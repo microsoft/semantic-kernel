@@ -54,7 +54,7 @@ class OpenAIAssistantBase(Agent):
     Manages the interaction with OpenAI Assistants.
     """
 
-    _options_metadata_key: str = "__run_options"
+    _options_metadata_key: ClassVar[str] = "__run_options"
 
     ai_model_id: str
     client: AsyncOpenAI
@@ -284,7 +284,8 @@ class OpenAIAssistantBase(Agent):
 
         return self.assistant
 
-    def _create_open_ai_assistant_definition(self, assistant: "Assistant") -> dict[str, Any]:
+    @classmethod
+    def _create_open_ai_assistant_definition(cls, assistant: "Assistant") -> dict[str, Any]:
         """Create an OpenAI Assistant Definition from the provided assistant dictionary.
 
         Args:
@@ -294,11 +295,11 @@ class OpenAIAssistantBase(Agent):
             An OpenAI Assistant Definition.
         """
         execution_settings = {}
-        if isinstance(assistant.metadata, dict) and self._options_metadata_key in assistant.metadata:
-            settings_data = assistant.metadata[self._options_metadata_key]
+        if isinstance(assistant.metadata, dict) and OpenAIAssistantBase._options_metadata_key in assistant.metadata:
+            settings_data = assistant.metadata[OpenAIAssistantBase._options_metadata_key]
             if isinstance(settings_data, str):
                 settings_data = json.loads(settings_data)
-                assistant.metadata[self._options_metadata_key] = settings_data
+                assistant.metadata[OpenAIAssistantBase._options_metadata_key] = settings_data
             execution_settings = {key: value for key, value in settings_data.items()}
 
         file_ids: list[str] = []
@@ -737,6 +738,7 @@ class OpenAIAssistantBase(Agent):
             role=AuthorRole.ASSISTANT,
             content=code,
             name=agent_name,
+            metadata={"code": True},
         )
 
     def _generate_annotation_content(self, annotation: "Annotation") -> AnnotationContent:
