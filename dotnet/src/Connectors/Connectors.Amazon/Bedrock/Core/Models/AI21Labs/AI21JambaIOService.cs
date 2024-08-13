@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -21,7 +24,7 @@ internal sealed class AI21JambaIOService : IBedrockTextGenerationIOService, IBed
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    object IBedrockTextGenerationIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
+    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonJambaExecutionSettings.FromExecutionSettings(executionSettings);
         List<AI21JambaRequest.AI21TextGenerationRequest.JambaMessage> messages = new()
@@ -54,7 +57,7 @@ internal sealed class AI21JambaIOService : IBedrockTextGenerationIOService, IBed
     /// </summary>
     /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
     /// <returns></returns>
-    IReadOnlyList<TextContent> IBedrockTextGenerationIOService.GetInvokeResponseBody(InvokeModelResponse response)
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<AI21JambaResponse.AI21TextResponse>(reader.ReadToEnd());
@@ -74,7 +77,7 @@ internal sealed class AI21JambaIOService : IBedrockTextGenerationIOService, IBed
     /// <param name="chatHistory">The messages between assistant and user.</param>
     /// <param name="settings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    ConverseRequest IBedrockChatCompletionIOService.GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
+    public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
@@ -126,7 +129,7 @@ internal sealed class AI21JambaIOService : IBedrockTextGenerationIOService, IBed
     /// </summary>
     /// <param name="chunk"></param>
     /// <returns></returns>
-    IEnumerable<string> IBedrockTextGenerationIOService.GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
         var buffer = new StringBuilder();
         if (chunk["choices"]?[0]?["delta"]?["content"] != null)
@@ -143,7 +146,7 @@ internal sealed class AI21JambaIOService : IBedrockTextGenerationIOService, IBed
     /// <param name="chatHistory"></param>
     /// <param name="settings"></param>
     /// <returns></returns>
-    ConverseStreamRequest IBedrockChatCompletionIOService.GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);

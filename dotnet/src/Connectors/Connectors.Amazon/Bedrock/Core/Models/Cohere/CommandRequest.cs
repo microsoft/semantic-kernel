@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
@@ -9,7 +10,6 @@ internal static class CommandRequest
     /// <summary>
     /// Text generation request object.
     /// </summary>
-    [Serializable]
     internal sealed class CohereCommandTextGenerationRequest
     {
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
@@ -7,7 +8,6 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// AI21 Labs Jurassic Response object.
 /// </summary>
-[Serializable]
 internal sealed class AI21JurassicResponse
 {
     /// <summary>
@@ -29,7 +29,6 @@ internal sealed class AI21JurassicResponse
     /// <summary>
     /// The prompt includes the raw text, the tokens with their log probabilities, and the top-K alternative tokens at each position, if requested.
     /// </summary>
-    [Serializable]
     internal sealed class PromptText
     {
         /// <summary>
@@ -48,7 +47,6 @@ internal sealed class AI21JurassicResponse
     /// <summary>
     /// The token object corresponding to each prompt object.
     /// </summary>
-    [Serializable]
     internal sealed class Token
     {
         /// <summary>
@@ -73,7 +71,6 @@ internal sealed class AI21JurassicResponse
     /// <summary>
     /// The generated token object from the token data.
     /// </summary>
-    [Serializable]
     internal sealed class GeneratedToken
     {
         /// <summary>
@@ -98,7 +95,6 @@ internal sealed class AI21JurassicResponse
     /// <summary>
     /// Indicates the start and end offsets of the token in the decoded text string.
     /// </summary>
-    [Serializable]
     internal sealed class TextRange
     {
         /// <summary>
@@ -117,7 +113,6 @@ internal sealed class AI21JurassicResponse
     /// <summary>
     /// A list of completions, including raw text, tokens, and log probabilities. The number of completions corresponds to the requested numResults.
     /// </summary>
-    [Serializable]
     internal sealed class Completion
     {
         /// <summary>
@@ -136,7 +131,6 @@ internal sealed class AI21JurassicResponse
     /// <summary>
     /// The data, which contains the text (string) and tokens (list of TokenData) for the completion
     /// </summary>
-    [Serializable]
     internal sealed class JurassicData
     {
         /// <summary>
@@ -155,7 +149,6 @@ internal sealed class AI21JurassicResponse
     /// <summary>
     /// This nested data structure explains why the generation process was halted for a specific completion.
     /// </summary>
-    [Serializable]
     internal sealed class FinishReason
     {
         /// <summary>

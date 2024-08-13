@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Reflection;
+using System;
 using Amazon.BedrockRuntime;
 using Amazon.Runtime;
 using Microsoft.Extensions.DependencyInjection;

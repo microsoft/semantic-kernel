@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
@@ -18,7 +22,7 @@ internal sealed class AI21JurassicIOService : IBedrockTextGenerationIOService
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    object IBedrockTextGenerationIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
+    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonJurassicExecutionSettings.FromExecutionSettings(executionSettings);
         var requestBody = new AI21JurassicRequest.AI21JurassicTextGenerationRequest
@@ -40,7 +44,7 @@ internal sealed class AI21JurassicIOService : IBedrockTextGenerationIOService
     /// </summary>
     /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
     /// <returns></returns>
-    IReadOnlyList<TextContent> IBedrockTextGenerationIOService.GetInvokeResponseBody(InvokeModelResponse response)
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<AI21JurassicResponse>(reader.ReadToEnd());
@@ -59,7 +63,7 @@ internal sealed class AI21JurassicIOService : IBedrockTextGenerationIOService
     /// <param name="chunk"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    IEnumerable<string> IBedrockTextGenerationIOService.GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
         throw new NotSupportedException("Streaming not supported by this model.");
     }

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>

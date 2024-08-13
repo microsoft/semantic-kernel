@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon;
@@ -12,7 +14,6 @@ public static class CommandRTools
     /// <summary>
     /// The required fields for chat_history.
     /// </summary>
-    [Serializable]
     public class ChatMessage
     {
         /// <summary>

@@ -9,7 +9,6 @@ internal static class LlamaRequest
     /// <summary>
     /// Text generation request object for InvokeModel as required by Meta Llama.
     /// </summary>
-    [Serializable]
     internal sealed class LlamaTextGenerationRequest
     {
         /// <summary>

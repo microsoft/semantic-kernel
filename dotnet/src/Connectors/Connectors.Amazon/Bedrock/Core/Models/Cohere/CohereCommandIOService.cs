@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
@@ -18,7 +21,7 @@ internal sealed class CohereCommandIOService : IBedrockTextGenerationIOService
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    object IBedrockTextGenerationIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
+    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonCommandExecutionSettings.FromExecutionSettings(executionSettings);
         var requestBody = new CommandRequest.CohereCommandTextGenerationRequest()
@@ -44,7 +47,7 @@ internal sealed class CohereCommandIOService : IBedrockTextGenerationIOService
     /// </summary>
     /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
     /// <returns>A list of text content objects as required by the semantic kernel.</returns>
-    IReadOnlyList<TextContent> IBedrockTextGenerationIOService.GetInvokeResponseBody(InvokeModelResponse response)
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<CommandResponse>(reader.ReadToEnd());
@@ -64,7 +67,7 @@ internal sealed class CohereCommandIOService : IBedrockTextGenerationIOService
     /// </summary>
     /// <param name="chunk"></param>
     /// <returns></returns>
-    IEnumerable<string> IBedrockTextGenerationIOService.GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
         var generations = chunk["generations"]?.AsArray();
         if (generations != null)

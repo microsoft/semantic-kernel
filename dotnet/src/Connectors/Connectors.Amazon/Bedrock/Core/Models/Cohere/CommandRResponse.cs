@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
@@ -56,7 +57,6 @@ internal sealed class CommandRResponse
     /// <summary>
     /// Citation object for array of inline citations and associated metadata for the generated reply.
     /// </summary>
-    [Serializable]
     internal sealed class Citation
     {
         /// <summary>
@@ -87,7 +87,6 @@ internal sealed class CommandRResponse
     /// <summary>
     /// Components for tool calling.
     /// </summary>
-    [Serializable]
     internal sealed class ToolCall
     {
         /// <summary>
@@ -106,7 +105,6 @@ internal sealed class CommandRResponse
     /// <summary>
     /// API usage data (only exists for streaming).
     /// </summary>
-    [Serializable]
     internal sealed class MetaCommandR
     {
         /// <summary>
@@ -125,7 +123,6 @@ internal sealed class CommandRResponse
     /// <summary>
     /// The API version.
     /// </summary>
-    [Serializable]
     internal sealed class ApiVersion
     {
         /// <summary>
@@ -138,7 +135,6 @@ internal sealed class CommandRResponse
     /// <summary>
     /// The billed units.
     /// </summary>
-    [Serializable]
     internal sealed class BilledUnits
     {
         /// <summary>

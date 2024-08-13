@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
@@ -12,7 +13,6 @@ internal static class AI21JambaRequest
     /// <summary>
     /// Text Generation Request object for AI21 Jamba.
     /// </summary>
-    [Serializable]
     internal sealed class AI21TextGenerationRequest
     {
         /// <summary>
@@ -67,7 +67,6 @@ internal static class AI21JambaRequest
         /// <summary>
         /// Message object for AI21 Labs Jamba which has the role and content.
         /// </summary>
-        [Serializable]
         internal sealed class JambaMessage
         {
             /// <summary>

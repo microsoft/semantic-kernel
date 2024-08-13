@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
@@ -22,7 +24,7 @@ internal sealed class CohereCommandRIOService : IBedrockTextGenerationIOService,
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    object IBedrockTextGenerationIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
+    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonCommandRExecutionSettings.FromExecutionSettings(executionSettings);
         var chatHistory = BedrockModelUtilities.GetExtensionDataValue<List<CommandRTools.ChatMessage>>(executionSettings?.ExtensionData, "chat_history") ?? exec.ChatHistory;
@@ -65,7 +67,7 @@ internal sealed class CohereCommandRIOService : IBedrockTextGenerationIOService,
     /// </summary>
     /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
     /// <returns></returns>
-    IReadOnlyList<TextContent> IBedrockTextGenerationIOService.GetInvokeResponseBody(InvokeModelResponse response)
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<CommandRResponse>(reader.ReadToEnd());
@@ -85,7 +87,7 @@ internal sealed class CohereCommandRIOService : IBedrockTextGenerationIOService,
     /// <param name="chatHistory">The messages between assistant and user.</param>
     /// <param name="settings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    ConverseRequest IBedrockChatCompletionIOService.GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
+    public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
@@ -158,7 +160,7 @@ internal sealed class CohereCommandRIOService : IBedrockTextGenerationIOService,
     /// </summary>
     /// <param name="chunk"></param>
     /// <returns></returns>
-    IEnumerable<string> IBedrockTextGenerationIOService.GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
         var text = chunk["text"]?.ToString();
         if (!string.IsNullOrEmpty(text))
@@ -174,7 +176,7 @@ internal sealed class CohereCommandRIOService : IBedrockTextGenerationIOService,
     /// <param name="chatHistory">The messages between assistant and user.</param>
     /// <param name="settings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    ConverseStreamRequest IBedrockChatCompletionIOService.GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);

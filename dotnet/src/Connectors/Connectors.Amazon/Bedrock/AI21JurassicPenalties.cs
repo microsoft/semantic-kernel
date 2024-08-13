@@ -7,8 +7,6 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon;
 /// <summary>
 /// Penalty struct for AI21 Jurassic. Accessed by both the execution settings and request object so must be kept public.
 /// </summary>
-[Serializable]
-
 public class AI21JurassicPenalties
 {
     /// <summary>

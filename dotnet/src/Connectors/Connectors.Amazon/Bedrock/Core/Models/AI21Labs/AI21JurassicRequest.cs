@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
@@ -12,7 +13,6 @@ internal static class AI21JurassicRequest
     /// <summary>
     /// The AI21 Labs Jurassic Text Generation request object.
     /// </summary>
-    [Serializable]
     internal class AI21JurassicTextGenerationRequest
     {
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
@@ -27,7 +28,6 @@ internal class CommandResponse
     /// <summary>
     /// A list of generated results along with the likelihoods for tokens requested. (Always returned). Each generation object in the list contains the following fields.
     /// </summary>
-    [Serializable]
     internal class Generation
     {
         /// <summary>
@@ -69,7 +69,6 @@ internal class CommandResponse
     /// <summary>
     /// An array of per token likelihoods. Returned if you specify the return_likelihoods input parameter.
     /// </summary>
-    [Serializable]
     internal class TokenLikelihood
     {
         /// <summary>

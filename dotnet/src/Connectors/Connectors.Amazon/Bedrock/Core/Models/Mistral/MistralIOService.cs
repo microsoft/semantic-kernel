@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
@@ -20,7 +23,7 @@ internal sealed class MistralIOService : IBedrockTextGenerationIOService, IBedro
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    object IBedrockTextGenerationIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
+    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonMistralExecutionSettings.FromExecutionSettings(executionSettings);
         var temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "temperature") ?? exec.Temperature;
@@ -47,7 +50,7 @@ internal sealed class MistralIOService : IBedrockTextGenerationIOService, IBedro
     /// </summary>
     /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
     /// <returns>A list of text content objects as required by the semantic kernel.</returns>
-    IReadOnlyList<TextContent> IBedrockTextGenerationIOService.GetInvokeResponseBody(InvokeModelResponse response)
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<MistralResponse>(reader.ReadToEnd());
@@ -67,7 +70,7 @@ internal sealed class MistralIOService : IBedrockTextGenerationIOService, IBedro
     /// <param name="chatHistory">The messages between assistant and user.</param>
     /// <param name="settings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    ConverseRequest IBedrockChatCompletionIOService.GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
+    public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
@@ -99,7 +102,7 @@ internal sealed class MistralIOService : IBedrockTextGenerationIOService, IBedro
     /// </summary>
     /// <param name="chunk"></param>
     /// <returns></returns>
-    IEnumerable<string> IBedrockTextGenerationIOService.GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
         var outputs = chunk["outputs"]?.AsArray();
         if (outputs != null)
@@ -122,7 +125,7 @@ internal sealed class MistralIOService : IBedrockTextGenerationIOService, IBedro
     /// <param name="chatHistory">The messages between assistant and user.</param>
     /// <param name="settings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    ConverseStreamRequest IBedrockChatCompletionIOService.GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);

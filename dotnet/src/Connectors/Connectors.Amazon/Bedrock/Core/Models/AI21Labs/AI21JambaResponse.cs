@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
@@ -12,7 +13,6 @@ internal static class AI21JambaResponse
     /// <summary>
     /// AI21 Text Generation Response object (from Invoke).
     /// </summary>
-    [Serializable]
     internal class AI21TextResponse
     {
         /// <summary>
@@ -34,7 +34,6 @@ internal static class AI21JambaResponse
     /// <summary>
     /// The members for the Choice class as required by AI21 Labs Jamba.
     /// </summary>
-    [Serializable]
     internal class Choice
     {
         /// <summary>
@@ -58,7 +57,6 @@ internal static class AI21JambaResponse
     /// <summary>
     /// Message object for the model with role and content as required.
     /// </summary>
-    [Serializable]
     internal class Message
     {
         /// <summary>
@@ -78,7 +76,6 @@ internal static class AI21JambaResponse
     /// <summary>
     /// The token counts for this request. Per-token billing is based on the prompt token and completion token counts and rates.
     /// </summary>
-    [Serializable]
     internal class JambaUsage
     {
         /// <summary>
