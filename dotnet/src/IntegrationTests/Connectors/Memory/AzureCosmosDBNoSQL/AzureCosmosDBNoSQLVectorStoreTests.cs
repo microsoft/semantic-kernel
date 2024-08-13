@@ -9,7 +9,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 
 /// <summary>
-/// Unit tests for <see cref="AzureCosmosDBNoSQLVectorStore"/>.
+/// Integration tests for <see cref="AzureCosmosDBNoSQLVectorStore"/>.
 /// </summary>
 [Collection("AzureCosmosDBNoSQLVectorStoreCollection")]
 public sealed class AzureCosmosDBNoSQLVectorStoreTests(AzureCosmosDBNoSQLVectorStoreFixture fixture)
