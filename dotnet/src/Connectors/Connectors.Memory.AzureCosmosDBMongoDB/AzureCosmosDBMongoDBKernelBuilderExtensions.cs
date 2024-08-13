@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using Microsoft.SemanticKernel.Data;
 using MongoDB.Driver;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods to register Azure CosmosDB MongoDB <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
