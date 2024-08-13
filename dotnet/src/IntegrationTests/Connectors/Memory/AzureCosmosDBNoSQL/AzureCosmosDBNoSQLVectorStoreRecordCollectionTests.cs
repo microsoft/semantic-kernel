@@ -14,7 +14,7 @@ using IndexKind = Microsoft.SemanticKernel.Data.IndexKind;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 
 /// <summary>
-/// Unit tests for <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TRecord}"/> class.
+/// Integration tests for <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>
 [Collection("AzureCosmosDBNoSQLVectorStoreCollection")]
 public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosmosDBNoSQLVectorStoreFixture fixture)
