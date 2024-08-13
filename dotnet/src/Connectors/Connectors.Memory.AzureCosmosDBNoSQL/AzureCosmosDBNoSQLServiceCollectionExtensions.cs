@@ -47,7 +47,6 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="connectionString">Connection string required to connect to Azure CosmosDB NoSQL.</param>
     /// <param name="databaseName">Database name for Azure CosmosDB NoSQL.</param>
-    /// <param name="jsonSerializerOptions">Optional JSON serializer options.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
@@ -55,7 +54,6 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
         this IServiceCollection services,
         string connectionString,
         string databaseName,
-        JsonSerializerOptions? jsonSerializerOptions = default,
         AzureCosmosDBNoSQLVectorStoreOptions? options = default,
         string? serviceId = default)
     {
@@ -66,7 +64,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
             {
                 var cosmosClient = new CosmosClient(connectionString, new()
                 {
-                    Serializer = new CosmosSystemTextJsonSerializer(jsonSerializerOptions ?? JsonSerializerOptions.Default)
+                    Serializer = new CosmosSystemTextJsonSerializer(options?.JsonSerializerOptions ?? JsonSerializerOptions.Default)
                 });
 
                 var database = cosmosClient.GetDatabase(databaseName);

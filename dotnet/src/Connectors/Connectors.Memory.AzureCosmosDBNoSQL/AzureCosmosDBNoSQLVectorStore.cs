@@ -57,7 +57,11 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
         var directlyCreatedStore = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(
             this._database,
             name,
-            new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            new()
+            {
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                JsonSerializerOptions = this._options.JsonSerializerOptions
+            }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
         return directlyCreatedStore!;
     }

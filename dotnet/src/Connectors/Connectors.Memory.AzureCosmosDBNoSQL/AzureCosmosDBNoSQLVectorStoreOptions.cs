@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
 /// <summary>
@@ -11,4 +13,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreOptions
     /// An optional factory to use for constructing <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TRecord}"/> instances, if custom options are required.
     /// </summary>
     public IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
+
+    /// <summary>
+    /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure CosmosDB NoSQL record.
+    /// </summary>
+    public JsonSerializerOptions? JsonSerializerOptions { get; init; }
 }

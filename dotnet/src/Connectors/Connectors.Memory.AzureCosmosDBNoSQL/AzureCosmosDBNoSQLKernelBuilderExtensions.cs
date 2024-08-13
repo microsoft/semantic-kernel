@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Microsoft.SemanticKernel.Data;
@@ -36,7 +35,6 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
     /// <param name="builder">The builder to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="connectionString">Connection string required to connect to Azure CosmosDB NoSQL.</param>
     /// <param name="databaseName">Database name for Azure CosmosDB NoSQL.</param>
-    /// <param name="jsonSerializerOptions">Optional JSON serializer options.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
@@ -44,14 +42,12 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
         this IKernelBuilder builder,
         string connectionString,
         string databaseName,
-        JsonSerializerOptions? jsonSerializerOptions = default,
         AzureCosmosDBNoSQLVectorStoreOptions? options = default,
         string? serviceId = default)
     {
         builder.Services.AddAzureCosmosDBNoSQLVectorStore(
             connectionString,
             databaseName,
-            jsonSerializerOptions,
             options,
             serviceId);
 
