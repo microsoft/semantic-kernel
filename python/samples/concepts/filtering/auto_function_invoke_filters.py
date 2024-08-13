@@ -9,6 +9,7 @@ from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAICh
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
@@ -139,16 +140,27 @@ async def chat() -> bool:
 
     result = await kernel.invoke(chat_function, arguments=arguments)
 
-    # If tools are used, and auto invoke tool calls is False, the response will be of type
-    # ChatMessageContent with information about the tool calls, which need to be sent
-    # back to the model to get the final response.
-    if isinstance(result.value[0].items[0], FunctionCallContent):
-        print_tool_calls(result.value[0])
-        return True
-
     history.add_user_message(user_input)
-    history.add_assistant_message(str(result))
-    print(f"Mosscap:> {result}")
+
+    # Check if any result.value is a FunctionResult
+    if any(isinstance(item, FunctionResultContent) for item in result.value[0].items):
+        # Iterate through each result to process FunctionResult instances
+        for fr in result.value[0].items:
+            if isinstance(fr, FunctionResultContent):
+                print(f"Mosscap:> {fr.result}")
+                history.add_assistant_message(str(fr.result))
+    elif any(isinstance(item, FunctionCallContent) for item in result.value[0].items):
+        # If tools are used, and auto invoke tool calls is False, the response will be of type
+        # ChatMessageContent with information about the tool calls, which need to be sent
+        # back to the model to get the final response.
+        for fcc in result.value[0].items:
+            if isinstance(fcc, FunctionCallContent):
+                print_tool_calls(fcc)
+        history.add_assistant_message(str(result))
+    else:
+        print(f"Mosscap:> {result}")
+        history.add_assistant_message(str(result))
+
     return True
 
 
