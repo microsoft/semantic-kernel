@@ -25,9 +25,4 @@ public sealed class FunctionChoiceBehaviorConfiguration
     /// Indicates whether the functions should be automatically invoked by the AI connector.
     /// </summary>
     public bool AutoInvoke { get; internal init; } = true;
-
-    /// <summary>
-    /// Specifies whether validation against a specified list of functions is required before allowing AI connector to invoke it.
-    /// </summary>
-    public bool AllowAnyRequestedKernelFunction { get; internal set; }
 }

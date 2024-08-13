@@ -257,7 +257,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
             await next(context);
         });
 
-        var settings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto([plugin.ElementAt(1)], autoInvoke: false) };
+        var settings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto([plugin.ElementAt(0)], autoInvoke: false) };
 
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("How many days until Christmas?");
@@ -295,7 +295,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 
         var functionsForManualInvocation = new List<string>();
 
-        var settings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto([plugin.ElementAt(1)], autoInvoke: false) };
+        var settings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto([plugin.ElementAt(0)], autoInvoke: false) };
 
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("How many days until Christmas?");

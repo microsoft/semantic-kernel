@@ -246,7 +246,7 @@ internal partial class ClientCore
                     continue;
                 }
 
-                // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
+                // Make sure the requested function is one we advertised. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
                 if (toolCallingConfig.AllowAnyRequestedKernelFunction is not true &&
@@ -513,7 +513,7 @@ internal partial class ClientCore
                     continue;
                 }
 
-                // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
+                // Make sure the requested function is one we advertised. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
                 if (toolCallingConfig.AllowAnyRequestedKernelFunction is not true &&
@@ -1159,7 +1159,7 @@ internal partial class ClientCore
         // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
         if (executionSettings.FunctionChoiceBehavior is { } functionChoiceBehavior)
         {
-            (tools, choice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction) = this.ConfigureFunctionCalling(kernel, requestIndex, functionChoiceBehavior);
+            (tools, choice, autoInvoke, maximumAutoInvokeAttempts) = this.ConfigureFunctionCalling(kernel, requestIndex, functionChoiceBehavior);
         }
         // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
         else if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
@@ -1208,7 +1208,7 @@ internal partial class ClientCore
         return new(tools, choice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction);
     }
 
-    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int maximumAutoInvokeAttempts, bool AllowAnyRequestedKernelFunction) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior)
+    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int maximumAutoInvokeAttempts) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior)
     {
         FunctionChoiceBehaviorConfiguration config = functionChoiceBehavior.GetConfiguration(new() { Kernel = kernel });
 
@@ -1216,7 +1216,6 @@ internal partial class ClientCore
         ChatToolChoice? toolChoice = null;
         int maximumAutoInvokeAttempts = config.AutoInvoke ? MaximumAutoInvokeAttempts : 0;
         bool autoInvoke = kernel is not null && config.AutoInvoke;
-        bool allowAnyRequestedKernelFunction = config.AllowAnyRequestedKernelFunction;
 
         if (config.Choice == FunctionChoice.Auto)
         {
@@ -1231,7 +1230,7 @@ internal partial class ClientCore
                 }
             }
 
-            return new(tools, toolChoice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction);
+            return new(tools, toolChoice, autoInvoke, maximumAutoInvokeAttempts);
         }
 
         throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");

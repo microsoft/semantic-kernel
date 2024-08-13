@@ -53,7 +53,6 @@ internal sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
         }
 
         List<KernelFunction>? availableFunctions = null;
-        bool allowAnyRequestedKernelFunction = false;
 
         if (this._functions is not null)
         {
@@ -76,8 +75,6 @@ internal sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
         // Provide all kernel functions.
         else if (context.Kernel is not null)
         {
-            allowAnyRequestedKernelFunction = true;
-
             foreach (var plugin in context.Kernel.Plugins)
             {
                 (availableFunctions ??= new List<KernelFunction>(context.Kernel.Plugins.Count)).AddRange(plugin);
@@ -90,7 +87,6 @@ internal sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
             Choice = FunctionChoice.Auto,
             Functions = availableFunctions,
             AutoInvoke = this._autoInvoke,
-            AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
         };
 #pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }

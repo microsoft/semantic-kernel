@@ -235,40 +235,6 @@ public sealed class AutoFunctionChoiceBehaviorTests
     //    Assert.Equal("The specified function MyPlugin.NonKernelFunction was not found.", exception.Message);
     //}
 
-    [Fact]
-    public void ItShouldAllowInvocationOfAnyRequestedKernelFunction()
-    {
-        // Arrange
-        var plugin = GetTestPlugin();
-        this._kernel.Plugins.Add(plugin);
-
-        // Act
-        var choiceBehavior = new AutoFunctionChoiceBehavior();
-
-        var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
-
-        // Assert
-        Assert.NotNull(config);
-        Assert.True(config.AllowAnyRequestedKernelFunction);
-    }
-
-    [Fact]
-    public void ItShouldNotAllowInvocationOfAnyRequestedKernelFunctionIfSubsetOfFunctionsSpecified()
-    {
-        // Arrange
-        var plugin = GetTestPlugin();
-        this._kernel.Plugins.Add(plugin);
-
-        // Act
-        var choiceBehavior = new AutoFunctionChoiceBehavior(functions: [plugin.ElementAt(1)]);
-
-        var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
-
-        // Assert
-        Assert.NotNull(config);
-        Assert.False(config.AllowAnyRequestedKernelFunction);
-    }
-
     private static KernelPlugin GetTestPlugin()
     {
         var function1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");
