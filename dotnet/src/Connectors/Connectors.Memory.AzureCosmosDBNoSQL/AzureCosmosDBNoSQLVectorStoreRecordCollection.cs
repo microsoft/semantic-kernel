@@ -149,6 +149,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
             this._options.PartitionKeyPropertyName! :
             this._keyProperty.DataModelPropertyName;
 
+        VerifyPartitionKeyProperty(partitionKeyPropertyName, this._vectorStoreRecordDefinition);
+
         this._partitionKeyStoragePropertyName = this._storagePropertyNames[partitionKeyPropertyName];
 
         this._nonVectorStoragePropertyNames = properties.DataProperties
@@ -318,20 +320,19 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
         }
     }
 
-    private async Task RunOperationAsync(string operationName, Func<Task> operation)
+    private static void VerifyPartitionKeyProperty(string partitionKeyPropertyName, VectorStoreRecordDefinition definition)
     {
-        try
+        var partitionKeyProperty = definition.Properties
+            .FirstOrDefault(l => l.DataModelPropertyName.Equals(partitionKeyPropertyName, StringComparison.Ordinal));
+
+        if (partitionKeyProperty is null)
         {
-            await operation.Invoke().ConfigureAwait(false);
+            throw new ArgumentException("Partition key property must be part of record definition.");
         }
-        catch (Exception ex)
+
+        if (partitionKeyProperty.PropertyType != typeof(string))
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreType = DatabaseName,
-                CollectionName = this.CollectionName,
-                OperationName = operationName
-            };
+            throw new ArgumentException("Partition key property must be string.");
         }
     }
 
