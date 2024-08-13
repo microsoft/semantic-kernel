@@ -18,6 +18,14 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
 )
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
+    GoogleAIChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import GoogleAIChatCompletion
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_chat_completion import VertexAIChatCompletion
+from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
+    VertexAIChatPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
@@ -80,7 +88,7 @@ def history() -> ChatHistory:
 
 
 @pytest.fixture(scope="module")
-def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]]:
+def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]:
     azure_openai_settings = AzureOpenAISettings.create()
     endpoint = azure_openai_settings.endpoint
     deployment_name = azure_openai_settings.chat_deployment_name
@@ -110,7 +118,9 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
         "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
         "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
         "mistral_ai": (MistralAIChatCompletion() if mistral_ai_setup else None, MistralAIChatPromptExecutionSettings),
-        "ollama": (OllamaChatCompletion(), OllamaChatPromptExecutionSettings),
+        "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
+        "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
+        "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
     }
 
 
@@ -390,6 +400,10 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
+            marks=pytest.mark.skip(
+                reason="Possible regression on the Azure AI Inference side when"
+                " returning tool calls in streaming responses. Investigating..."
+            ),
             id="azure_ai_inference_tool_call_auto",
         ),
         pytest.param(
@@ -452,6 +466,180 @@ pytestmark = pytest.mark.parametrize(
             ["Hello", "well"],
             marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
+        ),
+        pytest.param(
+            "google_ai",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
+            id="google_ai_text_input",
+        ),
+        pytest.param(
+            "google_ai",
+            {
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
+                ),
+            ],
+            ["house", "germany"],
+            id="google_ai_image_input_file",
+        ),
+        pytest.param(
+            "google_ai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["chat"]}
+                ),
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="google_ai_tool_call_auto",
+        ),
+        pytest.param(
+            "google_ai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=False, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="google_ai_tool_call_non_auto",
+        ),
+        pytest.param(
+            "google_ai",
+            {},
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="What was our 2024 revenue?")],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        items=[
+                            FunctionCallContent(
+                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                            )
+                        ],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.TOOL,
+                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                    ),
+                ],
+            ],
+            ["1.2"],
+            marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
+            id="google_ai_tool_call_flow",
+        ),
+        pytest.param(
+            "vertex_ai",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            id="vertex_ai_text_input",
+        ),
+        pytest.param(
+            "vertex_ai",
+            {
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
+                ),
+            ],
+            ["house", "germany"],
+            id="vertex_ai_image_input_file",
+        ),
+        pytest.param(
+            "vertex_ai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["chat"]}
+                ),
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="vertex_ai_tool_call_auto",
+        ),
+        pytest.param(
+            "vertex_ai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=False, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="vertex_ai_tool_call_non_auto",
+        ),
+        pytest.param(
+            "vertex_ai",
+            {},
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="What was our 2024 revenue?")],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        items=[
+                            FunctionCallContent(
+                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                            )
+                        ],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.TOOL,
+                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                    ),
+                ],
+            ],
+            ["1.2"],
+            id="vertex_ai_tool_call_flow",
         ),
     ],
 )
@@ -518,6 +706,7 @@ async def execute_invoke(kernel: Kernel, history: ChatHistory, output: str, stre
         response = invocation.value[0]
     print(response)
     if isinstance(response, ChatMessageContent):
+        assert response.items, "No items in response"
         for item in response.items:
             if isinstance(item, TextContent):
                 assert item.text is not None
