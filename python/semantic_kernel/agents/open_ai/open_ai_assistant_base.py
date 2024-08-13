@@ -3,7 +3,7 @@
 import asyncio
 import json
 import logging
-from collections.abc import AsyncIterable
+from collections.abc import AsyncIterable, Iterable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from openai import AsyncOpenAI
@@ -18,6 +18,8 @@ from openai.types.beta.threads.text_content_block import TextContentBlock
 from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.contents.annotation_content import AnnotationContent
@@ -76,6 +78,8 @@ class OpenAIAssistantBase(Agent):
     allowed_message_roles: ClassVar[list[str]] = [AuthorRole.USER, AuthorRole.ASSISTANT]
     polling_status: ClassVar[list[str]] = ["queued", "in_progress", "cancelling"]
     error_message_states: ClassVar[list[str]] = ["failed", "canceled", "expired"]
+
+    channel_type: ClassVar[type[AgentChannel]] = OpenAIAssistantChannel
 
     _is_deleted: bool = False
 
@@ -358,6 +362,39 @@ class OpenAIAssistantBase(Agent):
 
     # endregion
 
+    # region Agent Channel Methods
+
+    def get_channel_keys(self) -> Iterable[str]:
+        """Get the channel keys.
+
+        Returns:
+            Iterable[str]: The channel keys.
+        """
+        # Distinguish from other channel types.
+        yield f"{OpenAIAssistantBase.__name__}"
+
+        # Distiguish between different agent IDs
+        yield self.id
+
+        # Distinguish between agent names
+        yield self.name
+
+        # Distinguish between different API base URLs
+        yield str(self.client.base_url)
+
+        # for header in self.client.default_headers:
+        #     yield header
+
+    async def create_channel(self) -> AgentChannel:
+        """Create a channel."""
+        thread_id = await self.create_thread()
+
+        return OpenAIAssistantChannel(
+            client=self.client, thread_id=thread_id, polling_configuration=self.polling_options
+        )
+
+    # endregion
+
     # region Agent Methods
 
     async def create_thread(
@@ -399,7 +436,7 @@ class OpenAIAssistantBase(Agent):
                     raise AgentExecutionError(
                         f"Invalid message role `{message.role.value}`. Allowed roles are {self.allowed_message_roles}."
                     )
-                message_contents = self._get_message_contents(message=message)
+                message_contents = OpenAIAssistantBase._get_message_contents(message=message)
                 for content in message_contents:
                     messages_to_add.append({"role": message.role.value, "content": content})
             create_thread_kwargs["messages"] = messages_to_add
@@ -459,22 +496,31 @@ class OpenAIAssistantBase(Agent):
         Returns:
             Message: The message.
         """
-        if message.role.value not in self.allowed_message_roles:
+        return await OpenAIAssistantBase.create_chat_message(self.client, thread_id, message)
+
+    @classmethod
+    async def create_chat_message(cls, client, thread_id: str, message: ChatMessageContent) -> "Message":
+        """Class method to add a chat message, callable from class or instance.
+
+        Args:
+            client: The client to use for creating the message.
+            thread_id (str): The thread id.
+            message (ChatMessageContent): The chat message.
+
+        Returns:
+            Message: The message.
+        """
+        if message.role.value not in cls.allowed_message_roles:
             raise AgentExecutionError(
-                f"Invalid message role `{message.role.value}`. Allowed roles are {self.allowed_message_roles}."
+                f"Invalid message role `{message.role.value}`. Allowed roles are {cls.allowed_message_roles}."
             )
 
-        metadata: Any = None
-        if message.metadata:
-            metadata = message.metadata
+        message_contents: list[dict[str, Any]] = OpenAIAssistantBase._get_message_contents(message=message)
 
-        message_contents: list[dict[str, Any]] = self._get_message_contents(message=message)
-
-        return await self.client.beta.threads.messages.create(
+        return await client.beta.threads.messages.create(
             thread_id=thread_id,
             role=message.role.value,  # type: ignore
             content=message_contents,  # type: ignore
-            metadata=metadata,
         )
 
     async def get_thread_messages(self, thread_id: str) -> AsyncIterable[ChatMessageContent]:
@@ -502,6 +548,8 @@ class OpenAIAssistantBase(Agent):
 
             if len(content.items) > 0:
                 yield content
+
+    # endregion
 
     # region Agent Invoke Methods
 
@@ -577,7 +625,7 @@ class OpenAIAssistantBase(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
         metadata: dict[str, str] | None = {},
-        kwargs: Any,
+        **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
         """Internal invoke method.
 
@@ -896,7 +944,8 @@ class OpenAIAssistantBase(Agent):
 
         return message
 
-    def _get_message_contents(self, message: ChatMessageContent) -> list[dict[str, Any]]:
+    @staticmethod
+    def _get_message_contents(message: ChatMessageContent) -> list[dict[str, Any]]:
         """Get the message contents."""
         contents: list[dict[str, Any]] = []
         for content in message.items:
@@ -1012,12 +1061,10 @@ class OpenAIAssistantBase(Agent):
         tool_outputs = []
         for tool_call in chat_history.messages[0].items:
             if isinstance(tool_call, FunctionResultContent):
-                tool_outputs.append(
-                    {
-                        "tool_call_id": tool_call.id,
-                        "output": tool_call.result,
-                    }
-                )
+                tool_outputs.append({
+                    "tool_call_id": tool_call.id,
+                    "output": tool_call.result,
+                })
         return tool_outputs
 
     # endregion

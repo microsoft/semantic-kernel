@@ -160,7 +160,7 @@ class AgentChat(KernelBaseModel):
         channel_key = self._get_agent_hash(agent)
         channel = await self._synchronize_channel(channel_key)
         if channel is None:
-            channel = agent.create_channel()
+            channel = await agent.create_channel()
             self.agent_channels[channel_key] = channel
 
             if len(self.history.messages) > 0:

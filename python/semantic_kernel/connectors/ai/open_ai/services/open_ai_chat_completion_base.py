@@ -7,6 +7,8 @@ from collections.abc import AsyncGenerator
 from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -33,6 +35,7 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.completion_usage import KernelCompletionUsage
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceInvalidResponseError
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
@@ -135,7 +138,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
 
             if any(result.terminate for result in results if result is not None):
-                return [chat_history.messages[-1]]
+                return self._create_early_terminate_chat_message_content(chat_history.messages[-len(results) :])
 
             self._update_settings(settings, chat_history, kernel=kernel)
         else:
@@ -235,7 +238,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 ],
             )
             if any(result.terminate for result in results if result is not None):
-                yield [chat_history.messages[-1]]  # type: ignore
+                yield self._create_early_terminate_chat_message_content(chat_history.messages[-len(results) :])  # type: ignore
                 break
 
             self._update_settings(settings, chat_history, kernel=kernel)
@@ -314,13 +317,39 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             items=items,
         )
 
+    def _create_early_terminate_chat_message_content(
+        self,
+        messages: list[ChatMessageContent],
+    ) -> list[ChatMessageContent]:
+        """Add an early termination message to the chat messages.
+
+        This method combines the FunctionResultContent items from separate ChatMessageContent messages,
+        and is used in the event that the `context.terminate = True` condition is met.
+        """
+        items: list[Any] = []
+        for message in messages:
+            items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
+        return [
+            ChatMessageContent(
+                role=AuthorRole.TOOL,
+                items=items,
+            )
+        ]
+
     def _get_metadata_from_chat_response(self, response: ChatCompletion) -> dict[str, Any]:
         """Get metadata from a chat response."""
+        usage: KernelCompletionUsage | None = None
+        if hasattr(response, "usage"):
+            usage = KernelCompletionUsage(
+                completion_tokens=response.usage.completion_tokens,  # type: ignore
+                prompt_tokens=response.usage.prompt_tokens,  # type: ignore
+                total_tokens=response.usage.total_tokens,  # type: ignore
+            )
         return {
             "id": response.id,
             "created": response.created,
             "system_fingerprint": response.system_fingerprint,
-            "usage": getattr(response, "usage", None),
+            "usage": usage.model_dump() if usage is not None else None,
         }
 
     def _get_metadata_from_streaming_chat_response(self, response: ChatCompletionChunk) -> dict[str, Any]:

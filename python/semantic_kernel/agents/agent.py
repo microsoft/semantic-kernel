@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import uuid
+from collections.abc import Iterable
 from typing import ClassVar
 
 from pydantic import Field
@@ -36,7 +37,7 @@ class Agent(KernelBaseModel):
     kernel: Kernel = Field(default_factory=Kernel)
     channel_type: ClassVar[type[AgentChannel] | None] = None
 
-    def get_channel_keys(self) -> list[str]:
+    def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.
 
         Returns:
@@ -46,7 +47,7 @@ class Agent(KernelBaseModel):
             raise NotImplementedError("Unable to get channel keys. Channel type not configured.")
         return [self.channel_type.__name__]
 
-    def create_channel(self) -> AgentChannel:
+    async def create_channel(self) -> AgentChannel:
         """Create a channel.
 
         Returns:

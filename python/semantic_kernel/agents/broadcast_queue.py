@@ -67,7 +67,7 @@ class BroadcastQueue(KernelBaseModel):
                     failure = queue_ref.receive_failure
                     queue_ref.receive_failure = None
                     raise Exception(
-                        f"Unexpected failure broadcasting to channel: {type(channel_ref.channel)}"
+                        f"Unexpected failure broadcasting to channel: {type(channel_ref.channel)}, failure: {failure}"
                     ) from failure
 
                 if not is_empty and (not queue_ref.receive_task or queue_ref.receive_task.done()):
