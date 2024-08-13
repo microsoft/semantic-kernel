@@ -3,9 +3,10 @@
 using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Microsoft.SemanticKernel.Data;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods to register Azure CosmosDB NoSQL <see cref="IVectorStore"/> instances on an <see cref="IServiceCollection"/>.
