@@ -161,7 +161,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
     /// <inheritdoc />
     public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("CollectionExists", async () =>
+        return this.RunOperationAsync("GetContainerQueryIterator", async () =>
         {
             const string Query = "SELECT VALUE(c.id) FROM c WHERE c.id = @collectionName";
 
@@ -242,7 +242,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
     {
         Verify.NotNull(keys);
 
-        const string OperationName = "GetItems";
+        const string OperationName = "GetItemQueryIterator";
 
         var includeVectors = options?.IncludeVectors ?? false;
         var fields = new List<string>(includeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);
