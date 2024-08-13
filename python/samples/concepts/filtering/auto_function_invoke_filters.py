@@ -96,7 +96,7 @@ async def auto_function_invocation_filter(context: AutoFunctionInvocationContext
     await next(context)
     #############################
     # Note: to simply return the unaltered function results, uncomment the `context.terminate = True` line and
-    # comment out the plugin_name check
+    # comment out the lines starting with `result = context.function_result` through `context.terminate = True`.
     # context.terminate = True
     #############################
     result = context.function_result

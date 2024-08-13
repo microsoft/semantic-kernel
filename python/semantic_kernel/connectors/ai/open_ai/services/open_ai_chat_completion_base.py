@@ -138,7 +138,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
 
             if any(result.terminate for result in results if result is not None):
-                return self._create_early_terminate_chat_message_content(chat_history.messages[-len(results) :])
+                return self._create_filter_early_terminate_chat_message_content(chat_history.messages[-len(results) :])
 
             self._update_settings(settings, chat_history, kernel=kernel)
         else:
@@ -238,7 +238,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 ],
             )
             if any(result.terminate for result in results if result is not None):
-                yield self._create_early_terminate_chat_message_content(chat_history.messages[-len(results) :])  # type: ignore
+                yield self._create_filter_early_terminate_chat_message_content(chat_history.messages[-len(results) :])  # type: ignore
                 break
 
             self._update_settings(settings, chat_history, kernel=kernel)
@@ -317,7 +317,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             items=items,
         )
 
-    def _create_early_terminate_chat_message_content(
+    def _create_filter_early_terminate_chat_message_content(
         self,
         messages: list[ChatMessageContent],
     ) -> list[ChatMessageContent]:
