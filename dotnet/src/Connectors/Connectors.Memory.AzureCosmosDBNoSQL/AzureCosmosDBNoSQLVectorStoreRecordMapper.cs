@@ -48,8 +48,6 @@ internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord> : IVect
     public TRecord MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
     {
         // Rename key property for valid deserialization.
-        var key = storageModel[AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName];
-
         RenameJsonProperty(storageModel, AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName, this._keyStoragePropertyName);
 
         return storageModel.Deserialize<TRecord>(this._jsonSerializerOptions)!;

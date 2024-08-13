@@ -345,9 +345,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
         {
             var vectorPropertyName = this._storagePropertyNames[property.DataModelPropertyName];
 
-            if (!property.Dimensions.HasValue)
+            if (property.Dimensions is not > 0)
             {
-                throw new VectorStoreOperationException($"Cannot create a collection, {nameof(property.Dimensions)} should be specified for {vectorPropertyName} vector property.");
+                throw new VectorStoreOperationException($"Property {nameof(property.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{property.DataModelPropertyName}' must be set to a positive integer to create a collection.");
             }
 
             var path = $"/{vectorPropertyName}";

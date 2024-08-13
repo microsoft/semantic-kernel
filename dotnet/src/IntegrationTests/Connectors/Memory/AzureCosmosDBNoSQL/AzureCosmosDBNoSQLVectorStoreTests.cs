@@ -22,14 +22,14 @@ public sealed class AzureCosmosDBNoSQLVectorStoreTests(AzureCosmosDBNoSQLVectorS
         // Arrange
         var sut = new AzureCosmosDBNoSQLVectorStore(fixture.Database!);
 
-        await fixture.Database!.CreateContainerIfNotExistsAsync(new ContainerProperties("sk-test-hotels", "/id"));
-        await fixture.Database!.CreateContainerIfNotExistsAsync(new ContainerProperties("sk-test-contacts", "/id"));
+        await fixture.Database!.CreateContainerIfNotExistsAsync(new ContainerProperties("list-names-1", "/id"));
+        await fixture.Database!.CreateContainerIfNotExistsAsync(new ContainerProperties("list-names-2", "/id"));
 
         // Act
         var collectionNames = await sut.ListCollectionNamesAsync().ToListAsync();
 
         // Assert
-        Assert.Contains("sk-test-hotels", collectionNames);
-        Assert.Contains("sk-test-contacts", collectionNames);
+        Assert.Contains("list-names-1", collectionNames);
+        Assert.Contains("list-names-2", collectionNames);
     }
 }
