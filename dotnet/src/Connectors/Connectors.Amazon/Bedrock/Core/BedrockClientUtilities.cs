@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Net;
+using System.Reflection;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
@@ -11,6 +12,9 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// </summary>
 internal sealed class BedrockClientUtilities
 {
+    public const string UserAgentHeader = "User-Agent";
+    public static readonly string UserAgentString = $"lib/semantic-kernel#{Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty}";
+
     /// <summary>
     /// Convert the Http Status Code in Converse Response to the Activity Status Code for Semantic Kernel activity.
     /// </summary>
