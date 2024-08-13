@@ -92,8 +92,8 @@ public class AmazonMistralExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Converts PromptExecutionSettings to AmazonMistralExecutionSettings
     /// </summary>
-    /// <param name="executionSettings"></param>
-    /// <returns></returns>
+    /// <param name="executionSettings">The Kernel standard PromptExecutionSettings.</param>
+    /// <returns>Model specific execution settings</returns>
     public static AmazonMistralExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         switch (executionSettings)

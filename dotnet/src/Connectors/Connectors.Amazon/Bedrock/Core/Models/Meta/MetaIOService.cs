@@ -15,13 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// </summary>
 internal sealed class MetaIOService : IBedrockTextGenerationIOService, IBedrockChatCompletionIOService
 {
-    /// <summary>
-    /// Builds InvokeModel request Body parameter with structure as required by Meta Llama.
-    /// </summary>
-    /// <param name="modelId">The model ID to be used as a request parameter.</param>
-    /// <param name="prompt">The input prompt for text generation.</param>
-    /// <param name="executionSettings">Optional prompt execution settings.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonLlama3ExecutionSettings.FromExecutionSettings(executionSettings);
@@ -35,11 +29,7 @@ internal sealed class MetaIOService : IBedrockTextGenerationIOService, IBedrockC
         return requestBody;
     }
 
-    /// <summary>
-    /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
-    /// </summary>
-    /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
@@ -53,13 +43,7 @@ internal sealed class MetaIOService : IBedrockTextGenerationIOService, IBedrockC
         return textContents;
     }
 
-    /// <summary>
-    /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Meta Llama.
-    /// </summary>
-    /// <param name="modelId">The model ID.</param>
-    /// <param name="chatHistory">The messages between assistant and user.</param>
-    /// <param name="settings">Optional prompt execution settings.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
@@ -90,11 +74,7 @@ internal sealed class MetaIOService : IBedrockTextGenerationIOService, IBedrockC
         return converseRequest;
     }
 
-    /// <summary>
-    /// Extracts the text generation streaming output from the Meta Llama response object structure.
-    /// </summary>
-    /// <param name="chunk"></param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
         var generation = chunk["generation"]?.ToString();
@@ -104,13 +84,7 @@ internal sealed class MetaIOService : IBedrockTextGenerationIOService, IBedrockC
         }
     }
 
-    /// <summary>
-    /// Builds the ConverseStreamRequest object for the Converse Bedrock API call, including building the Meta Llama Request object and mapping parameters to the ConverseStreamRequest object.
-    /// </summary>
-    /// <param name="modelId">The model ID.</param>
-    /// <param name="chatHistory">The messages between assistant and user.</param>
-    /// <param name="settings">Optional prompt execution settings.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public ConverseStreamRequest GetConverseStreamRequest(
         string modelId,
         ChatHistory chatHistory,

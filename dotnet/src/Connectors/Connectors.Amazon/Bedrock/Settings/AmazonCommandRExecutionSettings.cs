@@ -272,8 +272,8 @@ public class AmazonCommandRExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Converts PromptExecutionSettings to AmazonCommandExecutionSettings
     /// </summary>
-    /// <param name="executionSettings"></param>
-    /// <returns></returns>
+    /// <param name="executionSettings">The Kernel standard PromptExecutionSettings.</param>
+    /// <returns>Model specific execution settings</returns>
     public static AmazonCommandRExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         switch (executionSettings)

@@ -22,12 +22,12 @@ public class BedrockTextGenerationService : ITextGenerationService
     /// <summary>
     /// Initializes an instance of the BedrockTextGenerationService using an IAmazonBedrockRuntime object passed in by the user.
     /// </summary>
-    /// <param name="modelId"></param>
-    /// <param name="bedrockApi"></param>
-    /// <param name="loggerFactory"></param>
-    public BedrockTextGenerationService(string modelId, IAmazonBedrockRuntime bedrockApi, ILoggerFactory? loggerFactory = null)
+    /// <param name="modelId">The model to be used for the text generation service.</param>
+    /// <param name="bedrockRuntime">The runtime object for the service.</param>
+    /// <param name="loggerFactory">The logger for error logging.</param>
+    public BedrockTextGenerationService(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
-        this._textGenerationClient = new BedrockTextGenerationClient(modelId, bedrockApi, loggerFactory);
+        this._textGenerationClient = new BedrockTextGenerationClient(modelId, bedrockRuntime, loggerFactory);
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 

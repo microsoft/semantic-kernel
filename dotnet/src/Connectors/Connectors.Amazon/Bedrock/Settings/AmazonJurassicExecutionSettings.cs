@@ -122,8 +122,8 @@ public class AmazonJurassicExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Converts PromptExecutionSettings to AmazonJurassicExecutionSettings
     /// </summary>
-    /// <param name="executionSettings"></param>
-    /// <returns></returns>
+    /// <param name="executionSettings">The Kernel standard PromptExecutionSettings.</param>
+    /// <returns>Model specific execution settings</returns>
     public static AmazonJurassicExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         switch (executionSettings)

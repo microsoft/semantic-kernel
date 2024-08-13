@@ -16,13 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// </summary>
 internal sealed class AnthropicIOService : IBedrockTextGenerationIOService, IBedrockChatCompletionIOService
 {
-    /// <summary>
-    /// Builds InvokeModel request Body parameter with structure as required by Anthropic Claude.
-    /// </summary>
-    /// <param name="modelId">The model ID to be used as a request parameter.</param>
-    /// <param name="prompt">The input prompt for text generation.</param>
-    /// <param name="executionSettings">Optional prompt execution settings.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonClaudeExecutionSettings.FromExecutionSettings(executionSettings);
@@ -38,11 +32,7 @@ internal sealed class AnthropicIOService : IBedrockTextGenerationIOService, IBed
         return requestBody;
     }
 
-    /// <summary>
-    /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
-    /// </summary>
-    /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
@@ -56,13 +46,7 @@ internal sealed class AnthropicIOService : IBedrockTextGenerationIOService, IBed
         return textContents;
     }
 
-    /// <summary>
-    /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Anthropic Claude.
-    /// </summary>
-    /// <param name="modelId">The model ID.</param>
-    /// <param name="chatHistory">The messages between assistant and user.</param>
-    /// <param name="settings">Optional prompt execution settings.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
@@ -135,11 +119,7 @@ internal sealed class AnthropicIOService : IBedrockTextGenerationIOService, IBed
         return converseRequest;
     }
 
-    /// <summary>
-    /// Extracts the text generation streaming output from the Anthropic Claude response object structure.
-    /// </summary>
-    /// <param name="chunk"></param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
         var text = chunk["completion"]?.ToString();
@@ -149,13 +129,7 @@ internal sealed class AnthropicIOService : IBedrockTextGenerationIOService, IBed
         }
     }
 
-    /// <summary>
-    /// Builds the ConverseStreamRequest object for the Converse Bedrock API call, including building the Anthropic Claude Request object and mapping parameters to the ConverseStreamRequest object.
-    /// </summary>
-    /// <param name="modelId">The model ID.</param>
-    /// <param name="chatHistory">The messages between assistant and user.</param>
-    /// <param name="settings">Optional prompt execution settings.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);

@@ -17,20 +17,20 @@ internal interface IBedrockTextGenerationIOService
     /// <param name="modelId">The model ID to be used as a request parameter.</param>
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
-    /// <returns></returns>
+    /// <returns>The invoke request body per model requirements for the InvokeAsync Bedrock runtime call.</returns>
     internal object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null);
 
     /// <summary>
     /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API. Must be deserialized into the model's specific response object first.
     /// </summary>
     /// <param name="response">The InvokeModelResponse object returned from the InvokeAsync Bedrock call. </param>
-    /// <returns></returns>
+    /// <returns>The list of TextContent objects for the Semnatic Kernel output.</returns>
     internal IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response);
 
     /// <summary>
     /// Converts the Json output from the streaming text generation into IEnumerable strings for output.
     /// </summary>
     /// <param name="chunk">The payloadPart bytes outputted from the streaming response.</param>
-    /// <returns></returns>
+    /// <returns>An enumerable string.</returns>
     internal IEnumerable<string> GetTextStreamOutput(JsonNode chunk);
 }

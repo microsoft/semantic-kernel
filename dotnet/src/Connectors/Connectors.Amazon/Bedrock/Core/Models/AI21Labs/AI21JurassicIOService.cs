@@ -15,13 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// </summary>
 internal sealed class AI21JurassicIOService : IBedrockTextGenerationIOService
 {
-    /// <summary>
-    /// Builds InvokeModelRequest Body parameter to be serialized.
-    /// </summary>
-    /// <param name="modelId">The model ID to be used as a request parameter.</param>
-    /// <param name="prompt">The input prompt for text generation.</param>
-    /// <param name="executionSettings">Optional prompt execution settings.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonJurassicExecutionSettings.FromExecutionSettings(executionSettings);
@@ -39,11 +33,7 @@ internal sealed class AI21JurassicIOService : IBedrockTextGenerationIOService
         return requestBody;
     }
 
-    /// <summary>
-    /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
-    /// </summary>
-    /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
@@ -57,12 +47,7 @@ internal sealed class AI21JurassicIOService : IBedrockTextGenerationIOService
         return textContents;
     }
 
-    /// <summary>
-    /// Jurassic does not support streaming.
-    /// </summary>
-    /// <param name="chunk"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <inheritdoc/>
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
         throw new NotSupportedException("Streaming not supported by this model.");

@@ -24,7 +24,7 @@ public static class BedrockKernelBuilderExtensions
     /// <param name="modelId">The model for chat completion.</param>
     /// <param name="bedrockRuntime">The IAmazonBedrockRuntime to run inference using the respective model.</param>
     /// <param name="serviceId">The optional service ID.</param>
-    /// <returns></returns>
+    /// <returns>IKernelBuilder object.</returns>
     public static IKernelBuilder AddBedrockChatCompletionService(
         this IKernelBuilder builder,
         string modelId,
@@ -67,7 +67,7 @@ public static class BedrockKernelBuilderExtensions
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="bedrockRuntime">The IAmazonBedrockRuntime to run inference using the respective model.</param>
     /// <param name="serviceId">The optional service ID.</param>
-    /// <returns></returns>
+    /// <returns>IKernelBuilder object.</returns>
     public static IKernelBuilder AddBedrockTextGenerationService(
         this IKernelBuilder builder,
         string modelId,

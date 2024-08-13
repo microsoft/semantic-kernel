@@ -116,7 +116,7 @@ internal sealed class BedrockChatCompletionClient
     /// Converts the ConverseResponse object as outputted by the Bedrock Runtime API call to a ChatMessageContent for the Semantic Kernel.
     /// </summary>
     /// <param name="response"> ConverseResponse object outputted by Bedrock. </param>
-    /// <returns></returns>
+    /// <returns>List of ChatMessageContent objects</returns>
     private ChatMessageContent[] ConvertToMessageContent(ConverseResponse response)
     {
         if (response.Output.Message == null)

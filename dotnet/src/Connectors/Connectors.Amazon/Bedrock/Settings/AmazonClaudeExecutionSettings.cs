@@ -97,14 +97,14 @@ public class AmazonClaudeExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Converts PromptExecutionSettings to ClaudeExecutionSettings
     /// </summary>
-    /// <param name="executionSettings"></param>
-    /// <returns></returns>
+    /// <param name="executionSettings">The Kernel standard PromptExecutionSettings.</param>
+    /// <returns>Model specific execution settings.</returns>
     public static AmazonClaudeExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         switch (executionSettings)
         {
             case null:
-                return new AmazonClaudeExecutionSettings() { MaxTokensToSample = DefaultTextMaxTokens };
+                return new AmazonClaudeExecutionSettings { MaxTokensToSample = DefaultTextMaxTokens };
             case AmazonClaudeExecutionSettings settings:
                 return settings;
         }

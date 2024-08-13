@@ -17,9 +17,9 @@ internal static class BedrockModelUtilities
     /// <summary>
     /// Maps the AuthorRole to the corresponding ConversationRole because AuthorRole is static and { readonly get; }. Only called if AuthorRole is User or Assistant (System set outside/beforehand).
     /// </summary>
-    /// <param name="role"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <param name="role">The AuthorRole to be converted to ConversationRole</param>
+    /// <returns>The corresponding ConversationRole</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if invalid role.</exception>
     internal static ConversationRole MapAuthorRoleToConversationRole(AuthorRole role)
     {
         if (role == AuthorRole.User)
@@ -34,11 +34,12 @@ internal static class BedrockModelUtilities
 
         throw new ArgumentException($"Invalid role: {role}");
     }
+
     /// <summary>
     /// Gets the system messages from the ChatHistory and adds them to the ConverseRequest System parameter.
     /// </summary>
-    /// <param name="chatHistory"></param>
-    /// <returns></returns>
+    /// <param name="chatHistory">The ChatHistory object to be parsed.</param>
+    /// <returns>The list of SystemContentBlock for the converse request.</returns>
     internal static List<SystemContentBlock> GetSystemMessages(ChatHistory chatHistory)
     {
         return chatHistory
@@ -46,11 +47,12 @@ internal static class BedrockModelUtilities
             .Select(m => new SystemContentBlock { Text = m.Content })
             .ToList();
     }
+
     /// <summary>
     /// Creates the list of user and assistant messages for the Converse Request from the Chat History.
     /// </summary>
-    /// <param name="chatHistory"></param>
-    /// <returns></returns>
+    /// <param name="chatHistory">The ChatHistory object to be building the message list from.</param>
+    /// <returns>The list of messages for the converse request.</returns>
     internal static List<Message> BuildMessageList(ChatHistory chatHistory)
     {
         // Check that the text from the latest message in the chat history  is not empty.
@@ -74,10 +76,10 @@ internal static class BedrockModelUtilities
     /// Gets the prompt execution settings extension data for the model request body build.
     /// Returns null if the extension data value is not set (default is null if TValue is a nullable type).
     /// </summary>
-    /// <param name="extensionData"></param>
-    /// <param name="key"></param>
-    /// <typeparam name="TValue"></typeparam>
-    /// <returns></returns>
+    /// <param name="extensionData">The execution settings extension data.</param>
+    /// <param name="key">The key name of the settings parameter</param>
+    /// <typeparam name="TValue">The value of the settings parameter</typeparam>
+    /// <returns>The conversion to the given value of the data for execution settings</returns>
     internal static TValue? GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key)
     {
         if (extensionData?.TryGetValue(key, out object? value) == true)
