@@ -19,16 +19,12 @@ internal static class BedrockModelUtilities
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     internal static ConversationRole MapAuthorRoleToConversationRole(AuthorRole role)
     {
-        if (role == AuthorRole.User)
+        return role switch
         {
-            return ConversationRole.User;
-        }
-
-        if (role == AuthorRole.Assistant)
-        {
-            return ConversationRole.Assistant;
-        }
-        throw new ArgumentException($"Invalid role: {role}");
+            AuthorRole.User => ConversationRole.User,
+            AuthorRole.Assistant => ConversationRole.Assistant,
+            _ => throw new ArgumentException($"Invalid role: {role}")
+        };
     }
     /// <summary>
     /// Gets the system messages from the ChatHistory and adds them to the ConverseRequest System parameter.
