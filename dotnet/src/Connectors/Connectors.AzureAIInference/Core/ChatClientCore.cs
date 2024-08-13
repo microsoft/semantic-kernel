@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -83,7 +85,7 @@ internal sealed class ChatClientCore
     /// <summary>
     /// Azure AI Inference Client
     /// </summary>
-    private ChatCompletionsClient? ChatClient { get; set; }
+    private ChatCompletionsClient ChatClient { get; set; }
 
     /// <summary>
     /// Storage for AI service attributes.
@@ -272,9 +274,91 @@ internal sealed class ChatClientCore
         return responseContent;
     }
 
-    internal IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    internal async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(chatHistory);
+
+        AzureAIInferencePromptExecutionSettings chatExecutionSettings = AzureAIInferencePromptExecutionSettings.FromExecutionSettings(executionSettings);
+
+        ValidateMaxTokens(chatExecutionSettings.MaxTokens);
+
+        var chatOptions = this.CreateChatCompletionsOptions(chatExecutionSettings, chatHistory, kernel, this.ModelId);
+        StringBuilder? contentBuilder = null;
+
+        // Reset state
+        contentBuilder?.Clear();
+
+        // Stream the response.
+        IReadOnlyDictionary<string, object?>? metadata = null;
+        string? streamedName = null;
+        ChatRole? streamedRole = default;
+        CompletionsFinishReason finishReason = default;
+
+        using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.ModelId ?? string.Empty, ModelProvider, chatHistory, chatExecutionSettings))
+        {
+            StreamingResponse<StreamingChatCompletionsUpdate> response;
+            try
+            {
+                response = await RunRequestAsync(() => this.ChatClient.CompleteStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (activity is not null)
+            {
+                activity.SetError(ex);
+                throw;
+            }
+
+            var responseEnumerator = response.ConfigureAwait(false).GetAsyncEnumerator();
+            List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+            try
+            {
+                while (true)
+                {
+                    try
+                    {
+                        if (!await responseEnumerator.MoveNextAsync())
+                        {
+                            break;
+                        }
+                    }
+                    catch (Exception ex) when (activity is not null)
+                    {
+                        activity.SetError(ex);
+                        throw;
+                    }
+
+                    StreamingChatCompletionsUpdate update = responseEnumerator.Current;
+                    metadata = GetResponseMetadata(update);
+                    streamedRole ??= update.Role;
+                    streamedName ??= update.AuthorName;
+                    finishReason = update.FinishReason ?? default;
+
+                    AuthorRole? role = null;
+                    if (streamedRole.HasValue)
+                    {
+                        role = new AuthorRole(streamedRole.Value.ToString());
+                    }
+
+                    StreamingChatMessageContent streamingChatMessageContent =
+                        new(role: update.Role.HasValue ? new AuthorRole(update.Role.ToString()!) : null, content: update.ContentUpdate, innerContent: update, modelId: update.Model, metadata: metadata)
+                        {
+                            AuthorName = streamedName,
+                            Role = role,
+                        };
+
+                    streamedContents?.Add(streamingChatMessageContent);
+                    yield return streamingChatMessageContent;
+                }
+            }
+            finally
+            {
+                activity?.EndStreaming(streamedContents, null);
+                await responseEnumerator.DisposeAsync();
+            }
+        }
     }
 
     private static void ValidateMaxTokens(int? maxTokens)
@@ -461,6 +545,18 @@ internal sealed class ChatClientCore
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(chatChoice.FinishReason), chatChoice.FinishReason?.ToString() },
             { nameof(chatChoice.Index), chatChoice.Index },
+        };
+    }
+
+    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
+    {
+        return new Dictionary<string, object?>(3)
+        {
+            { nameof(completions.Id), completions.Id },
+            { nameof(completions.Created), completions.Created },
+
+            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
+            { nameof(completions.FinishReason), completions.FinishReason?.ToString() },
         };
     }
 }

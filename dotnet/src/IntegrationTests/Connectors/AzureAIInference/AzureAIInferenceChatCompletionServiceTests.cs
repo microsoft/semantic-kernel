@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -48,6 +49,35 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         // Assert
         Assert.Single(result);
         Assert.Contains(expectedAnswerContains, result[0].Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
+    public async Task InvokeGetStreamingChatMessageContentsAsync(string prompt, string expectedAnswerContains)
+    {
+        // Arrange
+        var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
+        Assert.NotNull(config);
+
+        var sut = new AzureAIInferenceChatCompletionService(
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            loggerFactory: this._loggerFactory);
+
+        ChatHistory chatHistory = [
+            new ChatMessageContent(AuthorRole.User, prompt)
+        ];
+
+        StringBuilder fullContent = new();
+
+        // Act
+        await foreach (var update in sut.GetStreamingChatMessageContentsAsync(chatHistory))
+        {
+            fullContent.Append(update.Content);
+        };
+
+        // Assert
+        Assert.Contains(expectedAnswerContains, fullContent.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     public void Dispose()
