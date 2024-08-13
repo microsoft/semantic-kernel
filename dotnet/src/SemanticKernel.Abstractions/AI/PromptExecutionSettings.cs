@@ -75,8 +75,10 @@ public class PromptExecutionSettings
     /// To allow the model to decide whether to call the functions and, if so, which ones to call, set the property to an instance returned
     /// by the <see cref="FunctionChoiceBehavior.Auto(IEnumerable{KernelFunction}?, bool)"/> method.
     /// </item>
+    /// <item>
     /// To instruct the model to not call any functions and only generate a user-facing message, set the property to an instance returned
     /// by the <see cref="FunctionChoiceBehavior.None(IEnumerable{KernelFunction}?)"/> method.
+    /// </item>
     /// </list>
     /// For all the behaviors that presume the model to call functions, auto-invoke can be specified. If LLM
     /// call a function and auto-invoke enabled, SK will attempt to resolve that function from the functions
