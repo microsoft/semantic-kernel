@@ -165,8 +165,10 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
                 ],
             )
 
-            if any(result.terminate for result in results if result is not None):
-                return completions
+            if (any(result.terminate for result in results if result is not None)
+                or 
+                settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED):
+                return chat_history.messages[-len(results):]
 
             self._update_settings(settings, chat_history, kernel=kernel)
         else:
@@ -279,8 +281,11 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
                     for function_call in function_calls
                 ],
             )
-            if any(result.terminate for result in results if result is not None):
-                return
+            if (any(result.terminate for result in results if result is not None)
+                or 
+                settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED):
+                yield chat_history.messages[-len(results):]  # type: ignore
+                break
 
             self._update_settings(settings, chat_history, kernel=kernel)
 

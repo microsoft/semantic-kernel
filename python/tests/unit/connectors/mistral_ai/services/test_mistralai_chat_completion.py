@@ -17,6 +17,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import (
     ChatMessageContent,
     FunctionCallContent,
+    FunctionResultContent,
     TextContent,
 )
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -108,13 +109,12 @@ mock_message_function_call = ChatMessageContent(
         FunctionCallContent,
         id="auto_none_invoke"
     ),
-    # Commented out due to waiting on the implementation of the required behavior auto invoke True
-    # pytest.param(
-    #     FunctionChoiceBehavior.Required(auto_invoke=True),
-    #     [[mock_message_function_call]],
-    #     FunctionResultContent,
-    #     id="required"
-    # ),
+    pytest.param(
+        FunctionChoiceBehavior.Required(auto_invoke=True),
+        [[mock_message_function_call]],
+        FunctionResultContent,
+        id="required"
+    ),
     pytest.param(
         FunctionChoiceBehavior.Required(auto_invoke=False),
         [[mock_message_function_call]],
@@ -210,25 +210,31 @@ mock_message_text_content = StreamingChatMessageContent(
     pytest.param(
         FunctionChoiceBehavior.Auto(),
         [[mock_message_function_call], [mock_message_text_content]],
-        [mock_message_text_content],
+        TextContent,
         id="auto"
     ),
     pytest.param(
         FunctionChoiceBehavior.Auto(auto_invoke=False),
         [[mock_message_function_call]],
-        [mock_message_function_call],
+        FunctionCallContent,
         id="auto_none_invoke"
+    ),
+    pytest.param(
+        FunctionChoiceBehavior.Required(auto_invoke=True),
+        [[mock_message_function_call]],
+        FunctionResultContent,
+        id="required"
     ),
     pytest.param(
         FunctionChoiceBehavior.Required(auto_invoke=False),
         [[mock_message_function_call]],
-        [mock_message_function_call],
-        id="required"
+        FunctionCallContent,
+        id="required_none_invoke"
     ),
     pytest.param(
         FunctionChoiceBehavior.NoneInvoke(),
         [[mock_message_text_content]],
-        [mock_message_text_content],
+        TextContent,
         id="none"
     ),
 ])
@@ -268,7 +274,7 @@ async def test_complete_chat_contents_streaming_function_call_behavior_tool_call
             messages.append(chunk)
             
         response = messages[-1]
-        assert response == expected_result
+        assert all(isinstance(content, expected_result) for content in response[0].items)
 
 
 @pytest.mark.asyncio
