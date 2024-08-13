@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 {
     /// <summary>
-    /// Register a Azure CosmosDB NoSQL <see cref="IVectorStore"/> with the specified service ID
+    /// Register an Azure CosmosDB NoSQL <see cref="IVectorStore"/> with the specified service ID
     /// and where the Azure CosmosDB NoSQL <see cref="Database"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
