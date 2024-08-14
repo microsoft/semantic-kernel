@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.SemanticKernel.Services;
 using OllamaSharp;
 using OllamaSharp.Models;
 
@@ -58,20 +59,20 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var tasks = new List<Task<GenerateEmbeddingResponse>>();
-        foreach (var prompt in data)
+        var request = new GenerateEmbeddingRequest
         {
-            tasks.Add(this._client.GenerateEmbeddings(prompt, cancellationToken: cancellationToken));
+            Model = this.GetModelId()!,
+            Input = data.ToList()
+        };
+
+        var response = await this._client.GenerateEmbeddings(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        List<ReadOnlyMemory<float>> embeddings = [];
+        foreach (var embedding in response.Embeddings)
+        {
+            embeddings.Add(embedding.Select(@decimal => (float)@decimal).ToArray());
         }
 
-        await Task.WhenAll(tasks.ToArray()).ConfigureAwait(false);
-
-        return new List<ReadOnlyMemory<float>>(
-            tasks.Select(
-                task => new ReadOnlyMemory<float>(task.Result.Embedding
-                    .Select(@decimal => (float)@decimal).ToArray()
-                )
-            )
-        );
+        return embeddings;
     }
 }

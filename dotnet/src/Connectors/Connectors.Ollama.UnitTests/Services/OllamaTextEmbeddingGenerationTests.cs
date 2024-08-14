@@ -68,12 +68,12 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
             httpClient: this._httpClient);
 
         //Act
-        await sut.GenerateEmbeddingsAsync(new List<string> { "fake-text" });
+        await sut.GenerateEmbeddingsAsync(["fake-text"]);
 
         //Assert
         var requestPayload = JsonSerializer.Deserialize<GenerateEmbeddingRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(requestPayload);
-        Assert.Equal("fake-text", requestPayload.Prompt);
+        Assert.Equal("fake-text", requestPayload.Input[0]);
     }
 
     [Fact]
@@ -90,9 +90,10 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
 
         //Assert
         Assert.NotNull(contents);
+        Assert.Equal(2, contents.Count);
 
-        var content = contents.SingleOrDefault();
-        Assert.Equal(8, content.Length);
+        var content = contents[0];
+        Assert.Equal(5, content.Length);
     }
 
     public void Dispose()
