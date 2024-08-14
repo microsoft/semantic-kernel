@@ -343,7 +343,7 @@ internal static class AssistantThreadActions
     /// <param name="agent">The assistant agent to interact with the thread.</param>
     /// <param name="client">The assistant client</param>
     /// <param name="threadId">The thread identifier</param>
-    /// <param name="messages">The reciever for the completed messages generated</param>
+    /// <param name="messages">The receiver for the completed messages generated</param>
     /// <param name="invocationOptions">Options to utilize for the invocation</param>
     /// <param name="logger">The logger to utilize (might be agent or channel scoped)</param>
     /// <param name="kernel">The <see cref="Kernel"/> plugins and other state.</param>
