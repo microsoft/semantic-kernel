@@ -15,6 +15,7 @@ from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.runs import RunStep
 from openai.types.beta.threads.text_content_block import TextContentBlock
+from openai.types.beta.vector_store import VectorStore
 from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
@@ -42,7 +43,6 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 if TYPE_CHECKING:
     from openai.types.beta.threads.annotation import Annotation
     from openai.types.beta.threads.runs.tool_call import ToolCall
-    from openai.types.file_object import FileObject
 
     from semantic_kernel.kernel import Kernel
 
@@ -466,26 +466,6 @@ class OpenAIAssistantBase(Agent):
             self._is_deleted = True
         return self._is_deleted
 
-    async def add_file(self, file_path: str, purpose: Literal["assistants", "vision"]) -> str:
-        """Add a file.
-
-        Args:
-            file_path (str): The file path.
-            purpose (str): The purpose. Can be "assistants" or "vision".
-
-        Returns:
-            str: The file id.
-
-        Raises:
-            AgentInitializationError: If the client has not been initialized or the file is not found.
-        """
-        try:
-            with open(file_path, "rb") as file:
-                file: "FileObject" = await self.client.files.create(file=file, purpose=purpose)  # type: ignore
-                return file.id  # type: ignore
-        except FileNotFoundError as ex:
-            raise AgentFileNotFoundException(f"File not found: {file_path}") from ex
-
     async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
         """Add a chat message.
 
@@ -548,6 +528,70 @@ class OpenAIAssistantBase(Agent):
 
             if len(content.items) > 0:
                 yield content
+
+    async def add_file(self, file_path: str, purpose: Literal["assistants", "vision"]) -> str:
+        """Add a file for use with the Assistant.
+
+        Args:
+            file_path (str): The file path.
+            purpose (str): The purpose. Can be "assistants" or "vision".
+
+        Returns:
+            str: The file id.
+
+        Raises:
+            AgentInitializationError: If the client has not been initialized or the file is not found.
+        """
+        try:
+            with open(file_path, "rb") as file:
+                file = await self.client.files.create(file=file, purpose=purpose)  # type: ignore
+                return file.id  # type: ignore
+        except FileNotFoundError as ex:
+            raise AgentFileNotFoundException(f"File not found: {file_path}") from ex
+
+    async def delete_file(self, file_id: str) -> None:
+        """Delete a file.
+
+        Args:
+            file_id: The file id.
+        """
+        try:
+            await self.client.files.delete(file_id)
+        except Exception as ex:
+            raise AgentExecutionError("Error deleting file.") from ex
+
+    async def create_vector_store(self, file_ids: str | list[str]) -> VectorStore:
+        """Create a vector store.
+
+        Args:
+            file_ids: The file ids either as a str of a single file ID or a list of strings of file IDs.
+
+        Returns:
+            The vector store.
+
+        Raises:
+            AgentExecutionError: If there is an error creating the vector store.
+        """
+        if isinstance(file_ids, str):
+            file_ids = [file_ids]
+        try:
+            return await self.client.beta.vector_stores.create(file_ids=file_ids)
+        except Exception as ex:
+            raise AgentExecutionError("Error creating vector store.") from ex
+
+    async def delete_vector_store(self, vector_store_id: str) -> None:
+        """Delete a vector store.
+
+        Args:
+            vector_store_id: The vector store id.
+
+        Raises:
+            AgentExecutionError: If there is an error deleting the vector store.
+        """
+        try:
+            await self.client.beta.vector_stores.delete(vector_store_id)
+        except Exception as ex:
+            raise AgentExecutionError("Error deleting vector store.") from ex
 
     # endregion
 
@@ -953,6 +997,11 @@ class OpenAIAssistantBase(Agent):
                 contents.append({"type": "text", "text": content.text})
             elif isinstance(content, ImageContent) and content.uri:
                 contents.append(content.to_dict())
+            elif isinstance(content, FileReferenceContent):
+                contents.append({
+                    "type": "image_file",
+                    "image_file": {"file_id": content.file_id},
+                })
         return contents
 
     def _generate_message_content(self, assistant_name: str, message: Message) -> ChatMessageContent:

@@ -35,7 +35,6 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.contents.utils.completion_usage import KernelCompletionUsage
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceInvalidResponseError
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
@@ -338,18 +337,11 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
     def _get_metadata_from_chat_response(self, response: ChatCompletion) -> dict[str, Any]:
         """Get metadata from a chat response."""
-        usage: KernelCompletionUsage | None = None
-        if hasattr(response, "usage"):
-            usage = KernelCompletionUsage(
-                completion_tokens=response.usage.completion_tokens,  # type: ignore
-                prompt_tokens=response.usage.prompt_tokens,  # type: ignore
-                total_tokens=response.usage.total_tokens,  # type: ignore
-            )
         return {
             "id": response.id,
             "created": response.created,
             "system_fingerprint": response.system_fingerprint,
-            "usage": usage.model_dump() if usage is not None else None,
+            "usage": response.usage if hasattr(response, "usage") else None,
         }
 
     def _get_metadata_from_streaming_chat_response(self, response: ChatCompletionChunk) -> dict[str, Any]:

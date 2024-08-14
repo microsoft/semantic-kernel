@@ -35,7 +35,7 @@ async def main():
 
     # Create the agent
     if use_azure_openai:
-        agent = AzureAssistantAgent(
+        agent = await AzureAssistantAgent.create(
             kernel=kernel,
             service_id=service_id,
             name=AGENT_NAME,
@@ -43,15 +43,13 @@ async def main():
             enable_code_interpreter=True,
         )
     else:
-        agent = OpenAIAssistantAgent(
+        agent = await OpenAIAssistantAgent.create(
             kernel=kernel,
             service_id=service_id,
             name=AGENT_NAME,
             instructions=AGENT_INSTRUCTIONS,
             enable_code_interpreter=True,
         )
-
-    await agent.create_assistant()
 
     thread_id = await agent.create_thread()
 

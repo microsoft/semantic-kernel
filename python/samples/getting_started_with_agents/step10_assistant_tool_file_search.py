@@ -4,12 +4,11 @@ import os
 
 from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
-from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
-AGENT_NAME = "FileManipulation"
+AGENT_NAME = "FileSearch"
 AGENT_INSTRUCTIONS = "Find answers to the user's questions in the provided file."
 
 # Note: you may toggle this to switch between AzureOpenAI and OpenAI
@@ -24,14 +23,8 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
     print(f"# {AuthorRole.USER}: '{input}'")
 
     async for content in agent.invoke(thread_id=thread_id):
-        print(f"# {content.role}: {content.content}")
-
-        if len(content.items) > 0:
-            for item in content.items:
-                if isinstance(item, AnnotationContent):
-                    print(f"\n`{item.quote}` => {item.file_id}")
-                    response_content = await agent.client.files.content(item.file_id)
-                    print(response_content.text)
+        if content.role != AuthorRole.TOOL:
+            print(f"# {content.role}: {content.content}")
 
 
 async def main():
@@ -49,7 +42,6 @@ async def main():
             name=AGENT_NAME,
             instructions=AGENT_INSTRUCTIONS,
             enable_file_search=True,
-            enable_code_interpreter=True,
         )
     else:
         agent = OpenAIAssistantAgent(
@@ -58,36 +50,35 @@ async def main():
             name=AGENT_NAME,
             instructions=AGENT_INSTRUCTIONS,
             enable_file_search=True,
-            enable_code_interpreter=True,
         )
 
-    # Create the OpenAI assistant
-    await agent.create_assistant()
-
-    # Get the path to the sales.csv file
-    csv_file_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+    # Get the path to the travelinfo.txt file
+    txt_file_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
         "resources",
-        "agent_assistant_file_manipulation",
-        "sales.csv",
+        "assistant_file_search",
+        "travelinfo.txt",
     )
 
-    # Upload the file for use with the assistant
-    file_id = await agent.add_file(csv_file_path, purpose="assistants")
+    # Create a file with the travelinfo.txt content
+    file_id = await agent.add_file(file_path=txt_file_path, purpose="assistants")
 
-    # Create a thread and specify the file to use for code interpretation
-    thread_id = await agent.create_thread(code_interpreter_file_ids=[file_id])
+    # Create a vector store with the file ID
+    vector_store = await agent.create_vector_store(file_ids=[file_id])
+
+    # Create an assistant with the vector store ID
+    await agent.create_assistant(vector_store_id=vector_store.id)
+
+    # Define a thread and invoke the agent with the user input
+    thread_id = await agent.create_thread()
 
     try:
-        await invoke_agent(agent, thread_id=thread_id, input="Which segment had the most sales?")
-        await invoke_agent(agent, thread_id=thread_id, input="List the top 5 countries that generated the most profit.")
-        await invoke_agent(
-            agent,
-            thread_id=thread_id,
-            input="Create a tab delimited file report of profit by each country per month.",
-        )
+        await invoke_agent(agent, thread_id=thread_id, input="Where did Sam go?")
+        await invoke_agent(agent, thread_id=thread_id, input="When does the flight leave Seattle?")
+        await invoke_agent(agent, thread_id=thread_id, input="What is the hotel contact info at the destination?")
     finally:
-        await agent.client.files.delete(file_id)
+        await agent.delete_vector_store(vector_store_id=vector_store.id)
+        await agent.delete_file(file_id=file_id)
         await agent.delete_thread(thread_id)
         await agent.delete()
 

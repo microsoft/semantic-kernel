@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from openai.resources.beta.threads.messages import Message
     from openai.types.beta.threads.annotation import Annotation
 
-    from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+    from semantic_kernel.agents.agent import Agent
 
 
 class OpenAIAssistantChannel(AgentChannel):
@@ -37,15 +37,20 @@ class OpenAIAssistantChannel(AgentChannel):
         for message in history:
             await OpenAIAssistantBase.create_chat_message(self.client, self.thread_id, message)
 
-    async def invoke(self, agent: "OpenAIAssistantAgent") -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
+    async def invoke(self, agent: "Agent") -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Invoke the agent."""
+        from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
+
+        if not isinstance(agent, OpenAIAssistantBase):
+            raise AgentChatError(f"Agent is not of the expected type {type(OpenAIAssistantBase)}.")
+
         if agent._is_deleted:
             raise AgentChatError("Agent is deleted.")
 
         async for is_visible, message in agent._invoke_internal(thread_id=self.thread_id):
             yield is_visible, message
 
-    async def get_history(self) -> AsyncIterable[list["ChatMessageContent"]]:
+    async def get_history(self) -> AsyncIterable["ChatMessageContent"]:
         """Get the conversation history."""
         agent_names: dict[str, Any] = {}
 

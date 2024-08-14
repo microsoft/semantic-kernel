@@ -23,7 +23,10 @@ Example|Description
 [step4_kernel_function_strategies](../getting_started_with_agents/step4_kernel_function_strategies.py)|How to utilize a `KernelFunction` as a chat strategy.
 [step5_json_result](../getting_started_with_agents/step5_json_result.py)|How to have an agent produce JSON.
 [step6_logging](../getting_started_with_agents/step6_logging.py)|How to enable logging for agents.
-[step7_openai_assistant_agent](../getting_started_with_agents/step7_openai_assistant_agent.py)|How to create and use an OpenAI Assistant agent.
+[step7_assistant](../getting_started_with_agents/step7_assistant.py)|How to create and use an OpenAI Assistant agent.
+[step8_assistant_vision](../getting_started_with_agents/step8_assistant_vision.py)|How to provide an image as input to an Open AI Assistant agent.
+[step9_assistant_tool_code_interpreter](../getting_started_with_agents/step9_assistant_tool_code_interpreter.py)|How to use the code-interpreter tool for an Open AI Assistant agent.
+[step10_assistant_vision](../getting_started_with_agents/step10_assistant_tool_file_search.py)|How to use the file-search tool for an Open AI Assistant agent.
 
 *Note: As we strive for parity with .NET, more getting_started_with_agent samples will be added. The current steps and names may be revised to further align with our .NET counterpart.*
 
