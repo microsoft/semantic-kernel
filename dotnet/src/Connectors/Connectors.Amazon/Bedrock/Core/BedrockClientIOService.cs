@@ -13,7 +13,7 @@ internal sealed class BedrockClientIOService
     /// Gets the model IO service for body conversion.
     /// </summary>
     /// <param name="modelId">The model to be used for the IO service.</param>
-    /// <returns>An IBedrockTextGenerationIOService object</returns>
+    /// <returns><see cref="IBedrockTextGenerationIOService"/> object</returns>
     /// <exception cref="NotSupportedException">Thrown if model does not support text generation.</exception>
     internal IBedrockTextGenerationIOService GetTextIOService(string modelId)
     {
@@ -75,7 +75,7 @@ internal sealed class BedrockClientIOService
     /// Gets the model IO service for body conversion.
     /// </summary>
     /// <param name="modelId">The model to get the IO service for.</param>
-    /// <returns>An IBedrockChatCompletionIOService object.</returns>
+    /// <returns><see cref="IBedrockChatCompletionIOService"/> object</returns>
     /// <exception cref="NotSupportedException">Thrown if that model does not support chat completion.</exception>
     internal IBedrockChatCompletionIOService GetChatIOService(string modelId)
     {
