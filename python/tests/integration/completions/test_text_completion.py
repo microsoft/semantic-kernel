@@ -7,6 +7,14 @@ import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
+    GoogleAITextPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_completion import GoogleAITextCompletion
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_text_completion import VertexAITextCompletion
+from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
+    VertexAITextPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
 from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import HuggingFaceTextCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -65,6 +73,8 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
             ),
             HuggingFacePromptExecutionSettings,
         ),
+        "google_ai": (GoogleAITextCompletion(), GoogleAITextPromptExecutionSettings),
+        "vertex_ai": (VertexAITextCompletion(), VertexAITextPromptExecutionSettings),
     }
 
 
@@ -113,6 +123,21 @@ pytestmark = pytest.mark.parametrize(
             ["Hello, I like sleeping and "],
             [""],
             id="hf_gen",
+        ),
+        pytest.param(
+            "google_ai",
+            {},
+            ["Repeat the word Hello"],
+            ["Hello"],
+            marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
+            id="google_ai_text_input",
+        ),
+        pytest.param(
+            "vertex_ai",
+            {},
+            ["Repeat the word Hello"],
+            ["Hello"],
+            id="vertex_ai_text_input",
         ),
     ],
 )

@@ -10,7 +10,6 @@ from typing import Annotated, Any
 from httpx import AsyncClient, HTTPStatusError
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, version_info
 from semantic_kernel.const import USER_AGENT
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings import (
     ACASessionsSettings,
@@ -20,6 +19,7 @@ from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_meta
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseModel
+from semantic_kernel.utils.telemetry.user_agent import HTTP_USER_AGENT, version_info
 
 logger = logging.getLogger(__name__)
 
