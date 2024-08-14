@@ -54,7 +54,7 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
                 vectorStoreRecordDefinition);
         }
 
-        var directlyCreatedStore = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(
             this._database,
             name,
             new()
@@ -63,7 +63,7 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
                 JsonSerializerOptions = this._options.JsonSerializerOptions
             }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
-        return directlyCreatedStore!;
+        return recordCollection!;
     }
 
     /// <inheritdoc />
