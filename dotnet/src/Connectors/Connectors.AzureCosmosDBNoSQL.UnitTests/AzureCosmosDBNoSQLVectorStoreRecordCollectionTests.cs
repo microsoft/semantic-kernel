@@ -224,44 +224,31 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
     }
 
     [Theory]
-    [InlineData(null, "key")]
-    [InlineData("HotelName", "Test Name")]
-    public async Task DeleteInvokesValidMethodsAsync(string? partitionKeyPropertyName, string expectedPartitionKey)
+    [InlineData("recordKey", false)]
+    [InlineData("partitionKey", true)]
+    public async Task DeleteInvokesValidMethodsAsync(
+        string expectedPartitionKey,
+        bool useCompositeKeyCollection)
     {
         // Arrange
-        const string RecordKey = "key";
-
-        var jsonObject = new JsonObject { ["id"] = RecordKey, ["HotelName"] = "Test Name" };
-
-        var mockFeedResponse = new Mock<FeedResponse<JsonObject>>();
-        mockFeedResponse
-            .Setup(l => l.Resource)
-            .Returns([jsonObject]);
-
-        var mockFeedIterator = new Mock<FeedIterator<JsonObject>>();
-        mockFeedIterator
-            .SetupSequence(l => l.HasMoreResults)
-            .Returns(true)
-            .Returns(false);
-
-        mockFeedIterator
-            .Setup(l => l.ReadNextAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(mockFeedResponse.Object);
-
-        this._mockContainer
-            .Setup(l => l.GetItemQueryIterator<JsonObject>(
-                It.IsAny<QueryDefinition>(),
-                It.IsAny<string>(),
-                It.IsAny<QueryRequestOptions>()))
-            .Returns(mockFeedIterator.Object);
+        const string RecordKey = "recordKey";
+        const string PartitionKey = "partitionKey";
 
         var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
-            "collection",
-            new() { PartitionKeyPropertyName = partitionKeyPropertyName });
+            "collection");
 
         // Act
-        await sut.DeleteAsync(RecordKey);
+        if (useCompositeKeyCollection)
+        {
+            await ((IVectorStoreRecordCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel>)sut).DeleteAsync(
+                new AzureCosmosDBNoSQLCompositeKey(RecordKey, PartitionKey));
+        }
+        else
+        {
+            await ((IVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>)sut).DeleteAsync(
+                RecordKey);
+        }
 
         // Assert
         this._mockContainer.Verify(l => l.DeleteItemAsync<JsonObject>(

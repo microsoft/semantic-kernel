@@ -157,25 +157,31 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
-            fixture.Database!,
-            "delete-with-partition-key",
-            new() { PartitionKeyPropertyName = "HotelName" });
+        const string HotelName = "Test Hotel Name";
+
+        IVectorStoreRecordCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel> sut =
+            new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+                fixture.Database!,
+                "delete-with-partition-key",
+                new() { PartitionKeyPropertyName = "HotelName" });
 
         await sut.CreateCollectionAsync();
 
-        var record = this.CreateTestHotel(HotelId);
+        var record = this.CreateTestHotel(HotelId, HotelName);
 
         var upsertResult = await sut.UpsertAsync(record);
-        var getResult = await sut.GetAsync(HotelId);
 
-        Assert.Equal(HotelId, upsertResult);
+        var key = new AzureCosmosDBNoSQLCompositeKey(record.HotelId, record.HotelName!);
+        var getResult = await sut.GetAsync(key);
+
+        Assert.Equal(HotelId, upsertResult.RecordKey);
+        Assert.Equal(HotelName, upsertResult.PartitionKey);
         Assert.NotNull(getResult);
 
         // Act
-        await sut.DeleteAsync(HotelId);
+        await sut.DeleteAsync(key);
 
-        getResult = await sut.GetAsync(HotelId);
+        getResult = await sut.GetAsync(key);
 
         // Assert
         Assert.Null(getResult);
@@ -247,12 +253,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 
     #region private
 
-    private AzureCosmosDBNoSQLHotel CreateTestHotel(string hotelId)
+    private AzureCosmosDBNoSQLHotel CreateTestHotel(string hotelId, string? hotelName = null)
     {
         return new AzureCosmosDBNoSQLHotel
         {
             HotelId = hotelId,
-            HotelName = $"My Hotel {hotelId}",
+            HotelName = hotelName ?? $"My Hotel {hotelId}",
             HotelCode = 42,
             HotelRating = 4.5f,
             ParkingIncluded = true,
