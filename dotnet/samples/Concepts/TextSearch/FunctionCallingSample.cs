@@ -67,7 +67,7 @@ public sealed class FunctionCallingExample(ITestOutputHelper output) : BaseTest(
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(textSearch, "SearchPlugin");
+        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -109,14 +109,14 @@ public sealed class FunctionCallingExample(ITestOutputHelper output) : BaseTest(
         Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Include citations to the relevant information where it is referenced in the response.", arguments));
     }
 
-    private static KernelPluginFromTextSearchOptions CreateCustomOptions(ITextSearch<string> textSearch)
+    private static KernelPluginFromTextSearchOptions CreateCustomOptions(ITextSearch<TextSearchResult> textSearch)
     {
         var basicFilter = new BasicFilterOptions().Equality("site", "devblogs.microsoft.com");
         return new()
         {
             Functions =
             [
-                KernelFunctionFromTextSearchOptions.DefaultSearch(textSearch, basicFilter),
+                KernelFunctionFromTextSearchOptions.DefaultGetSearchResults(textSearch, basicFilter),
             ]
         };
     }

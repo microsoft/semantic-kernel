@@ -35,7 +35,7 @@ public sealed class RagExample(ITestOutputHelper output) : BaseTest(output)
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<string>(textSearch, "SearchPlugin");
+        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(textSearch, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -67,7 +67,7 @@ public sealed class RagExample(ITestOutputHelper output) : BaseTest(output)
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<TextSearchResult>(textSearch, "SearchPlugin");
+        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -127,7 +127,7 @@ Include the link to the relevant information in the response.
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<TextSearchResult>(textSearch, "SearchPlugin");
+        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information

@@ -161,7 +161,7 @@ Kernel kernel = kernelBuilder.Build();
 var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
 // Build a text search plugin with Bing search service and add to the kernel
-var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<string>(textSearch, "SearchPlugin");
+var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(textSearch, "SearchPlugin");
 kernel.Plugins.Add(searchPlugin);
 
 // Invoke prompt and use text search plugin to provide grounding information
@@ -175,6 +175,27 @@ This example works as follows:
 1. Create a BingTextSearch which can perform Bing search queries.
 1. Wrap the BingTextSearch as a plugin which can be advertised to the LLM.
 1. Enable automatic function calling, which allows the LLM to call Bing search to retrieve relevant information.
+
+**Note:** The `TextSearchKernelPluginFactory.CreateFromTextSearch` factory method is used to create the search plugin.
+This method will create a plugin with a `Search` function which returns the search results as a collection of `string` instances.
+
+An example response would look like this:
+
+```
+The Semantic Kernel is an open-source development kit aimed at integrating the latest AI models into various programming languages, such as C#, Python, or Java. It serves as a middleware enabling rapid delivery of enterprise-grade AI solutions. Key features and capabilities of the Semantic Kernel include:
+
+1. **Function Call Planning**: It leverages function calling—a native feature of most large language models (LLMs)—to allow these models to request specific functions to satisfy user requests.
+
+2. **Semantic Function Design**: The Semantic Kernel extension for Visual Studio Code simplifies the design and testing of semantic functions, providing an interface for creating and evaluating these functions with existing models and data.
+
+3. **Programming Model**: It introduces a programming model that combines conventional programming languages with AI "prompts" through prompt templating, chaining, and planning capabilities.
+
+4. **Multi-Language Support**: Compatible with programming in languages like C#, Python, and Java, ensuring broad accessibility and flexibility.
+
+5. **AI Agent Creation**: Facilitates building AI agents that can call existing code, thus automating business processes using models from OpenAI, Azure OpenAI, Hugging Face, and more.
+
+The Semantic Kernel helps developers quickly add large language capabilities to their applications, allowing the creation of smart, adaptable systems that can naturally interact with human users.
+```
 
 **Note:** In this case the abstract from the search result is the only data included in the prompt. The LLM should use this data if it considers it relevant but there is no feedback mechanism to the user which would allow them to verify the source of the data.
 
@@ -193,7 +214,7 @@ Kernel kernel = kernelBuilder.Build();
 var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
 // Build a text search plugin with Bing search service and add to the kernel
-var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<TextSearchResult>(textSearch, "SearchPlugin");
+var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
 kernel.Plugins.Add(searchPlugin);
 
 // Invoke prompt and use text search plugin to provide grounding information
@@ -202,42 +223,121 @@ KernelArguments arguments = new(settings);
 Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Include citations to the relevant information where it is referenced in the response.", arguments));
 ```
 
-There are two changes in this sample:
+There is just one change in the sample, the plugin is created using the `TextSearchKernelPluginFactory.CreateFromTextSearchResults` factory method.
+This method will create a plugin with a `Search` function which returns a collection of `TextSearchResult` instances which in turn will contain a link which can be used to provide a citation.
 
-1. 
+An example response would look like this:
 
+```
+    The Semantic Kernel is an open-source software development kit (SDK) that facilitates the integration of advanced AI models into applications. It allows developers to harness the power of large language models (LLMs) for building innovative AI solutions. Semantic Kernel supports C#, Python, and Java, and it emphasizes security, modularity, and flexibility, making it suitable for enterprise-grade applications.
+
+Key Features:
+1. **Integration of AI Models**: Semantic Kernel enables developers to incorporate AI models from platforms such as OpenAI and Hugging Face into their codebase. This allows for creating powerful AI agents that can automate a variety of tasks.
+
+2. **Semantic Functions**: The SDK provides tools to design and test semantic functions. These functions facilitate natural language processing capabilities in applications, allowing for more intuitive user interactions ([GitHub - microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel)).
+
+3. **Comprehensive Documentation and Guides**: Detailed guides and documentation are available to help developers get started quickly. They cover everything from installing the SDK to building AI agents and creating robust AI solutions ([Introduction to Semantic Kernel | Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/overview/), [How to quickly start with Semantic Kernel | Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide)).
+
+4. **Support for Enterprise Applications**: The kernel is designed to provide enterprise-grade services and plugins, ensuring scalability and robustness for large and complex applications ([Architecting AI Apps with Semantic Kernel | Semantic Kernel](https://devblogs.microsoft.com/semantic-kernel/architecting-ai-apps-with-semantic-kernel/)).
+
+5. **Integration with Popular Tools**: Semantic Kernel can be seamlessly integrated with conventional programming languages and popular development environments, providing tools to extend functionalities with minimal effort ([GitHub - microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel)).
+
+For more detailed information, the following sources can be referenced:
+- [Introduction to Semantic Kernel | Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/overview/)
+- [Semantic Kernel documentation | Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/)
+- [GitHub - microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel)
+
+These resources offer comprehensive insights into using the Semantic Kernel to leverage AI technology effectively in software development.
+```
+
+The next sample shows how a developer can customize the configuration of the search plugin.
+
+```csharp
+// Create a kernel with OpenAI chat completion
+IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+kernelBuilder.AddOpenAIChatCompletion(
+        modelId: TestConfiguration.OpenAI.ChatModelId,
+        apiKey: TestConfiguration.OpenAI.ApiKey,
+        httpClient: httpClient);
+Kernel kernel = kernelBuilder.Build();
+
+// Create a search service with Bing search service
+var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+
+// Build a text search plugin with Bing search service and add to the kernel
+var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(
+    textSearch, "SearchPlugin", "Search Microsoft Dev Blogs site", CreateCustomOptions(textSearch));
+kernel.Plugins.Add(searchPlugin);
+
+// Invoke prompt and use text search plugin to provide grounding information
+OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+KernelArguments arguments = new(settings);
+Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Include citations to the relevant information where it is referenced in the response.", arguments));
+```
+
+This sample provides a description for the search plugin i.e., in this case we only want to search the Microsoft Developer Blogs site and also the options for creating the plugin. The options allow the search plugin function definition(s) to be specified i.e., in this case we want to use a default search function that includes a basic filter which specifies the only site to include is `devblogs.microsoft.com`.
+
+```csharp
+private static KernelPluginFromTextSearchOptions CreateCustomOptions(ITextSearch<TextSearchResult> textSearch)
+{
+    var basicFilter = new BasicFilterOptions().Equality("site", "devblogs.microsoft.com");
+    return new()
+    {
+        Functions =
+        [
+            KernelFunctionFromTextSearchOptions.DefaultGetSearchResults(textSearch, basicFilter),
+        ]
+    };
+}
+```
+
+An example response would look like this and you will note that all of the citations are from `devblogs.microsoft.com`:
+
+```
+The Semantic Kernel (SK) is a lightweight Software Development Kit (SDK) that facilitates the integration of conventional programming languages like C# and Python with the latest advancements in Large Language Models (LLM) AI, such as prompt templating, chaining, and planning capabilities. It enables the building of AI solutions that can leverage models from platforms like OpenAI, Azure OpenAI, and Hugging Face ([Hello, Semantic Kernel!](https://devblogs.microsoft.com/semantic-kernel/hello-world/)).
+
+Semantic Kernel is incredibly versatile, allowing developers to create advanced AI applications by incorporating AI agents into their applications. These agents can interact with code, automate business processes, and manage multiple LLMs with ease. The framework also supports pre-built features like planners to simplify orchestration and is fully compatible with .NET Dependency Injection abstractions ([Build AI Applications with ease using Semantic Kernel](https://devblogs.microsoft.com/semantic-kernel/build-ai-applications-with-ease-using-semantic-kernel-and-net-aspire/), [How to Get Started using Semantic Kernel .NET](https://devblogs.microsoft.com/semantic-kernel/how-to-get-started-using-semantic-kernel-net/)).
+
+For more information and the latest updates from the Semantic Kernel team, you can visit their [official blog](https://devblogs.microsoft.com/semantic-kernel/).
+```
 
 ## Decision Drivers
 
-- An AI must be able to perform searches with a search plugin and get back “results” of type `T`.
+- An AI must be able to perform searches with a search plugin and get back results with the following types:
+   1. Simple string value.
+   2. Normalized value including a name, content and link.
+   3. Data model supported by the underlying search implementation.
 - Application developers should be able to easily add a search plugin using a search connector with minimal lines of code (ideally one).
 - Application developers must be able to provide connector specific settings.
 - Application developers must be able to set required information e.g. `IndexName` for search providers.
 - Application developers must be able to support custom schemas for search connectors. No fields should be required.
-- Search service developers must be able to easily create a new search service that returns type `T`.
-- Search service developers must be able to easily create a new search connector return type that inherits from `KernelSearchResults` (alternate suggestion `SearchResultContent`).
+- Community developers must be able to easily create a new search connector.
+- Community developers must be able to easily create a new search connector return type that inherits from `KernelSearchResults` (alternate suggestion `SearchResultContent`).
 - The design must be flexible to support future requirements and different search modalities.
-
-Need additional clarification
-
 - Application developers must to be able to override the semantic descriptions of the search function(s) per instance registered via settings / inputs.
-- Application developers must be able to optionally define the execution settings of an embedding service with a default being provided by the Kernel.
 - Search service developers must be able to define the attributes of the search method (e.g., name, description, input names, input descriptions, return description).
+
+Expect these to be handled by Vector search
+
+- Application developers must be able to optionally define the execution settings of an embedding service with a default being provided by the Kernel.
 - Application developers must be ab able to import a vector DB search connection using an ML index file.
 
 ### Future Requirements
 
-- An AI can perform search with filters using a search plugin to get back “results” of type T. This will require a Connector Dev to implement a search interface that accepts a Filter object.
+- An AI can perform search with filters using a search plugin. This will require a Connector Dev to implement a search interface that accepts a Filter object.
 - Connector developers can decide which search filters are given to the AI by “default”.
 - Application developers can override which filters the AI can use via search settings.
 - Application developers can set the filters when they create the connection.
+
+### Search Abstractions
+
+
+<img src="./diagrams/search-abstractions.png" alt="Search Abstractions" width="80%"/>
 
 ## Considered Options
 
 - Define `ITextSearch` abstraction specifically for text search that uses generics
 - Define `ITextSearch` abstraction specifically for text search that does not use generics
-- {title of option 3}
-- … <!-- numbers of options can vary -->
 
 ## Decision Outcome
 
@@ -250,8 +350,8 @@ Chosen option: "{title of option 1}", because
 
 ### Define `ITextSearch` Abstraction with Generics
 
-A new `ITextSearchService` abstraction is used to define the contract to perform a text based search.
-`ITextSearchService` uses generics are each implementation is required to support returning search values as:
+A new `ITextSearch` abstraction is used to define the contract to perform a text based search.
+`ITextSearch` uses generics are each implementation is required to support returning search values as:
 
 - `string` values, this will typically be the snippet or chunk associated with the search result.
 - instances of `TextSearchResult`, this is a normalized result that has name, value and link properties.
@@ -260,23 +360,23 @@ A new `ITextSearchService` abstraction is used to define the contract to perform
 
 The class diagram below shows the class hierarchy.
 
-<img src="./diagrams/text-search-service-abstraction.png" alt="ITextSearchService Abstraction" width="80%"/>
+<img src="./diagrams/text-search-service-abstraction.png" alt="ITextSearch Abstraction" width="80%"/>
 
 The abstraction contains the following interfaces and classes:
 
-- `ITextSearchService` is the interface for text based search services. This can be invoked with a text query to return a collection of search results.
-- `SearchExecutionSettings` provides execution settings for a search service. Some common settings e.g. `IndexName`, `Count`, `Offset` are defined.
-- `KernelSearchResults` represents the search results returned from a `ISearchService` service. This provides access to the individual search results, underlying search result, metadata, ... This supports generics but an implementation can restrict the supported types. All implementations must support `string`, `TextSearchResult` and whatever native types the connector implementation supports. Some implementations will also support custom types.
+- `ITextSearch` is the interface for text based search services. This can be invoked with a text query to return a collection of search results.
+- `SearchOptions` provides execution settings for a search service. Some common settings e.g. `Index`, `Count`, `Offset`, `BasicFilter` are defined.
+- `KernelSearchResults` represents the search results returned from a `ITextSearch` service. This provides access to the individual search results, underlying search result, metadata, ... This supports generics but an implementation can restrict the supported types. All implementations must support `string`, `TextSearchResult` and whatever native types the connector implementation supports. Some implementations will also support custom types.
 - `TextSearchResult` represents a normalized text search result. All implementations must be able to return results using this type.
 
 #### Return Results of Type `T`
 
-All implementations of `ITextSearchService` **must** support returning the search results as a `string`. The `string` value is expected to contain the text value associated with the search result e.g. for Bing/Google this will be the snippet of text from the web page but for Azure AI Search this will be a designated field in the database.
+All implementations of `ITextSearch` **must** support returning the search results as a `string`. The `string` value is expected to contain the text value associated with the search result e.g. for Bing/Google this will be the snippet of text from the web page but for Azure AI Search this will be a designated field in the database.
 
 Below is an example where Azure AI Search returns `string` search results. Note the `ValueField` setting controls which field value is returned.
 
 ```csharp
-var searchService = new AzureAITextSearchService(
+var searchService = new AzureAITextSearch(
     endpoint: TestConfiguration.AzureAISearch.Endpoint,
     adminKey: TestConfiguration.AzureAISearch.ApiKey);
 
@@ -302,7 +402,7 @@ await foreach (string result in summaryResults.Results)
 }
 ```
 
-All implementations of `ITextSearchService` **must** support returning the search results as a `TextSearchResult`. This is a common abstraction to present a search result that has the following properties:
+All implementations of `ITextSearch` **must** support returning the search results as a `TextSearchResult`. This is a common abstraction to present a search result that has the following properties:
 
 - `Name` - The name of the search result e.g. this could be a web page title.
 - `Value` - The text value associated with the search result e.g. this could be a web page snippet.
@@ -338,7 +438,7 @@ await foreach (CustomSearchResult result in searchResults.Results)
 }
 ```
 
-All implementations of `ITextSearchService` will support returning the implementation specific search results i.e. whatever the underlying client returns.
+All implementations of `ITextSearch` will support returning the implementation specific search results i.e. whatever the underlying client returns.
 
 Below is an example where Azure AI Search returns `Azure.Search.Documents.Models.SearchDocument` search results.
 
@@ -366,7 +466,7 @@ await foreach (BingWebPage result in fullResults.Results)
 }
 ```
 
-Implementations of `ITextSearchService` will optionally support returning the custom search results i.e. whatever the developer specifies.
+Implementations of `ITextSearch` will optionally support returning the custom search results i.e. whatever the developer specifies.
 
 Below is an example where Bing returns `Search.CustomSearchResult` search results.
 
