@@ -95,7 +95,7 @@ internal sealed class ChatClientCore
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatClientCore"/> class.
     /// </summary>
-    /// <param name="modelId">Target Model Id for endpoints supporting more than one</param>
+    /// <param name="modelId">Optional target Model Id for endpoints that supporting multiple models</param>
     /// <param name="apiKey">Azure AI Inference API Key.</param>
     /// <param name="endpoint">Azure AI Inference compatible API endpoint.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
@@ -111,6 +111,7 @@ internal sealed class ChatClientCore
         // Accepts the endpoint if provided, otherwise uses the default Azure AI Inference endpoint.
         this.Endpoint = endpoint ?? httpClient?.BaseAddress;
         Verify.NotNull(this.Endpoint);
+        this.AddAttribute(AIServiceExtensions.EndpointKey, this.Endpoint.ToString());
 
         if (string.IsNullOrEmpty(apiKey))
         {
@@ -124,8 +125,6 @@ internal sealed class ChatClientCore
             this.ModelId = modelId;
             this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         }
-
-        this.AddAttribute(AIServiceExtensions.EndpointKey, this.Endpoint.ToString());
 
         var options = GetClientOptions(httpClient);
 
@@ -146,6 +145,11 @@ internal sealed class ChatClientCore
         ILogger? logger = null)
     {
         Verify.NotNull(chatClient);
+        if (!string.IsNullOrEmpty(modelId))
+        {
+            this.ModelId = modelId;
+            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        }
 
         this.Logger = logger ?? NullLogger.Instance;
         this.ChatClient = chatClient;
