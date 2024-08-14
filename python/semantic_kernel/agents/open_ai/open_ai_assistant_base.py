@@ -10,7 +10,6 @@ from openai import AsyncOpenAI
 from openai.resources.beta.assistants import Assistant
 from openai.resources.beta.threads.messages import Message
 from openai.resources.beta.threads.runs.runs import Run
-from openai.types.beta import AssistantResponseFormat
 from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.runs import RunStep
@@ -317,8 +316,8 @@ class OpenAIAssistantBase(Agent):
 
         enable_json_response = (
             hasattr(assistant, "response_format")
-            and isinstance(assistant.response_format, AssistantResponseFormat)
-            and assistant.response_format.type == "json_object"
+            and assistant.response_format is not None
+            and getattr(assistant.response_format, "type", "") == "json_object"
         )
 
         enable_code_interpreter = any(isinstance(tool, CodeInterpreterTool) for tool in assistant.tools)
@@ -1012,12 +1011,10 @@ class OpenAIAssistantBase(Agent):
         tool_outputs = []
         for tool_call in chat_history.messages[0].items:
             if isinstance(tool_call, FunctionResultContent):
-                tool_outputs.append(
-                    {
-                        "tool_call_id": tool_call.id,
-                        "output": tool_call.result,
-                    }
-                )
+                tool_outputs.append({
+                    "tool_call_id": tool_call.id,
+                    "output": tool_call.result,
+                })
         return tool_outputs
 
     # endregion
