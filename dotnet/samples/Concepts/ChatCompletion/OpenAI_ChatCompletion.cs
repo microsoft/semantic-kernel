@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.Identity;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -11,7 +12,7 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task OpenAIChatSampleAsync()
     {
-        Console.WriteLine("======== Open AI - ChatGPT ========");
+        Console.WriteLine("======== Open AI - Chat Completion ========");
 
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
@@ -49,12 +50,30 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task AzureOpenAIChatSampleAsync()
     {
-        Console.WriteLine("======== Azure Open AI - ChatGPT ========");
+        Console.WriteLine("======== Azure Open AI - Chat Completion ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
             endpoint: TestConfiguration.AzureOpenAI.Endpoint,
             apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId);
+
+        await StartChatAsync(chatCompletionService);
+    }
+
+    /// <summary>
+    /// Sample showing how to use Azure Open AI Chat Completion with Azure Default Credential.
+    /// If local auth is disabled in the Azure Open AI deployment, you can use Azure Default Credential to authenticate.
+    /// </summary>
+    [Fact]
+    public async Task AzureOpenAIWithDefaultAzureCredentialSampleAsync()
+    {
+        Console.WriteLine("======== Azure Open AI - Chat Completion with Azure Default Credential ========");
+
+        AzureOpenAIChatCompletionService chatCompletionService = new(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+            credentials: new DefaultAzureCredential(),
             modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
         await StartChatAsync(chatCompletionService);
