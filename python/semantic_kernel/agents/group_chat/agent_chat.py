@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import base64
-import hashlib
 import logging
 import threading
 from abc import abstractmethod
@@ -12,35 +10,17 @@ from typing import Protocol, runtime_checkable
 from pydantic import Field, SkipValidation
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.agent_channel import AgentChannel
-from semantic_kernel.agents.broadcast_queue import BroadcastQueue, ChannelReference
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.agents.group_chat.agent_chat_utils import KeyEncoder
+from semantic_kernel.agents.group_chat.broadcast_queue import BroadcastQueue, ChannelReference
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import AgentChatError
+from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-
-class KeyEncoder:
-    """A class for encoding keys."""
-
-    @staticmethod
-    def generate_hash(keys):
-        """Generate a hash from a list of keys."""
-        # Join the keys into a single string with ':' as the separator
-        joined_keys = ":".join(keys)
-
-        # Encode the joined string to bytes
-        buffer = joined_keys.encode("utf-8")
-
-        # Compute the SHA-256 hash
-        sha256_hash = hashlib.sha256(buffer).digest()
-
-        # Convert the hash to a base64-encoded string
-        return base64.b64encode(sha256_hash).decode("utf-8")
 
 
 @experimental_class
@@ -141,7 +121,7 @@ class AgentChat(KernelBaseModel):
             if message.role == AuthorRole.SYSTEM:
                 error_message = "System messages cannot be added to the chat history."
                 logger.error(error_message)
-                raise AgentChatError(error_message)
+                raise AgentChatException(error_message)
 
         logger.info(f"Adding `{len(messages)}` agent chat messages")
 

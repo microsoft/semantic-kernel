@@ -7,18 +7,27 @@ from typing import Any
 from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.group_chat.agent_chat import AgentChat
+from semantic_kernel.agents.agent_chat import AgentChat
 from semantic_kernel.agents.strategies.selection.selection_strategy import (
     SelectionStrategy,
     SequentialSelectionStrategy,
 )
-from semantic_kernel.agents.strategies.termination.default_termination_strategy import DefaultTerminationStrategy
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+class DefaultTerminationStrategy(TerminationStrategy):
+    """A default termination strategy that never terminates."""
+
+    maximum_iterations: int = 1
+
+    async def should_agent_terminate(self, agent: Agent, history: list[ChatMessageContent]) -> bool:
+        """Check if the agent should terminate."""
+        return False
 
 
 class AgentGroupChat(AgentChat):
@@ -75,6 +84,7 @@ class AgentGroupChat(AgentChat):
         """Invoke the agent chat asynchronously."""
         # If agent and is_joining are provided, handle as single interaction.
         if agent is not None:
+            # logging
             if is_joining:
                 self.add_agent(agent)
 
@@ -84,6 +94,7 @@ class AgentGroupChat(AgentChat):
                     self.is_complete = await task
                 yield message
 
+            # logger
             return
 
         # Default behavior if no agent is provided or is_joining is False.

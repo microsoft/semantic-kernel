@@ -8,9 +8,9 @@ from openai.resources.beta.assistants import Assistant
 from openai.types.beta.assistant import ToolResources, ToolResourcesCodeInterpreter, ToolResourcesFileSearch
 from pydantic import ValidationError
 
-from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.kernel import Kernel
 
 
@@ -74,7 +74,7 @@ def test_create_client_from_configuration(azure_openai_assistant_agent, azure_op
 
 def test_create_client_from_configuration_missing_api_key():
     with pytest.raises(
-        AgentInitializationError,
+        AgentInitializationException,
         match="Please provide either AzureOpenAI api_key, an ad_token or an ad_token_provider or a client.",
     ):
         AzureAssistantAgent._create_client(None)
@@ -82,7 +82,7 @@ def test_create_client_from_configuration_missing_api_key():
 
 def test_create_client_from_configuration_missing_endpoint():
     with pytest.raises(
-        AgentInitializationError,
+        AgentInitializationException,
         match="Please provide an AzureOpenAI endpoint.",
     ):
         AzureAssistantAgent._create_client(api_key="test")
@@ -245,7 +245,7 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]], indirect=True)
 @pytest.mark.asyncio
 async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The Azure OpenAI chat_deployment_name is required."):
+    with pytest.raises(AgentInitializationException, match="The Azure OpenAI chat_deployment_name is required."):
         _ = await AzureAssistantAgent.retrieve(
             id="test_id", api_key="test_api_key", kernel=kernel, env_file_path="test.env"
         )
@@ -254,7 +254,9 @@ async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
 @pytest.mark.asyncio
 async def test_retrieve_agent_missing_api_key_throws(kernel, azure_openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="Please provide either api_key, ad_token or ad_token_provider."):
+    with pytest.raises(
+        AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."
+    ):
         _ = await AzureAssistantAgent.retrieve(id="test_id", kernel=kernel, env_file_path="test.env")
 
 
@@ -264,13 +266,13 @@ def test_open_ai_settings_create_throws(azure_openai_unit_test_env):
     ) as mock_create:
         mock_create.side_effect = ValidationError.from_exception_data("test", line_errors=[], input_type="python")
 
-        with pytest.raises(AgentInitializationError, match="Failed to create Azure OpenAI settings."):
+        with pytest.raises(AgentInitializationException, match="Failed to create Azure OpenAI settings."):
             AzureAssistantAgent(service_id="test", api_key="test_api_key", deployment_name="test_deployment_name")
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]], indirect=True)
 def test_azure_openai_agent_create_missing_deployment_name(azure_openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The Azure OpenAI chat_deployment_name is required."):
+    with pytest.raises(AgentInitializationException, match="The Azure OpenAI chat_deployment_name is required."):
         AzureAssistantAgent(
             service_id="test_service", api_key="test_key", endpoint="https://example.com", env_file_path="test.env"
         )
@@ -278,5 +280,7 @@ def test_azure_openai_agent_create_missing_deployment_name(azure_openai_unit_tes
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
 def test_azure_openai_agent_create_missing_api_key(azure_openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="Please provide either api_key, ad_token or ad_token_provider."):
+    with pytest.raises(
+        AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."
+    ):
         AzureAssistantAgent(service_id="test_service", endpoint="https://example.com", env_file_path="test.env")

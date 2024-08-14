@@ -7,6 +7,7 @@ from pydantic import Field
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
@@ -14,6 +15,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class TerminationStrategy(KernelBaseModel):
     """A strategy for determining when an agent should terminate."""
 
@@ -29,7 +31,6 @@ class TerminationStrategy(KernelBaseModel):
         """Check if the agent should terminate."""
         logger.info(f"Evaluating termination criteria for {agent.id}")
 
-        # `agents` must contain `agent`, if `agents` is not empty.
         if self.agents and not any(a.id == agent.id for a in self.agents):
             logger.info(f"Agent {agent.id} is out of scope")
             return False

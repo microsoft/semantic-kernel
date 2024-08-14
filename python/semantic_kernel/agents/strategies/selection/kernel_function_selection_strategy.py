@@ -9,9 +9,11 @@ from pydantic import Field
 
 from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
@@ -19,6 +21,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class KernelFunctionSelectionStrategy(SelectionStrategy):
     """Determines agent selection based on the evaluation of a Kernel Function."""
 
@@ -63,8 +66,9 @@ class KernelFunctionSelectionStrategy(SelectionStrategy):
 
         try:
             result = await self.function.invoke(kernel=self.kernel, arguments=arguments)
-        except Exception as e:
-            logger.error("Kernel Function Selection Strategy next method failed", exc_info=e)
+        except Exception as ex:
+            logger.error("Kernel Function Selection Strategy next method failed", exc_info=ex)
+            raise AgentExecutionException("Agent Failure - Strategy failed to execute function.") from ex
 
         logger.info(
             f"Kernel Function Selection Strategy next method completed: "
@@ -76,10 +80,10 @@ class KernelFunctionSelectionStrategy(SelectionStrategy):
             agent_name = await agent_name
 
         if agent_name is None:
-            raise ValueError("Agent Failure - Strategy unable to determine next agent.")
+            raise AgentExecutionException("Agent Failure - Strategy unable to determine next agent.")
 
         agent_turn = next((agent for agent in agents if agent.name == agent_name), None)
         if agent_turn is None:
-            raise ValueError(f"Agent Failure - Strategy unable to select next agent: {agent_name}")
+            raise AgentExecutionException(f"Agent Failure - Strategy unable to select next agent: {agent_name}")
 
         return agent_turn

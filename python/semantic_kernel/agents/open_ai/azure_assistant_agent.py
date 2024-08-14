@@ -11,7 +11,7 @@ from pydantic import ValidationError
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.kernel_pydantic import HttpsUrl
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
@@ -110,10 +110,10 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         )
 
         if not azure_openai_settings.chat_deployment_name:
-            raise AgentInitializationError("The Azure OpenAI chat_deployment_name is required.")
+            raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
 
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise AgentInitializationError("Please provide either api_key, ad_token or ad_token_provider.")
+            raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
 
         client = self._create_client(
             api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
@@ -287,11 +287,11 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
         if not api_key and not ad_token and not ad_token_provider:
-            raise AgentInitializationError(
+            raise AgentInitializationException(
                 "Please provide either AzureOpenAI api_key, an ad_token or an ad_token_provider or a client."
             )
         if not endpoint:
-            raise AgentInitializationError("Please provide an AzureOpenAI endpoint.")
+            raise AgentInitializationException("Please provide an AzureOpenAI endpoint.")
         return AsyncAzureOpenAI(
             azure_endpoint=str(endpoint),
             api_version=api_version,
@@ -333,7 +333,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise AgentInitializationError("Failed to create Azure OpenAI settings.", ex) from ex
+            raise AgentInitializationException("Failed to create Azure OpenAI settings.", ex) from ex
 
         return azure_openai_settings
 
@@ -390,9 +390,9 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         )
 
         if not azure_openai_settings.chat_deployment_name:
-            raise AgentInitializationError("The Azure OpenAI chat_deployment_name is required.")
+            raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise AgentInitializationError("Please provide either api_key, ad_token or ad_token_provider.")
+            raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
 
         if not client:
             client = AzureAssistantAgent._create_client(

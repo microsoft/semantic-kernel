@@ -12,6 +12,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class KernelFunctionTerminationStrategy(TerminationStrategy):
     """A termination strategy that uses a kernel function to determine termination."""
 

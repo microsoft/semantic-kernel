@@ -6,7 +6,7 @@ from typing import ClassVar
 
 from pydantic import Field
 
-from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class

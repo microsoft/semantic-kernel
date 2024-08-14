@@ -18,8 +18,8 @@ from openai.types.beta.vector_store import VectorStore
 from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.agent_channel import AgentChannel
-from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.contents.annotation_content import AnnotationContent
@@ -32,10 +32,10 @@ from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
-    AgentExecutionError,
+    AgentExecutionException,
     AgentFileNotFoundException,
-    AgentInitializationError,
-    AgentInvokeError,
+    AgentInitializationException,
+    AgentInvokeException,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -356,7 +356,7 @@ class OpenAIAssistantBase(Agent):
             list[dict[str, str]]: The tools.
         """
         if self.assistant is None:
-            raise AgentInitializationError("The assistant has not been created.")
+            raise AgentInitializationException("The assistant has not been created.")
         return self._get_tools()
 
     # endregion
@@ -381,16 +381,11 @@ class OpenAIAssistantBase(Agent):
         # Distinguish between different API base URLs
         yield str(self.client.base_url)
 
-        # for header in self.client.default_headers:
-        #     yield header
-
     async def create_channel(self) -> AgentChannel:
         """Create a channel."""
         thread_id = await self.create_thread()
 
-        return OpenAIAssistantChannel(
-            client=self.client, thread_id=thread_id, polling_configuration=self.polling_options
-        )
+        return OpenAIAssistantChannel(client=self.client, thread_id=thread_id)
 
     # endregion
 
@@ -432,7 +427,7 @@ class OpenAIAssistantBase(Agent):
             messages_to_add = []
             for message in messages:
                 if message.role.value not in self.allowed_message_roles:
-                    raise AgentExecutionError(
+                    raise AgentExecutionException(
                         f"Invalid message role `{message.role.value}`. Allowed roles are {self.allowed_message_roles}."
                     )
                 message_contents = OpenAIAssistantBase._get_message_contents(message=message)
@@ -490,7 +485,7 @@ class OpenAIAssistantBase(Agent):
             Message: The message.
         """
         if message.role.value not in cls.allowed_message_roles:
-            raise AgentExecutionError(
+            raise AgentExecutionException(
                 f"Invalid message role `{message.role.value}`. Allowed roles are {cls.allowed_message_roles}."
             )
 
@@ -523,7 +518,7 @@ class OpenAIAssistantBase(Agent):
             assistant_name = agent_names.get(message.assistant_id) if message.assistant_id else message.assistant_id
             assistant_name = assistant_name or message.assistant_id
 
-            content: ChatMessageContent = self._generate_message_content(str(assistant_name), message)
+            content: ChatMessageContent = OpenAIAssistantBase._generate_message_content(str(assistant_name), message)
 
             if len(content.items) > 0:
                 yield content
@@ -557,7 +552,7 @@ class OpenAIAssistantBase(Agent):
         try:
             await self.client.files.delete(file_id)
         except Exception as ex:
-            raise AgentExecutionError("Error deleting file.") from ex
+            raise AgentExecutionException("Error deleting file.") from ex
 
     async def create_vector_store(self, file_ids: str | list[str]) -> VectorStore:
         """Create a vector store.
@@ -576,7 +571,7 @@ class OpenAIAssistantBase(Agent):
         try:
             return await self.client.beta.vector_stores.create(file_ids=file_ids)
         except Exception as ex:
-            raise AgentExecutionError("Error creating vector store.") from ex
+            raise AgentExecutionException("Error creating vector store.") from ex
 
     async def delete_vector_store(self, vector_store_id: str) -> None:
         """Delete a vector store.
@@ -590,7 +585,7 @@ class OpenAIAssistantBase(Agent):
         try:
             await self.client.beta.vector_stores.delete(vector_store_id)
         except Exception as ex:
-            raise AgentExecutionError("Error deleting vector store.") from ex
+            raise AgentExecutionException("Error deleting vector store.") from ex
 
     # endregion
 
@@ -693,10 +688,10 @@ class OpenAIAssistantBase(Agent):
             tuple[bool, ChatMessageContent]: A tuple of visibility and chat message content.
         """
         if not self.assistant:
-            raise AgentInitializationError("The assistant has not been created.")
+            raise AgentInitializationException("The assistant has not been created.")
 
         if self._is_deleted:
-            raise AgentInitializationError("The assistant has been deleted.")
+            raise AgentInitializationException("The assistant has been deleted.")
 
         self._check_if_deleted()
         tools = self._get_tools()
@@ -734,7 +729,7 @@ class OpenAIAssistantBase(Agent):
             run = await self._poll_run_status(run=run, thread_id=thread_id)
 
             if run.status in self.error_message_states:
-                raise AgentInvokeError(
+                raise AgentInvokeException(
                     f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}`"
                 )
 
@@ -790,7 +785,7 @@ class OpenAIAssistantBase(Agent):
                         message_id=completed_step.step_details.message_creation.message_id,  # type: ignore
                     )
                     if message:
-                        content = self._generate_message_content(self.name, message)
+                        content = OpenAIAssistantBase._generate_message_content(self.name, message)
                         if len(content.items) > 0:
                             message_count += 1
                             yield True, content
@@ -832,7 +827,8 @@ class OpenAIAssistantBase(Agent):
             metadata={"code": True},
         )
 
-    def _generate_annotation_content(self, annotation: "Annotation") -> AnnotationContent:
+    @staticmethod
+    def _generate_annotation_content(annotation: "Annotation") -> AnnotationContent:
         """Generate annotation content."""
         file_id = None
         if hasattr(annotation, "file_path"):
@@ -1003,7 +999,8 @@ class OpenAIAssistantBase(Agent):
                 })
         return contents
 
-    def _generate_message_content(self, assistant_name: str, message: Message) -> ChatMessageContent:
+    @staticmethod
+    def _generate_message_content(assistant_name: str, message: Message) -> ChatMessageContent:
         """Generate message content."""
         role = AuthorRole(message.role)
 
@@ -1018,7 +1015,7 @@ class OpenAIAssistantBase(Agent):
                     )
                 )
                 for annotation in item_content.text.annotations:
-                    content.items.append(self._generate_annotation_content(annotation))
+                    content.items.append(OpenAIAssistantBase._generate_annotation_content(annotation))
             elif item_content.type == "image_file":
                 assert isinstance(item_content, ImageFileContentBlock)  # nosec
                 content.items.append(
@@ -1031,7 +1028,7 @@ class OpenAIAssistantBase(Agent):
     def _check_if_deleted(self) -> None:
         """Check if the assistant has been deleted."""
         if self._is_deleted:
-            raise AgentInitializationError("The assistant has been deleted.")
+            raise AgentInitializationException("The assistant has been deleted.")
 
     def _get_tools(self) -> list[dict[str, str]]:
         """Get the list of tools for the assistant.
@@ -1041,7 +1038,7 @@ class OpenAIAssistantBase(Agent):
         """
         tools = []
         if self.assistant is None:
-            raise AgentInitializationError("The assistant has not been created.")
+            raise AgentInitializationException("The assistant has not been created.")
 
         for tool in self.assistant.tools:
             if isinstance(tool, CodeInterpreterTool):

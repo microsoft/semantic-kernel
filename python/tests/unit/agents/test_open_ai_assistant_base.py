@@ -45,10 +45,10 @@ from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
-    AgentExecutionError,
+    AgentExecutionException,
     AgentFileNotFoundException,
-    AgentInitializationError,
-    AgentInvokeError,
+    AgentInitializationException,
+    AgentInvokeException,
 )
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
@@ -125,6 +125,7 @@ def mock_chat_message_content():
 def mock_message():
     class MockMessage:
         id = "test_message_id"
+        role = "user"
 
     return MockMessage()
 
@@ -472,7 +473,7 @@ async def test_get_agent_tools(azure_openai_assistant_agent, mock_assistant, ope
 async def test_get_assistant_tools_throws_when_no_assistant(
     azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
 ):
-    with pytest.raises(AgentInitializationError, match="The assistant has not been created."):
+    with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
         _ = azure_openai_assistant_agent.tools
 
 
@@ -514,7 +515,7 @@ async def test_create_thread_throws_with_invalid_role(azure_openai_assistant_age
         mock_client.beta.threads.create = AsyncMock(return_value=mock_thread)
 
         with pytest.raises(
-            AgentExecutionError,
+            AgentExecutionException,
             match="Invalid message role `tool`",
         ):
             _ = await azure_openai_assistant_agent.create_thread(
@@ -594,7 +595,6 @@ async def test_add_chat_message(
             thread_id="test_thread_id",
             role="user",
             content=[{"type": "text", "text": "test message"}],
-            metadata={"key": "value"},
         )
 
 
@@ -604,7 +604,7 @@ async def test_add_chat_message_invalid_role(
 ):
     mock_chat_message_content.role = AuthorRole.TOOL
 
-    with pytest.raises(AgentExecutionError, match="Invalid message role `tool`"):
+    with pytest.raises(AgentExecutionException, match="Invalid message role `tool`"):
         await azure_openai_assistant_agent.add_chat_message("test_thread_id", mock_chat_message_content)
 
 
@@ -648,7 +648,7 @@ async def test_invoke(
     mock_chat_message_content,
     mock_run_step_tool_call,
     mock_run_step_message_creation,
-    mock_message,
+    mock_thread_messages,
     mock_function_call_content,
     openai_unit_test_env,
 ):
@@ -681,8 +681,7 @@ async def test_invoke(
             return_value=[{"tool_call_id": "id", "output": "output"}]
         )
         azure_openai_assistant_agent._generate_function_call_content = MagicMock(return_value=mock_chat_message_content)
-        azure_openai_assistant_agent._generate_message_content = MagicMock(return_value=mock_chat_message_content)
-        azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_message)
+        azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
         azure_openai_assistant_agent._get_function_call_contents = MagicMock(
             side_effect=mock_get_function_call_contents
         )
@@ -690,13 +689,13 @@ async def test_invoke(
         messages = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 
         assert len(messages) == 2
-        assert messages[0].content == "test message"
+        assert messages[0].content == "Hello"
         assert messages[1].content == "test code"
 
 
 @pytest.mark.asyncio
 async def test_invoke_assistant_not_initialized_throws(azure_openai_assistant_agent, openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The assistant has not been created."):
+    with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
         _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 
 
@@ -711,7 +710,7 @@ async def test_invoke_agent_deleted_throws(azure_openai_assistant_agent, mock_as
         azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
         azure_openai_assistant_agent._is_deleted = True
 
-        with pytest.raises(AgentInitializationError, match="The assistant has been deleted."):
+        with pytest.raises(AgentInitializationException, match="The assistant has been deleted."):
             _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 
 
@@ -746,7 +745,7 @@ async def test_invoke_raises_error(
         azure_openai_assistant_agent._poll_run_status = AsyncMock(side_effect=mock_poll_run_status)
 
         with pytest.raises(
-            AgentInvokeError, match="Run failed with status: `failed` for agent `test_name` and thread `thread_id`"
+            AgentInvokeException, match="Run failed with status: `failed` for agent `test_name` and thread `thread_id`"
         ):
             _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 
@@ -809,7 +808,7 @@ async def test_get_tools(azure_openai_assistant_agent: AzureAssistantAgent, mock
 async def test_get_tools_no_assistant_returns_empty_list(
     azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
 ):
-    with pytest.raises(AgentInitializationError, match="The assistant has not been created."):
+    with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
         _ = azure_openai_assistant_agent._get_tools()
 
 
@@ -821,7 +820,7 @@ def test_generate_message_content(azure_openai_assistant_agent, mock_thread_mess
 
 def test_check_if_deleted_throws(azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env):
     azure_openai_assistant_agent._is_deleted = True
-    with pytest.raises(AgentInitializationError, match="The assistant has been deleted."):
+    with pytest.raises(AgentInitializationException, match="The assistant has been deleted."):
         azure_openai_assistant_agent._check_if_deleted()
 
 

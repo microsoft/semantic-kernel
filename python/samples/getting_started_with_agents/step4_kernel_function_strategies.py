@@ -3,7 +3,7 @@
 import asyncio
 
 from semantic_kernel.agents import AgentGroupChat
-from semantic_kernel.agents.chat_completion_agent import ChatCompletionAgent
+from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
 from semantic_kernel.agents.strategies import (
     KernelFunctionSelectionStrategy,
     KernelFunctionTerminationStrategy,

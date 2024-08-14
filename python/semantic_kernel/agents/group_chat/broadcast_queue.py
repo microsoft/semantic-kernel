@@ -6,11 +6,13 @@ from collections import deque
 
 from pydantic import Field, SkipValidation
 
-from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class QueueReference(KernelBaseModel):
     """Utility class to associate a queue with its specific lock."""
 
@@ -25,6 +27,7 @@ class QueueReference(KernelBaseModel):
         return len(self.queue) == 0
 
 
+@experimental_class
 class ChannelReference(KernelBaseModel):
     """Tracks a channel along with its hashed key."""
 
@@ -32,14 +35,20 @@ class ChannelReference(KernelBaseModel):
     hash: str
 
 
+@experimental_class
 class BroadcastQueue(KernelBaseModel):
     """A queue for broadcasting messages to listeners."""
 
     queues: dict[str, QueueReference] = Field(default_factory=dict)
     block_duration: float = 0.1
 
-    async def enqueue(self, channel_refs: list[ChannelReference], messages: list[ChatMessageContent]):
-        """Enqueue a set of messages for a given channel."""
+    async def enqueue(self, channel_refs: list[ChannelReference], messages: list[ChatMessageContent]) -> None:
+        """Enqueue a set of messages for a given channel.
+
+        Args:
+            channel_refs: The channel references.
+            messages: The messages to broadcast.
+        """
         for channel_ref in channel_refs:
             if channel_ref.hash not in self.queues:
                 self.queues[channel_ref.hash] = QueueReference()
@@ -52,8 +61,12 @@ class BroadcastQueue(KernelBaseModel):
                 if not queue_ref.receive_task or queue_ref.receive_task.done():
                     queue_ref.receive_task = asyncio.create_task(self.receive(channel_ref, queue_ref))
 
-    async def ensure_synchronized(self, channel_ref: ChannelReference):
-        """Blocks until a channel-queue is not in a receive state to ensure that channel history is complete."""
+    async def ensure_synchronized(self, channel_ref: ChannelReference) -> None:
+        """Blocks until a channel-queue is not in a receive state to ensure that channel history is complete.
+
+        Args:
+            channel_ref: The channel reference.
+        """
         if channel_ref.hash not in self.queues:
             return
 
@@ -78,8 +91,13 @@ class BroadcastQueue(KernelBaseModel):
 
             await asyncio.sleep(self.block_duration)
 
-    async def receive(self, channel_ref: ChannelReference, queue_ref: QueueReference):
-        """Processes the specified queue with the provided channel, until the queue is empty."""
+    async def receive(self, channel_ref: ChannelReference, queue_ref: QueueReference) -> None:
+        """Processes the specified queue with the provided channel, until the queue is empty.
+
+        Args:
+            channel_ref: The channel reference.
+            queue_ref: The queue reference.
+        """
         while True:
             async with queue_ref.queue_lock:
                 if queue_ref.is_empty:

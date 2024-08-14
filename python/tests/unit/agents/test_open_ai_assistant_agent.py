@@ -13,9 +13,9 @@ from openai.types.beta.assistant import (
 )
 from pydantic import ValidationError
 
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.kernel import Kernel
 
 
@@ -70,14 +70,12 @@ def mock_assistant_json():
         created_at=123456789,
         object="assistant",
         metadata={
-            "__run_options": json.dumps(
-                {
-                    "max_completion_tokens": 100,
-                    "max_prompt_tokens": 50,
-                    "parallel_tool_calls_enabled": True,
-                    "truncation_message_count": 10,
-                }
-            )
+            "__run_options": json.dumps({
+                "max_completion_tokens": 100,
+                "max_prompt_tokens": 50,
+                "parallel_tool_calls_enabled": True,
+                "truncation_message_count": 10,
+            })
         },
         model="test_model",
         description="test_description",
@@ -109,7 +107,7 @@ def test_create_client(openai_unit_test_env):
 
 def test_create_client_from_configuration_missing_api_key():
     with pytest.raises(
-        AgentInitializationError,
+        AgentInitializationException,
         match="Please provide an OpenAI api_key",
     ):
         OpenAIAssistantAgent._create_client(None)
@@ -317,7 +315,7 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
 @pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
 @pytest.mark.asyncio
 async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The OpenAI chat model ID is required."):
+    with pytest.raises(AgentInitializationException, match="The OpenAI chat model ID is required."):
         _ = await OpenAIAssistantAgent.retrieve(
             id="test_id", api_key="test_api_key", kernel=kernel, env_file_path="test.env"
         )
@@ -326,7 +324,9 @@ async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_t
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
 @pytest.mark.asyncio
 async def test_retrieve_agent_missing_api_key_throws(kernel, openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The OpenAI API key is required, if a client is not provided."):
+    with pytest.raises(
+        AgentInitializationException, match="The OpenAI API key is required, if a client is not provided."
+    ):
         _ = await OpenAIAssistantAgent.retrieve(id="test_id", kernel=kernel, env_file_path="test.env")
 
 
@@ -334,7 +334,7 @@ def test_open_ai_settings_create_throws(openai_unit_test_env):
     with patch("semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings.OpenAISettings.create") as mock_create:
         mock_create.side_effect = ValidationError.from_exception_data("test", line_errors=[], input_type="python")
 
-        with pytest.raises(AgentInitializationError, match="Failed to create OpenAI settings."):
+        with pytest.raises(AgentInitializationException, match="Failed to create OpenAI settings."):
             OpenAIAssistantAgent(
                 service_id="test", api_key="test_api_key", org_id="test_org_id", ai_model_id="test_model_id"
             )
@@ -342,13 +342,15 @@ def test_open_ai_settings_create_throws(openai_unit_test_env):
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
 def test_azure_openai_agent_create_missing_chat_model_id_throws(openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The OpenAI chat model ID is required."):
+    with pytest.raises(AgentInitializationException, match="The OpenAI chat model ID is required."):
         OpenAIAssistantAgent(service_id="test_service", env_file_path="test.env")
 
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
 def test_azure_openai_agent_create_missing_api_key_throws(openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The OpenAI API key is required, if a client is not provided."):
+    with pytest.raises(
+        AgentInitializationException, match="The OpenAI API key is required, if a client is not provided."
+    ):
         OpenAIAssistantAgent(env_file_path="test.env")
 
 
