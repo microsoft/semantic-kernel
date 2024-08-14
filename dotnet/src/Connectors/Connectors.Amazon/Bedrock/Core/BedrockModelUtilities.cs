@@ -19,7 +19,7 @@ internal static class BedrockModelUtilities
     /// </summary>
     /// <param name="role">The AuthorRole to be converted to ConversationRole</param>
     /// <returns>The corresponding ConversationRole</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if invalid role.</exception>
+    /// <exception cref="ArgumentException">Thrown if invalid role.</exception>
     internal static ConversationRole MapAuthorRoleToConversationRole(AuthorRole role)
     {
         if (role == AuthorRole.User)
@@ -53,6 +53,7 @@ internal static class BedrockModelUtilities
     /// </summary>
     /// <param name="chatHistory">The ChatHistory object to be building the message list from.</param>
     /// <returns>The list of messages for the converse request.</returns>
+    /// <exception cref="ArgumentException">Thrown if invalid last message in chat history.</exception>
     internal static List<Message> BuildMessageList(ChatHistory chatHistory)
     {
         // Check that the text from the latest message in the chat history  is not empty.
