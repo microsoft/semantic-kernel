@@ -35,7 +35,7 @@ public sealed class FunctionCallingExample(ITestOutputHelper output) : BaseTest(
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<string>(textSearch, "SearchPlugin");
+        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(textSearch, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -67,7 +67,7 @@ public sealed class FunctionCallingExample(ITestOutputHelper output) : BaseTest(
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<TextSearchResult>(textSearch, "SearchPlugin");
+        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(textSearch, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -99,8 +99,8 @@ public sealed class FunctionCallingExample(ITestOutputHelper output) : BaseTest(
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<TextSearchResult>(
-            textSearch, "SearchPlugin", "Search Microsoft Dev Blogs site", CreateCustomOptions<TextSearchResult>(textSearch));
+        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(
+            textSearch, "SearchPlugin", "Search Microsoft Dev Blogs site", CreateCustomOptions(textSearch));
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -109,7 +109,7 @@ public sealed class FunctionCallingExample(ITestOutputHelper output) : BaseTest(
         Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Include citations to the relevant information where it is referenced in the response.", arguments));
     }
 
-    private static KernelPluginFromTextSearchOptions<T> CreateCustomOptions<T>(ITextSearch<T> textSearch) where T : class
+    private static KernelPluginFromTextSearchOptions CreateCustomOptions(ITextSearch<string> textSearch)
     {
         var basicFilter = new BasicFilterOptions().Equality("site", "devblogs.microsoft.com");
         return new()

@@ -18,8 +18,8 @@ The current abstractions are experimental and the purpose of this ADR is to prog
 
 There are two main use cases we need to support:
 
-1. Allow Prompt Engineers to easily insert grounding information in prompts i.e. support for Retrieval-Augmented Generation scenarios.
-2. Allow Developers to register search plugins which can be called by the LLM to retrieve additional data it needs to respond to a user ask i.e. support for Function Calling scenarios.
+1. Enable Prompt Engineers to easily insert grounding information in prompts i.e. support for Retrieval-Augmented Generation scenarios.
+2. Enable Developers to register search plugins which can be called by the LLM to retrieve additional data it needs to respond to a user ask i.e. support for Function Calling scenarios.
 
 ### Retrieval-Augmented Generation Scenarios
 
@@ -132,7 +132,79 @@ The Semantic Kernel is an indispensable tool for developers aiming to build adva
 
 ### Function Calling Scenarios
 
+Function calling allows you to connect LLMs to external tools and systems.
+This capability can be used to enable an LLM to retrieve relevant information it needs in order to return a response to a user query.
+In the context of this discussion we want to allow an LLM to perform a search to return relevant information.
+We also want to enable developers to easily customize the search operations to improve the LLMs ability to retrieve the most relevant information.
 
+We need to support the following use cases:
+
+1. Enable developers to adapt an arbitrary text search implementation to be a search plugin which can be called by an LLM to perform searches.
+   - Search results can be returned as text, or in a normalized format, or is a proprietary format associated with the text search implementation.
+1. Enable developers to easily customize the search plugin, typical customizations will include:
+   - Alter the search function metadata i.e. name, description, parameter details
+   - Alter which search function(s) are included in the plugin
+   - Alter the search function(s) behavior
+
+Consider the following sample where the LLM can call Bing search to help it respond to the user ask.
+
+```csharp
+// Create a kernel with OpenAI chat completion
+IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+kernelBuilder.AddOpenAIChatCompletion(
+        modelId: TestConfiguration.OpenAI.ChatModelId,
+        apiKey: TestConfiguration.OpenAI.ApiKey,
+        httpClient: httpClient);
+Kernel kernel = kernelBuilder.Build();
+
+// Create a search service with Bing search service
+var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+
+// Build a text search plugin with Bing search service and add to the kernel
+var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<string>(textSearch, "SearchPlugin");
+kernel.Plugins.Add(searchPlugin);
+
+// Invoke prompt and use text search plugin to provide grounding information
+OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+KernelArguments arguments = new(settings);
+Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel?", arguments));
+```
+
+This example works as follows:
+
+1. Create a BingTextSearch which can perform Bing search queries.
+1. Wrap the BingTextSearch as a plugin which can be advertised to the LLM.
+1. Enable automatic function calling, which allows the LLM to call Bing search to retrieve relevant information.
+
+**Note:** In this case the abstract from the search result is the only data included in the prompt. The LLM should use this data if it considers it relevant but there is no feedback mechanism to the user which would allow them to verify the source of the data.
+
+The following sample shows a solution to this problem.
+
+```csharp
+// Create a kernel with OpenAI chat completion
+IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+kernelBuilder.AddOpenAIChatCompletion(
+        modelId: TestConfiguration.OpenAI.ChatModelId,
+        apiKey: TestConfiguration.OpenAI.ApiKey,
+        httpClient: httpClient);
+Kernel kernel = kernelBuilder.Build();
+
+// Create a search service with Bing search service
+var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+
+// Build a text search plugin with Bing search service and add to the kernel
+var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<TextSearchResult>(textSearch, "SearchPlugin");
+kernel.Plugins.Add(searchPlugin);
+
+// Invoke prompt and use text search plugin to provide grounding information
+OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+KernelArguments arguments = new(settings);
+Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Include citations to the relevant information where it is referenced in the response.", arguments));
+```
+
+There are two changes in this sample:
+
+1. 
 
 
 ## Decision Drivers

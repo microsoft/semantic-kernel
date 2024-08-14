@@ -53,8 +53,8 @@ public sealed class CreateFromTextSearchExample(ITestOutputHelper output) : Base
 
         // Build a kernel with Bing search service and add a text search plugin
         Kernel kernel = new();
-        var textSearchResultPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<TextSearchResult>(
-            searchService, "CustomSearch", "Custom Search Plugin", CreateCustomOptions<TextSearchResult>(searchService));
+        var textSearchResultPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(
+            searchService, "CustomSearch", "Custom Search Plugin", CreateCustomOptions(searchService));
         kernel.Plugins.Add(textSearchResultPlugin);
 
         // Invoke the plugin to perform a text search and return string values
@@ -66,11 +66,11 @@ public sealed class CreateFromTextSearchExample(ITestOutputHelper output) : Base
     }
 
 #pragma warning disable CA1859 // Use concrete types when possible for improved performance
-    private static KernelPluginFromTextSearchOptions<T> CreateCustomOptions<T>(ITextSearch<T> textSearch) where T : class
+    private static KernelPluginFromTextSearchOptions CreateCustomOptions(ITextSearch<TextSearchResult> textSearch)
 #pragma warning restore CA1859 // Use concrete types when possible for improved performance
     {
         List<KernelFunctionFromTextSearchOptions> functions = [];
-        KernelPluginFromTextSearchOptions<T> options = new()
+        KernelPluginFromTextSearchOptions options = new()
         {
             Functions = functions
         };

@@ -60,12 +60,11 @@ public sealed class KernelFunctionFromTextSearchOptions
     /// <summary>
     /// TODO
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     /// <param name="textSearch"></param>
     /// <param name="basicFilter"></param>
     /// <param name="mapToString"></param>
     /// <returns></returns>
-    public static KernelFunctionFromTextSearchOptions DefaultSearch<T>(ITextSearch<T> textSearch, BasicFilterOptions? basicFilter = null, MapSearchResultToString<T>? mapToString = null) where T : class
+    public static KernelFunctionFromTextSearchOptions DefaultSearch(ITextSearch<string> textSearch, BasicFilterOptions? basicFilter = null, MapSearchResultToString? mapToString = null)
     {
         mapToString ??= DefaultMapSearchResultToString;
 
@@ -115,13 +114,12 @@ public sealed class KernelFunctionFromTextSearchOptions
     /// <summary>
     /// TODO
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     /// <param name="textSearch"></param>
     /// <param name="basicFilter"></param>
     /// <returns></returns>
-    public static KernelFunctionFromTextSearchOptions DefaultGetSearchResults<T>(ITextSearch<T> textSearch, BasicFilterOptions? basicFilter = null) where T : class
+    public static KernelFunctionFromTextSearchOptions DefaultGetSearchResults(ITextSearch<TextSearchResult> textSearch, BasicFilterOptions? basicFilter = null)
     {
-        async Task<IEnumerable<T>> GetSearchResultsAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        async Task<IEnumerable<TextSearchResult>> GetSearchResultsAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
             try
             {
@@ -159,7 +157,7 @@ public sealed class KernelFunctionFromTextSearchOptions
                 new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
                 new KernelParameterMetadata("skip") { Description = "Number of results skip", IsRequired = false, DefaultValue = 0 },
             ],
-            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<T>) },
+            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
         };
     }
 
@@ -168,7 +166,7 @@ public sealed class KernelFunctionFromTextSearchOptions
     /// <summary>
     /// TODO
     /// </summary>
-    private static string DefaultMapSearchResultToString<T>(IEnumerable<T> resultList)
+    private static string DefaultMapSearchResultToString(IEnumerable<object> resultList)
     {
         return JsonSerializer.Serialize(resultList);
     }

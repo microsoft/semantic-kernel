@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Options that can be provided when creating a <see cref="KernelPlugin"/> from a <see cref="ITextSearch{T}"/>.
 /// </summary>
-public sealed class KernelPluginFromTextSearchOptions<T>
+public sealed class KernelPluginFromTextSearchOptions
 {
     /// <summary>
     /// Options that can be provided when creating multiple <see cref="KernelFunction"/> instances for the plugin.
@@ -18,7 +18,7 @@ public sealed class KernelPluginFromTextSearchOptions<T>
     /// <summary>
     /// Delegate to map a search result instance to a <see cref="string"/>
     /// </summary>
-    public MapSearchResultToString<T>? MapToString { get; init; } = null;
+    public MapSearchResultToString? MapToString { get; init; } = null;
 
     /// <summary>
     /// Create the associated <see cref="KernelFunction"/> instances.
@@ -42,4 +42,4 @@ public sealed class KernelPluginFromTextSearchOptions<T>
 /// <summary>
 /// Delegate to map a search result instance to a <see cref="string"/>
 /// </summary>
-public delegate string MapSearchResultToString<T>(IEnumerable<T> resultList);
+public delegate string MapSearchResultToString(IEnumerable<object> resultList);
