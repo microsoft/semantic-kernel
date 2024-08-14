@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Amazon</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <VersionSuffix>alpha</VersionSuffix>
+    <NoWarn>$(NoWarn);SKEXP0001,SKEXP0070</NoWarn>
+  </PropertyGroup>
+  
+  <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props"/>
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props"/>
+  
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.BedrockRuntime"/>
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup"/>
+    <PackageReference Include="AWSSDK.Core"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageVersion Include="AWSSDK.Core" Version="3.7.400"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Amazon.UnitTests"/>
+  </ItemGroup>
+
+</Project>
