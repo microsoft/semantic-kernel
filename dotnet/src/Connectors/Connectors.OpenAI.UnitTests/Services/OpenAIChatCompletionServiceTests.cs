@@ -1036,6 +1036,76 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("rainy", functionResult.GetProperty("content").GetString());
     }
 
+    [Fact]
+    public async Task ItCreatesCorrectFunctionToolCallsWhenUsingAutoFunctionChoiceBehaviorAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("TimePlugin", [
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Date"),
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Now")
+        ]);
+
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        using var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json")) };
+        this._messageHandlerStub.ResponseQueue.Enqueue(response);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.Equal(2, optionsJson.GetProperty("tools").GetArrayLength());
+        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
+
+        Assert.Equal("auto", optionsJson.GetProperty("tool_choice").ToString());
+    }
+
+    [Fact]
+    public async Task ItCreatesCorrectFunctionToolCallsWhenUsingNoneFunctionChoiceBehaviorAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("TimePlugin", [
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Date"),
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Now")
+        ]);
+
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        using var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json")) };
+        this._messageHandlerStub.ResponseQueue.Enqueue(response);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.None() };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.Equal(2, optionsJson.GetProperty("tools").GetArrayLength());
+        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
+
+        Assert.Equal("none", optionsJson.GetProperty("tool_choice").ToString());
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
