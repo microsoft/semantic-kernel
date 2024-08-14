@@ -94,13 +94,19 @@ async def auto_function_invocation_filter(context: AutoFunctionInvocationContext
     print(f"Number of function calls: {len(function_calls)}")
     # if we don't call next, it will skip this function, and go to the next one
     await next(context)
+    #############################
+    # Note: to simply return the unaltered function results, uncomment the `context.terminate = True` line and
+    # comment out the lines starting with `result = context.function_result` through `context.terminate = True`.
+    # context.terminate = True
+    #############################
     result = context.function_result
-    for fc in function_calls:
-        if fc.plugin_name == "math":
-            context.function_result = FunctionResult(
-                function=result.function, value="Stop trying to ask me to do math, I don't like it!"
-            )
-            context.terminate = True
+    if context.function.plugin_name == "math":
+        print("Altering the Math plugin")
+        context.function_result = FunctionResult(
+            function=result.function,
+            value="Stop trying to ask me to do math, I don't like it!",
+        )
+        context.terminate = True
 
 
 def print_tool_calls(message: ChatMessageContent) -> None:
@@ -142,12 +148,11 @@ async def chat() -> bool:
 
     history.add_user_message(user_input)
 
-    # Check if any result.value is a FunctionResult
+    # Check if any result.value is a FunctionResultContent
     if any(isinstance(item, FunctionResultContent) for item in result.value[0].items):
-        # Iterate through each result to process FunctionResult instances
         for fr in result.value[0].items:
             if isinstance(fr, FunctionResultContent):
-                print(f"Mosscap:> {fr.result}")
+                print(f"Mosscap:> {fr.result} for function: {fr.name}")
                 history.add_assistant_message(str(fr.result))
     elif any(isinstance(item, FunctionCallContent) for item in result.value[0].items):
         # If tools are used, and auto invoke tool calls is False, the response will be of type
