@@ -281,6 +281,8 @@ public abstract class AgentChat
                 yield return streamingContent;
             }
 
+            this.History.AddRange(messages);
+
             this.Logger.LogAgentChatInvokedStreamingAgentMessages(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, messages);
 
             // Broadcast message to other channels (in parallel)

@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -88,6 +89,52 @@ public sealed class ChatCompletionAgentTests()
         }
 
         Assert.Contains(expectedAnswerContains, messages.Single().Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="ChatCompletionAgent"/> using function calling
+    /// and targeting Azure OpenAI services.
+    /// </summary>
+    [Fact]
+    public async Task AzureChatCompletionStreamingAsync()
+    {
+        // Arrange
+        AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+
+        this._kernelBuilder.AddAzureOpenAIChatCompletion(
+            configuration.ChatDeploymentName!,
+            configuration.Endpoint,
+            configuration.ApiKey);
+
+        this._kernelBuilder.Plugins.Add(plugin);
+
+        Kernel kernel = this._kernelBuilder.Build();
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Kernel = kernel,
+                Instructions = "Answer questions about the menu.",
+                Arguments = new(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
+            };
+
+        AgentGroupChat chat = new();
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "What is the special soup?"));
+
+        // Act
+        StringBuilder builder = new();
+        await foreach (var message in chat.InvokeStreamingAsync(agent))
+        {
+            builder.Append(message.Content);
+        }
+
+        ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
+
+        // Assert
+        Assert.Contains("Clam Chowder", builder.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Clam Chowder", history.First().Content, StringComparison.OrdinalIgnoreCase);
     }
 
     public sealed class MenuPlugin

@@ -88,9 +88,16 @@ public sealed class ChatHistoryChannel : AgentChannel
         // Pre-process history reduction.
         await this._history.ReduceAsync(historyHandler.HistoryReducer, cancellationToken).ConfigureAwait(false);
 
+        int messageCount = this._history.Count;
+
         await foreach (StreamingChatMessageContent streamingMessage in historyHandler.InvokeStreamingAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
         {
             yield return streamingMessage;
+        }
+
+        for (int index = messageCount; index < this._history.Count; ++index)
+        {
+            messages.Add(this._history[index]);
         }
     }
 
