@@ -51,12 +51,12 @@ public sealed class AzureCosmosDBMongoDBVectorStore : IVectorStore
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._mongoDatabase, name, vectorStoreRecordDefinition);
         }
 
-        var directlyCreatedStore = new AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(
             this._mongoDatabase,
             name,
             new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
-        return directlyCreatedStore!;
+        return recordCollection!;
     }
 
     /// <inheritdoc />
