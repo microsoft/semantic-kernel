@@ -30,7 +30,7 @@ public class StreamingAnnotationContentTests
     /// Verify usage.
     /// </summary>
     [Fact]
-    public void VerifyStreamingAnnotationContentWithFileId ()
+    public void VerifyStreamingAnnotationContentWithFileId()
     {
         StreamingAnnotationContent definition =
             new("test quote")
