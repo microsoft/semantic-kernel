@@ -31,18 +31,15 @@ public abstract class FunctionChoiceBehavior
     }
 
     /// <summary>
-    /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to the AI model to call or specific ones.
-    /// This behavior instructs the model not to call any functions and only to generate a user-facing message.
+    /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specific ones but instructs it not to call any of them.
+    /// The model may use the provided function in the response it generates. E.g. the model may describe which functions it would call and with what parameter values.
+    /// This response is useful if the user should first validate what functions the model will use.
     /// </summary>
     /// <param name="functions">
     /// Functions to provide to the model. If null, all of the <see cref="Kernel"/>'s plugins' functions are provided to the model.
-    /// If empty, no functions are provided to the model, which is equivalent to disabling function calling.
+    /// If empty, no functions are provided to the model.
     /// </param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    /// <remarks>
-    /// Although this behavior prevents the model from calling any functions, the model can use the provided function information
-    /// to describe how it would complete the prompt if it had the ability to call the functions.
-    /// </remarks>
     public static FunctionChoiceBehavior None(IEnumerable<KernelFunction>? functions = null)
     {
         return new NoneFunctionChoiceBehavior(functions);

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -105,12 +106,12 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
 
         var settings = new AzureOpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.None() };
 
-        string result = "";
+        StringBuilder result = new();
 
         // Act
         await foreach (string c in this._kernel.InvokePromptStreamingAsync<string>("How many days until Christmas?", new(settings)))
         {
-            result += c;
+            result.Append(c);
         }
 
         // Assert
