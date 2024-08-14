@@ -42,4 +42,4 @@ public sealed class KernelPluginFromTextSearchOptions
 /// <summary>
 /// Delegate to map a search result instance to a <see cref="string"/>
 /// </summary>
-public delegate string MapSearchResultToString(IEnumerable<object> resultList);
+public delegate string MapSearchResultToString(object result);
