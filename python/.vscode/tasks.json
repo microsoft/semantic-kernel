@@ -153,7 +153,13 @@
             "args": [
                 "run",
                 "pytest",
-                "tests/"
+                "tests/",
+                "-n",
+                "logical",
+                "--dist",
+                "loadfile",
+                "--dist",
+                "worksteal"
             ],
             "group": "test",
             "presentation": {
