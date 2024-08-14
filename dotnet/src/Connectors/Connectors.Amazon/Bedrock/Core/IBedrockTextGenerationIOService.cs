@@ -24,7 +24,7 @@ internal interface IBedrockTextGenerationIOService
     /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API. Must be deserialized into the model's specific response object first.
     /// </summary>
     /// <param name="response">The InvokeModelResponse object returned from the InvokeAsync Bedrock call. </param>
-    /// <returns>The list of TextContent objects for the Semnatic Kernel output.</returns>
+    /// <returns>The list of TextContent objects for the Semantic Kernel output.</returns>
     internal IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response);
 
     /// <summary>

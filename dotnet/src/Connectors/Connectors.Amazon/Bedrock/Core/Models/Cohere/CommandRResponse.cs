@@ -15,38 +15,45 @@ internal sealed class CommandRResponse
     /// </summary>
     [JsonPropertyName("response_id")]
     public string? ResponseId { get; set; }
+
     /// <summary>
     /// The model’s response to chat message input.
     /// </summary>
     [JsonPropertyName("text")]
     public string? Text { get; set; }
+
     /// <summary>
     /// Unique identifier for chat completion, used with Feedback endpoint on Cohere’s platform.
     /// </summary>
     [JsonPropertyName("generation_id")]
     public string? GenerationId { get; set; }
+
     /// <summary>
     /// An array of inline citations and associated metadata for the generated reply.
     /// </summary>
     [JsonPropertyName("citations")]
     public List<Citation>? Citations { get; set; }
+
     /// <summary>
     /// The full prompt that was sent to the model. Specify the return_prompt field to return this field.
     /// </summary>
     [JsonPropertyName("prompt")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Prompt { get; set; }
+
     /// <summary>
     /// The reason why the model stopped generating output.
     /// </summary>
     [JsonPropertyName("finish_reason")]
     public string? FinishReason { get; set; }
+
     /// <summary>
     /// A list of appropriate tools to calls. Only returned if you specify the tools input field.
     /// </summary>
     [JsonPropertyName("tool_calls")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<ToolCall>? ToolCalls { get; set; }
+
     /// <summary>
     /// API usage data (only exists for streaming).
     /// </summary>

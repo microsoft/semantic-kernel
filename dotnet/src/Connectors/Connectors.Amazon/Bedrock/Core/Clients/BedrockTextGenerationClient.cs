@@ -36,7 +36,6 @@ internal sealed class BedrockTextGenerationClient
     /// <param name="modelId">The model to be used for text generation. </param>
     /// <param name="bedrockRuntime">The IAmazonBedrockRuntime object to be used for Bedrock runtime actions.</param>
     /// <param name="loggerFactory">Logger for error output.</param>
-    /// <exception cref="ArgumentException"></exception>
     internal BedrockTextGenerationClient(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
         var clientService = new BedrockClientIOService();

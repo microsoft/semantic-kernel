@@ -21,10 +21,10 @@ internal sealed class CohereCommandRIOService : IBedrockTextGenerationIOService,
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonCommandRExecutionSettings.FromExecutionSettings(executionSettings);
-        var chatHistory = BedrockModelUtilities.GetExtensionDataValue<List<CommandRTools.ChatMessage>>(executionSettings?.ExtensionData, "chat_history") ?? exec.ChatHistory;
+        var chatHistory = BedrockModelUtilities.GetExtensionDataValue<List<CohereCommandRTools.ChatMessage>>(executionSettings?.ExtensionData, "chat_history") ?? exec.ChatHistory;
         if (chatHistory == null || chatHistory.Count == 0)
         {
-            chatHistory = new List<CommandRTools.ChatMessage>
+            chatHistory = new List<CohereCommandRTools.ChatMessage>
             {
                 new()
                 {
@@ -37,7 +37,7 @@ internal sealed class CohereCommandRIOService : IBedrockTextGenerationIOService,
         {
             Message = prompt,
             ChatHistory = chatHistory,
-            Documents = BedrockModelUtilities.GetExtensionDataValue<List<CommandRTools.Document>?>(executionSettings?.ExtensionData, "documents") ?? exec.Documents,
+            Documents = BedrockModelUtilities.GetExtensionDataValue<List<CohereCommandRTools.Document>?>(executionSettings?.ExtensionData, "documents") ?? exec.Documents,
             SearchQueriesOnly = BedrockModelUtilities.GetExtensionDataValue<bool?>(executionSettings?.ExtensionData, "search_queries_only") ?? exec.SearchQueriesOnly,
             Preamble = BedrockModelUtilities.GetExtensionDataValue<string?>(executionSettings?.ExtensionData, "preamble") ?? exec.Preamble,
             MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "max_tokens") ?? exec.MaxTokens,

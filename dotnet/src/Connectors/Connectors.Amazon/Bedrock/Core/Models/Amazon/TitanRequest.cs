@@ -17,6 +17,7 @@ internal static class TitanRequest
         /// </summary>
         [JsonPropertyName("inputText")]
         public required string InputText { get; set; }
+
         /// <summary>
         /// Text generation configurations as required by Amazon Titan request body.
         /// </summary>
@@ -24,6 +25,7 @@ internal static class TitanRequest
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public AmazonTitanTextGenerationConfig? TextGenerationConfig { get; set; }
     }
+
     /// <summary>
     /// Amazon Titan Text Generation Configurations.
     /// </summary>

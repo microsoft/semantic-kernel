@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon;
 /// <summary>
 /// Structs accessed by the Command R execution settings and Command R request.
 /// </summary>
-public static class CommandRTools
+public static class CohereCommandRTools
 {
     /// <summary>
     /// The required fields for chat_history.
@@ -21,12 +21,14 @@ public static class CommandRTools
         /// </summary>
         [JsonPropertyName("role")]
         public required string Role { get; set; }
+
         /// <summary>
         /// Text contents of the message.
         /// </summary>
         [JsonPropertyName("message")]
         public required string Message { get; set; }
     }
+
     /// <summary>
     /// JSON structure for list of texts that the model can cite to generate a more accurate reply.
     /// </summary>
@@ -38,12 +40,14 @@ public static class CommandRTools
         /// </summary>
         [JsonPropertyName("title")]
         public required string Title { get; set; }
+
         /// <summary>
         /// Possible value field.
         /// </summary>
         [JsonPropertyName("snippet")]
         public required string Snippet { get; set; }
     }
+
     /// <summary>
     /// Tool parameters.
     /// </summary>
@@ -55,11 +59,13 @@ public static class CommandRTools
         /// </summary>
         [JsonPropertyName("name")]
         public required string Name { get; set; }
+
         /// <summary>
         /// Description of the tool.
         /// </summary>
         [JsonPropertyName("description")]
         public required string Description { get; set; }
+
         /// <summary>
         /// Definitions for each tool.
         /// </summary>
@@ -77,17 +83,20 @@ public static class CommandRTools
         /// </summary>
         [JsonPropertyName("description")]
         public required string Description { get; set; }
+
         /// <summary>
         /// Parameter type (str, int, etc.) as described in a string.
         /// </summary>
         [JsonPropertyName("type")]
         public required string Type { get; set; }
+
         /// <summary>
         /// Whether this parameter is required.
         /// </summary>
         [JsonPropertyName("required")]
         public required bool Required { get; set; }
     }
+
     /// <summary>
     /// Cohere tool result.
     /// </summary>
@@ -99,12 +108,14 @@ public static class CommandRTools
         /// </summary>
         [JsonPropertyName("call")]
         public required ToolCall Call { get; set; }
+
         /// <summary>
         /// Outputs from the tool call.
         /// </summary>
         [JsonPropertyName("outputs")]
         public required List<Dictionary<string, string>> Outputs { get; set; }
     }
+
     /// <summary>
     /// Tool call object to be passed into the tool call.
     /// </summary>
@@ -116,6 +127,7 @@ public static class CommandRTools
         /// </summary>
         [JsonPropertyName("name")]
         public required string Name { get; set; }
+
         /// <summary>
         /// Parameters for the tool.
         /// </summary>

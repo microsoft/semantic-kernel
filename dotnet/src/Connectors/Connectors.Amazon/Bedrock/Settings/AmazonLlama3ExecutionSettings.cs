@@ -59,7 +59,7 @@ public class AmazonLlama3ExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// Converts PromptExecutionSettings to AmazonLlama3PromptExecutionSettings
+    /// Converts PromptExecutionSettings to AmazonLlama3ExecutionSettings
     /// </summary>
     /// <param name="executionSettings">The Kernel standard PromptExecutionSettings.</param>
     /// <returns>Model specific execution settings</returns>

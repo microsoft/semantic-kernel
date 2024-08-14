@@ -35,7 +35,6 @@ internal sealed class BedrockChatCompletionClient
     /// <param name="modelId">The model ID for the client.</param>
     /// <param name="bedrockRuntime">The IAmazonBedrockRuntime object to be used for Bedrock runtime actions.</param>
     /// <param name="loggerFactory">Logger for error output.</param>
-    /// <exception cref="ArgumentException"></exception>
     internal BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
         var clientService = new BedrockClientIOService();
@@ -46,6 +45,7 @@ internal sealed class BedrockChatCompletionClient
         this._clientUtilities = new BedrockClientUtilities();
         this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
+
     /// <summary>
     /// Generates a chat message based on the provided chat history and execution settings.
     /// </summary>
@@ -55,7 +55,6 @@ internal sealed class BedrockChatCompletionClient
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The generated chat message.</returns>
     /// <exception cref="ArgumentException">Thrown when the chat history is null or empty.</exception>
-    /// <exception cref="Exception">Thrown when an error occurs during the chat generation process.</exception>
     internal async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
@@ -112,6 +111,7 @@ internal sealed class BedrockChatCompletionClient
         activity?.SetCompletionResponse(chatMessages, response.Usage.InputTokens, response.Usage.OutputTokens);
         return chatMessages;
     }
+
     /// <summary>
     /// Converts the ConverseResponse object as outputted by the Bedrock Runtime API call to a ChatMessageContent for the Semantic Kernel.
     /// </summary>
@@ -124,14 +124,14 @@ internal sealed class BedrockChatCompletionClient
             return [];
         }
         var message = response.Output.Message;
-        return new[]
-        {
+        return
+        [
             new ChatMessageContent
             {
                 Role = this._clientUtilities.MapConversationRoleToAuthorRole(message.Role.Value),
                 Items = CreateChatMessageContentItemCollection(message.Content)
             }
-        };
+        ];
     }
     private static ChatMessageContentItemCollection CreateChatMessageContentItemCollection(List<ContentBlock> contentBlocks)
     {

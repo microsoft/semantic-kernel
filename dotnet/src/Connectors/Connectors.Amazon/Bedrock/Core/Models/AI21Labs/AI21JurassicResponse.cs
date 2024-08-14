@@ -15,11 +15,13 @@ internal sealed class AI21JurassicResponse
     /// </summary>
     [JsonPropertyName("id")]
     public long Id { get; set; }
+
     /// <summary>
     /// The prompt includes the raw text, the tokens with their log probabilities, and the top-K alternative tokens at each position, if requested.
     /// </summary>
     [JsonPropertyName("prompt")]
     public PromptText? Prompt { get; set; }
+
     /// <summary>
     /// A list of completions, including raw text, tokens, and log probabilities. The number of completions corresponds to the requested numResults.
     /// </summary>

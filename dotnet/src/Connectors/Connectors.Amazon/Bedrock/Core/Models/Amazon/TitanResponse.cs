@@ -15,11 +15,13 @@ internal class TitanTextResponse
     /// </summary>
     [JsonPropertyName("inputTextTokenCount")]
     public int InputTextTokenCount { get; set; }
+
     /// <summary>
     /// The list of result objects.
     /// </summary>
     [JsonPropertyName("results")]
     public List<Result>? Results { get; set; }
+
     /// <summary>
     /// The result object.
     /// </summary>
@@ -30,11 +32,13 @@ internal class TitanTextResponse
         /// </summary>
         [JsonPropertyName("tokenCount")]
         public int TokenCount { get; set; }
+
         /// <summary>
         /// The text in the response.
         /// </summary>
         [JsonPropertyName("outputText")]
         public string? OutputText { get; set; }
+
         /// <summary>
         /// The reason the response finished being generated.
         /// </summary>
