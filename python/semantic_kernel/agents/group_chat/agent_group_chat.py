@@ -7,12 +7,12 @@ from typing import Any
 from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.agent_chat import AgentChat
-from semantic_kernel.agents.selection_strategy import (
+from semantic_kernel.agents.group_chat.agent_chat import AgentChat
+from semantic_kernel.agents.strategies.selection.selection_strategy import (
     SelectionStrategy,
     SequentialSelectionStrategy,
 )
-from semantic_kernel.agents.termination_strategy import TerminationStrategy
+from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentChatError

@@ -4,9 +4,9 @@ import asyncio
 
 from pydantic import ValidationError
 
-from semantic_kernel.agents.agent_group_chat import AgentGroupChat
+from semantic_kernel.agents import AgentGroupChat
 from semantic_kernel.agents.chat_completion_agent import ChatCompletionAgent
-from semantic_kernel.agents.termination_strategy import TerminationStrategy
+from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole

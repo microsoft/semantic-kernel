@@ -2,11 +2,10 @@
 
 import asyncio
 
-from semantic_kernel.agents.agent_group_chat import AgentGroupChat
-from semantic_kernel.agents.chat_completion_agent import ChatCompletionAgent
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
-from semantic_kernel.agents.termination_strategy import TerminationStrategy
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
+from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.strategies import TerminationStrategy
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
