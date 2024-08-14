@@ -39,4 +39,16 @@ internal sealed class TextToImageRequest
     /// </summary>
     [JsonPropertyName("response_format")]
     public string Format { get; set; } = "url";
+
+    /// <summary>
+    /// Image quality, "standard" or "hd"
+    /// </summary>
+    [JsonPropertyName("quality")]
+    public string Quality { get; set; } = "standard";
+
+    /// <summary>
+    /// Image style, "vivid" or "natural"
+    /// </summary>
+    [JsonPropertyName("style")]
+    public string Style { get; set; } = "vivid";
 }

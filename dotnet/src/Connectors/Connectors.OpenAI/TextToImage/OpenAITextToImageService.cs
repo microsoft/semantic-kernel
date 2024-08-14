@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -94,9 +95,72 @@ public sealed class OpenAITextToImageService : ITextToImageService
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(TextContent input, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(
+        TextContent input,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        // Ensure the input is valid
+        Verify.NotNull(input);
+
+        // Convert the generic execution settings to OpenAI-specific settings
+        var imageSettings = OpenAITextToImageExecutionSettings.FromExecutionSettings(executionSettings);
+
+        // Determine the size of the image based on the width and height settings
+        var size = (imageSettings.Width, imageSettings.Height) switch
+        {
+            (256, 256) => "256x256",
+            (512, 512) => "512x512",
+            (1024, 1024) => "1024x1024",
+            (1792, 1024) => "1792x1024",
+            (1024, 1792) => "1024x1792",
+            _ => throw new NotSupportedException($"The provided size is not supported: {imageSettings.Width}x{imageSettings.Height}")
+        };
+
+        // Validate quality and style
+        var supportedQualities = new[] { "standard", "hd" };
+        var supportedStyles = new[] { "vivid", "natural" };
+
+        if (!string.IsNullOrEmpty(imageSettings.Quality) && !supportedQualities.Contains(imageSettings.Quality))
+        {
+            throw new NotSupportedException($"The provided quality '{imageSettings.Quality}' is not supported.");
+        }
+
+        if (!string.IsNullOrEmpty(imageSettings.Style) && !supportedStyles.Contains(imageSettings.Style))
+        {
+            throw new NotSupportedException($"The provided style '{imageSettings.Style}' is not supported.");
+        }
+
+        // Create the request body for the image generation
+        var requestBody = JsonSerializer.Serialize(new TextToImageRequest
+        {
+            Model = imageSettings.ModelId ?? this._modelId,
+            Prompt = input.Text ?? string.Empty,
+            Size = size,
+            Count = imageSettings.ImageCount ?? 1,
+            Quality = imageSettings.Quality ?? "standard",
+            Style = imageSettings.Style ?? "vivid"
+        });
+
+        // Execute the request using the core client and return Image objects
+        var imageStrings = await this._core.ExecuteImageGenerationRequestAsync(OpenAIEndpoint, requestBody, x => x.Url ?? x.AsBase64, cancellationToken).ConfigureAwait(false);
+
+        // Convert the strings to ImageContent objects
+        var images = new List<ImageContent>();
+        foreach (var imageString in imageStrings)
+        {
+            if (Uri.TryCreate(imageString, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+            {
+                images.Add(new ImageContent(uriResult));
+            }
+            else
+            {
+                images.Add(new ImageContent($"data:;base64,{imageString}"));
+            }
+        }
+
+        return images.AsReadOnly();
     }
 
     private async Task<string> GenerateImageAsync(
