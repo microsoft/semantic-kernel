@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,9 +52,30 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
     }
 
     /// <inheritdoc/>
-    protected internal override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(AggregatorAgent agent, ChatHistory messages, CancellationToken cancellationToken = default)
+    protected internal override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(AggregatorAgent agent, IList<ChatMessageContent> messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException(); // %%% TODO
+        int messageCount = await this._chat.GetChatMessagesAsync(cancellationToken).CountAsync(cancellationToken).ConfigureAwait(false);
+
+        await foreach (StreamingChatMessageContent message in this._chat.InvokeStreamingAsync(cancellationToken).ConfigureAwait(false)) // %%% NOISY / NEEDED ???
+        {
+            yield return message;
+        }
+
+        ChatMessageContent[] history = await this._chat.GetChatMessagesAsync(cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+        if (history.Length > messageCount)
+        {
+            if (agent.Mode == AggregatorMode.Flat)
+            {
+                for (int index = messageCount; index < messages.Count; ++index)
+                {
+                    messages.Add(history[index]);
+                }
+            }
+            else if (agent.Mode == AggregatorMode.Nested)
+            {
+                messages.Add(history[history.Length - 1]);
+            }
+        }
     }
 
     /// <inheritdoc/>

@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -49,7 +48,7 @@ public abstract class AgentChannel
     /// <returns>Asynchronous enumeration of streaming messages.</returns>
     protected internal abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         Agent agent,
-        ChatHistory messages, // %%% IList ???
+        IList<ChatMessageContent> messages,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -109,13 +108,13 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
     /// </remarks>
     protected internal abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         TAgent agent,
-        ChatHistory messages,
+        IList<ChatMessageContent> messages,
         CancellationToken cancellationToken = default);
 
     /// <inheritdoc/>
     protected internal override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         Agent agent,
-        ChatHistory messages,
+        IList<ChatMessageContent> messages,
         CancellationToken cancellationToken = default)
     {
         if (agent.GetType() != typeof(TAgent))

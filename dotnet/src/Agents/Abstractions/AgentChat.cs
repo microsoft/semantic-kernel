@@ -278,9 +278,10 @@ public abstract class AgentChat
 
             await foreach (StreamingChatMessageContent streamingContent in channel.InvokeStreamingAsync(agent, messages, cancellationToken).ConfigureAwait(false))
             {
-                //this.Logger.LogAgentChatInvokedAgentMessage(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, message); // %%% LOGGING
                 yield return streamingContent;
             }
+
+            this.Logger.LogAgentChatInvokedStreamingAgentMessages(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, messages);
 
             // Broadcast message to other channels (in parallel)
             // Note: Able to queue messages without synchronizing channels.
@@ -317,7 +318,7 @@ public abstract class AgentChat
     /// The activity signal is used to manage ability and visibility for taking actions based
     /// on conversation history.
     /// </remarks>
-    protected void SetActivityOrThrow()
+    internal void SetActivityOrThrow()
     {
         // Note: Interlocked is the absolute lightest synchronization mechanism available in dotnet.
         int wasActive = Interlocked.CompareExchange(ref this._isActive, 1, 0);

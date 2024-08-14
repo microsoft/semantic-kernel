@@ -78,7 +78,7 @@ public sealed class ChatHistoryChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(Agent agent, ChatHistory messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    protected override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(Agent agent, IList<ChatMessageContent> messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (agent is not IChatHistoryHandler historyHandler)
         {
@@ -92,8 +92,6 @@ public sealed class ChatHistoryChannel : AgentChannel
         {
             yield return streamingMessage;
         }
-
-        // %%% VERIFY this._history
     }
 
     /// <inheritdoc/>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -100,12 +101,20 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
 
         this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, chatCompletionService.GetType());
 
+        AuthorRole? role = null;
+        StringBuilder builder = new();
         await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
         {
+            role ??= message.Role;
+            message.Role ??= AuthorRole.Assistant;
             message.AuthorName = this.Name;
+
+            builder.Append(message.ToString());
 
             yield return message;
         }
+
+        chat.Add(new(role ?? AuthorRole.Assistant, builder.ToString()) { AuthorName = this.Name });
 
         // Capture mutated messages related function calling / tools
         for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)

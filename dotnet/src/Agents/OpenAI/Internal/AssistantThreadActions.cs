@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -10,6 +11,8 @@ using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+
+//using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI;
 using OpenAI.Assistants;
 
@@ -354,7 +357,7 @@ internal static class AssistantThreadActions
         OpenAIAssistantAgent agent,
         AssistantClient client,
         string threadId,
-        ChatHistory messages,
+        IList<ChatMessageContent> messages,
         OpenAIAssistantInvocationOptions? invocationOptions,
         ILogger logger,
         Kernel kernel,
@@ -389,13 +392,16 @@ internal static class AssistantThreadActions
             functionResultTasks.Clear();
             messageIds.Clear();
 
+            if (run != null)
+            {
+                Debugger.Break();
+            }
+
             await foreach (StreamingUpdate update in asyncUpdates.ConfigureAwait(false))
             {
-                //logger.LogOpenAIAssistantProcessingRunSteps(nameof(InvokeAsync), run.Id, threadId); // %%% LOGGING
-
                 if (update is RunUpdate runUpdate)
                 {
-                    run = runUpdate;
+                    run = runUpdate.Value;
 
                     logger.LogOpenAIAssistantCreatedRun(nameof(InvokeAsync), run.Id, threadId);
                 }
@@ -413,8 +419,6 @@ internal static class AssistantThreadActions
                     messageIds.Add(contentUpdate.MessageId);
                     yield return GenerateStreamingMessageContent(agent.GetName(), contentUpdate);
                 }
-
-                //logger.LogOpenAIAssistantProcessedRunSteps(nameof(InvokeAsync), activeFunctionSteps.Length, run.Id, threadId); // %%% LOGGING
             }
 
             if (run != null)
@@ -442,6 +446,8 @@ internal static class AssistantThreadActions
 
             if (messageIds.Count > 0)
             {
+                logger.LogOpenAIAssistantProcessingRunMessages(nameof(InvokeAsync), run!.Id, threadId);
+
                 foreach (string messageId in messageIds)
                 {
                     ThreadMessage? message = await RetrieveMessageAsync(client, threadId, messageId, agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
@@ -452,14 +458,13 @@ internal static class AssistantThreadActions
                         messages.Add(content);
                     }
                 }
+
+                logger.LogOpenAIAssistantProcessedRunMessages(nameof(InvokeAsync), messageIds.Count, run!.Id, threadId);
             }
-
-            //logger.LogOpenAIAssistantProcessingRunMessages(nameof(InvokeAsync), run.Id, threadId); // %%% LOGGING
-            //logger.LogOpenAIAssistantProcessedRunMessages(nameof(InvokeAsync), messageCount, run.Id, threadId); // %%% LOGGING
         }
-        while (run?.Status.IsTerminal == false);
+        while (run?.Status != RunStatus.Completed);
 
-        logger.LogOpenAIAssistantCompletedRun(nameof(InvokeAsync), run?.Id ?? "Unknown", threadId); // %%% LOGGING
+        logger.LogOpenAIAssistantCompletedRun(nameof(InvokeAsync), run?.Id ?? "Failed", threadId);
     }
 
     private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message)
@@ -510,15 +515,15 @@ internal static class AssistantThreadActions
         // Process image content
         else if (update.ImageFileId != null)
         {
-            //content.Items.Add(new FileReferenceContent(itemContent.ImageFileId)); // %%% CONTENT
+            content.Items.Add(new StreamingFileReferenceContent(update.ImageFileId));
         }
         // Process annotations
         else if (update.TextAnnotation != null)
         {
-            //content.Items.Add(GenerateAnnotationContent(annotation)); // %%% CONTENT
+            content.Items.Add(GenerateStreamingAnnotationContent(update.TextAnnotation));
         }
 
-        if (update.Role.HasValue)
+        if (update.Role.HasValue && update.Role.Value != MessageRole.User)
         {
             content.Role = new(update.Role.Value.ToString());
         }
@@ -540,11 +545,32 @@ internal static class AssistantThreadActions
         }
 
         return
-            new()
+            new(annotation.TextToReplace)
             {
-                Quote = annotation.TextToReplace,
                 StartIndex = annotation.StartIndex,
                 EndIndex = annotation.EndIndex,
+                FileId = fileId,
+            };
+    }
+
+    private static StreamingAnnotationContent GenerateStreamingAnnotationContent(TextAnnotationUpdate annotation)
+    {
+        string? fileId = null;
+
+        if (!string.IsNullOrEmpty(annotation.OutputFileId))
+        {
+            fileId = annotation.OutputFileId;
+        }
+        else if (!string.IsNullOrEmpty(annotation.InputFileId))
+        {
+            fileId = annotation.InputFileId;
+        }
+
+        return
+            new(annotation.TextToReplace)
+            {
+                StartIndex = annotation.StartIndex ?? 0,
+                EndIndex = annotation.EndIndex ?? 0,
                 FileId = fileId,
             };
     }

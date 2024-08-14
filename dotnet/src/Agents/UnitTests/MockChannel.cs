@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace SemanticKernel.Agents.UnitTests;
 
@@ -44,7 +43,7 @@ internal sealed class MockChannel : AgentChannel<MockAgent>
         yield break;
     }
 
-    protected internal override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(MockAgent agent, ChatHistory messages, CancellationToken cancellationToken = default)
+    protected internal override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(MockAgent agent, IList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }

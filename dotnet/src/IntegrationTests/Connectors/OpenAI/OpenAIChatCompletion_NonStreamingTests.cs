@@ -33,6 +33,7 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         var result = await chatCompletion.GetChatMessageContentAsync("What is the capital of France?", settings, kernel);
 
         // Assert
+        Assert.Equal(AuthorRole.Assistant, result.Role);
         Assert.Contains("I don't know", result.Content);
     }
 
