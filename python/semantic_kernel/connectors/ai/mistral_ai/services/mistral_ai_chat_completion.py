@@ -25,12 +25,15 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
 )
 from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents import (
+    ChatMessageContent,
+    FunctionCallContent,
+    FunctionResultContent,
+    StreamingChatMessageContent,
+    StreamingTextContent,
+    TextContent,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
-from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import (
@@ -168,7 +171,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             if (any(result.terminate for result in results if result is not None)
                 or 
                 settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED):
-                return chat_history.messages[-len(results):]
+                return self._create_chat_message_content_from_function_results(chat_history.messages[-len(results) :]) 
 
             self._update_settings(settings, chat_history, kernel=kernel)
         else:
@@ -284,7 +287,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             if (any(result.terminate for result in results if result is not None)
                 or 
                 settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED):
-                yield chat_history.messages[-len(results):]  # type: ignore
+                yield self._create_chat_message_content_from_function_results(chat_history.messages[-len(results) :])   # type: ignore
                 break
 
             self._update_settings(settings, chat_history, kernel=kernel)
@@ -396,6 +399,26 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
                 arguments=tool.function.arguments,
             )
             for tool in content.tool_calls
+        ]
+        
+    def _create_chat_message_content_from_function_results(
+        self,
+        messages: list[ChatMessageContent],
+    ) -> list[ChatMessageContent]:
+        """Create Response from ChatMessageContent containing FunctionResultContent.
+        
+        This method combines the FunctionResultContent items from separate ChatMessageContent messages,
+        and is used in the event that the `context.terminate = True`
+        or the FunctionChoiceBehavior Required condition is met.
+        """
+        items: list[Any] = []
+        for message in messages:
+            items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
+        return [
+            ChatMessageContent(
+                role=AuthorRole.TOOL,
+                items=items,
+            )
         ]
 
     # endregion
