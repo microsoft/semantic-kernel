@@ -17,8 +17,6 @@
     <Description>Semantic Kernel web plugins: search the web, download files, etc.</Description>
   </PropertyGroup>
 
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="System.Text.Json" />

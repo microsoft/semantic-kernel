@@ -44,7 +44,7 @@ public static class BingTextSearchKernelPluginFactory
     /// <returns></returns>
     private static KernelFunctionFromTextSearchOptions GetBingWebPages(BingTextSearch textSearch, BasicFilterOptions? basicFilter = null)
     {
-        async Task<IEnumerable<BingWebPage>> GetSearchResultsAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        async Task<IEnumerable<BingWebPage>> GetBingWebPagesAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
             try
             {
@@ -73,9 +73,9 @@ public static class BingTextSearchKernelPluginFactory
 
         return new()
         {
-            Delegate = GetSearchResultsAsync,
-            FunctionName = "GetSearchResults",
-            Description = "Perform a search for content related to the specified query. The search will return the name, value and link for the related content.",
+            Delegate = GetBingWebPagesAsync,
+            FunctionName = "GetBingWebPages",
+            Description = "Perform a search for content related to the specified query. The search will return an object representing a Bing web page.",
             Parameters =
             [
                 new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },

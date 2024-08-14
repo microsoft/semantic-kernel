@@ -66,9 +66,7 @@ public sealed class KernelFunctionFromTextSearchOptions
     /// <returns></returns>
     public static KernelFunctionFromTextSearchOptions DefaultSearch(ITextSearch<string> textSearch, BasicFilterOptions? basicFilter = null, MapSearchResultToString? mapToString = null)
     {
-        mapToString ??= DefaultMapSearchResultToString;
-
-        async Task<string> SearchAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        async Task<IEnumerable<string>> SearchAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
             try
             {
@@ -88,7 +86,7 @@ public sealed class KernelFunctionFromTextSearchOptions
 
                 var result = await textSearch.SearchAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
                 var resultList = await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
-                return mapToString(resultList);
+                return MapToStrings(resultList, mapToString);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -163,12 +161,23 @@ public sealed class KernelFunctionFromTextSearchOptions
 
     #region private
 
+    private static List<string> MapToStrings(IEnumerable<object> resultList, MapSearchResultToString? mapToString = null)
+    {
+        mapToString ??= DefaultMapSearchResultToString;
+
+        return resultList.Select(result => mapToString(result)).ToList();
+    }
+
     /// <summary>
     /// TODO
     /// </summary>
-    private static string DefaultMapSearchResultToString(IEnumerable<object> resultList)
+    private static string DefaultMapSearchResultToString(object result)
     {
-        return JsonSerializer.Serialize(resultList);
+        if (result is string stringValue)
+        {
+            return stringValue;
+        }
+        return JsonSerializer.Serialize(result);
     }
 
     /// <summary>
