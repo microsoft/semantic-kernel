@@ -147,8 +147,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 
         Args:
             chat_history: The chat history to use for the chat completion.
-            settings: The settings to use
-                for the chat completion request.
+            settings: The settings to use for the chat completion request.
             kwargs: The optional arguments.
 
         Yields:
