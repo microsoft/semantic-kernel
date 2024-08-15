@@ -63,7 +63,7 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseTest(output)
 
             await InvokeAgentAsync(assistantAgent, "What is my favorite color?");
             await InvokeAgentAsync(chatAgent);
-\       }
+        }
         finally
         {
             await chat.ResetAsync();
