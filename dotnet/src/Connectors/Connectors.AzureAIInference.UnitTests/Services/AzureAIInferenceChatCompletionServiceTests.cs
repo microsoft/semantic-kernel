@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.Inference;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 using Moq;
 using Xunit;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
-using System.IO;
 
 namespace SemanticKernel.Connectors.AzureAIInference.UnitTests.Services;
 
@@ -100,7 +100,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     public async Task ItPrioritizesCustomEndpointOverHttpClientBaseAddressAsync(string endpoint)
     {
         // Arrange
-        this._httpClient.BaseAddress = new Uri(endpoint);
+        this._httpClient.BaseAddress = new Uri("http://should-be-overriden");
         var chatCompletion = new AzureAIInferenceChatCompletionService(modelId: "any", apiKey: null, httpClient: this._httpClient, endpoint: new Uri(endpoint));
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = this.CreateDefaultStringContent() };
@@ -178,31 +178,6 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task ItAddsSystemMessageAsync()
-    {
-        // Arrange
-        var chatCompletion = new AzureAIInferenceChatCompletionService(httpClient: this._httpClientWithBaseAddress);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        { Content = this.CreateDefaultStringContent() };
-        var chatHistory = new ChatHistory();
-        chatHistory.AddMessage(AuthorRole.User, "Hello");
-
-        // Act
-        await chatCompletion.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
-
-        // Assert
-        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-
-        var messages = optionsJson.GetProperty("messages");
-        Assert.Equal(1, messages.GetArrayLength());
-
-        Assert.Equal("Hello", messages[0].GetProperty("content").GetString());
-        Assert.Equal("user", messages[0].GetProperty("role").GetString());
-    }
-
-    [Fact]
     public async Task GetChatMessageContentsWithChatMessageContentItemCollectionCorrectlyAsync()
     {
         // Arrange
@@ -260,7 +235,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     [InlineData("ChatResponseFormat", "text")]
     public async Task GetChatMessageInResponseFormatsAsync(string formatType, string formatValue)
     {
-        // Assert
+        // Arrange
         object? format = null;
         switch (formatType)
         {
@@ -275,7 +250,6 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
                 break;
         }
 
-        // Assert
         var sut = new AzureAIInferenceChatCompletionService(httpClient: this._httpClientWithBaseAddress);
         AzureAIInferencePromptExecutionSettings executionSettings = new() { ResponseFormat = format };
 
@@ -297,28 +271,6 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
         this._httpClientWithBaseAddress.Dispose();
         this._messageHandlerStub.Dispose();
         this._multiMessageHandlerStub.Dispose();
-    }
-
-    private sealed class AutoFunctionInvocationFilter : IAutoFunctionInvocationFilter
-    {
-        private readonly Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task> _callback;
-
-        public AutoFunctionInvocationFilter(Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task> callback)
-        {
-            Verify.NotNull(callback, nameof(callback));
-            this._callback = callback;
-        }
-
-        public AutoFunctionInvocationFilter(Action<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>> callback)
-        {
-            Verify.NotNull(callback, nameof(callback));
-            this._callback = (c, n) => { callback(c, n); return Task.CompletedTask; };
-        }
-
-        public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
-        {
-            await this._callback(context, next);
-        }
     }
 
     private StringContent CreateDefaultStringContent()

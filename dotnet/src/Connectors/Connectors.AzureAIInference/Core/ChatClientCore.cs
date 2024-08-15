@@ -95,7 +95,7 @@ internal sealed class ChatClientCore
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatClientCore"/> class.
     /// </summary>
-    /// <param name="modelId">Optional target Model Id for endpoints that supports multiple models</param>
+    /// <param name="modelId">Optional target Model Id for endpoints that support multiple models</param>
     /// <param name="apiKey">Azure AI Inference API Key.</param>
     /// <param name="endpoint">Azure AI Inference compatible API endpoint.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
