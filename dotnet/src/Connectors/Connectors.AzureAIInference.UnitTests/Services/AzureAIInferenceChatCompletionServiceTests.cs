@@ -100,7 +100,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     public async Task ItPrioritizesCustomEndpointOverHttpClientBaseAddressAsync(string endpoint)
     {
         // Arrange
-        this._httpClient.BaseAddress = new Uri("http://should-be-overriden");
+        this._httpClient.BaseAddress = new Uri("http://should-be-overridden");
         var chatCompletion = new AzureAIInferenceChatCompletionService(modelId: "any", apiKey: null, httpClient: this._httpClient, endpoint: new Uri(endpoint));
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = this.CreateDefaultStringContent() };
