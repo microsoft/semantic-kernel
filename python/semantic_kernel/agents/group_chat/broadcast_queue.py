@@ -17,7 +17,7 @@ class QueueReference(KernelBaseModel):
     """Utility class to associate a queue with its specific lock."""
 
     queue: deque = Field(default_factory=deque)
-    queue_lock: SkipValidation[asyncio.Lock] = Field(default_factory=asyncio.Lock)
+    queue_lock: SkipValidation[asyncio.Lock] = Field(default_factory=asyncio.Lock, exclude=True)
     receive_task: asyncio.Task | None = None
     receive_failure: Exception | None = None
 

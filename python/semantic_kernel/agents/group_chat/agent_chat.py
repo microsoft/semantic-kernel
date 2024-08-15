@@ -7,7 +7,7 @@ from abc import abstractmethod
 from collections.abc import AsyncGenerator, AsyncIterable
 from typing import Protocol, runtime_checkable
 
-from pydantic import Field, SkipValidation
+from pydantic import Field, PrivateAttr
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
@@ -41,7 +41,8 @@ class AgentChat(KernelBaseModel):
     agent_channels: dict[str, AgentChannel] = Field(default_factory=dict)
     channel_map: dict[Agent, str] = Field(default_factory=dict)
     history: ChatHistory = Field(default_factory=ChatHistory)
-    lock: SkipValidation[threading.Lock] = Field(default_factory=threading.Lock, exclude=True)
+
+    _lock: threading.Lock = PrivateAttr(default_factory=threading.Lock)
     _is_active: bool = False
 
     @property
@@ -51,14 +52,14 @@ class AgentChat(KernelBaseModel):
 
     def set_activity_or_throw(self):
         """Set the activity signal or throw an exception if another agent is active."""
-        with self.lock:
+        with self._lock:
             if self._is_active:
                 raise Exception("Unable to proceed while another agent is active.")
             self._is_active = True
 
     def clear_activity_signal(self):
         """Clear the activity signal."""
-        with self.lock:
+        with self._lock:
             self._is_active = False
 
     def invoke(self, agent: Agent | None = None, is_joining: bool | None = False) -> AsyncIterable[ChatMessageContent]:
