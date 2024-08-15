@@ -338,7 +338,10 @@ Include citations to the relevant information where it is referenced in the resp
             try
             {
                 arguments.TryGetValue("query", out var query);
-                query = query?.ToString() ?? string.Empty;
+                if (string.IsNullOrEmpty(query?.ToString()))
+                {
+                    return [];
+                }
 
                 var parameters = function.Metadata.Parameters;
 
@@ -413,5 +416,4 @@ Include citations to the relevant information where it is referenced in the resp
 
     [GeneratedRegex(@"\s+")]
     private static partial Regex MyRegex();
-
 }

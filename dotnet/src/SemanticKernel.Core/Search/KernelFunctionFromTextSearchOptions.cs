@@ -71,7 +71,10 @@ public sealed class KernelFunctionFromTextSearchOptions
             try
             {
                 arguments.TryGetValue("query", out var query);
-                query = query?.ToString() ?? string.Empty;
+                if (string.IsNullOrEmpty(query?.ToString()))
+                {
+                    return [];
+                }
 
                 var parameters = function.Metadata.Parameters;
 
@@ -84,7 +87,7 @@ public sealed class KernelFunctionFromTextSearchOptions
                     BasicFilter = basicFilter
                 };
 
-                var result = await textSearch.SearchAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
+                var result = await textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
                 var resultList = await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
                 return MapToStrings(resultList, mapToString);
             }
@@ -122,7 +125,10 @@ public sealed class KernelFunctionFromTextSearchOptions
             try
             {
                 arguments.TryGetValue("query", out var query);
-                query = query?.ToString() ?? string.Empty;
+                if (string.IsNullOrEmpty(query?.ToString()))
+                {
+                    return [];
+                }
 
                 var parameters = function.Metadata.Parameters;
 
@@ -135,7 +141,7 @@ public sealed class KernelFunctionFromTextSearchOptions
                     BasicFilter = basicFilter
                 };
 
-                var result = await textSearch.SearchAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
+                var result = await textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
                 return await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException())

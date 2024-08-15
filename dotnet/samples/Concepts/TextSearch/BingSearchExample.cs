@@ -186,7 +186,10 @@ public sealed partial class BingSearchExample(ITestOutputHelper output) : BaseTe
             try
             {
                 arguments.TryGetValue("query", out var query);
-                query = query?.ToString() ?? string.Empty;
+                if (string.IsNullOrEmpty(query?.ToString()))
+                {
+                    return [];
+                }
 
                 var parameters = function.Metadata.Parameters;
 

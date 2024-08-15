@@ -21,6 +21,8 @@ There are two main use cases we need to support:
 1. Enable Prompt Engineers to easily insert grounding information in prompts i.e. support for Retrieval-Augmented Generation scenarios.
 2. Enable Developers to register search plugins which can be called by the LLM to retrieve additional data it needs to respond to a user ask i.e. support for Function Calling scenarios.
 
+What both of these scenarios have in common is that we need to generate a `KernelPlugin` from a search service and register it for use with the `Kernel`.
+
 ### Retrieval-Augmented Generation Scenarios
 
 Retrieval-Augmented Generation (RAG) is a process of optimizing the output of an LLM, so it references authoritative data which may not be part of its training data when generating a response. This reduce the likelihood of hallucinations and also enables the provision of citations which the end user can use to independently verify the response from the LLM. RAG works by retrieving additional data that is relevant to the use query and then augment the prompt with this data before sending to the LLM.
@@ -269,10 +271,12 @@ private static KernelFunctionFromTextSearchOptions GetFullWebPages(ITextSearch<B
         try
         {
             arguments.TryGetValue("query", out var query);
-            query = query?.ToString() ?? string.Empty;
-
+            if (string.IsNullOrEmpty(query?.ToString()))
+            {
+                return [];
+            }
+            
             var parameters = function.Metadata.Parameters;
-
             arguments.TryGetValue("count", out var count);
             arguments.TryGetValue("count", out var skip);
             SearchOptions searchOptions = new()
