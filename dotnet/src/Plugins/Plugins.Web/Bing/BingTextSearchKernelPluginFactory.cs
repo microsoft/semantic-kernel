@@ -18,6 +18,10 @@ public static class BingTextSearchKernelPluginFactory
     /// <summary>
     /// Creates a plugin from an BingTextSearch implementation.
     /// </summary>
+    /// <remarks>
+    /// The plugin will have a single function called <code>GetBingWebPages</code> which
+    /// will return a <see cref="IEnumerable{BingWebPage}"/>
+    /// </remarks>
     /// <param name="textSearch">The instance of ITextSearch to be used by the plugin.</param>
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
@@ -42,7 +46,7 @@ public static class BingTextSearchKernelPluginFactory
     /// <param name="textSearch"></param>
     /// <param name="basicFilter"></param>
     /// <returns></returns>
-    private static KernelFunctionFromTextSearchOptions GetBingWebPages(BingTextSearch textSearch, BasicFilterOptions? basicFilter = null)
+    public static KernelFunctionFromTextSearchOptions GetBingWebPages(BingTextSearch textSearch, BasicFilterOptions? basicFilter = null)
     {
         async Task<IEnumerable<BingWebPage>> GetBingWebPagesAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
