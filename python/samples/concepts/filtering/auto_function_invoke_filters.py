@@ -84,7 +84,7 @@ arguments = KernelArguments(settings=execution_settings)
 @kernel.filter(FilterTypes.AUTO_FUNCTION_INVOCATION)
 async def auto_function_invocation_filter(context: AutoFunctionInvocationContext, next):
     """A filter that will be called for each function call in the response."""
-    print("\nAuto function invocation filter one")
+    print("\nAuto function invocation filter")
     print(f"Function: {context.function.name}")
     print(f"Request sequence: {context.request_sequence_index}")
     print(f"Function sequence: {context.function_sequence_index}")
