@@ -59,17 +59,11 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseTest(output)
             await InvokeAgentAsync(assistantAgent, "What is my favorite color?");
             await InvokeAgentAsync(chatAgent);
 
-            //await DisplayHistory(assistantAgent);
-            //await DisplayHistory(chatAgent);
-
             await chat.ResetAsync();
 
             await InvokeAgentAsync(assistantAgent, "What is my favorite color?");
             await InvokeAgentAsync(chatAgent);
-
-            //await DisplayHistory(assistantAgent);
-            //await DisplayHistory(chatAgent);
-        }
+\       }
         finally
         {
             await chat.ResetAsync();
@@ -91,18 +85,6 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseTest(output)
                 {
                     Console.WriteLine($"\n# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
                 }
-            }
-        }
-
-        async Task DisplayHistory(Agent agent)
-        {
-            Console.WriteLine("\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-            Console.WriteLine($">>>> HISTORY: {agent.Name} ");
-            Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-
-            await foreach (ChatMessageContent content in chat.GetChatMessagesAsync(agent).Reverse())
-            {
-                Console.WriteLine($">>>> {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
     }
