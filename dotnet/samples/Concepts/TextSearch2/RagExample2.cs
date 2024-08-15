@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.Search;
 
-namespace TextSearch;
+namespace TextSearch2;
 
 /// <summary>
 /// This example shows how to perform RAG with an <see cref="ITextSearch{T}"/>.
 /// </summary>
-public sealed class RagExample(ITestOutputHelper output) : BaseTest(output)
+public sealed partial class RagExample2(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a default <see cref="KernelPlugin"/> from an <see cref="ITextSearch{T}"/> and use it to
@@ -32,7 +34,7 @@ public sealed class RagExample(ITestOutputHelper output) : BaseTest(output)
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text search using the Bing search service
-        var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
         var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(textSearch, "SearchPlugin");
@@ -64,7 +66,7 @@ public sealed class RagExample(ITestOutputHelper output) : BaseTest(output)
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text search using the Bing search service
-        var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
         var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
@@ -124,7 +126,7 @@ Include the link to the relevant information in the response.
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text search using the Bing search service
-        var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
         var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
@@ -188,7 +190,7 @@ Include citations to the relevant information where it is referenced in the resp
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text search using the Bing search service
-        var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
         var searchPlugin = BingTextSearchKernelPluginFactory.CreateFromBingWebPages(textSearch, "SearchPlugin");
@@ -268,10 +270,10 @@ Include citations to and the date of the relevant information where it is refere
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text search using the Bing search service
-        var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = BingTextSearchKernelPluginFactory.CreateFromBingWebPages(textSearch, "SearchPlugin", null, BingSearchExample.CreateGetFullWebPagesOptions(textSearch));
+        var searchPlugin = BingTextSearchKernelPluginFactory.CreateFromBingWebPages(textSearch, "SearchPlugin", null, CreateGetFullWebPagesOptions(textSearch));
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -317,4 +319,99 @@ Include citations to the relevant information where it is referenced in the resp
         By leveraging these features, the Semantic Kernel serves as a powerful toolset for developers looking to enhance their applications with cutting-edge AI capabilities, all while maintaining flexibility and ease of integration. For more details and to access the Semantic Kernel SDK, visit the [GitHub repository](https://github.com/microsoft/semantic-kernel).
         */
     }
+
+    public static KernelPluginFromTextSearchOptions CreateGetFullWebPagesOptions(ITextSearch2<BingWebPage> textSearch)
+    {
+        return new()
+        {
+            Functions =
+            [
+                GetFullWebPages(textSearch),
+            ]
+        };
+    }
+
+    private static KernelFunctionFromTextSearchOptions GetFullWebPages(ITextSearch2<BingWebPage> textSearch, BasicFilterOptions? basicFilter = null)
+    {
+        async Task<IEnumerable<TextSearchResult>> GetFullWebPagesAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        {
+            try
+            {
+                arguments.TryGetValue("query", out var query);
+                query = query?.ToString() ?? string.Empty;
+
+                var parameters = function.Metadata.Parameters;
+
+                arguments.TryGetValue("count", out var count);
+                arguments.TryGetValue("count", out var skip);
+                SearchOptions searchOptions = new()
+                {
+                    Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),
+                    Offset = (skip as int?) ?? GetDefaultValue(parameters, "skip", 0),
+                    BasicFilter = basicFilter
+                };
+
+                var result = await textSearch.GetSearchResultsAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
+                var resultList = new List<TextSearchResult>();
+
+                using HttpClient client = new();
+                await foreach (var item in result.Results.WithCancellation(cancellationToken).ConfigureAwait(false))
+                {
+                    string? value = item.Snippet;
+                    try
+                    {
+                        if (item.Url is not null)
+                        {
+                            value = await client.GetStringAsync(new Uri(item.Url), cancellationToken);
+                            value = ConvertHtmlToPlainText(value);
+                        }
+                    }
+                    catch (HttpRequestException)
+                    {
+                    }
+
+                    resultList.Add(new() { Name = item.Name, Value = value, Link = item.Url });
+                }
+
+                return resultList;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        return new()
+        {
+            Delegate = GetFullWebPagesAsync,
+            FunctionName = "GetFullWebPages",
+            Description = "Perform a search for content related to the specified query. The search will return the name, full web page content and link for the related content.",
+            Parameters =
+            [
+                new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
+                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+                new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
+            ],
+            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
+        };
+    }
+
+    private static int GetDefaultValue(IReadOnlyList<KernelParameterMetadata> parameters, string name, int defaultValue)
+    {
+        var value = parameters.FirstOrDefault(parameter => parameter.Name == name)?.DefaultValue;
+        return value is int intValue ? intValue : defaultValue;
+    }
+    private static string ConvertHtmlToPlainText(string html)
+    {
+        HtmlDocument doc = new();
+        doc.LoadHtml(html);
+
+        string text = doc.DocumentNode.InnerText;
+        text = MyRegex().Replace(text, " "); // Remove unnecessary whitespace  
+        return text.Trim();
+    }
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex MyRegex();
+
 }

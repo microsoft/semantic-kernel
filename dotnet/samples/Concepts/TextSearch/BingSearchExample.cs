@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Search;
@@ -9,7 +11,7 @@ namespace TextSearch;
 /// <summary>
 /// This example shows how to create and use a <see cref="BingTextSearch"/>.
 /// </summary>
-public sealed class BingSearchExample(ITestOutputHelper output) : BaseTest(output)
+public sealed partial class BingSearchExample(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a <see cref="BingTextSearch"/> and use it to perform a text search.
@@ -152,5 +154,111 @@ public sealed class BingSearchExample(ITestOutputHelper output) : BaseTest(outpu
             Console.WriteLine($"DateLastCrawled: {bingWebPage.DateLastCrawled}");
             Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
+
+        // Search with BingWebPage result type
+        var fullWebPagePlugin = BingTextSearchKernelPluginFactory.CreateFromBingWebPages(bingTextSearch, "FullWebPagePlugin", null, CreateGetFullWebPagesOptions(bingTextSearch));
+        var fullWebPages = await kernel.InvokeAsync<IEnumerable<TextSearchResult>>(fullWebPagePlugin["GetFullWebPages"], new() { ["query"] = query });
+        Console.WriteLine("\n--- Full Web Page Results ---\n");
+        foreach (TextSearchResult fullWebPage in fullWebPages!)
+        {
+            Console.WriteLine($"Name:  {fullWebPage.Name}");
+            Console.WriteLine($"Value: {fullWebPage.Value}");
+            Console.WriteLine($"Link:  {fullWebPage.Link}");
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+        }
     }
+
+    public static KernelPluginFromTextSearchOptions CreateGetFullWebPagesOptions(ITextSearch<BingWebPage> textSearch)
+    {
+        return new()
+        {
+            Functions =
+            [
+                GetFullWebPages(textSearch),
+            ]
+        };
+    }
+
+    private static KernelFunctionFromTextSearchOptions GetFullWebPages(ITextSearch<BingWebPage> textSearch, BasicFilterOptions? basicFilter = null)
+    {
+        async Task<IEnumerable<TextSearchResult>> GetFullWebPagesAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        {
+            try
+            {
+                arguments.TryGetValue("query", out var query);
+                query = query?.ToString() ?? string.Empty;
+
+                var parameters = function.Metadata.Parameters;
+
+                arguments.TryGetValue("count", out var count);
+                arguments.TryGetValue("count", out var skip);
+                SearchOptions searchOptions = new()
+                {
+                    Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),
+                    Offset = (skip as int?) ?? GetDefaultValue(parameters, "skip", 0),
+                    BasicFilter = basicFilter
+                };
+
+                var result = await textSearch.SearchAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
+                var resultList = new List<TextSearchResult>();
+
+                using HttpClient client = new();
+                await foreach (var item in result.Results.WithCancellation(cancellationToken).ConfigureAwait(false))
+                {
+                    string? value = item.Snippet;
+                    try
+                    {
+                        if (item.Url is not null)
+                        {
+                            value = await client.GetStringAsync(new Uri(item.Url), cancellationToken);
+                            value = ConvertHtmlToPlainText(value);
+                        }
+                    }
+                    catch (HttpRequestException)
+                    {
+                    }
+
+                    resultList.Add(new() { Name = item.Name, Value = value, Link = item.Url });
+                }
+
+                return resultList;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        return new()
+        {
+            Delegate = GetFullWebPagesAsync,
+            FunctionName = "GetFullWebPages",
+            Description = "Perform a search for content related to the specified query. The search will return the name, full web page content and link for the related content.",
+            Parameters =
+            [
+                new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
+                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+                new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
+            ],
+            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
+        };
+    }
+
+    private static int GetDefaultValue(IReadOnlyList<KernelParameterMetadata> parameters, string name, int defaultValue)
+    {
+        var value = parameters.FirstOrDefault(parameter => parameter.Name == name)?.DefaultValue;
+        return value is int intValue ? intValue : defaultValue;
+    }
+    private static string ConvertHtmlToPlainText(string html)
+    {
+        HtmlDocument doc = new();
+        doc.LoadHtml(html);
+
+        string text = doc.DocumentNode.InnerText;
+        text = MyRegex().Replace(text, " "); // Remove unnecessary whitespace  
+        return text.Trim();
+    }
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex MyRegex();
 }

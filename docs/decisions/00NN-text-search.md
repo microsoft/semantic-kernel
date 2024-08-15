@@ -213,6 +213,181 @@ References:
 - GitHub. "microsoft/semantic-kernel." Last crawled: 2024-08-14.
 ```
 
+In the previous samples a snippet of text from the web page is used as the relevant information. The url to the full page content is also available so the full page could be downloaded and used. There may be other search implementations that don't include any relevant information and just include a link, this next examples shows how to handle this case.
+
+```csharp
+// Build a text search plugin with Bing search service and add to the kernel
+var searchPlugin = BingTextSearchKernelPluginFactory.CreateFromBingWebPages(textSearch, "SearchPlugin", null, BingSearchExample.CreateGetFullWebPagesOptions(textSearch));
+kernel.Plugins.Add(searchPlugin);
+
+// Invoke prompt and use text search plugin to provide grounding information
+var query = "What is the Semantic Kernel?";
+string promptTemplate = @"
+{{#with (SearchPlugin-GetFullWebPages query)}}  
+  {{#each this}}  
+    Name: {{Name}}
+    Value: {{Value}}
+    Link: {{Link}}
+    -----------------
+  {{/each}}  
+{{/with}}  
+
+{{query}}
+
+Include citations to the relevant information where it is referenced in the response.
+";
+KernelArguments arguments = new() { { "query", query } };
+HandlebarsPromptTemplateFactory promptTemplateFactory = new();
+Console.WriteLine(await kernel.InvokePromptAsync(
+    promptTemplate,
+    arguments,
+    templateFormat: HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
+    promptTemplateFactory: promptTemplateFactory
+));
+```
+
+In this sample we call `BingSearchExample.CreateGetFullWebPagesOptions(textSearch)` to create the options that define the search plugin.
+
+The code for this method looks like this:
+
+```csharp
+public static KernelPluginFromTextSearchOptions CreateGetFullWebPagesOptions(ITextSearch<BingWebPage> textSearch)
+{
+    return new()
+    {
+        Functions =
+        [
+            GetFullWebPages(textSearch),
+        ]
+    };
+}
+
+private static KernelFunctionFromTextSearchOptions GetFullWebPages(ITextSearch<BingWebPage> textSearch, BasicFilterOptions? basicFilter = null)
+{
+    async Task<IEnumerable<TextSearchResult>> GetFullWebPagesAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+    {
+        try
+        {
+            arguments.TryGetValue("query", out var query);
+            query = query?.ToString() ?? string.Empty;
+
+            var parameters = function.Metadata.Parameters;
+
+            arguments.TryGetValue("count", out var count);
+            arguments.TryGetValue("count", out var skip);
+            SearchOptions searchOptions = new()
+            {
+                Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),
+                Offset = (skip as int?) ?? GetDefaultValue(parameters, "skip", 0),
+                BasicFilter = basicFilter
+            };
+
+            var result = await textSearch.SearchAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
+            var resultList = new List<TextSearchResult>();
+
+            using HttpClient client = new();
+            await foreach (var item in result.Results.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                string? value = item.Snippet;
+                try
+                {
+                    if (item.Url is not null)
+                    {
+                        value = await client.GetStringAsync(new Uri(item.Url), cancellationToken);
+                        value = ConvertHtmlToPlainText(value);
+                    }
+                }
+                catch (HttpRequestException)
+                {
+                }
+
+                resultList.Add(new() { Name = item.Name, Value = value, Link = item.Url });
+            }
+
+            return resultList;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    return new()
+    {
+        Delegate = GetFullWebPagesAsync,
+        FunctionName = "GetFullWebPages",
+        Description = "Perform a search for content related to the specified query. The search will return the name, full web page content and link for the related content.",
+        Parameters =
+        [
+            new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
+            new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+            new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
+        ],
+        ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
+    };
+}
+```
+
+The custom `KernelPluginFromTextSearchOptions` will result in a search plugin with a single function called `GetFullWebPages`, this method works as follows:
+
+1. It uses the `BingTextSearch` instances for retrieve the top pages for the specified query.
+2. For each web page is reads the full HTML content using the url and then converts in to a plain text representation.
+
+Here's an example of what the response will look like:
+
+```
+    The Semantic Kernel (SK) is an open-source development kit from Microsoft designed to facilitate the integration of large language models (LLMs) into AI applications. It acts as middleware, enabling the rapid development of enterprise-grade solutions by providing a flexible, modular, and extensible programming model that supports multiple languages like C#, Python, and Java [^1^][^4^].
+
+### Key Features:
+
+1. **AI Service Integration**:
+   - The Semantic Kernel supports popular AI models from providers like OpenAI, Azure OpenAI, and Hugging Face. It abstracts the complexity of these services, making it easier to integrate them into applications using traditional programming languages [^1^][^3^][^5^].
+   
+2. **Extensibility and Modularity**:
+   - Semantic Kernel leverages plugins and OpenAPI specifications to integrate seamlessly with existing codebases. This enables developers to maximize their current investments while extending functionalities through connectors and new AI capabilities [^1^][^2^][^5^].
+
+3. **Orchestrating AI Tasks**:
+   - Semantic Kernel uses "planners" to orchestrate the execution of functions, prompts, and API calls as needed. The planners coordinate multi-step processes to fulfill complex tasks based on a user's request, using predefined or dynamic execution plans [^2^][^7^].
+
+4. **Memory and Context Management**:
+   - It employs various types of memory such as local storage, key-value pairs, and vector (or semantic) search to maintain the context of interactions. This helps in preserving coherence and relevance in the outputs generated by the AI models [^8^].
+
+5. **Responsible AI and Observability**:
+   - The toolkit includes built-in logging, telemetry, and filtering support to enhance security and enable responsible AI deployment at scale. This ensures adherence to ethical guidelines and helps monitor the AI agents’ performance [^1^][^4^].
+
+6. **Flexible Integration with Traditional Code**:
+   - Developers can create native functions and semantic functions using SQL and other data manipulation techniques to extend the capabilities of the Semantic Kernel. This hybrid integration of AI and conventional code supports complex, real-world applications [^6^].
+
+### Practical Uses:
+
+- **Chatbots and Conversational Agents**:
+   - By combining natural language prompting with API capabilities, Semantic Kernel allows the creation of intelligent chatbots that can interact dynamically with users [^6^].
+   
+- **Automation of Business Processes**:
+   - AI agents built with SK can automate various business operations by interpreting natural language requests and executing corresponding actions through API integrations [^2^].
+
+- **Enhanced Search and Data Retrieval**:
+   - By using semantic memory and vector databases, SK facilitates advanced search functionalities that go beyond simple keyword matching, providing more accurate and contextually relevant search results [^8^].
+
+### Getting Started:
+
+Developers can get started with Semantic Kernel by following quick start guides and tutorials available on Microsoft Learn and GitHub [^3^][^4^][^5^].
+
+For more detailed information, visit the official [Microsoft Learn page](https://learn.microsoft.com/en-us/semantic-kernel/overview/) or the [GitHub repository](https://github.com/microsoft/semantic-kernel).
+
+[^1^]: [Introduction to Semantic Kernel | Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/overview/)
+[^2^]: [Semantic Kernel: What It Is and Why It Matters | Microsoft Tech Community](https://techcommunity.microsoft.com/t5/microsoft-developer-community/semantic-kernel-what-it-is-and-why-it-matters/ba-p/3877022)
+[^3^]: [How to quickly start with Semantic Kernel | Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide)
+[^4^]: [Understanding the kernel in Semantic Kernel | Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/concepts/kernel)
+[^5^]: [Hello, Semantic Kernel! | Semantic Kernel](https://devblogs.microsoft.com/semantic-kernel/hello-world/)
+[^6^]: [How to Get Started using Semantic Kernel .NET | Semantic Kernel](https://devblogs.microsoft.com/semantic-kernel/how-to-get-started-using-semantic-kernel-net/)
+[^7^]: [Understanding Semantic Kernel](https://valoremreply.com/post/understanding-semantic-kernel/)
+[^8^]: [Semantic Kernel: A bridge between large language models and your code | InfoWorld](https://www.infoworld.com/article/2338321/semantic-kernel-a-bridge-between-large-language-models-and-your-code.html)
+```
+
+**Note:** The token usage increases significantly if the full web pages are used.
+In the above example the total token count is `26836` compared to `1081` if snippets of the web page are used.
+
 
 ### Function Calling Scenarios
 
@@ -415,13 +590,17 @@ Expect these to be handled by Vector search
 
 ### Search Abstractions
 
+- ...
+- ...
+- ...
 
 <img src="./diagrams/search-abstractions.png" alt="Search Abstractions" width="80%"/>
 
 ## Considered Options
 
-- Define `ITextSearch` abstraction specifically for text search that uses generics
-- Define `ITextSearch` abstraction specifically for text search that does not use generics
+- Define `ITextSearch<T>` abstraction with single `Search` method and implementations check type
+- Define `ITextSearch<T>` abstraction with single `Search` method and implementations implement what they support
+- Define `ITextSearch<T>` abstraction with multiple search methods
 
 ## Decision Outcome
 
@@ -431,6 +610,154 @@ Chosen option: "{title of option 1}", because
 <!-- This is an optional element. Feel free to remove. -->
 
 ## Pros and Cons of the Options
+
+### Define `ITextSearch<T>` abstraction with single `Search` method and implementations check type
+
+Abstraction would look like this:
+
+```csharp
+public interface ITextSearch<T> where T : class
+{
+  public Task<KernelSearchResults<T>> SearchAsync(string query, SearchOptions? searchOptions = null, CancellationToken cancellationToken = default);
+}
+```
+
+Implementation would look like this:
+
+```csharp
+public class BingTextSearch<T> where T : class
+{
+  public async Task<KernelSearchResults<T>> SearchAsync(string query, SearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+  {
+    // Retrieve Bing search results
+
+    if (typeof(T) == typeof(string))
+    {
+       // Convert to string (custom mapper is supported)
+    }
+    else if (typeof(T) == typeof(TextSearchResult))
+    {
+       // Convert to TextSearchResult (custom mapper is supported)
+    }
+    else if (typeof(T) == typeof(BingWebPage))
+    {
+      // Return Bing search results
+    }
+  }
+}
+```
+
+- Good, because can support custom types for `IVectorStoreTextSearch`
+- Bad, because not clear what return types are supported by an implementation
+- Bad, because type checking required for each invocation
+
+### Define `ITextSearch<T>` abstraction with single `Search` method and implementations implement what they support
+
+Abstraction would look like this:
+
+```csharp
+public interface ITextSearch<T> where T : class
+{
+  public Task<KernelSearchResults<T>> SearchAsync(string query, SearchOptions? searchOptions = null, CancellationToken cancellationToken = default);
+}
+```
+
+Implementation would look like this:
+
+```csharp
+public sealed class BingTextSearch : ITextSearch<string>, ITextSearch<TextSearchResult>, ITextSearch<BingWebPage>
+{
+  /// <inheritdoc/>
+  async Task<KernelSearchResults<TextSearchResult>> ITextSearch<TextSearchResult>.SearchAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Bing search results and convert to TextSearchResult
+  }
+
+  /// <inheritdoc/>
+  async Task<KernelSearchResults<BingWebPage>> ITextSearch<BingWebPage>.SearchAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Bing search results
+  }
+
+  /// <inheritdoc/>
+  async Task<KernelSearchResults<string>> ITextSearch<string>.SearchAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Bing search results and convert to string
+  }
+}
+```
+
+- Good, because separates the implementation for each return type
+- Good, because it's clear what types are supported by an implementation
+- Bad, because you need to downcast
+- Bad, because no way to implement `IVectorStoreTextSearch` which supports custom types
+
+### Define `ITextSearch<T>` abstraction with multiple search methods
+
+Abstraction would look like this:
+
+```csharp
+public interface ITextSearch<T> where T : class
+{
+  public Task<KernelSearchResults<string>> SearchAsync(string query, SearchOptions? searchOptions = null, CancellationToken cancellationToken = default);
+
+  public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, SearchOptions? searchOptions = null, CancellationToken cancellationToken = default);
+
+  public Task<KernelSearchResults<T>> GetSearchResultsAsync(string query, SearchOptions? searchOptions = null, CancellationToken cancellationToken = default);
+}
+```
+
+Implementation would look like this:
+
+```csharp
+public sealed class BingTextSearch : ITextSearch<BingWebPage>
+{
+  public async Task<KernelSearchResults<BingWebPage>> GetSearchResultsAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Bing search results
+  }
+
+  public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Bing search results and convert to TextSearchResult
+  }
+
+  public async Task<KernelSearchResults<string>> SearchAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Bing search results and convert to string
+  }
+}
+```
+
+For Vector Store the implementation would look like:
+
+```csharp
+public sealed class VectorStoreTextSearch<TRecord> : ITextSearch2<TRecord> where TRecord : class
+{
+  public Task<KernelSearchResults<TRecord>> GetSearchResultsAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Vector Store search results
+  }
+
+  public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Vector Store search results and convert to TextSearchResult
+  }
+
+  public Task<KernelSearchResults<string>> SearchAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Vector Store search results and convert to string
+  }
+}
+```
+
+- Good, seperate methods for each type
+- Good, because {argument b}
+<!-- use "neutral" if the given argument weights neither for good nor bad -->
+- Neutral, because {argument c}
+- Bad, because in the above BingTextSearch sample no additional types can be added
+- Bad, because not clear what `TRecord` types are supported
+
 
 ### Define `ITextSearch` Abstraction with Generics
 
@@ -444,7 +771,7 @@ A new `ITextSearch` abstraction is used to define the contract to perform a text
 
 The class diagram below shows the class hierarchy.
 
-<img src="./diagrams/text-search-service-abstraction.png" alt="ITextSearch Abstraction" width="80%"/>
+<img src="./diagrams/text-search-abstraction.png" alt="ITextSearch Abstraction" width="80%"/>
 
 The abstraction contains the following interfaces and classes:
 
@@ -686,13 +1013,13 @@ In each case a plugin implementation is provided which allows the search to be i
 
 The diagram below shows the layers in the current design of the Memory Store search functionality.
 
-<img src="./diagrams/text-search-service-imemorystore.png" alt="Current Memory Design" width="40%"/>
+<img src="./diagrams/text-search-imemorystore.png" alt="Current Memory Design" width="40%"/>
 
 #### Web Search Engine Integration
 
 The diagram below shows the layers in the current design of the Web Search Engine integration.
 
-<img src="./diagrams/text-search-service-iwebsearchengineconnector.png" alt="Current Web Search Design" width="40%"/>
+<img src="./diagrams/text-search-iwebsearchengineconnector.png" alt="Current Web Search Design" width="40%"/>
 
 The Semantic Kernel currently includes experimental support for a `WebSearchEnginePlugin` which can be configured via a `IWebSearchEngineConnector` to integrate with a Web Search Services such as Bing or Google. The search results can be returned as a collection of string values or a collection of `WebPage` instances.
 
@@ -705,4 +1032,3 @@ The Semantic Kernel currently includes experimental support for a `WebSearchEngi
 The current design doesn't support breaking glass scenario's or using custom types for the response values.
 
 One goal of this ADR is to have a design where text search is unified into a single abstraction and a single plugin can be configured to perform web based searches or to search a vector store.
-
