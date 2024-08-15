@@ -8,8 +8,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 namespace Agents;
 
 /// <summary>
-/// Demonstrate <see cref="ChatCompletionAgent"/> agent interacts with
-/// <see cref="OpenAIAssistantAgent"/> when it produces image output.
+/// Demonstrate the use of <see cref="AgentChat.ResetAsync"/>.
 /// </summary>
 public class MixedChat_Reset(ITestOutputHelper output) : BaseTest(output)
 {
