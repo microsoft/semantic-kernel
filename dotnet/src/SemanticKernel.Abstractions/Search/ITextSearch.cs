@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Search;
 
 /// <summary>
-/// Interface for text based search services for use with Semantic Kernel prompts and automatic function calling.
+/// Interface for text based search queries for use with Semantic Kernel prompts and automatic function calling.
 /// </summary>
 [Experimental("SKEXP0001")]
 public interface ITextSearch<T> where T : class

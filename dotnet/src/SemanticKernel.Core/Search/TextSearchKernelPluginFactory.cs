@@ -12,8 +12,8 @@ public static class TextSearchKernelPluginFactory
     /// Creates a plugin from an ITextSearch implementation.
     /// </summary>
     /// <remarks>
-    /// The plugin will have a single function called <code>Search</code> which
-    /// will return a <see cref="IEnumerable{string}"/>
+    /// The plugin will have a single function called `Search` which
+    /// will return a <see cref="IEnumerable{String}"/>
     /// </remarks>
     /// <param name="textSearch">The instance of ITextSearch to be used by the plugin.</param>
     /// <param name="pluginName">The name for the plugin.</param>
@@ -37,7 +37,7 @@ public static class TextSearchKernelPluginFactory
     /// Creates a plugin from an ITextSearch implementation.
     /// </summary>
     /// <remarks>
-    /// The plugin will have a single function called <code>GetSearchResults</code> which
+    /// The plugin will have a single function called `GetSearchResults` which
     /// will return a <see cref="IEnumerable{TextSearchResult}"/>
     /// </remarks>
     /// <param name="textSearch">The instance of ITextSearch to be used by the plugin.</param>

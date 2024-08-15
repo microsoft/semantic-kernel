@@ -19,7 +19,7 @@ public static class BingTextSearchKernelPluginFactory
     /// Creates a plugin from an BingTextSearch implementation.
     /// </summary>
     /// <remarks>
-    /// The plugin will have a single function called <code>GetBingWebPages</code> which
+    /// The plugin will have a single function called `GetBingWebPages` which
     /// will return a <see cref="IEnumerable{BingWebPage}"/>
     /// </remarks>
     /// <param name="textSearch">The instance of ITextSearch to be used by the plugin.</param>

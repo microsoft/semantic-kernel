@@ -40,7 +40,7 @@ Kernel kernel = kernelBuilder.Build();
 var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
 // Build a text search plugin with Bing search service and add to the kernel
-var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<string>(textSearch, "SearchPlugin");
+var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(textSearch, "SearchPlugin");
 kernel.Plugins.Add(searchPlugin);
 
 // Invoke prompt and use text search plugin to provide grounding information
@@ -75,7 +75,7 @@ Kernel kernel = kernelBuilder.Build();
 var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
 // Build a text search plugin with Bing search service and add to the kernel
-var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<TextSearchResult>(textSearch, "SearchPlugin");
+var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
 kernel.Plugins.Add(searchPlugin);
 
 // Invoke prompt and use text search plugin to provide grounding information
@@ -129,6 +129,90 @@ The Semantic Kernel is an indispensable tool for developers aiming to build adva
 ```
 
 **Note:** In this case there is a link to the relevant information so the end user can follow the links to verify the response.
+
+The next sample shows an alternative solution that uses Bing Text Search and the built-in result type.
+
+```csharp
+// Create a kernel with OpenAI chat completion
+IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+kernelBuilder.AddOpenAIChatCompletion(
+        modelId: TestConfiguration.OpenAI.ChatModelId,
+        apiKey: TestConfiguration.OpenAI.ApiKey,
+        httpClient: httpClient);
+Kernel kernel = kernelBuilder.Build();
+
+// Create a text search using the Bing search service
+var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+
+// Build a text search plugin with Bing search service and add to the kernel
+var searchPlugin = BingTextSearchKernelPluginFactory.CreateFromBingWebPages(textSearch, "SearchPlugin");
+kernel.Plugins.Add(searchPlugin);
+
+// Invoke prompt and use text search plugin to provide grounding information
+var query = "What is the Semantic Kernel?";
+string promptTemplate = @"
+{{#with (SearchPlugin-GetBingWebPages query)}}  
+  {{#each this}}  
+    Name: {{Name}}
+    Snippet: {{Snippet}}
+    Link: {{DisplayUrl}}
+    Date Last Crawled: {{DateLastCrawled}}
+    -----------------
+  {{/each}}  
+{{/with}}  
+
+{{query}}
+
+Include citations to and the date of the relevant information where it is referenced in the response.
+";
+KernelArguments arguments = new() { { "query", query } };
+HandlebarsPromptTemplateFactory promptTemplateFactory = new();
+Console.WriteLine(await kernel.InvokePromptAsync(
+    promptTemplate,
+    arguments,
+    templateFormat: HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
+    promptTemplateFactory: promptTemplateFactory
+));
+```
+
+This example works as follows:
+
+1. Create a `BingTextSearch` which can perform Bing search queries.
+2. The default format is a Bing specific class called `BingWebPage` which includes a name, snippet, display url and date last crawled for each search result.
+3. Wrap the `BingTextSearch` as a plugin which can be called when rendering a prompt.
+4. Insert a call to the plugin which performs a search using the user query.
+5. The prompt will be augmented with the name, snippet, display url and date last crawled from the top search results.
+6. The prompt also instructs the LLM to include citations to and date of the relevant information in the response.
+
+An example response would look like this:
+
+```
+Semantic Kernel is an open-source development kit designed to facilitate the integration of advanced AI models into existing C#, Python, or Java codebases. It serves as an efficient middleware that enables rapid delivery of enterprise-grade AI solutions (Microsoft Learn, 2024-08-14).
+
+One of the standout features of Semantic Kernel is its lightweight SDK, which allows developers to blend conventional programming languages with Large Language Model (LLM) AI capabilities through prompt templating, chaining, and planning (Semantic Kernel Blog, 2024-08-10).
+
+This AI SDK uses natural language prompting to create and execute semantic AI tasks across multiple languages and platforms, offering developers a simple yet powerful programming model to add large language capabilities to their applications in a matter of minutes (Microsoft Developer Community, 2024-08-13).
+
+Semantic Kernel also leverages function calling—a native feature of most LLMs—enabling the models to request specific functions to fulfill user requests, thereby streamlining the planning process (Microsoft Learn, 2024-08-14).
+
+The toolkit is versatile and extends support to multiple programming environments. For instance, Semantic Kernel for Java is compatible with Java 8 and above, making it accessible to a wide range of Java developers (Semantic Kernel Blog, 2024-08-14).
+
+Additionally, Sketching an architecture with Semantic Kernel can simplify business automation using models from platforms such as OpenAI, Azure OpenAI, and Hugging Face (Semantic Kernel Blog, 2024-08-14).
+
+For .NET developers, Semantic Kernel is highly recommended for working with AI in .NET applications, offering a comprehensive guide on incorporating Semantic Kernel into projects and understanding its core concepts (Microsoft Learn, 2024-08-14).
+
+Last but not least, Semantic Kernel has an extension for Visual Studio Code that facilitates the design and testing of semantic functions, enabling developers to efficiently integrate and test AI models with their existing data (GitHub, 2024-08-14).
+
+References:
+- Microsoft Learn. "Introduction to Semantic Kernel." Last crawled: 2024-08-14.
+- Semantic Kernel Blog. "Hello, Semantic Kernel!" Last crawled: 2024-08-10.
+- Microsoft Developer Community. "Semantic Kernel: What It Is and Why It Matters." Last crawled: 2024-08-13.
+- Microsoft Learn. "How to quickly start with Semantic Kernel." Last crawled: 2024-08-14.
+- Semantic Kernel Blog. "Introducing Semantic Kernel for Java." Last crawled: 2024-08-14.
+- Microsoft Learn. "Semantic Kernel overview for .NET." Last crawled: 2024-08-14.
+- GitHub. "microsoft/semantic-kernel." Last crawled: 2024-08-14.
+```
+
 
 ### Function Calling Scenarios
 
