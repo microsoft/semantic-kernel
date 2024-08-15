@@ -70,22 +70,22 @@ internal sealed class ChatClientCore
     /// <summary>
     /// Non-default endpoint for Azure AI Inference API.
     /// </summary>
-    private Uri? Endpoint { get; init; }
+    internal Uri? Endpoint { get; init; }
 
     /// <summary>
     /// Non-default endpoint for Azure AI Inference API.
     /// </summary>
-    private string? ModelId { get; init; }
+    internal string? ModelId { get; init; }
 
     /// <summary>
     /// Logger instance
     /// </summary>
-    private ILogger Logger { get; init; }
+    internal ILogger Logger { get; init; }
 
     /// <summary>
     /// Azure AI Inference Client
     /// </summary>
-    private ChatCompletionsClient ChatClient { get; set; }
+    internal ChatCompletionsClient Client { get; set; }
 
     /// <summary>
     /// Storage for AI service attributes.
@@ -128,7 +128,7 @@ internal sealed class ChatClientCore
 
         var options = GetClientOptions(httpClient);
 
-        this.ChatClient = new ChatCompletionsClient(this.Endpoint, new AzureKeyCredential(apiKey!), options);
+        this.Client = new ChatCompletionsClient(this.Endpoint, new AzureKeyCredential(apiKey!), options);
     }
 
     /// <summary>
@@ -136,12 +136,12 @@ internal sealed class ChatClientCore
     /// Note: instances created this way might not have the default diagnostics settings,
     /// it's up to the caller to configure the client.
     /// </summary>
-    /// <param name="chatClient">Custom <see cref="ChatCompletionsClient"/>.</param>
     /// <param name="modelId">Target Model Id for endpoints supporting more than one</param>
+    /// <param name="chatClient">Custom <see cref="ChatCompletionsClient"/>.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal ChatClientCore(
+        string? modelId,
         ChatCompletionsClient chatClient,
-        string? modelId = null,
         ILogger? logger = null)
     {
         Verify.NotNull(chatClient);
@@ -152,7 +152,7 @@ internal sealed class ChatClientCore
         }
 
         this.Logger = logger ?? NullLogger.Instance;
-        this.ChatClient = chatClient;
+        this.Client = chatClient;
     }
 
     /// <summary>
@@ -249,7 +249,7 @@ internal sealed class ChatClientCore
         {
             try
             {
-                responseData = (await RunRequestAsync(() => this.ChatClient!.CompleteAsync(chatOptions, chatExecutionSettings.ExtraParameters ?? string.Empty, cancellationToken)).ConfigureAwait(false)).Value;
+                responseData = (await RunRequestAsync(() => this.Client!.CompleteAsync(chatOptions, chatExecutionSettings.ExtraParameters ?? string.Empty, cancellationToken)).ConfigureAwait(false)).Value;
 
                 this.LogUsage(responseData.Usage);
                 if (responseData.Choices.Count == 0)
@@ -307,7 +307,7 @@ internal sealed class ChatClientCore
             StreamingResponse<StreamingChatCompletionsUpdate> response;
             try
             {
-                response = await RunRequestAsync(() => this.ChatClient.CompleteStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
+                response = await RunRequestAsync(() => this.Client.CompleteStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
             }
             catch (Exception ex) when (activity is not null)
             {
@@ -534,8 +534,7 @@ internal sealed class ChatClientCore
 
     private ChatMessageContent GetChatMessage(ChatChoice chatChoice, ChatCompletions responseData)
     {
-        var message = new ChatMessageContent(new AuthorRole(chatChoice.Message.Role.ToString()), chatChoice.Message.Content, responseData.Model, GetChatChoiceMetadata(responseData, chatChoice));
-
+        var message = new ChatMessageContent(new AuthorRole(chatChoice.Message.Role.ToString()), chatChoice.Message.Content, responseData.Model, innerContent: responseData, metadata: GetChatChoiceMetadata(responseData, chatChoice));
         return message;
     }
 
