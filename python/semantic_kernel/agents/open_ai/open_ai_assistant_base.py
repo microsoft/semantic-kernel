@@ -372,7 +372,7 @@ class OpenAIAssistantBase(Agent):
         # Distinguish from other channel types.
         yield f"{OpenAIAssistantBase.__name__}"
 
-        # Distiguish between different agent IDs
+        # Distinguish between different agent IDs
         yield self.id
 
         # Distinguish between agent names
