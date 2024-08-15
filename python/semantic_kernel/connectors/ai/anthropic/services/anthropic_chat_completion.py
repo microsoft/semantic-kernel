@@ -186,10 +186,12 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 ex,
             ) from ex
 
-    def _create_chat_message_content(self, 
-                                     response: Message, 
-                                     content: TextBlock, 
-                                     response_metadata: dict[str, Any]) -> "ChatMessageContent":
+    def _create_chat_message_content(
+        self, 
+        response: Message, 
+        content: TextBlock, 
+        response_metadata: dict[str, Any]
+    ) -> "ChatMessageContent":
         """Create a chat message content object."""
         items: list[ITEM_TYPES] = []
         
@@ -209,11 +211,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             finish_reason=finish_reason,
         )
 
-    def _create_streaming_chat_message_content(self, 
-                                               stream_event: RawContentBlockDeltaEvent | RawMessageDeltaEvent,
-                                               content_block_idx: int,
-                                               role: str | None = None,
-                                               metadata: dict[str, Any] = {}) -> StreamingChatMessageContent:
+    def _create_streaming_chat_message_content(
+        self, 
+        stream_event: RawContentBlockDeltaEvent | RawMessageDeltaEvent, 
+        content_block_idx: int, 
+        role: str | None = None, 
+        metadata: dict[str, Any] = {}
+    ) -> StreamingChatMessageContent:
         """Create a streaming chat message content object from a choice."""
         text_content = ""
             
