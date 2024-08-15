@@ -110,7 +110,7 @@ internal sealed class ChatClientCore
         this.Logger = logger ?? NullLogger.Instance;
         // Accepts the endpoint if provided, otherwise uses the default Azure AI Inference endpoint.
         this.Endpoint = endpoint ?? httpClient?.BaseAddress;
-        Verify.NotNull(this.Endpoint);
+        Verify.NotNull(this.Endpoint, "endpoint or base-address");
         this.AddAttribute(AIServiceExtensions.EndpointKey, this.Endpoint.ToString());
 
         if (string.IsNullOrEmpty(apiKey))
@@ -351,6 +351,7 @@ internal sealed class ChatClientCore
                         {
                             AuthorName = streamedName,
                             Role = role,
+                            Metadata = metadata,
                         };
 
                     streamedContents?.Add(streamingChatMessageContent);

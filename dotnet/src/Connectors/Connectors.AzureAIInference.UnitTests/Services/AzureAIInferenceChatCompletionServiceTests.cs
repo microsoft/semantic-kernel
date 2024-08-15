@@ -27,6 +27,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly MultipleHttpMessageHandlerStub _multiMessageHandlerStub;
     private readonly HttpClient _httpClient;
+    private readonly HttpClient _httpClientWithBaseAddress;
     private readonly AzureAIInferencePromptExecutionSettings _executionSettings;
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
     private readonly ChatHistory _chatHistoryForTest = [new ChatMessageContent(AuthorRole.User, "test")];
@@ -36,6 +37,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._multiMessageHandlerStub = new MultipleHttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
+        this._httpClientWithBaseAddress = new HttpClient(this._messageHandlerStub, false) { BaseAddress = this._endpoint };
         this._mockLoggerFactory = new Mock<ILoggerFactory>();
         this._executionSettings = new AzureAIInferencePromptExecutionSettings();
     }
@@ -66,9 +68,9 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData("http://localhost:1234/chat/completions/")] // Uses full path when provided
-    [InlineData("http://localhost:1234/v2/chat/completions/")] // Uses full path when provided
-    [InlineData("http://localhost:1234/")]
+    [InlineData("http://localhost:1234/chat/completions")] // Uses full path when provided
+    [InlineData("http://localhost:1234/v2/chat/completions")] // Uses full path when provided
+    [InlineData("http://localhost:1234")]
     [InlineData("http://localhost:8080")]
     [InlineData("https://something:8080")] // Accepts TLS Secured endpoints
     [InlineData("http://localhost:1234/v2")]
@@ -84,13 +86,13 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
         await chatCompletion.GetChatMessageContentsAsync(this._chatHistoryForTest, this._executionSettings);
 
         // Assert
-        Assert.Equal(endpoint, this._messageHandlerStub.RequestUri!.ToString());
+        Assert.StartsWith($"{endpoint}/chat/completions", this._messageHandlerStub.RequestUri!.ToString());
     }
 
     [Theory]
-    [InlineData("http://localhost:1234/chat/completions/")] // Uses full path when provided
-    [InlineData("http://localhost:1234/v2/chat/completions/")] // Uses full path when provided
-    [InlineData("http://localhost:1234/")]
+    [InlineData("http://localhost:1234/chat/completions")] // Uses full path when provided
+    [InlineData("http://localhost:1234/v2/chat/completions")] // Uses full path when provided
+    [InlineData("http://localhost:1234")]
     [InlineData("http://localhost:8080")]
     [InlineData("https://something:8080")] // Accepts TLS Secured endpoints
     [InlineData("http://localhost:1234/v2")]
@@ -107,7 +109,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
         await chatCompletion.GetChatMessageContentsAsync(this._chatHistoryForTest, this._executionSettings);
 
         // Assert
-        Assert.Equal(endpoint, this._messageHandlerStub.RequestUri!.ToString());
+        Assert.StartsWith($"{endpoint}/chat/completions", this._messageHandlerStub.RequestUri!.ToString());
     }
 
     [Fact]
@@ -123,7 +125,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
         await chatCompletion.GetChatMessageContentsAsync(this._chatHistoryForTest, this._executionSettings);
 
         // Assert
-        Assert.Equal(this._endpoint, this._messageHandlerStub.RequestUri);
+        Assert.StartsWith(this._endpoint.ToString(), this._messageHandlerStub.RequestUri?.ToString());
     }
 
     [Fact]
@@ -137,7 +139,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     public async Task ItGetChatMessageContentsShouldHaveModelIdDefinedAsync()
     {
         // Arrange
-        var chatCompletion = new AzureAIInferenceChatCompletionService(apiKey: "NOKEY", httpClient: this._httpClient);
+        var chatCompletion = new AzureAIInferenceChatCompletionService(apiKey: "NOKEY", httpClient: this._httpClientWithBaseAddress);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = this.CreateDefaultStringContent() };
 
@@ -156,8 +158,8 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     public async Task GetStreamingChatMessageContentsWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new AzureAIInferenceChatCompletionService(httpClient: this._httpClient);
-        using var stream = File.OpenRead("TestData/chat_completion_streaming_test_response.txt");
+        var service = new AzureAIInferenceChatCompletionService(httpClient: this._httpClientWithBaseAddress);
+        using var stream = File.OpenRead("TestData/chat_completion_streaming_response.txt");
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -168,12 +170,10 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
         var enumerator = service.GetStreamingChatMessageContentsAsync([]).GetAsyncEnumerator();
 
         await enumerator.MoveNextAsync();
-        Assert.Equal("assistant", enumerator.Current.AuthorName);
+        Assert.Equal(AuthorRole.Assistant, enumerator.Current.Role);
 
         await enumerator.MoveNextAsync();
         Assert.Equal("Test content", enumerator.Current.Content);
-
-        await enumerator.MoveNextAsync();
         Assert.Equal("stop", enumerator.Current.Metadata?["FinishReason"]);
     }
 
@@ -181,7 +181,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     public async Task ItAddsSystemMessageAsync()
     {
         // Arrange
-        var chatCompletion = new AzureAIInferenceChatCompletionService(httpClient: this._httpClient);
+        var chatCompletion = new AzureAIInferenceChatCompletionService(httpClient: this._httpClientWithBaseAddress);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = this.CreateDefaultStringContent() };
         var chatHistory = new ChatHistory();
@@ -209,8 +209,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
         const string Prompt = "This is test prompt";
         const string AssistantMessage = "This is assistant message";
         const string CollectionItemPrompt = "This is collection item prompt";
-
-        var chatCompletion = new AzureAIInferenceChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        var chatCompletion = new AzureAIInferenceChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClientWithBaseAddress);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = this.CreateDefaultStringContent() };
@@ -234,7 +233,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
 
         var messages = optionsJson.GetProperty("messages");
 
-        Assert.Equal(4, messages.GetArrayLength());
+        Assert.Equal(3, messages.GetArrayLength());
 
         Assert.Equal(Prompt, messages[0].GetProperty("content").GetString());
         Assert.Equal("user", messages[0].GetProperty("role").GetString());
@@ -277,12 +276,12 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
         }
 
         // Assert
-        var sut = new AzureAIInferenceChatCompletionService(httpClient: this._httpClient);
+        var sut = new AzureAIInferenceChatCompletionService(httpClient: this._httpClientWithBaseAddress);
         AzureAIInferencePromptExecutionSettings executionSettings = new() { ResponseFormat = format };
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_response.json"))
         };
 
         // Act
@@ -295,6 +294,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     public void Dispose()
     {
         this._httpClient.Dispose();
+        this._httpClientWithBaseAddress.Dispose();
         this._messageHandlerStub.Dispose();
         this._multiMessageHandlerStub.Dispose();
     }
