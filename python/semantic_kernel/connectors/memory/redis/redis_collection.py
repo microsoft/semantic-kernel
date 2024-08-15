@@ -52,7 +52,7 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
         data_model_definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
         redis_database: Redis | None = None,
-        prefix_collection_name_to_key_names: bool = False,
+        prefix_collection_name_to_key_names: bool = True,
         collection_type: RedisCollectionTypes = RedisCollectionTypes.HASHSET,
         connection_string: str | None = None,
         env_file_path: str | None = None,
