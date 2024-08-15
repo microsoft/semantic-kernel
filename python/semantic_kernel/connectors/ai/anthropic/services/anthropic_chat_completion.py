@@ -28,13 +28,19 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceResponseException,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
-from .utils import ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP, AnthropicFinishReason
+# map finish reasons from Anthropic to Semantic Kernel
+ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP = {
+    "end_turn": SemanticKernelFinishReason.STOP,
+    "max_tokens": SemanticKernelFinishReason.LENGTH,
+    "tool_use": SemanticKernelFinishReason.TOOL_CALLS,
+}
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -57,15 +63,15 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         """Initialize an AnthropicChatCompletion service.
 
         Args:
-            ai_model_id (str): Anthropic model name, see
+            ai_model_id: Anthropic model name, see
                 https://docs.anthropic.com/en/docs/about-claude/models#model-names
-            service_id (str | None): Service ID tied to the execution settings.
-            api_key (str | None): The optional API key to use. If provided will override,
+            service_id: Service ID tied to the execution settings.
+            api_key: The optional API key to use. If provided will override,
                 the env vars or .env file value.
-            async_client (AsyncAnthropic | None) : An existing client to use. 
-            env_file_path (str | None): Use the environment settings file as a fallback
+            async_client: An existing client to use. 
+            env_file_path: Use the environment settings file as a fallback
                 to environment variables. 
-            env_file_encoding (str | None): The encoding of the environment settings file. 
+            env_file_encoding: The encoding of the environment settings file. 
         """
         try:
             anthropic_settings = AnthropicSettings.create(
@@ -100,13 +106,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         """Executes a chat completion request and returns the result.
 
         Args:
-            chat_history (ChatHistory): The chat history to use for the chat completion.
-            settings (PromptExecutionSettings): The settings to use
+            chat_history: The chat history to use for the chat completion.
+            settings: The settings to use
                 for the chat completion request.
-            kwargs (Dict[str, Any]): The optional arguments.
+            kwargs: The optional arguments.
 
         Returns:
-            List[ChatMessageContent]: The completion result(s).
+            The completion result(s).
         """
         if not isinstance(settings, AnthropicChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
@@ -141,14 +147,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         """Executes a streaming chat completion request and returns the result.
 
         Args:
-            chat_history (ChatHistory): The chat history to use for the chat completion.
-            settings (PromptExecutionSettings): The settings to use
+            chat_history: The chat history to use for the chat completion.
+            settings: The settings to use
                 for the chat completion request.
-            kwargs (Dict[str, Any]): The optional arguments.
+            kwargs: The optional arguments.
 
         Yields:
-            List[StreamingChatMessageContent]: A stream of
-                StreamingChatMessageContent.
+            A stream of StreamingChatMessageContent.
         """
         if not isinstance(settings, AnthropicChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
@@ -193,7 +198,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         if content.text:
             items.append(TextContent(text=content.text))
 
-        finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[AnthropicFinishReason(response.stop_reason)]
+        finish_reason = None
+        if response.stop_reason:
+            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[response.stop_reason]
+        
         return ChatMessageContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
@@ -215,11 +223,12 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             text_content = stream_event.delta.text
         
         items: list[STREAMING_ITEM_TYPES] = [StreamingTextContent(choice_index=content_block_idx, text=text_content)]
+        
         finish_reason = None
-
         if isinstance(stream_event, RawMessageDeltaEvent):
-            anthropic_finish_reason = AnthropicFinishReason(stream_event.delta.stop_reason)
-            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[anthropic_finish_reason]
+            if stream_event.delta.stop_reason:
+                finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[stream_event.delta.stop_reason]
+
             metadata["usage"]["output_tokens"] = stream_event.usage.output_tokens
 
         return StreamingChatMessageContent(
