@@ -755,13 +755,9 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch2<TRecord> where
 }
 ```
 
-- Good, seperate methods for each type
-- Good, because {argument b}
-<!-- use "neutral" if the given argument weights neither for good nor bad -->
-- Neutral, because {argument c}
+- Good, separate methods for each type
 - Bad, because in the above BingTextSearch sample no additional types can be added
 - Bad, because not clear what `TRecord` types are supported
-
 
 ### Define `ITextSearch` Abstraction with Generics
 
