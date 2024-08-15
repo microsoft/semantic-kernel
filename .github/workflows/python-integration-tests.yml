@@ -246,7 +246,7 @@ jobs:
           VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
           VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
           REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
-          ANTHROPIC_KEY: ${{secrets.ANTHROPIC_API_KEY}}
+          ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
           ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
