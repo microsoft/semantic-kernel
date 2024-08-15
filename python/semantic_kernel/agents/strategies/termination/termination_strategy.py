@@ -1,16 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING
 
 from pydantic import Field
 
+from semantic_kernel.agents.agent import Agent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
-
-if TYPE_CHECKING:
-    from semantic_kernel.agents.agent import Agent
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -21,10 +18,18 @@ class TerminationStrategy(KernelBaseModel):
 
     maximum_iterations: int = Field(default=99)
     automatic_reset: bool = False
-    agents: list["Agent"] = Field(default_factory=list)
+    agents: list[Agent] = Field(default_factory=list)
 
     async def should_agent_terminate(self, agent: "Agent", history: list[ChatMessageContent]) -> bool:
-        """Check if the agent should terminate."""
+        """Check if the agent should terminate.
+
+        Args:
+            agent: The agent to check.
+            history: The history of messages in the conversation.
+
+        Returns:
+            True if the agent should terminate, False otherwise
+        """
         raise NotImplementedError("Subclasses should implement this method")
 
     async def should_terminate(self, agent: "Agent", history: list[ChatMessageContent]) -> bool:

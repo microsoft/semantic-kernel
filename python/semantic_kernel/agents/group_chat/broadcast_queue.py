@@ -112,9 +112,8 @@ class BroadcastQueue(KernelBaseModel):
                 queue_ref.receive_failure = e
 
             async with queue_ref.queue_lock:
-                if queue_ref.receive_failure is not None:
-                    break
-                queue_ref.queue.popleft()
+                if not queue_ref.is_empty:
+                    queue_ref.queue.popleft()
 
-                if queue_ref.is_empty:
+                if queue_ref.receive_failure is not None or queue_ref.is_empty:
                     break

@@ -58,12 +58,11 @@ async def main():
     # Create the instance of the Kernel
     kernel = Kernel()
 
-    service_id = "agent"
-
     # Add the sample plugin to the kernel
     kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
 
     # Create the OpenAI Assistant Agent
+    service_id = "agent"
     if use_azure_openai:
         agent = await AzureAssistantAgent.create(
             kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS

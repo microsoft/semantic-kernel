@@ -35,7 +35,15 @@ class AggregatorTerminationStrategy(KernelBaseModel):
         agent: "Agent",
         history: list[ChatMessageContent],
     ) -> bool:
-        """Check if the agent should terminate."""
+        """Check if the agent should terminate.
+
+        Args:
+            agent: The agent to check.
+            history: The history of messages in the conversation.
+
+        Returns:
+            True if the agent should terminate, False otherwise
+        """
         strategy_execution = [strategy.should_terminate(agent, history) for strategy in self.strategies]
         results = await asyncio.gather(*strategy_execution)
 

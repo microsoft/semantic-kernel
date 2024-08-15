@@ -9,7 +9,7 @@ from typing import Protocol, runtime_checkable
 
 from pydantic import Field, SkipValidation
 
-from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.group_chat.agent_chat_utils import KeyEncoder
 from semantic_kernel.agents.group_chat.broadcast_queue import BroadcastQueue, ChannelReference
@@ -40,7 +40,6 @@ class AgentChat(KernelBaseModel):
     broadcast_queue: BroadcastQueue = Field(default_factory=BroadcastQueue)
     agent_channels: dict[str, AgentChannel] = Field(default_factory=dict)
     channel_map: dict[Agent, str] = Field(default_factory=dict)
-    logger: logging.Logger = Field(default_factory=lambda: logging.getLogger("AgentChat"))
     history: ChatHistory = Field(default_factory=ChatHistory)
     lock: SkipValidation[threading.Lock] = Field(default_factory=threading.Lock, exclude=True)
     _is_active: bool = False
@@ -66,7 +65,7 @@ class AgentChat(KernelBaseModel):
         """Invoke the agent asynchronously."""
         raise NotImplementedError("Subclasses should implement this method")
 
-    async def get_messages_in_descending_order_async(self):
+    async def get_messages_in_descending_order(self):
         """Get messages in descending order asynchronously."""
         for index in range(len(self.history.messages) - 1, -1, -1):
             yield self.history.messages[index]
@@ -79,7 +78,7 @@ class AgentChat(KernelBaseModel):
         logger.info("Getting chat messages")
         try:
             if agent is None:
-                messages = self.get_messages_in_descending_order_async()
+                messages = self.get_messages_in_descending_order()
             else:
                 channel_key = self._get_agent_hash(agent)
                 channel = await self._synchronize_channel(channel_key)

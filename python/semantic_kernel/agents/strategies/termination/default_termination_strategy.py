@@ -17,5 +17,13 @@ class DefaultTerminationStrategy(TerminationStrategy):
     maximum_iterations: int = 1
 
     async def should_agent_terminate(self, agent: "Agent", history: list["ChatMessageContent"]) -> bool:
-        """Check if the agent should terminate."""
+        """Check if the agent should terminate.
+
+        Args:
+            agent: The agent to check.
+            history: The history of messages in the conversation.
+
+        Returns:
+            Defaults to False for the default strategy
+        """
         return False

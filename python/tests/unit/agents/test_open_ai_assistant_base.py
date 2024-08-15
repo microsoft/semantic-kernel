@@ -435,6 +435,30 @@ async def test_create_assistant_delete_and_recreate(
 
 
 @pytest.mark.asyncio
+async def test_get_channel_keys(azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env):
+    keys = azure_openai_assistant_agent.get_channel_keys()
+    for key in keys:
+        assert isinstance(key, str)
+
+
+@pytest.mark.asyncio
+async def test_create_channel(
+    azure_openai_assistant_agent: AzureAssistantAgent, mock_assistant, mock_thread, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
+        mock_client.beta.threads = MagicMock()
+        mock_client.beta.threads.create = AsyncMock(return_value=mock_thread)
+
+        channel = await azure_openai_assistant_agent.create_channel()
+
+        assert channel is not None
+
+
+@pytest.mark.asyncio
 async def test_get_assistant_metadata(
     azure_openai_assistant_agent: AzureAssistantAgent, mock_assistant, openai_unit_test_env
 ):
@@ -576,6 +600,99 @@ async def test_add_file_not_found(azure_openai_assistant_agent: AzureAssistantAg
 
             with pytest.raises(AgentFileNotFoundException, match="File not found: test_file_path"):
                 await azure_openai_assistant_agent.add_file("test_file_path", "assistants")
+
+
+@pytest.mark.asyncio
+async def test_delete_file(azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.files = MagicMock()
+        mock_client.files.delete = AsyncMock()
+
+        await azure_openai_assistant_agent.delete_file("test_file_id")
+
+        mock_client.files.delete.assert_called_once_with("test_file_id")
+
+
+@pytest.mark.asyncio
+async def test_delete_file_raises_exception(azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.files = MagicMock()
+        mock_client.files.delete = AsyncMock(side_effect=Exception("Deletion failed"))
+
+        with pytest.raises(AgentExecutionException, match="Error deleting file."):
+            await azure_openai_assistant_agent.delete_file("test_file_id")
+
+        mock_client.files.delete.assert_called_once_with("test_file_id")
+
+
+@pytest.mark.asyncio
+async def test_create_vector_store(azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.vector_stores = MagicMock()
+        mock_client.beta.vector_stores.create = AsyncMock(return_value=MagicMock(id="test_vector_store_id"))
+
+        vector_store = await azure_openai_assistant_agent.create_vector_store(["file_id1", "file_id2"])
+
+        assert vector_store.id == "test_vector_store_id"
+        mock_client.beta.vector_stores.create.assert_called_once_with(file_ids=["file_id1", "file_id2"])
+
+
+@pytest.mark.asyncio
+async def test_create_vector_store_single_file_id(
+    azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.vector_stores = MagicMock()
+        mock_client.beta.vector_stores.create = AsyncMock(return_value=MagicMock(id="test_vector_store_id"))
+
+        vector_store = await azure_openai_assistant_agent.create_vector_store("file_id1")
+
+        assert vector_store.id == "test_vector_store_id"
+        mock_client.beta.vector_stores.create.assert_called_once_with(file_ids=["file_id1"])
+
+
+@pytest.mark.asyncio
+async def test_create_vector_store_raises_exception(
+    azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.vector_stores = MagicMock()
+        mock_client.beta.vector_stores.create = AsyncMock(side_effect=Exception("Creation failed"))
+
+        with pytest.raises(AgentExecutionException, match="Error creating vector store."):
+            await azure_openai_assistant_agent.create_vector_store("file_id1")
+
+        mock_client.beta.vector_stores.create.assert_called_once_with(file_ids=["file_id1"])
+
+
+@pytest.mark.asyncio
+async def test_delete_vector_store(azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.vector_stores = MagicMock()
+        mock_client.beta.vector_stores.delete = AsyncMock()
+
+        await azure_openai_assistant_agent.delete_vector_store("test_vector_store_id")
+
+        mock_client.beta.vector_stores.delete.assert_called_once_with("test_vector_store_id")
+
+
+@pytest.mark.asyncio
+async def test_delete_vector_store_raises_exception(
+    azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.vector_stores = MagicMock()
+        mock_client.beta.vector_stores.delete = AsyncMock(side_effect=Exception("Deletion failed"))
+
+        with pytest.raises(AgentExecutionException, match="Error deleting vector store."):
+            await azure_openai_assistant_agent.delete_vector_store("test_vector_store_id")
+
+        mock_client.beta.vector_stores.delete.assert_called_once_with("test_vector_store_id")
 
 
 @pytest.mark.asyncio
@@ -829,6 +946,7 @@ def test_get_message_contents(azure_openai_assistant_agent: AzureAssistantAgent,
     message.items = [
         ImageContent(role=AuthorRole.ASSISTANT, content="test message", uri="http://image.url"),
         TextContent(role=AuthorRole.ASSISTANT, text="test message"),
+        FileReferenceContent(role=AuthorRole.ASSISTANT, file_id="test_file_id"),
     ]
 
     result = azure_openai_assistant_agent._get_message_contents(message)

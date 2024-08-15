@@ -15,7 +15,7 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
-    from semantic_kernel.agents.agent import Agent
+    from semantic_kernel.agents import Agent
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -39,7 +39,15 @@ class KernelFunctionTerminationStrategy(TerminationStrategy):
         agent: "Agent",
         history: list[ChatMessageContent],
     ) -> bool:
-        """Check if the agent should terminate."""
+        """Check if the agent should terminate.
+
+        Args:
+            agent: The agent to check.
+            history: The history of messages in the conversation.
+
+        Returns:
+            True if the agent should terminate, False otherwise
+        """
         original_arguments = self.arguments or KernelArguments()
         execution_settings = original_arguments.execution_settings or {}
 

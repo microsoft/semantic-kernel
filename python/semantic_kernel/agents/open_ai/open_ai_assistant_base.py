@@ -17,7 +17,7 @@ from openai.types.beta.threads.text_content_block import TextContentBlock
 from openai.types.beta.vector_store import VectorStore
 from pydantic import Field
 
-from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions

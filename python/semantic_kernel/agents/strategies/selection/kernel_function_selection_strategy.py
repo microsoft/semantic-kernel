@@ -16,7 +16,7 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
-    from semantic_kernel.agents.agent import Agent
+    from semantic_kernel.agents import Agent
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -36,7 +36,18 @@ class KernelFunctionSelectionStrategy(SelectionStrategy):
     result_parser: Callable[..., str] = Field(default_factory=lambda: (lambda: ""))
 
     async def next(self, agents: list["Agent"], history: list[ChatMessageContent]) -> "Agent":
-        """Check if the agent should terminate."""
+        """Check if the agent should terminate.
+
+        Args:
+            agents: The list of agents to select from.
+            history: The history of messages in the conversation.
+
+        Returns:
+            The next agent to interact with.
+
+        Raises:
+            AgentExecutionException: If the strategy fails to execute the function or select the next agent
+        """
         original_arguments = self.arguments or KernelArguments()
         execution_settings = original_arguments.execution_settings or {}
 
