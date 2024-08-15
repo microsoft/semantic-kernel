@@ -31,6 +31,21 @@ public sealed class AzureCosmosDBNoSQLVectorStoreTests
     }
 
     [Fact]
+    public void GetCollectionWithSupportedKeyReturnsCollection()
+    {
+        // Arrange
+        var sut = new AzureCosmosDBNoSQLVectorStore(this._mockDatabase.Object);
+
+        // Act
+        var collectionWithStringKey = sut.GetCollection<string, AzureCosmosDBNoSQLHotel>("collection1");
+        var collectionWithCompositeKey = sut.GetCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel>("collection1");
+
+        // Assert
+        Assert.NotNull(collectionWithStringKey);
+        Assert.NotNull(collectionWithCompositeKey);
+    }
+
+    [Fact]
     public void GetCollectionWithFactoryReturnsCustomCollection()
     {
         // Arrange
