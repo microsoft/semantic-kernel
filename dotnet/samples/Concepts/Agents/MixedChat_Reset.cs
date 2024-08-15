@@ -13,7 +13,7 @@ namespace Agents;
 /// </summary>
 public class MixedChat_Reset(ITestOutputHelper output) : BaseTest(output)
 {
-    private const string CountingInstructions =
+    private const string AgentInstructions =
         """
         The user may either provide information or query on information previously provided.
         If the query does not correspond with information provided, inform the user that their query cannot be answered.
@@ -32,7 +32,7 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseTest(output)
                 new()
                 {
                     Name = nameof(OpenAIAssistantAgent),
-                    Instructions = CountingInstructions,
+                    Instructions = AgentInstructions,
                     ModelId = this.Model,
                 });
 
@@ -40,7 +40,7 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseTest(output)
             new()
             {
                 Name = nameof(ChatCompletionAgent),
-                Instructions = CountingInstructions,
+                Instructions = AgentInstructions,
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
 
