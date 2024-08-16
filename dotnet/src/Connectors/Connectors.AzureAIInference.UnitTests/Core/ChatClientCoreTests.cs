@@ -26,17 +26,15 @@ public sealed class ChatClientCoreTests
     [Fact]
     public void ItCanBeInstantiatedAndPropertiesSetAsExpected()
     {
-        // Act
+        // Arrange
         var logger = new Mock<ILogger<ChatClientCoreTests>>().Object;
         var breakingGlassClient = new ChatCompletionsClient(this._endpoint, new AzureKeyCredential("key"));
 
+        // Act
         var clientCoreModelConstructor = new ChatClientCore("model1", "apiKey", this._endpoint);
         var clientCoreBreakingGlassConstructor = new ChatClientCore("model1", breakingGlassClient, logger: logger);
 
         // Assert
-        Assert.NotNull(clientCoreModelConstructor);
-        Assert.NotNull(clientCoreBreakingGlassConstructor);
-
         Assert.Equal("model1", clientCoreModelConstructor.ModelId);
         Assert.Equal("model1", clientCoreBreakingGlassConstructor.ModelId);
 
@@ -88,12 +86,12 @@ public sealed class ChatClientCoreTests
     [Fact]
     public async Task ItAddSemanticKernelHeadersOnEachRequestAsync()
     {
+        // Arrange
         using HttpMessageHandlerStub handler = new();
         using HttpClient httpClient = new(handler);
         httpClient.BaseAddress = this._endpoint;
         handler.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
 
-        // Act
         var clientCore = new ChatClientCore(modelId: "model", apiKey: "test", httpClient: httpClient);
 
         var pipelineMessage = clientCore.Client!.Pipeline.CreateMessage();
@@ -101,9 +99,10 @@ public sealed class ChatClientCoreTests
         pipelineMessage.Request.Uri = new RequestUriBuilder() { Host = "localhost", Scheme = "https" };
         pipelineMessage.Request.Content = RequestContent.Create(new BinaryData("test"));
 
-        // Assert
+        // Act
         await clientCore.Client.Pipeline.SendAsync(pipelineMessage, CancellationToken.None);
 
+        // Assert
         Assert.True(handler.RequestHeaders!.Contains(HttpHeaderConstant.Names.SemanticKernelVersion));
         Assert.Equal(HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ChatClientCore)), handler.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).FirstOrDefault());
 
@@ -114,11 +113,11 @@ public sealed class ChatClientCoreTests
     [Fact]
     public async Task ItDoNotAddSemanticKernelHeadersWhenBreakingGlassClientIsProvidedAsync()
     {
+        // Arrange
         using HttpMessageHandlerStub handler = new();
         using HttpClient httpClient = new(handler);
         handler.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
 
-        // Act
         var clientCore = new ChatClientCore(
             modelId: "model",
             chatClient: new ChatCompletionsClient(this._endpoint, new AzureKeyCredential("api-key"),
@@ -134,9 +133,10 @@ public sealed class ChatClientCoreTests
         pipelineMessage.Request.Uri = new RequestUriBuilder { Scheme = "http", Host = "http://localhost" };
         pipelineMessage.Request.Content = RequestContent.Create(new BinaryData("test"));
 
-        // Assert
+        // Act
         await clientCore.Client.Pipeline.SendAsync(pipelineMessage, CancellationToken.None);
 
+        // Assert
         Assert.False(handler.RequestHeaders!.Contains(HttpHeaderConstant.Names.SemanticKernelVersion));
         Assert.DoesNotContain(HttpHeaderConstant.Values.UserAgent, handler.RequestHeaders.GetValues("User-Agent").FirstOrDefault());
     }
@@ -149,8 +149,8 @@ public sealed class ChatClientCoreTests
     {
         // Arrange
         var clientCore = new ChatClientCore("model", "api-key", this._endpoint);
-        // Act
 
+        // Act
         clientCore.AddAttribute("key", value);
 
         // Assert
