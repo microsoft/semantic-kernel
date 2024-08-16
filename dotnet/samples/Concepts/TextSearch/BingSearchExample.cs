@@ -194,7 +194,7 @@ public sealed partial class BingSearchExample(ITestOutputHelper output) : BaseTe
                 var parameters = function.Metadata.Parameters;
 
                 arguments.TryGetValue("count", out var count);
-                arguments.TryGetValue("count", out var skip);
+                arguments.TryGetValue("skip", out var skip);
                 SearchOptions searchOptions = new()
                 {
                     Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),

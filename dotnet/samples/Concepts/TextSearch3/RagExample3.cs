@@ -7,12 +7,12 @@ using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.Search;
 
-namespace TextSearch2;
+namespace TextSearch3;
 
 /// <summary>
 /// This example shows how to perform RAG with an <see cref="ITextSearch{T}"/>.
 /// </summary>
-public sealed partial class RagExample2(ITestOutputHelper output) : BaseTest(output)
+public sealed partial class RagExample3(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a default <see cref="KernelPlugin"/> from an <see cref="ITextSearch{T}"/> and use it to
@@ -34,7 +34,7 @@ public sealed partial class RagExample2(ITestOutputHelper output) : BaseTest(out
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text search using the Bing search service
-        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch3(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
         var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(textSearch, "SearchPlugin");
@@ -66,7 +66,7 @@ public sealed partial class RagExample2(ITestOutputHelper output) : BaseTest(out
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text search using the Bing search service
-        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch3(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
         var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
@@ -126,7 +126,7 @@ Include the link to the relevant information in the response.
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text search using the Bing search service
-        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch3(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
         var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
@@ -190,7 +190,7 @@ Include citations to the relevant information where it is referenced in the resp
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text search using the Bing search service
-        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch3(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
         var searchPlugin = BingTextSearchKernelPluginFactory.CreateFromBingWebPages(textSearch, "SearchPlugin");
@@ -270,7 +270,7 @@ Include citations to and the date of the relevant information where it is refere
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text search using the Bing search service
-        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch3(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
         var searchPlugin = BingTextSearchKernelPluginFactory.CreateFromBingWebPages(textSearch, "SearchPlugin", null, CreateGetFullWebPagesOptions(textSearch));
@@ -320,7 +320,7 @@ Include citations to the relevant information where it is referenced in the resp
         */
     }
 
-    public static KernelPluginFromTextSearchOptions CreateGetFullWebPagesOptions(ITextSearch2<BingWebPage> textSearch)
+    public static KernelPluginFromTextSearchOptions CreateGetFullWebPagesOptions(BingTextSearch3 textSearch)
     {
         return new()
         {
@@ -331,7 +331,7 @@ Include citations to the relevant information where it is referenced in the resp
         };
     }
 
-    private static KernelFunctionFromTextSearchOptions GetFullWebPages(ITextSearch2<BingWebPage> textSearch, BasicFilterOptions? basicFilter = null)
+    private static KernelFunctionFromTextSearchOptions GetFullWebPages(BingTextSearch3 textSearch, BasicFilterOptions? basicFilter = null)
     {
         async Task<IEnumerable<TextSearchResult>> GetFullWebPagesAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {

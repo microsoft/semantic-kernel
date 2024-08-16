@@ -8,7 +8,7 @@ consulted: stephentoub, matthewbolanos, shrojans
 informed: 
 ---
 
-# Text Search Service
+# Text Search Abstraction
 
 ## Context and Problem Statement
 
@@ -278,7 +278,7 @@ private static KernelFunctionFromTextSearchOptions GetFullWebPages(ITextSearch<B
             
             var parameters = function.Metadata.Parameters;
             arguments.TryGetValue("count", out var count);
-            arguments.TryGetValue("count", out var skip);
+            arguments.TryGetValue("skip", out var skip);
             SearchOptions searchOptions = new()
             {
                 Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),
@@ -594,9 +594,13 @@ Expect these to be handled by Vector search
 
 ### Search Abstractions
 
-- ...
-- ...
-- ...
+The diagram below shows the layering in the proposed design. From the bottom up these are:
+
+- We aim to support an arbitrary search service, which could be a Web search, Vector DB search or a proprietary implementation.
+- There will be a client API layer. Note we are **not** trying to provide a search abstraction to normalize this layer.
+- We are defining an `IVectorSearch` abstraction which will allow us to perform searches against multiple Vector databases. This will be covered in a separate ADR.
+- The focus for this ADR is the `ITextSearch` abstraction which is being designed to support the use cases described earlier in this document.
+- We will provide a number of implementations of the `ITextSearch` abstraction e.g., Bing, Google, Vector DB's. The final list is TBD.
 
 <img src="./diagrams/search-abstractions.png" alt="Search Abstractions" width="80%"/>
 
@@ -605,6 +609,8 @@ Expect these to be handled by Vector search
 - Define `ITextSearch<T>` abstraction with single `Search` method and implementations check type
 - Define `ITextSearch<T>` abstraction with single `Search` method and implementations implement what they support
 - Define `ITextSearch<T>` abstraction with multiple search methods
+- Define `ITextSearch` abstraction with multiple search methods and additional methods on implementations
+- Define `ITextSearch` and `ITextSearch<T>` abstractions
 
 ## Decision Outcome
 
@@ -629,7 +635,7 @@ public interface ITextSearch<T> where T : class
 Implementation would look like this:
 
 ```csharp
-public class BingTextSearch<T> where T : class
+public class BingTextSearch<T> : ITextSearch<T> where T : class
 {
   public async Task<KernelSearchResults<T>> SearchAsync(string query, SearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
   {
@@ -651,9 +657,36 @@ public class BingTextSearch<T> where T : class
 }
 ```
 
-- Good, because can support custom types for `IVectorStoreTextSearch`
+**Note:** Custom mappers are specified when the `BingTextSearch` instance is created
+
+For Vector Store the implementation would look like:
+
+```csharp
+public sealed class VectorTextSearch<T> : ITextSearch<T> where T : class
+{
+  public async Task<KernelSearchResults<T>> SearchAsync(string query, SearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+  {
+    // Retrieve Vector Store search results
+
+    if (typeof(T) == typeof(string))
+    {
+       // Convert to string (custom mapper is supported)
+    }
+    else if (typeof(T) == typeof(TextSearchResult))
+    {
+       // Convert to TextSearchResult (custom mapper is supported)
+    }
+    else if (typeof(T) == typeof(BingWebPage))
+    {
+      // Return Bing search results
+    }
+  }
+}
+```
+
+- Good, because can support custom types for `VectorTextSearch`
+- Neitral, because type checking required for each invocation
 - Bad, because not clear what return types are supported by an implementation
-- Bad, because type checking required for each invocation
 
 ### Define `ITextSearch<T>` abstraction with single `Search` method and implementations implement what they support
 
@@ -691,10 +724,34 @@ public sealed class BingTextSearch : ITextSearch<string>, ITextSearch<TextSearch
 }
 ```
 
-- Good, because separates the implementation for each return type
-- Good, because it's clear what types are supported by an implementation
+For Vector Store the implementation would still look like:
+
+```csharp
+public sealed class VectorTextSearch<T> : ITextSearch<T> where T : class
+{
+  public async Task<KernelSearchResults<T>> SearchAsync(string query, SearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+  {
+    // Retrieve Vector Store search results
+
+    if (typeof(T) == typeof(string))
+    {
+       // Convert to string (custom mapper is supported)
+    }
+    else if (typeof(T) == typeof(TextSearchResult))
+    {
+       // Convert to TextSearchResult (custom mapper is supported)
+    }
+    else if (typeof(T) == typeof(BingWebPage))
+    {
+      // Return Bing search results
+    }
+  }
+}
+```
+
+- Good, because separates the implementation for each return type where possible
+- Good, because it can be made clear what types are supported by an implementation
 - Bad, because you need to downcast
-- Bad, because no way to implement `IVectorStoreTextSearch` which supports custom types
 
 ### Define `ITextSearch<T>` abstraction with multiple search methods
 
@@ -711,7 +768,7 @@ public interface ITextSearch<T> where T : class
 }
 ```
 
-Implementation would look like this:
+Implementation could look like this:
 
 ```csharp
 public sealed class BingTextSearch : ITextSearch<BingWebPage>
@@ -733,12 +790,14 @@ public sealed class BingTextSearch : ITextSearch<BingWebPage>
 }
 ```
 
+**Note:** This option would not be extensible i.e., to add support for Bing News search results we would have to add a new `BingNewTextSearch` implementation.
+
 For Vector Store the implementation would look like:
 
 ```csharp
-public sealed class VectorStoreTextSearch<TRecord> : ITextSearch2<TRecord> where TRecord : class
+public sealed class VectorTextSearch<T> : ITextSearch<T> where T : class
 {
-  public Task<KernelSearchResults<TRecord>> GetSearchResultsAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  public Task<KernelSearchResults<T>> GetSearchResultsAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
   {
     // Retrieve Vector Store search results
   }
@@ -755,10 +814,87 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch2<TRecord> where
 }
 ```
 
-- Good, separate methods for each type
-- Bad, because in the above BingTextSearch sample no additional types can be added
-- Bad, because not clear what `TRecord` types are supported
+**Note:** This option would be extensible i.e., we can support custom record types in the underlying Vector Store implementation but developers will have to deal with run time exceptions if the type of record they specify is not supported.
 
+- Good, because there are separate methods for each type
+- Bad, because in the above BingTextSearch sample no additional types can be added
+- Bad, because not clear what types are supported
+
+### Define `ITextSearch` abstraction with multiple search methods and additional methods on implementations
+
+Abstraction would look like this:
+
+```csharp
+public interface ITextSearch
+{
+  public Task<KernelSearchResults<string>> SearchAsync(string query, SearchOptions? searchOptions = null, CancellationToken cancellationToken = default);
+
+  public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, SearchOptions? searchOptions = null, CancellationToken cancellationToken = default);
+}
+```
+
+Implementation could look like this:
+
+```csharp
+public sealed class BingTextSearch : ITextSearch
+{
+  public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Bing search results and convert to TextSearchResult
+  }
+
+  public async Task<KernelSearchResults<string>> SearchAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Bing search results and convert to string
+  }
+
+  public async Task<KernelSearchResults<BingWebPage>> GetSearchResultsAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Bing search results
+  }
+}
+```
+
+**Note:** This option would be extensible i.e., to add support for Bing News search results we would just have to add a new method to `BingTextSearch`.
+
+For Vector Store the implementation would look like:
+
+```csharp
+public sealed class VectorTextSearch<T> : ITextSearch where T : class
+{
+  public Task<KernelSearchResults<T>> GetSearchResultsAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Vector Store search results
+  }
+
+  public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Vector Store search results and convert to TextSearchResult
+  }
+
+  public Task<KernelSearchResults<string>> SearchAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  {
+    // Retrieve Vector Store search results and convert to string
+  }
+}
+```
+
+**Note:** This option would be extensible i.e., we can support custom record types in the underlying Vector Store implementation but developers will have to deal with run time exceptions if the type of record they specify is not supported.
+
+- Good, because there are separate methods for each type
+- Good, because support for additional types can be added
+- Good, because this will be easier to implement in Python
+- Bad, abstraction is limited to just including support for `string` and `TextSearchResult`
+
+### Define `ITextSearch` and `ITextSearch<T>` abstractions
+
+Start with the `ITextSearch` abstraction and extend to include `ITextSearch<T>` as needed.
+
+- Good, separate methods for each type
+- Good, support for additional types can be added
+- Good, additional abstraction using generics can be added when and if needed
+
+<!-- 
 ### Define `ITextSearch` Abstraction with Generics
 
 A new `ITextSearch` abstraction is used to define the contract to perform a text based search.
@@ -965,8 +1101,6 @@ Two `TextSearchPlugin` search results
 ]
 ```
 
-
-
 #### Support ML Index File Format
 
 TODO
@@ -975,10 +1109,8 @@ Evaluation
 
 - Good, because {argument a}
 - Good, because {argument b}
-<!-- use "neutral" if the given argument weights neither for good nor bad -->
 - Neutral, because {argument c}
 - Bad, because {argument d}
-- … <!-- numbers of pros and cons can vary -->
 
 ### {title of other option}
 
@@ -990,7 +1122,7 @@ Evaluation
 - Bad, because {argument d}
 - …
 
-<!-- This is an optional element. Feel free to remove. -->
+-->
 
 ## More Information
 

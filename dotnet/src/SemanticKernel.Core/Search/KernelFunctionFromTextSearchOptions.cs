@@ -79,7 +79,7 @@ public sealed class KernelFunctionFromTextSearchOptions
                 var parameters = function.Metadata.Parameters;
 
                 arguments.TryGetValue("count", out var count);
-                arguments.TryGetValue("count", out var skip);
+                arguments.TryGetValue("skip", out var skip);
                 SearchOptions searchOptions = new()
                 {
                     Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),
@@ -133,7 +133,7 @@ public sealed class KernelFunctionFromTextSearchOptions
                 var parameters = function.Metadata.Parameters;
 
                 arguments.TryGetValue("count", out var count);
-                arguments.TryGetValue("count", out var skip);
+                arguments.TryGetValue("skip", out var skip);
                 SearchOptions searchOptions = new()
                 {
                     Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),
@@ -244,6 +244,114 @@ public sealed class KernelFunctionFromTextSearchOptions
                 };
 
                 var result = await textSearch.GetTextSearchResultsAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
+                return await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!ex.IsCriticalException())
+            {
+                throw;
+            }
+        }
+
+        return new()
+        {
+            Delegate = GetSearchResultsAsync,
+            FunctionName = "GetSearchResults",
+            Description = "Perform a search for content related to the specified query. The search will return the name, value and link for the related content.",
+            Parameters =
+            [
+                new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
+                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+                new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
+            ],
+            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
+        };
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="textSearch"></param>
+    /// <param name="basicFilter"></param>
+    /// <param name="mapToString"></param>
+    /// <returns></returns>
+    public static KernelFunctionFromTextSearchOptions DefaultSearch(ITextSearch3 textSearch, BasicFilterOptions? basicFilter = null, MapSearchResultToString? mapToString = null)
+    {
+        async Task<IEnumerable<string>> SearchAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        {
+            try
+            {
+                arguments.TryGetValue("query", out var query);
+                if (string.IsNullOrEmpty(query?.ToString()))
+                {
+                    return [];
+                }
+
+                var parameters = function.Metadata.Parameters;
+
+                arguments.TryGetValue("count", out var count);
+                arguments.TryGetValue("skip", out var skip);
+                SearchOptions searchOptions = new()
+                {
+                    Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),
+                    Offset = (skip as int?) ?? GetDefaultValue(parameters, "skip", 0),
+                    BasicFilter = basicFilter
+                };
+
+                var result = await textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
+                var resultList = await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
+                return MapToStrings(resultList, mapToString);
+            }
+            catch (Exception ex) when (!ex.IsCriticalException())
+            {
+                throw;
+            }
+        }
+
+        return new()
+        {
+            Delegate = SearchAsync,
+            FunctionName = "Search",
+            Description = "Perform a search for content related to the specified query and return string results",
+            Parameters =
+            [
+                new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
+                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+                new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
+            ],
+            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
+        };
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="textSearch"></param>
+    /// <param name="basicFilter"></param>
+    /// <returns></returns>
+    public static KernelFunctionFromTextSearchOptions DefaultGetSearchResults(ITextSearch3 textSearch, BasicFilterOptions? basicFilter = null)
+    {
+        async Task<IEnumerable<TextSearchResult>> GetSearchResultsAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        {
+            try
+            {
+                arguments.TryGetValue("query", out var query);
+                if (string.IsNullOrEmpty(query?.ToString()))
+                {
+                    return [];
+                }
+
+                var parameters = function.Metadata.Parameters;
+
+                arguments.TryGetValue("count", out var count);
+                arguments.TryGetValue("skip", out var skip);
+                SearchOptions searchOptions = new()
+                {
+                    Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),
+                    Offset = (skip as int?) ?? GetDefaultValue(parameters, "skip", 0),
+                    BasicFilter = basicFilter
+                };
+
+                var result = await textSearch.GetTextSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
                 return await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException())

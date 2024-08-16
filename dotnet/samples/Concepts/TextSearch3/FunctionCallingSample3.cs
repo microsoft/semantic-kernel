@@ -5,12 +5,12 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Search;
 
-namespace TextSearch2;
+namespace TextSearch3;
 
 /// <summary>
 /// This example shows how to perform function calling with an <see cref="ITextSearch{T}"/>.
 /// </summary>
-public sealed class FunctionCallingExample2(ITestOutputHelper output) : BaseTest(output)
+public sealed class FunctionCallingExample3(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a default <see cref="KernelPlugin"/> from an <see cref="BingTextSearch2"/> and use it with
@@ -32,7 +32,7 @@ public sealed class FunctionCallingExample2(ITestOutputHelper output) : BaseTest
         Kernel kernel = kernelBuilder.Build();
 
         // Create a search service with Bing search service
-        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch3(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
         var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(textSearch, "SearchPlugin");
@@ -64,7 +64,7 @@ public sealed class FunctionCallingExample2(ITestOutputHelper output) : BaseTest
         Kernel kernel = kernelBuilder.Build();
 
         // Create a search service with Bing search service
-        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch3(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
         var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
@@ -96,7 +96,7 @@ public sealed class FunctionCallingExample2(ITestOutputHelper output) : BaseTest
         Kernel kernel = kernelBuilder.Build();
 
         // Create a search service with Bing search service
-        var textSearch = new BingTextSearch2(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new BingTextSearch3(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
         var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(
@@ -109,7 +109,7 @@ public sealed class FunctionCallingExample2(ITestOutputHelper output) : BaseTest
         Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Include citations to the relevant information where it is referenced in the response.", arguments));
     }
 
-    private static KernelPluginFromTextSearchOptions CreateCustomOptions(BingTextSearch2 textSearch)
+    private static KernelPluginFromTextSearchOptions CreateCustomOptions(BingTextSearch3 textSearch)
     {
         var basicFilter = new BasicFilterOptions().Equality("site", "devblogs.microsoft.com");
         return new()

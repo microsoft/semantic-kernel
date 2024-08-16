@@ -107,4 +107,54 @@ public static class TextSearchKernelPluginFactory
 
         return KernelPluginFactory.CreateFromFunctions(pluginName, description, options.CreateKernelFunctions());
     }
+
+    /// <summary>
+    /// Creates a plugin from an ITextSearch implementation.
+    /// </summary>
+    /// <remarks>
+    /// The plugin will have a single function called `Search` which
+    /// will return a <see cref="IEnumerable{String}"/>
+    /// </remarks>
+    /// <param name="textSearch">The instance of ITextSearch to be used by the plugin.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="options">Optional plugin creation options.</param>
+    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
+    public static KernelPlugin CreateFromTextSearch(ITextSearch3 textSearch, string pluginName, string? description = null, KernelPluginFromTextSearchOptions? options = default)
+    {
+        options ??= new()
+        {
+            Functions =
+            [
+                KernelFunctionFromTextSearchOptions.DefaultSearch(textSearch),
+            ]
+        };
+
+        return KernelPluginFactory.CreateFromFunctions(pluginName, description, options.CreateKernelFunctions());
+    }
+
+    /// <summary>
+    /// Creates a plugin from an ITextSearch implementation.
+    /// </summary>
+    /// <remarks>
+    /// The plugin will have a single function called `GetSearchResults` which
+    /// will return a <see cref="IEnumerable{TextSearchResult}"/>
+    /// </remarks>
+    /// <param name="textSearch">The instance of ITextSearch to be used by the plugin.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="options">Optional plugin creation options.</param>
+    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
+    public static KernelPlugin CreateFromTextSearchResults(ITextSearch3 textSearch, string pluginName, string? description = null, KernelPluginFromTextSearchOptions? options = default)
+    {
+        options ??= new()
+        {
+            Functions =
+            [
+                KernelFunctionFromTextSearchOptions.DefaultGetSearchResults(textSearch),
+            ]
+        };
+
+        return KernelPluginFactory.CreateFromFunctions(pluginName, description, options.CreateKernelFunctions());
+    }
 }
