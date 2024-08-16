@@ -441,7 +441,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     }
 
     [Fact]
-    public async Task ItCanParsePropertiessOfObjectDataTypeAsync()
+    public async Task ItCanParsePropertiesOfObjectDataTypeAsync()
     {
         // Arrange & Act
         var restApiSpec = await this._sut.ParseAsync(this._openApiDocument);
@@ -453,6 +453,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("object", property.Type);
         Assert.Null(property.Format);
     }
+
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<IDictionary<string, object>> transformer)
     {
         var serializer = new SharpYaml.Serialization.Serializer();
