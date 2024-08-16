@@ -126,12 +126,18 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.False(await sut.CollectionExistsAsync());
     }
 
-    [Fact(Skip = SkipReason)]
-    public async Task ItCanGetAndDeleteRecordAsync()
+    [Theory(Skip = SkipReason)]
+    [InlineData("consistent-mode-collection", IndexingMode.Consistent)]
+    [InlineData("lazy-mode-collection", IndexingMode.Lazy)]
+    [InlineData("none-mode-collection", IndexingMode.None)]
+    public async Task ItCanGetAndDeleteRecordAsync(string collectionName, IndexingMode indexingMode)
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(fixture.Database!, "test-delete-record");
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+            fixture.Database!,
+            collectionName,
+            new() { IndexingMode = indexingMode, Automatic = indexingMode != IndexingMode.None });
 
         await sut.CreateCollectionAsync();
 

@@ -107,15 +107,19 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal(expectedResult, actualResult);
     }
 
-    [Fact]
-    public async Task CreateCollectionUsesValidContainerPropertiesAsync()
+    [Theory]
+    [InlineData(IndexingMode.Consistent)]
+    [InlineData(IndexingMode.Lazy)]
+    [InlineData(IndexingMode.None)]
+    public async Task CreateCollectionUsesValidContainerPropertiesAsync(IndexingMode indexingMode)
     {
         // Arrange
         const string CollectionName = "collection";
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TestVectorModel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TestIndexingModel>(
             this._mockDatabase.Object,
-            CollectionName);
+            CollectionName,
+            new() { IndexingMode = indexingMode, Automatic = indexingMode != IndexingMode.None });
 
         var expectedVectorEmbeddingPolicy = new VectorEmbeddingPolicy(
         [
@@ -157,8 +161,22 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
                 new VectorIndexPath { Type = VectorIndexType.Flat, Path = "/DescriptionEmbedding2" },
                 new VectorIndexPath { Type = VectorIndexType.QuantizedFlat, Path = "/DescriptionEmbedding3" },
                 new VectorIndexPath { Type = VectorIndexType.DiskANN, Path = "/DescriptionEmbedding4" },
-            ]
+            ],
+            IndexingMode = indexingMode,
+            Automatic = indexingMode != IndexingMode.None
         };
+
+        if (indexingMode != IndexingMode.None)
+        {
+            expectedIndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/IndexableData1/?" });
+            expectedIndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/IndexableData2/?" });
+            expectedIndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/" });
+
+            expectedIndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/DescriptionEmbedding1/*" });
+            expectedIndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/DescriptionEmbedding2/*" });
+            expectedIndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/DescriptionEmbedding3/*" });
+            expectedIndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/DescriptionEmbedding4/*" });
+        }
 
         var expectedContainerProperties = new ContainerProperties(CollectionName, "/id")
         {
@@ -547,6 +565,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
     {
         Assert.Equal(expected.Id, actual.Id);
         Assert.Equal(expected.PartitionKeyPath, actual.PartitionKeyPath);
+        Assert.Equal(expected.IndexingPolicy.IndexingMode, actual.IndexingPolicy.IndexingMode);
+        Assert.Equal(expected.IndexingPolicy.Automatic, actual.IndexingPolicy.Automatic);
 
         for (var i = 0; i < expected.VectorEmbeddingPolicy.Embeddings.Count; i++)
         {
@@ -568,6 +588,22 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             Assert.Equal(expectedIndexPath.Path, actualIndexPath.Path);
         }
 
+        for (var i = 0; i < expected.IndexingPolicy.IncludedPaths.Count; i++)
+        {
+            var expectedIncludedPath = expected.IndexingPolicy.IncludedPaths[i].Path;
+            var actualIncludedPath = actual.IndexingPolicy.IncludedPaths[i].Path;
+
+            Assert.Equal(expectedIncludedPath, actualIncludedPath);
+        }
+
+        for (var i = 0; i < expected.IndexingPolicy.ExcludedPaths.Count; i++)
+        {
+            var expectedExcludedPath = expected.IndexingPolicy.ExcludedPaths[i].Path;
+            var actualExcludedPath = actual.IndexingPolicy.ExcludedPaths[i].Path;
+
+            Assert.Equal(expectedExcludedPath, actualExcludedPath);
+        }
+
         return true;
     }
 
@@ -579,7 +615,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         public string? HotelName { get; set; }
     }
 
-    private sealed class TestVectorModel
+    private sealed class TestIndexingModel
     {
         [VectorStoreRecordKey]
         public string? Id { get; set; }
@@ -595,6 +631,15 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.DiskAnn, DistanceFunction: DistanceFunction.EuclideanDistance)]
         public ReadOnlyMemory<sbyte>? DescriptionEmbedding4 { get; set; }
+
+        [VectorStoreRecordData(IsFilterable = true)]
+        public string? IndexableData1 { get; set; }
+
+        [VectorStoreRecordData(IsFullTextSearchable = true)]
+        public string? IndexableData2 { get; set; }
+
+        [VectorStoreRecordData]
+        public string? NonIndexableData1 { get; set; }
     }
 #pragma warning restore CA1812
 

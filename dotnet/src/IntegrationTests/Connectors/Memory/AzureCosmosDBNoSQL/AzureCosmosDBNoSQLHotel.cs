@@ -16,11 +16,11 @@ public record AzureCosmosDBNoSQLHotel()
     public string HotelId { get; init; }
 
     /// <summary>A string metadata field.</summary>
-    [VectorStoreRecordData]
+    [VectorStoreRecordData(IsFilterable = true)]
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>
-    [VectorStoreRecordData]
+    [VectorStoreRecordData(IsFullTextSearchable = true)]
     public int HotelCode { get; set; }
 
     /// <summary>A float metadata field.</summary>

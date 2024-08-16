@@ -397,10 +397,15 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         }
     }
 
+    /// <summary>
+    /// Returns instance of <see cref="ContainerProperties"/> with applied indexing policy.
+    /// More information here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/how-to-manage-indexing-policy"/>.
+    /// </summary>
     private ContainerProperties GetContainerProperties()
     {
+        // Process Vector properties.
         var embeddings = new Collection<Embedding>();
-        var vectorIndexes = new Collection<VectorIndexPath>();
+        var vectorIndexPaths = new Collection<VectorIndexPath>();
 
         foreach (var property in this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>())
         {
@@ -428,11 +433,37 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             };
 
             embeddings.Add(embedding);
-            vectorIndexes.Add(vectorIndexPath);
+            vectorIndexPaths.Add(vectorIndexPath);
         }
 
         var vectorEmbeddingPolicy = new VectorEmbeddingPolicy(embeddings);
-        var indexingPolicy = new IndexingPolicy { VectorIndexes = vectorIndexes };
+        var indexingPolicy = new IndexingPolicy
+        {
+            VectorIndexes = vectorIndexPaths,
+            IndexingMode = this._options.IndexingMode,
+            Automatic = this._options.Automatic
+        };
+
+        if (indexingPolicy.IndexingMode != IndexingMode.None)
+        {
+            // Process Data properties.
+            foreach (var property in this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordDataProperty>())
+            {
+                if (property.IsFilterable || property.IsFullTextSearchable)
+                {
+                    indexingPolicy.IncludedPaths.Add(new IncludedPath { Path = $"/{this._storagePropertyNames[property.DataModelPropertyName]}/?" });
+                }
+            }
+
+            // Adding special mandatory indexing path.
+            indexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/" });
+
+            // Exclude vector paths to ensure optimized performance.
+            foreach (var vectorIndexPath in vectorIndexPaths)
+            {
+                indexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = $"{vectorIndexPath.Path}/*" });
+            }
+        }
 
         return new ContainerProperties(this.CollectionName, partitionKeyPath: $"/{this._partitionKeyStoragePropertyName}")
         {

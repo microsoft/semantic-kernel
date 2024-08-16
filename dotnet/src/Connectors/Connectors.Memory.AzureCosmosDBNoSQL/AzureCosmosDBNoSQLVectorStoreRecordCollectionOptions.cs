@@ -2,6 +2,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Azure.Cosmos;
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
@@ -38,4 +39,21 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord
     /// The property name to use as partition key.
     /// </summary>
     public string? PartitionKeyPropertyName { get; init; } = null;
+
+    /// <summary>
+    /// Specifies the indexing mode in the Azure Cosmos DB service.
+    /// More information here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/index-policy#indexing-mode"/>.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="IndexingMode.Consistent" />.
+    /// </remarks>
+    public IndexingMode IndexingMode { get; init; } = IndexingMode.Consistent;
+
+    /// <summary>
+    /// Gets or sets a value that indicates whether automatic indexing is enabled for a collection in the Azure Cosmos DB service.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see langword="true" />.
+    /// </remarks>
+    public bool Automatic { get; init; } = true;
 }
