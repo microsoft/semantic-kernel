@@ -54,8 +54,8 @@ public class AzureAIInferenceChatCompletionService : IChatCompletionService
         ILoggerFactory? loggerFactory = null)
     {
         this._core = new(
-            chatClient,
             modelId,
+            chatClient,
             loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService)));
     }
 
