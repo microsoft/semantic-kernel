@@ -2,7 +2,6 @@
 
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
