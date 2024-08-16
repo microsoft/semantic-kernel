@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Azure.AI.Inference;
 using Microsoft.SemanticKernel.Text;
 
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAIInference;
 /// <summary>
 /// Chat completion prompt execution settings.
 /// </summary>
+[JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
@@ -25,6 +27,8 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Allowed values: "error" | "drop" | "pass-through"
     /// </summary>
+    [JsonPropertyName("extra_parameters")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ExtraParameters
     {
         get => this._extraParameters;
@@ -42,7 +46,9 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// decrease the likelihood of the model repeating the same statements verbatim.
     /// Supported range is [-2, 2].
     /// </summary>
-    public float? FrequencyPenalty
+    [JsonPropertyName("frequency_penalty")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? FrequencyPenalty
     {
         get => this._frequencyPenalty;
         set
@@ -59,7 +65,9 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// model's likelihood to output new topics.
     /// Supported range is [-2, 2].
     /// </summary>
-    public float? PresencePenalty
+    [JsonPropertyName("presence_penalty")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? PresencePenalty
     {
         get => this._presencePenalty;
         set
@@ -77,7 +85,9 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// interaction of these two settings is difficult to predict.
     /// Supported range is [0, 1].
     /// </summary>
-    public float? Temperature
+    [JsonPropertyName("temperature")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? Temperature
     {
         get => this._temperature;
         set
@@ -96,7 +106,9 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// interaction of these two settings is difficult to predict.
     /// Supported range is [0, 1].
     /// </summary>
-    public float? NucleusSamplingFactor
+    [JsonPropertyName("top_p")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? NucleusSamplingFactor
     {
         get => this._nucleusSamplingFactor;
         set
@@ -107,6 +119,8 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary> The maximum number of tokens to generate. </summary>
+    [JsonPropertyName("max_tokens")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxTokens
     {
         get => this._maxTokens;
@@ -124,6 +138,8 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// Please note <see cref="ChatCompletionsResponseFormat"/> is the base class. According to the scenario, a derived class of the base class might need to be assigned here, or this property needs to be casted to one of the possible derived classes.
     /// The available derived classes include <see cref="ChatCompletionsResponseFormatJSON"/> and <see cref="ChatCompletionsResponseFormatText"/>.
     /// </summary>
+    [JsonPropertyName("response_format")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? ResponseFormat
     {
         get => this._responseFormat;
@@ -135,6 +151,8 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary> A collection of textual sequences that will end completions generation. </summary>
+    [JsonPropertyName("stop")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<string> StopSequences
     {
         get => this._stopSequences;
@@ -150,6 +168,8 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// Please note <see cref="ChatCompletionsToolDefinition"/> is the base class. According to the scenario, a derived class of the base class might need to be assigned here, or this property needs to be casted to one of the possible derived classes.
     /// The available derived classes include <see cref="ChatCompletionsFunctionToolDefinition"/>.
     /// </summary>
+    [JsonPropertyName("tools")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<ChatCompletionsToolDefinition> Tools
     {
         get => this._tools;
@@ -164,6 +184,8 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// If specified, the system will make a best effort to sample deterministically such that repeated requests with the
     /// same seed and parameters should return the same result. Determinism is not guaranteed.
     /// </summary>
+    [JsonPropertyName("seed")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public long? Seed
     {
         get => this._seed;
@@ -193,8 +215,6 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
         {
             this._tools = new ReadOnlyCollection<ChatCompletionsToolDefinition>(this._tools);
         }
-
-        this.ExtensionData = new ReadOnlyDictionary<string, object>(this.ExtensionData!);
     }
 
     /// <inheritdoc/>
@@ -220,9 +240,8 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// Create a new settings object with the values from another settings object.
     /// </summary>
     /// <param name="executionSettings">Template configuration</param>
-    /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of <see cref="AzureAIInferencePromptExecutionSettings"/></returns>
-    public static AzureAIInferencePromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    public static AzureAIInferencePromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         if (executionSettings is null)
         {
@@ -248,21 +267,15 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     #region private ================================================================================
 
     private string? _extraParameters;
-    private float? _frequencyPenalty;
-    private float? _presencePenalty;
-    private float? _temperature;
-    private float? _nucleusSamplingFactor;
+    private double? _frequencyPenalty;
+    private double? _presencePenalty;
+    private double? _temperature;
+    private double? _nucleusSamplingFactor;
     private int? _maxTokens;
     private object? _responseFormat;
     private IList<string> _stopSequences = [];
     private IList<ChatCompletionsToolDefinition> _tools = [];
     private long? _seed;
-
-    private void SetValueInExtensionData(object value, string propertyName)
-        => this.ExtensionData![propertyName] = value;
-
-    private object? GetValueExtensionData(string propertyName)
-        => this.ExtensionData!.TryGetValue(propertyName, out var value) ? value : null;
 
     #endregion
 }
