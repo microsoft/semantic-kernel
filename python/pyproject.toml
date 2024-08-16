@@ -71,7 +71,7 @@ milvus = { version = ">=2.3,<2.3.8", markers = 'sys_platform != "win32"', option
 mistralai = { version = "^0.4.1", optional = true}
 # ollama
 ollama = { version = "^0.2.1", optional = true}
-# onnxruntime-genai
+# onnx
 onnxruntime-genai = { version = "^0.3.0", allow-prereleases = true, optional = true}
 # pinecone
 pinecone-client = { version = ">=3.0.0", optional = true}
@@ -150,7 +150,7 @@ milvus = { version = ">=2.3,<2.3.8", markers = 'sys_platform != "win32"'}
 mistralai = "^0.4.1"
 # ollama
 ollama = "^0.2.1"
-# onnxruntime-genai
+# onnx
 onnxruntime-genai = {version = "^0.3.0", allow-prereleases = true}
 # mongodb
 motor = "^3.3.2"
@@ -172,7 +172,7 @@ pandas = {version = "^2.2.2"}
 
 # Extras are exposed to pip, this allows a user to easily add the right dependencies to their environment
 [tool.poetry.extras]
-all = ["transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "mistralai", "ollama", "onnxruntime-genai", "google", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
+all = ["transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "mistralai", "ollama", "onnx", "google", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
 
 azure = ["azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "msgraph-sdk"]
 chromadb = ["chromadb"]
@@ -181,7 +181,7 @@ hugging_face = ["transformers", "sentence-transformers", "torch"]
 milvus = ["pymilvus", "milvus"]
 mistralai = ["mistralai"]
 ollama = ["ollama"]
-onnxruntime-genai = ["onnxruntime-genai"]
+onnx = ["onnxruntime-genai"]
 mongo = ["motor"]
 notebooks = ["ipykernel"]
 pinecone = ["pinecone-client"]

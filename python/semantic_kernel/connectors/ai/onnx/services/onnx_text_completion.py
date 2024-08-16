@@ -10,11 +10,14 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+import onnxruntime_genai as OnnxRuntimeGenAi
+
 from semantic_kernel.connectors.ai.onnx.onnx_prompt_execution_settings import OnnxPromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -23,18 +26,34 @@ logger: logging.Logger = logging.getLogger(__name__)
 @experimental_class
 class OnnxTextCompletion(TextCompletionClientBase):
     """Onnx text completion service."""
-
+    
+    model: Any
+    tokenizer: Any
+    
     def __init__(
         self,
         ai_model_path: str,
+        ai_model_id: str | None = None,
     ) -> None:
         """Initializes a new instance of the OnnxTextCompletion class.
 
         Args:
-            ai_model_path (str): Local path to the ONNX model.
+            ai_model_path (str): Local path to the ONNX model Folder.
+            ai_model_id (str, optional): The ID of the AI model. Defaults to None.
         """
+        if ai_model_id is None:
+            ai_model_id = ai_model_path
+            
+        try:
+            model = OnnxRuntimeGenAi.Model(ai_model_path)
+            tokenizer = OnnxRuntimeGenAi.Tokenizer(model)
+        except Exception as e:
+            raise ServiceInitializationError(f"Failed to initialize OnnxTextCompletion service: {e}")
+            
         super().__init__(
-            ai_model_id=ai_model_path,
+            ai_model_id=ai_model_id,
+            model=model,
+            tokenizer=tokenizer,
         )
 
     @override
@@ -56,7 +75,16 @@ class OnnxTextCompletion(TextCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OnnxPromptExecutionSettings)  # nosec
 
-        raise NotImplementedError("OnnxTextCompletion.get_text_contents")
+        new_tokens = ""
+        async for new_token in self.__generate_next_token(prompt, settings):
+            new_tokens += new_token
+                
+        return [
+            TextContent(
+                text=new_tokens,
+                ai_model_id=self.ai_model_id,
+            )
+        ]
 
     @override
     async def get_streaming_text_contents(
@@ -79,13 +107,36 @@ class OnnxTextCompletion(TextCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OnnxPromptExecutionSettings)  # nosec
         
-        yield [
-            StreamingTextContent(
-                choice_index="",
-                text="",
-            )
-        ]
-        raise NotImplementedError("OnnxTextCompletion.get_streaming_text_contents")
+        async for new_token in self.__generate_next_token(prompt, settings):
+            yield [
+                StreamingTextContent(
+                    choice_index=0, inner_content=new_token, text=new_token, ai_model_id=self.ai_model_id
+                )
+            ]
+                
+        return
+    
+    async def __generate_next_token(
+        self, 
+        prompt: str, 
+        settings: OnnxPromptExecutionSettings
+    ) -> AsyncGenerator[str, Any]:
+        try:
+            input_tokens = self.tokenizer.encode(prompt)
+            params = OnnxRuntimeGenAi.GeneratorParams(self.model)
+            params.set_search_options(**settings.prepare_settings_dict())
+            params.input_ids = input_tokens
+            generator = OnnxRuntimeGenAi.Generator(self.model, params)
+            
+            tokenizer_stream = self.tokenizer.create_stream()
+            
+            while not generator.is_done():
+                generator.compute_logits()
+                generator.generate_next_token()
+                new_token = tokenizer_stream.decode(generator.get_next_tokens()[0])
+                yield new_token
+        except Exception as e:
+            raise ServiceInvalidResponseError("Failed to get text content with ONNX") from e
         
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
