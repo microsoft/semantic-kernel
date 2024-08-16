@@ -34,6 +34,13 @@ from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
 from openai.types.shared.response_format_json_object import ResponseFormatJSONObject
 
+from semantic_kernel.agents.open_ai.assistant_content_generation import (
+    generate_function_call_content,
+    generate_function_result_content,
+    generate_message_content,
+    get_function_call_contents,
+    get_message_contents,
+)
 from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -797,13 +804,25 @@ async def test_invoke(
         azure_openai_assistant_agent._format_tool_outputs = MagicMock(
             return_value=[{"tool_call_id": "id", "output": "output"}]
         )
-        azure_openai_assistant_agent._generate_function_call_content = MagicMock(return_value=mock_chat_message_content)
+        # generate_function_call_content = MagicMock(return_value=mock_chat_message_content)
         azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
-        azure_openai_assistant_agent._get_function_call_contents = MagicMock(
-            side_effect=mock_get_function_call_contents
-        )
+        # azure_openai_assistant_agent._get_function_call_contents = MagicMock(
+        #     side_effect=mock_get_function_call_contents
+        # )
 
-        messages = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
+        with (
+            patch(
+                "semantic_kernel.agents.open_ai.assistant_content_generation.generate_function_call_content"
+            ) as mock_generate_function_call_content,
+            patch(
+                "semantic_kernel.agents.open_ai.assistant_content_generation.get_function_call_contents"
+            ) as mock_function_call_contents,
+        ):
+            mock_generate_function_call_content.return_value = mock_chat_message_content
+            mock_function_call_contents.return_value = [mock_get_function_call_contents]
+            messages = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
+
+        # messages = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 
         assert len(messages) == 2
         assert messages[0].content == "Hello"
@@ -896,7 +915,7 @@ async def test_invoke_function_calls(azure_openai_assistant_agent, openai_unit_t
 
 
 def test_get_function_call_contents(azure_openai_assistant_agent, mock_run_required_action, openai_unit_test_env):
-    result = azure_openai_assistant_agent._get_function_call_contents(run=mock_run_required_action, function_steps={})
+    result = get_function_call_contents(run=mock_run_required_action, function_steps={})
     assert result is not None
 
 
@@ -904,7 +923,7 @@ def test_get_function_call_contents_no_action_required(
     azure_openai_assistant_agent, mock_run_required_action, openai_unit_test_env
 ):
     mock_run_required_action.required_action = None
-    result = azure_openai_assistant_agent._get_function_call_contents(run=mock_run_required_action, function_steps={})
+    result = get_function_call_contents(run=mock_run_required_action, function_steps={})
     assert result == []
 
 
@@ -931,7 +950,7 @@ async def test_get_tools_no_assistant_returns_empty_list(
 
 def test_generate_message_content(azure_openai_assistant_agent, mock_thread_messages, openai_unit_test_env):
     for message in mock_thread_messages:
-        result = azure_openai_assistant_agent._generate_message_content(assistant_name="test", message=message)
+        result = generate_message_content(assistant_name="test", message=message)
         assert result is not None
 
 
@@ -949,7 +968,7 @@ def test_get_message_contents(azure_openai_assistant_agent: AzureAssistantAgent,
         FileReferenceContent(role=AuthorRole.ASSISTANT, file_id="test_file_id"),
     ]
 
-    result = azure_openai_assistant_agent._get_message_contents(message)
+    result = get_message_contents(message)
     assert result is not None
 
 
@@ -1027,7 +1046,7 @@ def test_generate_function_result_content(
         id="tool_call_id", type="function", function=Function(arguments="{}", name="function_name", output="result")
     )
 
-    message = azure_openai_assistant_agent._generate_function_result_content(
+    message = generate_function_result_content(
         agent_name="test", function_step=mock_function_call_content, tool_call=mock_tool_call
     )
     assert message is not None
@@ -1035,9 +1054,7 @@ def test_generate_function_result_content(
 
 
 def test_generate_function_call_content(azure_openai_assistant_agent, mock_function_call_content, openai_unit_test_env):
-    message = azure_openai_assistant_agent._generate_function_call_content(
-        agent_name="test", fccs=[mock_function_call_content]
-    )
+    message = generate_function_call_content(agent_name="test", fccs=[mock_function_call_content])
     assert message is not None
     assert isinstance(message, ChatMessageContent)
     assert isinstance(message.items[0], FunctionCallContent)

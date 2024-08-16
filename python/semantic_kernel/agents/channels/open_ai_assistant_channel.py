@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 from openai import AsyncOpenAI
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.agents.open_ai.assistant_content_generation import create_chat_message, generate_message_content
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 
@@ -22,14 +23,23 @@ class OpenAIAssistantChannel(AgentChannel):
         self.thread_id = thread_id
 
     async def receive(self, history: list["ChatMessageContent"]) -> None:
-        """Receive the conversation messages."""
-        from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
+        """Receive the conversation messages.
 
+        Args:
+            history: The conversation messages.
+        """
         for message in history:
-            await OpenAIAssistantBase.create_chat_message(self.client, self.thread_id, message)
+            await create_chat_message(self.client, self.thread_id, message)
 
     async def invoke(self, agent: "Agent") -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
-        """Invoke the agent."""
+        """Invoke the agent.
+
+        Args:
+            agent: The agent to invoke.
+
+        Yields:
+            tuple[bool, ChatMessageContent]: The conversation messages.
+        """
         from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
 
         if not isinstance(agent, OpenAIAssistantBase):
@@ -42,9 +52,11 @@ class OpenAIAssistantChannel(AgentChannel):
             yield is_visible, message
 
     async def get_history(self) -> AsyncIterable["ChatMessageContent"]:
-        """Get the conversation history."""
-        from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
+        """Get the conversation history.
 
+        Yields:
+            ChatMessageContent: The conversation history.
+        """
         agent_names: dict[str, Any] = {}
 
         thread_messages = await self.client.beta.threads.messages.list(
@@ -58,7 +70,7 @@ class OpenAIAssistantChannel(AgentChannel):
                     agent_names[message.assistant_id] = agent.name
             assistant_name = agent_names.get(message.assistant_id) if message.assistant_id else message.assistant_id
 
-            content: ChatMessageContent = OpenAIAssistantBase._generate_message_content(str(assistant_name), message)
+            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
 
             if len(content.items) > 0:
                 yield content

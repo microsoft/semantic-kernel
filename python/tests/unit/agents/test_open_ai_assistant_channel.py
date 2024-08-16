@@ -13,9 +13,10 @@ from openai.types.beta.threads.image_file_content_block import ImageFileContentB
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
 
-from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 
 
@@ -96,13 +97,18 @@ def mock_assistant():
 
 @pytest.mark.asyncio
 async def test_receive_messages():
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+
     client = MagicMock(spec=AsyncOpenAI)
+    client.beta = AsyncMock()
     thread_id = "test_thread"
     channel = OpenAIAssistantChannel(client=client, thread_id=thread_id)
-    history = [MagicMock(spec=ChatMessageContent) for _ in range(3)]
+    history = [
+        MagicMock(spec=ChatMessageContent, role=AuthorRole.USER, items=[TextContent(text="test")]) for _ in range(3)
+    ]
 
     with patch(
-        "semantic_kernel.agents.open_ai.open_ai_assistant_base.OpenAIAssistantBase.create_chat_message"
+        "semantic_kernel.agents.open_ai.assistant_content_generation.create_chat_message"
     ) as mock_create_chat_message:
         await channel.receive(history)
 
@@ -113,6 +119,8 @@ async def test_receive_messages():
 
 @pytest.mark.asyncio
 async def test_invoke_agent():
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+
     client = MagicMock(spec=AsyncOpenAI)
     thread_id = "test_thread"
     agent = MagicMock(spec=OpenAIAssistantBase)
@@ -137,6 +145,8 @@ async def test_invoke_agent():
 
 @pytest.mark.asyncio
 async def test_invoke_agent_deleted():
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+
     client = MagicMock(spec=AsyncOpenAI)
     thread_id = "test_thread"
     agent = MagicMock(spec=OpenAIAssistantBase)
@@ -150,6 +160,8 @@ async def test_invoke_agent_deleted():
 
 @pytest.mark.asyncio
 async def test_invoke_agent_wrong_type():
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+
     client = MagicMock(spec=AsyncOpenAI)
     thread_id = "test_thread"
     agent = MagicMock()
@@ -161,7 +173,9 @@ async def test_invoke_agent_wrong_type():
 
 
 @pytest.mark.asyncio
-async def test_get_get_history(mock_thread_messages, mock_assistant, openai_unit_test_env):
+async def test_get_history(mock_thread_messages, mock_assistant, openai_unit_test_env):
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+
     async def mock_list_messages(*args, **kwargs) -> Any:
         return MagicMock(data=mock_thread_messages)
 

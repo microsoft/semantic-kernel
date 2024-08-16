@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, create_autospec, patch
 import pytest
 
 from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.agents.channels import ChatHistoryChannel
+from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent

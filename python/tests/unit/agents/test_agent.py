@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from semantic_kernel.agents import Agent
-from semantic_kernel.agents.channels import AgentChannel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 
 
 class MockAgent(Agent):

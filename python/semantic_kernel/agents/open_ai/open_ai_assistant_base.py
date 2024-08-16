@@ -11,25 +11,28 @@ from openai.resources.beta.assistants import Assistant
 from openai.resources.beta.threads.messages import Message
 from openai.resources.beta.threads.runs.runs import Run
 from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
-from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.runs import RunStep
-from openai.types.beta.threads.text_content_block import TextContentBlock
 from openai.types.beta.vector_store import VectorStore
 from pydantic import Field
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+from semantic_kernel.agents.open_ai.assistant_content_generation import (
+    create_chat_message,
+    generate_code_interpreter_content,
+    generate_function_call_content,
+    generate_function_result_content,
+    generate_message_content,
+    get_function_call_contents,
+    get_message_contents,
+)
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
-from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.image_content import ImageContent
-from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
     AgentExecutionException,
@@ -40,9 +43,6 @@ from semantic_kernel.exceptions.agent_exceptions import (
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
-    from openai.types.beta.threads.annotation import Annotation
-    from openai.types.beta.threads.runs.tool_call import ToolCall
-
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -448,7 +448,7 @@ class OpenAIAssistantBase(Agent):
                     raise AgentExecutionException(
                         f"Invalid message role `{message.role.value}`. Allowed roles are {self.allowed_message_roles}."
                     )
-                message_contents = OpenAIAssistantBase._get_message_contents(message=message)
+                message_contents = get_message_contents(message=message)
                 for content in message_contents:
                     messages_to_add.append({"role": message.role.value, "content": content})
             create_thread_kwargs["messages"] = messages_to_add
@@ -488,32 +488,7 @@ class OpenAIAssistantBase(Agent):
         Returns:
             Message: The message.
         """
-        return await OpenAIAssistantBase.create_chat_message(self.client, thread_id, message)
-
-    @classmethod
-    async def create_chat_message(cls, client: AsyncOpenAI, thread_id: str, message: ChatMessageContent) -> "Message":
-        """Class method to add a chat message, callable from class or instance.
-
-        Args:
-            client: The client to use for creating the message.
-            thread_id (str): The thread id.
-            message (ChatMessageContent): The chat message.
-
-        Returns:
-            Message: The message.
-        """
-        if message.role.value not in cls.allowed_message_roles:
-            raise AgentExecutionException(
-                f"Invalid message role `{message.role.value}`. Allowed roles are {cls.allowed_message_roles}."
-            )
-
-        message_contents: list[dict[str, Any]] = OpenAIAssistantBase._get_message_contents(message=message)
-
-        return await client.beta.threads.messages.create(
-            thread_id=thread_id,
-            role=message.role.value,  # type: ignore
-            content=message_contents,  # type: ignore
-        )
+        return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
 
     async def get_thread_messages(self, thread_id: str) -> AsyncIterable[ChatMessageContent]:
         """Get the messages for the specified thread.
@@ -536,7 +511,7 @@ class OpenAIAssistantBase(Agent):
             assistant_name = agent_names.get(message.assistant_id) if message.assistant_id else message.assistant_id
             assistant_name = assistant_name or message.assistant_id
 
-            content: ChatMessageContent = OpenAIAssistantBase._generate_message_content(str(assistant_name), message)
+            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
 
             if len(content.items) > 0:
                 yield content
@@ -753,9 +728,9 @@ class OpenAIAssistantBase(Agent):
 
             # Check if function calling required
             if run.status == "requires_action":
-                fccs = self._get_function_call_contents(run, function_steps)
+                fccs = get_function_call_contents(run, function_steps)
                 if fccs:
-                    yield False, self._generate_function_call_content(agent_name=self.name, fccs=fccs)
+                    yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
 
                     chat_history = ChatHistory()
                     _ = await self._invoke_function_calls(fccs=fccs, chat_history=chat_history)
@@ -782,7 +757,7 @@ class OpenAIAssistantBase(Agent):
                         is_visible = False
                         content: ChatMessageContent | None = None
                         if tool_call.type == "code_interpreter":
-                            content = self._generate_code_interpreter_content(
+                            content = generate_code_interpreter_content(
                                 self.name,
                                 tool_call.code_interpreter.input,  # type: ignore
                             )
@@ -790,7 +765,7 @@ class OpenAIAssistantBase(Agent):
                         elif tool_call.type == "function":
                             function_step = function_steps.get(tool_call.id)
                             assert function_step is not None  # nosec
-                            content = self._generate_function_result_content(
+                            content = generate_function_result_content(
                                 agent_name=self.name, function_step=function_step, tool_call=tool_call
                             )
 
@@ -803,63 +778,11 @@ class OpenAIAssistantBase(Agent):
                         message_id=completed_step.step_details.message_creation.message_id,  # type: ignore
                     )
                     if message:
-                        content = OpenAIAssistantBase._generate_message_content(self.name, message)
+                        content = generate_message_content(self.name, message)
                         if len(content.items) > 0:
                             message_count += 1
                             yield True, content
                 processed_step_ids.add(completed_step.id)
-
-    # endregion
-
-    # region Content Generation Methods
-
-    def _generate_function_call_content(self, agent_name: str, fccs: list[FunctionCallContent]) -> ChatMessageContent:
-        """Generate function call content."""
-        function_call_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.TOOL, name=agent_name)  # type: ignore
-
-        function_call_content.items.extend(fccs)
-
-        return function_call_content
-
-    def _generate_function_result_content(
-        self, agent_name: str, function_step: FunctionCallContent, tool_call: "ToolCall"
-    ) -> ChatMessageContent:
-        """Generate function result content."""
-        function_call_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.TOOL, name=agent_name)  # type: ignore
-        function_call_content.items.append(
-            FunctionResultContent(
-                function_name=function_step.function_name,
-                plugin_name=function_step.plugin_name,
-                id=function_step.id,
-                result=tool_call.function.output,  # type: ignore
-            )
-        )
-        return function_call_content
-
-    def _generate_code_interpreter_content(self, agent_name: str, code: str) -> ChatMessageContent:
-        """Generate code interpreter content."""
-        return ChatMessageContent(
-            role=AuthorRole.ASSISTANT,
-            content=code,
-            name=agent_name,
-            metadata={"code": True},
-        )
-
-    @staticmethod
-    def _generate_annotation_content(annotation: "Annotation") -> AnnotationContent:
-        """Generate annotation content."""
-        file_id = None
-        if hasattr(annotation, "file_path"):
-            file_id = annotation.file_path.file_id
-        elif hasattr(annotation, "file_citation"):
-            file_id = annotation.file_citation.file_id
-
-        return AnnotationContent(
-            file_id=file_id,
-            quote=annotation.text,
-            start_index=annotation.start_index,
-            end_index=annotation.end_index,
-        )
 
     # endregion
 
@@ -1001,48 +924,6 @@ class OpenAIAssistantBase(Agent):
 
         return message
 
-    @staticmethod
-    def _get_message_contents(message: ChatMessageContent) -> list[dict[str, Any]]:
-        """Get the message contents."""
-        contents: list[dict[str, Any]] = []
-        for content in message.items:
-            if isinstance(content, TextContent):
-                contents.append({"type": "text", "text": content.text})
-            elif isinstance(content, ImageContent) and content.uri:
-                contents.append(content.to_dict())
-            elif isinstance(content, FileReferenceContent):
-                contents.append({
-                    "type": "image_file",
-                    "image_file": {"file_id": content.file_id},
-                })
-        return contents
-
-    @staticmethod
-    def _generate_message_content(assistant_name: str, message: Message) -> ChatMessageContent:
-        """Generate message content."""
-        role = AuthorRole(message.role)
-
-        content: ChatMessageContent = ChatMessageContent(role=role, name=assistant_name)  # type: ignore
-
-        for item_content in message.content:
-            if item_content.type == "text":
-                assert isinstance(item_content, TextContentBlock)  # nosec
-                content.items.append(
-                    TextContent(
-                        text=item_content.text.value,
-                    )
-                )
-                for annotation in item_content.text.annotations:
-                    content.items.append(OpenAIAssistantBase._generate_annotation_content(annotation))
-            elif item_content.type == "image_file":
-                assert isinstance(item_content, ImageFileContentBlock)  # nosec
-                content.items.append(
-                    FileReferenceContent(
-                        file_id=item_content.image_file.file_id,
-                    )
-                )
-        return content
-
     def _check_if_deleted(self) -> None:
         """Check if the assistant has been deleted."""
         if self._is_deleted:
@@ -1068,33 +949,6 @@ class OpenAIAssistantBase(Agent):
         tools.extend([kernel_function_metadata_to_function_call_format(f) for f in funcs])
 
         return tools
-
-    def _get_function_call_contents(
-        self, run: Run, function_steps: dict[str, FunctionCallContent]
-    ) -> list[FunctionCallContent]:
-        """Extract function call contents from the run.
-
-        Args:
-            run (Run): The run.
-            function_steps (dict[str, FunctionCallContent]): The function steps
-
-        Returns:
-            list[FunctionCallContent]: The list of function call contents.
-        """
-        function_call_contents: list[FunctionCallContent] = []
-        required_action = getattr(run, "required_action", None)
-        if not required_action or not getattr(required_action, "submit_tool_outputs", False):
-            return function_call_contents
-        for tool in required_action.submit_tool_outputs.tool_calls:
-            fcc = FunctionCallContent(
-                id=tool.id,
-                index=getattr(tool, "index", None),
-                name=tool.function.name,
-                arguments=tool.function.arguments,
-            )
-            function_call_contents.append(fcc)
-            function_steps[tool.id] = fcc
-        return function_call_contents
 
     async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
         """Invoke function calls and store results in chat history.

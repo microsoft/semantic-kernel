@@ -5,8 +5,9 @@ import os
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
 from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
@@ -32,8 +33,8 @@ SUMMARY_INSTRUCTIONS = "Summarize the entire conversation for the user in natura
 
 def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
     kernel = Kernel()
-    # kernel.add_service(AzureChatCompletion(service_id=service_id))
-    kernel.add_service(OpenAIChatCompletion(service_id=service_id))
+    kernel.add_service(AzureChatCompletion(service_id=service_id))
+    # kernel.add_service(OpenAIChatCompletion(service_id=service_id))
     return kernel
 
 
@@ -58,7 +59,7 @@ async def main():
             "user-context.txt",
         )
 
-        analyst_agent = await OpenAIAssistantAgent.create(
+        analyst_agent = await AzureAssistantAgent.create(
             service_id="analyst",
             kernel=Kernel(),
             enable_code_interpreter=True,

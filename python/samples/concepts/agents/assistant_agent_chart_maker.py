@@ -17,7 +17,7 @@ AGENT_NAME = "ChartMaker"
 AGENT_INSTRUCTIONS = "Create charts as requested without explanation."
 
 # Note: you may toggle this to switch between AzureOpenAI and OpenAI
-use_azure_openai = False
+use_azure_openai = True
 
 
 # A helper method to invoke the agent with the user input
