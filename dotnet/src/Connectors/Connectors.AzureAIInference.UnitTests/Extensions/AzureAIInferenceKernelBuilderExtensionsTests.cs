@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 using Xunit;
 
 namespace SemanticKernel.Connectors.AzureAIInference.UnitTests.Extensions;
-public class AzureAIInferenceKernelBuilderExtensionsTests
+public sealed class AzureAIInferenceKernelBuilderExtensionsTests
 {
     private readonly Uri _endpoint = new("https://endpoint");
 

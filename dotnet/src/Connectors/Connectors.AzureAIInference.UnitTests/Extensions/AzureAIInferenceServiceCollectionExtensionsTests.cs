@@ -11,7 +11,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.AzureAIInference.UnitTests.Extensions;
 
-public class AzureAIInferenceServiceCollectionExtensionsTests
+public sealed class AzureAIInferenceServiceCollectionExtensionsTests
 {
     private readonly Uri _endpoint = new("https://endpoint");
 
