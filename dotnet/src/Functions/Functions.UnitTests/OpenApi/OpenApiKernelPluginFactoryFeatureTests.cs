@@ -12,13 +12,13 @@ namespace SemanticKernel.Functions.UnitTests.OpenApi;
 public class OpenApiKernelPluginFactoryFeatureTests
 {
     [Fact]
-    public async Task CreatesPluginWithOperationPayloadForAnyOfSchemaAsync()
+    public async Task ItShouldCreatePluginWithOperationPayloadForAnyOfSchemaAsync()
     {
-        await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_tests.json");
+        await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_testsV3_0.json");
 
         var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
 
-        var postFoobarFunction = plugin["PostFoobarAnyOf"];
+        var postFoobarFunction = plugin["AnyOfPost"];
         Assert.NotNull(postFoobarFunction);
 
         var functionView = postFoobarFunction.Metadata;
@@ -30,12 +30,12 @@ public class OpenApiKernelPluginFactoryFeatureTests
     }
 
     [Fact]
-    public async Task CreatesPluginWithOperationPayloadForAllOfSchemaAsync()
+    public async Task ItShouldCreatePluginWithOperationPayloadForAllOfSchemaAsync()
     {
-        await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_tests.json");
+        await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_testsV3_0.json");
         var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
 
-        var postFoobarFunction = plugin["PostFoobarAllOf"];
+        var postFoobarFunction = plugin["AllOfPost"];
         Assert.NotNull(postFoobarFunction);
 
         var functionView = postFoobarFunction.Metadata;
@@ -47,13 +47,13 @@ public class OpenApiKernelPluginFactoryFeatureTests
     }
 
     [Fact]
-    public async Task CreatesPluginWithOperationPayloadForOneOfSchemaAsync()
+    public async Task ItShouldCreatePluginWithOperationPayloadForOneOfSchemaAsync()
     {
-        await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_tests.json");
+        await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_testsV3_0.json");
 
         var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
 
-        var postFoobarFunction = plugin["PostFoobarOneOf"];
+        var postFoobarFunction = plugin["OneOfPost"];
         Assert.NotNull(postFoobarFunction);
 
         var functionView = postFoobarFunction.Metadata;

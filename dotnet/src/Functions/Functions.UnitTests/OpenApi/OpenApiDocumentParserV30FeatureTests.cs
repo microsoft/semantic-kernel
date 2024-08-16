@@ -24,17 +24,17 @@ public class OpenApiDocumentParserV30FeatureTests
 
     public OpenApiDocumentParserV30FeatureTests()
     {
-        this._openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_tests.json");
+        this._openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_testsV3_0.json");
         this._parser = new OpenApiDocumentParser();
     }
 
     [Fact]
-    public async Task ParsesAllOfAsync()
+    public async Task ItCanParseAllOfAsync()
     {
         var spec = await this._parser.ParseAsync(this._openApiDocument);
 
         Assert.NotEmpty(spec.Operations);
-        var op0 = spec.Operations.Single(static x => x.Path == "/fooBarAllOf" && x.Method == HttpMethod.Get);
+        var op0 = spec.Operations.Single(static x => x.Id == "allOfGet");
         Assert.NotEmpty(op0.Responses);
         var res200 = op0.Responses["200"];
         Assert.NotNull(res200.Schema);
@@ -45,12 +45,12 @@ public class OpenApiDocumentParserV30FeatureTests
     }
 
     [Fact]
-    public async Task ParsesAnyOfAsync()
+    public async Task ItCanParseAnyOfAsync()
     {
         var spec = await this._parser.ParseAsync(this._openApiDocument);
 
         Assert.NotEmpty(spec.Operations);
-        var op0 = spec.Operations.Single(static x => x.Path == "/fooBarAnyOf" && x.Method == HttpMethod.Get);
+        var op0 = spec.Operations.Single(static x => x.Id == "anyOfGet");
         Assert.NotEmpty(op0.Responses);
         var res200 = op0.Responses["200"];
         Assert.NotNull(res200.Schema);
@@ -61,12 +61,12 @@ public class OpenApiDocumentParserV30FeatureTests
     }
 
     [Fact]
-    public async Task ParsesOneOfAsync()
+    public async Task ItCanParseOneOfAsync()
     {
         var spec = await this._parser.ParseAsync(this._openApiDocument);
 
         Assert.NotEmpty(spec.Operations);
-        var op0 = spec.Operations.Single(static x => x.Path == "/fooBarOneOf" && x.Method == HttpMethod.Get);
+        var op0 = spec.Operations.Single(static x => x.Id == "oneOfGet");
         Assert.NotEmpty(op0.Responses);
         var res200 = op0.Responses["200"];
         Assert.NotNull(res200.Schema);

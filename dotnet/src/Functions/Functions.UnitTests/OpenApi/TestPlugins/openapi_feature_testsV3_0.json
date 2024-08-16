@@ -7,6 +7,7 @@
   "paths": {
     "/fooBarAllOf": {
       "get": {
+        "operationId": "allOfGet",
         "responses": {
           "200": {
             "content": {
@@ -21,6 +22,7 @@
         }
       },
       "post": {
+        "operationId": "allOfPost",
         "requestBody": {
           "content": {
             "application/json": {
@@ -39,6 +41,7 @@
     },
     "/fooBarAnyOf": {
       "get": {
+        "operationId": "anyOfGet",
         "responses": {
           "200": {
             "content": {
@@ -53,6 +56,7 @@
         }
       },
       "post": {
+        "operationId": "anyOfPost",
         "requestBody": {
           "content": {
             "application/json": {
@@ -71,6 +75,7 @@
     },
     "/fooBarOneOf": {
       "get": {
+        "operationId": "oneOfGet",
         "responses": {
           "200": {
             "content": {
@@ -85,6 +90,7 @@
         }
       },
       "post": {
+        "operationId": "oneOfPost",
         "requestBody": {
           "content": {
             "application/json": {
