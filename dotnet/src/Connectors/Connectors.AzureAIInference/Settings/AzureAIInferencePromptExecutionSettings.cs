@@ -193,8 +193,6 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
         {
             this._tools = new ReadOnlyCollection<ChatCompletionsToolDefinition>(this._tools);
         }
-
-        this.ExtensionData = new ReadOnlyDictionary<string, object>(this.ExtensionData!);
     }
 
     /// <inheritdoc/>
