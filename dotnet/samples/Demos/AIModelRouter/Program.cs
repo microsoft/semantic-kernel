@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 
 #pragma warning disable SKEXP0001
 #pragma warning disable SKEXP0010
+#pragma warning disable SKEXP0070
 #pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
 
 namespace AIModelRouter;
@@ -25,6 +26,7 @@ internal sealed partial class Program
             .AddOpenAIChatCompletion(serviceId: "lmstudio", modelId: "N/A", endpoint: new Uri("http://localhost:1234"), apiKey: null)
             .AddOpenAIChatCompletion(serviceId: "ollama", modelId: "phi3", endpoint: new Uri("http://localhost:11434"), apiKey: null)
             .AddOpenAIChatCompletion(serviceId: "openai", modelId: "gpt-4o", apiKey: config["OpenAI:ApiKey"]!)
+            .AddAzureAIInferenceChatCompletion(serviceId: "azureai", endpoint: new Uri(config["AzureAIInference:Endpoint"]!), apiKey: config["AzureAIInference:ApiKey"]!)
 
             // Adding a custom filter to capture router selected service id
             .Services.AddSingleton<IPromptRenderFilter>(new SelectedServiceFilter());
@@ -43,7 +45,7 @@ internal sealed partial class Program
             // Find the best service to use based on the user's input
             KernelArguments arguments = new(new PromptExecutionSettings()
             {
-                ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai"])
+                ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai", "azureai"])
             });
 
             // Invoke the prompt and print the response
