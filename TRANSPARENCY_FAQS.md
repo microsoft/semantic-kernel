@@ -12,11 +12,13 @@ Building upon its foundational capabilities, Microsoft Semantic Kernel facilitat
 -	Function Invocation: It can automate code execution by calling functions based on AI model outputs.
 -	Modular and Extensible: Developers can enhance functionality through plugins and a variety of pre-built connectors, providing flexibility in integrating additional AI services.
 -	Multi-Modal Support: The kernel easily expands existing applications to support modalities like voice and video through its architecture
+-   Filtering: Developers can use filters to monitor the application, control function invocation or implement Responsible AI.
+-   Prompt Templates: Developer can define their prompts using various template languages including Handlebars and Liquid or the built-in Semantic Kernel format.
 
 
 ## What is/are Microsoft Semantic Kernel’s intended use(s)?
 The intended uses of Microsoft Semantic Kernel include:
-- 	Production Ready Applications: Building small to large enterprise scale applications that intend ...
+- 	Production Ready Applications: Building small to large enterprise scale solutions that can leverage advanced AI models capabilities.
 -	Automation of Business Processes: Facilitating quick and efficient automation of workflows and tasks within organizations.
 - 	Integration of AI Services: Connecting client code with a variety of pre-built AI services and capabilities for rapid development.
 
@@ -29,14 +31,18 @@ Microsoft Semantic Kernel was reviewed for reliability and performance metrics t
 
 
 ## What are the limitations of Microsoft Semantic Kernel?
-Limitations include:
+Semantic Kernel integrates with Large Language Models (LLMs) to allow AI capabilities to be added to existing application.
+LLMs have some inherent limitations such as:
 -	Contextual Misunderstanding: The system may struggle with nuanced requests, particularly those involving complex context.
 -	Bias in LLM Outputs: Historical biases in the training data can inadvertently influence model outputs. 
 	-	Users can mitigate these issues by:
 		-	Formulating clear and explicit queries.
 		-	Regularly reviewing AI-generated outputs to identify and rectify biases or inaccuracies.
         -   Providing relevant information when prompting the LLM so that it can base it's responses on this data
-
+-   Not all LLMs support all features uniformly e.g., function calling.
+Semantic Kernel is constantly evolving and adding new features so:
+-   There are some components still being developed e.g., support for some modalities such as Video and Classification, memory connectors for certain Vector databases, AI connectors for certain AI services.
+-   There are some components that are still experimental, these are clearly flagged and are subject to change.
 
 ## What operational factors and settings allow for effective and responsible use of Microsoft Semantic Kernel?
 Operational factors and settings for optimal use include:
