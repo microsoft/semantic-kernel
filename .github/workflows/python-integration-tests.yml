@@ -134,7 +134,7 @@ jobs:
           REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
         run: |
           cd python
-          poetry run pytest ./tests/integration ./tests/samples -v --junitxml=pytest.xml
+          poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
       - name: Surface failing tests
         if: always()
         uses: pmeier/pytest-results-action@main
@@ -250,8 +250,8 @@ jobs:
           fi
 
           cd python
-          poetry run pytest ./tests/integration -v
-          poetry run pytest ./tests/samples -v
+          poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/integration -v
+          poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v
 
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   python-integration-tests-check:
