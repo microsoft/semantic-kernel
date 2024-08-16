@@ -3,11 +3,7 @@
 using System;
 using System.Net.Http;
 using Azure.AI.Inference;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
 
