@@ -16,7 +16,7 @@ Building upon its foundational capabilities, Microsoft Semantic Kernel facilitat
 
 ## What is/are Microsoft Semantic Kernel’s intended use(s)?
 The intended uses of Microsoft Semantic Kernel include:
-- 	Enterprise Applications: Building scalable enterprise-grade solutions that can leverage advanced AI models for various business applications.
+- 	Production Ready Applications: Building small to large enterprise scale applications that intend ...
 -	Automation of Business Processes: Facilitating quick and efficient automation of workflows and tasks within organizations.
 - 	Integration of AI Services: Connecting client code with a variety of pre-built AI services and capabilities for rapid development.
 
