@@ -18,11 +18,6 @@ namespace SemanticKernel.Functions.UnitTests.OpenApi;
 public sealed class OpenApiKernelPluginFactoryTests
 {
     /// <summary>
-    /// System under test - an instance of OpenApiDocumentParser class.
-    /// </summary>
-    private readonly OpenApiDocumentParser _sut;
-
-    /// <summary>
     /// OpenAPI function execution parameters.
     /// </summary>
     private readonly OpenApiFunctionExecutionParameters _executionParameters;
@@ -40,8 +35,6 @@ public sealed class OpenApiKernelPluginFactoryTests
         this._executionParameters = new OpenApiFunctionExecutionParameters() { EnableDynamicPayload = false };
 
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
-
-        this._sut = new OpenApiDocumentParser();
     }
 
     [Fact]
@@ -333,6 +326,32 @@ public sealed class OpenApiKernelPluginFactoryTests
         // Assert
         Assert.Equal(5, plugin.Count());
         Assert.True(plugin.TryGetFunction("GetSecretsSecretname", out var _));
+    }
+
+    [Fact]
+    public async Task ItShouldUseCustomHttpResponseContentReaderAsync()
+    {
+        // Arrange
+        using var messageHandlerStub = new HttpMessageHandlerStub(this._openApiDocument);
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+
+        this._executionParameters.HttpResponseContentReader = async (context, cancellationToken) => await context.Response.Content.ReadAsStreamAsync(cancellationToken);
+        this._executionParameters.HttpClient = httpClient;
+
+        var kernel = new Kernel();
+
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", new Uri("http://localhost:3001/openapi.json"), this._executionParameters);
+
+        messageHandlerStub.ResetResponse();
+
+        // Act
+        var result = await kernel.InvokeAsync(plugin["GetSecret"], this.GetFakeFunctionArguments());
+
+        // Assert
+        var response = result.GetValue<RestApiOperationResponse>();
+        Assert.NotNull(response);
+
+        Assert.IsAssignableFrom<Stream>(response.Content);
     }
 
     [Fact]

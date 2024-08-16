@@ -34,7 +34,7 @@ public class ChatCompletionAgentTests
         Assert.Equal("test instructions", agent.Instructions);
         Assert.Equal("test description", agent.Description);
         Assert.Equal("test name", agent.Name);
-        Assert.Null(agent.ExecutionSettings);
+        Assert.Null(agent.Arguments);
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ public class ChatCompletionAgentTests
             {
                 Instructions = "test instructions",
                 Kernel = CreateKernel(mockService.Object),
-                ExecutionSettings = new(),
+                Arguments = [],
             };
 
         var result = await agent.InvokeAsync([]).ToArrayAsync();
@@ -98,7 +98,7 @@ public class ChatCompletionAgentTests
             {
                 Instructions = "test instructions",
                 Kernel = CreateKernel(mockService.Object),
-                ExecutionSettings = new(),
+                Arguments = [],
             };
 
         var result = await agent.InvokeStreamingAsync([]).ToArrayAsync();
