@@ -23,14 +23,14 @@ public class AzureAIInferenceChatCompletionService : IChatCompletionService
     /// Initializes a new instance of the <see cref="AzureAIInferenceChatCompletionService"/> class.
     /// </summary>
     /// <param name="modelId">Target Model Id for endpoints supporting more than one model</param>
-    /// <param name="endpoint">Endpoint / Target URI</param>
     /// <param name="apiKey">API Key</param>
+    /// <param name="endpoint">Endpoint / Target URI</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureAIInferenceChatCompletionService(
             string? modelId = null,
-            Uri? endpoint = null,
             string? apiKey = null,
+            Uri? endpoint = null,
             HttpClient? httpClient = null,
             ILoggerFactory? loggerFactory = null)
     {
@@ -45,12 +45,12 @@ public class AzureAIInferenceChatCompletionService : IChatCompletionService
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAIInferenceChatCompletionService"/> class providing your own ChatCompletionsClient instance.
     /// </summary>
-    /// <param name="chatClient">Breaking glass <see cref="ChatCompletionsClient"/> for HTTP requests.</param>
     /// <param name="modelId">Target Model Id for endpoints supporting more than one model</param>
+    /// <param name="chatClient">Breaking glass <see cref="ChatCompletionsClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureAIInferenceChatCompletionService(
+        string? modelId,
         ChatCompletionsClient chatClient,
-        string? modelId = null,
         ILoggerFactory? loggerFactory = null)
     {
         this._core = new(

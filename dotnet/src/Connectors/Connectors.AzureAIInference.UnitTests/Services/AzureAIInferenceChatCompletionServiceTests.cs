@@ -62,9 +62,9 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
         new AzureAIInferenceChatCompletionService(endpoint: this._endpoint, loggerFactory: loggerFactoryMock.Object); // Endpoint and loggerFactory
 
         // Breaking Glass constructor
-        new AzureAIInferenceChatCompletionService(chatClient: client); // Client
-        new AzureAIInferenceChatCompletionService(chatClient: client, modelId: "model"); // Client
-        new AzureAIInferenceChatCompletionService(chatClient: client, loggerFactory: loggerFactoryMock.Object); // Client
+        new AzureAIInferenceChatCompletionService(modelId: null, chatClient: client); // Client without model 
+        new AzureAIInferenceChatCompletionService(modelId: "model", chatClient: client); // Client
+        new AzureAIInferenceChatCompletionService(modelId: "model", chatClient: client, loggerFactory: loggerFactoryMock.Object); // Client
     }
 
     [Theory]
