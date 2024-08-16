@@ -7,6 +7,12 @@ from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
+#####################################################################
+# The following sample demonstrates how to create an OpenAI         #
+# assistant using either Azure OpenAI or OpenAI and leverage the    #
+# assistant and leverage the assistant's file search functionality. #
+#####################################################################
+
 AGENT_NAME = "ChartMaker"
 AGENT_INSTRUCTIONS = "Create charts as requested without explanation."
 
@@ -40,7 +46,7 @@ async def main():
 
     # Create the agent configuration
     if use_azure_openai:
-        agent = AzureAssistantAgent(
+        agent = await AzureAssistantAgent.create(
             kernel=kernel,
             service_id=service_id,
             name=AGENT_NAME,
@@ -48,16 +54,13 @@ async def main():
             enable_code_interpreter=True,
         )
     else:
-        agent = OpenAIAssistantAgent(
+        agent = await OpenAIAssistantAgent.create(
             kernel=kernel,
             service_id=service_id,
             name=AGENT_NAME,
             instructions=AGENT_INSTRUCTIONS,
             enable_code_interpreter=True,
         )
-
-    # Create an assistant with the vector store ID
-    await agent.create_assistant()
 
     # Define a thread and invoke the agent with the user input
     thread_id = await agent.create_thread()

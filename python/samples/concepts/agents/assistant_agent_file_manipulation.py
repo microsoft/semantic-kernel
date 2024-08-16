@@ -8,6 +8,13 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
+#####################################################################
+# The following sample demonstrates how to create an OpenAI         #
+# assistant using either Azure OpenAI or OpenAI and leverage the    #
+# assistant's ability to have the code interpreter work with        #
+# uploaded files.                                                   #
+#####################################################################
+
 AGENT_NAME = "FileManipulation"
 AGENT_INSTRUCTIONS = "Find answers to the user's questions in the provided file."
 
@@ -40,14 +47,6 @@ async def main():
     # Define a service_id for the sample
     service_id = "agent"
 
-    agent = await AzureAssistantAgent.create(
-        kernel=kernel,
-        service_id=service_id,
-        name=AGENT_NAME,
-        instructions=AGENT_INSTRUCTIONS,
-        enable_code_interpreter=True,
-    )
-
     # Get the path to the sales.csv file
     csv_file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
@@ -56,11 +55,18 @@ async def main():
         "sales.csv",
     )
 
-    # Upload the file for use with the assistant
-    file_id = await agent.add_file(csv_file_path, purpose="assistants")
+    # Create the assistant agent
+    agent = await AzureAssistantAgent.create(
+        kernel=kernel,
+        service_id=service_id,
+        name=AGENT_NAME,
+        instructions=AGENT_INSTRUCTIONS,
+        enable_code_interpreter=True,
+        code_interpreter_files=[csv_file_path],
+    )
 
     # Create a thread and specify the file to use for code interpretation
-    thread_id = await agent.create_thread(code_interpreter_file_ids=[file_id])
+    thread_id = await agent.create_thread()
 
     try:
         await invoke_agent(agent, thread_id=thread_id, input="Which segment had the most sales?")
@@ -71,7 +77,7 @@ async def main():
             input="Create a tab delimited file report of profit by each country per month.",
         )
     finally:
-        await agent.delete_file(file_id)
+        [await agent.delete_file(file_id) for file_id in agent.code_interpreter_file_ids]
         await agent.delete_thread(thread_id)
         await agent.delete()
 

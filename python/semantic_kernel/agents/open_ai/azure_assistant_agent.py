@@ -176,9 +176,10 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         instructions: str | None = None,
         name: str | None = None,
         enable_code_interpreter: bool | None = None,
+        code_interpreter_files: list[str] | None = None,
         enable_file_search: bool | None = None,
+        file_search_files: list[str] | None = None,
         enable_json_response: bool | None = None,
-        file_ids: list[str] | None = [],
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
@@ -209,9 +210,10 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             instructions: The Agent instructions. (optional)
             name: The Agent name. (optional)
             enable_code_interpreter: Enable the code interpreter. (optional)
+            code_interpreter_files: The file paths to use with the code interpreter. (optional)
             enable_file_search: Enable the file search. (optional)
+            file_search_files: The file paths for files to use with file search. (optional)
             enable_json_response: Enable the JSON response. (optional)
-            file_ids: The file IDs. (optional)
             temperature: The temperature. (optional)
             top_p: The top p. (optional)
             vector_store_id: The vector store ID. (optional)
@@ -245,7 +247,6 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             enable_code_interpreter=enable_code_interpreter,
             enable_file_search=enable_file_search,
             enable_json_response=enable_json_response,
-            file_ids=file_ids,
             temperature=temperature,
             top_p=top_p,
             vector_store_id=vector_store_id,
@@ -256,7 +257,39 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             truncation_message_count=truncation_message_count,
             **kwargs,
         )
-        agent.assistant = await agent.create_assistant()
+
+        assistant_create_kwargs: dict[str, Any] = {}
+
+        if code_interpreter_files is not None:
+            code_interpreter_file_ids: list[str] = []
+            for file_path in code_interpreter_files:
+                try:
+                    file_id = await agent.add_file(file_path=file_path, purpose="assistants")
+                    code_interpreter_file_ids.append(file_id)
+                except FileNotFoundError as ex:
+                    logger.error(
+                        f"Failed to upload code interpreter file with path: `{file_path}` with exception: {ex}"
+                    )
+                    raise AgentInitializationException("Failed to upload code interpreter files.", ex) from ex
+            agent.code_interpreter_file_ids = code_interpreter_file_ids
+            assistant_create_kwargs["code_interpreter_file_ids"] = code_interpreter_file_ids
+
+        if file_search_files is not None:
+            file_search_file_ids: list[str] = []
+            for file_path in file_search_files:
+                try:
+                    file_id = await agent.add_file(file_path=file_path, purpose="assistants")
+                    file_search_file_ids.append(file_id)
+                except FileNotFoundError as ex:
+                    logger.error(f"Failed to upload file search file with path: `{file_path}` with exception: {ex}")
+                    raise AgentInitializationException("Failed to upload file search files.", ex) from ex
+
+            if enable_file_search or agent.enable_file_search:
+                vector_store = await agent.create_vector_store(file_ids=file_search_file_ids)
+                agent.file_search_file_ids = file_search_file_ids
+                assistant_create_kwargs["vector_store_id"] = vector_store.id
+
+        agent.assistant = await agent.create_assistant(**assistant_create_kwargs)
         return agent
 
     @staticmethod

@@ -10,6 +10,13 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
+#####################################################################
+# The following sample demonstrates how to create an OpenAI         #
+# assistant using either Azure OpenAI or OpenAI, a chat completion  #
+# agent and have them participate in a group chat to work towards   #
+# the user's requirement.                                           #
+#####################################################################
+
 
 class ApprovalTerminationStrategy(TerminationStrategy):
     """A strategy for determining when an agent should terminate."""

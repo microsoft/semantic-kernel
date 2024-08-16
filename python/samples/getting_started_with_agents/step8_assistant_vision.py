@@ -12,10 +12,9 @@ from semantic_kernel.kernel import Kernel
 
 #####################################################################
 # The following sample demonstrates how to create an OpenAI         #
-# assistant using either Azure OpenAI or OpenAI. OpenAI Assistants  #
-# allow for function calling, the use of file search and a          #
-# code interpreter. Assistant Threads are used to manage the        #
-# conversation state, similar to a Semantic Kernel Chat History.    #
+# assistant using either Azure OpenAI or OpenAI and leverage the    #
+# multi-modal content types to have the assistant describe images   #
+# and answer questions about them.                                  #
 #####################################################################
 
 HOST_NAME = "Host"

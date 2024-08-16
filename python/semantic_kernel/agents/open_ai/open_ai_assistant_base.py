@@ -64,7 +64,8 @@ class OpenAIAssistantBase(Agent):
     enable_code_interpreter: bool | None = Field(False)
     enable_file_search: bool | None = Field(False)
     enable_json_response: bool | None = Field(False)
-    file_ids: list[str] | None = Field(default_factory=list, max_length=20)
+    code_interpreter_file_ids: list[str] | None = Field(default_factory=list, max_length=20)
+    file_search_file_ids: list[str] | None = Field(default_factory=list, max_length=20)
     temperature: float | None = Field(None)
     top_p: float | None = Field(None)
     vector_store_id: str | None = None
@@ -98,7 +99,7 @@ class OpenAIAssistantBase(Agent):
         enable_code_interpreter: bool | None = None,
         enable_file_search: bool | None = None,
         enable_json_response: bool | None = None,
-        file_ids: list[str] | None = [],
+        code_interpreter_file_ids: list[str] | None = [],
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
@@ -124,7 +125,7 @@ class OpenAIAssistantBase(Agent):
             enable_code_interpreter (bool): Enable code interpreter. Defaults to False. (optional)
             enable_file_search (bool): Enable file search. Defaults to False. (optional)
             enable_json_response (bool): Enable JSON response. Defaults to False. (optional)
-            file_ids (list[str]): The file ids. Defaults to []. (optional)
+            code_interpreter_file_ids (list[str]): The file ids. Defaults to []. (optional)
             temperature (float): The temperature. Defaults to None. (optional)
             top_p (float): The top p. Defaults to None. (optional)
             vector_store_id (str): The vector store id. Defaults to None. (optional)
@@ -146,7 +147,7 @@ class OpenAIAssistantBase(Agent):
             "enable_code_interpreter": enable_code_interpreter,
             "enable_file_search": enable_file_search,
             "enable_json_response": enable_json_response,
-            "file_ids": file_ids,
+            "code_interpreter_file_ids": code_interpreter_file_ids,
             "temperature": temperature,
             "top_p": top_p,
             "vector_store_id": vector_store_id,
@@ -175,8 +176,8 @@ class OpenAIAssistantBase(Agent):
         instructions: str | None = None,
         name: str | None = None,
         enable_code_interpreter: bool | None = None,
+        code_interpreter_file_ids: list[str] | None = None,
         enable_file_search: bool | None = None,
-        file_ids: list[str] | None = None,
         vector_store_id: str | None = None,
         metadata: dict[str, str] | None = {},
         **kwargs: Any,
@@ -184,16 +185,16 @@ class OpenAIAssistantBase(Agent):
         """Create the assistant.
 
         Args:
-            ai_model_id (str): The AI model id. Defaults to None. (optional)
-            description (str): The description. Defaults to None. (optional)
-            instructions (str): The instructions. Defaults to None. (optional)
-            name (str): The name. Defaults to None. (optional)
-            enable_code_interpreter (bool): Enable code interpreter. Defaults to None. (optional)
-            enable_file_search (bool): Enable file search. Defaults to None. (optional)
-            file_ids (list[str]): The file ids. Defaults to None. (optional)
-            vector_store_id (str): The vector store id. Defaults to None. (optional)
-            metadata (dict[str, str]): The metadata. Defaults to {}. (optional)
-            kwargs (Any): Extra keyword arguments.
+            ai_model_id: The AI model id. Defaults to None. (optional)
+            description: The description. Defaults to None. (optional)
+            instructions: The instructions. Defaults to None. (optional)
+            name: The name. Defaults to None. (optional)
+            enable_code_interpreter: Enable code interpreter. Defaults to None. (optional)
+            enable_file_search: Enable file search. Defaults to None. (optional)
+            code_interpreter_file_ids: The file ids. Defaults to None. (optional)
+            vector_store_id: The vector store id. Defaults to None. (optional)
+            metadata: The metadata. Defaults to {}. (optional)
+            kwargs: Extra keyword arguments.
 
         Returns:
             Assistant: The assistant
@@ -237,10 +238,10 @@ class OpenAIAssistantBase(Agent):
             create_assistant_kwargs["tools"] = tools
 
         tool_resources = {}
-        if file_ids is not None:
-            tool_resources["code_interpreter"] = {"file_ids": file_ids}
-        elif self.file_ids:
-            tool_resources["code_interpreter"] = {"file_ids": self.file_ids}
+        if code_interpreter_file_ids is not None:
+            tool_resources["code_interpreter"] = {"file_ids": code_interpreter_file_ids}
+        elif self.code_interpreter_file_ids:
+            tool_resources["code_interpreter"] = {"file_ids": self.code_interpreter_file_ids}
 
         if vector_store_id is not None:
             tool_resources["file_search"] = {"vector_store_ids": [vector_store_id]}

@@ -355,7 +355,7 @@ async def test_create_assistant(
             enable_code_interpreter=True,
             enable_file_search=True,
             vector_store_id="vector_store1",
-            file_ids=["file1", "file2"],
+            code_interpreter_file_ids=["file1", "file2"],
             metadata={"key": "value"},
         )
 
@@ -391,7 +391,7 @@ async def test_create_assistant_with_model_attributes(
             enable_code_interpreter=True,
             enable_file_search=True,
             vector_store_id="vector_store1",
-            file_ids=["file1", "file2"],
+            code_interpreter_file_ids=["file1", "file2"],
             metadata={"key": "value"},
             kwargs={"temperature": 0.1},
         )

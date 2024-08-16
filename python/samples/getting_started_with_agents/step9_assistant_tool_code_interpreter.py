@@ -7,6 +7,14 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
+#####################################################################
+# The following sample demonstrates how to create an OpenAI         #
+# assistant using either Azure OpenAI or OpenAI and leverage the    #
+# assistant's code interpreter functionality to have it write       #
+# Python code to print Fibonacci numbers.                           #
+#####################################################################
+
+
 AGENT_NAME = "CodeRunner"
 AGENT_INSTRUCTIONS = "Run the provided code file and return the result."
 
