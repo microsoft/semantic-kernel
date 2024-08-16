@@ -137,7 +137,7 @@ async def test_receive_processes_queue(channel_ref, message):
 
     assert queue_ref.is_empty is True
 
-    assert channel_ref.channel.receive.await_count > 1
+    assert channel_ref.channel.receive.await_count >= 1
     channel_ref.channel.receive.assert_any_await([message])
 
 

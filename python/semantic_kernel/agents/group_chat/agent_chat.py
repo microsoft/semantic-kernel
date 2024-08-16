@@ -34,6 +34,7 @@ class AgentChatProtocol(Protocol):
         ...
 
 
+@experimental_class
 class AgentChat(KernelBaseModel):
     """A base class chat interface for agents."""
 
@@ -62,7 +63,7 @@ class AgentChat(KernelBaseModel):
         with self._lock:
             self._is_active = False
 
-    def invoke(self, agent: Agent | None = None, is_joining: bool | None = False) -> AsyncIterable[ChatMessageContent]:
+    def invoke(self, agent: Agent | None = None, is_joining: bool = True) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent asynchronously."""
         raise NotImplementedError("Subclasses should implement this method")
 
@@ -100,8 +101,6 @@ class AgentChat(KernelBaseModel):
 
     def _get_agent_hash(self, agent: Agent):
         """Get the hash of an agent."""
-        from semantic_kernel.agents.agent import Agent  # noqa: F401
-
         hash_value = self.channel_map.get(agent, None)
         if hash_value is None:
             hash_value = KeyEncoder.generate_hash(agent.get_channel_keys())

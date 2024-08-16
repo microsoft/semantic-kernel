@@ -288,6 +288,23 @@ class OpenAIAssistantBase(Agent):
 
         return self.assistant
 
+    async def modify_assistant(self, assistant_id: str, **kwargs: Any) -> Assistant:
+        """Modify the assistant.
+
+        Args:
+            assistant_id: The assistant's current ID.
+            kwargs: Extra keyword arguments.
+
+        Returns:
+            Assistant: The modified assistant.
+        """
+        if self.assistant is None:
+            raise AgentInitializationException("The assistant has not been created.")
+
+        modified_assistant = await self.client.beta.assistants.update(assistant_id=assistant_id, **kwargs)
+        self.assistant = modified_assistant
+        return self.assistant
+
     @classmethod
     def _create_open_ai_assistant_definition(cls, assistant: "Assistant") -> dict[str, Any]:
         """Create an OpenAI Assistant Definition from the provided assistant dictionary.
@@ -474,7 +491,7 @@ class OpenAIAssistantBase(Agent):
         return await OpenAIAssistantBase.create_chat_message(self.client, thread_id, message)
 
     @classmethod
-    async def create_chat_message(cls, client, thread_id: str, message: ChatMessageContent) -> "Message":
+    async def create_chat_message(cls, client: AsyncOpenAI, thread_id: str, message: ChatMessageContent) -> "Message":
         """Class method to add a chat message, callable from class or instance.
 
         Args:
@@ -897,9 +914,9 @@ class OpenAIAssistantBase(Agent):
     def _merge_options(
         self,
         ai_model_id: str | None = None,
-        enable_code_interpreter: bool | None = False,
-        enable_file_search: bool | None = False,
-        enable_json_response: bool | None = False,
+        enable_code_interpreter: bool | None = None,
+        enable_file_search: bool | None = None,
+        enable_json_response: bool | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,

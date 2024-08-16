@@ -3,6 +3,7 @@
 
 import asyncio
 from collections import deque
+from dataclasses import dataclass, field
 
 from pydantic import Field, SkipValidation
 
@@ -28,11 +29,12 @@ class QueueReference(KernelBaseModel):
 
 
 @experimental_class
-class ChannelReference(KernelBaseModel):
+@dataclass
+class ChannelReference:
     """Tracks a channel along with its hashed key."""
 
-    channel: AgentChannel = Field(default_factory=AgentChannel)
     hash: str
+    channel: AgentChannel = field(default_factory=AgentChannel)
 
 
 @experimental_class
@@ -104,10 +106,8 @@ class BroadcastQueue(KernelBaseModel):
                     break
 
                 messages = queue_ref.queue[0]
-                receive_task = asyncio.create_task(channel_ref.channel.receive(messages))
-
             try:
-                await receive_task
+                await channel_ref.channel.receive(messages)
             except Exception as e:
                 queue_ref.receive_failure = e
 

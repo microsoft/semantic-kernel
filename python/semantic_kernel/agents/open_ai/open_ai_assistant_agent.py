@@ -269,6 +269,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             if enable_file_search or agent.enable_file_search:
                 vector_store = await agent.create_vector_store(file_ids=file_search_file_ids)
                 agent.file_search_file_ids = file_search_file_ids
+                agent.vector_store_id = vector_store.id
                 assistant_create_kwargs["vector_store_id"] = vector_store.id
 
         agent.assistant = await agent.create_assistant(**assistant_create_kwargs)

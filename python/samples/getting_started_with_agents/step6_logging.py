@@ -11,6 +11,16 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
+###################################################################
+# The following sample demonstrates how to create a simple,       #
+# agent group chat that utilizes An Art Director Chat Completion  #
+# Agent along with a Copy Writer Chat Completion Agent to         #
+# complete a task. The main point of this sample is to note how   #
+# to enable logging to view all interactions between the agents   #
+# and the model.                                                  #
+###################################################################
+
+
 # NOTE: This is all that is required to enable logging
 logging.basicConfig(level=logging.DEBUG)
 

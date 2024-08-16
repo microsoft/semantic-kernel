@@ -23,7 +23,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class AgentGroupChat(AgentChat):
     """An agent chat that supports multi-turn interactions."""
 
-    agent_ids: set[str] = Field(default_factory=set)
+    agent_ids: set[str]
     agents: list[Agent] = Field(default_factory=list)
 
     is_complete: bool = False
@@ -36,7 +36,13 @@ class AgentGroupChat(AgentChat):
         termination_strategy: TerminationStrategy | None = None,
         selection_strategy: SelectionStrategy | None = None,
     ) -> None:
-        """Initialize a new instance of AgentGroupChat."""
+        """Initialize a new instance of AgentGroupChat.
+
+        Args:
+            agents: The agents to add to the group chat.
+            termination_strategy: The termination strategy to use.
+            selection_strategy: The selection strategy
+        """
         agent_ids = {agent.id for agent in agents} if agents else set()
 
         if agents is None:
@@ -55,24 +61,42 @@ class AgentGroupChat(AgentChat):
         super().__init__(**args)
 
     def add_agent(self, agent: Agent) -> None:
-        """Add an agent to the group chat."""
+        """Add an agent to the group chat.
+
+        Args:
+            agent: The agent to add.
+        """
         if agent.id not in self.agent_ids:
             self.agent_ids.add(agent.id)
             self.agents.append(agent)
 
     async def invoke_single_turn(self, agent: Agent) -> AsyncIterable[ChatMessageContent]:
-        """Invoke the agent chat for a single turn."""
+        """Invoke the agent chat for a single turn.
+
+        Args:
+            agent: The agent to invoke.
+
+        Yields:
+            The chat message.
+        """
         async for message in self.invoke(agent, is_joining=True):
             if message.role == AuthorRole.ASSISTANT:
                 task = self.termination_strategy.should_terminate(agent, self.history.messages)
                 self.is_complete = await task
             yield message
 
-    async def invoke(
-        self, agent: Agent | None = None, is_joining: bool | None = False
-    ) -> AsyncIterable[ChatMessageContent]:
-        """Invoke the agent chat asynchronously."""
-        # If agent and is_joining are provided, handle as single interaction.
+    async def invoke(self, agent: Agent | None = None, is_joining: bool = True) -> AsyncIterable[ChatMessageContent]:
+        """Invoke the agent chat asynchronously.
+
+        Handles both group interactions and single agent interactions based on the provided arguments.
+
+        Args:
+            agent: The agent to invoke. If not provided, the method processes all agents in the chat.
+            is_joining: Controls whether the agent joins the chat. Defaults to True.
+
+        Yields:
+            The chat message.
+        """
         if agent is not None:
             if is_joining:
                 self.add_agent(agent)
@@ -85,7 +109,6 @@ class AgentGroupChat(AgentChat):
 
             return
 
-        # Default behavior if no agent is provided or is_joining is False.
         if self.agents is None:
             raise AgentChatException("No agents are available")
 

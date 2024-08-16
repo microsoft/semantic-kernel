@@ -12,6 +12,15 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
+###################################################################
+# The following sample demonstrates how to configure an Agent     #
+# Group Chat, and invoke an agent with only a single turn.        #
+# A custom termination strategy is provided where the model is    #
+# to rate the user input on creativity and expressiveness         #
+# and end the chat when a score of 70 or higher is provided.      #
+###################################################################
+
+
 SCORE_COMPLETED_THRESHOLD = 70
 TUTOR_NAME = "Tutor"
 TUTOR_INSTRUCTIONS = """

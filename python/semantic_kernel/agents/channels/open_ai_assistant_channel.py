@@ -57,7 +57,6 @@ class OpenAIAssistantChannel(AgentChannel):
                 if agent.name:
                     agent_names[message.assistant_id] = agent.name
             assistant_name = agent_names.get(message.assistant_id) if message.assistant_id else message.assistant_id
-            assistant_name = assistant_name or message.assistant_id
 
             content: ChatMessageContent = OpenAIAssistantBase._generate_message_content(str(assistant_name), message)
 

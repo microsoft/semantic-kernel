@@ -9,6 +9,13 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
+###################################################################
+# The following sample demonstrates how to create a simple,       #
+# agent group chat that utilizes An Art Director Chat Completion  #
+# Agent along with a Copy Writer Chat Completion Agent to         #
+# complete a task.                                                #
+###################################################################
+
 
 class ApprovalTerminationStrategy(TerminationStrategy):
     """A strategy for determining when an agent should terminate."""

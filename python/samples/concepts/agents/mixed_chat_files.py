@@ -45,7 +45,7 @@ async def invoke_agent(
         await chat.add_chat_message(message=ChatMessageContent(role=AuthorRole.USER, content=input))
         print(f"# {AuthorRole.USER}: '{input}'")
 
-    async for content in chat.invoke(agent=agent, is_joining=True):
+    async for content in chat.invoke(agent=agent):
         print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
 
 

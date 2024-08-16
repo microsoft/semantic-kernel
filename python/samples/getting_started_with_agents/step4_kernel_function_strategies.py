@@ -13,6 +13,16 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.kernel import Kernel
 
+###################################################################
+# The following sample demonstrates how to create a simple,       #
+# agent group chat that utilizes An Art Director Chat Completion  #
+# Agent along with a Copy Writer Chat Completion Agent to         #
+# complete a task. The sample also shows how to specify a Kernel  #
+# Function termination and selection strategy to determine when   #
+# to end the chat or how to select the next agent to take a turn  #
+# in the conversation.                                            #
+###################################################################
+
 REVIEWER_NAME = "ArtDirector"
 REVIEWER_INSTRUCTIONS = """
 You are an art director who has opinions about copywriting born of a love for David Ogilvy.
