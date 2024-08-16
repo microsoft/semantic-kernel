@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
@@ -125,17 +124,3 @@ def test_create_options_with_function_choice_behavior():
     )
     assert settings.function_choice_behavior
         
-
-def test_create_options_with_function_choice_behavior_from_function_call():
-    settings = MistralAIChatPromptExecutionSettings(
-        service_id="test_service",
-        extension_data={
-            "temperature": 0.5,
-            "top_p": 0.5,
-            "max_tokens": 128,
-            "tools": [{}],
-            "messages": [{"role": "system", "content": "Hello"}],
-            "function_call_behavior": FunctionCallBehavior.EnableFunctions()
-        },
-    )
-    assert settings.function_choice_behavior
