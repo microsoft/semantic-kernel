@@ -58,7 +58,7 @@ def mock_assistant():
         top_p=0.9,
         response_format={"type": "json_object"},
         tool_resources=ToolResources(
-            code_interpreter=ToolResourcesCodeInterpreter(file_ids=["file1", "file2"]),
+            code_interpreter=ToolResourcesCodeInterpreter(code_interpreter_file_ids=["file1", "file2"]),
             file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
         ),
     )
@@ -87,7 +87,7 @@ def mock_assistant_json():
         top_p=0.9,
         response_format={"type": "json_object"},
         tool_resources=ToolResources(
-            code_interpreter=ToolResourcesCodeInterpreter(file_ids=["file1", "file2"]),
+            code_interpreter=ToolResourcesCodeInterpreter(code_interpreter_file_ids=["file1", "file2"]),
             file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
         ),
     )
@@ -199,7 +199,7 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, openai_unit_test
             "enable_code_interpreter": True,
             "enable_file_search": True,
             "enable_json_response": True,
-            "file_ids": ["file1", "file2"],
+            "code_interpreter_file_ids": ["file1", "file2"],
             "temperature": 0.7,
             "top_p": 0.9,
             "vector_store_id": "vector_store1",
@@ -370,7 +370,7 @@ def test_create_open_ai_assistant_definition(mock_assistant, openai_unit_test_en
         "enable_code_interpreter": True,
         "enable_file_search": True,
         "enable_json_response": True,
-        "file_ids": ["file1", "file2"],
+        "code_interpreter_file_ids": ["file1", "file2"],
         "temperature": 0.7,
         "top_p": 0.9,
         "vector_store_id": "vector_store1",
@@ -405,7 +405,7 @@ def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_j
         "enable_code_interpreter": True,
         "enable_file_search": True,
         "enable_json_response": True,
-        "file_ids": ["file1", "file2"],
+        "code_interpreter_file_ids": ["file1", "file2"],
         "temperature": 0.7,
         "top_p": 0.9,
         "vector_store_id": "vector_store1",

@@ -312,7 +312,7 @@ class OpenAIAssistantBase(Agent):
         tool_resources = getattr(assistant, "tool_resources", None)
         if tool_resources:
             if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
-                file_ids = getattr(tool_resources.code_interpreter, "file_ids", [])
+                file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
 
             if hasattr(tool_resources, "file_search") and tool_resources.file_search:
                 vector_store_ids = getattr(tool_resources.file_search, "vector_store_ids", [])
@@ -337,7 +337,7 @@ class OpenAIAssistantBase(Agent):
             "enable_code_interpreter": enable_code_interpreter,
             "enable_file_search": enable_file_search,
             "enable_json_response": enable_json_response,
-            "file_ids": file_ids,
+            "code_interpreter_file_ids": file_ids,
             "temperature": assistant.temperature,
             "top_p": assistant.top_p,
             "vector_store_id": vector_store_id if vector_store_id else None,
