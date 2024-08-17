@@ -4,9 +4,9 @@
 // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/ExperimentalAttribute.cs
 // made internal rather than public.
 
+#if !NET8_0_OR_GREATER
 namespace System.Diagnostics.CodeAnalysis;
 
-#if !NET8_0_OR_GREATER
 /// <summary>
 ///  Indicates that an API is experimental and it may change in the future.
 /// </summary>

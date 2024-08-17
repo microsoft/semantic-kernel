@@ -48,7 +48,8 @@ internal sealed class AzureOpenAIClientCore : ClientCore
         var options = GetOpenAIClientOptions(httpClient);
 
         this.DeploymentOrModelName = deploymentName;
-        this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
+        this.Endpoint = new Uri(endpoint);
+        this.Client = new OpenAIClient(this.Endpoint, new AzureKeyCredential(apiKey), options);
     }
 
     /// <summary>
@@ -73,7 +74,8 @@ internal sealed class AzureOpenAIClientCore : ClientCore
         var options = GetOpenAIClientOptions(httpClient);
 
         this.DeploymentOrModelName = deploymentName;
-        this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
+        this.Endpoint = new Uri(endpoint);
+        this.Client = new OpenAIClient(this.Endpoint, credential, options);
     }
 
     /// <summary>

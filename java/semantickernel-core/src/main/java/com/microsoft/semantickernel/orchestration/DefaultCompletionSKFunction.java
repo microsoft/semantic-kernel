@@ -193,6 +193,16 @@ public class DefaultCompletionSKFunction
                                     prompt ->
                                             performCompletionRequest(
                                                     client, requestSettings, prompt, context))
+                            .flatMapMany(
+                                    prompt -> {
+                                        LOGGER.debug("RENDERED PROMPT: \n" + prompt);
+                                        return client.completeAsync(prompt, requestSettings);
+                                    })
+                            .single()
+                            .map(
+                                    completion -> {
+                                        return context.update(completion.get(0));
+                                    })
                             .doOnError(
                                     ex -> {
                                         LOGGER.warn(

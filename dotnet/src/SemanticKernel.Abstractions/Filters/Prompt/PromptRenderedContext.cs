@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// Class with data related to prompt after rendering.
 /// </summary>
 [Experimental("SKEXP0001")]
+[Obsolete("This class is deprecated in favor of PromptRenderContext class, which is used in IPromptRenderFilter interface.")]
 public sealed class PromptRenderedContext : PromptFilterContext
 {
     private string _renderedPrompt;

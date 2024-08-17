@@ -8,7 +8,14 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.services.AIService;
 import java.util.List;
 import javax.annotation.Nonnull;
+<<<<<<< AI
 import reactor.core.publisher.Flux;
+=======
+<<<<<<< HEAD
+import reactor.core.publisher.Flux;
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import reactor.core.publisher.Mono;
 
 /** Interface for text completion services */
@@ -24,6 +31,10 @@ public interface TextCompletion extends AIService, Buildable {
     Mono<List<String>> completeAsync(
             @Nonnull String text, @Nonnull CompletionRequestSettings requestSettings);
 
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
     /**
      * Creates a completion for the prompt and settings.
      *
@@ -34,10 +45,19 @@ public interface TextCompletion extends AIService, Buildable {
     Flux<String> completeStreamAsync(
             @Nonnull String text, @Nonnull CompletionRequestSettings requestSettings);
 
+<<<<<<< AI
+=======
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     static Builder builder() {
         return BuildersSingleton.INST.getInstance(Builder.class);
     }
 
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
     /**
      * Returns the default completion type for this service. This will be the type of request used
      * (streaming or non-streaming) when calls to this service are made. Defaults to {@link
@@ -47,11 +67,20 @@ public interface TextCompletion extends AIService, Buildable {
      */
     CompletionType defaultCompletionType();
 
+<<<<<<< AI
+=======
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     interface Builder extends SemanticKernelBuilder<TextCompletion> {
 
         Builder withOpenAIClient(OpenAIAsyncClient client);
 
         Builder withModelId(String modelId);
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
 
         /**
          * Sets the default completion type for this service. This will be the type of request used
@@ -59,5 +88,10 @@ public interface TextCompletion extends AIService, Buildable {
          * CompletionType#STREAMING}.
          */
         Builder withDefaultCompletionType(CompletionType completionType);
+<<<<<<< AI
+=======
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     }
 }

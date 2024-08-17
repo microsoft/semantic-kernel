@@ -24,6 +24,7 @@ public sealed class OpenAIFunctionToolCallTests
 
         // Act & Assert
         Assert.Equal(expectedName, openAIFunctionToolCall.FullyQualifiedName);
+        Assert.Same(openAIFunctionToolCall.FullyQualifiedName, openAIFunctionToolCall.FullyQualifiedName);
     }
 
     [Fact]

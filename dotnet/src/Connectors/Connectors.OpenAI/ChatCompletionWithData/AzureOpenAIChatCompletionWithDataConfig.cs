@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 public class AzureOpenAIChatCompletionWithDataConfig
 {
     /// <summary>
@@ -27,7 +29,7 @@ public class AzureOpenAIChatCompletionWithDataConfig
     public string CompletionApiKey { get; set; } = string.Empty;
 
     /// <summary>
-    /// Azure OpenAI Completion API version (e.g. 2023-06-01-preview)
+    /// Azure OpenAI Completion API version (e.g. 2024-02-01)
     /// </summary>
     public string CompletionApiVersion { get; set; } = string.Empty;
 

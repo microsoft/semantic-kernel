@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Azure.AI.OpenAI;
@@ -26,9 +25,6 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
-    /// <param name="chatMessage">Azure SDK chat message</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="metadata">Additional metadata</param>
     internal OpenAIChatMessageContent(ChatResponseMessage chatMessage, string modelId, IReadOnlyDictionary<string, object?>? metadata = null)
         : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, modelId, chatMessage, System.Text.Encoding.UTF8, CreateMetadataDictionary(chatMessage.ToolCalls, metadata))
     {
@@ -70,7 +66,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
         {
             if (toolCall is ChatCompletionsFunctionToolCall functionToolCall)
             {
-                (functionToolCallList ??= new List<OpenAIFunctionToolCall>()).Add(new OpenAIFunctionToolCall(functionToolCall));
+                (functionToolCallList ??= []).Add(new OpenAIFunctionToolCall(functionToolCall));
             }
         }
 
@@ -79,7 +75,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
             return functionToolCallList;
         }
 
-        return Array.Empty<OpenAIFunctionToolCall>();
+        return [];
     }
 
     private static IReadOnlyDictionary<string, object?>? CreateMetadataDictionary(

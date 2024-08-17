@@ -40,7 +40,7 @@ internal static class HttpRequest
 
     private static StringContent? GetJsonContent(object? payload)
     {
-        if (payload == null)
+        if (payload is null)
         {
             return null;
         }

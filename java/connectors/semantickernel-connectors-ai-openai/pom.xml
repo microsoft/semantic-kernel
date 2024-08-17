@@ -6,7 +6,11 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
+<<<<<<< HEAD
         <version>0.2.10-alpha-SNAPSHOT</version>
+=======
+        <version>0.2.9-alpha-SNAPSHOT</version>
+>>>>>>> main
         <relativePath>../../pom.xml</relativePath>
     </parent>
 

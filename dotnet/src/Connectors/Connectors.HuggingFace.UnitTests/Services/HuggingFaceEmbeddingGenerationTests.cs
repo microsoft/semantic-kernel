@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Xunit;
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
@@ -35,7 +35,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
-        await sut.GenerateEmbeddingsAsync(new List<string>());
+        await sut.GenerateEmbeddingsAsync([]);
 
         //Assert
         Assert.EndsWith("/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
@@ -48,7 +48,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
-        await sut.GenerateEmbeddingsAsync(new List<string>());
+        await sut.GenerateEmbeddingsAsync([]);
 
         //Assert
         Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
@@ -66,7 +66,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
-        await sut.GenerateEmbeddingsAsync(new List<string>());
+        await sut.GenerateEmbeddingsAsync([]);
 
         //Assert
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
@@ -81,7 +81,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", httpClient: this._httpClient);
 
         //Act
-        await sut.GenerateEmbeddingsAsync(new List<string>());
+        await sut.GenerateEmbeddingsAsync([]);
 
         //Assert
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
@@ -94,7 +94,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
-        await sut.GenerateEmbeddingsAsync(new List<string>());
+        await sut.GenerateEmbeddingsAsync([]);
 
         //Assert
         Assert.Equal("https://fake-random-test-host/fake-path/pipeline/feature-extraction/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
@@ -124,13 +124,13 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
-        var embeddings = await sut.GenerateEmbeddingsAsync(new List<string>() { "something" });
+        var embeddings = await sut.GenerateEmbeddingsAsync(["something"]);
 
         //Assert
 
         Assert.NotNull(embeddings);
-        Assert.Equal(3, embeddings.Count);
-        Assert.Equal(768, embeddings.First().Length);
+        Assert.Single(embeddings);
+        Assert.Equal(1024, embeddings.First().Length);
     }
 
     public void Dispose()

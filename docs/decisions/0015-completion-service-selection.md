@@ -1,6 +1,6 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: accepted
+status: superseded by [ADR-0038](0038-completion-service-selection.md)
 contact: SergeyMenshykh
 date: 2023-10-25
 deciders: markwallace-microsoft, matthewbolanos
