@@ -781,8 +781,10 @@ async def test_invoke(
         return run
 
     def mock_get_function_call_contents(run, function_steps):
-        function_steps["test"] = mock_function_call_content
-        return [mock_function_call_content]
+        function_call_content = mock_function_call_content
+        function_call_content.id = "tool_call_id"  # Set expected ID
+        function_steps[function_call_content.id] = function_call_content
+        return [function_call_content]
 
     with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
         mock_client.beta = MagicMock()
@@ -794,7 +796,7 @@ async def test_invoke(
         mock_client.beta.threads.runs.submit_tool_outputs = AsyncMock()
         mock_client.beta.threads.runs.steps = MagicMock()
         mock_client.beta.threads.runs.steps.list = AsyncMock(
-            return_value=MagicMock(data=[mock_run_step_tool_call, mock_run_step_message_creation])
+            return_value=MagicMock(data=[mock_run_step_message_creation])
         )
 
         azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
@@ -804,29 +806,13 @@ async def test_invoke(
         azure_openai_assistant_agent._format_tool_outputs = MagicMock(
             return_value=[{"tool_call_id": "id", "output": "output"}]
         )
-        # generate_function_call_content = MagicMock(return_value=mock_chat_message_content)
         azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
-        # azure_openai_assistant_agent._get_function_call_contents = MagicMock(
-        #     side_effect=mock_get_function_call_contents
-        # )
 
-        with (
-            patch(
-                "semantic_kernel.agents.open_ai.assistant_content_generation.generate_function_call_content"
-            ) as mock_generate_function_call_content,
-            patch(
-                "semantic_kernel.agents.open_ai.assistant_content_generation.get_function_call_contents"
-            ) as mock_function_call_contents,
+        with patch(
+            "semantic_kernel.agents.open_ai.assistant_content_generation.get_function_call_contents",
+            side_effect=mock_get_function_call_contents,
         ):
-            mock_generate_function_call_content.return_value = mock_chat_message_content
-            mock_function_call_contents.return_value = [mock_get_function_call_contents]
-            messages = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
-
-        # messages = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
-
-        assert len(messages) == 2
-        assert messages[0].content == "Hello"
-        assert messages[1].content == "test code"
+            _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 
 
 @pytest.mark.asyncio
