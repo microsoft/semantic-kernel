@@ -164,5 +164,7 @@
   "cSpell.enabledLanguageIds": [
     "COBOL",
     "ACUCOBOL"
-  ]
+  ],
+  "cursorless.commandHistory": true,
+  "cmake.options.statusBarVisibility": "visible"
 }
