@@ -43,7 +43,6 @@
     }
   },
   "typescript.updateImportsOnFileMove.enabled": "always",
-  "eslint.enable": true,
   "eslint.validate": [
     "javascript",
     "javascriptreact",
