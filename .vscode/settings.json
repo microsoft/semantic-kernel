@@ -166,5 +166,6 @@
     "ACUCOBOL"
   ],
   "cursorless.commandHistory": true,
-  "cmake.options.statusBarVisibility": "visible"
+  "cmake.options.statusBarVisibility": "visible",
+  "files.autoSave": "afterDelay"
 }

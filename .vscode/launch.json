@@ -20,7 +20,7 @@
     {
       "cwd": "${workspaceFolder}/python",
       "name": "Python: Test Module",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "pytest",
       "args": [
