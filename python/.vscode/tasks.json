@@ -93,8 +93,7 @@
             "command": "poetry",
             "args": [
                 "install",
-                "--extras",
-                "all"
+                "--all-extras"
             ],
             "presentation": {
                 "reveal": "silent",
@@ -110,6 +109,24 @@
                 "run",
                 "pytest",
                 "tests/unit/"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Python: Tests - Unit - Failed Only",
+            "type": "shell",
+            "command": "poetry",
+            "args": [
+                "run",
+                "pytest",
+                "tests/unit/",
+                "--last-failed",
+                "-v"
             ],
             "group": "test",
             "presentation": {

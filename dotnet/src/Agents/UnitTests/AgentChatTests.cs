@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -32,15 +30,15 @@ public class AgentChatTests
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
         // Inject history
-        chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, "More")]);
-        chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, "And then some")]);
+        chat.Add([new ChatMessageContent(AuthorRole.User, "More")]);
+        chat.Add([new ChatMessageContent(AuthorRole.User, "And then some")]);
 
         // Verify updated history
         await this.VerifyHistoryAsync(expectedCount: 2, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent hasn't joined
 
         // Invoke with input & verify (agent joins chat)
-        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
+        chat.Add(new ChatMessageContent(AuthorRole.User, "hi"));
         await chat.InvokeAsync().ToArrayAsync();
         Assert.Equal(1, chat.Agent.InvokeCount);
 
@@ -74,8 +72,7 @@ public class AgentChatTests
         lock (syncObject)
         {
             tasks =
-                new[]
-                {
+                [
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
@@ -84,7 +81,7 @@ public class AgentChatTests
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
-                };
+                ];
         }
 
         // Signal tasks to execute
@@ -112,40 +109,15 @@ public class AgentChatTests
 
     private async Task VerifyHistoryAsync(int expectedCount, IAsyncEnumerable<ChatMessageContent> history)
     {
-        if (expectedCount == 0)
-        {
-            Assert.Empty(history);
-        }
-        else
-        {
-            Assert.NotEmpty(history);
-            Assert.Equal(expectedCount, await history.CountAsync());
-        }
+        Assert.Equal(expectedCount, await history.CountAsync());
     }
 
     private sealed class TestChat : AgentChat
     {
-        public TestAgent Agent { get; } = new TestAgent();
+        public MockAgent Agent { get; } = new() { Response = [new(AuthorRole.Assistant, "sup")] };
 
         public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             CancellationToken cancellationToken = default) =>
                 this.InvokeAgentAsync(this.Agent, cancellationToken);
-    }
-
-    private sealed class TestAgent : ChatHistoryKernelAgent
-    {
-        public int InvokeCount { get; private set; }
-
-        public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-            IReadOnlyList<ChatMessageContent> history,
-            ILogger logger,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            await Task.Delay(0, cancellationToken);
-
-            this.InvokeCount++;
-
-            yield return new ChatMessageContent(AuthorRole.Assistant, "sup");
-        }
     }
 }

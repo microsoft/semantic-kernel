@@ -71,7 +71,7 @@ public class SerializingPrompts(ITestOutputHelper output) : LearnBaseTest([
         // Start the chat loop
         Console.Write("User > ");
         string? userInput;
-        while ((userInput = Console.ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) is not null)
         {
             // Invoke handlebars prompt
             var intent = await kernel.InvokeAsync(

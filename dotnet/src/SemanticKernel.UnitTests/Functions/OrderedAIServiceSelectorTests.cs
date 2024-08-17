@@ -110,6 +110,26 @@ public class OrderedAIServiceSelectorTests
     }
 
     [Fact]
+    public void ItGetsDefaultServiceForNotFoundModel()
+    {
+        // Arrange
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
+        Kernel kernel = builder.Build();
+
+        var promptConfig = new PromptTemplateConfig() { Template = "Hello AI" };
+        promptConfig.AddExecutionSettings(new PromptExecutionSettings { ModelId = "notfound" });
+        var function = kernel.CreateFunctionFromPrompt(promptConfig);
+        var serviceSelector = new OrderedAIServiceSelector();
+
+        // Act
+        // Assert
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []);
+        Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
+    }
+
+    [Fact]
     public void ItUsesDefaultServiceForNoExecutionSettings()
     {
         // Arrange

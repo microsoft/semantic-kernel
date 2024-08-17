@@ -106,6 +106,241 @@ public class PromptTemplateConfigTests
     }
 
     [Fact]
+    public void DeserializingDoesNotAutoSetServiceIdWhenNotProvided()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "description": "",
+              "execution_settings": 
+              {
+                "service1": {
+                  "model_id": "gpt-4",
+                  "max_tokens": 200,
+                  "temperature": 0.2,
+                  "top_p": 0.0,
+                  "presence_penalty": 0.0,
+                  "frequency_penalty": 0.0,
+                  "stop_sequences": 
+                  [
+                    "Human",
+                    "AI"
+                  ]
+                },
+                "service2": {
+                  "model_id": "gpt-3.5_turbo",
+                  "max_tokens": 256,
+                  "temperature": 0.3,
+                  "top_p": 0.0,
+                  "presence_penalty": 0.0,
+                  "frequency_penalty": 0.0,
+                  "stop_sequences": 
+                  [
+                    "Human",
+                    "AI"
+                  ]
+                }
+              }
+            }
+            """;
+
+        // Act
+        var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+        Assert.Null(promptTemplateConfig.ExecutionSettings["service1"].ServiceId);
+        Assert.Null(promptTemplateConfig.ExecutionSettings["service2"].ServiceId);
+    }
+
+    [Fact]
+    public void DeserializingDoesNotAutoSetServiceIdWhenDefault()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "description": "",
+              "execution_settings": 
+              {
+                "default": {
+                  "model_id": "gpt-4",
+                  "max_tokens": 200,
+                  "temperature": 0.2,
+                  "top_p": 0.0,
+                  "presence_penalty": 0.0,
+                  "frequency_penalty": 0.0,
+                  "stop_sequences": 
+                  [
+                    "Human",
+                    "AI"
+                  ]
+                }
+              }
+            }
+            """;
+
+        // Act
+        var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+        Assert.NotNull(promptTemplateConfig.DefaultExecutionSettings);
+        Assert.Null(promptTemplateConfig.DefaultExecutionSettings?.ServiceId);
+    }
+
+    [Fact]
+    public void DeserializingServiceIdUnmatchingIndexShouldThrow()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "description": "",
+              "execution_settings": 
+              {
+                "service1": {
+                  "model_id": "gpt-4",
+                  "max_tokens": 200,
+                  "temperature": 0.2,
+                  "top_p": 0.0,
+                  "presence_penalty": 0.0,
+                  "frequency_penalty": 0.0,
+                  "stop_sequences": 
+                  [
+                    "Human",
+                    "AI"
+                  ]
+                },
+                "service2": {
+                  "service_id": "service3",
+                  "model_id": "gpt-3.5_turbo",
+                  "max_tokens": 256,
+                  "temperature": 0.3,
+                  "top_p": 0.0,
+                  "presence_penalty": 0.0,
+                  "frequency_penalty": 0.0,
+                  "stop_sequences": 
+                  [
+                    "Human",
+                    "AI"
+                  ]
+                }
+              }
+            }
+            """;
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload));
+    }
+
+    [Fact]
+    public void ItCannotAddExecutionSettingsWithSameServiceId()
+    {
+        // Arrange
+        var settings = new PromptTemplateConfig();
+        settings.AddExecutionSettings(new PromptExecutionSettings(), "service1");
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => settings.AddExecutionSettings(new PromptExecutionSettings(), "service1"));
+    }
+
+    [Fact]
+    public void ItAddExecutionSettingsAndNeverOverwriteServiceId()
+    {
+        // Arrange
+        var promptTemplateConfig = new PromptTemplateConfig();
+        var settings1 = new PromptExecutionSettings { ModelId = "model-service-3", ServiceId = "should not override" };
+
+        // Act
+        promptTemplateConfig.AddExecutionSettings(new PromptExecutionSettings { ModelId = "model1" });
+        promptTemplateConfig.AddExecutionSettings(new PromptExecutionSettings { ModelId = "model2" }, "service1");
+        promptTemplateConfig.AddExecutionSettings(new PromptExecutionSettings { ServiceId = "service2", ModelId = "model-service-2" });
+        promptTemplateConfig.AddExecutionSettings(new PromptExecutionSettings { ServiceId = "service3", ModelId = "model-service-3" });
+        promptTemplateConfig.AddExecutionSettings(settings1);
+
+        // Assert
+        Assert.Equal("model1", promptTemplateConfig.ExecutionSettings["default"].ModelId);
+        Assert.Null(promptTemplateConfig.ExecutionSettings["default"].ServiceId);
+
+        Assert.Equal("model2", promptTemplateConfig.ExecutionSettings["service1"].ModelId);
+        Assert.Null(promptTemplateConfig.ExecutionSettings["service1"].ServiceId);
+
+        Assert.Equal("model-service-2", promptTemplateConfig.ExecutionSettings["service2"].ModelId);
+        Assert.Equal("service2", promptTemplateConfig.ExecutionSettings["service2"].ServiceId);
+
+        Assert.Equal("model-service-3", promptTemplateConfig.ExecutionSettings["service3"].ModelId);
+        Assert.Equal("service3", promptTemplateConfig.ExecutionSettings["service3"].ServiceId);
+
+        // Never changes settings id
+        Assert.Equal("should not override", settings1.ServiceId);
+        Assert.True(promptTemplateConfig.ExecutionSettings.ContainsKey("should not override"));
+    }
+
+    [Fact]
+    public void ItThrowsWhenServiceIdIsProvidedAndExecutionSettingsAlreadyHasAServiceIdPropertySet()
+    {
+        // Arrange
+        var promptTemplateConfig = new PromptTemplateConfig();
+        var settings = new PromptExecutionSettings { ModelId = "model-service-3", ServiceId = "service2" };
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => promptTemplateConfig.AddExecutionSettings(settings, "service1"));
+    }
+
+    [Fact]
+    public void DeserializingServiceIdSameIndexKeepsLast()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "description": "",
+              "execution_settings": 
+              {
+                "service1": {
+                  "model_id": "gpt-4",
+                  "max_tokens": 200,
+                  "temperature": 0.2,
+                  "top_p": 0.0,
+                  "presence_penalty": 0.0,
+                  "frequency_penalty": 0.0,
+                  "stop_sequences": 
+                  [
+                    "Human",
+                    "AI"
+                  ]
+                },
+                "service1": {
+                  "model_id": "gpt-3.5_turbo",
+                  "max_tokens": 256,
+                  "temperature": 0.3,
+                  "top_p": 0.0,
+                  "presence_penalty": 0.0,
+                  "frequency_penalty": 0.0,
+                  "stop_sequences": 
+                  [
+                    "Human",
+                    "AI"
+                  ]
+                }
+              }
+            }
+            """;
+
+        // Act
+        var promptTemplate = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplate);
+        Assert.NotNull(promptTemplate.ExecutionSettings);
+        Assert.Single(promptTemplate.ExecutionSettings);
+        Assert.Null(promptTemplate.ExecutionSettings["service1"].ServiceId);
+        Assert.Equal("gpt-3.5_turbo", promptTemplate.ExecutionSettings["service1"].ModelId);
+    }
+
+    [Fact]
     public void DeserializingExpectCompletion()
     {
         // Arrange

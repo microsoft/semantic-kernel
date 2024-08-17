@@ -77,7 +77,6 @@ public static class KernelFunctionCombinators
     /// <param name="kernel">The kernel to use for the operations.</param>
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token to monitor for a cancellation request.</param>
-    /// <returns></returns>
     public static Task<FunctionResult> InvokePipelineAsync(
         IEnumerable<KernelFunction> functions, Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken) =>
         Pipe(functions).InvokeAsync(kernel, arguments, cancellationToken);
@@ -89,7 +88,6 @@ public static class KernelFunctionCombinators
     /// <param name="kernel">The kernel to use for the operations.</param>
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token to monitor for a cancellation request.</param>
-    /// <returns></returns>
     public static Task<FunctionResult> InvokePipelineAsync(
         IEnumerable<(KernelFunction Function, string OutputVariable)> functions, Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken) =>
         Pipe(functions).InvokeAsync(kernel, arguments, cancellationToken);

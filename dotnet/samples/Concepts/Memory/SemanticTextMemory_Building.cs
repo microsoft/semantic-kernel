@@ -94,7 +94,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
         Query: Can I build a chat with SK?
 
         Result 1:
-          URL:     : https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins/ChatPlugin/ChatGPT
+          URL:     : https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples/ChatPlugin/ChatGPT
           Title    : Sample demonstrating how to create a chat plugin interfacing with ChatGPT
 
         Result 2:
@@ -159,9 +159,9 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
                 = "README: Installation, getting started, and how to contribute",
             ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks/02-running-prompts-from-file.ipynb"]
                 = "Jupyter notebook describing how to pass prompts from a file to a semantic plugin or function",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks//00-getting-started.ipynb"]
+            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks/00-getting-started.ipynb"]
                 = "Jupyter notebook describing how to get started with the Semantic Kernel",
-            ["https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins/ChatPlugin/ChatGPT"]
+            ["https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples/ChatPlugin/ChatGPT"]
                 = "Sample demonstrating how to create a chat plugin interfacing with ChatGPT",
             ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Plugins/Plugins.Memory/VolatileMemoryStore.cs"]
                 = "C# class that defines a volatile embedding store",

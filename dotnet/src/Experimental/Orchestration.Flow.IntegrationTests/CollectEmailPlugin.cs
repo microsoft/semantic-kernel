@@ -10,16 +10,16 @@ using Microsoft.SemanticKernel.Experimental.Orchestration;
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
-public sealed class CollectEmailPlugin
+public sealed partial class CollectEmailPlugin
 {
     private const string Goal = "Collect email from user";
 
-    private const string EmailRegex = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
+    private const string EmailPattern = /*lang=regex*/ @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
 
     private const string SystemPrompt =
         $"""
         I am AI assistant and will only answer questions related to collect email.
-        The email should conform to the regex: {EmailRegex}
+        The email should conform to the regex: {EmailPattern}
 
         If I cannot answer, say that I don't know.
         Do not expose the regex unless asked.
@@ -61,7 +61,7 @@ public sealed class CollectEmailPlugin
             chat.AddRange(chatHistory);
         }
 
-        if (!string.IsNullOrEmpty(email_address) && Regex.IsMatch(email_address, EmailRegex))
+        if (!string.IsNullOrEmpty(email_address) && EmailRegex().IsMatch(email_address))
         {
             return "Thanks for providing the info, the following email would be used in subsequent steps: " + email_address;
         }
@@ -74,4 +74,12 @@ public sealed class CollectEmailPlugin
 
         return response.Content ?? string.Empty;
     }
+
+#if NET
+    [GeneratedRegex(EmailPattern)]
+    private static partial Regex EmailRegex();
+#else
+    private static Regex EmailRegex() => s_emailRegex;
+    private static readonly Regex s_emailRegex = new(EmailPattern, RegexOptions.Compiled);
+#endif
 }

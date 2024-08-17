@@ -50,6 +50,10 @@ public sealed class FileIOPlugin
         }
 
         using var writer = File.OpenWrite(path);
-        await writer.WriteAsync(text, 0, text.Length).ConfigureAwait(false);
+        await writer.WriteAsync(text
+#if !NET
+            , 0, text.Length
+#endif
+            ).ConfigureAwait(false);
     }
 }

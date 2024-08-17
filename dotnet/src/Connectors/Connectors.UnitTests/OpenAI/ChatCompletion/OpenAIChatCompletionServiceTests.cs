@@ -81,10 +81,41 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         { Content = new StringContent(ChatCompletionResponse) };
 
         // Act
-        await chatCompletion.GetChatMessageContentsAsync(new ChatHistory(), this._executionSettings);
+        await chatCompletion.GetChatMessageContentsAsync([], this._executionSettings);
 
         // Assert
         Assert.Equal(expectedEndpoint, this._messageHandlerStub.RequestUri!.ToString());
+    }
+
+    [Fact]
+    public async Task ItUsesHttpClientEndpointIfProvidedEndpointIsMissingAsync()
+    {
+        // Arrange
+        this._httpClient.BaseAddress = new Uri("http://localhost:12312");
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: null, httpClient: this._httpClient, endpoint: null!);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(ChatCompletionResponse) };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync([], this._executionSettings);
+
+        // Assert
+        Assert.Equal("http://localhost:12312/v1/chat/completions", this._messageHandlerStub.RequestUri!.ToString());
+    }
+
+    [Fact]
+    public async Task ItUsesDefaultEndpointIfProvidedEndpointIsMissingAsync()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: "abc", httpClient: this._httpClient, endpoint: null!);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(ChatCompletionResponse) };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync([], this._executionSettings);
+
+        // Assert
+        Assert.Equal("https://api.openai.com/v1/chat/completions", this._messageHandlerStub.RequestUri!.ToString());
     }
 
     [Theory]
@@ -476,14 +507,14 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         var chatHistory = new ChatHistory
         {
-            new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
-            {
+            new ChatMessageContent(AuthorRole.Tool,
+            [
                 new FunctionResultContent(new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
-            }),
-            new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
-            {
+            ]),
+            new ChatMessageContent(AuthorRole.Tool,
+            [
                 new FunctionResultContent(new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
-            })
+            ])
         };
 
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
@@ -524,11 +555,11 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         var chatHistory = new ChatHistory
         {
-            new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
-            {
+            new ChatMessageContent(AuthorRole.Tool,
+            [
                 new FunctionResultContent(new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
                 new FunctionResultContent(new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
-            })
+            ])
         };
 
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };

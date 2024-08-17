@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
@@ -18,22 +19,32 @@ public class AutoFunctionInvocationContext
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="result">The result of the function's invocation.</param>
     /// <param name="chatHistory">The chat history associated with automatic function invocation.</param>
+    /// <param name="chatMessageContent">The chat message content associated with automatic function invocation.</param>
     public AutoFunctionInvocationContext(
         Kernel kernel,
         KernelFunction function,
         FunctionResult result,
-        ChatHistory chatHistory)
+        ChatHistory chatHistory,
+        ChatMessageContent chatMessageContent)
     {
         Verify.NotNull(kernel);
         Verify.NotNull(function);
         Verify.NotNull(result);
         Verify.NotNull(chatHistory);
+        Verify.NotNull(chatMessageContent);
 
         this.Kernel = kernel;
         this.Function = function;
         this.Result = result;
         this.ChatHistory = chatHistory;
+        this.ChatMessageContent = chatMessageContent;
     }
+
+    /// <summary>
+    /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.
+    /// The default is <see cref="CancellationToken.None"/>.
+    /// </summary>
+    public CancellationToken CancellationToken { get; init; }
 
     /// <summary>
     /// Gets the arguments associated with the operation.
@@ -54,6 +65,16 @@ public class AutoFunctionInvocationContext
     /// Number of functions that will be invoked during auto function invocation request.
     /// </summary>
     public int FunctionCount { get; init; }
+
+    /// <summary>
+    /// The ID of the tool call.
+    /// </summary>
+    public string? ToolCallId { get; init; }
+
+    /// <summary>
+    /// The chat message content associated with automatic function invocation.
+    /// </summary>
+    public ChatMessageContent ChatMessageContent { get; }
 
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.ChatCompletion.ChatHistory"/> associated with automatic function invocation.

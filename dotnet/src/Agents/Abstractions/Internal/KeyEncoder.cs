@@ -18,12 +18,16 @@ internal static class KeyEncoder
     /// <returns>A base-64 encoded hash</returns>
     public static string GenerateHash(IEnumerable<string> keys)
     {
-        using SHA256 shaProvider = SHA256Managed.Create();
-
         byte[] buffer = Encoding.UTF8.GetBytes(string.Join(":", keys));
-        byte[] hash = shaProvider.ComputeHash(buffer);
-        string encoding = Convert.ToBase64String(hash);
 
-        return encoding;
+#if NET
+        Span<byte> hash = stackalloc byte[32];
+        SHA256.HashData(buffer, hash);
+#else
+        using SHA256 shaProvider = SHA256.Create();
+        byte[] hash = shaProvider.ComputeHash(buffer);
+#endif
+
+        return Convert.ToBase64String(hash);
     }
 }

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Any
 
 from numpy import array, linalg, ndarray
 
@@ -14,6 +14,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 def camel_to_snake(camel_str):
+    """Convert camel case to snake case."""
     snake_str = ""
     for i, char in enumerate(camel_str):
         if char.isupper():
@@ -25,11 +26,14 @@ def camel_to_snake(camel_str):
     return snake_str
 
 
-def query_results_to_records(results: "QueryResult", with_embedding: bool) -> List[MemoryRecord]:
-    # if results has only one record, it will be a list instead of a nested list
-    # this is to make sure that results is always a nested list
-    # {'ids': ['test_id1'], 'embeddings': [[...]], 'documents': ['sample text1'], 'metadatas': [{...}]}
-    # => {'ids': [['test_id1']], 'embeddings': [[[...]]], 'documents': [['sample text1']], 'metadatas': [[{...}]]}
+def query_results_to_records(results: "QueryResult", with_embedding: bool) -> list[MemoryRecord]:
+    """Turn query results into Memory Records.
+
+    If results has only one record, it will be a list instead of a nested list
+    this is to make sure that results is always a nested list
+    {'ids': ['test_id1'], 'embeddings': [[...]], 'documents': ['sample text1'], 'metadatas': [{...}]}
+    => {'ids': [['test_id1']], 'embeddings': [[[...]]], 'documents': [['sample text1']], 'metadatas': [[{...}]]}
+    """
     try:
         if isinstance(results["ids"][0], str):
             for k, v in results.items():
@@ -83,16 +87,17 @@ def query_results_to_records(results: "QueryResult", with_embedding: bool) -> Li
     return memory_records
 
 
-def chroma_compute_similarity_scores(embedding: ndarray, embedding_array: ndarray, **kwargs) -> ndarray:
+def chroma_compute_similarity_scores(embedding: ndarray, embedding_array: ndarray, **kwargs: Any) -> ndarray:
     """Computes the cosine similarity scores between a query embedding and a group of embeddings.
-    Arguments:
-        embedding {ndarray} -- The query embedding.
-        embedding_array {ndarray} -- The group of embeddings.
+
+    Args:
+        embedding (ndarray): The query embedding.
+        embedding_array (ndarray): The group of embeddings.
+        **kwargs: Additional keyword arguments.
+
     Returns:
-        ndarray -- The cosine similarity scores.
+        ndarray: The cosine similarity scores.
     """
-    if kwargs.get("logger"):
-        logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
     query_norm = linalg.norm(embedding)
     collection_norm = linalg.norm(embedding_array, axis=1)
 

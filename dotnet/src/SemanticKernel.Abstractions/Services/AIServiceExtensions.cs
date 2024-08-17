@@ -91,19 +91,19 @@ public static class AIServiceExtensions
             return (service, settings);
         }
 
-        var message = new StringBuilder($"Required service of type {typeof(T)} not registered.");
+        var message = new StringBuilder().Append("Required service of type ").Append(typeof(T)).Append(" not registered.");
         if (function.ExecutionSettings is not null)
         {
             string serviceIds = string.Join("|", function.ExecutionSettings.Keys);
             if (!string.IsNullOrEmpty(serviceIds))
             {
-                message.Append($" Expected serviceIds: {serviceIds}.");
+                message.Append(" Expected serviceIds: ").Append(serviceIds).Append('.');
             }
 
             string modelIds = string.Join("|", function.ExecutionSettings.Values.Select(model => model.ModelId));
             if (!string.IsNullOrEmpty(modelIds))
             {
-                message.Append($" Expected modelIds: {modelIds}.");
+                message.Append(" Expected modelIds: ").Append(modelIds).Append('.');
             }
         }
 

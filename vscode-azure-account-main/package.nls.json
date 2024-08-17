@@ -1,0 +1,14 @@
+{
+    "azure-account.capabilities.untrustedWorkspaces.description": "Only global Azure configurations will be used when running in untrusted mode.",
+    "azure-account.commands.azure": "Azure",
+    "azure-account.commands.azureAccount": "Azure Account",
+    "azure-account.commands.createAccount": "Create an Account",
+    "azure-account.commands.login": "Sign In",
+    "azure-account.commands.loginToCloud": "Sign In to Azure Cloud",
+    "azure-account.commands.loginWithDeviceCode": "Sign In with Device Code",
+    "azure-account.commands.logout": "Sign Out",
+    "azure-account.commands.manageAccount": "Manage Azure Account",
+    "azure-account.commands.reportIssue": "Report Issue...",
+    "azure-account.commands.selectSubscriptions": "Select Subscriptions...",
+    "azure-account.commands.selectTenant": "Select Tenant"
+}

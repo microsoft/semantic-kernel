@@ -36,7 +36,7 @@ namespace System.Reflection
         public static bool IsGenericMethodParameter(this Type target)
         {
             return target.IsGenericParameter &&
-                   target.DeclaringMethod != null;
+                   target.DeclaringMethod is not null;
         }
     }
 }

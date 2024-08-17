@@ -6,10 +6,7 @@ from semantic_kernel.exceptions import ContentAdditionException
 
 
 class StreamingTextContent(StreamingContentMixin, TextContent):
-    """This is the base class for streaming text response content.
-
-    All Text Completion Services should return a instance of this class as streaming response.
-    Or they can implement their own subclass of this class and return an instance.
+    """This represents streaming text response content.
 
     Args:
         choice_index: int - The index of the choice that generated this response.
@@ -28,9 +25,10 @@ class StreamingTextContent(StreamingContentMixin, TextContent):
     """
 
     def __bytes__(self) -> bytes:
+        """Return the content of the response encoded in the encoding."""
         return self.text.encode(self.encoding if self.encoding else "utf-8") if self.text else b""
 
-    def __add__(self, other: "TextContent") -> "StreamingTextContent":
+    def __add__(self, other: TextContent) -> "StreamingTextContent":
         """When combining two StreamingTextContent instances, the text fields are combined.
 
         The inner_content of the first one is used, choice_index, ai_model_id and encoding should be the same.

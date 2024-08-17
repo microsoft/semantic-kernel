@@ -100,7 +100,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
     private SseLine? ReadLine()
     {
         string? lineText = this._reader.ReadLine();
-        if (lineText == null)
+        if (lineText is null)
         {
             return null;
         }
@@ -120,12 +120,13 @@ internal sealed class SseReader(Stream stream) : IDisposable
 
     private async Task<SseLine?> ReadLineAsync(CancellationToken cancellationToken)
     {
-#if NET7_0_OR_GREATER
-        string lineText = await this._reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
-#else
-        string? lineText = await this._reader.ReadLineAsync().ConfigureAwait(false);
+        string? lineText = await this._reader.ReadLineAsync(
+#if NET
+            cancellationToken
 #endif
-        if (lineText == null)
+            ).ConfigureAwait(false);
+
+        if (lineText is null)
         {
             return null;
         }

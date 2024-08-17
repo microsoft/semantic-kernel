@@ -10,13 +10,22 @@ jobs:
   python-unit-tests:
     name: Python Unit Tests
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
+        experimental: [false]
+        include:
+          - python-version: "3.13.0-beta.4"
+            os: "ubuntu-latest"
+            experimental: true
     permissions:
       contents: write
+    defaults:
+      run:
+        working-directory: python
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
@@ -27,20 +36,63 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
       - name: Install dependencies
-        run: cd python && poetry install --with unit-tests
+        run: poetry install --with unit-tests
       - name: Test with pytest
-        run: cd python && poetry run pytest -q --junitxml=pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+        run: poetry run pytest --junitxml=pytest.xml ./tests/unit
+      - name: Surface failing tests
+        if: always()
+        uses: pmeier/pytest-results-action@main
+        with:
+          # A list of JUnit XML files, directories containing the former, and wildcard
+          # patterns to process.
+          # See @actions/glob for supported patterns.
+          path: python/pytest.xml
+          # (Optional) Add a summary of the results at the top of the report
+          summary: true
+          # (Optional) Select which results should be included in the report.
+          # Follows the same syntax as `pytest -r`
+          display-options: fEX
+          # (Optional) Fail the workflow if no JUnit XML was found.
+          fail-on-empty: true
+          # (Optional) Title of the test results section in the workflow summary
+          title: Test results
+  python-test-coverage:
+    name: Python Test Coverage
+    runs-on: [ubuntu-latest]
+    continue-on-error: true
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup filename variables
+        run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+      - name: Install dependencies
+        run: poetry install --with unit-tests
+      - name: Test with pytest
+        run: poetry run pytest -q --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt      
       - name: Upload coverage
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
-          path: python/python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          name: python-coverage-${{ env.FILE_ID }}.txt
+          path: python/python-coverage.txt
           overwrite: true
-          retention-days: 1  
+          retention-days: 1
       - name: Upload pytest.xml
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
-          path: python/pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          name: pytest-${{ env.FILE_ID }}.xml
+          path: python/pytest.xml
           overwrite: true
           retention-days: 1

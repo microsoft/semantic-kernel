@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
 
 from enum import Enum
 
@@ -10,11 +9,15 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class OpenAIAuthenticationType(str, Enum):
+    """OpenAI authentication types."""
+
     OAuth = "oauth"
     NoneType = "none"
 
 
 class OpenAIAuthorizationType(str, Enum):
+    """OpenAI authorization types."""
+
     Bearer = "Bearer"
     Basic = "Basic"
 

@@ -7,16 +7,25 @@ using Microsoft.Extensions.Logging;
 /// </summary>
 internal sealed class XunitLogger(ITestOutputHelper output) : ILoggerFactory, ILogger, IDisposable
 {
+    private object? _scopeState;
+
     /// <inheritdoc/>
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-        => output.WriteLine(state?.ToString());
+    {
+        var localState = state?.ToString();
+        var line = this._scopeState is not null ? $"{this._scopeState} {localState}" : localState;
+        output.WriteLine(line);
+    }
 
     /// <inheritdoc/>
     public bool IsEnabled(LogLevel logLevel) => true;
 
     /// <inheritdoc/>
     public IDisposable BeginScope<TState>(TState state) where TState : notnull
-        => this;
+    {
+        this._scopeState = state;
+        return this;
+    }
 
     /// <inheritdoc/>
     public void Dispose()

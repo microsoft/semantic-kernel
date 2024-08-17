@@ -54,7 +54,7 @@ internal sealed class CreateCollectionRequest
                 QdrantDistanceType.DotProduct => "DotProduct",
                 QdrantDistanceType.Euclidean => "Euclidean",
                 QdrantDistanceType.Manhattan => "Manhattan",
-                _ => throw new NotSupportedException($"Distance type {Enum.GetName(typeof(QdrantDistanceType), x)} not supported")
+                _ => throw new NotSupportedException($"Distance type {x} not supported")
             };
         }
     }

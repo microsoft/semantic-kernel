@@ -77,7 +77,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         {
             if (e.Result.Metadata is not null && e.Result.Metadata.ContainsKey("Usage"))
             {
-                Console.WriteLine($"Token usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
+                Console.WriteLine("Token usage: {0}", e.Result.Metadata?["Usage"]?.AsJson());
             }
         }
 

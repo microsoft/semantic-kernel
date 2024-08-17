@@ -54,7 +54,7 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
     private async Task AddApiManifestPluginsAsync(Kernel kernel, params string[] pluginNames)
     {
 #pragma warning disable SKEXP0050
-        if (TestConfiguration.MSGraph.Scopes == null)
+        if (TestConfiguration.MSGraph.Scopes is null)
         {
             throw new InvalidOperationException("Missing Scopes configuration for Microsoft Graph API.");
         }

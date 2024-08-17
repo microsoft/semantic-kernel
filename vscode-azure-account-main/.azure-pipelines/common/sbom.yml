@@ -1,0 +1,13 @@
+steps:
+  - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+    displayName: "SBoM Generation Task"
+    inputs:
+      BuildDropPath: "$(Build.ArtifactStagingDirectory)"
+    condition: ne(variables['System.PullRequest.IsFork'], 'True')
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish artifacts: sbom"
+    inputs:
+      PathtoPublish: "$(Build.ArtifactStagingDirectory)/_manifest"
+      ArtifactName: _manifest
+    condition: ne(variables['System.PullRequest.IsFork'], 'True')

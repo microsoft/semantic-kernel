@@ -73,7 +73,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
 
         Console.WriteLine("======== Using Retrieval tool ========");
 
-        if (TestConfiguration.OpenAI.ApiKey == null)
+        if (TestConfiguration.OpenAI.ApiKey is null)
         {
             Console.WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
@@ -83,7 +83,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
         var fileService = kernel.GetRequiredService<OpenAIFileService>();
         var result =
             await fileService.UploadContentAsync(
-                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
+                new BinaryContent(await EmbeddedResource.ReadAllAsync("travelinfo.txt")!, "text/plain"),
                 new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
 
         var fileId = result.Id;
@@ -125,7 +125,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
         params string[] questions)
     {
         string[]? fileIds = null;
-        if (fileId != null)
+        if (fileId is not null)
         {
             fileIds = [fileId];
         }
