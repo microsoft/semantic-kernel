@@ -32,15 +32,15 @@ public class AgentChatTests
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
         // Inject history
-        chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, "More")]);
-        chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, "And then some")]);
+        chat.Add([new ChatMessageContent(AuthorRole.User, "More")]);
+        chat.Add([new ChatMessageContent(AuthorRole.User, "And then some")]);
 
         // Verify updated history
         await this.VerifyHistoryAsync(expectedCount: 2, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent hasn't joined
 
         // Invoke with input & verify (agent joins chat)
-        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
+        chat.Add(new ChatMessageContent(AuthorRole.User, "hi"));
         await chat.InvokeAsync().ToArrayAsync();
         Assert.Equal(1, chat.Agent.InvokeCount);
 

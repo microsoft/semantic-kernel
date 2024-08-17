@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
@@ -42,7 +43,7 @@ public class Example61_MultipleLLMs {
         }
         System.out.println("======== Using Chat GPT model for text generation ========");
 
-        var openAIChatCompletion = ChatCompletionService.builder()
+        var openAIChatCompletion = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withServiceId("AzureOpenAIChat")
             .withModelId("gpt-35-turbo-2")

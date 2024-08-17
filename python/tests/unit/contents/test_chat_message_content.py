@@ -3,12 +3,13 @@
 import pytest
 from defusedxml.ElementTree import XML
 
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 
 
 def test_cmc():
@@ -61,14 +62,11 @@ def test_cmc_items_and_content():
 def test_cmc_multiple_items():
     message = ChatMessageContent(
         role=AuthorRole.SYSTEM,
-        items=[
-            TextContent(text="Hello, world!"),
-            TextContent(text="Hello, world!"),
-        ],
+        items=[TextContent(text="Hello, world!"), TextContent(text="Hello, world!"), ImageContent(uri="http://test/")],
     )
     assert message.role == AuthorRole.SYSTEM
     assert message.content == "Hello, world!"
-    assert len(message.items) == 2
+    assert len(message.items) == 3
 
 
 def test_cmc_content_set():
@@ -101,6 +99,48 @@ def test_cmc_to_element():
     for child in element:
         assert child.tag == "text"
         assert child.text == "Hello, world!"
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[
+                TextContent(text="test"),
+            ],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[ImageContent(uri="http://test/")],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[ImageContent(data=b"test_data", mime_type="image/jpeg")],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER, items=[FunctionCallContent(id="test", name="func_name", arguments="args")]
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[FunctionResultContent(id="test", name="func_name", result="result")],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[
+                TextContent(text="Hello, world!"),
+                FunctionCallContent(id="test", name="func_name", arguments="args"),
+                FunctionResultContent(id="test", name="func_name", result="result"),
+                ImageContent(uri="http://test/"),
+            ],
+        ),
+    ],
+    ids=["text", "image_uri", "image_data", "function_call", "function_result", "all"],
+)
+def test_cmc_to_from_element(message):
+    element = message.to_element()
+    new_message = ChatMessageContent.from_element(element)
+    assert message == new_message
 
 
 def test_cmc_to_prompt():
@@ -162,6 +202,7 @@ def test_cmc_from_element_content():
             1,  # TODO: review this case
         ),
         ('<message role="user" choice_index="0">Hello, world!</message>', "user", "Hello, world!", 1),
+        ('<message role="user"><image>data:image/jpeg;base64,dGVzdF9kYXRh</image></message>', "user", "", 1),
     ],
     ids=[
         "no_tag",
@@ -172,6 +213,7 @@ def test_cmc_from_element_content():
         "combined",
         "unknown_tag",
         "streaming",
+        "image",
     ],
 )
 def test_cmc_from_element_content_parse(xml_content, user, text_content, length):

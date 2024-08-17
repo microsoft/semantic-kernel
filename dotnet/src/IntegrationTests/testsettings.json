@@ -1,12 +1,12 @@
 ﻿{
   "OpenAI": {
-    "ServiceId": "text-davinci-003",
-    "ModelId": "text-davinci-003",
+    "ServiceId": "gpt-3.5-turbo-instruct",
+    "ModelId": "gpt-3.5-turbo-instruct",
     "ApiKey": ""
   },
   "AzureOpenAI": {
-    "ServiceId": "azure-text-davinci-003",
-    "DeploymentName": "text-davinci-003",
+    "ServiceId": "azure-gpt-35-turbo-instruct",
+    "DeploymentName": "gpt-35-turbo-instruct",
     "ChatDeploymentName": "gpt-4",
     "Endpoint": "",
     "ApiKey": ""

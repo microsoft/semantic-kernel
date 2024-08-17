@@ -1,10 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from html import unescape
+from typing import ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
-from semantic_kernel.contents.const import TEXT_CONTENT_TAG
+from pydantic import Field
+
+from semantic_kernel.contents.const import TEXT_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
+
+_T = TypeVar("_T", bound="TextContent")
 
 
 class TextContent(KernelContent):
@@ -26,6 +32,8 @@ class TextContent(KernelContent):
         __str__: Returns the text of the response.
     """
 
+    content_type: Literal[ContentTypes.TEXT_CONTENT] = Field(TEXT_CONTENT_TAG, init=False)  # type: ignore
+    tag: ClassVar[str] = TEXT_CONTENT_TAG
     text: str
     encoding: str | None = None
 
@@ -35,19 +43,19 @@ class TextContent(KernelContent):
 
     def to_element(self) -> Element:
         """Convert the instance to an Element."""
-        element = Element(TEXT_CONTENT_TAG)
+        element = Element(self.tag)
         element.text = self.text
         if self.encoding:
             element.set("encoding", self.encoding)
         return element
 
     @classmethod
-    def from_element(cls, element: Element) -> "TextContent":
+    def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
-        if element.tag != TEXT_CONTENT_TAG:
-            raise ValueError(f"Element tag is not {TEXT_CONTENT_TAG}")
+        if element.tag != cls.tag:
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")
 
-        return TextContent(text=unescape(element.text) if element.text else "", encoding=element.get("encoding", None))
+        return cls(text=unescape(element.text) if element.text else "", encoding=element.get("encoding", None))
 
     def to_dict(self) -> dict[str, str]:
         """Convert the instance to a dictionary."""

@@ -246,18 +246,8 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     {
         record.Key = record.Metadata.Id;
 
-        // Update
-        await this._dbConnector.UpdateAsync(
-            conn: connection,
-            collection: collectionName,
-            key: record.Key,
-            metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding, JsonOptionsCache.Default),
-            timestamp: ToTimestampString(record.Timestamp),
-            cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        // Insert if entry does not exists
-        await this._dbConnector.InsertOrIgnoreAsync(
+        // Insert or replace
+        await this._dbConnector.UpsertAsync(
             conn: connection,
             collection: collectionName,
             key: record.Key,

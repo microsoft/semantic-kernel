@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 internal sealed class OpenAIAssistantChannel(AssistantsClient client, string threadId, OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration)
     : AgentChannel<OpenAIAssistantAgent>
 {
-    private const char FunctionDelimiter = '-';
+    private const string FunctionDelimiter = "-";
 
     private static readonly HashSet<RunStatus> s_pollingStatuses =
         [
@@ -94,8 +94,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         this.Logger.LogInformation("[{MethodName}] Created run: {RunId}", nameof(InvokeAsync), run.Id);
 
         // Evaluate status and process steps and messages, as encountered.
-        HashSet<string> processedStepIds = [];
-        Dictionary<string, FunctionCallContent> functionSteps = [];
+        HashSet<string> processedStepIds = new HashSet<string>();
+        Dictionary<string, FunctionCallContent> functionSteps = new Dictionary<string, FunctionCallContent>();
 
         do
         {
@@ -128,6 +128,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
                     // Invoke functions for each tool-step
                     IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
+
+                    yield return GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps);
 
                     // Block for function results
                     FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
@@ -268,6 +270,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         }
 
         return await this._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
+        // Local function to capture kernel function state for further processing (participates in method closure).
         IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
         {
             if (step.Status == RunStepStatus.InProgress && step.StepDetails is RunStepToolCallDetails callDetails)
@@ -476,6 +479,56 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
             object resultValue = (functionResult.Result as FunctionResult)?.GetValue<object>() ?? string.Empty;
 
+    private static ChatMessageContent GenerateFunctionCallContent(string agentName, FunctionCallContent[] functionSteps)
+    {
+        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
+        {
+            AuthorName = agentName
+        };
+
+        functionCallContent.Items.AddRange(functionSteps);
+
+        return functionCallContent;
+    }
+
+    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionCallContent functionStep, string result)
+    {
+        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
+        {
+            AuthorName = agentName
+        };
+
+        functionCallContent.Items.Add(
+            new FunctionResultContent(
+                functionStep.FunctionName,
+                functionStep.PluginName,
+                functionStep.Id,
+                result));
+
+        return functionCallContent;
+    }
+
+    private static Task<FunctionResultContent>[] ExecuteFunctionSteps(OpenAIAssistantAgent agent, FunctionCallContent[] functionSteps, CancellationToken cancellationToken)
+    {
+        Task<FunctionResultContent>[] functionTasks = new Task<FunctionResultContent>[functionSteps.Length];
+
+        for (int index = 0; index < functionSteps.Length; ++index)
+        {
+            functionTasks[index] = functionSteps[index].InvokeAsync(agent.Kernel, cancellationToken);
+        }
+
+        return functionTasks;
+    }
+
+    private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
+    {
+        ToolOutput[] toolOutputs = new ToolOutput[functionResults.Length];
+
+        for (int index = 0; index < functionResults.Length; ++index)
+        {
+            FunctionResultContent functionResult = functionResults[index];
+
+            object resultValue = (functionResult.Result as FunctionResult)?.GetValue<object>() ?? string.Empty;
             if (resultValue is not string textResult)
             {
                 textResult = JsonSerializer.Serialize(resultValue);

@@ -17,4 +17,5 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | PromptTemplates | Using [`Templates`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/prompt_template/prompt_template_base.py) with parametrization for `Prompt` rendering  |
 | RAG | Different ways of `RAG` (Retrieval-Augmented Generation) |
 | Search | Using search services information |
+| Setup | How to setup environment variables for Semantic Kernel |
 | TextGeneration | Using [`TextGeneration`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/text_completion_client_base.py) capable service with models  |

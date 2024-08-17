@@ -434,7 +434,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
             {
                 "name": "FishMarket2",
                 "execution_settings": {
-                    "azure-text-davinci-003": {
+                    "azure-gpt-35-turbo-instruct": {
                         "max_tokens": 256
                     }
                 }

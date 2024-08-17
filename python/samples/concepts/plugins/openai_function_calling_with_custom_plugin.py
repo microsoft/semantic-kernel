@@ -51,7 +51,7 @@ async def main():
     else:
         ai_service = OpenAIChatCompletion(
             service_id=service_id,
-            ai_model_id="gpt-3.5-turbo-1106",
+            ai_model_id="gpt-3.5-turbo",
         )
     kernel.add_service(ai_service)
 

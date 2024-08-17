@@ -41,7 +41,7 @@ class MockModel:
         "status": Union[int, str],
         "optional_field": Optional[str],
     }
-    __fields__ = {
+    model_fields = {
         "id": Mock(description="The ID of the model"),
         "name": Mock(description="The name of the model"),
         "is_active": Mock(description="Whether the model is active"),
@@ -110,17 +110,13 @@ def test_build_model_schema():
         "required": ["name", "age"],
         "description": "A model",
     }
-    result = KernelJsonSchemaBuilder.build_model_schema(
-        ExampleModel, description="A model"
-    )
+    result = KernelJsonSchemaBuilder.build_model_schema(ExampleModel, description="A model")
     assert result == expected_schema
 
 
 def test_build_from_type_name():
     expected_schema = {"type": "string", "description": "A simple string"}
-    result = KernelJsonSchemaBuilder.build_from_type_name(
-        "str", description="A simple string"
-    )
+    result = KernelJsonSchemaBuilder.build_from_type_name("str", description="A simple string")
     assert result == expected_schema
 
 

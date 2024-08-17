@@ -10,7 +10,7 @@ using Resources;
 namespace Agents;
 
 /// <summary>
-/// Demonstrate using code-interpreter to manipulate and generate csv file on <see cref="OpenAIAssistantAgent"/> .
+/// Demonstrate using code-interpreter to manipulate and generate csv files with <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
 public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTest(output)
 {
@@ -21,6 +21,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
 
     [Fact]
     public async Task RunAsync()
+    public async Task AnalyzeCSVFileUsingOpenAIAssistantAgentAsync()
     {
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
 
