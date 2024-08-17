@@ -1,5 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
+
+def test_empty_input():
+    result = your_function("")
+    assert result == expected_output, "The function should handle empty input gracefully"
+
+import asyncio
+
+def test_empty_input():
+    result = your_function("")
+    assert result == expected_output, "The function should handle empty input gracefully"
+
 import os
 from functools import partial, reduce
 from typing import Any
@@ -715,4 +727,5 @@ async def execute_invoke(kernel: Kernel, history: ChatHistory, output: str, stre
                 assert item.arguments
                 assert kernel.get_function_from_fully_qualified_function_name(item.name)
         return response
-    raise AssertionError(f"Unexpected output: response: {invocation}, type: {type(invocation)}")
+    with pytest.raises(AssertionError, match=f"Unexpected output: response: {invocation}, type: {type(invocation)}"):
+        raise AssertionError(f"Unexpected output: response: {invocation}, type: {type(invocation)}")

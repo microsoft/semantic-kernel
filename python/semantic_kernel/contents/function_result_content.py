@@ -28,7 +28,13 @@ _T = TypeVar("_T", bound="FunctionResultContent")
 class FunctionResultContent(KernelContent):
     """This class represents function result content."""
 
-    content_type: Literal[ContentTypes.FUNCTION_RESULT_CONTENT] = Field(FUNCTION_RESULT_CONTENT_TAG, init=False)  # type: ignore
+from pydantic import Field, validator
+
+@validator('content_type', pre=True, always=True)
+def set_content_type(cls, v):
+    return FUNCTION_RESULT_CONTENT_TAG
+
+content_type: Literal[ContentTypes.FUNCTION_RESULT_CONTENT] = Field(init=False)
     tag: ClassVar[str] = FUNCTION_RESULT_CONTENT_TAG
     id: str
     result: Any

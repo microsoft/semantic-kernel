@@ -62,7 +62,12 @@ def test_cmc_items_and_content():
 def test_cmc_multiple_items():
     message = ChatMessageContent(
         role=AuthorRole.SYSTEM,
-        items=[TextContent(text="Hello, world!"), TextContent(text="Hello, world!"), ImageContent(uri="http://test/")],
+        items=[
+            TextContent(text="Hello, world!"), 
+            TextContent(text="Hello, world!"), 
+            ImageContent(uri="http://test/"), 
+            FunctionCallContent(function_name="testFunction", arguments={"arg1": "value1"})
+        ],
     )
     assert message.role == AuthorRole.SYSTEM
     assert message.content == "Hello, world!"
