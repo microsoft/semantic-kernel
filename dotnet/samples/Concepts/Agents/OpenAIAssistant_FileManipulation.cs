@@ -20,6 +20,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
     protected override bool ForceOpenAI => true;
 
     [Fact]
+    public async Task RunAsync()
     public async Task AnalyzeCSVFileUsingOpenAIAssistantAgentAsync()
     {
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);

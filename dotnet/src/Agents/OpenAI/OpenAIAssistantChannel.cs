@@ -118,10 +118,18 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                 if (activeFunctionSteps.Length > 0)
                 {
                     // Emit function-call content
-                    yield return GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps);
+{
+    var functionCallContent = GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps);
+    await foreach (var content in functionCallContent)
+    {
+        yield return content;
+    }
+}
 
                     // Invoke functions for each tool-step
                     IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
+
+                    yield return GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps);
 
                     // Block for function results
                     FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
@@ -256,6 +264,12 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             return await this._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
+        private IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
+        {
+            // Implementation here
+        }
+
+        return await this._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
         // Local function to capture kernel function state for further processing (participates in method closure).
         IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
         {
@@ -263,7 +277,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             {
                 foreach (RunStepFunctionToolCall toolCall in callDetails.ToolCalls.OfType<RunStepFunctionToolCall>())
                 {
-                    var nameParts = FunctionName.Parse(toolCall.Name, FunctionDelimiter);
+                    var nameParts = FunctionName.Parse(toolCall.Name, FunctionDelimiter.ToString());
 
                     KernelArguments functionArguments = [];
                     if (!string.IsNullOrWhiteSpace(toolCall.Arguments))
@@ -442,6 +456,64 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
         for (int index = 0; index < functionSteps.Length; ++index)
         {
+            functionTasks[index] = ExecuteFunctionStepAsync(functionSteps[index]);
+        }
+
+        return functionTasks;
+
+        async Task<FunctionResultContent> ExecuteFunctionStepAsync(FunctionCallContent functionStep)
+        {
+            FunctionResultContent functionResult = await functionStep.InvokeAsync(agent.Kernel, cancellationToken).ConfigureAwait(false);
+
+            return functionResult;
+        }
+    }
+
+    private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
+    {
+        ToolOutput[] toolOutputs = new ToolOutput[functionResults.Length];
+
+        for (int index = 0; index < functionResults.Length; ++index)
+        {
+            FunctionResultContent functionResult = functionResults[index];
+
+            object resultValue = (functionResult.Result as FunctionResult)?.GetValue<object>() ?? string.Empty;
+
+    private static ChatMessageContent GenerateFunctionCallContent(string agentName, FunctionCallContent[] functionSteps)
+    {
+        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
+        {
+            AuthorName = agentName
+        };
+
+        functionCallContent.Items.AddRange(functionSteps);
+
+        return functionCallContent;
+    }
+
+    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionCallContent functionStep, string result)
+    {
+        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
+        {
+            AuthorName = agentName
+        };
+
+        functionCallContent.Items.Add(
+            new FunctionResultContent(
+                functionStep.FunctionName,
+                functionStep.PluginName,
+                functionStep.Id,
+                result));
+
+        return functionCallContent;
+    }
+
+    private static Task<FunctionResultContent>[] ExecuteFunctionSteps(OpenAIAssistantAgent agent, FunctionCallContent[] functionSteps, CancellationToken cancellationToken)
+    {
+        Task<FunctionResultContent>[] functionTasks = new Task<FunctionResultContent>[functionSteps.Length];
+
+        for (int index = 0; index < functionSteps.Length; ++index)
+        {
             functionTasks[index] = functionSteps[index].InvokeAsync(agent.Kernel, cancellationToken);
         }
 
@@ -457,7 +529,6 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             FunctionResultContent functionResult = functionResults[index];
 
             object resultValue = (functionResult.Result as FunctionResult)?.GetValue<object>() ?? string.Empty;
-
             if (resultValue is not string textResult)
             {
                 textResult = JsonSerializer.Serialize(resultValue);

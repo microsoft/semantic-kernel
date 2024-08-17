@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Azure.AI.OpenAI.Assistants;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Resources;
 
 namespace Agents;
 
 /// <summary>
+/// Demonstrate using retrieval on <see cref="OpenAIAssistantAgent"/> .
 /// Demonstrate uploading and retrieving files with <see cref="OpenAIFileService"/> .
 /// </summary>
 public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(output)
@@ -17,6 +19,7 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
     protected override bool ForceOpenAI => true;
 
     [Fact]
+    public async Task RunAsync()
     public async Task UploadAndRetrieveFilesAsync()
     {
         var openAIClient = new AssistantsClient(TestConfiguration.OpenAI.ApiKey);
