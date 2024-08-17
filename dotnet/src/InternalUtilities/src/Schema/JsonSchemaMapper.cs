@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -371,6 +370,29 @@ internal
         }
 
         return defaultValue;
+    }
+
+    private static class JsonSchemaConstants
+    {
+        public const string SchemaPropertyName = "$schema";
+        public const string RefPropertyName = "$ref";
+        public const string CommentPropertyName = "$comment";
+        public const string TitlePropertyName = "title";
+        public const string DescriptionPropertyName = "description";
+        public const string TypePropertyName = "type";
+        public const string FormatPropertyName = "format";
+        public const string PatternPropertyName = "pattern";
+        public const string PropertiesPropertyName = "properties";
+        public const string RequiredPropertyName = "required";
+        public const string ItemsPropertyName = "items";
+        public const string AdditionalPropertiesPropertyName = "additionalProperties";
+        public const string EnumPropertyName = "enum";
+        public const string NotPropertyName = "not";
+        public const string AnyOfPropertyName = "anyOf";
+        public const string ConstPropertyName = "const";
+        public const string DefaultPropertyName = "default";
+        public const string MinLengthPropertyName = "minLength";
+        public const string MaxLengthPropertyName = "maxLength";
     }
 
     private static partial class ThrowHelpers
