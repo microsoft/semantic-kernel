@@ -2,9 +2,11 @@
 
 #if !NET9_0_OR_GREATER && !SYSTEM_TEXT_JSON_V9
 using System;
+using System.ComponentModel;
 
 namespace JsonSchemaMapper;
 
+[EditorBrowsable(EditorBrowsableState.Never)]
 [Flags]
 internal enum JsonSchemaType
 {

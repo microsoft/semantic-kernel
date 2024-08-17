@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel;
+
 namespace JsonSchemaMapper;
 
+[EditorBrowsable(EditorBrowsableState.Never)]
 internal static class JsonSchemaConstants
 {
     internal const string SchemaPropertyName = "$schema";
