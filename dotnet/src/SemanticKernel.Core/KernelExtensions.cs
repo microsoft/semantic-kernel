@@ -110,6 +110,42 @@ public static class KernelExtensions
     }
 
     /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="promptTemplate">Prompt template for the function.</param>
+    /// <param name="executionSettings">List of execution settings to use when invoking this prompt function.</param>
+    /// <param name="functionName">The name to use for the function. If null, it will default to a randomly generated name.</param>
+    /// <param name="description">The description to use for the function.</param>
+    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
+    /// If null, a default factory will be used.
+    /// </param>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
+    public static KernelFunction CreateFunctionFromPrompt(
+        this Kernel kernel,
+        string promptTemplate,
+        IEnumerable<PromptExecutionSettings>? executionSettings,
+        string? functionName = null,
+        string? description = null,
+        string? templateFormat = null,
+        IPromptTemplateFactory? promptTemplateFactory = null)
+    {
+        Verify.NotNull(kernel);
+        Verify.NotNull(promptTemplate);
+
+        return KernelFunctionFactory.CreateFromPrompt(
+            promptTemplate,
+            executionSettings,
+            functionName,
+            description,
+            templateFormat,
+            promptTemplateFactory,
+            kernel.LoggerFactory);
+    }
+
+    /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>

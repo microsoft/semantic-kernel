@@ -37,7 +37,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
                 });
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat();
+        AgentGroupChat chat = new();
 
         // Respond to user input
         try
@@ -68,14 +68,14 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var message in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
             {
                 if (!string.IsNullOrWhiteSpace(message.Content))
                 {
                     Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
                 }
 
-                foreach (var fileReference in message.Items.OfType<FileReferenceContent>())
+                foreach (FileReferenceContent fileReference in message.Items.OfType<FileReferenceContent>())
                 {
                     Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: @{fileReference.FileId}");
                 }

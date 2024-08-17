@@ -21,6 +21,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
 {
     /// <summary>Dictionary of name/values for all the arguments in the instance.</summary>
     private readonly Dictionary<string, object?> _arguments;
+    private IReadOnlyDictionary<string, PromptExecutionSettings>? _executionSettings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
@@ -36,12 +37,36 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// </summary>
     /// <param name="executionSettings">The prompt execution settings.</param>
     public KernelArguments(PromptExecutionSettings? executionSettings)
+        : this(executionSettings is null ? null : [executionSettings])
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
+    /// </summary>
+    /// <param name="executionSettings">The prompt execution settings.</param>
+    public KernelArguments(IEnumerable<PromptExecutionSettings>? executionSettings)
     {
         this._arguments = new(StringComparer.OrdinalIgnoreCase);
-
         if (executionSettings is not null)
         {
-            this.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>() { { PromptExecutionSettings.DefaultServiceId, executionSettings } };
+            var newExecutionSettings = new Dictionary<string, PromptExecutionSettings>();
+            foreach (var settings in executionSettings)
+            {
+                var targetServiceId = settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
+                if (newExecutionSettings.ContainsKey(targetServiceId))
+                {
+                    var exceptionMessage = (targetServiceId == PromptExecutionSettings.DefaultServiceId)
+                        ? $"Multiple prompt execution settings with the default service id '{PromptExecutionSettings.DefaultServiceId}' or no service id have been provided. Specify a single default prompt execution settings and provide a unique service id for all other instances."
+                        : $"Multiple prompt execution settings with the service id '{targetServiceId}' have been provided. Provide a unique service id for all instances.";
+
+                    throw new ArgumentException(exceptionMessage, nameof(executionSettings));
+                }
+
+                newExecutionSettings[targetServiceId] = settings;
+            }
+
+            this.ExecutionSettings = newExecutionSettings;
         }
     }
 
@@ -65,7 +90,30 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <summary>
     /// Gets or sets the prompt execution settings.
     /// </summary>
-    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; set; }
+    /// <remarks>
+    /// The settings dictionary is keyed by the service ID, or <see cref="PromptExecutionSettings.DefaultServiceId"/> for the default execution settings.
+    /// When setting, the service id of each <see cref="PromptExecutionSettings"/> must match the key in the dictionary.
+    /// </remarks>
+    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings
+    {
+        get => this._executionSettings;
+        set
+        {
+            if (value is { Count: > 0 })
+            {
+                foreach (var kv in value!)
+                {
+                    // Ensures that if a service id is specified it needs to match to the current key in the dictionary.
+                    if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId)
+                    {
+                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(this.ExecutionSettings));
+                    }
+                }
+            }
+
+            this._executionSettings = value;
+        }
+    }
 
     /// <summary>
     /// Gets the number of arguments contained in the <see cref="KernelArguments"/>.

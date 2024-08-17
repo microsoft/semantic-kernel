@@ -17,6 +17,7 @@ import com.azure.ai.openai.models.ChatRequestSystemMessage;
 import com.azure.ai.openai.models.ChatRequestToolMessage;
 import com.azure.ai.openai.models.ChatRequestUserMessage;
 import com.azure.ai.openai.models.ChatResponseMessage;
+import com.azure.ai.openai.models.CompletionsUsage;
 import com.azure.ai.openai.models.FunctionCall;
 import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -60,6 +61,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,7 +142,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
         String prompt,
         @Nullable Kernel kernel,
         @Nullable InvocationContext invocationContext) {
-        ParsedPrompt parsedPrompt = XMLPromptParser.parse(prompt);
+        ParsedPrompt parsedPrompt = OpenAiXMLPromptParser.parse(prompt);
 
         ChatMessages messages = new ChatMessages(parsedPrompt.getChatRequestMessages());
 
@@ -510,7 +513,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
 
     private Mono<List<OpenAIChatMessageContent>> getChatMessageContentsAsync(
         ChatCompletions completions) {
-        FunctionResultMetadata completionMetadata = FunctionResultMetadata.build(
+        FunctionResultMetadata<CompletionsUsage> completionMetadata = FunctionResultMetadata.build(
             completions.getId(),
             completions.getUsage(),
             completions.getCreatedAt());
@@ -621,11 +624,8 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                             throw SKException.build("Failed to parse tool arguments", e);
                         }
                     } else {
-                        return new OpenAIFunctionToolCall(
-                            call.getId(),
-                            null,
-                            null,
-                            null);
+                        throw new SKException(
+                            "Unknown tool call type: " + call.getClass().getSimpleName());
                     }
                 })
                 .collect(Collectors.toList());
@@ -671,7 +671,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
 
         chatRequestMessages = chatRequestMessages
             .stream()
-            .map(XMLPromptParser::unescapeRequest)
+            .map(OpenAiXMLPromptParser::unescapeRequest)
             .collect(Collectors.toList());
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
@@ -959,7 +959,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
     /**
      * Builder for creating a new instance of {@link OpenAIChatCompletion}.
      */
-    public static class Builder extends ChatCompletionService.Builder {
+    public static class Builder extends OpenAiServiceBuilder<OpenAIChatCompletion, Builder> {
 
         @Override
         public OpenAIChatCompletion build() {

@@ -1,6 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.TextGeneration;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -63,6 +69,37 @@ public class KernelExtensionsTests
         Assert.Equal(2, plugin.FunctionCount);
         Assert.True(plugin.Contains("Function1"));
         Assert.True(plugin.Contains("Function2"));
+    }
+
+    [Fact]
+    public async Task CreateFunctionFromPromptWithMultipleSettingsUseCorrectServiceAsync()
+    {
+        // Arrange
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<IChatCompletionService>();
+        var fakeTextContent = new TextContent("llmResult");
+        var fakeChatContent = new ChatMessageContent(AuthorRole.User, "content");
+
+        mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeTextContent]);
+        mockTextGeneration2.Setup(c => c.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeChatContent]);
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        builder.Services.AddKeyedSingleton("service3", mockTextGeneration1.Object);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = kernel.CreateFunctionFromPrompt("coolfunction", [
+            new PromptExecutionSettings { ServiceId = "service5" }, // Should ignore this as service5 is not registered
+            new PromptExecutionSettings { ServiceId = "service2" },
+        ]);
+
+        // Act
+        await kernel.InvokeAsync(function);
+
+        // Assert
+        mockTextGeneration1.Verify(a => a.GetTextContentsAsync("coolfunction", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockTextGeneration2.Verify(a => a.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]

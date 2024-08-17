@@ -44,7 +44,7 @@ public class CreatingFunctions {
 
         // <RunNativeFunction>
         Kernel kernel = Kernel.builder()
-            .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
+            .withAIService(ChatCompletionService.class, OpenAIChatCompletion.builder()
                 .withModelId(MODEL_ID)
                 .withOpenAIAsyncClient(client)
                 .build())

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -26,6 +27,27 @@ public class PromptExecutionSettings
     /// In a dictionary of <see cref="PromptExecutionSettings"/>, this is the key that should be used settings considered the default.
     /// </remarks>
     public static string DefaultServiceId => "default";
+
+    /// <summary>
+    /// Service identifier.
+    /// This identifies the service these settings are configured for e.g., azure_openai_eastus, openai, ollama, huggingface, etc.
+    /// </summary>
+    /// <remarks>
+    /// When provided, this service identifier will be the key in a dictionary collection of execution settings for both <see cref="KernelArguments"/> and <see cref="PromptTemplateConfig"/>.
+    /// If not provided the service identifier will be the default value in <see cref="DefaultServiceId"/>.
+    /// </remarks>
+    [Experimental("SKEXP0001")]
+    [JsonPropertyName("service_id")]
+    public string? ServiceId
+    {
+        get => this._serviceId;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._serviceId = value;
+        }
+    }
 
     /// <summary>
     /// Model identifier.
@@ -93,6 +115,7 @@ public class PromptExecutionSettings
         return new()
         {
             ModelId = this.ModelId,
+            ServiceId = this.ServiceId,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
         };
     }
@@ -113,6 +136,7 @@ public class PromptExecutionSettings
 
     private string? _modelId;
     private IDictionary<string, object>? _extensionData;
+    private string? _serviceId;
 
     #endregion
 }
