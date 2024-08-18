@@ -52,7 +52,7 @@ async def main():
             name=AGENT_NAME,
             instructions=AGENT_INSTRUCTIONS,
             enable_file_search=True,
-            file_search_files=[pdf_file_path],
+            vector_store_filenames=[pdf_file_path],
         )
     else:
         agent = await OpenAIAssistantAgent.create(
@@ -61,7 +61,7 @@ async def main():
             name=AGENT_NAME,
             instructions=AGENT_INSTRUCTIONS,
             enable_file_search=True,
-            file_search_files=[pdf_file_path],
+            vector_store_filenames=[pdf_file_path],
         )
 
     # Define a thread and invoke the agent with the user input

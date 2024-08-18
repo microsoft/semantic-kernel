@@ -272,6 +272,18 @@ def mock_run_in_progress():
             self.thread_id = "thread_id"
             self.tools = []
             self.poll_count = 0
+            self.required_action = RequiredAction(
+                type="submit_tool_outputs",
+                submit_tool_outputs=RequiredActionSubmitToolOutputs(
+                    tool_calls=[
+                        RequiredActionFunctionToolCall(
+                            id="tool_call_id",
+                            type="function",
+                            function=Function(arguments="{}", name="function_name"),
+                        )
+                    ]
+                ),
+            )
 
         def update_status(self):
             self.poll_count += 1
@@ -296,11 +308,13 @@ def mock_run_step_tool_call():
         step_details=ToolCallsStepDetails(
             tool_calls=[
                 CodeInterpreterToolCall(
-                    type="code_interpreter", id="test", code_interpreter=CodeInterpreter(input="test code", outputs=[])
+                    type="code_interpreter",
+                    id="tool_call_id",
+                    code_interpreter=CodeInterpreter(input="test code", outputs=[]),
                 ),
                 FunctionToolCall(
                     type="function",
-                    id="test",
+                    id="tool_call_id",
                     function=RunsFunction(arguments="{}", name="function_name", outpt="test output"),
                 ),
             ],
@@ -378,6 +392,76 @@ async def test_create_assistant(
         assert assistant.tool_resources == ToolResources(
             code_interpreter=ToolResourcesCodeInterpreter(file_ids=["file1", "file2"]),
             file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
+        )
+
+
+@pytest.mark.asyncio
+async def test_modify_assistant(
+    azure_openai_assistant_agent: AzureAssistantAgent, mock_assistant, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
+        assistant = await azure_openai_assistant_agent.create_assistant(
+            ai_model_id="test_model",
+            description="test_description",
+            instructions="test_instructions",
+            name="test_name",
+            enable_code_interpreter=True,
+            enable_file_search=True,
+            vector_store_id="vector_store1",
+            code_interpreter_file_ids=["file1", "file2"],
+            metadata={"key": "value"},
+        )
+
+        mock_client.beta.assistants.update = AsyncMock(return_value=mock_assistant)
+
+        assistant = await azure_openai_assistant_agent.modify_assistant(
+            assistant_id=assistant.id,
+            ai_model_id="test_model",
+            description="test_description",
+            instructions="test_instructions",
+            name="test_name",
+            enable_code_interpreter=True,
+            enable_file_search=True,
+            vector_store_id="vector_store1",
+            code_interpreter_file_ids=["file1", "file2"],
+            metadata={"key": "value"},
+        )
+
+        assert assistant.model == "test_model"
+        assert assistant.description == "test_description"
+        assert assistant.id == "test_id"
+        assert assistant.instructions == "test_instructions"
+        assert assistant.name == "test_name"
+        assert assistant.tools == [CodeInterpreterTool(type="code_interpreter"), FileSearchTool(type="file_search")]
+        assert assistant.temperature == 0.7
+        assert assistant.top_p == 0.9
+        assert assistant.response_format == ResponseFormatJSONObject(type="json_object")
+        assert assistant.tool_resources == ToolResources(
+            code_interpreter=ToolResourcesCodeInterpreter(file_ids=["file1", "file2"]),
+            file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
+        )
+
+
+@pytest.mark.asyncio
+async def test_modify_assistant_not_initialized_throws(
+    azure_openai_assistant_agent: AzureAssistantAgent, mock_assistant, openai_unit_test_env
+):
+    with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
+        _ = await azure_openai_assistant_agent.modify_assistant(
+            assistant_id="id",
+            ai_model_id="test_model",
+            description="test_description",
+            instructions="test_instructions",
+            name="test_name",
+            enable_code_interpreter=True,
+            enable_file_search=True,
+            vector_store_id="vector_store1",
+            code_interpreter_file_ids=["file1", "file2"],
+            metadata={"key": "value"},
         )
 
 
@@ -639,9 +723,9 @@ async def test_create_vector_store(azure_openai_assistant_agent: AzureAssistantA
         mock_client.beta.vector_stores = MagicMock()
         mock_client.beta.vector_stores.create = AsyncMock(return_value=MagicMock(id="test_vector_store_id"))
 
-        vector_store = await azure_openai_assistant_agent.create_vector_store(["file_id1", "file_id2"])
+        vector_store_id = await azure_openai_assistant_agent.create_vector_store(["file_id1", "file_id2"])
 
-        assert vector_store.id == "test_vector_store_id"
+        assert vector_store_id == "test_vector_store_id"
         mock_client.beta.vector_stores.create.assert_called_once_with(file_ids=["file_id1", "file_id2"])
 
 
@@ -654,9 +738,9 @@ async def test_create_vector_store_single_file_id(
         mock_client.beta.vector_stores = MagicMock()
         mock_client.beta.vector_stores.create = AsyncMock(return_value=MagicMock(id="test_vector_store_id"))
 
-        vector_store = await azure_openai_assistant_agent.create_vector_store("file_id1")
+        vector_store_id = await azure_openai_assistant_agent.create_vector_store("file_id1")
 
-        assert vector_store.id == "test_vector_store_id"
+        assert vector_store_id == "test_vector_store_id"
         mock_client.beta.vector_stores.create.assert_called_once_with(file_ids=["file_id1"])
 
 
@@ -769,6 +853,7 @@ async def test_invoke(
     azure_openai_assistant_agent,
     mock_assistant,
     mock_run_in_progress,
+    mock_run_required_action,
     mock_chat_message_content,
     mock_run_step_tool_call,
     mock_run_step_message_creation,
@@ -796,7 +881,7 @@ async def test_invoke(
         mock_client.beta.threads.runs.submit_tool_outputs = AsyncMock()
         mock_client.beta.threads.runs.steps = MagicMock()
         mock_client.beta.threads.runs.steps.list = AsyncMock(
-            return_value=MagicMock(data=[mock_run_step_message_creation])
+            return_value=MagicMock(data=[mock_run_step_message_creation, mock_run_step_tool_call])
         )
 
         azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()

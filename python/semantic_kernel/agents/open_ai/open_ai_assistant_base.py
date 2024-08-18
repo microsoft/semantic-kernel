@@ -12,7 +12,6 @@ from openai.resources.beta.threads.messages import Message
 from openai.resources.beta.threads.runs.runs import Run
 from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
 from openai.types.beta.threads.runs import RunStep
-from openai.types.beta.vector_store import VectorStore
 from pydantic import Field
 
 from semantic_kernel.agents import Agent
@@ -547,14 +546,14 @@ class OpenAIAssistantBase(Agent):
         except Exception as ex:
             raise AgentExecutionException("Error deleting file.") from ex
 
-    async def create_vector_store(self, file_ids: str | list[str]) -> VectorStore:
+    async def create_vector_store(self, file_ids: str | list[str]) -> str:
         """Create a vector store.
 
         Args:
             file_ids: The file ids either as a str of a single file ID or a list of strings of file IDs.
 
         Returns:
-            The vector store.
+            The vector store id.
 
         Raises:
             AgentExecutionError: If there is an error creating the vector store.
@@ -562,7 +561,8 @@ class OpenAIAssistantBase(Agent):
         if isinstance(file_ids, str):
             file_ids = [file_ids]
         try:
-            return await self.client.beta.vector_stores.create(file_ids=file_ids)
+            vector_store = await self.client.beta.vector_stores.create(file_ids=file_ids)
+            return vector_store.id
         except Exception as ex:
             raise AgentExecutionException("Error creating vector store.") from ex
 

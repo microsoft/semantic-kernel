@@ -62,7 +62,7 @@ async def main():
         name=AGENT_NAME,
         instructions=AGENT_INSTRUCTIONS,
         enable_code_interpreter=True,
-        code_interpreter_files=[csv_file_path],
+        code_interpreter_filenames=[csv_file_path],
     )
 
     # Create a thread and specify the file to use for code interpretation

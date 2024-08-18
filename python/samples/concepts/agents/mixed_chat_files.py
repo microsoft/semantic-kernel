@@ -63,7 +63,7 @@ async def main():
             service_id="analyst",
             kernel=Kernel(),
             enable_code_interpreter=True,
-            code_interpreter_files=[file_path],
+            code_interpreter_filenames=[file_path],
             name="AnalystAgent",
         )
 

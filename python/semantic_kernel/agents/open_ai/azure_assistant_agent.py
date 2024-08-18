@@ -176,9 +176,9 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         instructions: str | None = None,
         name: str | None = None,
         enable_code_interpreter: bool | None = None,
-        code_interpreter_files: list[str] | None = None,
+        code_interpreter_filenames: list[str] | None = None,
         enable_file_search: bool | None = None,
-        file_search_files: list[str] | None = None,
+        vector_store_filenames: list[str] | None = None,
         enable_json_response: bool | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
@@ -210,9 +210,9 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             instructions: The Agent instructions. (optional)
             name: The Agent name. (optional)
             enable_code_interpreter: Enable the code interpreter. (optional)
-            code_interpreter_files: The file paths to use with the code interpreter. (optional)
+            code_interpreter_filenames: The filenames/paths to use with the code interpreter. (optional)
             enable_file_search: Enable the file search. (optional)
-            file_search_files: The file paths for files to use with file search. (optional)
+            vector_store_filenames: The filenames/paths for files to use with file search. (optional)
             enable_json_response: Enable the JSON response. (optional)
             temperature: The temperature. (optional)
             top_p: The top p. (optional)
@@ -260,9 +260,9 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 
         assistant_create_kwargs: dict[str, Any] = {}
 
-        if code_interpreter_files is not None:
+        if code_interpreter_filenames is not None:
             code_interpreter_file_ids: list[str] = []
-            for file_path in code_interpreter_files:
+            for file_path in code_interpreter_filenames:
                 try:
                     file_id = await agent.add_file(file_path=file_path, purpose="assistants")
                     code_interpreter_file_ids.append(file_id)
@@ -274,9 +274,9 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             agent.code_interpreter_file_ids = code_interpreter_file_ids
             assistant_create_kwargs["code_interpreter_file_ids"] = code_interpreter_file_ids
 
-        if file_search_files is not None:
+        if vector_store_filenames is not None:
             file_search_file_ids: list[str] = []
-            for file_path in file_search_files:
+            for file_path in vector_store_filenames:
                 try:
                     file_id = await agent.add_file(file_path=file_path, purpose="assistants")
                     file_search_file_ids.append(file_id)
@@ -285,9 +285,10 @@ class AzureAssistantAgent(OpenAIAssistantBase):
                     raise AgentInitializationException("Failed to upload file search files.", ex) from ex
 
             if enable_file_search or agent.enable_file_search:
-                vector_store = await agent.create_vector_store(file_ids=file_search_file_ids)
+                vector_store_id = await agent.create_vector_store(file_ids=file_search_file_ids)
                 agent.file_search_file_ids = file_search_file_ids
-                assistant_create_kwargs["vector_store_id"] = vector_store.id
+                agent.vector_store_id = vector_store_id
+                assistant_create_kwargs["vector_store_id"] = vector_store_id
 
         agent.assistant = await agent.create_assistant(**assistant_create_kwargs)
         return agent
