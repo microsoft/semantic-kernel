@@ -9,3 +9,4 @@ class OpenAIModelTypes(Enum):
     TEXT = "text"
     CHAT = "chat"
     EMBEDDING = "embedding"
+    IMAGE = "image"
