@@ -171,6 +171,7 @@ async def test_create_agent_with_search_files_not_found_raises_exception(kernel:
             _ = await AzureAssistantAgent.create(
                 kernel=kernel,
                 service_id="test_service",
+                deployment_name="test_deployment_name",
                 name="test_name",
                 api_key="test_api_key",
                 api_version="2024-05-01",
