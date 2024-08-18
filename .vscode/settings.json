@@ -170,5 +170,7 @@
   "CodeGPT.Autocomplete.enabled": true,
   "CodeGPT.Autocomplete.maxTokens": 1024,
   "CodeGPT.Autocomplete.suggestionDelay": 7200,
-  "CodeGPT.Autocomplete.provider": "CodeGPT Enterprise - Plus"
+  "CodeGPT.Autocomplete.provider": "CodeGPT Enterprise - Plus",
+  "clojure.trace.server": "verbose",
+  "iis.configDir": ""
 }
