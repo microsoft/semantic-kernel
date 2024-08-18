@@ -160,7 +160,7 @@ async def test_create_agent_with_files(kernel: Kernel, openai_unit_test_env):
 
 
 @pytest.mark.asyncio
-async def test_create_agent_with_code_files_not_found_raises_exception(kernel: Kernel, azure_openai_unit_test_env):
+async def test_create_agent_with_code_files_not_found_raises_exception(kernel: Kernel, openai_unit_test_env):
     mock_open_file = mock_open(read_data="file_content")
     with (
         patch("builtins.open", mock_open_file),
@@ -175,6 +175,7 @@ async def test_create_agent_with_code_files_not_found_raises_exception(kernel: K
             _ = await OpenAIAssistantAgent.create(
                 kernel=kernel,
                 service_id="test_service",
+                ai_model_id="test_model_id",
                 name="test_name",
                 api_key="test_api_key",
                 api_version="2024-05-01",
