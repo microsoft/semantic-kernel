@@ -166,5 +166,9 @@
   ],
   "cursorless.commandHistory": true,
   "cmake.options.statusBarVisibility": "visible",
-  "files.autoSave": "afterDelay"
+  "files.autoSave": "afterDelay",
+  "CodeGPT.Autocomplete.enabled": true,
+  "CodeGPT.Autocomplete.maxTokens": 1024,
+  "CodeGPT.Autocomplete.suggestionDelay": 7200,
+  "CodeGPT.Autocomplete.provider": "CodeGPT Enterprise - Plus"
 }
