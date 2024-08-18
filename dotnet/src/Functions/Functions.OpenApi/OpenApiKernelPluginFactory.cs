@@ -151,7 +151,8 @@ public static partial class OpenApiKernelPluginFactory
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
             executionParameters?.EnableDynamicPayload ?? true,
-            executionParameters?.EnablePayloadNamespacing ?? false);
+            executionParameters?.EnablePayloadNamespacing ?? false,
+            executionParameters?.HttpResponseContentReader);
 
         var functions = new List<KernelFunction>();
         ILogger logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
@@ -254,7 +255,7 @@ public static partial class OpenApiKernelPluginFactory
                 Description = $"{p.Description ?? p.Name}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 IsRequired = p.IsRequired,
-                ParameterType = p.Type switch { "string" => typeof(string), "boolean" => typeof(bool), _ => null },
+                ParameterType = ConvertParameterDataType(p),
                 Schema = p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($$"""{"type":"{{p.Type}}"}""")),
             })
             .ToList();
@@ -361,6 +362,34 @@ public static partial class OpenApiKernelPluginFactory
     }
 
     /// <summary>
+    /// Converts the parameter type to a C# <see cref="Type"/> object.
+    /// </summary>
+    /// <param name="parameter">The REST API operation parameter.</param>
+    /// <returns></returns>
+    private static Type? ConvertParameterDataType(RestApiOperationParameter parameter)
+    {
+        return parameter.Type switch
+        {
+            "string" => typeof(string),
+            "boolean" => typeof(bool),
+            "number" => parameter.Format switch
+            {
+                "float" => typeof(float),
+                "double" => typeof(double),
+                _ => typeof(double)
+            },
+            "integer" => parameter.Format switch
+            {
+                "int32" => typeof(int),
+                "int64" => typeof(long),
+                _ => typeof(long)
+            },
+            "object" => typeof(object),
+            _ => null
+        };
+    }
+
+    /// <summary>
     /// Used to convert operationId to SK function names.
     /// </summary>
 #if NET
@@ -372,5 +401,4 @@ public static partial class OpenApiKernelPluginFactory
 #endif
 
     #endregion
-
 }
