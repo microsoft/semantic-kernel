@@ -390,10 +390,10 @@ internal sealed class ChatClientCore
         var options = new ChatCompletionsOptions
         {
             MaxTokens = executionSettings.MaxTokens,
-            Temperature = executionSettings.Temperature,
-            NucleusSamplingFactor = executionSettings.NucleusSamplingFactor,
-            FrequencyPenalty = executionSettings.FrequencyPenalty,
-            PresencePenalty = executionSettings.PresencePenalty,
+            Temperature = (float?)executionSettings.Temperature,
+            NucleusSamplingFactor = (float?)executionSettings.NucleusSamplingFactor,
+            FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
+            PresencePenalty = (float?)executionSettings.PresencePenalty,
             Model = modelId,
             Seed = executionSettings.Seed,
         };
