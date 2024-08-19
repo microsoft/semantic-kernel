@@ -341,7 +341,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             "id": response.id,
             "created": response.created,
             "system_fingerprint": response.system_fingerprint,
-            "usage": getattr(response, "usage", None),
+            "usage": response.usage if hasattr(response, "usage") else None,
         }
 
     def _get_metadata_from_streaming_chat_response(self, response: ChatCompletionChunk) -> dict[str, Any]:
