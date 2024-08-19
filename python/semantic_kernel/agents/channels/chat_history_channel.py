@@ -12,8 +12,7 @@ else:
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Deque, Protocol, runtime_checkable
 
-from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -22,6 +21,7 @@ from semantic_kernel.exceptions import ServiceInvalidTypeError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
+    from semantic_kernel.agents.agent import Agent
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -50,7 +50,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
     @override
     async def invoke(
         self,
-        agent: Agent,
+        agent: "Agent",
     ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
         """Perform a discrete incremental interaction between a single Agent and AgentChat.
 
