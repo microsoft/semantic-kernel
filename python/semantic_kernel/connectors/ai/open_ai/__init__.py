@@ -15,6 +15,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
+    OpenAIEmbeddingPromptExecutionSettings,
     OpenAIPromptExecutionSettings,
     OpenAITextPromptExecutionSettings,
 )
@@ -46,6 +47,7 @@ __all__ = [
     "ExtraBody",
     "OpenAIChatCompletion",
     "OpenAIChatPromptExecutionSettings",
+    "OpenAIEmbeddingPromptExecutionSettings",
     "OpenAIPromptExecutionSettings",
     "OpenAITextCompletion",
     "OpenAITextEmbedding",
