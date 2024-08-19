@@ -2,7 +2,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent, OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -17,9 +17,6 @@ from semantic_kernel.kernel import Kernel
 
 AGENT_NAME = "FileManipulation"
 AGENT_INSTRUCTIONS = "Find answers to the user's questions in the provided file."
-
-# Note: you may toggle this to switch between AzureOpenAI and OpenAI
-use_azure_openai = False
 
 
 # A helper method to invoke the agent with the user input
@@ -56,7 +53,7 @@ async def main():
     )
 
     # Create the assistant agent
-    agent = await AzureAssistantAgent.create(
+    agent = await OpenAIAssistantAgent.create(
         kernel=kernel,
         service_id=service_id,
         name=AGENT_NAME,
@@ -77,9 +74,10 @@ async def main():
             input="Create a tab delimited file report of profit by each country per month.",
         )
     finally:
-        [await agent.delete_file(file_id) for file_id in agent.code_interpreter_file_ids]
-        await agent.delete_thread(thread_id)
-        await agent.delete()
+        if agent is not None:
+            [await agent.delete_file(file_id) for file_id in agent.code_interpreter_file_ids]
+            await agent.delete_thread(thread_id)
+            await agent.delete()
 
 
 if __name__ == "__main__":

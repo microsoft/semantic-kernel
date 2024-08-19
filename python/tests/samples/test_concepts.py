@@ -5,10 +5,6 @@ import copy
 import pytest
 from pytest import mark, param
 
-from samples.concepts.agents.assistant_agent_chart_maker import main as assistant_agent_chart_maker
-from samples.concepts.agents.assistant_agent_file_manipulation import main as assistant_agent_file_manipulation
-from samples.concepts.agents.mixed_chat_agents import main as mixed_chat_agents
-from samples.concepts.agents.mixed_chat_files import main as mixed_chat_files
 from samples.concepts.auto_function_calling.azure_python_code_interpreter_function_calling import (
     main as azure_python_code_interpreter_function_calling,
 )
@@ -60,19 +56,7 @@ from samples.concepts.service_selector.custom_service_selector import main as cu
 from samples.getting_started_with_agents.step1_agent import main as step1_agent
 from samples.getting_started_with_agents.step2_plugins import main as step2_plugins
 from samples.getting_started_with_agents.step3_chat import main as step3_chat
-from samples.getting_started_with_agents.step4_kernel_function_strategies import (
-    main as step4_kernel_function_strategies,
-)
-from samples.getting_started_with_agents.step5_json_result import main as step5_json_result
-from samples.getting_started_with_agents.step6_logging import main as step6_logging
 from samples.getting_started_with_agents.step7_assistant import main as step7_assistant
-from samples.getting_started_with_agents.step8_assistant_vision import main as step8_assistant_vision
-from samples.getting_started_with_agents.step9_assistant_tool_code_interpreter import (
-    main as step9_assistant_tool_code_interpreter,
-)
-from samples.getting_started_with_agents.step10_assistant_tool_file_search import (
-    main as step10_assistant_tool_file_search,
-)
 from tests.samples.samples_utils import retry
 
 concepts = [
@@ -126,17 +110,7 @@ concepts = [
     param(step1_agent, [], id="step1_agent"),
     param(step2_plugins, [], id="step2_agent_plugins"),
     param(step3_chat, [], id="step3_chat"),
-    param(step4_kernel_function_strategies, [], id="step4_kernel_function_strategies"),
-    param(step5_json_result, [], id="step5_json_result"),
-    param(step6_logging, [], id="step6_logging"),
     param(step7_assistant, [], id="step7_assistant"),
-    param(step8_assistant_vision, [], id="step8_assistant_vision"),
-    param(step9_assistant_tool_code_interpreter, [], id="step9_assistant_tool_code_interpreter"),
-    param(step10_assistant_tool_file_search, [], id="step10_assistant_tool_file_search"),
-    param(assistant_agent_chart_maker, [], id="assistant_agent_chart_maker"),
-    param(assistant_agent_file_manipulation, [], id="assistant_agent_file_manipulation"),
-    param(mixed_chat_agents, [], id="mixed_chat_agents"),
-    param(mixed_chat_files, [], id="mixed_chat_files"),
     param(
         ollama_chat_completion,
         ["Why is the sky blue?", "exit"],

@@ -5,7 +5,6 @@ import os
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
 from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
-from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -59,7 +58,7 @@ async def main():
             "user-context.txt",
         )
 
-        analyst_agent = await AzureAssistantAgent.create(
+        analyst_agent = await OpenAIAssistantAgent.create(
             service_id="analyst",
             kernel=Kernel(),
             enable_code_interpreter=True,
@@ -87,8 +86,9 @@ async def main():
         )
         await invoke_agent(chat=chat, agent=summary_agent)
     finally:
-        [await analyst_agent.delete_file(file_id=file_id) for file_id in analyst_agent.code_interpreter_file_ids]
-        await analyst_agent.delete()
+        if analyst_agent is not None:
+            [await analyst_agent.delete_file(file_id=file_id) for file_id in analyst_agent.code_interpreter_file_ids]
+            await analyst_agent.delete()
 
 
 if __name__ == "__main__":
