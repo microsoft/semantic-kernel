@@ -90,7 +90,7 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
         await MessageOutputAsync(chatHistory);
 
-        // First bot assistant message
+        // First assistant message
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         await MessageOutputAsync(chatHistory);
@@ -99,7 +99,7 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
         await MessageOutputAsync(chatHistory);
 
-        // Second bot assistant message
+        // Second assistant message
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         await MessageOutputAsync(chatHistory);

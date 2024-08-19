@@ -28,7 +28,7 @@ public class AzureAIInference_ChatCompletion(ITestOutputHelper output) : BaseTes
         chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
         await MessageOutputAsync(chatHistory);
 
-        // First bot assistant message
+        // First assistant message
         var reply = await chatService.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         await MessageOutputAsync(chatHistory);
@@ -37,7 +37,7 @@ public class AzureAIInference_ChatCompletion(ITestOutputHelper output) : BaseTes
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
         await MessageOutputAsync(chatHistory);
 
-        // Second bot assistant message
+        // Second assistant message
         reply = await chatService.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         await MessageOutputAsync(chatHistory);
@@ -74,7 +74,7 @@ public class AzureAIInference_ChatCompletion(ITestOutputHelper output) : BaseTes
     [Fact]
     public async Task ChatPromptAsync()
     {
-        StringBuilder ChatPrompt = new("""
+        StringBuilder chatPrompt = new("""
                                        <message role="system">You are a librarian, expert about books</message>
                                        <message role="user">Hi, I'm looking for book suggestions</message>
                                        """);
@@ -85,12 +85,12 @@ public class AzureAIInference_ChatCompletion(ITestOutputHelper output) : BaseTes
                 apiKey: TestConfiguration.AzureAIInference.ApiKey)
             .Build();
 
-        var reply = await kernel.InvokePromptAsync(ChatPrompt.ToString());
+        var reply = await kernel.InvokePromptAsync(chatPrompt.ToString());
 
-        ChatPrompt.AppendLine($"<message role=\"assistant\"><![CDATA[{reply}]]></message>");
-        ChatPrompt.AppendLine("<message role=\"user\">I love history and philosophy, I'd like to learn something new about Greece, any suggestion</message>");
+        chatPrompt.AppendLine($"<message role=\"assistant\"><![CDATA[{reply}]]></message>");
+        chatPrompt.AppendLine("<message role=\"user\">I love history and philosophy, I'd like to learn something new about Greece, any suggestion</message>");
 
-        reply = await kernel.InvokePromptAsync(ChatPrompt.ToString());
+        reply = await kernel.InvokePromptAsync(chatPrompt.ToString());
 
         Console.WriteLine(reply);
     }
