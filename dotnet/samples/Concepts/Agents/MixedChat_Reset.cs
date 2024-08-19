@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -10,7 +11,7 @@ namespace Agents;
 /// <summary>
 /// Demonstrate the use of <see cref="AgentChat.ResetAsync"/>.
 /// </summary>
-public class MixedChat_Reset(ITestOutputHelper output) : BaseTest(output)
+public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string AgentInstructions =
         """
@@ -21,18 +22,17 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task ResetChatAsync()
     {
-        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
+        OpenAIClientProvider provider = this.GetClientProvider();
 
         // Define the agents
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
-                new()
+                provider,
+                new(this.Model)
                 {
                     Name = nameof(OpenAIAssistantAgent),
                     Instructions = AgentInstructions,
-                    ModelId = this.Model,
                 });
 
         ChatCompletionAgent chatAgent =
@@ -74,16 +74,14 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseTest(output)
         {
             if (!string.IsNullOrWhiteSpace(input))
             {
-                chat.AddChatMessage(new(AuthorRole.User, input));
-                Console.WriteLine($"\n# {AuthorRole.User}: '{input}'");
+                ChatMessageContent message = new(AuthorRole.User, input);
+                chat.AddChatMessage(message);
+                this.WriteAgentChatMessage(message);
             }
 
-            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
-                if (!string.IsNullOrWhiteSpace(message.Content))
-                {
-                    Console.WriteLine($"\n# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
-                }
+                this.WriteAgentChatMessage(response);
             }
         }
     }
