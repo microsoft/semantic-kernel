@@ -41,7 +41,7 @@ class AzureTextToImage(AzureOpenAIConfigBase, OpenAITextToImageBase):
             api_key: The optional api key. If provided, will override the value in the
                     env vars or .env file.
             deployment_name: The optional deployment. If provided, will override the value
-                (text_deployment_name) in the env vars or .env file.
+                (text_to_image_deployment_name) in the env vars or .env file.
             endpoint: The optional deployment endpoint. If provided will override the value
                 in the env vars or .env file.
             base_url: The optional deployment base_url. If provided will override the value
@@ -64,18 +64,18 @@ class AzureTextToImage(AzureOpenAIConfigBase, OpenAITextToImageBase):
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
                 api_key=api_key,
-                embedding_deployment_name=deployment_name,
+                text_to_image_deployment_name=deployment_name,
                 endpoint=endpoint,
                 base_url=base_url,
                 api_version=api_version,
             )
         except ValidationError as exc:
             raise ServiceInitializationError(f"Invalid settings: {exc}") from exc
-        if not azure_openai_settings.embedding_deployment_name:
-            raise ServiceInitializationError("The Azure OpenAI embedding deployment name is required.")
+        if not azure_openai_settings.text_to_image_deployment_name:
+            raise ServiceInitializationError("The Azure OpenAI text to image deployment name is required.")
 
         super().__init__(
-            deployment_name=azure_openai_settings.embedding_deployment_name,
+            deployment_name=azure_openai_settings.text_to_image_deployment_name,
             endpoint=azure_openai_settings.endpoint,
             base_url=azure_openai_settings.base_url,
             api_version=azure_openai_settings.api_version,
