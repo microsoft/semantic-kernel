@@ -130,7 +130,6 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             yield break;
         }
 
-        var collectionMemories = new List<MemoryRecord>();
         List<(MemoryRecord Record, double Score)> embeddings = [];
 
         await foreach (var record in this.GetAllAsync(collectionName, cancellationToken).ConfigureAwait(false))
