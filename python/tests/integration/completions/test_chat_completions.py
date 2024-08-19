@@ -35,6 +35,13 @@ try:
 except KeyError:
     ollama_setup = False
 
+anthropic_setup: bool = False
+try:
+    if os.environ["ANTHROPIC_API_KEY"] and os.environ["ANTHROPIC_CHAT_MODEL_ID"]:
+        anthropic_setup = True
+except KeyError:
+    anthropic_setup = False
+
 
 pytestmark = pytest.mark.parametrize(
     "service_id, execution_settings_kwargs, inputs, kwargs",
@@ -100,6 +107,17 @@ pytestmark = pytest.mark.parametrize(
             ["Hello", "well"],
             marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
+        ),
+         pytest.param(
+            "anthropic",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
+            id="anthropic_text_input",
         ),
         pytest.param(
             "google_ai",
