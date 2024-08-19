@@ -110,6 +110,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
 
 
+
                     // Invoke functions for each tool-step
                     IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
 
@@ -179,6 +180,39 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
                     // Retrieve the message
                     ThreadMessage? message = await this.RetrieveMessageAsync(messageCreationDetails, cancellationToken).ConfigureAwait(false);
+
+
+                    // Retrieve the message
+                    ThreadMessage? message = await this.RetrieveMessageAsync(messageCreationDetails, cancellationToken).ConfigureAwait(false);
+
+                    if (message is not null)
+                    {
+                        AuthorRole role = new(message.Role.ToString());
+
+                        foreach (MessageContent itemContent in message.ContentItems)
+                        {
+                            ChatMessageContent? content = null;
+
+                            // Process text content
+                            if (itemContent is MessageTextContent contentMessage)
+                            {
+                                content = GenerateTextMessageContent(agent.GetName(), role, contentMessage);
+                            }
+                            // Process image content
+                            else if (itemContent is MessageImageFileContent contentImage)
+                            {
+                                content = GenerateImageFileContent(agent.GetName(), role, contentImage);
+                            }
+
+                            if (content is not null)
+                            {
+                                ++messageCount;
+
+                                yield return content;
+                            }
+                        }
+                    }
+                }
 
 
                     // Retrieve the message
@@ -449,6 +483,30 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         }
 
         return functionTasks;
+        }
+
+        return functionTasks;
+    }
+
+    private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
+    {
+        ToolOutput[] toolOutputs = new ToolOutput[functionResults.Length];
+
+        for (int index = 0; index < functionResults.Length; ++index)
+        {
+            FunctionResultContent functionResult = functionResults[index];
+
+            object resultValue = functionResult.Result ?? string.Empty;
+
+            if (resultValue is not string textResult)
+            {
+                textResult = JsonSerializer.Serialize(resultValue);
+            }
+
+            toolOutputs[index] = new ToolOutput(functionResult.CallId, textResult!);
+        }
+
+        return toolOutputs;
     }
 
     private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)

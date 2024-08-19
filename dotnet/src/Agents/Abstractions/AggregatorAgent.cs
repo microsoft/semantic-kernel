@@ -48,6 +48,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
         this.Logger.LogAggregatorAgentCreatingChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
 >>>>>>>-Updated upstrea
 ebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync), nameof(AggregatorChannel));
+        this.Logger.LogDebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync), nameof(AggregatorChannel));
 
         AgentChat chat = chatProvider.Invoke();
         AggregatorChannel channel = new(chat);

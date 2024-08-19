@@ -442,6 +442,7 @@ public class AnnotationContent : KernelContent
 - `FunctionCallContent`: Graduate as is.
 - `FunctionResultContent`: Experimental breaking change from property `Id` to `CallId` to avoid confusion regarding being a function call Id or a response id.
 - `FileReferenceContent` and `AnnotationContent`: No changes, continue as experimental.
+- Fully serializeable.
 - Data Uri parameters support (serialization included).
 - Data Uri and Base64 validation checks
 - Data Uri and Data can be dynamically generated
@@ -563,6 +564,8 @@ Pros:
 - Fu- Fully serializeable.
 >>>>>>>-Stashed changes
 ta Uri parameters support (serialization included).
+- Fully serializeable.
+- Data Uri parameters support (serialization included).
 - Data Uri and Base64 validation checks
 - Can be retrieved
 - Data Uri and Data can be dynamically generated

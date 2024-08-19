@@ -31,6 +31,7 @@ _T = TypeVar("_T", bound="FunctionResultContent")
 
 
 
+
 class FunctionResultContent(KernelContent):
     """This class represents function result content."""
 

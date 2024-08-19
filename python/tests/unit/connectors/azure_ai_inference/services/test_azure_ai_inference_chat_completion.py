@@ -26,6 +26,11 @@ from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGEN
 # region init
 def test_azure_ai_inference_chat_completion_init(azure_ai_inference_unit_test_env, model_id) -> None:
     """Test initialization of AzureAIInferenceChatCompletion"""
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+
+
+def test_azure_ai_inference_chat_completion_init(azure_ai_inference_unit_test_env, model_id) -> None:
     azure_ai_inference = AzureAIInferenceChatCompletion(model_id)
 
     assert azure_ai_inference.ai_model_id == model_id
@@ -56,6 +61,9 @@ def test_azure_ai_inference_chat_completion_init_with_service_id(
     azure_ai_inference_unit_test_env, model_id, service_id
 ) -> None:
     """Test initialization of AzureAIInferenceChatCompletion with service_id"""
+def test_azure_ai_inference_chat_completion_init_with_service_id(
+    azure_ai_inference_unit_test_env, model_id, service_id
+) -> None:
     azure_ai_inference = AzureAIInferenceChatCompletion(model_id, service_id=service_id)
 
     assert azure_ai_inference.ai_model_id == model_id
@@ -124,6 +132,7 @@ async def test_azure_ai_inference_chat_completion(
     mock_complete.return_value = mock_azure_ai_inference_chat_completion_response
 
     responses = await azure_ai_inference_service.get_chat_message_contents(chat_history=chat_history, settings=settings)
+    await azure_ai_inference_service.get_chat_message_contents(chat_history, settings)
 
     mock_complete.assert_awaited_once_with(
         messages=[UserMessage(content=user_message_content)],
@@ -165,6 +174,7 @@ async def test_azure_ai_inference_chat_completion_with_standard_parameters(
     mock_complete.return_value = mock_azure_ai_inference_chat_completion_response
 
     responses = await azure_ai_inference_service.get_chat_message_contents(chat_history=chat_history, settings=settings)
+    await azure_ai_inference_service.get_chat_message_contents(chat_history, settings)
 
     mock_complete.assert_awaited_once_with(
         messages=[UserMessage(content=user_message_content)],
@@ -580,3 +590,10 @@ async def test_azure_ai_inference_streaming_chat_completion_with_function_choice
 
 
 # endregion streaming chat completion
+    await azure_ai_inference_service.get_chat_message_contents(chat_history, settings)
+
+    mock_complete.assert_awaited_once_with(
+        messages=[UserMessage(content=user_message_content)],
+        model_extras=extra_parameters,
+        **settings.prepare_settings_dict(),
+    )
