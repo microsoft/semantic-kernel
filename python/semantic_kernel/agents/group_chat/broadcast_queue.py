@@ -5,7 +5,7 @@ import asyncio
 from collections import deque
 from dataclasses import dataclass, field
 
-from pydantic import Field, SkipValidation
+from pydantic import Field, SkipValidation, ValidationError, model_validator
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -19,13 +19,21 @@ class QueueReference(KernelBaseModel):
 
     queue: deque = Field(default_factory=deque)
     queue_lock: SkipValidation[asyncio.Lock] = Field(default_factory=asyncio.Lock, exclude=True)
-    receive_task: asyncio.Task | None = None
+    receive_task: SkipValidation[asyncio.Task | None] = None
     receive_failure: Exception | None = None
 
     @property
     def is_empty(self):
         """Check if the queue is empty."""
         return len(self.queue) == 0
+
+    @model_validator(mode="before")
+    def validate_receive_task(cls, values):
+        """Validate the receive task."""
+        receive_task = values.get("receive_task")
+        if receive_task is not None and not isinstance(receive_task, asyncio.Task):
+            raise ValidationError("receive_task must be an instance of asyncio.Task or None")
+        return values
 
 
 @experimental_class
