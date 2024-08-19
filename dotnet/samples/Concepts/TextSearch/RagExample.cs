@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
@@ -10,7 +12,7 @@ namespace TextSearch;
 /// <summary>
 /// This example shows how to perform RAG with an <see cref="ITextSearch{T}"/>.
 /// </summary>
-public sealed class RagExample(ITestOutputHelper output) : BaseTest(output)
+public sealed partial class RagExample(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a default <see cref="KernelPlugin"/> from an <see cref="ITextSearch{T}"/> and use it to
@@ -35,7 +37,7 @@ public sealed class RagExample(ITestOutputHelper output) : BaseTest(output)
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(textSearch, "SearchPlugin");
+        var searchPlugin = textSearch.CreateKernelPluginWithTextSearch("SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -67,7 +69,7 @@ public sealed class RagExample(ITestOutputHelper output) : BaseTest(output)
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
+        var searchPlugin = textSearch.CreateKernelPluginWithGetSearchResults("SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -127,7 +129,7 @@ Include the link to the relevant information in the response.
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
+        var searchPlugin = textSearch.CreateKernelPluginWithGetSearchResults("SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -191,7 +193,7 @@ Include citations to the relevant information where it is referenced in the resp
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = BingTextSearchKernelPluginFactory.CreateFromBingWebPages(textSearch, "SearchPlugin");
+        var searchPlugin = textSearch.CreateKernelPluginWithGetBingWebPages("SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -271,7 +273,7 @@ Include citations to and the date of the relevant information where it is refere
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search service and add to the kernel
-        var searchPlugin = BingTextSearchKernelPluginFactory.CreateFromBingWebPages(textSearch, "SearchPlugin", null, BingSearchExample.CreateGetFullWebPagesOptions(textSearch));
+        var searchPlugin = KernelPluginFactory.CreateFromFunctions("SearchPlugin", null, [CreateGetFullWebPages(textSearch)]);
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -317,4 +319,80 @@ Include citations to the relevant information where it is referenced in the resp
         By leveraging these features, the Semantic Kernel serves as a powerful toolset for developers looking to enhance their applications with cutting-edge AI capabilities, all while maintaining flexibility and ease of integration. For more details and to access the Semantic Kernel SDK, visit the [GitHub repository](https://github.com/microsoft/semantic-kernel).
         */
     }
+
+    private static KernelFunction CreateGetFullWebPages(ITextSearch<BingWebPage> textSearch, BasicFilterOptions? basicFilter = null)
+    {
+        async Task<IEnumerable<TextSearchResult>> GetFullWebPagesAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        {
+            arguments.TryGetValue("query", out var query);
+            if (string.IsNullOrEmpty(query?.ToString()))
+            {
+                return [];
+            }
+
+            var parameters = function.Metadata.Parameters;
+
+            arguments.TryGetValue("count", out var count);
+            arguments.TryGetValue("skip", out var skip);
+            SearchOptions searchOptions = new()
+            {
+                Count = (count as int?) ?? 2,
+                Offset = (skip as int?) ?? 0,
+                BasicFilter = basicFilter
+            };
+
+            var result = await textSearch.SearchAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
+            var resultList = new List<TextSearchResult>();
+
+            using HttpClient client = new();
+            await foreach (var item in result.Results.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                string? value = item.Snippet;
+                try
+                {
+                    if (item.Url is not null)
+                    {
+                        value = await client.GetStringAsync(new Uri(item.Url), cancellationToken);
+                        value = ConvertHtmlToPlainText(value);
+                    }
+                }
+                catch (HttpRequestException)
+                {
+                }
+
+                resultList.Add(new() { Name = item.Name, Value = value, Link = item.Url });
+            }
+
+            return resultList;
+        }
+
+        var options = new KernelFunctionFromMethodOptions()
+        {
+            FunctionName = "GetFullWebPages",
+            Description = "Perform a search for content related to the specified query. The search will return the name, full web page content and link for the related content.",
+            Parameters =
+            [
+                new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
+                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+                new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
+                new KernelParameterMetadata("site") { Description = "Only return results from this domain", IsRequired = false, DefaultValue = 2 },
+            ],
+            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
+        };
+
+        return KernelFunctionFactory.CreateFromMethod(GetFullWebPagesAsync, options);
+    }
+
+    private static string ConvertHtmlToPlainText(string html)
+    {
+        HtmlDocument doc = new();
+        doc.LoadHtml(html);
+
+        string text = doc.DocumentNode.InnerText;
+        text = MyRegex().Replace(text, " "); // Remove unnecessary whitespace  
+        return text.Trim();
+    }
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex MyRegex();
 }

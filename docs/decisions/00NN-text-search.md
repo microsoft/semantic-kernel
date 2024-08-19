@@ -42,7 +42,7 @@ Kernel kernel = kernelBuilder.Build();
 var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
 // Build a text search plugin with Bing search service and add to the kernel
-var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(textSearch, "SearchPlugin");
+var searchPlugin = textSearch.CreateKernelPluginWithTextSearch("SearchPlugin");
 kernel.Plugins.Add(searchPlugin);
 
 // Invoke prompt and use text search plugin to provide grounding information
@@ -77,7 +77,7 @@ Kernel kernel = kernelBuilder.Build();
 var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
 // Build a text search plugin with Bing search service and add to the kernel
-var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
+var searchPlugin = textSearch.CreateKernelPluginWithGetSearchResults("SearchPlugin");
 kernel.Plugins.Add(searchPlugin);
 
 // Invoke prompt and use text search plugin to provide grounding information
@@ -147,7 +147,7 @@ Kernel kernel = kernelBuilder.Build();
 var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
 // Build a text search plugin with Bing search service and add to the kernel
-var searchPlugin = BingTextSearchKernelPluginFactory.CreateFromBingWebPages(textSearch, "SearchPlugin");
+var searchPlugin = textSearch.CreateKernelPluginWithGetBingWebPages("SearchPlugin");
 kernel.Plugins.Add(searchPlugin);
 
 // Invoke prompt and use text search plugin to provide grounding information
@@ -219,7 +219,7 @@ In the previous samples a snippet of text from the web page is used as the relev
 
 ```csharp
 // Build a text search plugin with Bing search service and add to the kernel
-var searchPlugin = BingTextSearchKernelPluginFactory.CreateFromBingWebPages(textSearch, "SearchPlugin", null, BingSearchExample.CreateGetFullWebPagesOptions(textSearch));
+var searchPlugin = KernelPluginFactory.CreateFromFunctions("SearchPlugin", null, [CreateGetFullWebPages(textSearch)]);
 kernel.Plugins.Add(searchPlugin);
 
 // Invoke prompt and use text search plugin to provide grounding information
@@ -253,72 +253,54 @@ In this sample we call `BingSearchExample.CreateGetFullWebPagesOptions(textSearc
 The code for this method looks like this:
 
 ```csharp
-public static KernelPluginFromTextSearchOptions CreateGetFullWebPagesOptions(ITextSearch<BingWebPage> textSearch)
-{
-    return new()
-    {
-        Functions =
-        [
-            GetFullWebPages(textSearch),
-        ]
-    };
-}
-
-private static KernelFunctionFromTextSearchOptions GetFullWebPages(ITextSearch<BingWebPage> textSearch, BasicFilterOptions? basicFilter = null)
+private static KernelFunction CreateGetFullWebPages(ITextSearch<BingWebPage> textSearch, BasicFilterOptions? basicFilter = null)
 {
     async Task<IEnumerable<TextSearchResult>> GetFullWebPagesAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
     {
-        try
+        arguments.TryGetValue("query", out var query);
+        if (string.IsNullOrEmpty(query?.ToString()))
         {
-            arguments.TryGetValue("query", out var query);
-            if (string.IsNullOrEmpty(query?.ToString()))
+            return [];
+        }
+
+        var parameters = function.Metadata.Parameters;
+
+        arguments.TryGetValue("count", out var count);
+        arguments.TryGetValue("skip", out var skip);
+        SearchOptions searchOptions = new()
+        {
+            Count = (count as int?) ?? 2,
+            Offset = (skip as int?) ?? 0,
+            BasicFilter = basicFilter
+        };
+
+        var result = await textSearch.SearchAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
+        var resultList = new List<TextSearchResult>();
+
+        using HttpClient client = new();
+        await foreach (var item in result.Results.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            string? value = item.Snippet;
+            try
             {
-                return [];
+                if (item.Url is not null)
+                {
+                    value = await client.GetStringAsync(new Uri(item.Url), cancellationToken);
+                    value = ConvertHtmlToPlainText(value);
+                }
             }
-            
-            var parameters = function.Metadata.Parameters;
-            arguments.TryGetValue("count", out var count);
-            arguments.TryGetValue("skip", out var skip);
-            SearchOptions searchOptions = new()
+            catch (HttpRequestException)
             {
-                Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),
-                Offset = (skip as int?) ?? GetDefaultValue(parameters, "skip", 0),
-                BasicFilter = basicFilter
-            };
-
-            var result = await textSearch.SearchAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
-            var resultList = new List<TextSearchResult>();
-
-            using HttpClient client = new();
-            await foreach (var item in result.Results.WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                string? value = item.Snippet;
-                try
-                {
-                    if (item.Url is not null)
-                    {
-                        value = await client.GetStringAsync(new Uri(item.Url), cancellationToken);
-                        value = ConvertHtmlToPlainText(value);
-                    }
-                }
-                catch (HttpRequestException)
-                {
-                }
-
-                resultList.Add(new() { Name = item.Name, Value = value, Link = item.Url });
             }
 
-            return resultList;
+            resultList.Add(new() { Name = item.Name, Value = value, Link = item.Url });
         }
-        catch (Exception)
-        {
-            throw;
-        }
+
+        return resultList;
     }
 
-    return new()
+    var options = new KernelFunctionFromMethodOptions()
     {
-        Delegate = GetFullWebPagesAsync,
         FunctionName = "GetFullWebPages",
         Description = "Perform a search for content related to the specified query. The search will return the name, full web page content and link for the related content.",
         Parameters =
@@ -326,13 +308,16 @@ private static KernelFunctionFromTextSearchOptions GetFullWebPages(ITextSearch<B
             new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
             new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
             new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
+            new KernelParameterMetadata("site") { Description = "Only return results from this domain", IsRequired = false, DefaultValue = 2 },
         ],
-        ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
+        ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
     };
+
+    return KernelFunctionFactory.CreateFromMethod(GetFullWebPagesAsync, options);
 }
 ```
 
-The custom `KernelPluginFromTextSearchOptions` will result in a search plugin with a single function called `GetFullWebPages`, this method works as follows:
+The custom `CreateGetFullWebPages` will result in a search plugin with a single function called `GetFullWebPages`, this method works as follows:
 
 1. It uses the `BingTextSearch` instances for retrieve the top pages for the specified query.
 2. For each web page is reads the full HTML content using the url and then converts in to a plain text representation.
@@ -424,7 +409,7 @@ Kernel kernel = kernelBuilder.Build();
 var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
 // Build a text search plugin with Bing search service and add to the kernel
-var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch(textSearch, "SearchPlugin");
+var searchPlugin = textSearch.CreateKernelPluginWithTextSearch("SearchPlugin");
 kernel.Plugins.Add(searchPlugin);
 
 // Invoke prompt and use text search plugin to provide grounding information
@@ -477,7 +462,7 @@ Kernel kernel = kernelBuilder.Build();
 var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
 // Build a text search plugin with Bing search service and add to the kernel
-var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(textSearch, "SearchPlugin");
+var searchPlugin = textSearch.CreateKernelPluginWithGetSearchResults("SearchPlugin");
 kernel.Plugins.Add(searchPlugin);
 
 // Invoke prompt and use text search plugin to provide grounding information
@@ -528,8 +513,8 @@ Kernel kernel = kernelBuilder.Build();
 var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
 // Build a text search plugin with Bing search service and add to the kernel
-var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearchResults(
-    textSearch, "SearchPlugin", "Search Microsoft Dev Blogs site", CreateCustomOptions(textSearch));
+var basicFilter = new BasicFilterOptions().Equality("site", "devblogs.microsoft.com");
+var searchPlugin = KernelPluginFactory.CreateFromFunctions("SearchPlugin", "Search Microsoft Dev Blogs site", [textSearch.CreateGetSearchResults(basicFilter)]);
 kernel.Plugins.Add(searchPlugin);
 
 // Invoke prompt and use text search plugin to provide grounding information
@@ -540,20 +525,6 @@ Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? I
 
 This sample provides a description for the search plugin i.e., in this case we only want to search the Microsoft Developer Blogs site and also the options for creating the plugin. The options allow the search plugin function definition(s) to be specified i.e., in this case we want to use a default search function that includes a basic filter which specifies the only site to include is `devblogs.microsoft.com`.
 
-```csharp
-private static KernelPluginFromTextSearchOptions CreateCustomOptions(ITextSearch<TextSearchResult> textSearch)
-{
-    var basicFilter = new BasicFilterOptions().Equality("site", "devblogs.microsoft.com");
-    return new()
-    {
-        Functions =
-        [
-            KernelFunctionFromTextSearchOptions.DefaultGetSearchResults(textSearch, basicFilter),
-        ]
-    };
-}
-```
-
 An example response would look like this and you will note that all of the citations are from `devblogs.microsoft.com`:
 
 ```
@@ -562,6 +533,86 @@ The Semantic Kernel (SK) is a lightweight Software Development Kit (SDK) that fa
 Semantic Kernel is incredibly versatile, allowing developers to create advanced AI applications by incorporating AI agents into their applications. These agents can interact with code, automate business processes, and manage multiple LLMs with ease. The framework also supports pre-built features like planners to simplify orchestration and is fully compatible with .NET Dependency Injection abstractions ([Build AI Applications with ease using Semantic Kernel](https://devblogs.microsoft.com/semantic-kernel/build-ai-applications-with-ease-using-semantic-kernel-and-net-aspire/), [How to Get Started using Semantic Kernel .NET](https://devblogs.microsoft.com/semantic-kernel/how-to-get-started-using-semantic-kernel-net/)).
 
 For more information and the latest updates from the Semantic Kernel team, you can visit their [official blog](https://devblogs.microsoft.com/semantic-kernel/).
+```
+
+In the previous example the site has hard coded. It is also possible to allow the LLM to extract the site from the user query. In the example below a custom search function is created which includes an additional argument to allow the LLM to set the site.
+
+```csharp
+// Create a kernel with OpenAI chat completion
+IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+kernelBuilder.AddOpenAIChatCompletion(
+        modelId: TestConfiguration.OpenAI.ChatModelId,
+        apiKey: TestConfiguration.OpenAI.ApiKey,
+        httpClient: httpClient);
+Kernel kernel = kernelBuilder.Build();
+
+// Create a search service with Bing search service
+var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+
+// Build a text search plugin with Bing search service and add to the kernel
+var searchPlugin = KernelPluginFactory.CreateFromFunctions("SearchPlugin", "Search Microsoft Dev Blogs site", [CreateSearchBySite(textSearch)]);
+kernel.Plugins.Add(searchPlugin);
+
+// Invoke prompt and use text search plugin to provide grounding information
+OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+KernelArguments arguments = new(settings);
+Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Only include results from devblogs.microsoft.com. Include citations to the relevant information where it is referenced in the response.", arguments));
+```
+
+The code below shows how the custom search function is created.
+
+- The `KernelFunction` includes an additional optional parameter called `site`
+- If the `site` parameter is provided a `BasicFilterOptions` instance is created which will cause Bing to return responses only from that site
+- A custom function description and parameter description are provided to help the LLM in using this method.
+
+```csharp
+private static KernelFunction CreateSearchBySite(ITextSearch<BingWebPage> textSearch, BasicFilterOptions? basicFilter = null, MapSearchResultToString? mapToString = null)
+{
+    async Task<IEnumerable<BingWebPage>> SearchAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+    {
+        arguments.TryGetValue("query", out var query);
+        if (string.IsNullOrEmpty(query?.ToString()))
+        {
+            return [];
+        }
+
+        var parameters = function.Metadata.Parameters;
+
+        arguments.TryGetValue("count", out var count);
+        arguments.TryGetValue("skip", out var skip);
+        arguments.TryGetValue("site", out var site);
+        BasicFilterOptions? basicFilter = null;
+        if (string.IsNullOrEmpty(site?.ToString()))
+        {
+            basicFilter = new BasicFilterOptions().Equality("site", site?.ToString()!);
+        }
+        SearchOptions searchOptions = new()
+        {
+            Count = (count as int?) ?? 2,
+            Offset = (skip as int?) ?? 0,
+            BasicFilter = basicFilter
+        };
+
+        var result = await textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
+        return await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    var options = new KernelFunctionFromMethodOptions()
+    {
+        FunctionName = "Search",
+        Description = "Perform a search for content related to the specified query and optionally from the specified domain.",
+        Parameters =
+        [
+            new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
+            new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+            new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
+            new KernelParameterMetadata("site") { Description = "Only return results from this domain", IsRequired = false, DefaultValue = 2 },
+        ],
+        ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
+    };
+
+    return KernelFunctionFactory.CreateFromMethod(SearchAsync, options);
+}
 ```
 
 ## Decision Drivers
@@ -606,11 +657,11 @@ The diagram below shows the layering in the proposed design. From the bottom up 
 
 ## Considered Options
 
-- Define `ITextSearch<T>` abstraction with single `Search` method and implementations check type
-- Define `ITextSearch<T>` abstraction with single `Search` method and implementations implement what they support
-- Define `ITextSearch<T>` abstraction with multiple search methods
-- Define `ITextSearch` abstraction with multiple search methods and additional methods on implementations
-- Define `ITextSearch` and `ITextSearch<T>` abstractions
+1. Define `ITextSearch<T>` abstraction with single `Search` method and implementations check type
+2. Define `ITextSearch<T>` abstraction with single `Search` method and implementations implement what they support
+3. Define `ITextSearch<T>` abstraction with multiple search methods
+4. Define `ITextSearch` abstraction with multiple search methods and additional methods on implementations
+5. Define `ITextSearch` and `ITextSearch<T>` abstractions
 
 ## Decision Outcome
 
@@ -621,7 +672,7 @@ Chosen option: "{title of option 1}", because
 
 ## Pros and Cons of the Options
 
-### Define `ITextSearch<T>` abstraction with single `Search` method and implementations check type
+### 1. Define `ITextSearch<T>` abstraction with single `Search` method and implementations check type
 
 Abstraction would look like this:
 
@@ -674,11 +725,11 @@ public sealed class VectorTextSearch<T> : ITextSearch<T> where T : class
     }
     else if (typeof(T) == typeof(TextSearchResult))
     {
-       // Convert to TextSearchResult (custom mapper is supported)
+       // Convert to TextSearchResult (custom mapper is required)
     }
-    else if (typeof(T) == typeof(BingWebPage))
+    else
     {
-      // Return Bing search results
+      // Return search results
     }
   }
 }
@@ -688,7 +739,7 @@ public sealed class VectorTextSearch<T> : ITextSearch<T> where T : class
 - Neitral, because type checking required for each invocation
 - Bad, because not clear what return types are supported by an implementation
 
-### Define `ITextSearch<T>` abstraction with single `Search` method and implementations implement what they support
+### 2. Define `ITextSearch<T>` abstraction with single `Search` method and implementations implement what they support
 
 Abstraction would look like this:
 
@@ -739,11 +790,11 @@ public sealed class VectorTextSearch<T> : ITextSearch<T> where T : class
     }
     else if (typeof(T) == typeof(TextSearchResult))
     {
-       // Convert to TextSearchResult (custom mapper is supported)
+       // Convert to TextSearchResult (custom mapper is required)
     }
-    else if (typeof(T) == typeof(BingWebPage))
+    else
     {
-      // Return Bing search results
+      // Return search results
     }
   }
 }
@@ -753,7 +804,7 @@ public sealed class VectorTextSearch<T> : ITextSearch<T> where T : class
 - Good, because it can be made clear what types are supported by an implementation
 - Bad, because you need to downcast
 
-### Define `ITextSearch<T>` abstraction with multiple search methods
+### 3. Define `ITextSearch<T>` abstraction with multiple search methods
 
 Abstraction would look like this:
 
@@ -820,7 +871,7 @@ public sealed class VectorTextSearch<T> : ITextSearch<T> where T : class
 - Bad, because in the above BingTextSearch sample no additional types can be added
 - Bad, because not clear what types are supported
 
-### Define `ITextSearch` abstraction with multiple search methods and additional methods on implementations
+### 4. Define `ITextSearch` abstraction with multiple search methods and additional methods on implementations
 
 Abstraction would look like this:
 
@@ -848,7 +899,7 @@ public sealed class BingTextSearch : ITextSearch
     // Retrieve Bing search results and convert to string
   }
 
-  public async Task<KernelSearchResults<BingWebPage>> GetSearchResultsAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
+  public async Task<KernelSearchResults<BingWebPage>> GetWebPagesAsync(string query, SearchOptions? searchOptions, CancellationToken cancellationToken)
   {
     // Retrieve Bing search results
   }
@@ -886,7 +937,7 @@ public sealed class VectorTextSearch<T> : ITextSearch where T : class
 - Good, because this will be easier to implement in Python
 - Bad, abstraction is limited to just including support for `string` and `TextSearchResult`
 
-### Define `ITextSearch` and `ITextSearch<T>` abstractions
+### 5. Define `ITextSearch` and `ITextSearch<T>` abstractions
 
 Start with the `ITextSearch` abstraction and extend to include `ITextSearch<T>` as needed.
 
