@@ -90,6 +90,14 @@ public sealed class ChatHistoryChannel : AgentChannel
         return this._history.ToDescendingAsync();
     }
 
+    /// <inheritdoc/>
+    protected override Task ResetAsync(CancellationToken cancellationToken = default)
+    {
+        this._history.Clear();
+
+        return Task.CompletedTask;
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryChannel"/> class.
     /// </summary>

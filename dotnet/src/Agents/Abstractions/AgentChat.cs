@@ -267,6 +267,29 @@ public abstract class AgentChat
     }
 
     /// <summary>
+    /// Reset the chat, clearing all history and persisted state.
+    /// All agents will remain present.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public async Task ResetAsync(CancellationToken cancellationToken = default)
+    {
+        this.SetActivityOrThrow(); // Disallow concurrent access to chat
+
+        try
+        {
+            Task[] resetTasks = this._agentChannels.Values.Select(c => c.ResetAsync(cancellationToken)).ToArray();
+            await Task.WhenAll(resetTasks).ConfigureAwait(false);
+            this._agentChannels.Clear();
+            this._channelMap.Clear();
+            this.History.Clear();
+        }
+        finally
+        {
+            this.ClearActivitySignal();
+        }
+    }
+
+    /// <summary>
     /// Clear activity signal to indicate that activity has ceased.
     /// </summary>
     private void ClearActivitySignal()

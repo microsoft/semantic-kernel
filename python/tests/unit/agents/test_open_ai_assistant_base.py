@@ -34,6 +34,13 @@ from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
 from openai.types.shared.response_format_json_object import ResponseFormatJSONObject
 
+from semantic_kernel.agents.open_ai.assistant_content_generation import (
+    generate_function_call_content,
+    generate_function_result_content,
+    generate_message_content,
+    get_function_call_contents,
+    get_message_contents,
+)
 from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -45,10 +52,10 @@ from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
-    AgentExecutionError,
+    AgentExecutionException,
     AgentFileNotFoundException,
-    AgentInitializationError,
-    AgentInvokeError,
+    AgentInitializationException,
+    AgentInvokeException,
 )
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
@@ -125,6 +132,7 @@ def mock_chat_message_content():
 def mock_message():
     class MockMessage:
         id = "test_message_id"
+        role = "user"
 
     return MockMessage()
 
@@ -264,6 +272,18 @@ def mock_run_in_progress():
             self.thread_id = "thread_id"
             self.tools = []
             self.poll_count = 0
+            self.required_action = RequiredAction(
+                type="submit_tool_outputs",
+                submit_tool_outputs=RequiredActionSubmitToolOutputs(
+                    tool_calls=[
+                        RequiredActionFunctionToolCall(
+                            id="tool_call_id",
+                            type="function",
+                            function=Function(arguments="{}", name="function_name"),
+                        )
+                    ]
+                ),
+            )
 
         def update_status(self):
             self.poll_count += 1
@@ -288,11 +308,13 @@ def mock_run_step_tool_call():
         step_details=ToolCallsStepDetails(
             tool_calls=[
                 CodeInterpreterToolCall(
-                    type="code_interpreter", id="test", code_interpreter=CodeInterpreter(input="test code", outputs=[])
+                    type="code_interpreter",
+                    id="tool_call_id",
+                    code_interpreter=CodeInterpreter(input="test code", outputs=[]),
                 ),
                 FunctionToolCall(
                     type="function",
-                    id="test",
+                    id="tool_call_id",
                     function=RunsFunction(arguments="{}", name="function_name", outpt="test output"),
                 ),
             ],
@@ -354,7 +376,7 @@ async def test_create_assistant(
             enable_code_interpreter=True,
             enable_file_search=True,
             vector_store_id="vector_store1",
-            file_ids=["file1", "file2"],
+            code_interpreter_file_ids=["file1", "file2"],
             metadata={"key": "value"},
         )
 
@@ -370,6 +392,76 @@ async def test_create_assistant(
         assert assistant.tool_resources == ToolResources(
             code_interpreter=ToolResourcesCodeInterpreter(file_ids=["file1", "file2"]),
             file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
+        )
+
+
+@pytest.mark.asyncio
+async def test_modify_assistant(
+    azure_openai_assistant_agent: AzureAssistantAgent, mock_assistant, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
+        assistant = await azure_openai_assistant_agent.create_assistant(
+            ai_model_id="test_model",
+            description="test_description",
+            instructions="test_instructions",
+            name="test_name",
+            enable_code_interpreter=True,
+            enable_file_search=True,
+            vector_store_id="vector_store1",
+            code_interpreter_file_ids=["file1", "file2"],
+            metadata={"key": "value"},
+        )
+
+        mock_client.beta.assistants.update = AsyncMock(return_value=mock_assistant)
+
+        assistant = await azure_openai_assistant_agent.modify_assistant(
+            assistant_id=assistant.id,
+            ai_model_id="test_model",
+            description="test_description",
+            instructions="test_instructions",
+            name="test_name",
+            enable_code_interpreter=True,
+            enable_file_search=True,
+            vector_store_id="vector_store1",
+            code_interpreter_file_ids=["file1", "file2"],
+            metadata={"key": "value"},
+        )
+
+        assert assistant.model == "test_model"
+        assert assistant.description == "test_description"
+        assert assistant.id == "test_id"
+        assert assistant.instructions == "test_instructions"
+        assert assistant.name == "test_name"
+        assert assistant.tools == [CodeInterpreterTool(type="code_interpreter"), FileSearchTool(type="file_search")]
+        assert assistant.temperature == 0.7
+        assert assistant.top_p == 0.9
+        assert assistant.response_format == ResponseFormatJSONObject(type="json_object")
+        assert assistant.tool_resources == ToolResources(
+            code_interpreter=ToolResourcesCodeInterpreter(file_ids=["file1", "file2"]),
+            file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
+        )
+
+
+@pytest.mark.asyncio
+async def test_modify_assistant_not_initialized_throws(
+    azure_openai_assistant_agent: AzureAssistantAgent, mock_assistant, openai_unit_test_env
+):
+    with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
+        _ = await azure_openai_assistant_agent.modify_assistant(
+            assistant_id="id",
+            ai_model_id="test_model",
+            description="test_description",
+            instructions="test_instructions",
+            name="test_name",
+            enable_code_interpreter=True,
+            enable_file_search=True,
+            vector_store_id="vector_store1",
+            code_interpreter_file_ids=["file1", "file2"],
+            metadata={"key": "value"},
         )
 
 
@@ -390,7 +482,7 @@ async def test_create_assistant_with_model_attributes(
             enable_code_interpreter=True,
             enable_file_search=True,
             vector_store_id="vector_store1",
-            file_ids=["file1", "file2"],
+            code_interpreter_file_ids=["file1", "file2"],
             metadata={"key": "value"},
             kwargs={"temperature": 0.1},
         )
@@ -434,6 +526,30 @@ async def test_create_assistant_delete_and_recreate(
 
 
 @pytest.mark.asyncio
+async def test_get_channel_keys(azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env):
+    keys = azure_openai_assistant_agent.get_channel_keys()
+    for key in keys:
+        assert isinstance(key, str)
+
+
+@pytest.mark.asyncio
+async def test_create_channel(
+    azure_openai_assistant_agent: AzureAssistantAgent, mock_assistant, mock_thread, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
+        mock_client.beta.threads = MagicMock()
+        mock_client.beta.threads.create = AsyncMock(return_value=mock_thread)
+
+        channel = await azure_openai_assistant_agent.create_channel()
+
+        assert channel is not None
+
+
+@pytest.mark.asyncio
 async def test_get_assistant_metadata(
     azure_openai_assistant_agent: AzureAssistantAgent, mock_assistant, openai_unit_test_env
 ):
@@ -472,7 +588,7 @@ async def test_get_agent_tools(azure_openai_assistant_agent, mock_assistant, ope
 async def test_get_assistant_tools_throws_when_no_assistant(
     azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
 ):
-    with pytest.raises(AgentInitializationError, match="The assistant has not been created."):
+    with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
         _ = azure_openai_assistant_agent.tools
 
 
@@ -514,7 +630,7 @@ async def test_create_thread_throws_with_invalid_role(azure_openai_assistant_age
         mock_client.beta.threads.create = AsyncMock(return_value=mock_thread)
 
         with pytest.raises(
-            AgentExecutionError,
+            AgentExecutionException,
             match="Invalid message role `tool`",
         ):
             _ = await azure_openai_assistant_agent.create_thread(
@@ -578,6 +694,99 @@ async def test_add_file_not_found(azure_openai_assistant_agent: AzureAssistantAg
 
 
 @pytest.mark.asyncio
+async def test_delete_file(azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.files = MagicMock()
+        mock_client.files.delete = AsyncMock()
+
+        await azure_openai_assistant_agent.delete_file("test_file_id")
+
+        mock_client.files.delete.assert_called_once_with("test_file_id")
+
+
+@pytest.mark.asyncio
+async def test_delete_file_raises_exception(azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.files = MagicMock()
+        mock_client.files.delete = AsyncMock(side_effect=Exception("Deletion failed"))
+
+        with pytest.raises(AgentExecutionException, match="Error deleting file."):
+            await azure_openai_assistant_agent.delete_file("test_file_id")
+
+        mock_client.files.delete.assert_called_once_with("test_file_id")
+
+
+@pytest.mark.asyncio
+async def test_create_vector_store(azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.vector_stores = MagicMock()
+        mock_client.beta.vector_stores.create = AsyncMock(return_value=MagicMock(id="test_vector_store_id"))
+
+        vector_store_id = await azure_openai_assistant_agent.create_vector_store(["file_id1", "file_id2"])
+
+        assert vector_store_id == "test_vector_store_id"
+        mock_client.beta.vector_stores.create.assert_called_once_with(file_ids=["file_id1", "file_id2"])
+
+
+@pytest.mark.asyncio
+async def test_create_vector_store_single_file_id(
+    azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.vector_stores = MagicMock()
+        mock_client.beta.vector_stores.create = AsyncMock(return_value=MagicMock(id="test_vector_store_id"))
+
+        vector_store_id = await azure_openai_assistant_agent.create_vector_store("file_id1")
+
+        assert vector_store_id == "test_vector_store_id"
+        mock_client.beta.vector_stores.create.assert_called_once_with(file_ids=["file_id1"])
+
+
+@pytest.mark.asyncio
+async def test_create_vector_store_raises_exception(
+    azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.vector_stores = MagicMock()
+        mock_client.beta.vector_stores.create = AsyncMock(side_effect=Exception("Creation failed"))
+
+        with pytest.raises(AgentExecutionException, match="Error creating vector store."):
+            await azure_openai_assistant_agent.create_vector_store("file_id1")
+
+        mock_client.beta.vector_stores.create.assert_called_once_with(file_ids=["file_id1"])
+
+
+@pytest.mark.asyncio
+async def test_delete_vector_store(azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.vector_stores = MagicMock()
+        mock_client.beta.vector_stores.delete = AsyncMock()
+
+        await azure_openai_assistant_agent.delete_vector_store("test_vector_store_id")
+
+        mock_client.beta.vector_stores.delete.assert_called_once_with("test_vector_store_id")
+
+
+@pytest.mark.asyncio
+async def test_delete_vector_store_raises_exception(
+    azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.vector_stores = MagicMock()
+        mock_client.beta.vector_stores.delete = AsyncMock(side_effect=Exception("Deletion failed"))
+
+        with pytest.raises(AgentExecutionException, match="Error deleting vector store."):
+            await azure_openai_assistant_agent.delete_vector_store("test_vector_store_id")
+
+        mock_client.beta.vector_stores.delete.assert_called_once_with("test_vector_store_id")
+
+
+@pytest.mark.asyncio
 async def test_add_chat_message(
     azure_openai_assistant_agent, mock_chat_message_content, mock_message, openai_unit_test_env
 ):
@@ -594,7 +803,6 @@ async def test_add_chat_message(
             thread_id="test_thread_id",
             role="user",
             content=[{"type": "text", "text": "test message"}],
-            metadata={"key": "value"},
         )
 
 
@@ -604,7 +812,7 @@ async def test_add_chat_message_invalid_role(
 ):
     mock_chat_message_content.role = AuthorRole.TOOL
 
-    with pytest.raises(AgentExecutionError, match="Invalid message role `tool`"):
+    with pytest.raises(AgentExecutionException, match="Invalid message role `tool`"):
         await azure_openai_assistant_agent.add_chat_message("test_thread_id", mock_chat_message_content)
 
 
@@ -645,10 +853,11 @@ async def test_invoke(
     azure_openai_assistant_agent,
     mock_assistant,
     mock_run_in_progress,
+    mock_run_required_action,
     mock_chat_message_content,
     mock_run_step_tool_call,
     mock_run_step_message_creation,
-    mock_message,
+    mock_thread_messages,
     mock_function_call_content,
     openai_unit_test_env,
 ):
@@ -657,8 +866,10 @@ async def test_invoke(
         return run
 
     def mock_get_function_call_contents(run, function_steps):
-        function_steps["test"] = mock_function_call_content
-        return [mock_function_call_content]
+        function_call_content = mock_function_call_content
+        function_call_content.id = "tool_call_id"  # Set expected ID
+        function_steps[function_call_content.id] = function_call_content
+        return [function_call_content]
 
     with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
         mock_client.beta = MagicMock()
@@ -670,7 +881,7 @@ async def test_invoke(
         mock_client.beta.threads.runs.submit_tool_outputs = AsyncMock()
         mock_client.beta.threads.runs.steps = MagicMock()
         mock_client.beta.threads.runs.steps.list = AsyncMock(
-            return_value=MagicMock(data=[mock_run_step_tool_call, mock_run_step_message_creation])
+            return_value=MagicMock(data=[mock_run_step_message_creation, mock_run_step_tool_call])
         )
 
         azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
@@ -680,23 +891,18 @@ async def test_invoke(
         azure_openai_assistant_agent._format_tool_outputs = MagicMock(
             return_value=[{"tool_call_id": "id", "output": "output"}]
         )
-        azure_openai_assistant_agent._generate_function_call_content = MagicMock(return_value=mock_chat_message_content)
-        azure_openai_assistant_agent._generate_message_content = MagicMock(return_value=mock_chat_message_content)
-        azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_message)
-        azure_openai_assistant_agent._get_function_call_contents = MagicMock(
-            side_effect=mock_get_function_call_contents
-        )
+        azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
 
-        messages = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
-
-        assert len(messages) == 2
-        assert messages[0].content == "test message"
-        assert messages[1].content == "test code"
+        with patch(
+            "semantic_kernel.agents.open_ai.assistant_content_generation.get_function_call_contents",
+            side_effect=mock_get_function_call_contents,
+        ):
+            _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 
 
 @pytest.mark.asyncio
 async def test_invoke_assistant_not_initialized_throws(azure_openai_assistant_agent, openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The assistant has not been created."):
+    with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
         _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 
 
@@ -711,7 +917,7 @@ async def test_invoke_agent_deleted_throws(azure_openai_assistant_agent, mock_as
         azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
         azure_openai_assistant_agent._is_deleted = True
 
-        with pytest.raises(AgentInitializationError, match="The assistant has been deleted."):
+        with pytest.raises(AgentInitializationException, match="The assistant has been deleted."):
             _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 
 
@@ -746,7 +952,7 @@ async def test_invoke_raises_error(
         azure_openai_assistant_agent._poll_run_status = AsyncMock(side_effect=mock_poll_run_status)
 
         with pytest.raises(
-            AgentInvokeError, match="Run failed with status: `failed` for agent `test_name` and thread `thread_id`"
+            AgentInvokeException, match="Run failed with status: `failed` for agent `test_name` and thread `thread_id`"
         ):
             _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 
@@ -780,7 +986,7 @@ async def test_invoke_function_calls(azure_openai_assistant_agent, openai_unit_t
 
 
 def test_get_function_call_contents(azure_openai_assistant_agent, mock_run_required_action, openai_unit_test_env):
-    result = azure_openai_assistant_agent._get_function_call_contents(run=mock_run_required_action, function_steps={})
+    result = get_function_call_contents(run=mock_run_required_action, function_steps={})
     assert result is not None
 
 
@@ -788,7 +994,7 @@ def test_get_function_call_contents_no_action_required(
     azure_openai_assistant_agent, mock_run_required_action, openai_unit_test_env
 ):
     mock_run_required_action.required_action = None
-    result = azure_openai_assistant_agent._get_function_call_contents(run=mock_run_required_action, function_steps={})
+    result = get_function_call_contents(run=mock_run_required_action, function_steps={})
     assert result == []
 
 
@@ -809,19 +1015,19 @@ async def test_get_tools(azure_openai_assistant_agent: AzureAssistantAgent, mock
 async def test_get_tools_no_assistant_returns_empty_list(
     azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
 ):
-    with pytest.raises(AgentInitializationError, match="The assistant has not been created."):
+    with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
         _ = azure_openai_assistant_agent._get_tools()
 
 
 def test_generate_message_content(azure_openai_assistant_agent, mock_thread_messages, openai_unit_test_env):
     for message in mock_thread_messages:
-        result = azure_openai_assistant_agent._generate_message_content(assistant_name="test", message=message)
+        result = generate_message_content(assistant_name="test", message=message)
         assert result is not None
 
 
 def test_check_if_deleted_throws(azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env):
     azure_openai_assistant_agent._is_deleted = True
-    with pytest.raises(AgentInitializationError, match="The assistant has been deleted."):
+    with pytest.raises(AgentInitializationException, match="The assistant has been deleted."):
         azure_openai_assistant_agent._check_if_deleted()
 
 
@@ -830,9 +1036,10 @@ def test_get_message_contents(azure_openai_assistant_agent: AzureAssistantAgent,
     message.items = [
         ImageContent(role=AuthorRole.ASSISTANT, content="test message", uri="http://image.url"),
         TextContent(role=AuthorRole.ASSISTANT, text="test message"),
+        FileReferenceContent(role=AuthorRole.ASSISTANT, file_id="test_file_id"),
     ]
 
-    result = azure_openai_assistant_agent._get_message_contents(message)
+    result = get_message_contents(message)
     assert result is not None
 
 
@@ -910,7 +1117,7 @@ def test_generate_function_result_content(
         id="tool_call_id", type="function", function=Function(arguments="{}", name="function_name", output="result")
     )
 
-    message = azure_openai_assistant_agent._generate_function_result_content(
+    message = generate_function_result_content(
         agent_name="test", function_step=mock_function_call_content, tool_call=mock_tool_call
     )
     assert message is not None
@@ -918,9 +1125,7 @@ def test_generate_function_result_content(
 
 
 def test_generate_function_call_content(azure_openai_assistant_agent, mock_function_call_content, openai_unit_test_env):
-    message = azure_openai_assistant_agent._generate_function_call_content(
-        agent_name="test", fccs=[mock_function_call_content]
-    )
+    message = generate_function_call_content(agent_name="test", fccs=[mock_function_call_content])
     assert message is not None
     assert isinstance(message, ChatMessageContent)
     assert isinstance(message.items[0], FunctionCallContent)

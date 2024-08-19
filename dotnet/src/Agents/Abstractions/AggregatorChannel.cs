@@ -57,4 +57,8 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
 
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc/>
+    protected internal override Task ResetAsync(CancellationToken cancellationToken = default) =>
+        this._chat.ResetAsync(cancellationToken);
 }
