@@ -191,7 +191,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Equal(includeVectors, getResult.DescriptionEmbedding != null);
         if (includeVectors)
         {
-            Assert.Equal(new[] { 30f, 31f, 32f, 33f }, getResult.DescriptionEmbedding!.Value.ToArray());
+            Assert.Equal(AzureAISearchVectorStoreFixture.CreateTestEmbedding(), getResult.DescriptionEmbedding!.Value.ToArray());
         }
         Assert.Equal(new[] { "pool", "air conditioning", "concierge" }, getResult.Tags);
         Assert.False(getResult.ParkingIncluded);
@@ -308,12 +308,60 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
     }
 
+    [Theory(Skip = SkipReason)]
+    [InlineData(1, 1)]
+    [InlineData(2, 2)]
+    public async Task ItCanSearchWithVectorAndFiltersAsync(int option, int expectedResultsCount)
+    {
+        // Arrange.
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
+
+        // Act.
+        var filter = option == 1 ? new BasicVectorSearchFilter().Equality("HotelName", "Hotel 3") : new BasicVectorSearchFilter().TagListContains("Tags", "pool");
+        var searchResults = sut.SearchAsync(
+            VectorSearchQuery.CreateQuery(
+                new ReadOnlyMemory<float>(AzureAISearchVectorStoreFixture.CreateTestEmbedding()),
+                new()
+                {
+                    VectorFieldName = "DescriptionEmbedding",
+                    BasicVectorSearchFilter = filter,
+                }));
+
+        // Assert.
+        Assert.NotNull(searchResults);
+        var searchResultsList = await searchResults.ToListAsync();
+        Assert.Equal(expectedResultsCount, searchResultsList.Count);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanSearchWithVectorizableTextAndFiltersAsync()
+    {
+        // Arrange.
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
+
+        // Act.
+        var filter = new BasicVectorSearchFilter().Equality("HotelName", "Hotel 3");
+        var searchResults = sut.SearchAsync(
+            VectorSearchQuery.CreateQuery(
+                "A hotel with great views.",
+                new()
+                {
+                    VectorFieldName = "DescriptionEmbedding",
+                    BasicVectorSearchFilter = filter,
+                }));
+
+        // Assert.
+        Assert.NotNull(searchResults);
+        var searchResultsList = await searchResults.ToListAsync();
+        Assert.Single(searchResultsList);
+    }
+
     private static Hotel CreateTestHotel(string hotelId) => new()
     {
         HotelId = hotelId,
         HotelName = $"MyHotel {hotelId}",
         Description = "My Hotel is great.",
-        DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+        DescriptionEmbedding = AzureAISearchVectorStoreFixture.CreateTestEmbedding(),
         Tags = ["pool", "air conditioning", "concierge"],
         ParkingIncluded = true,
         LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
