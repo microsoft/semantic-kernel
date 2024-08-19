@@ -26,6 +26,8 @@ class OpenAISettings(KernelBaseSettings):
         (Env var OPENAI_TEXT_MODEL_ID)
     - embedding_model_id: str | None - The OpenAI embedding model ID to use, for example, text-embedding-ada-002.
         (Env var OPENAI_EMBEDDING_MODEL_ID)
+    - text_to_image_model_id: str | None - The OpenAI text to image model ID to use, for example, dall-e-3.
+        (Env var OPENAI_TEXT_TO_IMAGE_MODEL_ID)
     - env_file_path: str | None - if provided, the .env settings are read from this file path location
     """
 
@@ -36,3 +38,4 @@ class OpenAISettings(KernelBaseSettings):
     chat_model_id: str | None = None
     text_model_id: str | None = None
     embedding_model_id: str | None = None
+    text_to_image_model_id: str | None = None
