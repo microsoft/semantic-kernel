@@ -84,7 +84,7 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
             if (!string.IsNullOrWhiteSpace(input))
             {
                 ChatMessageContent message = new(AuthorRole.User, input);
-                chat.AddChatMessage(new(AuthorRole.User, input));
+                chat.AddChatMessage(message);
                 this.WriteAgentChatMessage(message);
             }
 

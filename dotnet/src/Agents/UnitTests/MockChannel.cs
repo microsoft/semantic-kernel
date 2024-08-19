@@ -60,4 +60,9 @@ internal sealed class MockChannel : AgentChannel<MockAgent>
             throw this.MockException;
         }
     }
+
+    protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }

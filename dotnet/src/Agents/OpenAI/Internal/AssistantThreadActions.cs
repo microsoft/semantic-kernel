@@ -547,6 +547,7 @@ internal static class AssistantThreadActions
         return
             new(annotation.TextToReplace)
             {
+                Quote = annotation.TextToReplace,
                 StartIndex = annotation.StartIndex,
                 EndIndex = annotation.EndIndex,
                 FileId = fileId,

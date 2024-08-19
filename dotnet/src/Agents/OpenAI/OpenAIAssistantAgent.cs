@@ -360,6 +360,8 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
 
+        this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
+
         OpenAIAssistantChannel channel =
             new(this._client, thread.Id)
             {
@@ -391,6 +393,8 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this._assistant = model;
         this._client = provider.Client.GetAssistantClient();
         this._channelKeys = provider.ConfigurationKeys.ToArray();
+
+        this.Definition = CreateAssistantDefinition(model);
 
         this.Definition = CreateAssistantDefinition(model);
 
@@ -454,6 +458,12 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             {
                 assistantCreationOptions.Metadata[item.Key] = item.Value;
             }
+        }
+
+        if (definition.ExecutionOptions != null)
+        {
+            string optionsJson = JsonSerializer.Serialize(definition.ExecutionOptions);
+            assistantCreationOptions.Metadata[OptionsMetadataKey] = optionsJson;
         }
 
         if (definition.ExecutionOptions != null)

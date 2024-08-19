@@ -9,7 +9,7 @@ namespace Memory;
 public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(output)
 {
     private const string EmbeddingModelName = "text-embedding-ada-002";
-    private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel(EmbeddingModelName);
+    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel(EmbeddingModelName);
 
     [Fact]
     public async Task RunAsync()
