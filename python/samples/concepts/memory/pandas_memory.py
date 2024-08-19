@@ -6,18 +6,18 @@ from uuid import uuid4
 import pandas as pd
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.open_ai import (
     OpenAIEmbeddingPromptExecutionSettings,
+    OpenAITextEmbedding,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
-from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collection import AzureAISearchCollection
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
+from semantic_kernel.data import (
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
+    VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.data.vector_store_record_utils import VectorStoreRecordUtils
 
 model_fields = VectorStoreRecordDefinition(
     container_mode=True,

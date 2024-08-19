@@ -224,6 +224,7 @@ def azure_openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dic
         "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME": "test_chat_deployment",
         "AZURE_OPENAI_TEXT_DEPLOYMENT_NAME": "test_text_deployment",
         "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME": "test_embedding_deployment",
+        "AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME": "test_text_to_image_deployment",
         "AZURE_OPENAI_API_KEY": "test_api_key",
         "AZURE_OPENAI_ENDPOINT": "https://test-endpoint.com",
         "AZURE_OPENAI_API_VERSION": "2023-03-15-preview",
@@ -256,6 +257,7 @@ def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         "OPENAI_CHAT_MODEL_ID": "test_chat_model_id",
         "OPENAI_TEXT_MODEL_ID": "test_text_model_id",
         "OPENAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
+        "OPENAI_TEXT_TO_IMAGE_MODEL_ID": "test_text_to_image_model_id",
     }
 
     env_vars.update(override_env_param_dict)
@@ -282,6 +284,31 @@ def mistralai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         "MISTRALAI_CHAT_MODEL_ID": "test_chat_model_id",
         "MISTRALAI_API_KEY": "test_api_key",
         "MISTRALAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@fixture()
+def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for AnthropicSettings."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {
+        "ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id",
+        "ANTHROPIC_API_KEY": "test_api_key"
     }
 
     env_vars.update(override_env_param_dict)
