@@ -125,7 +125,10 @@ jobs:
 >>>>>>> Stashed changes
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.6
 =======
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.3.6
+=======
         uses: danielpalme/ReportGenerator-GitHub-Action@5.2.3
+>>>>>>> semantic-kernel/dependabot/github_actions/danielpalme/ReportGenerator-GitHub-Action-5.2.3
 >>>>>>> Stashed changes
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
