@@ -2,7 +2,6 @@
 
 from logging import Logger
 
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
@@ -32,20 +31,10 @@ class KernelFunctionLogMessages:
     def log_function_result_value(logger: Logger, function_result: FunctionResult | None):
         """Log message when a kernel function result is returned."""
         if function_result is not None:
-            if isinstance(function_result.value, str):
-                logger.debug("Function result value: %s", function_result.value)
             try:
-                if isinstance(function_result.value, list) and all(
-                    isinstance(x, ChatMessageContent) for x in function_result.value
-                ):
-                    logger.debug(
-                        "Function result value: %s", f"[\n{'\n'.join(str(x) for x in function_result.value)}\n]"
-                    )
-                else:
-                    raise TypeError
+                logger.debug("Function result: %s", function_result)
             except Exception:
-                # Fall back to default string representation
-                logger.debug("Function result value: %s", function_result.value)
+                logger.error("Function result: Failed to convert result value to string")
         else:
             logger.debug("Function result: None")
 
