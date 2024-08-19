@@ -5,6 +5,7 @@ import json
 import logging
 import sys
 from collections.abc import Sequence
+from copy import copy
 from typing import Any, ClassVar, TypeVar
 
 if sys.version_info >= (3, 12):
@@ -287,7 +288,9 @@ class RedisJsonCollection(RedisCollection):
 
     @override
     async def _inner_get(self, keys: Sequence[str], **kwargs) -> Sequence[dict[bytes, bytes]] | None:
-        results = await self.redis_database.json().mget([self._get_redis_key(key) for key in keys], "$", **kwargs)
+        kwargs_copy = copy(kwargs)
+        kwargs_copy.pop("include_vectors", None)
+        results = await self.redis_database.json().mget([self._get_redis_key(key) for key in keys], "$", **kwargs_copy)
         return [result[0] for result in results if result]
 
     @override
