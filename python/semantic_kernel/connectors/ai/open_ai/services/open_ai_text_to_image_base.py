@@ -22,13 +22,16 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
         Returns:
             bytes | str: Image bytes or image URL.
         """
-        result = await self.client.images.generate(
-            prompt=description,
-            model=self.ai_model_id,
-            size=f"{width}x{height}",  # type: ignore
-            response_format="url",
-            **kwargs,
-        )
+        try:
+            result = await self.client.images.generate(
+                prompt=description,
+                model=self.ai_model_id,
+                size=f"{width}x{height}",  # type: ignore
+                response_format="url",
+                **kwargs,
+            )
+        except Exception as ex:
+            raise ServiceResponseException(f"Failed to generate image: {ex}") from ex
         if not result.data or not result.data[0].url:
             raise ServiceResponseException("Failed to generate image.")
         return result.data[0].url
