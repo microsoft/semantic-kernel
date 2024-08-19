@@ -23,6 +23,7 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
 )
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -145,8 +146,19 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
     @override
     async def _inner_get(self, keys: Sequence[str], **kwargs: Any) -> Sequence[dict[str, Any]]:
         client = self.search_client
+        if "selected_fields" in kwargs:
+            selected_fields = kwargs["selected_fields"]
+        elif "include_vector" in kwargs and not kwargs["include_vector"]:
+            selected_fields = [
+                name
+                for name, field in self.data_model_definition.fields.items()
+                if not isinstance(field, VectorStoreRecordVectorField)
+            ]
+        else:
+            selected_fields = ["*"]
+
         result = await asyncio.gather(
-            *[client.get_document(key=key, selected_fields=kwargs.get("selected_fields", ["*"])) for key in keys],
+            *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],
             return_exceptions=True,
         )
         return [res for res in result if not isinstance(res, BaseException)]

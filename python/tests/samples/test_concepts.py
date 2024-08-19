@@ -26,6 +26,7 @@ from samples.concepts.filtering.function_invocation_filters_stream import main a
 from samples.concepts.filtering.prompt_filters import main as prompt_filters
 from samples.concepts.functions.kernel_arguments import main as kernel_arguments
 from samples.concepts.grounding.grounded import main as grounded
+from samples.concepts.images.image_generation import main as image_generation
 from samples.concepts.local_models.lm_studio_chat_completion import main as lm_studio_chat_completion
 from samples.concepts.local_models.lm_studio_text_embedding import main as lm_studio_text_embedding
 from samples.concepts.local_models.ollama_chat_completion import main as ollama_chat_completion
@@ -124,6 +125,7 @@ concepts = [
         id="lm_studio_text_embedding",
         marks=pytest.mark.skip(reason="Need to set up LM Studio locally. Check out the module for more details."),
     ),
+    param(image_generation, [], id="image_generation"),
 ]
 
 
