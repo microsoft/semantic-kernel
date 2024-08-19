@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
+print(__name__)
 tracer: trace.Tracer = trace.get_tracer("Microsoft.SemanticKernel")
 
 TEMPLATE_FORMAT_MAP = {
