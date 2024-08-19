@@ -98,7 +98,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
         // Create chat history with initial user question
-        ChatHistory chatHistory = new();
+        ChatHistory chatHistory = [];
         chatHistory.AddUserMessage("Hi, what is the current time?");
 
         // Start streaming chat based on the chat history

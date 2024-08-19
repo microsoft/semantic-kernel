@@ -4,7 +4,6 @@ using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace ChatCompletion;
 
@@ -51,7 +50,6 @@ public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) 
 
         Console.WriteLine(reply);
     }
-
 
     /// <summary>
     /// This example demonstrates how the chat completion service streams text content.
