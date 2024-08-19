@@ -25,7 +25,7 @@ public sealed class EqualityFilterClause : FilterClause
     }
 
     /// <summary>
-    /// Fieled name to match.
+    /// Field name to match.
     /// </summary>
     public string FieldName { get; private set; }
 

@@ -48,7 +48,7 @@ abstract class VectorSearchQuery(
     public static VectorizedSearchQuery<TVector> CreateQuery<TVector>(TVector vector, VectorSearchOptions? options = default) => new(vector, options);
     public static VectorizableTextSearchQuery CreateQuery(string text, VectorSearchOptions? options = default) => new(text, options);
 
-    // Showing future extensibility possiblities.
+    // Showing future extensibility possibilities.
     public static HybridTextVectorizedSearchQuery<TVector> CreateHybridQuery<TVector>(TVector vector, string text, HybridVectorSearchOptions? options = default) => new(vector, text, options);
     public static HybridVectorizableTextSearchQuery CreateHybridQuery(string text, HybridVectorSearchOptions? options = default) => new(text, options);
 }
