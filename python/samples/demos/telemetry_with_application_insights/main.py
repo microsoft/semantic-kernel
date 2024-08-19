@@ -85,7 +85,7 @@ async def main():
         )
         print(f"Poem:\n{poem}")
 
-        print("Translated poem:")
+        print("\nTranslated poem:")
         async for update in kernel.invoke_stream(
             function=plugin["Translate"],
             arguments=KernelArguments(
