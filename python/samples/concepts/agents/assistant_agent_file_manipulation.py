@@ -3,6 +3,7 @@ import asyncio
 import os
 
 from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -53,7 +54,7 @@ async def main():
     )
 
     # Create the assistant agent
-    agent = await OpenAIAssistantAgent.create(
+    agent = await AzureAssistantAgent.create(
         kernel=kernel,
         service_id=service_id,
         name=AGENT_NAME,
