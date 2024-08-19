@@ -12,7 +12,7 @@ else:
 
 import onnxruntime_genai as OnnxRuntimeGenAi
 
-from semantic_kernel.connectors.ai.onnx.onnx_prompt_execution_settings import OnnxPromptExecutionSettings
+from semantic_kernel.connectors.ai.onnx.onnx_prompt_execution_settings import OnnxTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
@@ -66,17 +66,17 @@ class OnnxTextCompletion(TextCompletionClientBase):
 
         Args:
             prompt (str): The prompt to send to the LLM.
-            settings (OnnxPromptExecutionSettings): Settings for the request.
+            settings (OnnxTextPromptExecutionSettings): Settings for the request.
 
         Returns:
             List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
         """
-        if not isinstance(settings, OnnxPromptExecutionSettings):
+        if not isinstance(settings, OnnxTextPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, OnnxPromptExecutionSettings)  # nosec
+        assert isinstance(settings, OnnxTextPromptExecutionSettings)  # nosec
 
         new_tokens = ""
-        async for new_token in self.__generate_next_token(prompt, settings):
+        async for new_token in self._generate_next_token(prompt, settings):
             new_tokens += new_token
                 
         return [
@@ -98,16 +98,16 @@ class OnnxTextCompletion(TextCompletionClientBase):
 
         Args:
             prompt (str): Prompt to complete.
-            settings (OnnxPromptExecutionSettings): Request settings.
+            settings (OnnxTextPromptExecutionSettings): Request settings.
 
         Yields:
             List[StreamingTextContent]: List of StreamingTextContent objects.
         """
-        if not isinstance(settings, OnnxPromptExecutionSettings):
+        if not isinstance(settings, OnnxTextPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, OnnxPromptExecutionSettings)  # nosec
+        assert isinstance(settings, OnnxTextPromptExecutionSettings)  # nosec
         
-        async for new_token in self.__generate_next_token(prompt, settings):
+        async for new_token in self._generate_next_token(prompt, settings):
             yield [
                 StreamingTextContent(
                     choice_index=0, inner_content=new_token, text=new_token, ai_model_id=self.ai_model_id
@@ -116,10 +116,10 @@ class OnnxTextCompletion(TextCompletionClientBase):
                 
         return
     
-    async def __generate_next_token(
+    async def _generate_next_token(
         self, 
         prompt: str, 
-        settings: OnnxPromptExecutionSettings
+        settings: OnnxTextPromptExecutionSettings
     ) -> AsyncGenerator[str, Any]:
         try:
             input_tokens = self.tokenizer.encode(prompt)
@@ -141,4 +141,4 @@ class OnnxTextCompletion(TextCompletionClientBase):
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         """Create a request settings object."""
-        return OnnxPromptExecutionSettings
+        return OnnxTextPromptExecutionSettings
