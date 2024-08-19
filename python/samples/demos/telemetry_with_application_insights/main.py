@@ -28,7 +28,7 @@ def set_up_logging():
     # Create and set a global logger provider for the application.
     logger_provider = LoggerProvider()
     # Log processors are initialized with an exporter which is responsible
-    # for sending the telemetry data a particular backend.
+    # for sending the telemetry data to a particular backend.
     logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
     # Sets the global default logger provider
     set_logger_provider(logger_provider)
@@ -51,7 +51,7 @@ def set_up_tracing():
     # Initialize a trace provider for the application. This is a factory for creating tracers.
     tracer_provider = TracerProvider()
     # Span processors are initialized with an exporter which is responsible
-    # for sending the telemetry data a particular backend.
+    # for sending the telemetry data to a particular backend.
     tracer_provider.add_span_processor(BatchSpanProcessor(trace_exporter))
     # Sets the global default tracer provider
     set_tracer_provider(tracer_provider)
