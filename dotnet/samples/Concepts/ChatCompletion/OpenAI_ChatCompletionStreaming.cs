@@ -98,7 +98,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
         // Create chat history with initial user question
-        ChatHistory chatHistory = new();
+        ChatHistory chatHistory = [];
         chatHistory.AddUserMessage("Hi, what is the current time?");
 
         // Start streaming chat based on the chat history
@@ -127,14 +127,14 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
         OutputLastMessage(chatHistory);
 
-        // First bot assistant message
+        // First assistant message
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
 
         // Second user message
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
         OutputLastMessage(chatHistory);
 
-        // Second bot assistant message
+        // Second assistant message
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
     }
 
