@@ -8,7 +8,6 @@ import pytest
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from openai.resources.beta.threads.runs.runs import Run
 from openai.types.beta.assistant import Assistant, ToolResources, ToolResourcesCodeInterpreter, ToolResourcesFileSearch
-from openai.types.beta.assistant_response_format import AssistantResponseFormat
 from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
 from openai.types.beta.threads.annotation import FileCitationAnnotation, FilePathAnnotation
 from openai.types.beta.threads.file_citation_annotation import FileCitation
@@ -33,6 +32,7 @@ from openai.types.beta.threads.runs.message_creation_step_details import Message
 from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStepDetails
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
+from openai.types.shared.response_format_json_object import ResponseFormatJSONObject
 
 from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.contents.annotation_content import AnnotationContent
@@ -366,7 +366,7 @@ async def test_create_assistant(
         assert assistant.tools == [CodeInterpreterTool(type="code_interpreter"), FileSearchTool(type="file_search")]
         assert assistant.temperature == 0.7
         assert assistant.top_p == 0.9
-        assert assistant.response_format == AssistantResponseFormat(type="json_object")
+        assert assistant.response_format == ResponseFormatJSONObject(type="json_object")
         assert assistant.tool_resources == ToolResources(
             code_interpreter=ToolResourcesCodeInterpreter(file_ids=["file1", "file2"]),
             file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
@@ -403,7 +403,7 @@ async def test_create_assistant_with_model_attributes(
         assert assistant.tools == [CodeInterpreterTool(type="code_interpreter"), FileSearchTool(type="file_search")]
         assert assistant.temperature == 0.7
         assert assistant.top_p == 0.9
-        assert assistant.response_format == AssistantResponseFormat(type="json_object")
+        assert assistant.response_format == ResponseFormatJSONObject(type="json_object")
         assert assistant.tool_resources == ToolResources(
             code_interpreter=ToolResourcesCodeInterpreter(file_ids=["file1", "file2"]),
             file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
