@@ -16,7 +16,9 @@
 				"vscjava.vscode-gradle",
 				"GitHub.copilot-chat",
 				"GitHub.copilot",
-				"franneck94.c-cpp-runner"
+				"franneck94.c-cpp-runner",
+				"ms-python.debugpy",
+				"atariq11700.debugpy-old"
 			]
 		}
 	},
