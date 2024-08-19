@@ -70,6 +70,6 @@ public class AzureAISearchVectorStoreCollectionSearchMappingTests
         yield return new object[] { "floatField", 5.5f, "storage_floatField eq 5.5" };
         yield return new object[] { "doubleField", 5.5d, "storage_doubleField eq 5.5" };
         yield return new object[] { "dateTimeOffSetField", new DateTimeOffset(2000, 10, 20, 5, 55, 55, TimeSpan.Zero), "storage_dateTimeOffSetField eq 2000-10-20T05:55:55.0000000Z" };
-        yield return new object[] { "nullField", null, "storage_nullField eq null" };
+        yield return new object[] { "nullField", null!, "storage_nullField eq null" };
     }
 }
