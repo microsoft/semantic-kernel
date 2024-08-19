@@ -3,7 +3,7 @@
 import asyncio
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.strategies import TerminationStrategy
+from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -70,7 +70,7 @@ async def main():
         termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer], maximum_iterations=10),
     )
 
-    input = "concept: maps made out of egg cartons."
+    input = "a slogan for a new line of electric cars."
 
     await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=input))
     print(f"# {AuthorRole.USER}: '{input}'")

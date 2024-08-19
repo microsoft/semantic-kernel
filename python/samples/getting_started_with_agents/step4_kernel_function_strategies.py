@@ -113,7 +113,7 @@ async def main():
         ),
     )
 
-    input = "concept: maps made out of egg cartons."
+    input = "a slogan for a new line of electric cars."
 
     await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=input))
     print(f"# {AuthorRole.USER}: '{input}'")

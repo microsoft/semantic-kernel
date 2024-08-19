@@ -108,12 +108,16 @@ def generate_message_content(assistant_name: str, message: "Message") -> ChatMes
 
 
 def generate_function_call_content(agent_name: str, fccs: list[FunctionCallContent]) -> ChatMessageContent:
-    """Generate function call content."""
-    function_call_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.TOOL, name=agent_name)  # type: ignore
+    """Generate function call content.
 
-    function_call_content.items.extend(fccs)
+    Args:
+        agent_name: The agent name.
+        fccs: The function call contents.
 
-    return function_call_content
+    Returns:
+        ChatMessageContent: The chat message content containing the function call content as the items.
+    """
+    return ChatMessageContent(role=AuthorRole.TOOL, name=agent_name, items=fccs)  # type: ignore
 
 
 def generate_function_result_content(
@@ -136,11 +140,11 @@ def get_function_call_contents(run: "Run", function_steps: dict[str, FunctionCal
     """Extract function call contents from the run.
 
     Args:
-        run (Run): The run.
-        function_steps (dict[str, FunctionCallContent]): The function steps
+        run: The run.
+        function_steps: The function steps
 
     Returns:
-        list[FunctionCallContent]: The list of function call contents.
+        The list of function call contents.
     """
     function_call_contents: list[FunctionCallContent] = []
     required_action = getattr(run, "required_action", None)
