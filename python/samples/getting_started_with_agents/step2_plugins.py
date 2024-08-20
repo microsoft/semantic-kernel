@@ -18,7 +18,7 @@ from semantic_kernel.kernel import Kernel
 ###################################################################
 
 # This sample allows for a streaming response verus a non-streaming response
-streaming = True
+streaming = False
 
 # Define the agent name and instructions
 HOST_NAME = "Host"

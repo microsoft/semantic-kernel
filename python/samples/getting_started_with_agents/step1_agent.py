@@ -16,7 +16,7 @@ from semantic_kernel.kernel import Kernel
 ###################################################################
 
 # To toggle streaming or non-streaming mode, change the following boolean
-streaming = True
+streaming = False
 
 # Define the agent name and instructions
 PARROT_NAME = "Parrot"
@@ -42,6 +42,8 @@ async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory
         async for content in agent.invoke(chat):
             print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
             chat.add_message(content)
+            for msg in chat.messages:
+                print(f"ChatHistory: {msg}")
 
 
 async def main():

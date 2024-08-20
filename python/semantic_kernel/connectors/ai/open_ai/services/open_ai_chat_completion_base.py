@@ -109,12 +109,14 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         # loop for auto-invoke function calls
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(settings)
-            # there is only one chat message, this was checked earlier
-            chat_history.add_message(message=completions[0])
-            # get the function call contents from the chat message
-            function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
+            # get the function call contents from the chat message, there is only one chat message
+            # this was checked earlier
+            function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
             if (fc_count := len(function_calls)) == 0:
                 return completions
+
+            # Since we have a function call, add the assistant's tool call message to the history
+            chat_history.add_message(message=completions[0])
 
             logger.info(f"processing {fc_count} tool calls in parallel.")
 
