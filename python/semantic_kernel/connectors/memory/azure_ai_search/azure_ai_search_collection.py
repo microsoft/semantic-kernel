@@ -4,7 +4,10 @@ import asyncio
 import logging
 import sys
 from collections.abc import Sequence
-from typing import Any, ClassVar, Generic, TypeVar
+from typing import Any, ClassVar, Generic, Literal, TypeVar
+
+from semantic_kernel.data.filter_clause import FilterClause
+from semantic_kernel.data.vector_search_options import VectorSearchOptions
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -14,6 +17,7 @@ else:
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import SearchIndex
+from azure.search.documents.models import VectorizedQuery
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_ai_search.utils import (
@@ -21,8 +25,9 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_client,
     get_search_index_client,
 )
+from semantic_kernel.data.const import FilterClauseType, VectorSearchQueryTypes
+from semantic_kernel.data.vector_search import VectorSearch
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -33,7 +38,7 @@ TModel = TypeVar("TModel")
 
 
 @experimental_class
-class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[TModel]):
+class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
     """Azure AI Search collection implementation."""
 
     search_client: SearchClient
@@ -212,3 +217,66 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
     @override
     async def delete_collection(self, **kwargs) -> None:
         await self.search_index_client.delete_index(self.collection_name, **kwargs)
+
+    @override
+    async def _inner_search(
+        self,
+        query_type: Literal[
+            VectorSearchQueryTypes.VECTORIZED_SEARCH_QUERY,
+            VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY,
+            VectorSearchQueryTypes.HYBRID_TEXT_VECTORIZED_SEARCH_QUERY,
+            VectorSearchQueryTypes.HYBRID_VECTORIZABLE_TEXT_SEARCH_QUERY,
+        ],
+        search_options: VectorSearchOptions,
+        query_text: str | None = None,
+        vector: list[float | int] | None = None,
+        **kwargs: Any,
+    ) -> Sequence[Any] | None:
+        search_args: dict[str, Any] = {
+            "top": search_options.limit,
+            "skip": search_options.offset,
+        }
+        if search_options.vector_search_filters:
+            search_args["filter"] = self._build_filter_string(search_options.vector_search_filters)
+        if query_type == VectorSearchQueryTypes.VECTORIZED_SEARCH_QUERY and vector:
+            search_args["search_text"] = "*"
+            search_args["vector_queries"] = [
+                VectorizedQuery(
+                    vector=vector,
+                    k_nearest_neighbors=search_options.limit,
+                    fields=search_options.vector_field_name,
+                )
+            ]
+        if query_type == VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY and query_text:
+            search_args["search_text"] = query_text
+        if query_type == VectorSearchQueryTypes.HYBRID_TEXT_VECTORIZED_SEARCH_QUERY and query_text and vector:
+            search_args["search_text"] = query_text
+            search_args["vector_queries"] = [
+                VectorizedQuery(
+                    vector=vector,
+                    k_nearest_neighbors=search_options.limit,
+                    fields=search_options.vector_field_name,
+                )
+            ]
+        if search_options.include_vectors:
+            search_args["select"] = ["*"]
+        else:
+            search_args["select"] = [
+                name
+                for name, field in self.data_model_definition.fields.items()
+                if not isinstance(field, VectorStoreRecordVectorField)
+            ]
+
+        return [
+            (res, res.get("@search.score", None))
+            async for res in await self.search_client.search(**search_args, **kwargs)
+        ]
+
+    def _build_filter_string(self, filters: list[FilterClause]) -> str:
+        filter_string = ""
+        for filter in filters:
+            if filter.clause_type == FilterClauseType.EQUALITY:
+                filter_string += f"{filter.field_name} eq '{filter.value}' and "
+            elif filter.clause_type == FilterClauseType.TAG_LIST_CONTAINS:
+                filter_string += f"{filter.field_name}/any(t: t eq '{filter.value}') and "
+        return filter_string[:-5]
