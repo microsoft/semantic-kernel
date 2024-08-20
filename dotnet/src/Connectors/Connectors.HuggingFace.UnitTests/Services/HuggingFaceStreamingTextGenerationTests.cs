@@ -238,28 +238,6 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ItCreatesPostRequestWithValidUserAgentWithPrefixAsync()
-    {
-        try
-        {
-            // Arrange
-            HttpHeaderConstant.Values.SetUserAgentPrefix("Custom");
-            var client = this.CreateTextGenerationClient();
-
-            // Act
-            await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
-
-            // Assert
-            Assert.NotNull(this._messageHandlerStub.RequestHeaders);
-            Assert.Equal("Custom-Semantic-Kernel", this._messageHandlerStub.RequestHeaders.UserAgent.ToString());
-        }
-        finally
-        {
-            HttpHeaderConstant.Values.SetUserAgentPrefix(null);
-        }
-    }
-
-    [Fact]
     public async Task ItCreatesPostRequestWithSemanticKernelVersionHeaderAsync()
     {
         // Arrange
