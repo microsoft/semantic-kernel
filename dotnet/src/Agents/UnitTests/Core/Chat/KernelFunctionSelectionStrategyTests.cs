@@ -82,13 +82,22 @@ public class KernelFunctionSelectionStrategyTests
             };
 
         await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent.Object], []));
+
+        strategy =
+            new(plugin.Single(), new())
+            {
+                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Object.Name } },
+                UseRootAgentAsFallback = true
+            };
+
+        await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent.Object], []));
     }
 
     /// <summary>
     /// Verify strategy mismatch.
     /// </summary>
     [Fact]
-    public async Task VerifyKernelFunctionSelectionStrategyBadAgentAsync()
+    public async Task VerifyKernelFunctionSelectionStrategyBadAgentFallbackWithNoRootAsync()
     {
         Mock<Agent> mockAgent = new();
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin("bad"));
@@ -100,6 +109,38 @@ public class KernelFunctionSelectionStrategyTests
             };
 
         await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent.Object], []));
+
+        strategy =
+            new(plugin.Single(), new())
+            {
+                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Object.Name } },
+                UseRootAgentAsFallback = true
+            };
+
+        await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent.Object], []));
+    }
+
+    /// <summary>
+    /// Verify strategy mismatch.
+    /// </summary>
+    [Fact]
+    public async Task VerifyKernelFunctionSelectionStrategyBadAgentFallbackAsync()
+    {
+        Mock<Agent> mockAgent = new();
+        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin("bad"));
+
+        KernelFunctionSelectionStrategy strategy =
+            new(plugin.Single(), new())
+            {
+                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Object.Name } },
+                RootAgent = mockAgent.Object,
+                UseRootAgentAsFallback = true
+            };
+
+        Agent nextAgent = await strategy.NextAsync([mockAgent.Object], []);
+
+        Assert.NotNull(nextAgent);
+        Assert.Equal(mockAgent.Object, nextAgent);
     }
 
     private sealed class TestPlugin(string? agentName)

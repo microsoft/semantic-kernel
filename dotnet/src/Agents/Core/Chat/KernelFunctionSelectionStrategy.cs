@@ -48,6 +48,11 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     public KernelFunction Function { get; } = function;
 
     /// <summary>
+    /// When set, will use <see cref="RootAgent"/> in the event of a failure to select an agent.
+    /// </summary>
+    public bool UseRootAgentAsFallback { get; init; }
+
+    /// <summary>
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
     /// </summary>
     public Kernel Kernel => kernel;
@@ -76,13 +81,17 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
         this.Logger.LogKernelFunctionSelectionStrategyInvokedFunction(nameof(NextAsync), this.Function.PluginName, this.Function.Name, result.ValueType);
 
         string? agentName = this.ResultParser.Invoke(result);
-        if (string.IsNullOrEmpty(agentName))
+        if (string.IsNullOrEmpty(agentName) && (!this.UseRootAgentAsFallback || this.RootAgent == null))
         {
             throw new KernelException("Agent Failure - Strategy unable to determine next agent.");
         }
 
-        return
-            agents.FirstOrDefault(a => (a.Name ?? a.Id) == agentName) ??
-            throw new KernelException($"Agent Failure - Strategy unable to select next agent: {agentName}");
+        Agent? agent = agents.FirstOrDefault(a => (a.Name ?? a.Id) == agentName);
+        if (agent == null && this.UseRootAgentAsFallback)
+        {
+            agent = this.RootAgent;
+        }
+
+        return agent ?? throw new KernelException($"Agent Failure - Strategy unable to select next agent: {agentName}");
     }
 }
