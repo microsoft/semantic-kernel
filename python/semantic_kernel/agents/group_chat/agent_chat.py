@@ -166,3 +166,15 @@ class AgentChat(KernelBaseModel):
             await self.broadcast_queue.enqueue(channel_refs, messages)
         finally:
             self.clear_activity_signal()
+
+    async def reset(self) -> None:
+        """Reset the agent chat."""
+        self.set_activity_or_throw()
+
+        try:
+            await asyncio.gather(*(channel.reset() for channel in self.agent_channels.values()))
+            self.agent_channels.clear()
+            self.channel_map.clear()
+            self.history.messages.clear()
+        finally:
+            self.clear_activity_signal()
