@@ -43,7 +43,7 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
     {
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(AzureCosmosDBNoSQLCompositeKey))
         {
-            throw new NotSupportedException("Only string keys are supported.");
+            throw new NotSupportedException($"Only {nameof(String)} and {nameof(AzureCosmosDBNoSQLCompositeKey)} keys are supported.");
         }
 
         if (this._options.VectorStoreCollectionFactory is not null)
