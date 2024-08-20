@@ -263,7 +263,7 @@ public sealed class RestApiOperation
         else
         {
             Uri? serverUrl = null;
-            if (this.Server is not null && !string.IsNullOrEmpty(this.Server.Url))
+            if (this.Server.Url is not null)
             {
                 var url = this.Server.Url;
                 foreach (var variable in this.Server.Variables)
