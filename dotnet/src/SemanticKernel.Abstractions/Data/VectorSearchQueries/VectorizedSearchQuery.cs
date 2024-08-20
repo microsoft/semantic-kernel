@@ -22,6 +22,12 @@ public sealed class VectorizedSearchQuery<TVector> : VectorSearchQuery
     {
         Verify.NotNull(vector);
 
+        if (searchOptions != null)
+        {
+            Verify.True(searchOptions.Limit > 0, "VectorSearchOptions.Limit must be greater than 0.", nameof(searchOptions));
+            Verify.True(searchOptions.Offset >= 0, "VectorSearchOptions.Offset must be 0 or greater.", nameof(searchOptions));
+        }
+
         this.Vector = vector;
         this.SearchOptions = searchOptions;
     }

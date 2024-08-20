@@ -46,8 +46,8 @@ public abstract class VectorSearchQuery
     /// <summary>
     /// Creates a new query to search a vector store using a text string that will be vectorized downstream.
     /// </summary>
-    /// <param name="text">The text to search the store with.</param>
+    /// <param name="searchText">The text to search the store with.</param>
     /// <param name="options">The options that control the behavior of the search.</param>
     /// <returns>The query object.</returns>
-    public static VectorizableTextSearchQuery CreateQuery(string text, VectorSearchOptions? options = default) => new(text, options);
+    public static VectorizableTextSearchQuery CreateQuery(string searchText, VectorSearchOptions? options = default) => new(searchText, options);
 }
