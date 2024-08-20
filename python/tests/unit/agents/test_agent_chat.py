@@ -129,6 +129,7 @@ async def test_invoke_agent(agent_chat, agent, chat_message):
             pass
 
     mock_channel.invoke.assert_called_once_with(agent)
+    await agent_chat.reset()
 
 
 @pytest.mark.asyncio
