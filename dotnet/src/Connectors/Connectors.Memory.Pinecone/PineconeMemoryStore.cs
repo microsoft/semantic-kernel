@@ -271,7 +271,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (MemoryRecord? record in this.GetBatchFromNamespaceAsync(collectionName, string.Empty, keys, withEmbeddings, cancellationToken).ConfigureAwait(false))
+        await foreach (MemoryRecord record in this.GetBatchFromNamespaceAsync(collectionName, string.Empty, keys, withEmbeddings, cancellationToken).ConfigureAwait(false))
         {
             yield return record;
         }
@@ -285,13 +285,16 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        foreach (string? key in keys)
+        await foreach (PineconeDocument? pineconeDocument in this._pineconeClient.FetchVectorsAsync(
+                               indexName,
+                               keys,
+                               indexNamespace,
+                               withEmbeddings,
+                               cancellationToken).ConfigureAwait(false))
         {
-            MemoryRecord? record = await this.GetFromNamespaceAsync(indexName, indexNamespace, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-
-            if (record is not null)
+            if (pineconeDocument is not null)
             {
-                yield return record;
+                yield return pineconeDocument.ToMemoryRecord();
             }
         }
     }
