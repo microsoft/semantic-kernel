@@ -97,7 +97,7 @@ public class KernelFunctionSelectionStrategyTests
     /// Verify strategy mismatch.
     /// </summary>
     [Fact]
-    public async Task VerifyKernelFunctionSelectionStrategyBadAgentFallbackWithNoRootAsync()
+    public async Task VerifyKernelFunctionSelectionStrategyBadAgentFallbackWithNoInitialAgentAsync()
     {
         Mock<Agent> mockAgent = new();
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin("bad"));
