@@ -1238,6 +1238,114 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("{\"value\":\"fake-value\"}", canceledException.Data["http.request.body"]);
     }
 
+    [Fact]
+    public async Task ItShouldUseCustomHttpResponseContentReaderAsync()
+    {
+        // Arrange
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Get,
+            "fake-description",
+            [],
+            payload: null
+        );
+
+        var expectedCancellationToken = new CancellationToken();
+
+        async Task<object?> ReadHttpResponseContentAsync(HttpResponseContentReaderContext context, CancellationToken cancellationToken)
+        {
+            Assert.Equal(expectedCancellationToken, cancellationToken);
+
+            return await context.Response.Content.ReadAsStreamAsync(cancellationToken);
+        }
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, httpResponseContentReader: ReadHttpResponseContentAsync);
+
+        // Act
+        var response = await sut.RunAsync(operation, [], cancellationToken: expectedCancellationToken);
+
+        // Assert
+        Assert.IsAssignableFrom<Stream>(response.Content);
+    }
+
+    [Fact]
+    public async Task ItShouldUseDefaultHttpResponseContentReaderIfCustomDoesNotReturnAnyContentAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Get,
+            "fake-description",
+            [],
+            payload: null
+        );
+
+        var readerHasBeenCalled = false;
+
+        Task<object?> ReadHttpResponseContentAsync(HttpResponseContentReaderContext context, CancellationToken cancellationToken)
+        {
+            readerHasBeenCalled = true;
+            return Task.FromResult<object?>(null); // Return null to indicate that no content is returned
+        }
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, httpResponseContentReader: ReadHttpResponseContentAsync);
+
+        // Act
+        var response = await sut.RunAsync(operation, []);
+
+        // Assert
+        Assert.True(readerHasBeenCalled);
+        Assert.Equal("fake-content", response.Content);
+    }
+
+    [Fact]
+    public async Task ItShouldDisposeContentStreamAndHttpResponseContentMessageAsync()
+    {
+        // Arrange
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Get,
+            "fake-description",
+            [],
+            payload: null
+        );
+
+        HttpResponseMessage? responseMessage = null;
+        Stream? contentStream = null;
+
+        async Task<object?> ReadHttpResponseContentAsync(HttpResponseContentReaderContext context, CancellationToken cancellationToken)
+        {
+            responseMessage = context.Response;
+            contentStream = await context.Response.Content.ReadAsStreamAsync(cancellationToken);
+            return contentStream;
+        }
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, httpResponseContentReader: ReadHttpResponseContentAsync);
+
+        // Act
+        var response = await sut.RunAsync(operation, []);
+
+        // Assert
+        var stream = Assert.IsAssignableFrom<Stream>(response.Content);
+        Assert.True(stream.CanRead);
+        Assert.True(stream.CanSeek);
+
+        stream.Dispose();
+
+        // Check that the content stream and the response message are disposed
+        Assert.Throws<ObjectDisposedException>(() => responseMessage!.Version = Version.Parse("1.1.1"));
+        Assert.False(contentStream!.CanRead);
+        Assert.False(contentStream!.CanSeek);
+    }
+
     public class SchemaTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
