@@ -27,6 +27,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
+    """Hugging Face text embedding service."""
+
     device: str
     generator: Any
 

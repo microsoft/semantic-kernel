@@ -8,6 +8,8 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 
 
 class AsyncSession:
+    """A wrapper around aiohttp.ClientSession that can be used as an async context manager."""
+
     def __init__(self, session: aiohttp.ClientSession = None):
         """Initializes a new instance of the AsyncSession class."""
         self._session = session if session else aiohttp.ClientSession()
