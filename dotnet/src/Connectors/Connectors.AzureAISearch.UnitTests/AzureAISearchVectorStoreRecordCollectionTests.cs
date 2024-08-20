@@ -572,6 +572,8 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 new ReadOnlyMemory<float>(new float[4]),
                 new()
                 {
+                    Limit = 5,
+                    Offset = 3,
                     BasicVectorSearchFilter = filter,
                     VectorFieldName = nameof(MultiPropsModel.Vector1)
                 }),
@@ -583,6 +585,8 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 null,
                 It.Is<SearchOptions>(x =>
                     x.Filter == "storage_data1 eq 'Data1FilterValue'" &&
+                    x.Size == 5 &&
+                    x.Skip == 3 &&
                     x.VectorSearch.Queries.First().GetType() == typeof(VectorizedQuery) &&
                     x.VectorSearch.Queries.First().Fields.First() == "storage_vector1"),
                 It.IsAny<CancellationToken>()),
@@ -609,6 +613,8 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 "search string",
                 new()
                 {
+                    Limit = 5,
+                    Offset = 3,
                     BasicVectorSearchFilter = filter,
                     VectorFieldName = nameof(MultiPropsModel.Vector1)
                 }),
@@ -620,6 +626,8 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 null,
                 It.Is<SearchOptions>(x =>
                     x.Filter == "storage_data1 eq 'Data1FilterValue'" &&
+                    x.Size == 5 &&
+                    x.Skip == 3 &&
                     x.VectorSearch.Queries.First().GetType() == typeof(VectorizableTextQuery) &&
                     x.VectorSearch.Queries.First().Fields.First() == "storage_vector1" &&
                     ((VectorizableTextQuery)x.VectorSearch.Queries.First()).Text == "search string"),

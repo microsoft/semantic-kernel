@@ -331,6 +331,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         var searchFields = new List<string>();
         var vectorQueries = new List<VectorQuery>();
         int limit = 3;
+        int offset = 0;
         bool includeVectors = false;
 
         if (vectorQuery is VectorizedSearchQuery<ReadOnlyMemory<float>> floatVectorQuery)
@@ -343,6 +344,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
             filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.BasicVectorSearchFilter, this._storagePropertyNames);
             vectorQueries.Add(new VectorizedQuery(floatVectorQuery.Vector) { KNearestNeighborsCount = internalOptions.Limit, Fields = { vectorFieldName } });
             limit = internalOptions.Limit;
+            offset = internalOptions.Offset;
             includeVectors = internalOptions.IncludeVectors;
         }
         else if (vectorQuery is VectorizableTextSearchQuery vectorizableTextQuery)
@@ -355,6 +357,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
             filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.BasicVectorSearchFilter, this._storagePropertyNames);
             vectorQueries.Add(new VectorizableTextQuery(vectorizableTextQuery.QueryText) { KNearestNeighborsCount = internalOptions.Limit, Fields = { vectorFieldName } });
             limit = internalOptions.Limit;
+            offset = internalOptions.Offset;
             includeVectors = internalOptions.IncludeVectors;
         }
         else
@@ -367,6 +370,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         {
             VectorSearch = new(),
             Size = limit,
+            Skip = offset,
             Filter = filterString,
         };
         searchOptions.SearchFields.AddRange(searchFields);
