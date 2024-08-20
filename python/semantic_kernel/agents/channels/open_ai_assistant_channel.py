@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from openai import AsyncOpenAI
 
@@ -22,6 +28,7 @@ class OpenAIAssistantChannel(AgentChannel):
         self.client = client
         self.thread_id = thread_id
 
+    @override
     async def receive(self, history: list["ChatMessageContent"]) -> None:
         """Receive the conversation messages.
 
@@ -31,6 +38,7 @@ class OpenAIAssistantChannel(AgentChannel):
         for message in history:
             await create_chat_message(self.client, self.thread_id, message)
 
+    @override
     async def invoke(self, agent: "Agent") -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Invoke the agent.
 
@@ -51,6 +59,7 @@ class OpenAIAssistantChannel(AgentChannel):
         async for is_visible, message in agent._invoke_internal(thread_id=self.thread_id):
             yield is_visible, message
 
+    @override
     async def get_history(self) -> AsyncIterable["ChatMessageContent"]:
         """Get the conversation history.
 
@@ -74,3 +83,11 @@ class OpenAIAssistantChannel(AgentChannel):
 
             if len(content.items) > 0:
                 yield content
+
+    @override
+    async def reset(self) -> None:
+        """Reset the agent's thread."""
+        try:
+            await self.client.beta.threads.delete(thread_id=self.thread_id)
+        except Exception as e:
+            raise AgentChatException(f"Failed to delete thread: {e}")
