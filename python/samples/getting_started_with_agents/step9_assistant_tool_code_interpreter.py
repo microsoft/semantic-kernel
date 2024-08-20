@@ -4,15 +4,22 @@ import asyncio
 from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
-AGENT_NAME = "ChartMaker"
-AGENT_INSTRUCTIONS = "Create charts as requested without explanation."
+#####################################################################
+# The following sample demonstrates how to create an OpenAI         #
+# assistant using either Azure OpenAI or OpenAI and leverage the    #
+# assistant's code interpreter functionality to have it write       #
+# Python code to print Fibonacci numbers.                           #
+#####################################################################
+
+
+AGENT_NAME = "CodeRunner"
+AGENT_INSTRUCTIONS = "Run the provided code file and return the result."
 
 # Note: you may toggle this to switch between AzureOpenAI and OpenAI
-use_azure_openai = False
+use_azure_openai = True
 
 
 # A helper method to invoke the agent with the user input
@@ -22,14 +29,9 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
 
     print(f"# {AuthorRole.USER}: '{input}'")
 
-    async for message in agent.invoke(thread_id=thread_id):
-        if message.content:
-            print(f"# {message.role}: {message.content}")
-
-        if len(message.items) > 0:
-            for item in message.items:
-                if isinstance(item, FileReferenceContent):
-                    print(f"\n`{message.role}` => {item.file_id}")
+    async for content in agent.invoke(thread_id=thread_id):
+        if content.role != AuthorRole.TOOL:
+            print(f"# {content.role}: {content.content}")
 
 
 async def main():
@@ -39,9 +41,9 @@ async def main():
     # Define a service_id for the sample
     service_id = "agent"
 
-    # Create the agent configuration
+    # Create the agent
     if use_azure_openai:
-        agent = AzureAssistantAgent(
+        agent = await AzureAssistantAgent.create(
             kernel=kernel,
             service_id=service_id,
             name=AGENT_NAME,
@@ -49,7 +51,7 @@ async def main():
             enable_code_interpreter=True,
         )
     else:
-        agent = OpenAIAssistantAgent(
+        agent = await OpenAIAssistantAgent.create(
             kernel=kernel,
             service_id=service_id,
             name=AGENT_NAME,
@@ -57,31 +59,13 @@ async def main():
             enable_code_interpreter=True,
         )
 
-    # Create an assistant with the vector store ID
-    await agent.create_assistant()
-
-    # Define a thread and invoke the agent with the user input
     thread_id = await agent.create_thread()
 
     try:
         await invoke_agent(
             agent,
             thread_id=thread_id,
-            input="""
-                Display this data using a bar-chart:
-
-                Banding  Brown Pink Yellow  Sum
-                X00000   339   433     126  898
-                X00300    48   421     222  691
-                X12345    16   395     352  763
-                Others    23   373     156  552
-                Sum      426  1622     856 2904
-                """,
-        )
-        await invoke_agent(
-            agent,
-            thread_id=thread_id,
-            input="Can you regenerate this same chart using the category names as the bar colors?",
+            input="Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?",  # noqa: E501
         )
     finally:
         await agent.delete_thread(thread_id)
