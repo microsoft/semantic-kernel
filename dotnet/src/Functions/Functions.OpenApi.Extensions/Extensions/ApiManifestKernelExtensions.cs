@@ -144,7 +144,7 @@ public static class ApiManifestKernelExtensions
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
 
             var server = filteredOpenApiDocument.Servers.FirstOrDefault();
-            if (server is not null && !string.IsNullOrEmpty(server.Url))
+            if (server?.Url is not null)
             {
                 foreach (var path in filteredOpenApiDocument.Paths)
                 {
@@ -154,7 +154,7 @@ public static class ApiManifestKernelExtensions
                         try
                         {
                             logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                            functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, null /*new Uri(serverUrl)*/, loggerFactory));
+                            functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
                         }
                         catch (Exception ex) when (!ex.IsCriticalException())
                         {
