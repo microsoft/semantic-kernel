@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure.Search.Documents.Indexes;
 using System.Text.Json;
+using Azure.Search.Documents.Indexes;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
