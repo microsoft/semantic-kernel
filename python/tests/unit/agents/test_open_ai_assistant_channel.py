@@ -193,3 +193,70 @@ async def test_get_history(mock_thread_messages, mock_assistant, openai_unit_tes
 
     assert len(results) == 2
     mock_client.beta.threads.messages.list.assert_awaited_once_with(thread_id=thread_id, limit=100, order="desc")
+
+
+@pytest.mark.asyncio
+async def test_reset_channel(mock_thread_messages, mock_assistant, openai_unit_test_env):
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+
+    async def mock_list_messages(*args, **kwargs) -> Any:
+        return MagicMock(data=mock_thread_messages)
+
+    async def mock_retrieve_assistant(*args, **kwargs) -> Any:
+        return mock_assistant
+
+    mock_client = MagicMock(spec=AsyncOpenAI)
+    mock_client.beta = MagicMock()
+    mock_client.beta.threads = MagicMock()
+    mock_client.beta.threads.messages = MagicMock()
+    mock_client.beta.threads.messages.list = AsyncMock(side_effect=mock_list_messages)
+    mock_client.beta.assistants = MagicMock()
+    mock_client.beta.assistants.retrieve = AsyncMock(side_effect=mock_retrieve_assistant)
+    mock_client.beta.threads.delete = AsyncMock()
+
+    thread_id = "test_thread"
+    channel = OpenAIAssistantChannel(client=mock_client, thread_id=thread_id)
+
+    results = []
+    async for content in channel.get_history():
+        results.append(content)
+
+    assert len(results) == 2
+    mock_client.beta.threads.messages.list.assert_awaited_once_with(thread_id=thread_id, limit=100, order="desc")
+
+    await channel.reset()
+
+    assert channel.thread_id is not None
+
+
+@pytest.mark.asyncio
+async def test_reset_channel_error_throws_exception(mock_thread_messages, mock_assistant, openai_unit_test_env):
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+
+    async def mock_list_messages(*args, **kwargs) -> Any:
+        return MagicMock(data=mock_thread_messages)
+
+    async def mock_retrieve_assistant(*args, **kwargs) -> Any:
+        return mock_assistant
+
+    mock_client = MagicMock(spec=AsyncOpenAI)
+    mock_client.beta = MagicMock()
+    mock_client.beta.threads = MagicMock()
+    mock_client.beta.threads.messages = MagicMock()
+    mock_client.beta.threads.messages.list = AsyncMock(side_effect=mock_list_messages)
+    mock_client.beta.assistants = MagicMock()
+    mock_client.beta.assistants.retrieve = AsyncMock(side_effect=mock_retrieve_assistant)
+    mock_client.beta.threads.delete = AsyncMock(side_effect=Exception("Test error"))
+
+    thread_id = "test_thread"
+    channel = OpenAIAssistantChannel(client=mock_client, thread_id=thread_id)
+
+    results = []
+    async for content in channel.get_history():
+        results.append(content)
+
+    assert len(results) == 2
+    mock_client.beta.threads.messages.list.assert_awaited_once_with(thread_id=thread_id, limit=100, order="desc")
+
+    with pytest.raises(Exception, match="Test error"):
+        await channel.reset()
