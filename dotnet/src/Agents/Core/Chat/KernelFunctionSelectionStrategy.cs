@@ -59,7 +59,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     public Func<FunctionResult, string> ResultParser { get; init; } = (result) => result.GetValue<string>() ?? string.Empty;
 
     /// <inheritdoc/>
-    public sealed override async Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+    protected sealed override async Task<Agent> SelectAgentAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =
