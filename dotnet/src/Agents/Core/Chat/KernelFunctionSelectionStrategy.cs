@@ -50,7 +50,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     /// <summary>
     /// When set, will use <see cref="SelectionStrategy.InitialAgent"/> in the event of a failure to select an agent.
     /// </summary>
-    public bool UseRootAgentAsFallback { get; init; }
+    public bool UseInitialAgentAsFallback { get; init; }
 
     /// <summary>
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
@@ -81,13 +81,13 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
         this.Logger.LogKernelFunctionSelectionStrategyInvokedFunction(nameof(NextAsync), this.Function.PluginName, this.Function.Name, result.ValueType);
 
         string? agentName = this.ResultParser.Invoke(result);
-        if (string.IsNullOrEmpty(agentName) && (!this.UseRootAgentAsFallback || this.InitialAgent == null))
+        if (string.IsNullOrEmpty(agentName) && (!this.UseInitialAgentAsFallback || this.InitialAgent == null))
         {
             throw new KernelException("Agent Failure - Strategy unable to determine next agent.");
         }
 
         Agent? agent = agents.FirstOrDefault(a => (a.Name ?? a.Id) == agentName);
-        if (agent == null && this.UseRootAgentAsFallback)
+        if (agent == null && this.UseInitialAgentAsFallback)
         {
             agent = this.InitialAgent;
         }

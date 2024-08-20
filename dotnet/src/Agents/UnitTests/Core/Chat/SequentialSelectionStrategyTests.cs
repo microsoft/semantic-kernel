@@ -43,7 +43,7 @@ public class SequentialSelectionStrategyTests
     /// Verify <see cref="SequentialSelectionStrategy"/> provides agents in expected order.
     /// </summary>
     [Fact]
-    public async Task VerifySequentialSelectionStrategyRootAgentAsync()
+    public async Task VerifySequentialSelectionStrategyInitialAgentAsync()
     {
         Mock<Agent> agent1 = new();
         Mock<Agent> agent2 = new();

@@ -47,7 +47,7 @@ public class KernelFunctionSelectionStrategyTests
     /// Verify default state and behavior
     /// </summary>
     [Fact]
-    public async Task VerifyKernelFunctionSelectionStrategyRootAgentAsync()
+    public async Task VerifyKernelFunctionSelectionStrategyInitialAgentAsync()
     {
         Mock<Agent> mockAgent1 = new();
         Mock<Agent> mockAgent2 = new();
@@ -87,7 +87,7 @@ public class KernelFunctionSelectionStrategyTests
             new(plugin.Single(), new())
             {
                 Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Object.Name } },
-                UseRootAgentAsFallback = true
+                UseInitialAgentAsFallback = true
             };
 
         await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent.Object], []));
@@ -114,7 +114,7 @@ public class KernelFunctionSelectionStrategyTests
             new(plugin.Single(), new())
             {
                 Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Object.Name } },
-                UseRootAgentAsFallback = true
+                UseInitialAgentAsFallback = true
             };
 
         await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent.Object], []));
@@ -134,7 +134,7 @@ public class KernelFunctionSelectionStrategyTests
             {
                 Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Object.Name } },
                 InitialAgent = mockAgent.Object,
-                UseRootAgentAsFallback = true
+                UseInitialAgentAsFallback = true
             };
 
         Agent nextAgent = await strategy.NextAsync([mockAgent.Object], []);
