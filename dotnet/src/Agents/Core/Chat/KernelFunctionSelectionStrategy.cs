@@ -48,7 +48,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     public KernelFunction Function { get; } = function;
 
     /// <summary>
-    /// When set, will use <see cref="RootAgent"/> in the event of a failure to select an agent.
+    /// When set, will use <see cref="SelectionStrategy.RootAgent"/> in the event of a failure to select an agent.
     /// </summary>
     public bool UseRootAgentAsFallback { get; init; }
 
