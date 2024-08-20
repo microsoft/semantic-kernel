@@ -249,15 +249,6 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
             ]
         if query_type == VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY and query_text:
             search_args["search_text"] = query_text
-        if query_type == VectorSearchQueryTypes.HYBRID_TEXT_VECTORIZED_SEARCH_QUERY and query_text and vector:
-            search_args["search_text"] = query_text
-            search_args["vector_queries"] = [
-                VectorizedQuery(
-                    vector=vector,
-                    k_nearest_neighbors=search_options.limit,
-                    fields=search_options.vector_field_name,
-                )
-            ]
         if search_options.include_vectors:
             search_args["select"] = ["*"]
         else:
