@@ -5,8 +5,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.agents import Agent
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 

@@ -55,6 +55,8 @@ from samples.concepts.search.bing_search_plugin import main as bing_search_plugi
 from samples.concepts.service_selector.custom_service_selector import main as custom_service_selector
 from samples.getting_started_with_agents.step1_agent import main as step1_agent
 from samples.getting_started_with_agents.step2_plugins import main as step2_plugins
+from samples.getting_started_with_agents.step3_chat import main as step3_chat
+from samples.getting_started_with_agents.step7_assistant import main as step7_assistant
 from tests.samples.samples_utils import retry
 
 concepts = [
@@ -107,6 +109,8 @@ concepts = [
     param(function_defined_in_yaml_prompt, ["What is 3+3?", "exit"], id="function_defined_in_yaml_prompt"),
     param(step1_agent, [], id="step1_agent"),
     param(step2_plugins, [], id="step2_agent_plugins"),
+    param(step3_chat, [], id="step3_chat"),
+    param(step7_assistant, [], id="step7_assistant"),
     param(
         ollama_chat_completion,
         ["Why is the sky blue?", "exit"],
