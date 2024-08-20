@@ -65,7 +65,7 @@ motor = { version = "^3.3.2", optional = true }
 # notebooks
 ipykernel = { version = "^6.21.1", optional = true}
 # milvus
-pymilvus = { version = ">=2.3,<2.4.5", optional = true}
+pymilvus = { version = ">=2.3,<2.4.6", optional = true}
 milvus = { version = ">=2.3,<2.3.8", markers = 'sys_platform != "win32"', optional = true}
 # mistralai
 mistralai = { version = "^0.4.1", optional = true}
@@ -144,7 +144,7 @@ transformers = { version = "^4.28.1", extras=['torch']}
 sentence-transformers = { version = "^2.2.2"}
 torch = {version = "2.2.2"}
 # milvus
-pymilvus = ">=2.3,<2.4.5"
+pymilvus = ">=2.3,<2.4.6"
 milvus = { version = ">=2.3,<2.3.8", markers = 'sys_platform != "win32"'}
 # mistralai
 mistralai = "^0.4.1"
