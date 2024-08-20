@@ -291,6 +291,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 parameter.Schema.Items?.Type,
                 GetParameterValue(parameter.Schema.Default, "parameter", parameter.Name),
                 parameter.Description,
+                parameter.Schema.Format,
                 parameter.Schema.ToJsonSchema()
             );
 
@@ -371,6 +372,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
                 propertySchema.Description,
+                propertySchema.Format,
                 propertySchema.ToJsonSchema(),
                 GetParameterValue(propertySchema.Default, "payload property", propertyName));
 
