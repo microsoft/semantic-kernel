@@ -90,17 +90,9 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        foreach (var key in keys)
+        await foreach (var memoryRecord in this.InternalGetBatchAsync(this._dbConnection, collectionName, keys.ToArray(), withEmbeddings, cancellationToken).ConfigureAwait(false))
         {
-            var result = await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (result is not null)
-            {
-                yield return result;
-            }
-            else
-            {
-                yield break;
-            }
+            yield return memoryRecord;
         }
     }
 
@@ -281,6 +273,20 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             ReadOnlyMemory<float>.Empty,
             entry.Value.Key,
             ParseTimestamp(entry.Value.Timestamp));
+    }
+
+    private async IAsyncEnumerable<MemoryRecord> InternalGetBatchAsync(
+        SqliteConnection connection,
+        string collectionName,
+        string[] keys, bool withEmbedding,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadBatchAsync(connection, collectionName, keys, withEmbedding, cancellationToken).ConfigureAwait(false))
+        {
+            ReadOnlyMemory<float> vector = withEmbedding ? JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntry.EmbeddingString, JsonOptionsCache.Default) : ReadOnlyMemory<float>.Empty;
+            var record = MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp));
+            yield return record;
+        }
     }
 
     #endregion
