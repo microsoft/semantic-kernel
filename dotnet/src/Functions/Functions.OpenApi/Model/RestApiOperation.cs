@@ -268,7 +268,7 @@ public sealed class RestApiOperation
                 var url = this.Server.Url;
                 foreach (var variable in this.Server.Variables)
                 {
-                    if (arguments.TryGetValue(variable.Key, out object? value))
+                    if (arguments.TryGetValue(variable.Key, out object? value) && variable.Value.IsValid(value!.ToString()))
                     {
                         url = url.Replace($"{{{variable.Key}}}", value!.ToString());
                     }

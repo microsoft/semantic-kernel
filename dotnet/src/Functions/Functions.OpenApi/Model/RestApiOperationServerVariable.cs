@@ -37,4 +37,13 @@ public sealed class RestApiOperationServerVariable
         this.Description = description;
         this.Enum = enumValues;
     }
+
+    /// <summary>
+    /// Return true if the value is valid based on the enumeration of string values to be used.
+    /// </summary>
+    /// <param name="value">Value to be used as a substitution.</param>
+    public bool IsValid(string? value)
+    {
+        return this.Enum?.Contains(value!) ?? true;
+    }
 }

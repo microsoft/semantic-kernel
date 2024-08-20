@@ -725,12 +725,36 @@ public class RestApiOperationTests
     }
 
     [Fact]
+    public void ItShouldUseDefaultServerVariableIfInvalidOverrideProvided()
+    {
+        // Arrange
+        var version = new RestApiOperationServerVariable("v2", null, ["v1", "v2"]);
+        var sut = new RestApiOperation(
+            "fake_id",
+            new RestApiOperationServer("https://example.com/{version}", new Dictionary<string, RestApiOperationServerVariable> { { "version", version } }),
+            "/items",
+            HttpMethod.Get,
+            "fake_description",
+            []
+        );
+
+        var arguments = new Dictionary<string, object?>() { { "version", "v3" } };
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert
+        Assert.Equal("https://example.com/v2/items", url.OriginalString);
+    }
+
+    [Fact]
     public void ItShouldUseServerVariableOverrideIfProvided()
     {
         // Arrange
+        var version = new RestApiOperationServerVariable("v2", null, ["v1", "v2", "v3"]);
         var sut = new RestApiOperation(
             "fake_id",
-            new RestApiOperationServer("https://example.com/{version}", new Dictionary<string, RestApiOperationServerVariable> { { "version", new RestApiOperationServerVariable("v2") } }),
+            new RestApiOperationServer("https://example.com/{version}", new Dictionary<string, RestApiOperationServerVariable> { { "version", version } }),
             "/items",
             HttpMethod.Get,
             "fake_description",
