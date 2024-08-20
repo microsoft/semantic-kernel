@@ -56,7 +56,15 @@ public sealed class AzureAISearchVectorStore : IVectorStore
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._searchIndexClient, name, vectorStoreRecordDefinition);
         }
 
-        var directlyCreatedStore = new AzureAISearchVectorStoreRecordCollection<TRecord>(this._searchIndexClient, name, new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+        var directlyCreatedStore = new AzureAISearchVectorStoreRecordCollection<TRecord>(
+            this._searchIndexClient,
+            name,
+            new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>()
+            {
+                JsonSerializerOptions = this._options.JsonSerializerOptions,
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            }) as IVectorStoreRecordCollection<TKey, TRecord>;
+
         return directlyCreatedStore!;
     }
 
