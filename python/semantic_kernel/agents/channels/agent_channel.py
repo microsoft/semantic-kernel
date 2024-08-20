@@ -57,3 +57,8 @@ class AgentChannel(ABC):
             An async iterable of ChatMessageContent.
         """
         ...
+
+    @abstractmethod
+    async def reset(self) -> None:
+        """Reset any persistent state associated with the channel."""
+        ...
