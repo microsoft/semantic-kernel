@@ -5102,13 +5102,13 @@ files = [
 
 [[package]]
 name = "pymilvus"
-version = "2.4.4"
+version = "2.4.5"
 description = "Python Sdk for Milvus"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pymilvus-2.4.4-py3-none-any.whl", hash = "sha256:073b76bc36f6f4e70f0f0a0023a53324f0ba8ef9a60883f87cd30a44b6c6f2b5"},
-    {file = "pymilvus-2.4.4.tar.gz", hash = "sha256:50c53eb103e034fbffe936fe942751ea3dbd2452e18cf79acc52360ed4987fb7"},
+    {file = "pymilvus-2.4.5-py3-none-any.whl", hash = "sha256:dc4f2d1eac8db9cf3951de39566a1a244695760bb94d8310fbfc73d6d62bb267"},
+    {file = "pymilvus-2.4.5.tar.gz", hash = "sha256:1a497fe9b41d6bf62b1d5e1c412960922dde1598576fcbb8818040c8af11149f"},
 ]
 
 [package.dependencies]
@@ -5117,7 +5117,7 @@ grpcio = ">=1.49.1,<=1.63.0"
 milvus-lite = {version = ">=2.4.0,<2.5.0", markers = "sys_platform != \"win32\""}
 pandas = ">=1.2.4"
 protobuf = ">=3.20.0"
-setuptools = ">=67"
+setuptools = ">69"
 ujson = ">=2.0.0"
 
 [package.extras]
@@ -7697,4 +7697,4 @@ weaviate = ["weaviate-client"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.13"
-content-hash = "a97be782fb175066b7f3d01cd820dc2fddcf87c5b2eb15a1bed6ab72751cb56b"
+content-hash = "45bffc6686e76fda8799c7a786d0618594cf8f8b7450bb8d805423882a0c20b3"
