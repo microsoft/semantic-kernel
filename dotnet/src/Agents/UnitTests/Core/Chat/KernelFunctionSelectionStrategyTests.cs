@@ -56,7 +56,7 @@ public class KernelFunctionSelectionStrategyTests
         KernelFunctionSelectionStrategy strategy =
             new(plugin.Single(), new())
             {
-                RootAgent = mockAgent1.Object,
+                InitialAgent = mockAgent1.Object,
                 ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
             };
 
@@ -133,7 +133,7 @@ public class KernelFunctionSelectionStrategyTests
             new(plugin.Single(), new())
             {
                 Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Object.Name } },
-                RootAgent = mockAgent.Object,
+                InitialAgent = mockAgent.Object,
                 UseRootAgentAsFallback = true
             };
 

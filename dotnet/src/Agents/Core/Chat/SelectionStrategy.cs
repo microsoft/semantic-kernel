@@ -18,12 +18,12 @@ public abstract class SelectionStrategy
     protected bool HasSelected { get; private set; }
 
     /// <summary>
-    /// An optional root agent for initial selection.
+    /// An optional agent for initial selection.
     /// </summary>
     /// <remarks>
     /// Useful to avoid latency in initial agent selection.
     /// </remarks>
-    public Agent? RootAgent { get; set; }
+    public Agent? InitialAgent { get; set; }
 
     /// <summary>
     /// The <see cref="ILogger"/> associated with the <see cref="SelectionStrategy"/>.
@@ -39,14 +39,14 @@ public abstract class SelectionStrategy
     /// <returns>The agent who shall take the next turn.</returns>
     public async Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        if (agents.Count == 0 && this.RootAgent == null)
+        if (agents.Count == 0 && this.InitialAgent == null)
         {
             throw new KernelException("Agent Failure - No agents present to select.");
         }
 
         Agent agent =
-            (!this.HasSelected && this.RootAgent != null) ?
-                this.RootAgent :
+            (!this.HasSelected && this.InitialAgent != null) ?
+                this.InitialAgent :
                 await this.SelectAgentAsync(agents, history, cancellationToken).ConfigureAwait(false);
 
         this.HasSelected = true;

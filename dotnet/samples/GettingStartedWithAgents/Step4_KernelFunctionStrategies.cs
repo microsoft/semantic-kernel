@@ -105,7 +105,7 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                             new KernelFunctionSelectionStrategy(selectionFunction, CreateKernelWithChatCompletion())
                             {
                                 // Always start with the writer agent.
-                                RootAgent = agentWriter,
+                                InitialAgent = agentWriter,
                                 // Returns the entire result value as a string.
                                 ResultParser = (result) => result.GetValue<string>() ?? CopyWriterName,
                                 // The prompt variable name for the agents argument.

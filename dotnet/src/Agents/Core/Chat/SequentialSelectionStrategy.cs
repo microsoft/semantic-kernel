@@ -23,9 +23,9 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
     protected override Task<Agent> SelectAgentAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         if (this.HasSelected &&
-            this.RootAgent != null &&
+            this.InitialAgent != null &&
             agents.Count > 0 &&
-            agents[0] == this.RootAgent)
+            agents[0] == this.InitialAgent)
         {
             // Avoid selecting first agent twice
             IncrementIndex();

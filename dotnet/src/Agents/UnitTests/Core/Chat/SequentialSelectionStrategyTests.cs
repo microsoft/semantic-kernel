@@ -52,7 +52,7 @@ public class SequentialSelectionStrategyTests
         SequentialSelectionStrategy strategy =
             new()
             {
-                RootAgent = agent2.Object
+                InitialAgent = agent2.Object
             };
 
         await VerifyNextAgentAsync(agent2.Object, agents, strategy);
