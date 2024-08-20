@@ -130,3 +130,8 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
         """
         for message in reversed(self.messages):
             yield message
+
+    @override
+    async def reset(self) -> None:
+        """Reset the channel state."""
+        self.messages.clear()
