@@ -72,7 +72,6 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                 - {{{CopyWriterName}}}
                 
                 Always follow these rules when selecting the next participant:
-                - After user input, it is {{{CopyWriterName}}}'a turn.
                 - After {{{CopyWriterName}}} replies, it is {{{ReviewerName}}}'s turn.
                 - After {{{ReviewerName}}} provides feedback, it is {{{CopyWriterName}}}'s turn.
 
@@ -105,6 +104,8 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                         SelectionStrategy =
                             new KernelFunctionSelectionStrategy(selectionFunction, CreateKernelWithChatCompletion())
                             {
+                                // Always start with the writer agent.
+                                InitialAgent = agentWriter,
                                 // Returns the entire result value as a string.
                                 ResultParser = (result) => result.GetValue<string>() ?? CopyWriterName,
                                 // The prompt variable name for the agents argument.
