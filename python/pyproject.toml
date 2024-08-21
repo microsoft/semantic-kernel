@@ -99,7 +99,7 @@ pytest-asyncio = "^0.23.7"
 snoop = "^0.4.3"
 mypy = ">=1.10.0"
 types-PyYAML = "^6.0.12.20240311"
-ruff = "^0.5.2"
+ruff = ">=0.5.2,<0.7.0"
 
 [tool.poetry.group.unit-tests]
 optional = true
