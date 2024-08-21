@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
-using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.TextGeneration;
 using OllamaSharp;
@@ -129,24 +128,19 @@ public static class OllamaKernelBuilderExtensions
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="endpoint">The endpoint to Ollama hosted service.</param>
-    /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="serviceId">The optional service ID.</param>
     /// <returns>The updated kernel builder.</returns>
     public static IKernelBuilder AddOllamaTextEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
         Uri endpoint,
-        string? serviceId = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new OllamaTextEmbeddingGenerationService(
-                modelId: modelId,
-                endpoint: endpoint,
-                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+        builder.Services.AddOllamaTextEmbeddingGeneration(modelId, endpoint, httpClient, serviceId);
 
         return builder;
     }
@@ -167,11 +161,7 @@ public static class OllamaKernelBuilderExtensions
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new OllamaTextEmbeddingGenerationService(
-                modelId: modelId,
-                ollamaClient: ollamaClient,
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+        builder.Services.AddOllamaTextEmbeddingGeneration(modelId, ollamaClient, serviceId);
 
         return builder;
     }
