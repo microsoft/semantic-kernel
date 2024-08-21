@@ -8,22 +8,19 @@ from uuid import uuid4
 import numpy as np
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIEmbeddingPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
-from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collection import AzureAISearchCollection
-from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
-from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection, RedisJsonCollection
-from semantic_kernel.connectors.memory.volatile.volatile_collection import VolatileCollection
-from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings, OpenAITextEmbedding
+from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
+from semantic_kernel.connectors.memory.qdrant import QdrantCollection
+from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
+from semantic_kernel.connectors.memory.volatile import VolatileCollection
+from semantic_kernel.data import (
+    VectorStoreRecordCollection,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
+    VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
+    vectorstoremodel,
 )
-from semantic_kernel.data.vector_store_record_utils import VectorStoreRecordUtils
 
 
 @vectorstoremodel

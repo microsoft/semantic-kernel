@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from semantic_kernel.agents.chat_history_channel import ChatHistoryAgentProtocol, ChatHistoryChannel
+from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryAgentProtocol, ChatHistoryChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -75,15 +75,13 @@ async def test_invoke_leftover_in_queue():
         )
 
     agent.invoke.return_value = AsyncIterableMock(
-        lambda: mock_invoke(
-            [
-                ChatMessageContent(
-                    role=AuthorRole.USER,
-                    content="Initial message",
-                    items=[FunctionResultContent(id="test_id", result="test")],
-                )
-            ]
-        )
+        lambda: mock_invoke([
+            ChatMessageContent(
+                role=AuthorRole.USER,
+                content="Initial message",
+                items=[FunctionResultContent(id="test_id", result="test")],
+            )
+        ])
     )
 
     initial_message = ChatMessageContent(role=AuthorRole.USER, content="Initial message")
@@ -145,3 +143,25 @@ async def test_get_history():
     assert messages[0].role == AuthorRole.USER
     assert messages[1].content == "test message 1"
     assert messages[1].role == AuthorRole.SYSTEM
+
+
+@pytest.mark.asyncio
+async def test_reset_history():
+    channel = ChatHistoryChannel()
+    history = [
+        ChatMessageContent(role=AuthorRole.SYSTEM, content="test message 1"),
+        ChatMessageContent(role=AuthorRole.USER, content="test message 2"),
+    ]
+    channel.messages.extend(history)
+
+    messages = [message async for message in channel.get_history()]
+
+    assert len(messages) == 2
+    assert messages[0].content == "test message 2"
+    assert messages[0].role == AuthorRole.USER
+    assert messages[1].content == "test message 1"
+    assert messages[1].role == AuthorRole.SYSTEM
+
+    await channel.reset()
+
+    assert len(channel.messages) == 0

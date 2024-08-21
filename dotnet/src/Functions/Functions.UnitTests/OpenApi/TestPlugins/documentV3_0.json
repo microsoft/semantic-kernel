@@ -331,6 +331,94 @@
           "key2": "value2"
         }
       }
+    },
+    "/test-parameter-data-types/{string-parameter}": {
+      "put": {
+        "summary": "Get secret",
+        "description": "Operation to test parameter data types.",
+        "operationId": "TestParameterDataTypes",
+        "parameters": [
+          {
+            "name": "string-parameter",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "string-value"
+            }
+          },
+          {
+            "name": "boolean-parameter",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "number-parameter",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": -12.01
+            }
+          },
+          {
+            "name": "int32-parameter",
+            "in": "header",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "int64-parameter",
+            "in": "header",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "attributes": {
+                    "type": "object",
+                    "properties": {
+                      "double-parameter": {
+                        "type": "number",
+                        "format": "double",
+                        "default": -12.01
+                      }
+                    },
+                    "description": "attributes"
+                  },
+                  "float-parameter": {
+                    "type": "number",
+                    "format": "float",
+                    "default": 12.01
+                  },
+                  "integer-parameter": {
+                    "type": "integer",
+                    "default": 123
+                  }
+                }
+              }
+            }
+          },
+          "required": true,
+          "x-bodyName": "body"
+        },
+        "responses": {
+          "200": {
+            "description": "The OK response"
+          }
+        }
+      }
     }
   },
   "components": {
