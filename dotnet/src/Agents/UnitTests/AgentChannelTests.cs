@@ -61,6 +61,11 @@ public class AgentChannelTests
         {
             throw new NotImplementedException();
         }
+
+        protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private sealed class NextAgent : TestAgent;

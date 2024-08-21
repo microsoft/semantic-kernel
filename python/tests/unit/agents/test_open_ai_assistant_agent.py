@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
 import pytest
 from openai import AsyncOpenAI
@@ -13,9 +13,9 @@ from openai.types.beta.assistant import (
 )
 from pydantic import ValidationError
 
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.kernel import Kernel
 
 
@@ -58,7 +58,7 @@ def mock_assistant():
         top_p=0.9,
         response_format={"type": "json_object"},
         tool_resources=ToolResources(
-            code_interpreter=ToolResourcesCodeInterpreter(file_ids=["file1", "file2"]),
+            code_interpreter=ToolResourcesCodeInterpreter(code_interpreter_file_ids=["file1", "file2"]),
             file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
         ),
     )
@@ -70,14 +70,12 @@ def mock_assistant_json():
         created_at=123456789,
         object="assistant",
         metadata={
-            "__run_options": json.dumps(
-                {
-                    "max_completion_tokens": 100,
-                    "max_prompt_tokens": 50,
-                    "parallel_tool_calls_enabled": True,
-                    "truncation_message_count": 10,
-                }
-            )
+            "__run_options": json.dumps({
+                "max_completion_tokens": 100,
+                "max_prompt_tokens": 50,
+                "parallel_tool_calls_enabled": True,
+                "truncation_message_count": 10,
+            })
         },
         model="test_model",
         description="test_description",
@@ -89,7 +87,7 @@ def mock_assistant_json():
         top_p=0.9,
         response_format={"type": "json_object"},
         tool_resources=ToolResources(
-            code_interpreter=ToolResourcesCodeInterpreter(file_ids=["file1", "file2"]),
+            code_interpreter=ToolResourcesCodeInterpreter(code_interpreter_file_ids=["file1", "file2"]),
             file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
         ),
     )
@@ -109,7 +107,7 @@ def test_create_client(openai_unit_test_env):
 
 def test_create_client_from_configuration_missing_api_key():
     with pytest.raises(
-        AgentInitializationError,
+        AgentInitializationException,
         match="Please provide an OpenAI api_key",
     ):
         OpenAIAssistantAgent._create_client(None)
@@ -128,6 +126,85 @@ async def test_create_agent(kernel: Kernel, openai_unit_test_env):
         )
         assert agent.assistant is not None
         mock_create_assistant.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_create_agent_with_files(kernel: Kernel, openai_unit_test_env):
+    mock_open_file = mock_open(read_data="file_content")
+    with (
+        patch("builtins.open", mock_open_file),
+        patch(
+            "semantic_kernel.agents.open_ai.open_ai_assistant_base.OpenAIAssistantBase.add_file",
+            return_value="test_file_id",
+        ),
+        patch(
+            "semantic_kernel.agents.open_ai.open_ai_assistant_base.OpenAIAssistantBase.create_vector_store",
+            return_value="vector_store_id",
+        ),
+        patch.object(OpenAIAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant,
+    ):
+        mock_create_assistant.return_value = MagicMock(spec=Assistant)
+        agent = await OpenAIAssistantAgent.create(
+            kernel=kernel,
+            ai_model_id="test_model_id",
+            service_id="test_service",
+            name="test_name",
+            api_key="test_api_key",
+            code_interpreter_filenames=["file1", "file2"],
+            vector_store_filenames=["file3", "file4"],
+            enable_code_interpreter=True,
+            enable_file_search=True,
+        )
+        assert agent.assistant is not None
+        mock_create_assistant.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_create_agent_with_code_files_not_found_raises_exception(kernel: Kernel, openai_unit_test_env):
+    mock_open_file = mock_open(read_data="file_content")
+    with (
+        patch("builtins.open", mock_open_file),
+        patch(
+            "semantic_kernel.agents.open_ai.open_ai_assistant_base.OpenAIAssistantBase.add_file",
+            side_effect=FileNotFoundError("File not found"),
+        ),
+        patch.object(OpenAIAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant,
+    ):
+        mock_create_assistant.return_value = MagicMock(spec=Assistant)
+        with pytest.raises(AgentInitializationException, match="Failed to upload code interpreter files."):
+            _ = await OpenAIAssistantAgent.create(
+                kernel=kernel,
+                service_id="test_service",
+                ai_model_id="test_model_id",
+                name="test_name",
+                api_key="test_api_key",
+                api_version="2024-05-01",
+                code_interpreter_filenames=["file1", "file2"],
+            )
+
+
+@pytest.mark.asyncio
+async def test_create_agent_with_search_files_not_found_raises_exception(kernel: Kernel, openai_unit_test_env):
+    mock_open_file = mock_open(read_data="file_content")
+    with (
+        patch("builtins.open", mock_open_file),
+        patch(
+            "semantic_kernel.agents.open_ai.open_ai_assistant_base.OpenAIAssistantBase.add_file",
+            side_effect=FileNotFoundError("File not found"),
+        ),
+        patch.object(OpenAIAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant,
+    ):
+        mock_create_assistant.return_value = MagicMock(spec=Assistant)
+        with pytest.raises(AgentInitializationException, match="Failed to upload file search files."):
+            _ = await OpenAIAssistantAgent.create(
+                kernel=kernel,
+                service_id="test_service",
+                ai_model_id="test_model_id",
+                name="test_name",
+                api_key="test_api_key",
+                api_version="2024-05-01",
+                vector_store_filenames=["file3", "file4"],
+            )
 
 
 @pytest.mark.asyncio
@@ -201,7 +278,7 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, openai_unit_test
             "enable_code_interpreter": True,
             "enable_file_search": True,
             "enable_json_response": True,
-            "file_ids": ["file1", "file2"],
+            "code_interpreter_file_ids": ["file1", "file2"],
             "temperature": 0.7,
             "top_p": 0.9,
             "vector_store_id": "vector_store1",
@@ -244,7 +321,7 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
                 "enable_code_interpreter": True,
                 "enable_file_search": True,
                 "enable_json_response": True,
-                "file_ids": ["file1", "file2"],
+                "code_interpreter_file_ids": ["file1", "file2"],
                 "temperature": 0.7,
                 "top_p": 0.9,
                 "vector_store_id": "vector_store1",
@@ -274,7 +351,7 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
                 "enable_code_interpreter",
                 "enable_file_search",
                 "enable_json_response",
-                "file_ids",
+                "code_interpreter_file_ids",
                 "temperature",
                 "top_p",
                 "vector_store_id",
@@ -293,7 +370,7 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
             "enable_code_interpreter": True,
             "enable_file_search": True,
             "enable_json_response": True,
-            "file_ids": ["file1", "file2"],
+            "code_interpreter_file_ids": ["file1", "file2"],
             "temperature": 0.7,
             "top_p": 0.9,
             "vector_store_id": "vector_store1",
@@ -317,7 +394,7 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
 @pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
 @pytest.mark.asyncio
 async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The OpenAI chat model ID is required."):
+    with pytest.raises(AgentInitializationException, match="The OpenAI chat model ID is required."):
         _ = await OpenAIAssistantAgent.retrieve(
             id="test_id", api_key="test_api_key", kernel=kernel, env_file_path="test.env"
         )
@@ -326,7 +403,9 @@ async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_t
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
 @pytest.mark.asyncio
 async def test_retrieve_agent_missing_api_key_throws(kernel, openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The OpenAI API key is required, if a client is not provided."):
+    with pytest.raises(
+        AgentInitializationException, match="The OpenAI API key is required, if a client is not provided."
+    ):
         _ = await OpenAIAssistantAgent.retrieve(id="test_id", kernel=kernel, env_file_path="test.env")
 
 
@@ -334,7 +413,7 @@ def test_open_ai_settings_create_throws(openai_unit_test_env):
     with patch("semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings.OpenAISettings.create") as mock_create:
         mock_create.side_effect = ValidationError.from_exception_data("test", line_errors=[], input_type="python")
 
-        with pytest.raises(AgentInitializationError, match="Failed to create OpenAI settings."):
+        with pytest.raises(AgentInitializationException, match="Failed to create OpenAI settings."):
             OpenAIAssistantAgent(
                 service_id="test", api_key="test_api_key", org_id="test_org_id", ai_model_id="test_model_id"
             )
@@ -342,13 +421,15 @@ def test_open_ai_settings_create_throws(openai_unit_test_env):
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
 def test_azure_openai_agent_create_missing_chat_model_id_throws(openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The OpenAI chat model ID is required."):
+    with pytest.raises(AgentInitializationException, match="The OpenAI chat model ID is required."):
         OpenAIAssistantAgent(service_id="test_service", env_file_path="test.env")
 
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
 def test_azure_openai_agent_create_missing_api_key_throws(openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The OpenAI API key is required, if a client is not provided."):
+    with pytest.raises(
+        AgentInitializationException, match="The OpenAI API key is required, if a client is not provided."
+    ):
         OpenAIAssistantAgent(env_file_path="test.env")
 
 
@@ -368,7 +449,7 @@ def test_create_open_ai_assistant_definition(mock_assistant, openai_unit_test_en
         "enable_code_interpreter": True,
         "enable_file_search": True,
         "enable_json_response": True,
-        "file_ids": ["file1", "file2"],
+        "code_interpreter_file_ids": ["file1", "file2"],
         "temperature": 0.7,
         "top_p": 0.9,
         "vector_store_id": "vector_store1",
@@ -403,7 +484,7 @@ def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_j
         "enable_code_interpreter": True,
         "enable_file_search": True,
         "enable_json_response": True,
-        "file_ids": ["file1", "file2"],
+        "code_interpreter_file_ids": ["file1", "file2"],
         "temperature": 0.7,
         "top_p": 0.9,
         "vector_store_id": "vector_store1",
