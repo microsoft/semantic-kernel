@@ -28,9 +28,9 @@ public sealed class RestApiOperationServerVariable
     /// <summary>
     /// Construct a new <see cref="RestApiOperationServerVariable"/> object.
     /// </summary>
-    /// <param name="defaultValue"></param>
-    /// <param name="description"></param>
-    /// <param name="enumValues"></param>
+    /// <param name="defaultValue">The default value to use for substitution.</param>
+    /// <param name="description">An optional description for the server variable.</param>
+    /// <param name="enumValues">An enumeration of string values to be used if the substitution options are from a limited set.</param>
     public RestApiOperationServerVariable(string defaultValue, string? description = null, List<string>? enumValues = null)
     {
         this.Default = defaultValue;

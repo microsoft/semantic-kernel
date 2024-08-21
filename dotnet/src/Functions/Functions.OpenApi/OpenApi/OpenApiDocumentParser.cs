@@ -216,10 +216,9 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     }
 
     /// <summary>
-    /// Build a RestApiOperationServer object from the given OpenApiServer object.
+    /// Build a <see cref="RestApiOperationServer"/> object from the given <see cref="OpenApiServer"/> object.
     /// </summary>
-    /// <param name="server"></param>
-    /// <returns></returns>
+    /// <param name="server">Represents the server which hosts the REST API.</param>
     private static RestApiOperationServer CreateRestApiOperationServer(OpenApiServer? server)
     {
         var variables = server?.Variables.ToDictionary(item => item.Key, item => new RestApiOperationServerVariable(item.Value.Default, item.Value.Description, item.Value.Enum));

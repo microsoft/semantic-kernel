@@ -260,32 +260,30 @@ public sealed class RestApiOperation
         {
             serverUrlString = serverUrlOverride.AbsoluteUri;
         }
+        else if (this.Server.Url is not null)
+        {
+            serverUrlString = this.Server.Url;
+            foreach (var variable in this.Server.Variables)
+            {
+                arguments.TryGetValue(variable.Key, out object? value);
+                string? strValue = value as string;
+                if (strValue is not null && variable.Value.IsValid(strValue))
+                {
+                    serverUrlString = serverUrlString.Replace($"{{{variable.Key}}}", strValue);
+                }
+                else if (variable.Value.Default is not null)
+                {
+                    serverUrlString = serverUrlString.Replace($"{{{variable.Key}}}", variable.Value.Default);
+                }
+                else
+                {
+                    throw new KernelException($"No value provided for the '{variable.Key}' server variable of the operation - '{this.Id}'.");
+                }
+            }
+        }
         else
         {
-            Uri? serverUrl = null;
-            if (this.Server.Url is not null)
-            {
-                var url = this.Server.Url;
-                foreach (var variable in this.Server.Variables)
-                {
-                    if (arguments.TryGetValue(variable.Key, out object? value) && variable.Value.IsValid(value!.ToString()))
-                    {
-                        url = url.Replace($"{{{variable.Key}}}", value!.ToString());
-                    }
-                    else if (variable.Value.Default is not null)
-                    {
-                        url = url.Replace($"{{{variable.Key}}}", variable.Value.Default);
-                    }
-                    else
-                    {
-                        throw new KernelException($"No value provided for the '{variable.Key}' server variable of the operation - '{this.Id}'.");
-                    }
-                }
-                serverUrl = new Uri(url);
-            }
-
             serverUrlString =
-                serverUrl?.AbsoluteUri ??
                 apiHostUrl?.AbsoluteUri ??
                 throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
         }
