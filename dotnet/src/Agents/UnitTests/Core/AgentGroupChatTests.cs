@@ -229,7 +229,7 @@ public class AgentGroupChatTests
 
     private sealed class FailedSelectionStrategy : SelectionStrategy
     {
-        public override Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected override Task<Agent> SelectAgentAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             throw new InvalidOperationException();
         }

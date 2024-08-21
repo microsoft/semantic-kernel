@@ -172,8 +172,7 @@ public sealed class AgentGroupChat : AgentChat
             yield return message;
         }
 
-        Task<bool> task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken);
-        this.IsComplete = await task.ConfigureAwait(false);
+        this.IsComplete = await this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken).ConfigureAwait(false);
 
         this.Logger.LogAgentGroupChatYield(nameof(InvokeAsync), this.IsComplete);
     }

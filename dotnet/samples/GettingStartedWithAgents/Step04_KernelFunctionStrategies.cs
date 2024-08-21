@@ -73,7 +73,6 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                 - {{{CopyWriterName}}}
                 
                 Always follow these rules when selecting the next participant:
-                - After user input, it is {{{CopyWriterName}}}'s turn.
                 - After {{{CopyWriterName}}}, it is {{{ReviewerName}}}'s turn.
                 - After {{{ReviewerName}}}, it is {{{CopyWriterName}}}'s turn.
 
@@ -106,6 +105,8 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                         SelectionStrategy =
                             new KernelFunctionSelectionStrategy(selectionFunction, CreateKernelWithChatCompletion())
                             {
+                                // Always start with the writer agent.
+                                InitialAgent = agentWriter,
                                 // Returns the entire result value as a string.
                                 ResultParser = (result) => result.GetValue<string>() ?? CopyWriterName,
                                 // The prompt variable name for the agents argument.
