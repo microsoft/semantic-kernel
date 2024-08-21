@@ -16,9 +16,8 @@ namespace Microsoft.SemanticKernel.Search;
 /// <param name="name">The text search result name.</param>
 /// <param name="value">The text search result value.</param>
 /// <param name="link">The link reference associated with the text search result.</param>
-/// <param name="innerResult">The inner result representation. Use this to bypass the current abstraction.</param>
 [Experimental("SKEXP0001")]
-public sealed class TextSearchResult(string? name = null, string? value = null, string? link = null, object? innerResult = null)
+public sealed class TextSearchResult(string? name = null, string? value = null, string? link = null)
 {
     /// <summary>
     /// The text search result name.
