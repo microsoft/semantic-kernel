@@ -18,11 +18,24 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on Open AI Assistant / GPT.
 /// </summary>
-public sealed partial class OpenAIAssistantAgent : KernelAgent
+public sealed class OpenAIAssistantAgent : KernelAgent
 {
+    /// <summary>
+    /// Metadata key that identifies code-interpreter content.
+    /// </summary>
+    public const string CodeInterpreterMetadataKey = "code";
+
     private readonly Assistant _assistant;
     private readonly AssistantsClient _client;
     private readonly OpenAIAssistantConfiguration _config;
+
+    /// <summary>
+    /// Optional arguments for the agent.
+    /// </summary>
+    /// <remarks>
+    /// This property is not currently used by the agent, but is provided for future extensibility.
+    /// </remarks>
+    public KernelArguments? Arguments { get; init; }
 
     /// <summary>
     /// A list of previously uploaded file IDs to attach to the assistant.
@@ -238,15 +251,25 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// Invoke the assistant on the specified thread.
     /// </summary>
     /// <param name="threadId">The thread identifier</param>
+    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
+    /// </remarks>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
-        await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, this._config.Polling, this.Logger, cancellationToken).ConfigureAwait(false))
+        kernel ??= this.Kernel;
+        arguments ??= this.Arguments;
+
+        await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, this._config.Polling, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
         {
             if (isVisible)
             {
