@@ -24,12 +24,12 @@ public sealed class BasicFilterOptions
     /// <summary>
     /// Add a equality clause to the filter options.
     /// </summary>
-    /// <param name="field">Name of the field.</param>
+    /// <param name="fieldName">Name of the field.</param>
     /// <param name="value">Value of the field.</param>
     /// <returns>FilterOptions instance to allow fluent configuration.</returns>
-    public BasicFilterOptions Equality(string field, object value)
+    public BasicFilterOptions Equality(string fieldName, object value)
     {
-        this._filterClauses.Add(new EqualityFilterClause(field, value));
+        this._filterClauses.Add(new EqualityFilterClause(fieldName, value));
         return this;
     }
 

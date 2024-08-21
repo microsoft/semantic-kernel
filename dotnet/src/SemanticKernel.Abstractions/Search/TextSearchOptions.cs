@@ -10,9 +10,13 @@ namespace Microsoft.SemanticKernel.Search;
 public sealed class TextSearchOptions
 {
     /// <summary>
-    /// The name of the search index.
+    /// Flag indicating the total count should be included in the results.
     /// </summary>
-    public string? Index { get; set; }
+    /// <remarks>
+    /// Default value is false.
+    /// Not all text search implementations will support this option.
+    /// </remarks>
+    public bool IncludeTotalCount { get; set; } = false;
 
     /// <summary>
     /// The basic filter expression to apply to the search query.

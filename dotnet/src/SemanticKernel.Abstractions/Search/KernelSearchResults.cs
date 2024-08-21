@@ -1,53 +1,37 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Search;
 
 /// <summary>
 /// Represents the search results returned from a <see cref="ITextSearch" /> service.
 /// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="KernelSearchResults{T}"/> class.
+/// </remarks>
+/// <param name="results">The search results.</param>
+/// <param name="totalCount">The total count of results found by the search operation, or null if the count was not requested.</param>
+/// <param name="metadata">Metadata associated with the search results.</param>
 [Experimental("SKEXP0001")]
-public class KernelSearchResults<T>
+public sealed class KernelSearchResults<T>(IAsyncEnumerable<T> results, long? totalCount = null, IReadOnlyDictionary<string, object?>? metadata = null)
 {
     /// <summary>
     /// The total count of results found by the search operation, or null
-    /// if the count was not requested.
-    /// </summary>
-    public long? TotalCount { get; internal set; }
-
-    /// <summary>
-    /// The inner content representation. Use this to bypass the current abstraction.
+    /// if the count was not requested or cannot be computed.
     /// </summary>
     /// <remarks>
-    /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
+    /// This value represents the total number of results that are available for the current query and not the number of results being returned.
     /// </remarks>
-    [JsonIgnore]
-    public object? InnerContent { get; }
+    public long? TotalCount { get; internal set; } = totalCount;
 
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
-    public IReadOnlyDictionary<string, object?>? Metadata { get; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; } = metadata;
 
     /// <summary>
     /// The search results.
     /// </summary>
-    public IAsyncEnumerable<T> Results { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="KernelSearchResults{T}"/> class.
-    /// </summary>
-    /// <param name="innerContent">The inner content representation.</param>
-    /// <param name="results">The search results.</param>
-    /// <param name="totalCount">The total count of results found by the search operation, or null if the count was not requested.</param>
-    /// <param name="metadata">Metadata associated with the search results.</param>
-    public KernelSearchResults(object? innerContent, IAsyncEnumerable<T> results, long? totalCount = null, IReadOnlyDictionary<string, object?>? metadata = null)
-    {
-        this.InnerContent = innerContent;
-        this.Results = results;
-        this.TotalCount = totalCount;
-        this.Metadata = metadata;
-    }
+    public IAsyncEnumerable<T> Results { get; } = results;
 }

@@ -11,15 +11,15 @@ namespace Microsoft.SemanticKernel.Search;
 /// The <see cref="EqualityFilterClause"/> is used to request that the underlying search service should
 /// filter search results based on the equality of a field value with the specified field value.
 /// </remarks>
-/// <param name="field">Field name.</param>
+/// <param name="fieldName">Field name.</param>
 /// <param name="value">Field value.</param>
 [Experimental("SKEXP0001")]
-public sealed class EqualityFilterClause(string field, object value) : FilterClause(FilterClauseType.Equality)
+public sealed class EqualityFilterClause(string fieldName, object value) : FilterClause(FilterClauseType.Equality)
 {
     /// <summary>
     /// Field name to match.
     /// </summary>
-    public string Field { get; private set; } = field;
+    public string FieldName { get; private set; } = fieldName;
 
     /// <summary>
     /// Field value to match.

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Search;
 
@@ -14,30 +13,37 @@ namespace Microsoft.SemanticKernel.Search;
 /// - Value associated with the search result
 /// - Link reference associated with the search result
 /// </remarks>
+/// <param name="name">The text search result name.</param>
+/// <param name="value">The text search result value.</param>
+/// <param name="link">The link reference associated with the text search result.</param>
+/// <param name="innerResult">The inner result representation. Use this to bypass the current abstraction.</param>
 [Experimental("SKEXP0001")]
-public class TextSearchResult(string? name = null, string? value = null, string? link = null, object? innerResult = null)
+public sealed class TextSearchResult(string? name = null, string? value = null, string? link = null, object? innerResult = null)
 {
     /// <summary>
     /// The text search result name.
     /// </summary>
+    /// <remarks>
+    /// This represents the name associated with the result.
+    /// If the text search was for a web search engine this would typically be the name of the web page associated with the search result.
+    /// </remarks>
     public string? Name { get; init; } = name;
 
     /// <summary>
     /// The link reference associated with the text search result.
     /// </summary>
+    /// <remarks>
+    /// This represents a possible link associated with the result.
+    /// If the text search was for a web search engine this would typically be the URL of the web page associated with the search result.
+    /// </remarks>
     public string? Link { get; init; } = link;
 
     /// <summary>
     /// The text search result value.
     /// </summary>
-    public string? Value { get; init; } = value;
-
-    /// <summary>
-    /// The inner result representation. Use this to bypass the current abstraction.
-    /// </summary>
     /// <remarks>
-    /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
+    /// This represents the text value associated with the result.
+    /// If the text search was for a web search engine this would typically be the snippet describing the web page associated with the search result.
     /// </remarks>
-    [JsonIgnore]
-    public object? InnerResult { get; init; } = innerResult;
+    public string? Value { get; init; } = value;
 }
