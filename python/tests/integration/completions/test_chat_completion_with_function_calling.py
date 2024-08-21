@@ -543,7 +543,7 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
             retries=5,
         )
 
-        if test_type != FunctionChoiceTestTypes.AUTO or stream:
+        if test_type != stream:
             # Need to add the last response (the response from the model after it sees the tool call result)
             # to the chat history.
             # When not streaming: responses from within the auto invoke loop will be added to the history.
