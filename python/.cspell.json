@@ -54,6 +54,7 @@
         "qdrant",
         "huggingface",
         "pytestmark",
-        "contoso"
+        "contoso",
+        "opentelemetry"
     ]
 }
