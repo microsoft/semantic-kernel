@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.TextGeneration;
 using xRetry;
 
@@ -62,19 +61,14 @@ public class Ollama_TextGeneration(ITestOutputHelper helper) : BaseTest(helper)
         Console.WriteLine($"\n======== HuggingFace {model} streaming example ========\n");
 
         Kernel kernel = Kernel.CreateBuilder()
-            .AddHuggingFaceTextGeneration(
-                model: model,
-                apiKey: TestConfiguration.HuggingFace.ApiKey)
+            .AddOllamaTextGeneration(
+                endpoint: new Uri(TestConfiguration.Ollama.Endpoint),
+                modelId: TestConfiguration.Ollama.ModelId)
             .Build();
 
-        var settings = new HuggingFacePromptExecutionSettings { UseCache = false };
+        var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
-        var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:", new HuggingFacePromptExecutionSettings
-        {
-            UseCache = false
-        });
-
-        await foreach (string text in kernel.InvokePromptStreamingAsync<string>("Question: {{$input}}; Answer:", new(settings) { ["input"] = "What is New York?" }))
+        await foreach (string text in kernel.InvokePromptStreamingAsync<string>("Question: {{$input}}; Answer:", new() { ["input"] = "What is New York?" }))
         {
             Console.Write(text);
         }
