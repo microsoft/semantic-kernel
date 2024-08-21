@@ -11,7 +11,7 @@ namespace AIModelRouter;
 /// In a real-world scenario, you would use a more sophisticated routing mechanism, such as another local model for
 /// deciding which service to use based on the user's input or any other criteria.
 /// </summary>
-internal class CustomRouter()
+internal sealed class CustomRouter()
 {
     /// <summary>
     /// Returns the best service id to use based on the user's input.
