@@ -2,7 +2,7 @@
 # These are optional elements. Feel free to remove any of them.
 status: proposed
 contact: markwallace
-date: {YYYY-MM-DD when the decision was last updated}
+date: 2024-08-21
 deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, westey
 consulted: stephentoub, matthewbolanos, shrojans 
 informed: 

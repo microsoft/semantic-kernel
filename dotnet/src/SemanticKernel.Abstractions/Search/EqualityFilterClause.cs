@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Search;
 
 /// <summary>
@@ -11,6 +13,7 @@ namespace Microsoft.SemanticKernel.Search;
 /// </remarks>
 /// <param name="field">Field name.</param>
 /// <param name="value">Field value.</param>
+[Experimental("SKEXP0001")]
 public sealed class EqualityFilterClause(string field, object value) : FilterClause(FilterClauseType.Equality)
 {
     /// <summary>
