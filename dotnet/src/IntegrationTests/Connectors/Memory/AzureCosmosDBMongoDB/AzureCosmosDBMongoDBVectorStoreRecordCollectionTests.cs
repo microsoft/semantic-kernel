@@ -200,7 +200,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal(10, getResult.HotelRating);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task UpsertWithModelWorksCorrectlyAsync()
     {
         // Arrange
@@ -232,7 +232,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task UpsertWithVectorStoreModelWorksCorrectlyAsync()
     {
         // Arrange
@@ -252,7 +252,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task UpsertWithBsonModelWorksCorrectlyAsync()
     {
         // Arrange
@@ -284,7 +284,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task UpsertWithBsonVectorStoreModelWorksCorrectlyAsync()
     {
         // Arrange
@@ -304,7 +304,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task UpsertWithBsonVectorStoreWithNameModelWorksCorrectlyAsync()
     {
         // Arrange
