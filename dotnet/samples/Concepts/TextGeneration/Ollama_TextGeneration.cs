@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.TextGeneration;
 using xRetry;
 
