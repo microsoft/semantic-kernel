@@ -49,10 +49,7 @@ public class AgentGroupChatTests
         chat.AddAgent(agent3);
         Assert.Equal(3, chat.Agents.Count);
 
-        var messages = await chat.InvokeAsync(agent4, isJoining: false).ToArrayAsync();
-        Assert.Equal(3, chat.Agents.Count);
-
-        messages = await chat.InvokeAsync(agent4).ToArrayAsync();
+        ChatMessageContent[] messages = await chat.InvokeAsync(agent4).ToArrayAsync();
         Assert.Equal(4, chat.Agents.Count);
     }
 
@@ -204,7 +201,7 @@ public class AgentGroupChatTests
 
     private sealed class FailedSelectionStrategy : SelectionStrategy
     {
-        public override Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected override Task<Agent> SelectAgentAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             throw new InvalidOperationException();
         }
