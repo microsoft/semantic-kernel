@@ -121,7 +121,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{1C19D805-3
 		src\InternalUtilities\src\Http\HttpClientExtensions.cs = src\InternalUtilities\src\Http\HttpClientExtensions.cs
 		src\InternalUtilities\src\Http\HttpClientProvider.cs = src\InternalUtilities\src\Http\HttpClientProvider.cs
 		src\InternalUtilities\src\Http\HttpContentExtensions.cs = src\InternalUtilities\src\Http\HttpContentExtensions.cs
-		src\InternalUtilities\src\Http\HttpHeaderConstant.cs = src\InternalUtilities\src\Http\HttpHeaderConstant.cs
 		src\InternalUtilities\src\Http\HttpRequest.cs = src\InternalUtilities\src\Http\HttpRequest.cs
 	EndProjectSection
 EndProject
@@ -320,7 +319,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Qdrant.UnitTests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
