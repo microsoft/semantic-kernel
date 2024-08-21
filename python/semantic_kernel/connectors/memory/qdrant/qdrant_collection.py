@@ -148,7 +148,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
     @override
     async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
         if "with_vectors" not in kwargs:
-            kwargs["with_vectors"] = True
+            kwargs["with_vectors"] = kwargs.pop("include_vectors", True)
         return await self.qdrant_client.retrieve(
             collection_name=self.collection_name,
             ids=keys,
