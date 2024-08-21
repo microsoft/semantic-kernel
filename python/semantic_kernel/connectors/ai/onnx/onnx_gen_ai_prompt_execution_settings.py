@@ -6,8 +6,8 @@ from pydantic import Field
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
-class OnnxPromptExecutionSettings(PromptExecutionSettings):
-    """Onnx prompt execution settings."""
+class OnnxGenAIPromptExecutionSettings(PromptExecutionSettings):
+    """OnnxGenAI prompt execution settings."""
 
     diversity_penalty: float | None = Field(None, ge=0.0, le=1.0)
     do_sample: bool = False
@@ -23,7 +23,3 @@ class OnnxPromptExecutionSettings(PromptExecutionSettings):
     temperature: float | None = Field(None, ge=0.0, le=2.0)
     top_k: int | None = Field(None, gt=0)
     top_p: float | None = Field(None, ge=0.0, le=1.0)
-    
-
-class OnnxTextPromptExecutionSettings(OnnxPromptExecutionSettings):
-    """Onnx text prompt execution settings."""

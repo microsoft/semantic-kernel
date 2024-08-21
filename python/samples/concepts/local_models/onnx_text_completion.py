@@ -3,7 +3,7 @@
 
 import asyncio
 
-from semantic_kernel.connectors.ai.onnx import OnnxTextCompletion
+from semantic_kernel.connectors.ai.onnx import OnnxGenAITextCompletion
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 
@@ -21,7 +21,7 @@ service_id = "phi3"
 streaming = True
 model_path = r"C:\GIT\models\phi3-cpu-onnx"
 
-kernel.add_service(OnnxTextCompletion(ai_model_path=model_path, ai_model_id=service_id))
+kernel.add_service(OnnxGenAITextCompletion(ai_model_path=model_path, ai_model_id=service_id))
 
 settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
 
