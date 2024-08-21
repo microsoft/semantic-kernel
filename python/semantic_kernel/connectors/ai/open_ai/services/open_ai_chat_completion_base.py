@@ -7,8 +7,6 @@ from collections.abc import AsyncGenerator
 from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from semantic_kernel.contents.function_result_content import FunctionResultContent
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -22,7 +20,10 @@ from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    merge_function_results,
+    update_settings_from_function_call_configuration,
+)
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
@@ -139,7 +140,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
 
             if any(result.terminate for result in results if result is not None):
-                return self._create_filter_early_terminate_chat_message_content(chat_history.messages[-len(results) :])
+                return merge_function_results(chat_history.messages[-len(results) :])
 
             self._update_settings(settings, chat_history, kernel=kernel)
         else:
@@ -239,7 +240,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 ],
             )
             if any(result.terminate for result in results if result is not None):
-                yield self._create_filter_early_terminate_chat_message_content(chat_history.messages[-len(results) :])  # type: ignore
+                yield merge_function_results(chat_history.messages[-len(results) :])  # type: ignore
                 break
 
             self._update_settings(settings, chat_history, kernel=kernel)
@@ -317,25 +318,6 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             finish_reason=(FinishReason(choice.finish_reason) if choice.finish_reason else None),
             items=items,
         )
-
-    def _create_filter_early_terminate_chat_message_content(
-        self,
-        messages: list[ChatMessageContent],
-    ) -> list[ChatMessageContent]:
-        """Add an early termination message to the chat messages.
-
-        This method combines the FunctionResultContent items from separate ChatMessageContent messages,
-        and is used in the event that the `context.terminate = True` condition is met.
-        """
-        items: list[Any] = []
-        for message in messages:
-            items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
-        return [
-            ChatMessageContent(
-                role=AuthorRole.TOOL,
-                items=items,
-            )
-        ]
 
     def _get_metadata_from_chat_response(self, response: ChatCompletion) -> dict[str, Any]:
         """Get metadata from a chat response."""
