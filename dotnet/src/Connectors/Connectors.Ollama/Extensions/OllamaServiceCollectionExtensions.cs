@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -119,12 +120,14 @@ public static class OllamaServiceCollectionExtensions
     /// <param name="services">The target service collection.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="endpoint">The endpoint to Ollama hosted service.</param>
+    /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated kernel builder.</returns>
     public static IServiceCollection AddOllamaTextEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,
         Uri endpoint,
+        HttpClient? httpClient = null,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -133,7 +136,7 @@ public static class OllamaServiceCollectionExtensions
             new OllamaTextEmbeddingGenerationService(
                 modelId: modelId,
                 endpoint: endpoint,
-                httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
+                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 
