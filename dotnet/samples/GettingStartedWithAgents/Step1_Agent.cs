@@ -17,12 +17,15 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task UseSingleChatCompletionAgentAsync()
     {
+        Kernel kernel = this.CreateKernelWithChatCompletion();
+
         // Define the agent
         ChatCompletionAgent agent =
             new()
             {
                 Name = ParrotName,
-                Instructions = ParrotInstructions,
+                //Instructions = ParrotInstructions,
+                Template = kernel.CreateFunctionFromPrompt(ParrotInstructions),
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
 

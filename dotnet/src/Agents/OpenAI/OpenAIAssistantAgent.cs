@@ -35,7 +35,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// This property is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
-    public KernelArguments? Arguments { get; init; }
+    public KernelArguments? Arguments { get; init; } // %%% KernelAgent ???
 
     /// <summary>
     /// A list of previously uploaded file IDs to attach to the assistant.
@@ -349,7 +349,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.Description = this._assistant.Description;
         this.Id = this._assistant.Id;
         this.Name = this._assistant.Name;
-        this.Instructions = this._assistant.Instructions;
+        //this.Instructions = this._assistant.Instructions; %%% TEMPLATE ???
     }
 
     private static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)

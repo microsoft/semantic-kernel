@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using System;
-using System.Linq;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -77,7 +76,7 @@ public static class KernelExtensions
 
         IPromptTemplateFactory factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
         IPromptTemplate template = factory.Create(promptTemplateConfig);
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(template, promptTemplateConfig, loggerFactory);
+        //KernelFunction function = KernelFunctionFactory.CreateFromPrompt(template, promptTemplateConfig, loggerFactory);
         ChatCompletionAgent agent =
             new()
             {
@@ -86,7 +85,7 @@ public static class KernelExtensions
                 Description = promptTemplateConfig.Description,
                 LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance,
                 Arguments = defaultArguments,
-                Instructions = promptTemplateConfig.Template,
+                //Instructions = promptTemplateConfig.Template, %%%
                 Kernel = kernel,
                 Template = template,
                 //Prompt = function, // %%% << THIS ONE

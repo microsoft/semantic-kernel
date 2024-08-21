@@ -29,7 +29,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
 
-        ChatHistory chat = this.SetupAgentChatHistory(history);
+        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
 
         int messageCount = chat.Count;
 
@@ -74,7 +74,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
 
-        ChatHistory chat = this.SetupAgentChatHistory(history);
+        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
 
         int messageCount = chat.Count;
 
@@ -120,13 +120,22 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         return (chatCompletionService, executionSettings);
     }
 
-    private ChatHistory SetupAgentChatHistory(IReadOnlyList<ChatMessageContent> history)
+    private async Task<ChatHistory> SetupAgentChatHistoryAsync(
+        IReadOnlyList<ChatMessageContent> history,
+        KernelArguments? arguments,
+        Kernel kernel,
+        CancellationToken cancellationToken)
     {
         ChatHistory chat = [];
 
-        if (!string.IsNullOrWhiteSpace(this.Instructions))
+        string? instructions =
+            this.Template == null ?
+                null : // %%% this.Instructions :
+                await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        if (!string.IsNullOrWhiteSpace(instructions))
         {
-            chat.Add(new ChatMessageContent(AuthorRole.System, this.Instructions) { AuthorName = this.Name });
+            chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { AuthorName = this.Name });
         }
 
         chat.AddRange(history);

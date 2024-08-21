@@ -138,7 +138,7 @@ internal static class AssistantThreadActions
         CreateRunOptions options =
             new(agent.Id)
             {
-                OverrideInstructions = agent.Instructions,
+                //OverrideInstructions = agent.Instructions, %%% TEMPLATE ???
                 OverrideTools = tools,
             };
 
