@@ -284,8 +284,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadBatchAsync(connection, collectionName, keys, withEmbedding, cancellationToken).ConfigureAwait(false))
         {
             ReadOnlyMemory<float> vector = withEmbedding ? JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntry.EmbeddingString, JsonOptionsCache.Default) : ReadOnlyMemory<float>.Empty;
-            var record = MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp));
-            yield return record;
+            yield return MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp)); ;
         }
     }
 
