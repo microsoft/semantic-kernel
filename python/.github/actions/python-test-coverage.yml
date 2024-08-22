@@ -1,0 +1,61 @@
+name: Python Test Coverage
+
+on:
+  pull_request_target:
+    branches: ["main", "feature*"]
+    paths:
+      - "python/**"
+  workflow_run:
+    workflows: ["Python Unit Tests"]
+    types: 
+      - in_progress
+
+jobs:
+  python-tests-coverage:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      pull-requests: write
+      contents: read
+      actions: read
+    steps:
+      - name: Wait for unit tests to succeed
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: 'Python Test Coverage'
+          repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          wait-interval: 90
+          allowed-conclusions: success
+      - uses: actions/checkout@v4
+      - name: Setup filename variables
+        run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
+      - name: Download coverage
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          name: python-coverage-${{ env.FILE_ID }}.txt
+          github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          workflow: python-unit-tests.yml
+          search_artifacts: true
+          if_no_artifact_found: warn
+      - name: Download pytest
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          name: pytest-${{ env.FILE_ID }}.xml
+          github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          workflow: python-unit-tests.yml
+          search_artifacts: true
+          if_no_artifact_found: warn
+      - name: Pytest coverage comment
+        id: coverageComment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          pytest-coverage-path: python-coverage.txt
+          coverage-path-prefix: "python/"
+          title: "Python Test Coverage Report"
+          badge-title: "Python Test Coverage"
+          junitxml-title: "Python Unit Test Overview"
+          junitxml-path: pytest.xml
+          default-branch: "main"
+          unique-id-for-comment: python-test-coverage

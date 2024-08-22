@@ -1,27 +1,21 @@
-files: ^python/
 fail_fast: true
 repos:
-  - repo: https://github.com/floatingpurr/sync_with_poetry
-    rev: 1.1.0
-    hooks:
-      - id: sync_with_poetry
-        args: [--config=.pre-commit-config.yaml, --db=python/.conf/packages_list.json, python/poetry.lock]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
       - id: check-toml
         files: \.toml$
       - id: check-yaml
-        files: \.yaml$
+        files: \.yaml$        
       - id: check-json
         files: \.json$
-        exclude: ^python\/\.vscode\/.*
+        exclude: ^python\/.vscode\/.*
       - id: end-of-file-fixer
         files: \.py$
       - id: mixed-line-ending
         files: \.py$
       - id: debug-statements
-        files: ^python\/semantic_kernel\/.*\.py$
+        files: ^semantic_kernel\/.*\.py$
       - id: check-ast
         name: Check Valid Python Samples
         types: ["python"]
@@ -32,21 +26,24 @@ repos:
         name: Check Valid Python Notebooks
         types: ["jupyter"]
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.17.0
     hooks:
     - id: pyupgrade
       args: [--py310-plus]
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.1
+  - repo: local
     hooks:
       - id: ruff
-        args: [ --fix, --exit-non-zero-on-fix ]
+        files: ^semantic_kernel/
+        name: ruff
+        entry: uv tool run ruff check semantic_kernel --fix --exit-non-zero-on-fix
+        language: system
+        types: [python]
   - repo: local
     hooks:
     - id: mypy
-      files: ^python/semantic_kernel/
+      files: ^semantic_kernel/
       name: mypy
-      entry: poetry -C python/ run python -m mypy -p semantic_kernel --config-file=python/mypy.ini
+      entry: uv tool run python -m mypy -p semantic_kernel
       language: system
       types: [python]
       pass_filenames: false

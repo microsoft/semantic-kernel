@@ -6,8 +6,9 @@
         {
             "label": "Python: Run Checks",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
+                "tool",
                 "run",
                 "pre-commit",
                 "run",
@@ -34,8 +35,9 @@
         {
             "label": "Python: Run Checks - Staged",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
+                "tool",
                 "run",
                 "pre-commit",
                 "run",
@@ -61,8 +63,9 @@
         {
             "label": "Python: Run Mypy",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
+                "tool",
                 "run",
                 "pre-commit",
                 "run",
@@ -90,10 +93,11 @@
         {
             "label": "Python: Install",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
-                "install",
-                "--all-extras"
+                "sync",
+                "--all-extras",
+                "--dev"
             ],
             "presentation": {
                 "reveal": "silent",
@@ -104,7 +108,7 @@
         {
             "label": "Python: Tests - Unit",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
                 "run",
                 "pytest",
@@ -120,7 +124,7 @@
         {
             "label": "Python: Tests - Unit - Failed Only",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
                 "run",
                 "pytest",
@@ -138,7 +142,7 @@
         {
             "label": "Python: Tests - Code Coverage",
             "type": "shell",
-            "command": "poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/",
+            "command": "uv run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/",
             "group": "test",
             "presentation": {
                 "reveal": "always",
@@ -149,7 +153,7 @@
         {
             "label": "Python: Tests - All",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
                 "run",
                 "pytest",
