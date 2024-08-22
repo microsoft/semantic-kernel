@@ -77,6 +77,8 @@ class OnnxGenAICompletionBase(KernelBaseModel):
             params.input_ids = input_tokens
         else:
             if image is not None:
+                # With the use of Pybind there is currently no way to load images from bytes
+                # We can only open images from a file path
                 image = OnnxRuntimeGenAi.Images.open(str(image.uri))
             input_tokens = self.tokenizer(prompt, images=image)
             params.set_inputs(input_tokens)
