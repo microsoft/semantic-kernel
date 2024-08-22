@@ -1,4 +1,4 @@
-name: Python Unit Tests
+name: Python Unit Tests Trigger
 
 on:
   pull_request:
@@ -7,6 +7,6 @@ on:
       - "python/**"
 
 jobs:
-  python-unit-tests:
+  python-unit-tests-trigger:
     uses: ./python/.github/actions/python-unit-tests.yml
     secrets: inherit
