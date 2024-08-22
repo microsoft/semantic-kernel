@@ -14,7 +14,7 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Agents.OpenAI;
+namespace SemanticKernel.IntegrationTests.Agents;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
