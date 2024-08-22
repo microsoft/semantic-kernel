@@ -103,6 +103,7 @@ pandas = [
 ]
 
 [tool.uv]
+prerelease = "if-necessary-or-explicit"
 dev-dependencies = [
     "pre-commit ~= 3.7",
     "ipykernel ~= 6.29",
@@ -129,11 +130,11 @@ addopts = "-ra -q -r fEX"
 line-length = 120
 target-version = "py310"
 include = ["*.py", "*.pyi", "**/pyproject.toml", "*.ipynb"]
+preview = true
 
 [tool.ruff.lint]
 fixable = ["ALL"]
 unfixable = []
-preview = true
 select = [
     "D", #pydocstyle checks
     "E", #error checks
@@ -158,7 +159,6 @@ ignore = [
 ]
 
 [tool.ruff.format]
-preview = true
 docstring-code-format = true
 
 [tool.ruff.lint.pydocstyle]

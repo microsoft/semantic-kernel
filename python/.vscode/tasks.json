@@ -8,7 +8,6 @@
             "type": "shell",
             "command": "uv",
             "args": [
-                "tool",
                 "run",
                 "pre-commit",
                 "run",
@@ -37,7 +36,6 @@
             "type": "shell",
             "command": "uv",
             "args": [
-                "tool",
                 "run",
                 "pre-commit",
                 "run",
@@ -65,7 +63,6 @@
             "type": "shell",
             "command": "uv",
             "args": [
-                "tool",
                 "run",
                 "pre-commit",
                 "run",
@@ -93,15 +90,10 @@
         {
             "label": "Python: Install",
             "type": "shell",
-            "command": "uv",
-            "args": [
-                "sync",
-                "--all-extras",
-                "--dev"
-            ],
+            "command": "make install PYTHON_VERSION=${input:py_version}",
             "presentation": {
-                "reveal": "silent",
-                "panel": "shared"
+                "reveal": "always",
+                "panel": "new"
             },
             "problemMatcher": []
         },
@@ -171,6 +163,19 @@
                 "panel": "shared"
             },
             "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "type": "pickString",
+            "options": [
+                "3.10",
+                "3.11",
+                "3.12"
+            ],
+            "id": "py_version",
+            "description": "Python version",
+            "default": "3.10"
         }
     ]
 }

@@ -1,6 +1,6 @@
 # Dev Setup
 
-This document describes how to setup your environment with Python and Poetry,
+This document describes how to setup your environment with Python and uv,
 if you're working on new features or a bug fix for Semantic Kernel, or simply
 want to run the tests included.
 
@@ -41,16 +41,6 @@ If using the second method, we suggest adding a copy of the `.env` file under th
 
 ## System setup
 
-To get started, you'll need VSCode and a local installation of Python 3.8+.
-
-You can run:
-
-```python
-    python3 --version ; pip3 --version ; code -v
-```
-
-to verify that you have the required dependencies.
-
 ## If you're on WSL
 
 Check that you've cloned the repository to `~/workspace` or a similar folder.
@@ -71,17 +61,34 @@ you may need to run `~/.local/bin/poetry install` and `~/.local/bin/poetry shell
 instead. You can fix this by adding `export PATH="$HOME/.local/bin:$PATH"` to
 your `~/.bashrc` and closing/re-opening the terminal.\_
 
-## Using Poetry
+## Using uv
 
-Poetry allows to use SK from the local files, without worrying about paths, as
+uv allows us to use SK from the local files, without worrying about paths, as
 if you had SK pip package installed.
 
-To install Poetry in your system, first, navigate to the directory containing
-this README using your chosen shell. You will need to have Python 3.10, 3.11, or 3.12
-installed.
+To install uv in your system, first, navigate to the directory containing
+this README using your chosen shell. 
 
-Install the Poetry package manager and create a project virtual environment.
-Note: SK requires at least Poetry 1.2.0.
+If you are on windows, check the [uv documentation](https://docs.astral.sh/uv/getting-started/installation/) for the installation instructions.
+
+Then run the following commands:
+
+```bash
+make install
+```
+
+This will install uv, python, Semantic Kernel and all dependencies and the pre-commit config. It uses python 3.10 by default, if you want to change that set the `PYTHON_VERSION` environment variable to the desired version (currently supported are 3.10, 3.11, 3.12). For instance for 3.12"
+    
+```bash
+make install PYTHON_VERSION=3.12
+```
+If you want to change python version (without installing uv, python and pre-commit), you can use the same parameter, but do:
+
+```bash
+make install-sk PYTHON_VERSION=3.12
+```
+
+Alternatively you can run the VSCode task `Python: Install` to run the same command.
 
 ### Note for MacOS Users
 
@@ -113,28 +120,19 @@ Follow these steps:
 After these steps, you should be able to use `python` in your terminal to run 
 Python 3 commands.
 
-### Poetry Installation
+### uv Installation
 
 ```bash
-# Install poetry package if not choosing to install via their official installer
-pip3 install poetry
 
-# optionally, define which python version you want to use
-poetry env use python3.11
+# If you are on windows, use this command to install uv:
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
-# Use poetry to install base project dependencies
-poetry install
+# Afterwards (and directly on mac and linux), use this command to install everything:
+make install
 
-# If you want to get all dependencies for tests installed, use
-# poetry install --with tests
-# example: poetry install --with hugging_face
+# activate the venv:
+source .venv/bin/activate
 
-# Use poetry to activate project venv
-poetry shell
-
-# Optionally, you can install the pre-commit hooks
-poetry run pre-commit install
-# this will run linters and mypy checks on all the changed code.
 ```
 
 ## VSCode Setup
@@ -144,10 +142,9 @@ Open the [workspace](https://code.visualstudio.com/docs/editor/workspaces) in VS
 
 Open any of the `.py` files in the project and run the `Python: Select Interpreter`
 command from the command palette. Make sure the virtual env (venv) created by
-`poetry` is selected.
-The python you're looking for should be under `~/.cache/pypoetry/virtualenvs/semantic-kernel-.../bin/python`.
+`uv` is selected.
 
-If prompted, install `ruff`. (It should have been installed as part of `poetry install`).
+If prompted, install `ruff`. (It should have been installed as part of `uv sync --dev`).
 
 You also need to install the `ruff` extension in VSCode so that auto-formatting uses the `ruff` formatter on save.
 Read more about the extension here: https://github.com/astral-sh/ruff-vscode
@@ -157,8 +154,7 @@ Read more about the extension here: https://github.com/astral-sh/ruff-vscode
 You can run the unit tests under the [tests/unit](tests/unit/) folder.
 
 ```bash
-    poetry install --with unit-tests
-    poetry run pytest tests/unit
+    uv run pytest tests/unit
 ```
 
 Alternatively, you can run them using VSCode Tasks. Open the command palette
@@ -167,15 +163,13 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 You can run the integration tests under the [tests/integration](tests/integration/) folder.
 
 ```bash
-    poetry install --with tests
-    poetry run pytest tests/integration
+    uv run pytest tests/integration
 ```
 
 You can also run all the tests together under the [tests](tests/) folder.
 
 ```bash
-    poetry install
-    poetry run pytest tests
+    uv run pytest tests
 ```
 
 Alternatively, you can run them using VSCode Tasks. Open the command palette
@@ -203,7 +197,7 @@ They should contain:
 - If necessary to further explain the logic a newline follows the first line and then the explanation is given.
 - The following three sections are optional, and if used should be separated by a single empty line.
 - Arguments are then specified after a header called `Args:`, with each argument being specified in the following format:
-    - `arg_name` (`arg_type`): Explanation of the argument, arg_type is optional, as long as you are consistent.
+    - `arg_name`: Explanation of the argument, arg_type is optional, as long as you are consistent.
     - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
     - Default values do not have to be specified, they will be pulled from the definition.
 - Returns are specified after a header called `Returns:` or `Yields:`, with the return type and explanation of the return value.
@@ -227,8 +221,8 @@ def equal(arg1: str, arg2: str) -> bool:
     Here is extra explanation of the logic involved.
 
     Args:
-        arg1 (str): The first string to compare.
-        arg2 (str): The second string to compare.
+        arg1: The first string to compare.
+        arg2: The second string to compare.
             This string requires extra explanation.
 
     Returns:
@@ -316,7 +310,7 @@ To run the same checks that run during the GitHub Action build, you can use
 this command, from the [python](../python) folder:
 
 ```bash
-    poetry run pre-commit run -a
+    uv run pre-commit run -a
 ```
 
 or use the following task (using `Ctrl+Shift+P`):

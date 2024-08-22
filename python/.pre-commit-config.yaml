@@ -1,3 +1,4 @@
+files: ^python/
 fail_fast: true
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -15,7 +16,7 @@ repos:
       - id: mixed-line-ending
         files: \.py$
       - id: debug-statements
-        files: ^semantic_kernel\/.*\.py$
+        files: ^python/semantic_kernel\/.*\.py$
       - id: check-ast
         name: Check Valid Python Samples
         types: ["python"]
@@ -30,20 +31,18 @@ repos:
     hooks:
     - id: pyupgrade
       args: [--py310-plus]
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.1
     hooks:
       - id: ruff
-        files: ^semantic_kernel/
-        name: ruff
-        entry: uv tool run ruff check semantic_kernel --fix --exit-non-zero-on-fix
-        language: system
-        types: [python]
+        args: [ --fix ]
+      - id: ruff-format
   - repo: local
     hooks:
     - id: mypy
-      files: ^semantic_kernel/
+      files: ^python/semantic_kernel/
       name: mypy
-      entry: uv tool run python -m mypy -p semantic_kernel
+      entry: cd python && uv run mypy -p semantic_kernel --config-file mypy.ini
       language: system
       types: [python]
       pass_filenames: false
