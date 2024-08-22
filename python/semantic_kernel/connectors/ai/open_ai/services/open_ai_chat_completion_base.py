@@ -5,9 +5,7 @@ import logging
 import sys
 from collections.abc import AsyncGenerator
 from functools import reduce
-from typing import TYPE_CHECKING, Any, ClassVar
-
-from semantic_kernel.contents.function_result_content import FunctionResultContent
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -16,13 +14,18 @@ else:
 
 from openai import AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
-from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, ChoiceDeltaFunctionCall, ChoiceDeltaToolCall
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
+from openai.types.chat.chat_completion_message import FunctionCall
+from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall
 from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    merge_function_results,
+    update_settings_from_function_call_configuration,
+)
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
@@ -109,12 +112,14 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         # loop for auto-invoke function calls
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(settings)
-            # there is only one chat message, this was checked earlier
-            chat_history.add_message(message=completions[0])
-            # get the function call contents from the chat message
-            function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
+            # get the function call contents from the chat message, there is only one chat message
+            # this was checked earlier
+            function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
             if (fc_count := len(function_calls)) == 0:
                 return completions
+
+            # Since we have a function call, add the assistant's tool call message to the history
+            chat_history.add_message(message=completions[0])
 
             logger.info(f"processing {fc_count} tool calls in parallel.")
 
@@ -137,7 +142,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
 
             if any(result.terminate for result in results if result is not None):
-                return self._create_filter_early_terminate_chat_message_content(chat_history.messages[-len(results) :])
+                return merge_function_results(chat_history.messages[-len(results) :])
 
             self._update_settings(settings, chat_history, kernel=kernel)
         else:
@@ -237,7 +242,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 ],
             )
             if any(result.terminate for result in results if result is not None):
-                yield self._create_filter_early_terminate_chat_message_content(chat_history.messages[-len(results) :])  # type: ignore
+                yield merge_function_results(chat_history.messages[-len(results) :])  # type: ignore
                 break
 
             self._update_settings(settings, chat_history, kernel=kernel)
@@ -304,36 +309,17 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
         items: list[Any] = self._get_tool_calls_from_chat_choice(choice)
         items.extend(self._get_function_call_from_chat_choice(choice))
-        if choice.delta.content is not None:
+        if choice.delta and choice.delta.content is not None:
             items.append(StreamingTextContent(choice_index=choice.index, text=choice.delta.content))
         return StreamingChatMessageContent(
             choice_index=choice.index,
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=(AuthorRole(choice.delta.role) if choice.delta.role else AuthorRole.ASSISTANT),
+            role=(AuthorRole(choice.delta.role) if choice.delta and choice.delta.role else AuthorRole.ASSISTANT),
             finish_reason=(FinishReason(choice.finish_reason) if choice.finish_reason else None),
             items=items,
         )
-
-    def _create_filter_early_terminate_chat_message_content(
-        self,
-        messages: list[ChatMessageContent],
-    ) -> list[ChatMessageContent]:
-        """Add an early termination message to the chat messages.
-
-        This method combines the FunctionResultContent items from separate ChatMessageContent messages,
-        and is used in the event that the `context.terminate = True` condition is met.
-        """
-        items: list[Any] = []
-        for message in messages:
-            items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
-        return [
-            ChatMessageContent(
-                role=AuthorRole.TOOL,
-                items=items,
-            )
-        ]
 
     def _get_metadata_from_chat_response(self, response: ChatCompletion) -> dict[str, Any]:
         """Get metadata from a chat response."""
@@ -361,31 +347,32 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     def _get_tool_calls_from_chat_choice(self, choice: Choice | ChunkChoice) -> list[FunctionCallContent]:
         """Get tool calls from a chat choice."""
         content = choice.message if isinstance(choice, Choice) else choice.delta
-        assert hasattr(content, "tool_calls")  # nosec
-        if content.tool_calls is None:
-            return []
-        return [
-            FunctionCallContent(
-                id=tool.id,
-                index=getattr(tool, "index", None),
-                name=tool.function.name,
-                arguments=tool.function.arguments,
-            )
-            for tool in content.tool_calls
-            if tool.function is not None
-        ]
+        if content and (tool_calls := getattr(content, "tool_calls", None)) is not None:
+            return [
+                FunctionCallContent(
+                    id=tool.id,
+                    index=getattr(tool, "index", None),
+                    name=tool.function.name,
+                    arguments=tool.function.arguments,
+                )
+                for tool in cast(list[ChatCompletionMessageToolCall] | list[ChoiceDeltaToolCall], tool_calls)
+                if tool.function is not None
+            ]
+        # When you enable asynchronous content filtering in Azure OpenAI, you may receive empty deltas
+        return []
 
     def _get_function_call_from_chat_choice(self, choice: Choice | ChunkChoice) -> list[FunctionCallContent]:
         """Get a function call from a chat choice."""
         content = choice.message if isinstance(choice, Choice) else choice.delta
-        assert hasattr(content, "function_call")  # nosec
-        if content.function_call is None:
-            return []
-        return [
-            FunctionCallContent(
-                id="legacy_function_call", name=content.function_call.name, arguments=content.function_call.arguments
-            )
-        ]
+        if content and (function_call := getattr(content, "function_call", None)) is not None:
+            function_call = cast(FunctionCall | ChoiceDeltaFunctionCall, function_call)
+            return [
+                FunctionCallContent(
+                    id="legacy_function_call", name=function_call.name, arguments=function_call.arguments
+                )
+            ]
+        # When you enable asynchronous content filtering in Azure OpenAI, you may receive empty deltas
+        return []
 
     # endregion
     # region request preparation
