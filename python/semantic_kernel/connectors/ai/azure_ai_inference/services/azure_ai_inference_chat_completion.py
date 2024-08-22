@@ -34,7 +34,10 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.azure_ai_inference.services.utils import MESSAGE_CONVERTERS
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    merge_function_results,
+    update_settings_from_function_call_configuration,
+)
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
@@ -151,10 +154,11 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
 
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
-            chat_history.add_message(message=completions[0])
-            function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
+            function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
             if (fc_count := len(function_calls)) == 0:
                 return completions
+
+            chat_history.add_message(message=completions[0])
 
             results = await self._invoke_function_calls(
                 function_calls=function_calls,
@@ -167,7 +171,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             )
 
             if any(result.terminate for result in results if result is not None):
-                return completions
+                return merge_function_results(chat_history.messages[-len(results) :])
         else:
             # do a final call without auto function calling
             return await self._send_chat_request(chat_history, settings)
@@ -317,7 +321,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             )
 
             if any(result.terminate for result in results if result is not None):
-                return
+                yield merge_function_results(chat_history.messages[-len(results) :])  # type: ignore
+                break
 
     async def _send_chat_streaming_request(
         self, chat_history: ChatHistory, settings: AzureAIInferenceChatPromptExecutionSettings
