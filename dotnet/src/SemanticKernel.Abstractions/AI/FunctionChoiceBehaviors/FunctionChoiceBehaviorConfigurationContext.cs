@@ -29,4 +29,9 @@ public sealed class FunctionChoiceBehaviorConfigurationContext
     /// The <see cref="Kernel"/> to be used for function calling.
     /// </summary>
     public Kernel? Kernel { get; init; }
+
+    /// <summary>
+    /// Request sequence index of automatic function invocation process. Starts from 0.
+    /// </summary>
+    public int RequestSequenceIndex { get; init; }
 }

@@ -33,7 +33,7 @@ public abstract class FunctionChoiceBehavior
 
     /// <summary>
     /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to the AI model to call or specific ones.
-    /// This behavior forces the model to always call one or more functions. The model will then select which function(s) to call.
+    /// This behavior forces the model to always call one or more functions.
     /// </summary>
     /// <param name="functions">
     /// Functions to provide to the model. If null, all of the <see cref="Kernel"/>'s plugins' functions are provided to the model.

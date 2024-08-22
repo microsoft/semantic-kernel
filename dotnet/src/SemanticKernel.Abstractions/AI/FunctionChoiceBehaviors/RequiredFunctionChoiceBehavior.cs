@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specific ones.
-/// This behavior forces the model to always call one or more functions. The model will then select which function(s) to call.
+/// This behavior forces the model to always call one or more functions.
 /// </summary>
 internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 {

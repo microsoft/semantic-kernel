@@ -127,24 +127,24 @@ internal partial class ClientCore
     /// Generate a new chat message
     /// </summary>
     /// <param name="targetModel">Model identifier</param>
-    /// <param name="chat">Chat history</param>
+    /// <param name="chatHistory">Chat history</param>
     /// <param name="executionSettings">Execution settings for the completion API.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Generated chat message in string format</returns>
     internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
         string targetModel,
-        ChatHistory chat,
+        ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(chat);
+        Verify.NotNull(chatHistory);
 
         if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
-                JsonSerializer.Serialize(chat),
+                JsonSerializer.Serialize(chatHistory),
                 JsonSerializer.Serialize(executionSettings));
         }
 
@@ -155,16 +155,16 @@ internal partial class ClientCore
 
         for (int requestIndex = 0; ; requestIndex++)
         {
-            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
+            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
 
-            var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, chat, requestIndex);
+            var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
-            var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
+            var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, toolCallingConfig, kernel);
 
             // Make the request.
             OpenAIChatCompletion? chatCompletion = null;
             OpenAIChatMessageContent chatMessageContent;
-            using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
+            using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
             {
                 try
                 {
@@ -219,7 +219,7 @@ internal partial class ClientCore
 
             // Add the result message to the caller's chat history;
             // this is required for the service to understand the tool call responses.
-            chat.Add(chatMessageContent);
+            chatHistory.Add(chatMessageContent);
 
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
             // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
@@ -230,7 +230,7 @@ internal partial class ClientCore
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (functionToolCall.Kind != ChatToolCallKind.Function)
                 {
-                    AddResponseMessage(chat, result: null, "Error: Tool call was not a function call.", functionToolCall, this.Logger);
+                    AddResponseMessage(chatHistory, result: null, "Error: Tool call was not a function call.", functionToolCall, this.Logger);
                     continue;
                 }
 
@@ -242,7 +242,7 @@ internal partial class ClientCore
                 }
                 catch (JsonException)
                 {
-                    AddResponseMessage(chat, result: null, "Error: Function call arguments were invalid JSON.", functionToolCall, this.Logger);
+                    AddResponseMessage(chatHistory, result: null, "Error: Function call arguments were invalid JSON.", functionToolCall, this.Logger);
                     continue;
                 }
 
@@ -252,20 +252,20 @@ internal partial class ClientCore
                 if (toolCallingConfig.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
-                    AddResponseMessage(chat, result: null, "Error: Function call request for a function that wasn't defined.", functionToolCall, this.Logger);
+                    AddResponseMessage(chatHistory, result: null, "Error: Function call request for a function that wasn't defined.", functionToolCall, this.Logger);
                     continue;
                 }
 
                 // Find the function in the kernel and populate the arguments.
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
-                    AddResponseMessage(chat, result: null, "Error: Requested function could not be found.", functionToolCall, this.Logger);
+                    AddResponseMessage(chatHistory, result: null, "Error: Requested function could not be found.", functionToolCall, this.Logger);
                     continue;
                 }
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat, chatMessageContent)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory, chatMessageContent)
                 {
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex,
@@ -294,7 +294,7 @@ internal partial class ClientCore
                 catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
                 {
-                    AddResponseMessage(chat, null, $"Error: Exception while invoking function. {e.Message}", functionToolCall, this.Logger);
+                    AddResponseMessage(chatHistory, null, $"Error: Exception while invoking function. {e.Message}", functionToolCall, this.Logger);
                     continue;
                 }
                 finally
@@ -308,7 +308,7 @@ internal partial class ClientCore
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
                 var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
-                AddResponseMessage(chat, stringResult, errorMessage: null, functionToolCall, this.Logger);
+                AddResponseMessage(chatHistory, stringResult, errorMessage: null, functionToolCall, this.Logger);
 
                 // If filter requested termination, returning latest function result.
                 if (invocationContext.Terminate)
@@ -318,7 +318,7 @@ internal partial class ClientCore
                         this.Logger.LogDebug("Filter requested termination of automatic function invocation.");
                     }
 
-                    return [chat.Last()];
+                    return [chatHistory.Last()];
                 }
             }
         }
@@ -1210,7 +1210,7 @@ internal partial class ClientCore
 
     private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int maximumAutoInvokeAttempts) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior, ChatHistory chatHistory)
     {
-        FunctionChoiceBehaviorConfiguration config = functionChoiceBehavior.GetConfiguration(new(chatHistory) { Kernel = kernel });
+        FunctionChoiceBehaviorConfiguration config = functionChoiceBehavior.GetConfiguration(new(chatHistory) { Kernel = kernel, RequestSequenceIndex = requestIndex });
 
         IList<ChatTool>? tools = null;
         ChatToolChoice? toolChoice = null;

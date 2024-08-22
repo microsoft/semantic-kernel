@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
@@ -8,7 +9,8 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Context containing information to be used by the functions selector.
 /// </summary>
-public class FunctionChoiceBehaviorFunctionsSelectorContext
+[Experimental("SKEXP0001")]
+public sealed class FunctionChoiceBehaviorFunctionsSelectorContext
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionChoiceBehaviorFunctionsSelectorContext"/> class.
@@ -25,12 +27,17 @@ public class FunctionChoiceBehaviorFunctionsSelectorContext
     public IReadOnlyList<KernelFunction>? Functions { get; init; }
 
     /// <summary>
+    /// The chat history.
+    /// </summary>
+    public ChatHistory ChatHistory { get; }
+
+    /// <summary>
     /// The <see cref="Kernel"/>.
     /// </summary>
     public Kernel? Kernel { get; init; }
 
     /// <summary>
-    /// The chat history.
+    /// Request sequence index of automatic function invocation process. Starts from 0.
     /// </summary>
-    public ChatHistory ChatHistory { get; }
+    public int RequestSequenceIndex { get; init; }
 }
