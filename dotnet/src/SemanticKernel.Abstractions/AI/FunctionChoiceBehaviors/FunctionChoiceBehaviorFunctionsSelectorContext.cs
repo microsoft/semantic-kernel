@@ -16,7 +16,7 @@ public sealed class FunctionChoiceBehaviorFunctionsSelectorContext
     /// Initializes a new instance of the <see cref="FunctionChoiceBehaviorFunctionsSelectorContext"/> class.
     /// </summary>
     /// <param name="chatHistory">The chat history.</param>
-    public FunctionChoiceBehaviorFunctionsSelectorContext(ChatHistory chatHistory)
+    internal FunctionChoiceBehaviorFunctionsSelectorContext(ChatHistory chatHistory)
     {
         this.ChatHistory = chatHistory;
     }
