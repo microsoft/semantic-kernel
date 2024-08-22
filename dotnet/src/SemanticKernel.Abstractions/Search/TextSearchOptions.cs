@@ -10,6 +10,11 @@ namespace Microsoft.SemanticKernel.Search;
 public sealed class TextSearchOptions
 {
     /// <summary>
+    /// Default number of search results to return.
+    /// </summary>
+    public static readonly int DefaultCount = 5;
+
+    /// <summary>
     /// Flag indicating the total count should be included in the results.
     /// </summary>
     /// <remarks>
@@ -26,7 +31,7 @@ public sealed class TextSearchOptions
     /// <summary>
     /// Number of search results to return.
     /// </summary>
-    public int Count { get; set; } = 2;
+    public int Count { get; set; } = DefaultCount;
 
     /// <summary>
     /// The index of the first result to return.

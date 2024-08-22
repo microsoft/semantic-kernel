@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Search;
 /// <param name="fieldName">Field name.</param>
 /// <param name="value">Field value.</param>
 [Experimental("SKEXP0001")]
-public sealed class EqualityFilterClause(string fieldName, object value) : FilterClause(FilterClauseType.Equality)
+public sealed class EqualityFilterClause(string fieldName, object value) : FilterClause
 {
     /// <summary>
     /// Field name to match.
