@@ -26,13 +26,13 @@ public interface ITextSearch
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Perform a search for content related to the specified query and return <see cref="TextSearchContent"/> values representing the search results.
+    /// Perform a search for content related to the specified query and return <see cref="TextSearchResult"/> values representing the search results.
     /// </summary>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     [Description("Perform a search for content related to the specified query and return the name, value and link for each of the search results.")]
-    public Task<KernelSearchResults<TextSearchContent>> GetTextSearchResultsAsync(
+    public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(
         string query,
         TextSearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default);
