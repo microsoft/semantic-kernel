@@ -96,21 +96,23 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
             }
         }
 
+        IReadOnlyList<KernelFunction>? selectedFunctions = null;
+
         // Invoke function selector, if provided, to get the final list of functions.
         if (this._functionsSelector is not null)
         {
-            availableFunctions = this._functionsSelector(new FunctionChoiceBehaviorFunctionsSelectorContext(context.ChatHistory)
+            selectedFunctions = this._functionsSelector(new FunctionChoiceBehaviorFunctionsSelectorContext(context.ChatHistory)
             {
                 Kernel = context.Kernel,
                 Functions = availableFunctions,
-            })?.ToList();
+            });
         }
 
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         return new FunctionChoiceBehaviorConfiguration()
         {
             Choice = FunctionChoice.Required,
-            Functions = availableFunctions,
+            Functions = selectedFunctions ?? availableFunctions,
             AutoInvoke = this._autoInvoke,
         };
 #pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
