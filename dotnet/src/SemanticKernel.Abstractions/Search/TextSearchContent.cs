@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Search;
 /// Represents a search result retrieved from a <see cref="ITextSearch" /> instance.
 /// </summary>
 /// <remarks>
-/// An instance of <see cref="TextSearchResult"/> is a normalised search result which provides access to:
+/// An instance of <see cref="TextSearchContent"/> is a normalised search result which provides access to:
 /// - Name associated with the search result
 /// - Value associated with the search result
 /// - Link reference associated with the search result
@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Search;
 /// <param name="value">The text search result value.</param>
 /// <param name="link">The link reference associated with the text search result.</param>
 [Experimental("SKEXP0001")]
-public sealed class TextSearchResult(string? name = null, string? value = null, string? link = null)
+public sealed class TextSearchContent(string? name = null, string? value = null, string? link = null)
 {
     /// <summary>
     /// The text search result name.
