@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// The context to be provided by the choice behavior consumer in order to obtain the choice behavior configuration.
+/// The context is to be provided by the choice behavior consumer – AI connector in order to obtain the choice behavior configuration.
 /// </summary>
 [Experimental("SKEXP0001")]
 public sealed class FunctionChoiceBehaviorConfigurationContext
@@ -14,19 +14,19 @@ public sealed class FunctionChoiceBehaviorConfigurationContext
     /// <summary>
     /// Creates a new instance of <see cref="FunctionChoiceBehaviorConfigurationContext"/>.
     /// </summary>
-    /// <param name="chatHistory">The chat history.</param>
+    /// <param name="chatHistory">History of the current chat session.</param>
     public FunctionChoiceBehaviorConfigurationContext(ChatHistory chatHistory)
     {
         this.ChatHistory = chatHistory;
     }
 
     /// <summary>
-    /// The chat history.
+    /// History of the current chat session.
     /// </summary>
     public ChatHistory ChatHistory { get; }
 
     /// <summary>
-    /// The <see cref="Kernel"/> to be used for function calling.
+    /// The <see cref="Kernel"/> used by in the current chat session.
     /// </summary>
     public Kernel? Kernel { get; init; }
 

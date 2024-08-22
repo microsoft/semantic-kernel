@@ -15,24 +15,24 @@ public sealed class FunctionChoiceBehaviorFunctionsSelectorContext
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionChoiceBehaviorFunctionsSelectorContext"/> class.
     /// </summary>
-    /// <param name="chatHistory">The chat history.</param>
+    /// <param name="chatHistory">History of the current chat session.</param>
     internal FunctionChoiceBehaviorFunctionsSelectorContext(ChatHistory chatHistory)
     {
         this.ChatHistory = chatHistory;
     }
 
     /// <summary>
-    /// Functions to provide to AI model.
+    /// Functions to provide to AI model for the current chat session.
     /// </summary>
     public IReadOnlyList<KernelFunction>? Functions { get; init; }
 
     /// <summary>
-    /// The chat history.
+    /// History of the current chat session.
     /// </summary>
     public ChatHistory ChatHistory { get; }
 
     /// <summary>
-    /// The <see cref="Kernel"/>.
+    /// The <see cref="Kernel"/> used by in the current chat session.
     /// </summary>
     public Kernel? Kernel { get; init; }
 

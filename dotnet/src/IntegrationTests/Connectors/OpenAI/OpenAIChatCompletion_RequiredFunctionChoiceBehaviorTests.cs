@@ -361,6 +361,8 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         .AddUserSecrets<OpenAIChatCompletionTests>()
         .Build();
 
+    #region private
+
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
@@ -372,8 +374,6 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         [Description("Retrieves the current date.")]
         public string GetCurrentDate() => DateTime.UtcNow.ToString("d", CultureInfo.InvariantCulture);
     }
-
-    #region private
 
     private sealed class FakeFunctionFilter : IAutoFunctionInvocationFilter
     {
