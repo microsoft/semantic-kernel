@@ -16,20 +16,17 @@ class KernelFunctionLogMessages:
     @staticmethod
     def log_function_invoking(logger: Logger, kernel_function_name: str):
         """Log message when a kernel function is invoked."""
-        if logger.isEnabledFor(logging.INFO):
-            logger.info("Function %s invoking.", kernel_function_name)
+        logger.info("Function %s invoking.", kernel_function_name)
 
     @staticmethod
     def log_function_arguments(logger: Logger, arguments: KernelArguments):
         """Log message when a kernel function is invoked."""
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug("Function arguments: %s", arguments)
+        logger.debug("Function arguments: %s", arguments)
 
     @staticmethod
     def log_function_invoked_success(logger: Logger, kernel_function_name: str):
         """Log message when a kernel function is invoked successfully."""
-        if logger.isEnabledFor(logging.INFO):
-            logger.info("Function %s succeeded.", kernel_function_name)
+        logger.info("Function %s succeeded.", kernel_function_name)
 
     @staticmethod
     def log_function_result_value(logger: Logger, function_result: FunctionResult | None):
@@ -48,23 +45,19 @@ class KernelFunctionLogMessages:
     @staticmethod
     def log_function_error(logger: Logger, error: Exception):
         """Log message when a kernel function fails."""
-        if logger.isEnabledFor(logging.ERROR):
-            logger.error("Function failed. Error: %s", error)
+        logger.error("Function failed. Error: %s", error)
 
     @staticmethod
     def log_function_completed(logger: Logger, duration: float):
         """Log message when a kernel function is completed."""
-        if logger.isEnabledFor(logging.INFO):
-            logger.info("Function completed. Duration: %fs", duration)
+        logger.info("Function completed. Duration: %fs", duration)
 
     @staticmethod
     def log_function_streaming_invoking(logger: Logger, kernel_function_name: str):
         """Log message when a kernel function is invoked via streaming."""
-        if logger.isEnabledFor(logging.INFO):
-            logger.info("Function %s streaming.", kernel_function_name)
+        logger.info("Function %s streaming.", kernel_function_name)
 
     @staticmethod
     def log_function_streaming_completed(logger: Logger, duration: float):
         """Log message when a kernel function is completed via streaming."""
-        if logger.isEnabledFor(logging.INFO):
-            logger.info("Function streaming completed. Duration: %fs", duration)
+        logger.info("Function streaming completed. Duration: %fs", duration)

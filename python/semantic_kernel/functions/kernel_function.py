@@ -43,7 +43,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 tracer: trace.Tracer = trace.get_tracer(__name__)
 meter: metrics.Meter = metrics.get_meter_provider().get_meter(__name__)
-MeasurementFunctionTagName: str = "semantic_kernel.function.name"
+MEASUREMENT_FUNCTION_TAG_NAME: str = "semantic_kernel.function.name"
 
 TEMPLATE_FORMAT_MAP = {
     KERNEL_TEMPLATE_FORMAT_NAME: KernelPromptTemplate,
@@ -227,7 +227,7 @@ class KernelFunction(KernelBaseModel):
             KernelFunctionLogMessages.log_function_invoking(logger, self.fully_qualified_name)
             KernelFunctionLogMessages.log_function_arguments(logger, arguments)
 
-            attributes = {MeasurementFunctionTagName: self.fully_qualified_name}
+            attributes = {MEASUREMENT_FUNCTION_TAG_NAME: self.fully_qualified_name}
             starting_time_stamp = time.perf_counter()
             try:
                 stack = kernel.construct_call_stack(
@@ -287,7 +287,7 @@ class KernelFunction(KernelBaseModel):
             KernelFunctionLogMessages.log_function_streaming_invoking(logger, self.fully_qualified_name)
             KernelFunctionLogMessages.log_function_arguments(logger, arguments)
 
-            attributes = {MeasurementFunctionTagName: self.fully_qualified_name}
+            attributes = {MEASUREMENT_FUNCTION_TAG_NAME: self.fully_qualified_name}
             starting_time_stamp = time.perf_counter()
             try:
                 stack = kernel.construct_call_stack(
