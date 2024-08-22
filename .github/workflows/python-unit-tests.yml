@@ -43,14 +43,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Restore uv cache
+        id: cache
         uses: actions/cache@v4
         with:
           path: /tmp/.uv-cache
-          key: uv-${{ runner.os }}-${{ hashFiles('python/uv.lock') }}
+          key: uv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
           restore-keys: |
-            uv-${{ runner.os }}-${{ hashFiles('python/uv.lock') }}
+            uv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
             uv-${{ runner.os }}
       - name: Install the project
+        if: steps.cache.outputs.cache-hit != 'true'
         run: uv sync --all-extras --dev
       - name: Test with pytest
         run: uv run pytest --junitxml=pytest.xml ./tests/unit
