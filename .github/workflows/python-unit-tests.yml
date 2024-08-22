@@ -46,9 +46,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.uv-cache
-          key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
+          key: uv-${{ runner.os }}-${{ hashFiles('python/uv.lock') }}
           restore-keys: |
-            uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
+            uv-${{ runner.os }}-${{ hashFiles('python/uv.lock') }}
             uv-${{ runner.os }}
       - name: Install the project
         run: uv sync --all-extras --dev
