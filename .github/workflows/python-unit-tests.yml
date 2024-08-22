@@ -48,9 +48,6 @@ jobs:
         with:
           path: /tmp/.uv-cache
           key: uv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
-          restore-keys: |
-            uv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
-            uv-${{ runner.os }}
       - name: Install the project
         if: steps.cache.outputs.cache-hit != 'true'
         run: uv sync --all-extras --dev
