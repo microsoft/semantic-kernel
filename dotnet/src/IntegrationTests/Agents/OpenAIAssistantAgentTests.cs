@@ -36,7 +36,7 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
     [InlineData("What is the special soup?", "Clam Chowder")]
     public async Task OpenAIAssistantAgentTestAsync(string input, string expectedAnswerContains)
     {
-        OpenAIConfiguration openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        OpenAIConfiguration openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
         Assert.NotNull(openAIConfiguration);
 
         await this.ExecuteAgentAsync(
