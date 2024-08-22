@@ -45,7 +45,7 @@ public sealed class MixedAgentTests
     /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Fact/*(Skip = "No supported endpoint configured.")*/]
+    [Fact]
     public async Task AzureOpenAIMixedAgentAsync()
     {
         AzureOpenAIConfiguration azureOpenAISettings = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
