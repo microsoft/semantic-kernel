@@ -148,6 +148,11 @@ public class BroadcastQueueTests
 
             await Task.Delay(this.ReceiveDuration, cancellationToken);
         }
+
+        protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private sealed class BadChannel : AgentChannel
@@ -169,6 +174,11 @@ public class BroadcastQueueTests
             await Task.Delay(this.ReceiveDuration, cancellationToken);
 
             throw new InvalidOperationException("Test");
+        }
+
+        protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
         }
     }
 }

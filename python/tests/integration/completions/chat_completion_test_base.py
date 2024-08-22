@@ -79,6 +79,13 @@ try:
         vertex_ai_setup = True
 except KeyError:
     vertex_ai_setup = False
+    
+anthropic_setup: bool = False
+try:
+    if os.environ["ANTHROPIC_API_KEY"] and os.environ["ANTHROPIC_CHAT_MODEL_ID"]:
+        anthropic_setup = True
+except KeyError:
+    anthropic_setup = False
 
 
 class ChatCompletionTestBase(CompletionTestBase):

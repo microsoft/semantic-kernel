@@ -13,6 +13,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
+    anthropic_setup,
     mistral_ai_setup,
     ollama_setup,
     vertex_ai_setup,
@@ -89,6 +90,17 @@ pytestmark = pytest.mark.parametrize(
             ["Hello", "well"],
             marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
+        ),
+         pytest.param(
+            "anthropic",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
+            id="anthropic_text_input",
         ),
         pytest.param(
             "google_ai",

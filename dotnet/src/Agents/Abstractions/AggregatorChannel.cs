@@ -47,6 +47,7 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
         }
     }
 
+    /// <inheritdoc/>
     protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // Always receive the initial history from the owning chat.
@@ -54,4 +55,8 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
 
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc/>
+    protected internal override Task ResetAsync(CancellationToken cancellationToken = default) =>
+        this._chat.ResetAsync(cancellationToken);
 }
