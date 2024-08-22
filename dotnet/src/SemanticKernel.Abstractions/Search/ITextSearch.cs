@@ -26,7 +26,7 @@ public interface ITextSearch
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Perform a search for content related to the specified query and return <see cref="TextSearchResult"/> values representing the search results.
+    /// Perform a search for content related to the specified query and return <see cref="TextSearchContent"/> values representing the search results.
     /// </summary>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
