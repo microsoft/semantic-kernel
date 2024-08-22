@@ -245,7 +245,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
 
         static IReadOnlyList<KernelFunction>? FunctionsSelector(FunctionChoiceBehaviorFunctionsSelectorContext context)
         {
-            return null;
+            return [];
         }
 
         // Act
@@ -254,8 +254,8 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
 
         // Assert
-        Assert.NotNull(config);
-        Assert.Null(config.Functions);
+        Assert.NotNull(config.Functions);
+        Assert.Empty(config.Functions);
     }
 
     [Fact]

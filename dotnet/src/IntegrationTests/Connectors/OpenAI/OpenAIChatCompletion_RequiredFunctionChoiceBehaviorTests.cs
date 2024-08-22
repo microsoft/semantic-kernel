@@ -49,7 +49,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
             if (invokedFunctionNames.Contains("GetCurrentDate"))
             {
-                return null; // Don't advertise any more functions because the expected function has been invoked.
+                return []; // Don't advertise any more functions because the expected function has been invoked.
             }
 
             return context.Functions;
@@ -161,7 +161,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
             if (invokedFunctionNames.Contains("GetCurrentDate"))
             {
-                return null; // Don't advertise any more functions because the expected function has been invoked.
+                return []; // Don't advertise any more functions because the expected function has been invoked.
             }
 
             return context.Functions;
