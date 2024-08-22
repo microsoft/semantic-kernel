@@ -99,6 +99,36 @@ public sealed class HybridVectorSearchOptions
 }
 ```
 
+To simplify calling search, without needing to call CreateQuery we can use extension methods.
+e.g. Instead of `SearchAsync(VectorSearchQuery.CreateQuery(vector))` you can call `SearchAsync(vector)`
+
+```csharp
+public static class VectorSearchExtensions
+{
+    public static IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TRecord, TVector>(
+        this IVectorSearch<TRecord> search,
+        TVector vector,
+        VectorSearchOptions? options = default,
+        CancellationToken cancellationToken = default)
+        where TRecord : class
+    {
+        return search.SearchAsync(new VectorizedSearchQuery<TVector>(vector, options), cancellationToken);
+    }
+
+    public static IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TRecord>(
+        this IVectorSearch<TRecord> search,
+        string searchText,
+        VectorSearchOptions? options = default,
+        CancellationToken cancellationToken = default)
+        where TRecord : class
+    {
+        return search.SearchAsync(new VectorizableTextSearchQuery(searchText, options), cancellationToken);
+    }
+
+    // etc...
+}
+```
+
 ## Usage Examples
 
 ```csharp
@@ -208,7 +238,67 @@ class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorSearch<TRecord>
 }
 ```
 
-## Decision Outcome
+### Option 3: Abstract base class
 
-Chosen option: 1: Search Object, because
-it allows more future extensibility without breaking changes and makes it easier to implement the current requirements.
+One of the main requirements is to allow future extensibility with additional query types.
+One way to achieve this is to use an abstract base class that can auto implement new methods
+that throw with NotSupported unless overridden by each implementation. This behavior would
+be similar to Option 1. With Option 1 though, the same bahvior is achieved via extension methods.
+The set of methods end up being the same with Option 1 and Option 3, except that Option 1 also has
+a Search method that takes `VectorSearchQuery` as input.
+
+`IVectorSearch` is a separate interface to `IVectorStoreRecordCollection`, but the intention is
+for `IVectorStoreRecordCollection` to inherit from `IVectorSearch`.
+
+This means that some (most) implementations of `IVectorSearch` will be part of `IVectorStoreRecordCollection` implementations.
+We anticipate cases where we need to support standalone `IVectorSearch` implementations where the store supports search
+but isn't necessarily writable.
+
+Therefore a hierarchy of abstract base classes would be required.
+
+```csharp
+abstract class BaseVectorSearch
+{
+    public virtual IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TRecord, TVector>(
+        this IVectorSearch<TRecord> search,
+        TVector vector,
+        VectorSearchOptions? options = default,
+        CancellationToken cancellationToken = default)
+        where TRecord : class
+    {
+        throw new NotSupportedException($"Vectorized search is not supported by the {this._connectorName} connector");
+    }
+
+    public virtual IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TRecord>(
+        this IVectorSearch<TRecord> search,
+        string searchText,
+        VectorSearchOptions? options = default,
+        CancellationToken cancellationToken = default)
+        where TRecord : class
+    {
+        throw new NotSupportedException($"Vectorizable text search is not supported by the {this._connectorName} connector");
+    }
+}
+
+abstract class BaseVectorStoreRecordCollection : BaseVectorSearch
+{
+    public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    {
+        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+}
+
+class QdrantVectorStoreRecordCollection : BaseVectorStoreRecordCollection
+{
+}
+```
+
+The risk here is that any additional functionality added to `VectorStoreRecordCollection` will not be able to follow a similar pattern
+due to the fact that you can only inherit from a single class.
+
+We also considered default interface methods, but there is no support in .net Framework for this, and SK has to support .net Framework.
+
+## Decision Outcome
