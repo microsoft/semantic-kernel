@@ -172,17 +172,12 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("How many days until Christmas?");
 
-        string result = "";
-
         // Act
         await foreach (var content in this._chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, settings, this._kernel))
         {
-            result += content;
         }
 
         // Assert
-        Assert.NotNull(result);
-
         Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
