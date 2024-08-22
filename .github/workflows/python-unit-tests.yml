@@ -49,7 +49,6 @@ jobs:
           path: /tmp/.uv-cache
           key: uv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
       - name: Install the project
-        if: steps.cache.outputs.cache-hit != 'true'
         run: uv sync --all-extras --dev
       - name: Test with pytest
         run: uv run pytest --junitxml=pytest.xml ./tests/unit
