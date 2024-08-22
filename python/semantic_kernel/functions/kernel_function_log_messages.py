@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from logging import Logger
 
 from semantic_kernel.functions.function_result import FunctionResult
@@ -30,6 +31,9 @@ class KernelFunctionLogMessages:
     @staticmethod
     def log_function_result_value(logger: Logger, function_result: FunctionResult | None):
         """Log message when a kernel function result is returned."""
+        if not logger.isEnabledFor(logging.DEBUG):
+            return
+
         if function_result is not None:
             try:
                 logger.debug("Function result: %s", function_result)
