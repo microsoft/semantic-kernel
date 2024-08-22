@@ -20,6 +20,7 @@ namespace SemanticKernel.IntegrationTests.Agents;
 
 public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDisposable
 {
+    private const string AssistantModel = "gpt-4o"; // Model must be able to support assistant API
     private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
@@ -41,7 +42,7 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
 
         await this.ExecuteAgentAsync(
             new(openAIConfiguration.ApiKey),
-            openAIConfiguration.ModelId,
+            AssistantModel,
             input,
             expectedAnswerContains);
     }
@@ -59,7 +60,7 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
 
         await this.ExecuteAgentAsync(
             new(azureOpenAIConfiguration.ApiKey, azureOpenAIConfiguration.Endpoint),
-            azureOpenAIConfiguration.ChatDeploymentName!,
+            AssistantModel,
             input,
             expectedAnswerContains);
     }

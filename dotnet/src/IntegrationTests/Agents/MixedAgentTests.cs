@@ -18,6 +18,7 @@ namespace SemanticKernel.IntegrationTests.Agents;
 
 public sealed class MixedAgentTests
 {
+    private const string AssistantModel = "gpt-4o"; // Model must be able to support assistant API
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
@@ -38,7 +39,7 @@ public sealed class MixedAgentTests
         await this.ExecuteAgentAsync(
             this.CreateChatCompletionKernel(openAISettings),
             new(openAISettings.ApiKey),
-            openAISettings.ModelId);
+            AssistantModel);
     }
 
     /// <summary>
