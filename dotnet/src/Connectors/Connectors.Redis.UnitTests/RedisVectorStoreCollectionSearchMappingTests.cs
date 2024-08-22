@@ -47,7 +47,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
             { "Vector", "storage_Vector" },
         };
         var firstVectorPropertyName = "storage_FirstVector";
-        var selectFields = new string[] { "strorage_Field1", "strorage_Field2" };
+        var selectFields = new string[] { "storage_Field1", "storage_Field2" };
 
         // Act.
         var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVectorQuery, storagePropertyNames, firstVectorPropertyName, selectFields);
