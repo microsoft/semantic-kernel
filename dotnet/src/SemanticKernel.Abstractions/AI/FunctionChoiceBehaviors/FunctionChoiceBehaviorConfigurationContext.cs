@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
 
@@ -10,6 +11,20 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0001")]
 public sealed class FunctionChoiceBehaviorConfigurationContext
 {
+    /// <summary>
+    /// Creates a new instance of <see cref="FunctionChoiceBehaviorConfigurationContext"/>.
+    /// </summary>
+    /// <param name="chatHistory">The chat history.</param>
+    public FunctionChoiceBehaviorConfigurationContext(ChatHistory chatHistory)
+    {
+        this.ChatHistory = chatHistory;
+    }
+
+    /// <summary>
+    /// The chat history.
+    /// </summary>
+    public ChatHistory ChatHistory { get; }
+
     /// <summary>
     /// The <see cref="Kernel"/> to be used for function calling.
     /// </summary>

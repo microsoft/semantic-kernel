@@ -157,7 +157,7 @@ internal partial class ClientCore
         {
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
 
-            var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, requestIndex);
+            var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, chat, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
 
@@ -353,7 +353,7 @@ internal partial class ClientCore
         {
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
 
-            var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, requestIndex);
+            var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, chat, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
 
@@ -1142,7 +1142,7 @@ internal partial class ClientCore
         }
     }
 
-    private ToolCallingConfig GetToolCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, int requestIndex)
+    private ToolCallingConfig GetToolCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory, int requestIndex)
     {
         // If both behaviors are specified, we can't handle that.
         if (executionSettings.FunctionChoiceBehavior is not null && executionSettings.ToolCallBehavior is not null)
@@ -1159,7 +1159,7 @@ internal partial class ClientCore
         // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
         if (executionSettings.FunctionChoiceBehavior is { } functionChoiceBehavior)
         {
-            (tools, choice, autoInvoke, maximumAutoInvokeAttempts) = this.ConfigureFunctionCalling(kernel, requestIndex, functionChoiceBehavior);
+            (tools, choice, autoInvoke, maximumAutoInvokeAttempts) = this.ConfigureFunctionCalling(kernel, requestIndex, functionChoiceBehavior, chatHistory);
         }
         // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
         else if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
@@ -1208,9 +1208,9 @@ internal partial class ClientCore
         return new(tools, choice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction);
     }
 
-    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int maximumAutoInvokeAttempts) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior)
+    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int maximumAutoInvokeAttempts) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior, ChatHistory chatHistory)
     {
-        FunctionChoiceBehaviorConfiguration config = functionChoiceBehavior.GetConfiguration(new() { Kernel = kernel });
+        FunctionChoiceBehaviorConfiguration config = functionChoiceBehavior.GetConfiguration(new(chatHistory) { Kernel = kernel });
 
         IList<ChatTool>? tools = null;
         ChatToolChoice? toolChoice = null;
@@ -1223,6 +1223,22 @@ internal partial class ClientCore
             if (config.Functions is { Count: > 0 } functions)
             {
                 toolChoice = ChatToolChoice.Auto;
+                tools = [];
+
+                foreach (var function in functions)
+                {
+                    tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition());
+                }
+            }
+
+            return new(tools, toolChoice, autoInvoke, maximumAutoInvokeAttempts);
+        }
+
+        if (config.Choice == FunctionChoice.Required)
+        {
+            if (config.Functions is { Count: > 0 } functions)
+            {
+                toolChoice = ChatToolChoice.Required;
                 tools = [];
 
                 foreach (var function in functions)

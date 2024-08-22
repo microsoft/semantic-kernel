@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel;
 using Xunit;
@@ -7,13 +8,13 @@ using Xunit;
 namespace SemanticKernel.UnitTests.AI.FunctionChoiceBehaviors;
 
 /// <summary>
-/// Unit tests for <see cref="AutoFunctionChoiceBehavior"/>
+/// Unit tests for <see cref="RequiredFunctionChoiceBehavior"/>
 /// </summary>
-public sealed class AutoFunctionChoiceBehaviorTests
+public sealed class RequiredFunctionChoiceBehaviorTests
 {
     private readonly Kernel _kernel;
 
-    public AutoFunctionChoiceBehaviorTests()
+    public RequiredFunctionChoiceBehaviorTests()
     {
         this._kernel = new Kernel();
     }
@@ -26,7 +27,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new AutoFunctionChoiceBehavior();
+        var choiceBehavior = new RequiredFunctionChoiceBehavior();
 
         var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
 
@@ -48,7 +49,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new AutoFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
 
         var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
 
@@ -69,7 +70,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
     //    this._kernel.Plugins.Add(plugin);
 
     //    // Act
-    //    var choiceBehavior = new AutoFunctionChoiceBehavior()
+    //    var choiceBehavior = new RequiredFunctionChoiceBehavior()
     //    {
     //        Functions = ["MyPlugin.Function1", "MyPlugin.Function2"]
     //    };
@@ -92,7 +93,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         var plugin = GetTestPlugin();
 
         // Act
-        var choiceBehavior = new AutoFunctionChoiceBehavior([plugin.ElementAt(0), plugin.ElementAt(1)], autoInvoke: false);
+        var choiceBehavior = new RequiredFunctionChoiceBehavior([plugin.ElementAt(0), plugin.ElementAt(1)], autoInvoke: false);
 
         var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
 
@@ -113,7 +114,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false);
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: false);
 
         var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
 
@@ -135,7 +136,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new AutoFunctionChoiceBehavior();
+        var choiceBehavior = new RequiredFunctionChoiceBehavior();
 
         var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
 
@@ -152,7 +153,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false);
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: false);
 
         var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
 
@@ -169,7 +170,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
     //    this._kernel.Plugins.Add(plugin);
 
     //    // Act
-    //    var choiceBehavior = new AutoFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
+    //    var choiceBehavior = new RequiredFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
 
     //    // Assert
     //    Assert.NotNull(choiceBehavior.Functions);
@@ -186,7 +187,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         var plugin = GetTestPlugin();
         this._kernel.Plugins.Add(plugin);
 
-        var choiceBehavior = new AutoFunctionChoiceBehavior();
+        var choiceBehavior = new RequiredFunctionChoiceBehavior();
 
         // Act
         var exception = Assert.Throws<KernelException>(() =>
@@ -203,7 +204,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         // Arrange
         var plugin = GetTestPlugin();
 
-        var choiceBehavior = new AutoFunctionChoiceBehavior(functions: [plugin.ElementAt(0)]);
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(functions: [plugin.ElementAt(0)]);
 
         // Act
         var exception = Assert.Throws<KernelException>(() =>
@@ -221,7 +222,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
     //    var plugin = GetTestPlugin();
     //    this._kernel.Plugins.Add(plugin);
 
-    //    var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false)
+    //    var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: false)
     //    {
     //        Functions = ["MyPlugin.NonKernelFunction"]
     //    };
@@ -234,6 +235,51 @@ public sealed class AutoFunctionChoiceBehaviorTests
 
     //    Assert.Equal("The specified function MyPlugin.NonKernelFunction was not found.", exception.Message);
     //}
+
+    [Fact]
+    public void ItShouldReturnNoFunctionAsSpecifiedByFunctionsSelector()
+    {
+        // Arrange
+        var plugin = GetTestPlugin();
+        this._kernel.Plugins.Add(plugin);
+
+        static IReadOnlyList<KernelFunction>? FunctionsSelector(FunctionChoiceBehaviorFunctionsSelectorContext context)
+        {
+            return null;
+        }
+
+        // Act
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: true, functionsSelector: FunctionsSelector);
+
+        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+
+        // Assert
+        Assert.NotNull(config);
+        Assert.Null(config.Functions);
+    }
+
+    [Fact]
+    public void ItShouldReturnFunctionsAsSpecifiedByFunctionsSelector()
+    {
+        // Arrange
+        var plugin = GetTestPlugin();
+        this._kernel.Plugins.Add(plugin);
+
+        static IReadOnlyList<KernelFunction>? FunctionsSelector(FunctionChoiceBehaviorFunctionsSelectorContext context)
+        {
+            return context.Functions!.Where(f => f.Name == "Function1").ToList();
+        }
+
+        // Act
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: true, functionsSelector: FunctionsSelector);
+
+        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+
+        // Assert
+        Assert.NotNull(config?.Functions);
+        Assert.Single(config.Functions);
+        Assert.Equal("Function1", config.Functions[0].Name);
+    }
 
     private static KernelPlugin GetTestPlugin()
     {
