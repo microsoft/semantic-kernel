@@ -17,7 +17,6 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import (
     ChatMessageContent,
     FunctionCallContent,
-    FunctionResultContent,
     TextContent,
 )
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -108,12 +107,6 @@ mock_message_function_call = ChatMessageContent(
         [[mock_message_function_call]],
         FunctionCallContent,
         id="auto_none_invoke"
-    ),
-    pytest.param(
-        FunctionChoiceBehavior.Required(auto_invoke=True),
-        [[mock_message_function_call]],
-        FunctionResultContent,
-        id="required"
     ),
     pytest.param(
         FunctionChoiceBehavior.Required(auto_invoke=False),
@@ -218,12 +211,6 @@ mock_message_text_content = StreamingChatMessageContent(
         [[mock_message_function_call]],
         FunctionCallContent,
         id="auto_none_invoke"
-    ),
-    pytest.param(
-        FunctionChoiceBehavior.Required(auto_invoke=True),
-        [[mock_message_function_call]],
-        FunctionResultContent,
-        id="required"
     ),
     pytest.param(
         FunctionChoiceBehavior.Required(auto_invoke=False),

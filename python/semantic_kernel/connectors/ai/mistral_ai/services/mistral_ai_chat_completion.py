@@ -18,7 +18,10 @@ from mistralai.models.chat_completion import (
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    merge_function_results,
+    update_settings_from_function_call_configuration,
+)
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
@@ -28,7 +31,6 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents import (
     ChatMessageContent,
     FunctionCallContent,
-    FunctionResultContent,
     StreamingChatMessageContent,
     StreamingTextContent,
     TextContent,
@@ -142,12 +144,14 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
         # loop for auto-invoke function calls
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(settings)
-            # there is only one chat message, this was checked earlier
-            chat_history.add_message(message=completions[0])
-            # get the function call contents from the chat message
-            function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
+            # get the function call contents from the chat message, there is only one chat message
+            # this was checked earlier
+            function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
             if (fc_count := len(function_calls)) == 0:
                 return completions
+            
+            # Since we have a function call, add the assistant's tool call message to the history
+            chat_history.add_message(message=completions[0])
 
             logger.info(f"processing {fc_count} tool calls in parallel.")
 
@@ -168,10 +172,8 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
                 ],
             )
 
-            if (any(result.terminate for result in results if result is not None)
-                or 
-                settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED):
-                return self._create_chat_message_content_from_function_results(chat_history.messages[-len(results) :]) 
+            if (any(result.terminate for result in results if result is not None)):
+                return merge_function_results(chat_history.messages[-len(results) :]) 
 
             self._update_settings(settings, chat_history, kernel=kernel)
         else:
@@ -284,10 +286,8 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
                     for function_call in function_calls
                 ],
             )
-            if (any(result.terminate for result in results if result is not None)
-                or 
-                settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED):
-                yield self._create_chat_message_content_from_function_results(chat_history.messages[-len(results) :])   # type: ignore
+            if (any(result.terminate for result in results if result is not None)):
+                yield merge_function_results(chat_history.messages[-len(results) :])   # type: ignore
                 break
 
             self._update_settings(settings, chat_history, kernel=kernel)
@@ -400,27 +400,6 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             )
             for tool in content.tool_calls
         ]
-        
-    def _create_chat_message_content_from_function_results(
-        self,
-        messages: list[ChatMessageContent],
-    ) -> list[ChatMessageContent]:
-        """Create Response from ChatMessageContent containing FunctionResultContent.
-        
-        This method combines the FunctionResultContent items from separate ChatMessageContent messages,
-        and is used in the event that the `context.terminate = True`
-        or the FunctionChoiceBehavior Required condition is met.
-        """
-        items: list[Any] = []
-        for message in messages:
-            items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
-        return [
-            ChatMessageContent(
-                role=AuthorRole.TOOL,
-                items=items,
-            )
-        ]
-
     # endregion
 
     def get_prompt_execution_settings_class(self) -> "type[MistralAIChatPromptExecutionSettings]":
