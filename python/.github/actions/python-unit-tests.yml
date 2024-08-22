@@ -1,4 +1,4 @@
-name: Python Unit Tests
+name: Python Unit Tests Runner
 
 on:
   workflow_call:
