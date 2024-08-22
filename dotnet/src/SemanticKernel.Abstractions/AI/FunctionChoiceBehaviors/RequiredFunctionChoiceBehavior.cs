@@ -7,7 +7,7 @@ using System.Linq;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Represents <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specific ones
+/// Represents <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specific ones.
 /// This behavior forces the model to always call one or more functions. The model will then select which function(s) to call.
 /// </summary>
 internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
@@ -23,7 +23,7 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     private readonly bool _autoInvoke;
 
     /// <summary>
-    /// Function selector to customize the function selection logic.
+    /// Functions selector to customize functions selection logic.
     /// </summary>
     private readonly Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? _functionsSelector;
 

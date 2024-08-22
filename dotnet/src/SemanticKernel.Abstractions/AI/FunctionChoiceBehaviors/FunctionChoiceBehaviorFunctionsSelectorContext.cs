@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Context to be provided by function choice behavior in order to obtain the functions to be used by the AI model.
+/// Context containing information to be used by the functions selector.
 /// </summary>
 public class FunctionChoiceBehaviorFunctionsSelectorContext
 {
@@ -25,7 +25,7 @@ public class FunctionChoiceBehaviorFunctionsSelectorContext
     public IReadOnlyList<KernelFunction>? Functions { get; init; }
 
     /// <summary>
-    /// The <see cref="Kernel"/> to be used for function calling.
+    /// The <see cref="Kernel"/>.
     /// </summary>
     public Kernel? Kernel { get; init; }
 
