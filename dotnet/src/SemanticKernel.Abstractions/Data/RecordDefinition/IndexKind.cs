@@ -33,4 +33,21 @@ public static class IndexKind
     /// Better with smaller datasets.
     /// </remarks>
     public const string Flat = nameof(Flat);
+
+    /// <summary>
+    /// Inverted File with Flat Compression. Designed to enhance search efficiency by narrowing the search area through the use of neighbor partitions or clusters.
+    /// Also referred to as approximate nearest neighbor (ANN) search.
+    /// </summary>
+    public const string IvfFlat = nameof(IvfFlat);
+
+    /// <summary>
+    /// Disk-based Approximate Nearest Neighbor algorithm designed for efficiently searching for approximate nearest neighbors (ANN) in high-dimensional spaces.
+    /// The primary focus of DiskANN is to handle large-scale datasets that cannot fit entirely into memory, leveraging disk storage to store the data while maintaining fast search times.
+    /// </summary>
+    public const string DiskAnn = nameof(DiskAnn);
+
+    /// <summary>
+    /// Index that compresses vectors using DiskANN-based quantization methods for better efficiency in the kNN search.
+    /// </summary>
+    public const string QuantizedFlat = nameof(QuantizedFlat);
 }

@@ -4,6 +4,8 @@ import sys
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any
 
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -36,6 +38,8 @@ class OpenAIAssistantChannel(AgentChannel):
             history: The conversation messages.
         """
         for message in history:
+            if any(isinstance(item, FunctionCallContent) for item in message.items):
+                continue
             await create_chat_message(self.client, self.thread_id, message)
 
     @override
