@@ -75,7 +75,7 @@ public sealed class MixedAgentTests
             };
         chatAgent.Kernel.Plugins.Add(plugin);
 
-        // Assistant doesn't need plug-in since it has acess to the shared function result.
+        // Assistant doesn't need plug-in since it has access to the shared function result.
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
