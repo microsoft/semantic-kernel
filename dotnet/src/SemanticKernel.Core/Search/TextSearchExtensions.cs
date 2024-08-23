@@ -24,7 +24,7 @@ public static class TextSearchExtensions
     /// <param name="textSearch">The instance of ITextSearch to be used by the plugin.</param>
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
-    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
+    /// <returns>A <see cref="KernelPlugin"/> instance with a Search operation that calls the provided <see cref="ITextSearch.SearchAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
     public static KernelPlugin CreateWithSearch(this ITextSearch textSearch, string pluginName, string? description = null)
     {
         Verify.NotNull(textSearch);
@@ -43,7 +43,7 @@ public static class TextSearchExtensions
     /// <param name="textSearch">The instance of ITextSearch to be used by the plugin.</param>
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
-    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
+    /// <returns>A <see cref="KernelPlugin"/> instance with a GetTextSearchResults operation that calls the provided <see cref="ITextSearch.GetTextSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
     public static KernelPlugin CreateWithGetTextSearchResults(this ITextSearch textSearch, string pluginName, string? description = null)
     {
         Verify.NotNull(textSearch);
@@ -62,7 +62,7 @@ public static class TextSearchExtensions
     /// <param name="textSearch">The instance of ITextSearch to be used by the plugin.</param>
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
-    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
+    /// <returns>A <see cref="KernelPlugin"/> instance with a GetSearchResults operation that calls the provided <see cref="ITextSearch.GetSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
     public static KernelPlugin CreateWithGetSearchResults(this ITextSearch textSearch, string pluginName, string? description = null)
     {
         Verify.NotNull(textSearch);
@@ -80,6 +80,7 @@ public static class TextSearchExtensions
     /// <param name="options">Optional KernelFunctionFromMethodOptions which allow the KernelFunction metadata to be specified.</param>
     /// <param name="mapToString">Optional MapSearchResultToString delegate which modifies how the search result is converted to a string.</param>
     /// <param name="searchOptions">Optional TextSearchOptions which override the options provided when the function is invoked.</param>
+    /// <returns>A <see cref="KernelFunction"/> instance with a Search operation that calls the provided <see cref="ITextSearch.SearchAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
     public static KernelFunction CreateSearch(this ITextSearch textSearch, KernelFunctionFromMethodOptions? options = null, MapSearchResultToString? mapToString = null, TextSearchOptions? searchOptions = null)
     {
         async Task<IEnumerable<string>> SearchAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
@@ -115,6 +116,7 @@ public static class TextSearchExtensions
     /// <param name="textSearch">The ITextSearch instance to use.</param>
     /// <param name="options">Optional KernelFunctionFromMethodOptions which allow the KernelFunction metadata to be specified.</param>
     /// <param name="searchOptions">Optional TextSearchOptions which override the options provided when the function is invoked.</param>
+    /// <returns>A <see cref="KernelFunction"/> instance with a Search operation that calls the provided <see cref="ITextSearch.GetTextSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
     public static KernelFunction CreateGetTextSearchResults(this ITextSearch textSearch, KernelFunctionFromMethodOptions? options = null, TextSearchOptions? searchOptions = null)
     {
         async Task<IEnumerable<TextSearchResult>> GetTextSearchResultAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
@@ -149,6 +151,7 @@ public static class TextSearchExtensions
     /// <param name="textSearch">The ITextSearch instance to use.</param>
     /// <param name="options">Optional KernelFunctionFromMethodOptions which allow the KernelFunction metadata to be specified.</param>
     /// <param name="searchOptions">Optional TextSearchOptions which override the options provided when the function is invoked.</param>
+    /// <returns>A <see cref="KernelFunction"/> instance with a Search operation that calls the provided <see cref="ITextSearch.GetSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
     public static KernelFunction CreateGetSearchResults(this ITextSearch textSearch, KernelFunctionFromMethodOptions? options = null, TextSearchOptions? searchOptions = null)
     {
         async Task<IEnumerable<object>> GetSearchResultAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
@@ -189,20 +192,18 @@ public static class TextSearchExtensions
     /// <param name="defaultValue">Default value of the argument.</param>
     private static int GetArgumentValue(KernelArguments arguments, IReadOnlyList<KernelParameterMetadata> parameters, string name, int defaultValue)
     {
-        arguments.TryGetValue(name, out var value);
-        return (value as int?) ?? GetDefaultValue(parameters, "count", defaultValue);
-    }
+        if (arguments.TryGetValue(name, out var value) && value is int argument)
+        {
+            return argument;
+        }
 
-    /// <summary>
-    /// Get the argument value <see cref="KernelReturnParameterMetadata"/> or default to the provided value.
-    /// </summary>
-    /// <param name="parameters">List of KernelReturnParameterMetadata.</param>
-    /// <param name="name">Name of the argument.</param>
-    /// <param name="defaultValue">Default value of the argument.</param>
-    private static int GetDefaultValue(IReadOnlyList<KernelParameterMetadata> parameters, string name, int defaultValue)
-    {
-        var value = parameters.FirstOrDefault(parameter => parameter.Name == name)?.DefaultValue;
-        return value is int intValue ? intValue : defaultValue;
+        value = parameters.FirstOrDefault(parameter => parameter.Name == name)?.DefaultValue;
+        if (value is int metadataDefault)
+        {
+            return metadataDefault;
+        }
+
+        return defaultValue;
     }
 
     /// <summary>
@@ -211,11 +212,11 @@ public static class TextSearchExtensions
     /// <param name="resultList">Collection of search results.</param>
     /// <param name="mapToString">Optional mapper function to convert a search result to a string.</param>
     /// <returns></returns>
-    private static List<string> MapToStrings(IEnumerable<object> resultList, MapSearchResultToString? mapToString = null)
+    private static IEnumerable<string> MapToStrings(IEnumerable<object> resultList, MapSearchResultToString? mapToString = null)
     {
         mapToString ??= DefaultMapSearchResultToString;
 
-        return resultList.Select(result => mapToString(result)).ToList();
+        return resultList.Select(result => mapToString(result));
     }
 
     /// <summary>
