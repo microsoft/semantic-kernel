@@ -23,7 +23,7 @@ from semantic_kernel.utils.telemetry.model_diagnostics.model_diagnostics_setting
 # To enable these features, set one of the following environment variables to true:
 #    SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS
 #    SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE
-model_diagnostics_settings = ModelDiagnosticSettings.create()
+MODEL_DIAGNOSTICS_SETTINGS = ModelDiagnosticSettings.create()
 
 # Operation names
 CHAT_COMPLETION_OPERATION = "chat.completions"
@@ -40,8 +40,8 @@ def are_model_diagnostics_enabled() -> bool:
     Model diagnostics are enabled if either diagnostic is enabled or diagnostic with sensitive events is enabled.
     """
     return (
-        model_diagnostics_settings.enable_otel_diagnostics
-        or model_diagnostics_settings.enable_otel_diagnostics_sensitive
+        MODEL_DIAGNOSTICS_SETTINGS.enable_otel_diagnostics
+        or MODEL_DIAGNOSTICS_SETTINGS.enable_otel_diagnostics_sensitive
     )
 
 
@@ -51,7 +51,7 @@ def are_sensitive_events_enabled() -> bool:
 
     Sensitive events are enabled if the diagnostic with sensitive events is enabled.
     """
-    return model_diagnostics_settings.enable_otel_diagnostics_sensitive
+    return MODEL_DIAGNOSTICS_SETTINGS.enable_otel_diagnostics_sensitive
 
 
 @experimental_function
@@ -183,7 +183,9 @@ def _set_completion_response(
         current_span.set_attribute(gen_ai_attributes.RESPONSE_ID, response_id)
 
     # Set the finish reason
-    finish_reasons = [str(completion.metadata.get("finish_reason")) for completion in completions]
+    finish_reasons = [
+        str(completion.finish_reason) for completion in completions if isinstance(completion, ChatMessageContent)
+    ]
     if finish_reasons:
         current_span.set_attribute(gen_ai_attributes.FINISH_REASON, ",".join(finish_reasons))
 
