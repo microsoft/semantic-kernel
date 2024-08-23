@@ -47,7 +47,7 @@ async def create_chat_message(
     Returns:
         Message: The message.
     """
-    if message.role.value not in allowed_message_roles:
+    if message.role.value not in allowed_message_roles and message.role != AuthorRole.TOOL:
         raise AgentExecutionException(
             f"Invalid message role `{message.role.value}`. Allowed roles are {allowed_message_roles}."
         )
@@ -56,7 +56,7 @@ async def create_chat_message(
 
     return await client.beta.threads.messages.create(
         thread_id=thread_id,
-        role=message.role.value,  # type: ignore
+        role="assistant" if message.role == AuthorRole.TOOL else message.role.value,  # type: ignore
         content=message_contents,  # type: ignore
     )
 
@@ -78,6 +78,8 @@ def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
                 "type": "image_file",
                 "image_file": {"file_id": content.file_id},
             })
+        elif isinstance(content, FunctionResultContent):
+            contents.append({"type": "text", "text": content.result})
     return contents
 
 
