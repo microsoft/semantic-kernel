@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -19,7 +21,7 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <summary>
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </summary>
-    private readonly bool _autoInvoke;
+    private readonly bool _autoInvoke = true;
 
     /// <summary>
     /// Functions selector to customize functions selection logic.
@@ -27,7 +29,15 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     private readonly Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? _functionsSelector;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AutoFunctionChoiceBehavior"/> class.
+    /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
+    /// </summary>
+    [JsonConstructor]
+    public RequiredFunctionChoiceBehavior()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
     /// </summary>
     /// <param name="functions">
     /// Functions to provide to AI model. If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
@@ -46,16 +56,24 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// </param>
     public RequiredFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? functionsSelector = null)
     {
+        this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
         this._functions = functions;
         this._autoInvoke = autoInvoke;
         this._functionsSelector = functionsSelector;
     }
 
+    /// <summary>
+    /// Fully qualified names of the functions to provide to AI model.
+    /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
+    /// </summary>
+    [JsonPropertyName("functions")]
+    public IList<string>? Functions { get; set; }
+
     /// <inheritdoc />
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        var functions = base.GetFunctions(this._functions, context.Kernel, this._autoInvoke);
+        var functions = base.GetFunctions(this.Functions, this._functions, context.Kernel, this._autoInvoke);
 
         IReadOnlyList<KernelFunction>? selectedFunctions = null;
 
