@@ -35,7 +35,7 @@ install:
 
 UV_VERSION = $(shell uv --version 2> /dev/null)
 install-uv:
-# Check if Poetry is installed
+# Check if uv is installed
 ifdef UV_VERSION
 	echo "uv found $(UV_VERSION)"
 	echo "running uv update"

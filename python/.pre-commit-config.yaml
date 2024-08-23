@@ -7,16 +7,16 @@ repos:
       - id: check-toml
         files: \.toml$
       - id: check-yaml
-        files: \.yaml$        
+        files: \.yaml$
       - id: check-json
         files: \.json$
-        exclude: ^python\/.vscode\/.*
+        exclude: ^python\/\.vscode\/.*
       - id: end-of-file-fixer
         files: \.py$
       - id: mixed-line-ending
         files: \.py$
       - id: debug-statements
-        files: ^python/semantic_kernel\/.*\.py$
+        files: ^python\/semantic_kernel\/.*\.py$
       - id: check-ast
         name: Check Valid Python Samples
         types: ["python"]
