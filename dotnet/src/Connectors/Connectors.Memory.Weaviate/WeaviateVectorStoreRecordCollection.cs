@@ -2,12 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Weaviate.HttpV2;
+using Microsoft.SemanticKernel.Connectors.Weaviate.ModelV2;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Http;
 
@@ -140,13 +142,45 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <inheritdoc />
     public Task DeleteAsync(Guid key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        const string OperationName = "DeleteObject";
+
+        return this.RunOperationAsync(OperationName, () =>
+        {
+            using var request = new WeaviateDeleteObjectRequest(this.CollectionName, key).Build();
+
+            return this.ExecuteRequestAsync(request, cancellationToken);
+        });
     }
 
     /// <inheritdoc />
     public Task DeleteBatchAsync(IEnumerable<Guid> keys, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        const string OperationName = "DeleteObjectBatch";
+        const string EqualOperand = "Equal";
+
+        return this.RunOperationAsync(OperationName, () =>
+        {
+            var match = new WeaviateQueryMatch
+            {
+                CollectionName = this.CollectionName,
+                WhereClause = new WeaviateQueryMatchWhereClause
+                {
+                    Operands =
+                    [
+                        new()
+                        {
+                            Operator = EqualOperand,
+                            Path = [WeaviateConstants.ReservedKeyPropertyName],
+                            Values = keys.Select(key => key.ToString()).ToList()
+                        }
+                    ]
+                }
+            };
+
+            using var request = new WeaviateDeleteObjectBatchRequest(match).Build();
+
+            return this.ExecuteRequestAsync(request, cancellationToken);
+        });
     }
 
     /// <inheritdoc />
