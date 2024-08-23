@@ -11,7 +11,7 @@ import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.chatcompletion.ChatRequestSettings;
 =======
 import com.microsoft.semantickernel.ai.AIException;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.NotSupportedException.ErrorCodes;
@@ -19,7 +19,7 @@ import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 <<<<<<< HEAD
 import com.microsoft.semantickernel.textcompletion.CompletionType;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import jakarta.inject.Inject;
 import java.util.Collections;
@@ -33,7 +33,7 @@ import reactor.core.publisher.Flux;
 =======
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import reactor.core.publisher.Mono;
 
 /// <summary>
@@ -47,7 +47,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
     private final CompletionType defaultCompletionType;
 
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     /// <summary>
     /// Create an instance of the OpenAI text completion connector
     /// </summary>
@@ -70,7 +70,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
 
         this.defaultCompletionType = defaultCompletionType;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     }
 
     @Override
@@ -135,7 +135,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
             String text, CompletionRequestSettings requestSettings) {
         // TODO
 
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         if (requestSettings.getMaxTokens() < 1) {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, "Max tokens must be >0");
         }
@@ -144,7 +144,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
         CompletionsOptions options =
 =======
         CompletionsOptions completionsOptions =
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                 new CompletionsOptions(Collections.singletonList(text))
                         .setMaxTokens(requestSettings.getMaxTokens())
                         .setTemperature(requestSettings.getTemperature())
@@ -179,7 +179,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
     public static final class Builder implements TextCompletion.Builder {
         @Nullable private OpenAIAsyncClient client;
         @Nullable private String modelId;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
         public Builder withOpenAIClient(OpenAIAsyncClient client) {
             this.client = client;
@@ -200,7 +200,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
 
         @Override
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         public TextCompletion build() {
             if (client == null) {
                 throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "OpenAI client not set");
@@ -212,7 +212,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
             return new OpenAITextCompletion(client, modelId, defaultCompletionType);
 =======
             return new OpenAITextCompletion(client, modelId);
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         }
     }
 }

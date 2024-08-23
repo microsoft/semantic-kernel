@@ -5,7 +5,7 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 <<<<<<< HEAD
 import com.azure.ai.openai.models.ChatChoice;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatMessage;
@@ -29,7 +29,7 @@ import java.util.function.BiFunction;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -46,10 +46,12 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
             OpenAIAsyncClient client, String modelId, CompletionType defaultCompletionType) {
         super(client, modelId);
         this.defaultCompletionType = defaultCompletionType;
+    public OpenAIChatCompletion(OpenAIAsyncClient client, String modelId) {
+        super(client, modelId);
 =======
     public OpenAIChatCompletion(OpenAIAsyncClient client, String modelId) {
         super(client, modelId);
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     }
 
     @Override
@@ -76,7 +78,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
 
 =======
     public static class Builder implements ChatCompletion.Builder<OpenAIChatHistory> {
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         public Builder() {}
 
         @Nullable private OpenAIAsyncClient client;
@@ -84,7 +86,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
 <<<<<<< HEAD
         private CompletionType defaultCompletionType = CompletionType.STREAMING;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
         public Builder withOpenAIClient(OpenAIAsyncClient client) {
             this.client = client;
@@ -98,7 +100,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
         }
 
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         public Builder withModelId(String modelId) {
             this.modelId = modelId;
             return this;
@@ -116,7 +118,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
             return new OpenAIChatCompletion(client, modelId, defaultCompletionType);
 =======
             return new OpenAIChatCompletion(client, modelId);
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         }
     }
 
@@ -180,7 +182,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
 =======
                                         new ChatMessage(toChatRole(it.getAuthorRoles()))
                                                 .setContent(it.getContent()))
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                         .collect(Collectors.toList());
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(messages);
@@ -196,7 +198,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
 <<<<<<< HEAD
         options.setStop(requestSettings.getStopSequences());
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
         return options;
     }
@@ -261,7 +263,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
                         });
     }
 
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     @Override
     public Flux<ChatCompletions> getStreamingChatCompletionsAsync(
             OpenAIChatHistory chat, ChatRequestSettings requestSettings) {
@@ -299,6 +301,6 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
         return history;
 =======
         return new OpenAIChatHistory(instructions);
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     }
 }

@@ -40,13 +40,13 @@ public sealed class OpenAIAudioToTextTests()
         var audioData = await BinaryData.FromStreamAsync(audio);
 
         // Act
-        var result = await service.GetTextContentAsync(new AudioContent(audioData), new OpenAIAudioToTextExecutionSettings(Filename));
+        var result = await service.GetTextContentAsync(new AudioContent(audioData, mimeType: "audio/wav"), new OpenAIAudioToTextExecutionSettings(Filename));
 
         // Assert
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = "Re-enable when Azure OpenAPI service is available.")]
     public async Task AzureOpenAIAudioToTextTestAsync()
     {
         // Arrange
@@ -68,7 +68,7 @@ public sealed class OpenAIAudioToTextTests()
         var audioData = await BinaryData.FromStreamAsync(audio);
 
         // Act
-        var result = await service.GetTextContentAsync(new AudioContent(audioData), new OpenAIAudioToTextExecutionSettings(Filename));
+        var result = await service.GetTextContentAsync(new AudioContent(audioData, mimeType: "audio/wav"), new OpenAIAudioToTextExecutionSettings(Filename));
 
         // Assert
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);

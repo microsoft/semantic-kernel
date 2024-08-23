@@ -63,6 +63,7 @@
         <project.github.repository>microsoft/semantic-kernel</project.github.repository>
         <repository.url>git@github.com:${project.github.repository}.git</repository.url>
         <spotbugs.version>4.8.3</spotbugs.version>
+        <doOldBuild>false</doOldBuild>
         <compilingJdk8>false</compilingJdk8>
     </properties>
 
@@ -77,6 +78,9 @@
         <module>extensions/semantickernel-planners</module>
         <module>extensions/semantickernel-gpt3-tokenizer</module>
         <module>extensions/semantickernel-settings-loader</module>
+
+        <module>extensions/semantickernel-planners</module>
+        <module>extensions/semantickernel-gpt3-tokenizer</module>
 
         <module>aiservices/openai</module>
         <module>aiservices/google</module>
@@ -415,6 +419,30 @@
 
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>antrun-plugin</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${doOldBuild}</skip>
+                            <target>
+                                <echo message="=============================================================="/>
+                                <echo message="THIS BRANCH HAS BEEN DISABLED, USE THE java-development BRANCH"/>
+                                <echo message="=============================================================="/>
+
+                                <fail message="THIS BRANCH HAS BEEN DISABLED, USE THE java-development BRANCH"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
             </plugin>
@@ -447,6 +475,7 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 

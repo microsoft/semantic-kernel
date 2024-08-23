@@ -30,9 +30,6 @@
       "command": "dotnet",
       "type": "process",
       "args": [
-        "tool",
-        "install",
-        "JetBrains.ReSharper.GlobalTools",
         "--global"
       ],
       "options": {

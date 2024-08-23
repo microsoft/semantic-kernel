@@ -30,7 +30,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         """;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseDependencyInjectionToCreateAgentAsync()
     {
         ServiceCollection serviceContainer = new();
 
@@ -82,7 +82,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         {
             Console.WriteLine($"# {AuthorRole.User}: {input}");
 
-            await foreach (var content in agentClient.RunDemoAsync(input))
+            await foreach (ChatMessageContent content in agentClient.RunDemoAsync(input))
             {
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
@@ -107,7 +107,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         {
             // Create a chat for agent interaction.
 
-            this._chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            this._chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             return this._chat.InvokeAsync(agent);
         }

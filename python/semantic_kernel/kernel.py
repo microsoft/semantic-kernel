@@ -1,50 +1,74 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import AsyncGenerator, AsyncIterable
+from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from copy import copy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.exceptions import (
+    FunctionCallInvalidArgumentsException,
+    FunctionExecutionException,
     KernelFunctionNotFoundError,
     KernelInvokeException,
     OperationCancelledException,
     TemplateSyntaxError,
 )
-from semantic_kernel.filters.kernel_filters_extension import KernelFilterExtension
+from semantic_kernel.exceptions.kernel_exceptions import KernelServiceNotFoundError
+from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+    AutoFunctionInvocationContext,
+)
+from semantic_kernel.filters.filter_types import FilterTypes
+from semantic_kernel.filters.kernel_filters_extension import (
+    KernelFilterExtension,
+    _rebuild_auto_function_invocation_context,
+)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_extension import KernelFunctionExtension
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE
+from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
+from semantic_kernel.utils.naming import generate_random_ascii_name
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_choice_behavior import (
+        FunctionChoiceBehavior,
+    )
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.functions.kernel_function import KernelFunction
 
 T = TypeVar("T")
 
+TDataModel = TypeVar("TDataModel")
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExtension, KernelReliabilityExtension):
-    """The main Kernel class of Semantic Kernel.
+    """The Kernel of Semantic Kernel.
 
-    This is the main entry point for the Semantic Kernel. It provides the ability to run
-    semantic/native functions, and manage plugins, memory, and AI services.
+    This is the main entry point for Semantic Kernel. It provides the ability to run
+    functions and manage filters, plugins, and AI services.
 
     Attributes:
-        plugins (dict[str, KernelPlugin] | None): The plugins to be used by the kernel
-        services (dict[str, AIServiceClientBase]): The services to be used by the kernel
-        ai_service_selector (AIServiceSelector): The AI service selector to be used by the kernel
-        retry_mechanism (RetryMechanismBase): The retry mechanism to be used by the kernel
+        function_invocation_filters: Filters applied during function invocation, from KernelFilterExtension.
+        prompt_rendering_filters: Filters applied during prompt rendering, from KernelFilterExtension.
+        auto_function_invocation_filters: Filters applied during auto function invocation, from KernelFilterExtension.
+        plugins: A dict with the plugins registered with the Kernel, from KernelFunctionExtension.
+        services: A dict with the services registered with the Kernel, from KernelServicesExtension.
+        ai_service_selector: The AI service selector to be used by the kernel, from KernelServicesExtension.
+        retry_mechanism: The retry mechanism to be used by the kernel, from KernelReliabilityExtension.
+
     """
 
     def __init__(
@@ -59,14 +83,11 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         """Initialize a new instance of the Kernel class.
 
         Args:
-            plugins (KernelPlugin | dict[str, KernelPlugin] | list[KernelPlugin] | None):
-                The plugins to be used by the kernel, will be rewritten to a dict with plugin name as key
-            services (AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None):
-                The services to be used by the kernel, will be rewritten to a dict with service_id as key
-            ai_service_selector (AIServiceSelector | None):
-                The AI service selector to be used by the kernel,
+            plugins: The plugins to be used by the kernel, will be rewritten to a dict with plugin name as key
+            services: The services to be used by the kernel, will be rewritten to a dict with service_id as key
+            ai_service_selector: The AI service selector to be used by the kernel,
                 default is based on order of execution settings.
-            **kwargs (Any): Additional fields to be passed to the Kernel model,
+            **kwargs: Additional fields to be passed to the Kernel model,
                 these are limited to retry_mechanism and function_invoking_handlers
                 and function_invoked_handlers, the best way to add function_invoking_handlers
                 and function_invoked_handlers is to use the add_function_invoking_handler
@@ -113,6 +134,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
         if not function:
             if not function_name or not plugin_name:
                 raise KernelFunctionNotFoundError("No function(s) or function- and plugin-name provided")
@@ -192,9 +215,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
     async def invoke_prompt(
         self,
-        function_name: str,
-        plugin_name: str,
         prompt: str,
+        function_name: str | None = None,
+        plugin_name: str | None = None,
         arguments: KernelArguments | None = None,
         template_format: Literal[
             "semantic-kernel",
@@ -206,9 +229,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         """Invoke a function from the provided prompt.
 
         Args:
-            function_name (str): The name of the function
-            plugin_name (str): The name of the plugin
             prompt (str): The prompt to use
+            function_name (str): The name of the function, optional
+            plugin_name (str): The name of the plugin, optional
             arguments (KernelArguments | None): The arguments to pass to the function(s), optional
             template_format (str | None): The format of the prompt template
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
@@ -222,7 +245,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             raise TemplateSyntaxError("The prompt is either null or empty.")
 
         function = KernelFunctionFromPrompt(
-            function_name=function_name,
+            function_name=function_name or generate_random_ascii_name(),
             plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
@@ -231,9 +254,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
     async def invoke_prompt_stream(
         self,
-        function_name: str,
-        plugin_name: str,
         prompt: str,
+        function_name: str | None = None,
+        plugin_name: str | None = None,
         arguments: KernelArguments | None = None,
         template_format: Literal[
             "semantic-kernel",
@@ -246,9 +269,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         """Invoke a function from the provided prompt and stream the results.
 
         Args:
-            function_name (str): The name of the function
-            plugin_name (str): The name of the plugin
             prompt (str): The prompt to use
+            function_name (str): The name of the function, optional
+            plugin_name (str): The name of the plugin, optional
             arguments (KernelArguments | None): The arguments to pass to the function(s), optional
             template_format (str | None): The format of the prompt template
             return_function_results (bool): If True, the function results are yielded as a list[FunctionResult]
@@ -265,7 +288,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 
         function = KernelFunctionFromPrompt(
-            function_name=function_name,
+            function_name=function_name or generate_random_ascii_name(),
             plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
@@ -294,3 +317,168 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
                     else:
                         output_function_result[choice.choice_index] += choice
             yield FunctionResult(function=function.metadata, value=output_function_result)
+
+    async def invoke_function_call(
+        self,
+        function_call: FunctionCallContent,
+        chat_history: ChatHistory,
+        arguments: "KernelArguments | None" = None,
+        function_call_count: int | None = None,
+        request_index: int | None = None,
+        function_behavior: "FunctionChoiceBehavior" = None,  # type: ignore
+    ) -> "AutoFunctionInvocationContext | None":
+        """Processes the provided FunctionCallContent and updates the chat history."""
+        args_cloned = copy(arguments) if arguments else KernelArguments()
+        try:
+            parsed_args = function_call.to_kernel_arguments()
+            if parsed_args:
+                args_cloned.update(parsed_args)
+        except (FunctionCallInvalidArgumentsException, TypeError) as exc:
+            logger.info(f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again.")
+            frc = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=function_call,
+                result="The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
+            )
+            chat_history.add_message(message=frc.to_chat_message_content())
+            return None
+
+        try:
+            if function_call.name is None:
+                raise FunctionExecutionException("The function name is required.")
+            if function_behavior is not None and function_behavior.filters:
+                allowed_functions = [
+                    func.fully_qualified_name for func in self.get_list_of_function_metadata(function_behavior.filters)
+                ]
+                if function_call.name not in allowed_functions:
+                    raise FunctionExecutionException(
+                        f"Only functions: {allowed_functions} are allowed, {function_call.name} is not allowed."
+                    )
+            function_to_call = self.get_function(function_call.plugin_name, function_call.function_name)
+        except Exception as exc:
+            logger.exception(f"The function `{function_call.name}` is not part of the provided functions: {exc}.")
+            frc = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=function_call,
+                result=(
+                    f"The tool call with name `{function_call.name}` is not part of the provided tools, "
+                    "please try again with a supplied tool call name and make sure to validate the name."
+                ),
+            )
+            chat_history.add_message(message=frc.to_chat_message_content())
+            return None
+
+        num_required_func_params = len([param for param in function_to_call.parameters if param.is_required])
+        if parsed_args is None or len(parsed_args) < num_required_func_params:
+            msg = (
+                f"There are `{num_required_func_params}` tool call arguments required and "
+                f"only `{len(parsed_args) if parsed_args is not None else 0}` received. The required arguments are: "
+                f"{[param.name for param in function_to_call.parameters if param.is_required]}. "
+                "Please provide the required arguments and try again."
+            )
+            logger.info(msg)
+            frc = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=function_call,
+                result=msg,
+            )
+            chat_history.add_message(message=frc.to_chat_message_content())
+            return None
+
+        logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
+
+        _rebuild_auto_function_invocation_context()
+        invocation_context = AutoFunctionInvocationContext(
+            function=function_to_call,
+            kernel=self,
+            arguments=args_cloned,
+            chat_history=chat_history,
+            function_result=FunctionResult(function=function_to_call.metadata, value=None),
+            function_count=function_call_count or 0,
+            request_sequence_index=request_index or 0,
+        )
+        if function_call.index is not None:
+            invocation_context.function_sequence_index = function_call.index
+
+        stack = self.construct_call_stack(
+            filter_type=FilterTypes.AUTO_FUNCTION_INVOCATION,
+            inner_function=self._inner_auto_function_invoke_handler,
+        )
+        await stack(invocation_context)
+
+        if invocation_context.terminate:
+            return invocation_context
+
+        frc = FunctionResultContent.from_function_call_content_and_result(
+            function_call_content=function_call, result=invocation_context.function_result
+        )
+        chat_history.add_message(message=frc.to_chat_message_content())
+        return None
+
+    async def _inner_auto_function_invoke_handler(self, context: AutoFunctionInvocationContext):
+        """Inner auto function invocation handler."""
+        try:
+            result = await context.function.invoke(context.kernel, context.arguments)
+            if result:
+                context.function_result = result
+        except Exception as exc:
+            logger.exception(f"Error invoking function {context.function.fully_qualified_name}: {exc}.")
+            value = f"An error occurred while invoking the function {context.function.fully_qualified_name}: {exc}"
+            if context.function_result is not None:
+                context.function_result.value = value
+            else:
+                context.function_result = FunctionResult(function=context.function.metadata, value=value)
+            return
+
+    async def add_embedding_to_object(
+        self,
+        inputs: OneOrMany[TDataModel],
+        field_to_embed: str,
+        field_to_store: str,
+        execution_settings: dict[str, "PromptExecutionSettings"],
+        container_mode: bool = False,
+        cast_function: Callable[[list[float]], Any] | None = None,
+        **kwargs: Any,
+    ):
+        """Gather all fields to embed, batch the embedding generation and store."""
+        contents: list[Any] = []
+        dict_like = (getter := getattr(inputs, "get", False)) and callable(getter)
+        list_of_dicts: bool = False
+        if container_mode:
+            contents = inputs[field_to_embed].tolist()  # type: ignore
+        elif isinstance(inputs, list):
+            list_of_dicts = (getter := getattr(inputs[0], "get", False)) and callable(getter)
+            for record in inputs:
+                if list_of_dicts:
+                    contents.append(record.get(field_to_embed))  # type: ignore
+                else:
+                    contents.append(getattr(record, field_to_embed))
+        else:
+            if dict_like:
+                contents.append(inputs.get(field_to_embed))  # type: ignore
+            else:
+                contents.append(getattr(inputs, field_to_embed))
+        vectors = None
+        service: EmbeddingGeneratorBase | None = None
+        for service_id, settings in execution_settings.items():
+            service = self.get_service(service_id, type=EmbeddingGeneratorBase)  # type: ignore
+            if service:
+                vectors = await service.generate_raw_embeddings(texts=contents, settings=settings, **kwargs)  # type: ignore
+                break
+        if not service:
+            raise KernelServiceNotFoundError("No service found to generate embeddings.")
+        if vectors is None:
+            raise KernelInvokeException("No vectors were generated.")
+        if cast_function:
+            vectors = [cast_function(vector) for vector in vectors]
+        if container_mode:
+            inputs[field_to_store] = vectors  # type: ignore
+            return
+        if isinstance(inputs, list):
+            for record, vector in zip(inputs, vectors):
+                if list_of_dicts:
+                    record[field_to_store] = vector  # type: ignore
+                else:
+                    setattr(record, field_to_store, vector)
+            return
+        if dict_like:
+            inputs[field_to_store] = vectors[0]  # type: ignore
+            return
+        setattr(inputs, field_to_store, vectors[0])

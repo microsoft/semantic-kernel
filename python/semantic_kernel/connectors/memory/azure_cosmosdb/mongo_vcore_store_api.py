@@ -5,9 +5,9 @@ import sys
 from typing import Any
 
 if sys.version >= "3.12":
-    from typing import override
+    from typing import override  # pragma: no cover
 else:
-    from typing_extensions import override
+    from typing_extensions import override  # pragma: no cover
 
 import numpy as np
 
@@ -19,6 +19,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class MongoStoreApi(AzureCosmosDBStoreApi):
+    """MongoStoreApi class for the Azure Cosmos DB Mongo store."""
+
     database = None
     collection_name: str
     index_name = None
@@ -338,10 +340,8 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
 
     @staticmethod
     def __serialize_metadata(record: MemoryRecord) -> str:
-        return json.dumps(
-            {
-                "text": record.text,
-                "description": record.description,
-                "additional_metadata": record.additional_metadata,
-            }
-        )
+        return json.dumps({
+            "text": record.text,
+            "description": record.description,
+            "additional_metadata": record.additional_metadata,
+        })

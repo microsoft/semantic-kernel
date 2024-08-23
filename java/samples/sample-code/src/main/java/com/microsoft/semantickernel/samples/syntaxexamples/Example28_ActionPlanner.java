@@ -19,7 +19,7 @@ import com.microsoft.semantickernel.planner.actionplanner.ActionPlanner;
  * README</a> for configuring your environment to run the examples.
  */
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 public class Example28_ActionPlanner {
     public static void main(String[] args) throws ConfigurationException {
         OpenAIAsyncClient client = SamplesConfig.getClient();

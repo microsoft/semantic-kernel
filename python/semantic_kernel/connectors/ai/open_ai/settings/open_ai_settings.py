@@ -31,7 +31,7 @@ class OpenAISettings(KernelBaseSettings):
 
     env_prefix: ClassVar[str] = "OPENAI_"
 
-    api_key: SecretStr
+    api_key: SecretStr | None = None
     org_id: str | None = None
     chat_model_id: str | None = None
     text_model_id: str | None = None
