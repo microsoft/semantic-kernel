@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 # Constants for tracing activities with semantic conventions.
+# Ideally, we should use the attributes from the semcov package.
+# However, many of the attributes are not yet available in the package,
+# so we define them here for now.
 
 # Activity tags
 SYSTEM = "gen_ai.system"
