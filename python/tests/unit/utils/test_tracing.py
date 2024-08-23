@@ -17,22 +17,10 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
-from semantic_kernel.utils.telemetry.const import (
+from semantic_kernel.utils.telemetry.model_diagnostics import gen_ai_attributes
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     CHAT_COMPLETION_OPERATION,
-    COMPLETION_EVENT,
-    COMPLETION_EVENT_COMPLETION,
-    ERROR_TYPE,
-    FINISH_REASON,
-    MAX_TOKENS,
-    MODEL,
-    OPERATION,
-    PROMPT_EVENT,
-    PROMPT_EVENT_PROMPT,
-    RESPONSE_ID,
-    SYSTEM,
-    TEMPERATURE,
     TEXT_COMPLETION_OPERATION,
-    TOP_P,
 )
 
 TEST_CONTENT = "Test content"
@@ -108,22 +96,21 @@ async def test_trace_chat_completion(
 
     assert results == TEST_CHAT_RESPONSE
 
-    mock_span.set_attributes.assert_called_with(
-        {
-            OPERATION: CHAT_COMPLETION_OPERATION,
-            SYSTEM: OpenAIChatCompletionBase.MODEL_PROVIDER_NAME,
-            MODEL: TEST_MODEL,
-        }
-    )
-    mock_span.set_attribute.assert_any_call(MAX_TOKENS, TEST_MAX_TOKENS)
-    mock_span.set_attribute.assert_any_call(TEMPERATURE, TEST_TEMPERATURE)
-    mock_span.set_attribute.assert_any_call(TOP_P, TEST_TOP_P)
-    mock_span.add_event.assert_any_call(PROMPT_EVENT, {PROMPT_EVENT_PROMPT: "[]"})
+    mock_span.set_attributes.assert_called_with({
+        gen_ai_attributes.OPERATION: CHAT_COMPLETION_OPERATION,
+        gen_ai_attributes.SYSTEM: OpenAIChatCompletionBase.MODEL_PROVIDER_NAME,
+        gen_ai_attributes.MODEL: TEST_MODEL,
+    })
+    mock_span.set_attribute.assert_any_call(gen_ai_attributes.MAX_TOKENS, TEST_MAX_TOKENS)
+    mock_span.set_attribute.assert_any_call(gen_ai_attributes.TEMPERATURE, TEST_TEMPERATURE)
+    mock_span.set_attribute.assert_any_call(gen_ai_attributes.TOP_P, TEST_TOP_P)
+    mock_span.add_event.assert_any_call(gen_ai_attributes.PROMPT_EVENT, {gen_ai_attributes.PROMPT_EVENT_PROMPT: "[]"})
 
-    mock_span.set_attribute.assert_any_call(RESPONSE_ID, TEST_RESPONSE_ID)
-    mock_span.set_attribute.assert_any_call(FINISH_REASON, str(FinishReason.STOP))
+    mock_span.set_attribute.assert_any_call(gen_ai_attributes.RESPONSE_ID, TEST_RESPONSE_ID)
+    mock_span.set_attribute.assert_any_call(gen_ai_attributes.FINISH_REASON, str(FinishReason.STOP))
     mock_span.add_event.assert_any_call(
-        COMPLETION_EVENT, {COMPLETION_EVENT_COMPLETION: EXPECTED_CHAT_COMPLETION_EVENT_PAYLOAD}
+        gen_ai_attributes.COMPLETION_EVENT,
+        {gen_ai_attributes.COMPLETION_EVENT_COMPLETION: EXPECTED_CHAT_COMPLETION_EVENT_PAYLOAD},
     )
 
 
@@ -147,21 +134,22 @@ async def test_trace_text_completion(
 
     assert results == EXPECTED_TEXT_CONTENT
 
-    mock_span.set_attributes.assert_called_with(
-        {
-            OPERATION: TEXT_COMPLETION_OPERATION,
-            SYSTEM: OpenAIChatCompletionBase.MODEL_PROVIDER_NAME,
-            MODEL: TEST_MODEL,
-        }
-    )
-    mock_span.set_attribute.assert_any_call(MAX_TOKENS, TEST_MAX_TOKENS)
-    mock_span.set_attribute.assert_any_call(TEMPERATURE, TEST_TEMPERATURE)
-    mock_span.set_attribute.assert_any_call(TOP_P, TEST_TOP_P)
-    mock_span.add_event.assert_any_call(PROMPT_EVENT, {PROMPT_EVENT_PROMPT: TEST_TEXT_PROMPT})
-
-    mock_span.set_attribute.assert_any_call(RESPONSE_ID, TEST_RESPONSE_ID)
+    mock_span.set_attributes.assert_called_with({
+        gen_ai_attributes.OPERATION: TEXT_COMPLETION_OPERATION,
+        gen_ai_attributes.SYSTEM: OpenAIChatCompletionBase.MODEL_PROVIDER_NAME,
+        gen_ai_attributes.MODEL: TEST_MODEL,
+    })
+    mock_span.set_attribute.assert_any_call(gen_ai_attributes.MAX_TOKENS, TEST_MAX_TOKENS)
+    mock_span.set_attribute.assert_any_call(gen_ai_attributes.TEMPERATURE, TEST_TEMPERATURE)
+    mock_span.set_attribute.assert_any_call(gen_ai_attributes.TOP_P, TEST_TOP_P)
     mock_span.add_event.assert_any_call(
-        COMPLETION_EVENT, {COMPLETION_EVENT_COMPLETION: EXPECTED_TEXT_COMPLETION_EVENT_PAYLOAD}
+        gen_ai_attributes.PROMPT_EVENT, {gen_ai_attributes.PROMPT_EVENT_PROMPT: TEST_TEXT_PROMPT}
+    )
+
+    mock_span.set_attribute.assert_any_call(gen_ai_attributes.RESPONSE_ID, TEST_RESPONSE_ID)
+    mock_span.add_event.assert_any_call(
+        gen_ai_attributes.COMPLETION_EVENT,
+        {gen_ai_attributes.COMPLETION_EVENT_COMPLETION: EXPECTED_TEXT_COMPLETION_EVENT_PAYLOAD},
     )
 
 
@@ -188,16 +176,14 @@ async def test_trace_chat_completion_exception(
             chat_history=ChatHistory(), settings=PromptExecutionSettings(extension_data=extension_data)
         )
 
-    mock_span.set_attributes.assert_called_with(
-        {
-            OPERATION: CHAT_COMPLETION_OPERATION,
-            SYSTEM: OpenAIChatCompletionBase.MODEL_PROVIDER_NAME,
-            MODEL: TEST_MODEL,
-        }
-    )
+    mock_span.set_attributes.assert_called_with({
+        gen_ai_attributes.OPERATION: CHAT_COMPLETION_OPERATION,
+        gen_ai_attributes.SYSTEM: OpenAIChatCompletionBase.MODEL_PROVIDER_NAME,
+        gen_ai_attributes.MODEL: TEST_MODEL,
+    })
 
     exception = ServiceResponseException()
-    mock_span.set_attribute.assert_any_call(ERROR_TYPE, str(type(exception)))
+    mock_span.set_attribute.assert_any_call(gen_ai_attributes.ERROR_TYPE, str(type(exception)))
     mock_span.set_status.assert_any_call(StatusCode.ERROR, repr(exception))
 
     mock_span.end.assert_any_call()
@@ -226,16 +212,14 @@ async def test_trace_text_completion_exception(
             prompt=TEST_TEXT_PROMPT, settings=PromptExecutionSettings(extension_data=extension_data)
         )
 
-    mock_span.set_attributes.assert_called_with(
-        {
-            OPERATION: TEXT_COMPLETION_OPERATION,
-            SYSTEM: OpenAIChatCompletionBase.MODEL_PROVIDER_NAME,
-            MODEL: TEST_MODEL,
-        }
-    )
+    mock_span.set_attributes.assert_called_with({
+        gen_ai_attributes.OPERATION: TEXT_COMPLETION_OPERATION,
+        gen_ai_attributes.SYSTEM: OpenAIChatCompletionBase.MODEL_PROVIDER_NAME,
+        gen_ai_attributes.MODEL: TEST_MODEL,
+    })
 
     exception = ServiceResponseException()
-    mock_span.set_attribute.assert_any_call(ERROR_TYPE, str(type(exception)))
+    mock_span.set_attribute.assert_any_call(gen_ai_attributes.ERROR_TYPE, str(type(exception)))
     mock_span.set_status.assert_any_call(StatusCode.ERROR, repr(exception))
 
     mock_span.end.assert_any_call()
