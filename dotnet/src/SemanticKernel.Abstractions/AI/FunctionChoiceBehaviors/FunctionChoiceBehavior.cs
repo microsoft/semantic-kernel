@@ -79,5 +79,53 @@ public abstract class FunctionChoiceBehavior
     /// <returns>The configuration.</returns>
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     public abstract FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context);
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+    /// <summary>
+    /// Returns functions AI connector should provide to the AI model.
+    /// </summary>
+    /// <param name="functions">Functions provided as instances of <see cref="KernelFunction"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> to be used for function calling.</param>
+    /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI connector.</param>
+    /// <returns>The configuration.</returns>
+    public IReadOnlyList<KernelFunction>? GetFunctions(IEnumerable<KernelFunction>? functions, Kernel? kernel, bool autoInvoke)
+    {
+        // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
+        // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
+        // and then fail to do so, so we fail before we get to that point. This is an error
+        // on the consumers behalf: if they specify auto-invocation with any functions, they must
+        // specify the kernel and the kernel must contain those functions.
+        if (autoInvoke && kernel is null)
+        {
+            throw new KernelException("Auto-invocation is not supported when no kernel is provided.");
+        }
+
+        List<KernelFunction>? availableFunctions = null;
+
+        if (functions is not null)
+        {
+            availableFunctions = new List<KernelFunction>(functions);
+
+            if (autoInvoke)
+            {
+                foreach (var function in availableFunctions)
+                {
+                    // If auto-invocation is requested and no function is found in the kernel, fail early.
+                    if (!kernel!.Plugins.TryGetFunction(function.PluginName, function.Name, out var _))
+                    {
+                        throw new KernelException($"The specified function {function} is not available in the kernel.");
+                    }
+                }
+            }
+        }
+        // Provide all kernel functions.
+        else if (kernel is not null)
+        {
+            foreach (var plugin in kernel.Plugins)
+            {
+                (availableFunctions ??= new List<KernelFunction>(kernel.Plugins.Count)).AddRange(plugin);
+            }
+        }
+
+        return availableFunctions;
+    }
 }

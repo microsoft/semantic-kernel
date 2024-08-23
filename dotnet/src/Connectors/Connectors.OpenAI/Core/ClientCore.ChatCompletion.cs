@@ -1217,55 +1217,33 @@ internal partial class ClientCore
         int maximumAutoInvokeAttempts = config.AutoInvoke ? MaximumAutoInvokeAttempts : 0;
         bool autoInvoke = kernel is not null && config.AutoInvoke;
 
-        // TODO: Extract common logic out of the `if` operators.
-        if (config.Choice == FunctionChoice.Auto)
+        if (config.Functions is { Count: > 0 } functions)
         {
-            if (config.Functions is { Count: > 0 } functions)
+            if (config.Choice == FunctionChoice.Auto)
             {
                 toolChoice = ChatToolChoice.Auto;
-                tools = [];
-
-                foreach (var function in functions)
-                {
-                    tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition());
-                }
             }
-
-            return new(tools, toolChoice, autoInvoke, maximumAutoInvokeAttempts);
-        }
-
-        if (config.Choice == FunctionChoice.Required)
-        {
-            if (config.Functions is { Count: > 0 } functions)
+            else if (config.Choice == FunctionChoice.Required)
             {
                 toolChoice = ChatToolChoice.Required;
-                tools = [];
-
-                foreach (var function in functions)
-                {
-                    tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition());
-                }
             }
-
-            return new(tools, toolChoice, autoInvoke, maximumAutoInvokeAttempts);
-        }
-
-        if (config.Choice == FunctionChoice.None)
-        {
-            if (config.Functions is { Count: > 0 } functions)
+            else if (config.Choice == FunctionChoice.None)
             {
                 toolChoice = ChatToolChoice.None;
-                tools = [];
-
-                foreach (var function in functions)
-                {
-                    tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition());
-                }
+            }
+            else
+            {
+                throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");
             }
 
-            return new(tools, toolChoice, autoInvoke, maximumAutoInvokeAttempts);
+            tools = [];
+
+            foreach (var function in functions)
+            {
+                tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition());
+            }
         }
 
-        throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");
+        return new(tools, toolChoice, autoInvoke, maximumAutoInvokeAttempts);
     }
 }

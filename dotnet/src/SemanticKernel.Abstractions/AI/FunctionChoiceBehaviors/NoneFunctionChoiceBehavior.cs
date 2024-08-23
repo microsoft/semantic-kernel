@@ -28,29 +28,16 @@ internal sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
         this._functions = functions;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        List<KernelFunction>? availableFunctions = null;
+        var functions = base.GetFunctions(this._functions, context.Kernel, autoInvoke: false);
 
-        if (this._functions is not null)
-        {
-            availableFunctions = new List<KernelFunction>(this._functions);
-        }
-        // Provide all kernel functions.
-        else if (context.Kernel is not null)
-        {
-            foreach (var plugin in context.Kernel.Plugins)
-            {
-                (availableFunctions ??= new List<KernelFunction>(context.Kernel.Plugins.Count)).AddRange(plugin);
-            }
-        }
-
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         return new FunctionChoiceBehaviorConfiguration()
         {
             Choice = FunctionChoice.None,
-            Functions = availableFunctions,
+            Functions = functions,
             AutoInvoke = false,
         };
 #pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

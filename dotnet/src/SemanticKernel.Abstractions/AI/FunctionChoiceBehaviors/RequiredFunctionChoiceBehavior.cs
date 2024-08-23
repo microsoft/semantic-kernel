@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.SemanticKernel;
 
@@ -55,46 +54,8 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <inheritdoc />
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     {
-        // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
-        // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
-        // and then fail to do so, so we fail before we get to that point. This is an error
-        // on the consumers behalf: if they specify auto-invocation with any functions, they must
-        // specify the kernel and the kernel must contain those functions.
-        if (this._autoInvoke && context.Kernel is null)
-        {
-            throw new KernelException("Auto-invocation is not supported when no kernel is provided.");
-        }
-
-        List<KernelFunction>? availableFunctions = null;
-
-        if (this._functions is not null)
-        {
-            availableFunctions = new List<KernelFunction>(this._functions.Count());
-
-            foreach (var function in this._functions)
-            {
-                if (this._autoInvoke)
-                {
-                    // If auto-invocation is requested and no function is found in the kernel, fail early.
-                    if (!context.Kernel!.Plugins.TryGetFunction(function.PluginName, function.Name, out var _))
-                    {
-                        throw new KernelException($"The specified function {function} is not available in the kernel.");
-                    }
-                }
-
-                availableFunctions.Add(function);
-            }
-        }
-        // Provide all kernel functions.
-        else if (context.Kernel is not null)
-        {
-            foreach (var plugin in context.Kernel.Plugins)
-            {
-                (availableFunctions ??= new List<KernelFunction>(context.Kernel.Plugins.Count)).AddRange(plugin);
-            }
-        }
+        var functions = base.GetFunctions(this._functions, context.Kernel, this._autoInvoke);
 
         IReadOnlyList<KernelFunction>? selectedFunctions = null;
 
@@ -104,15 +65,14 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
             selectedFunctions = this._functionsSelector(new FunctionChoiceBehaviorFunctionsSelectorContext(context.ChatHistory)
             {
                 Kernel = context.Kernel,
-                Functions = availableFunctions,
+                Functions = functions,
             });
         }
 
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         return new FunctionChoiceBehaviorConfiguration()
         {
             Choice = FunctionChoice.Required,
-            Functions = selectedFunctions ?? availableFunctions,
+            Functions = selectedFunctions ?? functions,
             AutoInvoke = this._autoInvoke,
         };
 #pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
