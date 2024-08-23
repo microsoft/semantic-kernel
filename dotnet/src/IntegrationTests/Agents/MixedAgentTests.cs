@@ -55,7 +55,7 @@ public sealed class MixedAgentTests
         await this.ExecuteAgentAsync(
             this.CreateChatCompletionKernel(azureOpenAISettings),
             new(azureOpenAISettings.ApiKey, azureOpenAISettings.Endpoint),
-            azureOpenAISettings.ChatDeploymentName!);
+            AssistantModel);
     }
 
     private async Task ExecuteAgentAsync(
