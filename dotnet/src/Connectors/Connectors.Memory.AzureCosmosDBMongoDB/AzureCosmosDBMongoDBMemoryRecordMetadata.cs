@@ -73,10 +73,10 @@ internal struct AzureCosmosDBMongoDBMemoryRecordMetadata
     public MemoryRecordMetadata ToMemoryRecordMetadata() =>
         new(
             this.IsReference,
-            this.ExternalSourceName,
             this.Id,
-            this.Description,
             this.Text,
+            this.Description,
+            this.ExternalSourceName,
             this.AdditionalMetadata
         );
 }

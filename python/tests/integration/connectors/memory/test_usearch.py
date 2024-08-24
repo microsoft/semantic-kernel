@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from datetime import datetime
-from typing import List
 
 import numpy as np
 import pytest
@@ -90,7 +89,7 @@ def memory_record3():
     )
 
 
-def gen_memory_records(count: int, ndim: int, start_index: int = 0) -> List[MemoryRecord]:
+def gen_memory_records(count: int, ndim: int, start_index: int = 0) -> list[MemoryRecord]:
     return [
         MemoryRecord(
             is_reference=False,
@@ -108,7 +107,6 @@ def gen_memory_records(count: int, ndim: int, start_index: int = 0) -> List[Memo
 
 def compare_memory_records(record1: MemoryRecord, record2: MemoryRecord, with_embedding: bool):
     """Compare two MemoryRecord instances and assert they are the same."""
-
     assert record1._key == record2._key, f"_key mismatch: {record1._key} != {record2._key}"
     assert (
         record1._timestamp == record2._timestamp

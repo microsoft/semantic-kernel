@@ -2,7 +2,7 @@
 
 import logging
 from copy import copy
-from typing import TYPE_CHECKING, Any, ClassVar, List
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import Field, field_validator, model_validator
 
@@ -11,6 +11,8 @@ from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundE
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
+from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 
 if TYPE_CHECKING:
@@ -42,12 +44,12 @@ class CodeBlock(Block):
         CodeBlockTokenError: If a token is not a named argument after the second token.
         CodeBlockRenderError: If the plugin collection is not set in the kernel.
         CodeBlockRenderError: If the function is not found in the plugin collection.
-        CodeBlockRenderError: If the function does not take any arguments but it is being
+        CodeBlockRenderError: If the function does not take any arguments, but it is being
             called in the template with arguments.
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.CODE
-    tokens: List[Block] = Field(default_factory=list)
+    tokens: list[Block] = Field(default_factory=list)
 
     @model_validator(mode="before")
     @classmethod
@@ -63,7 +65,7 @@ class CodeBlock(Block):
         return fields
 
     @field_validator("tokens", mode="after")
-    def check_tokens(cls, tokens: List[Block]) -> List[Block]:
+    def check_tokens(cls, tokens: list[Block]) -> list[Block]:
         """Check the tokens in the list.
 
         If the first token is a value or variable, the rest of the tokens will be ignored.
@@ -104,16 +106,18 @@ these will be ignored."
         """Render the code block.
 
         If the first token is a function_id, it will call the function from the plugin collection.
-        Otherwise it is a value or variable and those are then rendered directly.
+        Otherwise, it is a value or variable and those are then rendered directly.
         """
         logger.debug(f"Rendering code: `{self.content}`")
-        if self.tokens[0].type == BlockTypes.FUNCTION_ID:
+        if isinstance(self.tokens[0], FunctionIdBlock):
             return await self._render_function_call(kernel, arguments)
         # validated that if the first token is not a function_id, it is a value or variable
-        return self.tokens[0].render(kernel, arguments)
+        return self.tokens[0].render(kernel, arguments)  # type: ignore
 
     async def _render_function_call(self, kernel: "Kernel", arguments: "KernelArguments"):
-        function_block = self.tokens[0]
+        if not isinstance(self.tokens[0], FunctionIdBlock):
+            raise CodeBlockRenderException("The first token should be a function_id")
+        function_block: FunctionIdBlock = self.tokens[0]
         try:
             function = kernel.get_function(function_block.plugin_name, function_block.function_name)
         except (KernelFunctionNotFoundError, KernelPluginNotFoundError) as exc:
@@ -124,11 +128,12 @@ these will be ignored."
         arguments_clone = copy(arguments)
         if len(self.tokens) > 1:
             arguments_clone = self._enrich_function_arguments(kernel, arguments_clone, function.metadata)
-
-        result = await function.invoke(kernel, arguments_clone)
-        if exc := result.metadata.get("error", None):
-            raise CodeBlockRenderException(f"Error rendering function: {function.metadata} with error: {exc}") from exc
-
+        try:
+            result = await function.invoke(kernel, arguments_clone)
+        except Exception as exc:
+            error_msg = f"Error invoking function `{function_block.content}`"
+            logger.error(error_msg)
+            raise CodeBlockRenderException(error_msg) from exc
         return str(result) if result else ""
 
     def _enrich_function_arguments(
@@ -144,10 +149,10 @@ these will be ignored."
             )
         for index, token in enumerate(self.tokens[1:], start=1):
             logger.debug(f"Parsing variable/value: `{self.tokens[1].content}`")
-            rendered_value = token.render(kernel, arguments)
-            if token.type != BlockTypes.NAMED_ARG and index == 1:
+            rendered_value = token.render(kernel, arguments)  # type: ignore
+            if not isinstance(token, NamedArgBlock) and index == 1:
                 arguments[function_metadata.parameters[0].name] = rendered_value
                 continue
-            arguments[token.name] = rendered_value
+            arguments[token.name] = rendered_value  # type: ignore
 
         return arguments

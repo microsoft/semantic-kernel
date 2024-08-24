@@ -28,7 +28,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null) : IOpenApiDocumentParser
 {
     /// <inheritdoc/>
-    public async Task<IList<RestApiOperation>> ParseAsync(
+    public async Task<RestApiSpecification> ParseAsync(
         Stream stream,
         bool ignoreNonCompliantErrors = false,
         IList<string>? operationsToExclude = null,
@@ -42,7 +42,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
-        return ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger);
+        return new(ExtractRestApiInfo(result.OpenApiDocument), ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger));
     }
 
     #region private
@@ -133,6 +133,21 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     }
 
     /// <summary>
+    /// Parses an OpenAPI document and extracts REST API information.
+    /// </summary>
+    /// <param name="document">The OpenAPI document.</param>
+    /// <returns>Rest API information.</returns>
+    private static RestApiInfo ExtractRestApiInfo(OpenApiDocument document)
+    {
+        return new()
+        {
+            Title = document.Info.Title,
+            Description = document.Info.Description,
+            Version = document.Info.Version,
+        };
+    }
+
+    /// <summary>
     /// Parses an OpenAPI document and extracts REST API operations.
     /// </summary>
     /// <param name="document">The OpenAPI document.</param>
@@ -174,7 +189,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
             var operationItem = operationPair.Value;
 
-            if (operationsToExclude != null && operationsToExclude.Contains(operationItem.OperationId, StringComparer.OrdinalIgnoreCase))
+            if (operationsToExclude is not null && operationsToExclude.Contains(operationItem.OperationId, StringComparer.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -226,7 +241,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 // Serialize complex objects and set as json strings.
                 // The only remaining type not referenced here is null, but the default value of extensionValueObj
                 // is null, so if we just continue that will handle the null case.
-                if (any.AnyType == AnyType.Array || any.AnyType == AnyType.Object)
+                if (any.AnyType is AnyType.Array or AnyType.Object)
                 {
                     var schemaBuilder = new StringBuilder();
                     var jsonWriter = new OpenApiJsonWriter(new StringWriter(schemaBuilder, CultureInfo.InvariantCulture), new OpenApiJsonWriterSettings() { Terse = true });
@@ -256,12 +271,12 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         foreach (var parameter in parameters)
         {
-            if (parameter.In == null)
+            if (parameter.In is null)
             {
                 throw new KernelException($"Parameter location of {parameter.Name} parameter of {operationId} operation is undefined.");
             }
 
-            if (parameter.Style == null)
+            if (parameter.Style is null)
             {
                 throw new KernelException($"Parameter style of {parameter.Name} parameter of {operationId} operation is undefined.");
             }
@@ -293,7 +308,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <returns>The REST API operation payload.</returns>
     private static RestApiOperationPayload? CreateRestApiOperationPayload(string operationId, OpenApiRequestBody requestBody)
     {
-        if (requestBody?.Content == null)
+        if (requestBody?.Content is null)
         {
             return null;
         }
@@ -332,7 +347,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     private static List<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ISet<string> requiredProperties,
         int level = 0)
     {
-        if (schema == null)
+        if (schema is null)
         {
             return [];
         }

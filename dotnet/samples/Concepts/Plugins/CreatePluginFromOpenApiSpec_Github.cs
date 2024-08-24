@@ -53,7 +53,7 @@ public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : Base
         WriteStringToStream(schemaStream, schema);
 
         // Import an Open API plugin from a stream.
-        var plugin = await kernel.CreatePluginFromOpenApiAsync("GithubVersionsApi", schemaStream, new OpenAIFunctionExecutionParameters(httpClient));
+        var plugin = await kernel.CreatePluginFromOpenApiAsync("GithubVersionsApi", schemaStream, new OpenApiFunctionExecutionParameters(httpClient));
 
         // Get the function to be invoked and its metadata and extension properties.
         var function = plugin["getVersions"];
@@ -75,7 +75,7 @@ public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : Base
         else
         {
             // Invoke the function and output the result.
-            var functionResult = await kernel.InvokeAsync(function, new KernelArguments());
+            var functionResult = await kernel.InvokeAsync(function);
             var result = functionResult.GetValue<RestApiOperationResponse>();
             Console.WriteLine($"Function execution result: {result?.Content}");
         }
@@ -87,7 +87,7 @@ public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : Base
         if (function.Metadata.AdditionalProperties.TryGetValue("method", out var method) && method as string is "GET")
         {
             // Invoke the function and output the result.
-            var functionResult = await kernel.InvokeAsync(function, new KernelArguments());
+            var functionResult = await kernel.InvokeAsync(function);
             var result = functionResult.GetValue<RestApiOperationResponse>();
             Console.WriteLine($"Function execution result: {result?.Content}");
         }

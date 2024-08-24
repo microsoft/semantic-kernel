@@ -69,7 +69,11 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
+        this.Logger.LogKernelFunctionTerminationStrategyInvokingFunction(nameof(ShouldAgentTerminateAsync), this.Function.PluginName, this.Function.Name);
+
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        this.Logger.LogKernelFunctionTerminationStrategyInvokedFunction(nameof(ShouldAgentTerminateAsync), this.Function.PluginName, this.Function.Name, result.ValueType);
 
         return this.ResultParser.Invoke(result);
     }

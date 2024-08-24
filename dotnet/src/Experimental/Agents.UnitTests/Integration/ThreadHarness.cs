@@ -74,7 +74,7 @@ public sealed class ThreadHarness(ITestOutputHelper output)
 
         int index = 0;
         string? messageId = null;
-        while (messageId != null || index == 0)
+        while (messageId is not null || index == 0)
         {
             var messages = await thread.GetMessagesAsync(count: 100, lastMessageId: messageId).ConfigureAwait(true);
             foreach (var message in messages)

@@ -39,7 +39,7 @@ public static class PineconeDocumentExtensions
             JsonSerializerOptions options = PineconeUtils.DefaultSerializerOptions;
             var additionalMetaData = JsonSerializer.Deserialize<Dictionary<string, object>>(memoryRecord.Metadata.AdditionalMetadata, options);
 
-            if (additionalMetaData != null)
+            if (additionalMetaData is not null)
             {
                 foreach (var item in additionalMetaData)
                 {
@@ -73,7 +73,7 @@ public static class PineconeDocumentExtensions
             additionalMetadataJson
         );
 
-        DateTimeOffset? timestamp = pineconeDocument.CreatedAt != null
+        DateTimeOffset? timestamp = pineconeDocument.CreatedAt is not null
             ? DateTimeOffset.Parse(pineconeDocument.CreatedAt, DateTimeFormatInfo.InvariantInfo)
             : null;
 

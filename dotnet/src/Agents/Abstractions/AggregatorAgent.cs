@@ -39,12 +39,19 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     /// <inheritdoc/>
     protected internal override IEnumerable<string> GetChannelKeys()
     {
-        yield return typeof(AggregatorChannel).FullName;
+        yield return typeof(AggregatorChannel).FullName!;
     }
 
     /// <inheritdoc/>
     protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult<AgentChannel>(new AggregatorChannel(chatProvider.Invoke()));
+        this.Logger.LogAggregatorAgentCreatingChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
+
+        AgentChat chat = chatProvider.Invoke();
+        AggregatorChannel channel = new(chat);
+
+        this.Logger.LogAggregatorAgentCreatedChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel), this.Mode, chat.GetType());
+
+        return Task.FromResult<AgentChannel>(channel);
     }
 }

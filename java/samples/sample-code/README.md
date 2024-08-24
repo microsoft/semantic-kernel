@@ -34,6 +34,10 @@ They can then be run by:
 
 # Configuration
 
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
 You can define the provider of Open AI by setting the `OPENAI_CLIENT_TYPE`
 property or environment variable to either [`OPENAI`](https://platform.openai.com)
 or [`AZURE_OPEN_AI`](https://learn.microsoft.com/azure/cognitive-services/openai/).
@@ -41,6 +45,23 @@ By default, the samples will use the Open AI client.
 
 ```shell
 OPENAI_CLIENT_TYPE=OPEN_AI ../../mvnw exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
+<<<<<<< AI
+=======
+=======
+>>>>>>> main
+By default, the samples will use the Open AI client, but you can also use the Azure Open AI client.
+
+## Open AI client type
+
+You can define the provider of Open AI (openai.com or Azure), this can be done by setting the `OPENAI_CLIENT_TYPE`
+property or environment variable to either `OPENAI` or `AZURE_OPEN_AI`, i.e.:
+
+```shell
+OPENAI_CLIENT_TYPE=OPENAI ../../mvnw exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
+<<<<<<< AI
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
 OR
 
@@ -48,9 +69,16 @@ OR
 ```
 
 ## Client Settings
-
+<<<<<<< AI
 The samples search for the client settings in the following order:
-
+The tests search for the client settings in the following order:
+=======
+<<<<<<< HEAD
+The samples search for the client settings in the following order:
+=======
+The tests search for the client settings in the following order:
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 1. Properties file whose location is defined by the `CONF_PROPERTIES` property or environment variable.
 1. System properties defined on the command line.
 1. Environment variables.
@@ -63,7 +91,16 @@ You can set the location of a properties file, by setting the `CONF_PROPERTIES` 
 
 ```shell
 CONF_PROPERTIES=my.properties \
+<<<<<<< AI
 OPENAI_CLIENT_TYPE=OPEN_AI \
+OPENAI_CLIENT_TYPE=OPENAI \
+=======
+<<<<<<< HEAD
+OPENAI_CLIENT_TYPE=OPEN_AI \
+=======
+OPENAI_CLIENT_TYPE=OPENAI \
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 ../../mvnw exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
 
 OR
@@ -119,8 +156,25 @@ AZURE_OPEN_AI_ENDPOINT="endpoint url" \
 ../../mvnw clean package exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
 
 # OPENAI:
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
 OPENAI_CLIENT_TYPE=OPEN_AI \
 OPEN_AI_KEY="my-key" \
 OPEN_AI_ORGANIZATION_ID="organisation id" \
 ../../mvnw clean package exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
 ```
+<<<<<<< AI
+=======
+=======
+>>>>>>> main
+OPENAI_CLIENT_TYPE=OPENAI \
+OPEN_AI_KEY="my-key" \
+OPEN_AI_ORGANIZATION_ID="organisation id" \
+../../mvnw clean package exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
+```
+<<<<<<< AI
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main

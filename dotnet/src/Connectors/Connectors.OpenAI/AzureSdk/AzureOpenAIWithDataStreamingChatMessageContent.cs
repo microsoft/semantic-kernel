@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// Represents a chat message content chunk that was streamed from the remote model.
 /// </remarks>
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 public sealed class AzureOpenAIWithDataStreamingChatMessageContent : StreamingChatMessageContent
 {
     /// <inheritdoc/>

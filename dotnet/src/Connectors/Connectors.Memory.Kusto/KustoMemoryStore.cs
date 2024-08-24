@@ -232,7 +232,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        if (keys != null)
+        if (keys is not null)
         {
             var keysString = string.Join(",", keys.Select(k => $"'{k}'"));
             using var resp = await this._adminClient
@@ -358,7 +358,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <param name="collectionName">Kusto table name.</param>
     /// <param name="normalized">Boolean flag that indicates if table name normalization is needed.</param>
     private static string GetTableName(string collectionName, bool normalized = true)
-        => normalized ? CslSyntaxGenerator.NormalizeTableName(collectionName) : collectionName;
+        => normalized ? CslSyntaxGenerator.NormalizeName(collectionName) : collectionName;
 
     /// <summary>
     /// Converts Kusto table name to collection name.

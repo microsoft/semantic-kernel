@@ -25,7 +25,7 @@ public class PromptFunctions_MultipleArguments(ITestOutputHelper output) : BaseT
         string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (apiKey == null || deploymentName == null || modelId == null || endpoint == null)
+        if (apiKey is null || deploymentName is null || modelId is null || endpoint is null)
         {
             Console.WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;

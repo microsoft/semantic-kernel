@@ -35,6 +35,8 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
 
         var agent = agents[this._index];
 
+        this.Logger.LogSequentialSelectionStrategySelectedAgent(nameof(NextAsync), this._index, agents.Count, agent.Id);
+
         this._index = (this._index + 1) % agents.Count;
 
         return Task.FromResult(agent);

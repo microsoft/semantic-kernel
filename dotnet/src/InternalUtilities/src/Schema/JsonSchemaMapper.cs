@@ -173,6 +173,7 @@ static partial class JsonSchemaMapper
         string? title = null,
         string? description = null,
         bool isNullableReferenceType = false,
+        bool isNullableOfTElement = false,
         JsonConverter? customConverter = null,
         bool hasDefaultValue = false,
         JsonNode? defaultValue = null,
@@ -186,7 +187,7 @@ static partial class JsonSchemaMapper
         JsonConverter effectiveConverter = customConverter ?? typeInfo.Converter;
         JsonNumberHandling? effectiveNumberHandling = customNumberHandling ?? typeInfo.NumberHandling;
         bool emitsTypeDiscriminator = derivedTypeDiscriminator?.Value is not null;
-        bool isCacheable = !emitsTypeDiscriminator && description is null && !hasDefaultValue;
+        bool isCacheable = !emitsTypeDiscriminator && description is null && !hasDefaultValue && !isNullableOfTElement;
 
         if (!IsBuiltInConverter(effectiveConverter))
         {
@@ -220,7 +221,8 @@ static partial class JsonSchemaMapper
                 defaultValue: defaultValue,
                 customNumberHandling: customNumberHandling,
                 customConverter: customConverter,
-                parentNullableOfT: type);
+                parentNullableOfT: type,
+                isNullableOfTElement: true);
         }
 
         if (isCacheable && typeInfo.Kind != JsonTypeInfoKind.None)
@@ -319,23 +321,15 @@ static partial class JsonSchemaMapper
                 }
                 else if (type.IsEnum)
                 {
-                    if (TryGetStringEnumConverterValues(typeInfo, effectiveConverter, out JsonArray? values))
+                    if (TryGetStringEnumConverterValues(typeInfo, effectiveConverter, out enumValues))
                     {
-                        if (values is null)
-                        {
-                            // enum declared with the flags attribute -- do not surface enum values in the JSON schema.
-                            schemaType = JsonSchemaType.String;
-                        }
-                        else
-                        {
-                            if (parentNullableOfT != null)
-                            {
-                                // We're generating the schema for a nullable
-                                // enum type. Append null to the "enum" array.
-                                values.Add(null);
-                            }
+                        schemaType = JsonSchemaType.String;
 
-                            enumValues = values;
+                        if (enumValues != null && isNullableOfTElement)
+                        {
+                            // We're generating the schema for a nullable
+                            // enum type. Append null to the "enum" array.
+                            enumValues.Add(null);
                         }
                     }
                     else
@@ -384,7 +378,7 @@ static partial class JsonSchemaMapper
                     NullabilityInfoContext? nullabilityCtx = !property.PropertyType.IsValueType ? state.NullabilityInfoContext : null;
 
                     // Only resolve the attribute provider if needed.
-                    ICustomAttributeProvider? attributeProvider = state.Configuration.ResolveDescriptionAttributes || nullabilityCtx != null
+                    ICustomAttributeProvider? attributeProvider = state.Configuration.ResolveDescriptionAttributes || nullabilityCtx is not null
                         ? ResolveAttributeProvider(typeInfo, property)
                         : null;
 
@@ -394,7 +388,7 @@ static partial class JsonSchemaMapper
                         : null;
 
                     // Declare the property as nullable if either getter or setter are nullable.
-                    bool isPropertyNullableReferenceType = nullabilityCtx != null && attributeProvider is MemberInfo memberInfo
+                    bool isPropertyNullableReferenceType = nullabilityCtx is not null && attributeProvider is MemberInfo memberInfo
                         ? nullabilityCtx.GetMemberNullability(memberInfo) is { WriteState: NullabilityState.Nullable } or { ReadState: NullabilityState.Nullable }
                         : false;
 
@@ -417,15 +411,15 @@ static partial class JsonSchemaMapper
 
                     state.Push(property.Name);
                     JsonObject propertySchema = MapJsonSchemaCore(
-                        propertyTypeInfo,
-                        ref state,
+                        typeInfo: propertyTypeInfo,
+                        state: ref state,
                         title: null,
-                        propertyDescription,
-                        isPropertyNullableReferenceType,
-                        property.CustomConverter,
-                        propertyHasDefaultValue,
-                        propertyDefaultValue,
-                        propertyNumberHandling);
+                        description: propertyDescription,
+                        isNullableReferenceType: isPropertyNullableReferenceType,
+                        customConverter: property.CustomConverter,
+                        hasDefaultValue: propertyHasDefaultValue,
+                        defaultValue: propertyDefaultValue,
+                        customNumberHandling: propertyNumberHandling);
 
                     state.Pop();
 
@@ -446,7 +440,7 @@ static partial class JsonSchemaMapper
 
                 if (emitsTypeDiscriminator)
                 {
-                    Debug.Assert(derivedTypeDiscriminator != null);
+                    Debug.Assert(derivedTypeDiscriminator is not null);
 
                     // Polymorphic enumerable types are represented using a wrapping object:
                     // { "$type" : "discriminator", "$values" : [element1, element2, ...] }
@@ -508,7 +502,7 @@ static partial class JsonSchemaMapper
 
         if (schemaType != JsonSchemaType.Any &&
             (type.IsValueType
-             ? parentNullableOfT != null
+             ? parentNullableOfT is not null
              : (isNullableReferenceType || state.Configuration.ReferenceTypeNullability is ReferenceTypeNullability.AlwaysNullable)))
         {
             // Append "null" to the type array in the following cases:
@@ -606,7 +600,7 @@ ConstructSchemaDocument:
 
             if (Configuration.AllowSchemaReferences)
             {
-                Debug.Assert(_currentPath != null);
+                Debug.Assert(_currentPath is not null);
                 _currentPath!.Add(nodeId);
             }
         }
@@ -618,7 +612,7 @@ ConstructSchemaDocument:
 
             if (Configuration.AllowSchemaReferences)
             {
-                Debug.Assert(_currentPath != null);
+                Debug.Assert(_currentPath is not null);
                 _currentPath!.RemoveAt(_currentPath.Count - 1);
             }
         }
@@ -630,8 +624,8 @@ ConstructSchemaDocument:
         {
             if (Configuration.AllowSchemaReferences)
             {
-                Debug.Assert(_currentPath != null);
-                Debug.Assert(_generatedTypePaths != null);
+                Debug.Assert(_currentPath is not null);
+                Debug.Assert(_generatedTypePaths is not null);
 
                 string pointer = _currentDepth == 0 ? "#" : "#/" + string.Join("/", _currentPath);
                 _generatedTypePaths!.Add((parentNullableOfT ?? type, customConverter, isNullableReferenceType, customNumberHandling), pointer);
@@ -645,7 +639,7 @@ ConstructSchemaDocument:
         {
             if (Configuration.AllowSchemaReferences)
             {
-                Debug.Assert(_generatedTypePaths != null);
+                Debug.Assert(_generatedTypePaths is not null);
                 return _generatedTypePaths!.TryGetValue((parentNullableOfT ?? type, customConverter, isNullableReferenceType, customNumberHandling), out value);
             }
 

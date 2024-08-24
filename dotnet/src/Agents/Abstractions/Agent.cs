@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -36,6 +38,16 @@ public abstract class Agent
     public string? Name { get; init; }
 
     /// <summary>
+    /// A <see cref="ILoggerFactory"/> for this <see cref="Agent"/>.
+    /// </summary>
+    public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
+
+    /// <summary>
+    /// The <see cref="ILogger"/> associated with this  <see cref="Agent"/>.
+    /// </summary>
+    protected ILogger Logger => this._logger ??= this.LoggerFactory.CreateLogger(this.GetType());
+
+    /// <summary>
     /// Set of keys to establish channel affinity.  Minimum expected key-set:
     /// <example>
     /// yield return typeof(YourAgentChannel).FullName;
@@ -59,4 +71,6 @@ public abstract class Agent
     /// objects according to the specific <see cref="Agent"/> type.
     /// </remarks>
     protected internal abstract Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken);
+
+    private ILogger? _logger;
 }

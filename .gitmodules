@@ -1,0 +1,5 @@
+[submodule "Singularity"]
+[submodule "Bryan-Roe"]
+[submodule "semantic-kernel"]
+	path = semantic-kernel
+	url = git@github.com:Bryan-Roe/semantic-kernel.git

@@ -73,8 +73,7 @@ public class AgentChatTests
         lock (syncObject)
         {
             tasks =
-                new[]
-                {
+                [
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
@@ -83,7 +82,7 @@ public class AgentChatTests
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
-                };
+                ];
         }
 
         // Signal tasks to execute
@@ -135,13 +134,26 @@ public class AgentChatTests
     {
         public int InvokeCount { get; private set; }
 
-        public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(IReadOnlyList<ChatMessageContent> history, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+            ChatHistory history,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await Task.Delay(0, cancellationToken);
 
             this.InvokeCount++;
 
             yield return new ChatMessageContent(AuthorRole.Assistant, "sup");
+        }
+
+        public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+            ChatHistory history,
+            CancellationToken cancellationToken = default)
+        {
+            this.InvokeCount++;
+
+            StreamingChatMessageContent[] contents = [new(AuthorRole.Assistant, "sup")];
+
+            return contents.ToAsyncEnumerable();
         }
     }
 }

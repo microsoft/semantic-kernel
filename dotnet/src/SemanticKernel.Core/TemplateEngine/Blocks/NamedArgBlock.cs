@@ -91,13 +91,13 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// <returns></returns>
     internal object? GetValue(KernelArguments? arguments)
     {
-        var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
+        var valueIsValidValBlock = this._valBlock is not null && this._valBlock.IsValid(out var errorMessage);
         if (valueIsValidValBlock)
         {
             return this._valBlock!.Render(arguments);
         }
 
-        var valueIsValidVarBlock = this.VarBlock != null && this.VarBlock.IsValid(out var errorMessage2);
+        var valueIsValidVarBlock = this.VarBlock is not null && this.VarBlock.IsValid(out var errorMessage2);
         if (valueIsValidVarBlock)
         {
             return this.VarBlock!.Render(arguments);
@@ -128,19 +128,19 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             return false;
         }
 
-        if (this._valBlock != null && !this._valBlock.IsValid(out var valErrorMsg))
+        if (this._valBlock is not null && !this._valBlock.IsValid(out var valErrorMsg))
         {
             errorMsg = $"There was an issue with the named argument value for '{this.Name}': {valErrorMsg}";
             this.Logger.LogError(errorMsg);
             return false;
         }
-        else if (this.VarBlock != null && !this.VarBlock.IsValid(out var variableErrorMsg))
+        else if (this.VarBlock is not null && !this.VarBlock.IsValid(out var variableErrorMsg))
         {
             errorMsg = $"There was an issue with the named argument value for '{this.Name}': {variableErrorMsg}";
             this.Logger.LogError(errorMsg);
             return false;
         }
-        else if (this._valBlock == null && this.VarBlock == null)
+        else if (this._valBlock is null && this.VarBlock is null)
         {
             errorMsg = "A named argument must have a value";
             this.Logger.LogError(errorMsg);
@@ -166,7 +166,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
     private static string? TrimWhitespace(string? text)
     {
-        if (text == null)
+        if (text is null)
         {
             return text;
         }
@@ -182,7 +182,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
     private static string[] GetTrimmedParts(string? text)
     {
-        if (text == null)
+        if (text is null)
         {
             return [];
         }

@@ -4,7 +4,16 @@ package com.microsoft.semantickernel.guice;
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
+<<<<<<< AI
 import com.azure.core.credential.KeyCredential;
+import com.azure.ai.openai.models.NonAzureOpenAIKeyCredential;
+=======
+<<<<<<< HEAD
+import com.azure.core.credential.KeyCredential;
+=======
+import com.azure.ai.openai.models.NonAzureOpenAIKeyCredential;
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -56,7 +65,16 @@ public class Config {
         }
 
         return new OpenAIClientBuilder()
+<<<<<<< AI
                 .credential(new KeyCredential(Config.getOpenAIKey(OPEN_AI_CONF_PROPERTIES)))
+                .credential(new NonAzureOpenAIKeyCredential(Config.getOpenAIKey(OPEN_AI_CONF_PROPERTIES)))
+=======
+<<<<<<< HEAD
+                .credential(new KeyCredential(Config.getOpenAIKey(OPEN_AI_CONF_PROPERTIES)))
+=======
+                .credential(new NonAzureOpenAIKeyCredential(Config.getOpenAIKey(OPEN_AI_CONF_PROPERTIES)))
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                 .buildAsyncClient();
     }
 }

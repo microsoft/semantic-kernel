@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -32,7 +33,13 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     {
         Console.WriteLine("=== Example with Chat Completion ===");
 
-        var chatCompletion = new AzureOpenAIChatCompletionWithDataService(GetCompletionWithDataConfig());
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
+            .Build();
+
         var chatHistory = new ChatHistory();
 
         // First question without previous context based on uploaded content.
@@ -40,10 +47,14 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         chatHistory.AddUserMessage(ask);
 
         // Chat Completion example
-        var chatMessage = (AzureOpenAIWithDataChatMessageContent)await chatCompletion.GetChatMessageContentAsync(chatHistory);
+        var chatExtensionsOptions = GetAzureChatExtensionsOptions();
+        var promptExecutionSettings = new OpenAIPromptExecutionSettings { AzureChatExtensionsOptions = chatExtensionsOptions };
+
+        var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
+
+        var chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, promptExecutionSettings);
 
         var response = chatMessage.Content!;
-        var toolResponse = chatMessage.ToolContent;
 
         // Output
         // Ask: How did Emily and David meet?
@@ -53,11 +64,6 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         Console.WriteLine();
 
         // Chat history maintenance
-        if (!string.IsNullOrEmpty(toolResponse))
-        {
-            chatHistory.AddMessage(AuthorRole.Tool, toolResponse);
-        }
-
         chatHistory.AddAssistantMessage(response);
 
         // Second question based on uploaded content.
@@ -68,7 +74,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (var word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
+        await foreach (var word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, promptExecutionSettings))
         {
             Console.Write(word);
         }
@@ -83,16 +89,20 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 
         var ask = "How did Emily and David meet?";
 
-        var completionWithDataConfig = GetCompletionWithDataConfig();
-
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(config: completionWithDataConfig)
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
+        var chatExtensionsOptions = GetAzureChatExtensionsOptions();
+        var promptExecutionSettings = new OpenAIPromptExecutionSettings { AzureChatExtensionsOptions = chatExtensionsOptions };
+
         // First question without previous context based on uploaded content.
-        var response = await kernel.InvokeAsync(function, new() { ["input"] = ask });
+        var response = await kernel.InvokeAsync(function, new(promptExecutionSettings) { ["input"] = ask });
 
         // Output
         // Ask: How did Emily and David meet?
@@ -103,7 +113,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 
         // Second question based on uploaded content.
         ask = "What are Emily and David studying?";
-        response = await kernel.InvokeAsync(function, new() { ["input"] = ask });
+        response = await kernel.InvokeAsync(function, new(promptExecutionSettings) { ["input"] = ask });
 
         // Output
         // Ask: What are Emily and David studying?
@@ -117,16 +127,18 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataConfig"/> class.
     /// </summary>
-    private static AzureOpenAIChatCompletionWithDataConfig GetCompletionWithDataConfig()
+    private static AzureChatExtensionsOptions GetAzureChatExtensionsOptions()
     {
-        return new AzureOpenAIChatCompletionWithDataConfig
+        var azureSearchExtensionConfiguration = new AzureSearchChatExtensionConfiguration
         {
-            CompletionModelId = TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            CompletionEndpoint = TestConfiguration.AzureOpenAI.Endpoint,
-            CompletionApiKey = TestConfiguration.AzureOpenAI.ApiKey,
-            DataSourceEndpoint = TestConfiguration.AzureAISearch.Endpoint,
-            DataSourceApiKey = TestConfiguration.AzureAISearch.ApiKey,
-            DataSourceIndex = TestConfiguration.AzureAISearch.IndexName
+            SearchEndpoint = new Uri(TestConfiguration.AzureAISearch.Endpoint),
+            Authentication = new OnYourDataApiKeyAuthenticationOptions(TestConfiguration.AzureAISearch.ApiKey),
+            IndexName = TestConfiguration.AzureAISearch.IndexName
+        };
+
+        return new AzureChatExtensionsOptions
+        {
+            Extensions = { azureSearchExtensionConfiguration }
         };
     }
 }

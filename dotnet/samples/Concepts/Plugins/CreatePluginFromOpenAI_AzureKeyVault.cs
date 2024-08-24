@@ -11,6 +11,7 @@ using Resources;
 
 namespace Plugins;
 
+[Obsolete("OpenAI plugins are deprecated and will be removed in a future version.")]
 public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : BaseTest(output)
 {
     private const string SecretName = "Foo";
@@ -118,10 +119,11 @@ public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : Ba
 /// <summary>
 /// Provides authentication for HTTP requests to OpenAI using OAuth or verification tokens.
 /// </summary>
+[Obsolete("OpenAI plugins are deprecated and will be removed in a future version.")]
 internal sealed class OpenAIAuthenticationProvider(Dictionary<string, Dictionary<string, string>>? oAuthValues = null, Dictionary<string, string>? credentials = null)
 {
     private readonly Dictionary<string, Dictionary<string, string>> _oAuthValues = oAuthValues ?? [];
-#pragma warning disable CA1823 // TODO: Use credentials
+#pragma warning disable CA1823, RCS1213 // TODO: Use credentials
     private readonly Dictionary<string, string> _credentials = credentials ?? [];
 #pragma warning restore CA1823
 

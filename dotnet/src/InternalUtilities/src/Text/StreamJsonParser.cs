@@ -67,13 +67,17 @@ internal sealed class StreamJsonParser
 
         internal async Task<string?> ExtractNextChunkAsync(
             bool validateJson,
-            CancellationToken ct)
+            CancellationToken cancellationToken)
         {
             this.ResetState();
             string? line;
-            while (!ct.IsCancellationRequested && ((line = await this._reader.ReadLineAsync().ConfigureAwait(false)) != null || this._lastLine != null))
+            while ((line = await this._reader.ReadLineAsync(
+#if NET
+                cancellationToken
+#endif
+                ).ConfigureAwait(false)) is not null || this._lastLine is not null)
             {
-                if (this._lastLine != null)
+                if (this._lastLine is not null)
                 {
                     line = this._lastLine + line;
                     this._lastLine = null;

@@ -32,7 +32,9 @@ internal static class XmlPromptParser
         // - it would need to contain a closing tag, which could include either </ or />
         int startPos;
         if (prompt is null ||
+#pragma warning disable CA1307 // Specify StringComparison for clarity
             (startPos = prompt.IndexOf('<')) < 0 ||
+#pragma warning restore CA1307
             (prompt.IndexOf("</", startPos + 1, StringComparison.Ordinal) < 0 &&
              prompt.IndexOf("/>", startPos + 1, StringComparison.Ordinal) < 0))
         {
@@ -78,11 +80,10 @@ internal static class XmlPromptParser
         }
 
         // Since we're preserving whitespace for the contents within each XMLNode, we
-        //  need to skip any whitespace nodes at the front of the children.
+        // need to skip any whitespace nodes at the front of the children.
         var firstNonWhitespaceChild = node.ChildNodes
-                    .Cast<XmlNode>()
-                    .Where(n => n.NodeType != XmlNodeType.Whitespace)
-                    .FirstOrDefault();
+            .Cast<XmlNode>()
+            .FirstOrDefault(n => n.NodeType != XmlNodeType.Whitespace);
 
         var isCData = firstNonWhitespaceChild?.NodeType == XmlNodeType.CDATA;
         var nodeContent = isCData
@@ -106,7 +107,7 @@ internal static class XmlPromptParser
         {
             var childPromptNode = GetPromptNode(childNode);
 
-            if (childPromptNode != null)
+            if (childPromptNode is not null)
             {
                 promptNode.ChildNodes.Add(childPromptNode);
             }

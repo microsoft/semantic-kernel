@@ -141,7 +141,7 @@ public class PineconeDocument
     {
         // return a dictionary from the metadata without the text, document_Id, and source_Id properties
 
-        if (this.Metadata == null)
+        if (this.Metadata is null)
         {
             return string.Empty;
         }

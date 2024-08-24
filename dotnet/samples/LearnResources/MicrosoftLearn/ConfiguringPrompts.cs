@@ -88,7 +88,7 @@ public class ConfiguringPrompts(ITestOutputHelper output) : LearnBaseTest(["Who 
         // Start the chat loop
         Console.Write("User > ");
         string? userInput;
-        while ((userInput = Console.ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) is not null)
         {
             // Get chat response
             var chatResult = kernel.InvokeStreamingAsync<StreamingChatMessageContent>(

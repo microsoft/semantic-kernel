@@ -7,16 +7,15 @@ on:
       - 'python/**'
 
 jobs:
-  ruff:
+  pre-commit:
     if: '!cancelled()'
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.10"]
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    continue-on-error: true
     steps:
-      - run: echo "/root/.local/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v4
       - name: Install poetry
         run: pipx install poetry
@@ -24,16 +23,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
-      - name: Install Semantic Kernel
+<<<<<<< main
+          cache-dependency-path: "python/pyproject.toml"
+      - name: Install SemanticKernel
         run: cd python && poetry install --no-ansi
-      - name: Run ruff
+      - name: Run lint
         run: cd python && poetry run ruff check .
   black:
-    if: '!cancelled()'
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.8"]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -45,29 +45,13 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
-      - name: Install Semantic Kernel
+          cache-dependency-path: "python/pyproject.toml"
+      - name: Install SemanticKernel
         run: cd python && poetry install --no-ansi
-      - name: Run black
+      - name: Run lint
         run: cd python && poetry run black --check .
-  mypy:
-    if: '!cancelled()'
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10"]
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - run: echo "/root/.local/bin" >> $GITHUB_PATH
-      - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: "poetry"
-      - name: Install Semantic Kernel
-        run: cd python && poetry install --no-ansi
-      - name: Run mypy
-        run: cd python && poetry run mypy -p semantic_kernel --config-file=mypy.ini
-
+=======
+      - name: Install dependencies
+        run: cd python && poetry install
+      - uses: pre-commit/action@v3.0.1
+>>>>>>> origin/main-auto-tune

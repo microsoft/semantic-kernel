@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict
+from typing import Any
 
 from openai import BadRequestError
 
@@ -10,6 +10,8 @@ from semantic_kernel.exceptions import ServiceContentFilterException
 
 
 class ContentFilterResultSeverity(Enum):
+    """The severity of the content filter result."""
+
     HIGH = "high"
     MEDIUM = "medium"
     SAFE = "safe"
@@ -17,20 +19,22 @@ class ContentFilterResultSeverity(Enum):
 
 @dataclass
 class ContentFilterResult:
+    """The result of a content filter check."""
+
     filtered: bool = False
     detected: bool = False
     severity: ContentFilterResultSeverity = ContentFilterResultSeverity.SAFE
 
     @classmethod
-    def from_inner_error_result(cls, inner_error_results: Dict[str, Any]) -> "ContentFilterResult":
+    def from_inner_error_result(cls, inner_error_results: dict[str, Any]) -> "ContentFilterResult":
         """Creates a ContentFilterResult from the inner error results.
 
-        Arguments:
-            key {str} -- The key to get the inner error result from.
-            inner_error_results {Dict[str, Any]} -- The inner error results.
+        Args:
+            key (str): The key to get the inner error result from.
+            inner_error_results (Dict[str, Any]): The inner error results.
 
         Returns:
-            ContentFilterResult -- The ContentFilterResult.
+            ContentFilterResult: The ContentFilterResult.
         """
         return cls(
             filtered=inner_error_results.get("filtered", False),
@@ -42,21 +46,23 @@ class ContentFilterResult:
 
 
 class ContentFilterCodes(Enum):
+    """Content filter codes."""
+
     RESPONSIBLE_AI_POLICY_VIOLATION = "ResponsibleAIPolicyViolation"
 
 
 @dataclass
 class ContentFilterAIException(ServiceContentFilterException):
-    """AI exception for an error from Azure OpenAI's content filter"""
+    """AI exception for an error from Azure OpenAI's content filter."""
 
     # The parameter that caused the error.
-    param: str
+    param: str | None
 
     # The error code specific to the content filter.
     content_filter_code: ContentFilterCodes
 
     # The results of the different content filter checks.
-    content_filter_result: Dict[str, ContentFilterResult]
+    content_filter_result: dict[str, ContentFilterResult]
 
     def __init__(
         self,
@@ -65,19 +71,19 @@ class ContentFilterAIException(ServiceContentFilterException):
     ) -> None:
         """Initializes a new instance of the ContentFilterAIException class.
 
-        Arguments:
-            message {str} -- The error message.
-            inner_exception {Exception} -- The inner exception.
+        Args:
+            message (str): The error message.
+            inner_exception (Exception): The inner exception.
         """
         super().__init__(message)
 
         self.param = inner_exception.param
-
-        inner_error = inner_exception.body.get("innererror", {})
-        self.content_filter_code = ContentFilterCodes(
-            inner_error.get("code", ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION.value)
-        )
-        self.content_filter_result = {
-            key: ContentFilterResult.from_inner_error_result(values)
-            for key, values in inner_error.get("content_filter_result", {}).items()
-        }
+        if inner_exception.body is not None and isinstance(inner_exception.body, dict):
+            inner_error = inner_exception.body.get("innererror", {})
+            self.content_filter_code = ContentFilterCodes(
+                inner_error.get("code", ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION.value)
+            )
+            self.content_filter_result = {
+                key: ContentFilterResult.from_inner_error_result(values)
+                for key, values in inner_error.get("content_filter_result", {}).items()
+            }

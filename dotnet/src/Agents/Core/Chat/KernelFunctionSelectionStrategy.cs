@@ -69,7 +69,11 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
+        this.Logger.LogKernelFunctionSelectionStrategyInvokingFunction(nameof(NextAsync), this.Function.PluginName, this.Function.Name);
+
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        this.Logger.LogKernelFunctionSelectionStrategyInvokedFunction(nameof(NextAsync), this.Function.PluginName, this.Function.Name, result.ValueType);
 
         string? agentName = this.ResultParser.Invoke(result);
         if (string.IsNullOrEmpty(agentName))
@@ -78,7 +82,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
         }
 
         return
-            agents.Where(a => (a.Name ?? a.Id) == agentName).FirstOrDefault() ??
+            agents.FirstOrDefault(a => (a.Name ?? a.Id) == agentName) ??
             throw new KernelException($"Agent Failure - Strategy unable to select next agent: {agentName}");
     }
 }
