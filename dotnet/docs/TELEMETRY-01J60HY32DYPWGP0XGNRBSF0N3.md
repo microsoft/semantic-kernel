@@ -1,3 +1,12 @@
+---
+runme:
+  document:
+    relativePath: TELEMETRY.md
+  session:
+    id: 01J60HY32DYPWGP0XGNRBSF0N3
+    updated: 2024-08-23 18:31:43-03:00
+---
+
 # Telemetry
 
 Telemetry in Semantic Kernel (SK) .NET implementation includes _logging_, _metering_ and _tracing_.
@@ -69,7 +78,7 @@ using var loggerFactory = LoggerFactory.Create(builder =>
 }
 ```
 
-> Read more at: https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/docs/logs/customizing-the-sdk/README.md
+> Read more at: ht****************************************************************************************************md
 
 ## Metering
 
@@ -99,7 +108,7 @@ TagList tags = new() { { "semantic_kernel.function.name", this.Name } };
 s_invocationDuration.Record(duration.TotalSeconds, in tags);
 ```
 
-### [Examples](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Demos/TelemetryWithAppInsights/Program.cs)
+### [Examples](ht***********************************************************************************************************cs)
 
 Depending on monitoring tool, there are different ways how to subscribe to available meters. Following example shows how to subscribe to available meters and export metrics to Application Insights using `OpenTelemetry.Sdk`:
 
@@ -110,9 +119,9 @@ using var meterProvider = Sdk.CreateMeterProviderBuilder()
   .Build();
 ```
 
-> Read more at: https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-enable?tabs=net
+> Read more at: ht***********************************************************************************et
 
-> Read more at: https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/docs/metrics/customizing-the-sdk/README.md
+> Read more at: ht*******************************************************************************************************md
 
 ## Tracing
 
@@ -134,4 +143,4 @@ using var traceProvider = Sdk.CreateTracerProviderBuilder()
   .Build();
 ```
 
-> Read more at: https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/docs/trace/customizing-the-sdk/README.md
+> Read more at: ht*****************************************************************************************************md

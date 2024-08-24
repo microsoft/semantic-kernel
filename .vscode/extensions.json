@@ -9,5 +9,7 @@
     "ms-azuretools.vscode-azureresourcegroups",
     "ms-python.debugpy",
     "atariq11700.debugpy-old"
+    "ms-dotnettools.dotnet-interactive-vscode",
+    "ms-vscode-remote.remote-containers"
   ]
 }

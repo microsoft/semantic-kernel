@@ -17,8 +17,9 @@
 				"GitHub.copilot-chat",
 				"GitHub.copilot",
 				"franneck94.c-cpp-runner",
-				"ms-python.debugpy",
-				"atariq11700.debugpy-old"
+				"hangxingliu.vscode-coding-tracker",
+				"micoloth.reactive-jupyter",
+				"ms-vscode-remote.remote-containers"
 			]
 		}
 	},
