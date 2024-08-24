@@ -2,50 +2,54 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "C#: Concept Samples",
-      "type": "coreclr",
+      "name": "RobotCode: Run All",
+      "type": "robotcode",
       "request": "launch",
-      "preLaunchTask": "build (Concepts)",
-      "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
+      "cwd": "${workspaceFolder}",
+      "target": "."
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Launch",
+      "program": "${workspaceFolder}/path/to/your/program",
       "args": [],
-      "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
-      "console": "internalConsole",
-      "stopAtEntry": false
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "PowerShell: Binary Module Pester Tests",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "Invoke-Pester",
+      "createTemporaryIntegratedConsole": true,
+      "attachDotnetDebugger": true
+    },
+    {
+      "name": "C#: Concept Samples",
+          "type": "lldb",
+          "request": "launch",
+          "preLaunchTask": "build (Concepts)",
+          "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
+          "args": [],
+          "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
+          "console": "internalConsole"
     },
     {
       "name": ".NET Core Attach",
-      "type": "coreclr",
+      "type": "lldb",
       "request": "attach"
     },
     {
-      "cwd": "${workspaceFolder}/python",
-      "name": "Python: Test Module",
-      "type": "python",
-      "request": "launch",
-      "module": "pytest",
-      "args": [
-        "${file}"
-      ]
-    },
-    {
       "name": "C#: HuggingFaceImageToText Demo",
-      "type": "dotnet",
+      "type": "lldb",
       "request": "launch",
-      "projectPath": "${workspaceFolder}\\dotnet\\samples\\Demos\\HuggingFaceImageToText.csproj",
-      "launchConfigurationId": "TargetFramework=;HuggingFaceImageToText"
+      "program": "${workspaceFolder}/dotnet/samples/Demos/bin/Debug/net6.0/HuggingFaceImageToText.dll"
     },
     {
       "name": "C#: GettingStarted Samples",
-      "type": "dotnet",
+      "type": "lldb",
       "request": "launch",
-      "projectPath": "${workspaceFolder}\\dotnet\\samples\\GettingStarted\\GettingStarted.csproj",
-      "launchConfigurationId": "TargetFramework=;GettingStarted"
-    },
-    {
-      "name": "Attach to .NET Functions",
-      "type": "coreclr",
-      "request": "attach",
-      "processId": "${command:azureFunctions.pickProcess}"
+      "program": "${workspaceFolder}/dotnet/samples/GettingStarted/bin/Debug/net6.0/GettingStarted.dll"
     }
   ]
 }
