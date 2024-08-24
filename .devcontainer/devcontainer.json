@@ -16,7 +16,10 @@
 				"vscjava.vscode-gradle",
 				"GitHub.copilot-chat",
 				"GitHub.copilot",
-				"franneck94.c-cpp-runner"
+				"franneck94.c-cpp-runner",
+				"hangxingliu.vscode-coding-tracker",
+				"micoloth.reactive-jupyter",
+				"ms-vscode-remote.remote-containers"
 			]
 		}
 	},
