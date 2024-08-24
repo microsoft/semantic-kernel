@@ -13,4 +13,6 @@ class PlannerOptions(KernelBaseModel):
 
     excluded_plugins: set[str] = Field(default_factory=set)
     excluded_functions: set[str] = Field(default_factory=set)
-    get_available_functions: Callable[["PlannerOptions", str | None], list[KernelFunctionMetadata]] | None = None
+    get_available_functions: (
+        Callable[["PlannerOptions", str | None], list[KernelFunctionMetadata]] | None
+    ) = None

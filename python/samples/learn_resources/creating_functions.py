@@ -5,7 +5,9 @@ import os
 
 from samples.sk_service_configurator import add_service
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 
@@ -17,7 +19,9 @@ async def main():
     # Import the MathPlugin.
     # <RunningNativeFunction>
     plugins_directory = os.path.join(os.path.dirname(__file__), "plugins")
-    math_plugin = kernel.add_plugin(parent_directory=plugins_directory, plugin_name="MathPlugin")
+    math_plugin = kernel.add_plugin(
+        parent_directory=plugins_directory, plugin_name="MathPlugin"
+    )
 
     result = await kernel.invoke(
         math_plugin["Sqrt"],

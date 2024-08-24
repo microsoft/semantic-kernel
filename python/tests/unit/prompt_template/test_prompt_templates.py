@@ -6,8 +6,12 @@ import json
 import yaml
 from pytest import raises
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
+from semantic_kernel.functions.kernel_function_from_prompt import (
+    KernelFunctionFromPrompt,
+)
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -26,7 +30,11 @@ def test_prompt_template_config_initialization_minimal():
 def test_prompt_template_config_initialization_full():
     input_variables = [
         InputVariable(
-            name="var1", description="A variable", default="default_val", is_required=True, json_schema="string"
+            name="var1",
+            description="A variable",
+            default="default_val",
+            is_required=True,
+            json_schema="string",
         )
     ]
     execution_settings = {"setting1": PromptExecutionSettings(setting_value="value1")}
@@ -57,9 +65,13 @@ def test_add_execution_settings_no_overwrite():
     new_settings = PromptExecutionSettings(service_id="test", setting_value="new_value")
     config.add_execution_settings(new_settings)
     assert config.execution_settings["test"] == new_settings
-    new_settings = PromptExecutionSettings(service_id="test", setting_value="new_value2")
+    new_settings = PromptExecutionSettings(
+        service_id="test", setting_value="new_value2"
+    )
     config.add_execution_settings(new_settings, overwrite=False)
-    assert config.execution_settings["test"].extension_data["setting_value"] == "new_value"
+    assert (
+        config.execution_settings["test"].extension_data["setting_value"] == "new_value"
+    )
 
 
 def test_add_execution_settings_with_overwrite():
@@ -67,9 +79,14 @@ def test_add_execution_settings_with_overwrite():
     new_settings = PromptExecutionSettings(service_id="test", setting_value="new_value")
     config.add_execution_settings(new_settings)
     assert config.execution_settings["test"] == new_settings
-    new_settings = PromptExecutionSettings(service_id="test", setting_value="new_value2")
+    new_settings = PromptExecutionSettings(
+        service_id="test", setting_value="new_value2"
+    )
     config.add_execution_settings(new_settings, overwrite=True)
-    assert config.execution_settings["test"].extension_data["setting_value"] == "new_value2"
+    assert (
+        config.execution_settings["test"].extension_data["setting_value"]
+        == "new_value2"
+    )
 
 
 def test_get_kernel_parameter_metadata_empty():
@@ -81,10 +98,16 @@ def test_get_kernel_parameter_metadata_empty():
 def test_get_kernel_parameter_metadata_with_variables():
     input_variables = [
         InputVariable(
-            name="var1", description="A variable", default="default_val", is_required=True, json_schema="string"
+            name="var1",
+            description="A variable",
+            default="default_val",
+            is_required=True,
+            json_schema="string",
         )
     ]
-    config = PromptTemplateConfig(template="Example template", input_variables=input_variables)
+    config = PromptTemplateConfig(
+        template="Example template", input_variables=input_variables
+    )
     metadata: list[KernelParameterMetadata] = config.get_kernel_parameter_metadata()
     assert len(metadata) == 1
     assert metadata[0].name == "var1"
@@ -96,17 +119,29 @@ def test_get_kernel_parameter_metadata_with_variables():
 
 def test_get_kernel_parameter_metadata_with_variables_bad_default():
     input_variables = [
-        InputVariable(name="var1", description="A variable", default=120, is_required=True, json_schema="string")
+        InputVariable(
+            name="var1",
+            description="A variable",
+            default=120,
+            is_required=True,
+            json_schema="string",
+        )
     ]
     with raises(TypeError):
-        PromptTemplateConfig(template="Example template", input_variables=input_variables)
+        PromptTemplateConfig(
+            template="Example template", input_variables=input_variables
+        )
 
 
 def test_restore():
     name = "Test Template"
     description = "This is a test template."
     template = "Hello, {{$name}}!"
-    input_variables = [InputVariable(name="name", description="Name of the person to greet", type="string")]
+    input_variables = [
+        InputVariable(
+            name="name", description="Name of the person to greet", type="string"
+        )
+    ]
     execution_settings = PromptExecutionSettings(timeout=30, max_tokens=100)
 
     restored_template = PromptTemplateConfig.restore(
@@ -117,9 +152,15 @@ def test_restore():
         execution_settings={"default": execution_settings},
     )
 
-    assert restored_template.name == name, "The name attribute does not match the expected value."
-    assert restored_template.description == description, "The description attribute does not match the expected value."
-    assert restored_template.template == template, "The template attribute does not match the expected value."
+    assert (
+        restored_template.name == name
+    ), "The name attribute does not match the expected value."
+    assert (
+        restored_template.description == description
+    ), "The description attribute does not match the expected value."
+    assert (
+        restored_template.template == template
+    ), "The template attribute does not match the expected value."
     assert (
         restored_template.input_variables == input_variables
     ), "The input_variables attribute does not match the expected value."
@@ -131,7 +172,11 @@ def test_restore():
 def test_prompt_template_config_initialization_full_handlebars():
     input_variables = [
         InputVariable(
-            name="var1", description="A variable", default="default_val", is_required=True, json_schema="string"
+            name="var1",
+            description="A variable",
+            default="default_val",
+            is_required=True,
+            json_schema="string",
         )
     ]
     execution_settings = {"setting1": PromptExecutionSettings(setting_value="value1")}
@@ -155,7 +200,11 @@ def test_restore_handlebars():
     description = "This is a test template."
     template = "Hello, {{name}}!"
     template_format = "handlebars"
-    input_variables = [InputVariable(name="name", description="Name of the person to greet", type="string")]
+    input_variables = [
+        InputVariable(
+            name="name", description="Name of the person to greet", type="string"
+        )
+    ]
     execution_settings = PromptExecutionSettings(timeout=30, max_tokens=100)
 
     restored_template = PromptTemplateConfig.restore(
@@ -167,9 +216,15 @@ def test_restore_handlebars():
         execution_settings={"default": execution_settings},
     )
 
-    assert restored_template.name == name, "The name attribute does not match the expected value."
-    assert restored_template.description == description, "The description attribute does not match the expected value."
-    assert restored_template.template == template, "The template attribute does not match the expected value."
+    assert (
+        restored_template.name == name
+    ), "The name attribute does not match the expected value."
+    assert (
+        restored_template.description == description
+    ), "The description attribute does not match the expected value."
+    assert (
+        restored_template.template == template
+    ), "The template attribute does not match the expected value."
     assert (
         restored_template.input_variables == input_variables
     ), "The input_variables attribute does not match the expected value."
@@ -277,7 +332,9 @@ def test_from_json_with_function_choice_behavior():
                 }
             ],
             "execution_settings": {
-                "settings1": {"function_choice_behavior": {"type": "auto", "functions": ["p1.f1"]}},
+                "settings1": {
+                    "function_choice_behavior": {"type": "auto", "functions": ["p1.f1"]}
+                },
             },
         }
     )

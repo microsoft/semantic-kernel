@@ -33,7 +33,9 @@ async def main():
     Answer:
     """
 
-    req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+    req_settings = kernel.get_prompt_execution_settings_from_service_id(
+        service_id=service_id
+    )
     req_settings.temperature = 0.2
 
     prompt_template_config = PromptTemplateConfig(

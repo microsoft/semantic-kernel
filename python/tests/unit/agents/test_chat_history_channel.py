@@ -5,7 +5,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from semantic_kernel.agents.chat_history_channel import ChatHistoryAgentProtocol, ChatHistoryChannel
+from semantic_kernel.agents.chat_history_channel import (
+    ChatHistoryAgentProtocol,
+    ChatHistoryChannel,
+)
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -15,9 +18,13 @@ from semantic_kernel.exceptions import ServiceInvalidTypeError
 class MockChatHistoryHandler:
     """Mock agent to test chat history handling"""
 
-    async def invoke(self, history: list[ChatMessageContent]) -> AsyncIterable[ChatMessageContent]:
+    async def invoke(
+        self, history: list[ChatMessageContent]
+    ) -> AsyncIterable[ChatMessageContent]:
         for message in history:
-            yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
+            yield ChatMessageContent(
+                role=AuthorRole.SYSTEM, content=f"Processed: {message.content}"
+            )
 
 
 class MockNonChatHistoryHandler:
@@ -44,13 +51,19 @@ async def test_invoke():
 
     async def mock_invoke(history: list[ChatMessageContent]):
         for message in history:
-            yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
+            yield ChatMessageContent(
+                role=AuthorRole.SYSTEM, content=f"Processed: {message.content}"
+            )
 
     agent.invoke.return_value = AsyncIterableMock(
-        lambda: mock_invoke([ChatMessageContent(role=AuthorRole.USER, content="Initial message")])
+        lambda: mock_invoke(
+            [ChatMessageContent(role=AuthorRole.USER, content="Initial message")]
+        )
     )
 
-    initial_message = ChatMessageContent(role=AuthorRole.USER, content="Initial message")
+    initial_message = ChatMessageContent(
+        role=AuthorRole.USER, content="Initial message"
+    )
     channel.messages.append(initial_message)
 
     received_messages = []
@@ -69,9 +82,13 @@ async def test_invoke_leftover_in_queue():
 
     async def mock_invoke(history: list[ChatMessageContent]):
         for message in history:
-            yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
+            yield ChatMessageContent(
+                role=AuthorRole.SYSTEM, content=f"Processed: {message.content}"
+            )
         yield ChatMessageContent(
-            role=AuthorRole.SYSTEM, content="Final message", items=[FunctionResultContent(id="test_id", result="test")]
+            role=AuthorRole.SYSTEM,
+            content="Final message",
+            items=[FunctionResultContent(id="test_id", result="test")],
         )
 
     agent.invoke.return_value = AsyncIterableMock(
@@ -86,7 +103,9 @@ async def test_invoke_leftover_in_queue():
         )
     )
 
-    initial_message = ChatMessageContent(role=AuthorRole.USER, content="Initial message")
+    initial_message = ChatMessageContent(
+        role=AuthorRole.USER, content="Initial message"
+    )
     channel.messages.append(initial_message)
 
     received_messages = []

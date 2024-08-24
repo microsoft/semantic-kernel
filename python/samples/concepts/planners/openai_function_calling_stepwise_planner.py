@@ -6,7 +6,10 @@ import os
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
-from semantic_kernel.planners import FunctionCallingStepwisePlanner, FunctionCallingStepwisePlannerOptions
+from semantic_kernel.planners import (
+    FunctionCallingStepwisePlanner,
+    FunctionCallingStepwisePlannerOptions,
+)
 
 
 async def main():

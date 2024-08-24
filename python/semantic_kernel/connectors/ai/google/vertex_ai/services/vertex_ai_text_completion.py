@@ -9,13 +9,21 @@ import vertexai
 from pydantic import ValidationError
 from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
 
-from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_base import VertexAIBase
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_base import (
+    VertexAIBase,
+)
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import VertexAISettings
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import (
+    VertexAISettings,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
@@ -62,9 +70,13 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise ServiceInitializationError(f"Failed to validate Vertex AI settings: {e}") from e
+            raise ServiceInitializationError(
+                f"Failed to validate Vertex AI settings: {e}"
+            ) from e
         if not vertex_ai_settings.gemini_model_id:
-            raise ServiceInitializationError("The Vertex AI Gemini model ID is required.")
+            raise ServiceInitializationError(
+                "The Vertex AI Gemini model ID is required."
+            )
 
         super().__init__(
             ai_model_id=vertex_ai_settings.gemini_model_id,
@@ -84,9 +96,14 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 
         return await self._send_request(prompt, settings)
 
-    async def _send_request(self, prompt: str, settings: VertexAITextPromptExecutionSettings) -> list[TextContent]:
+    async def _send_request(
+        self, prompt: str, settings: VertexAITextPromptExecutionSettings
+    ) -> list[TextContent]:
         """Send a text generation request to the Vertex AI service."""
-        vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        vertexai.init(
+            project=self.service_settings.project_id,
+            location=self.service_settings.region,
+        )
         model = GenerativeModel(self.service_settings.gemini_model_id)
 
         response: GenerationResponse = await model.generate_content_async(
@@ -94,9 +111,14 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
             generation_config=settings.prepare_settings_dict(),
         )
 
-        return [self._create_text_content(response, candidate) for candidate in response.candidates]
+        return [
+            self._create_text_content(response, candidate)
+            for candidate in response.candidates
+        ]
 
-    def _create_text_content(self, response: GenerationResponse, candidate: Candidate) -> TextContent:
+    def _create_text_content(
+        self, response: GenerationResponse, candidate: Candidate
+    ) -> TextContent:
         """Create a text content object.
 
         Args:
@@ -137,19 +159,29 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
         self, prompt: str, settings: VertexAITextPromptExecutionSettings
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """Send a text generation request to the Vertex AI service."""
-        vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        vertexai.init(
+            project=self.service_settings.project_id,
+            location=self.service_settings.region,
+        )
         model = GenerativeModel(self.service_settings.gemini_model_id)
 
-        response: AsyncIterable[GenerationResponse] = await model.generate_content_async(
-            contents=prompt,
-            generation_config=settings.prepare_settings_dict(),
-            stream=True,
+        response: AsyncIterable[GenerationResponse] = (
+            await model.generate_content_async(
+                contents=prompt,
+                generation_config=settings.prepare_settings_dict(),
+                stream=True,
+            )
         )
 
         async for chunk in response:
-            yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]
+            yield [
+                self._create_streaming_text_content(chunk, candidate)
+                for candidate in chunk.candidates
+            ]
 
-    def _create_streaming_text_content(self, chunk: GenerationResponse, candidate: Candidate) -> StreamingTextContent:
+    def _create_streaming_text_content(
+        self, chunk: GenerationResponse, candidate: Candidate
+    ) -> StreamingTextContent:
         """Create a streaming text content object.
 
         Args:
@@ -172,7 +204,9 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 
     # endregion
 
-    def _get_metadata_from_response(self, response: GenerationResponse) -> dict[str, Any]:
+    def _get_metadata_from_response(
+        self, response: GenerationResponse
+    ) -> dict[str, Any]:
         """Get metadata from the response.
 
         Args:

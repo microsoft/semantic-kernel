@@ -24,12 +24,13 @@ class SessionsRemoteFileMetadata(KernelBaseModel):
     @staticmethod
     def from_dict(data: dict[str, Any]) -> "SessionsRemoteFileMetadata":
         """Create a SessionsRemoteFileMetadata object from a dictionary of file data values.
-        
+
         Args:
             data (dict[str, Any]): The file data values.
 
         Returns:
             SessionsRemoteFileMetadata: The metadata for the file.
         """
-        return SessionsRemoteFileMetadata(filename=data["filename"], size_in_bytes=data["size"])
-    
+        return SessionsRemoteFileMetadata(
+            filename=data["filename"], size_in_bytes=data["size"]
+        )

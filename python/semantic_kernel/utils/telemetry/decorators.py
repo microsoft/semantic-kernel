@@ -14,7 +14,9 @@ from typing import Any
 
 from opentelemetry.trace import Span, StatusCode, get_tracer, use_span
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -39,11 +41,19 @@ from semantic_kernel.utils.telemetry.const import (
 )
 
 OTEL_ENABLED_ENV_VAR = "SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS"
-OTEL_SENSITIVE_ENABLED_ENV_VAR = "SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE"
+OTEL_SENSITIVE_ENABLED_ENV_VAR = (
+    "SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE"
+)
 
 
-_enable_diagnostics = os.getenv(OTEL_ENABLED_ENV_VAR, "false").lower() in ("true", "1", "t")
-_enable_sensitive_events = os.getenv(OTEL_SENSITIVE_ENABLED_ENV_VAR, "false").lower() in ("true", "1", "t")
+_enable_diagnostics = os.getenv(OTEL_ENABLED_ENV_VAR, "false").lower() in (
+    "true",
+    "1",
+    "t",
+)
+_enable_sensitive_events = os.getenv(
+    OTEL_SENSITIVE_ENABLED_ENV_VAR, "false"
+).lower() in ("true", "1", "t")
 
 # Creates a tracer from the global tracer provider
 tracer = get_tracer(__name__)
@@ -70,21 +80,35 @@ def trace_chat_completion(model_provider: str) -> Callable:
 
     def inner_trace_chat_completion(completion_func: Callable) -> Callable:
         @functools.wraps(completion_func)
-        async def wrapper_decorator(*args: Any, **kwargs: Any) -> list[ChatMessageContent]:
+        async def wrapper_decorator(
+            *args: Any, **kwargs: Any
+        ) -> list[ChatMessageContent]:
             chat_history: ChatHistory = kwargs["chat_history"]
             settings: PromptExecutionSettings = kwargs["settings"]
 
-            model_name = getattr(settings, "ai_model_id", None) or getattr(args[0], "ai_model_id", None) or "unknown"
+            model_name = (
+                getattr(settings, "ai_model_id", None)
+                or getattr(args[0], "ai_model_id", None)
+                or "unknown"
+            )
 
             formatted_messages = (
-                _messages_to_openai_format(chat_history.messages) if are_sensitive_events_enabled() else None
+                _messages_to_openai_format(chat_history.messages)
+                if are_sensitive_events_enabled()
+                else None
             )
             span = _start_completion_activity(
-                CHAT_COMPLETION_OPERATION, model_name, model_provider, formatted_messages, settings
+                CHAT_COMPLETION_OPERATION,
+                model_name,
+                model_provider,
+                formatted_messages,
+                settings,
             )
 
             try:
-                completions: list[ChatMessageContent] = await completion_func(*args, **kwargs)
+                completions: list[ChatMessageContent] = await completion_func(
+                    *args, **kwargs
+                )
             except Exception as exception:
                 if span:
                     _set_completion_error(span, exception)
@@ -94,18 +118,22 @@ def trace_chat_completion(model_provider: str) -> Callable:
             if span and completions:
                 with use_span(span, end_on_exit=True):
                     first_completion = completions[0]
-                    response_id = first_completion.metadata.get("id") or (first_completion.inner_content or {}).get(
-                        "id"
-                    )
+                    response_id = first_completion.metadata.get("id") or (
+                        first_completion.inner_content or {}
+                    ).get("id")
                     usage = first_completion.metadata.get("usage", None)
                     prompt_tokens = getattr(usage, "prompt_tokens", None)
                     completion_tokens = getattr(usage, "completion_tokens", None)
 
                     completion_text: str | None = (
-                        _messages_to_openai_format(completions) if are_sensitive_events_enabled() else None
+                        _messages_to_openai_format(completions)
+                        if are_sensitive_events_enabled()
+                        else None
                     )
 
-                    finish_reasons: list[str] = [str(completion.finish_reason) for completion in completions]
+                    finish_reasons: list[str] = [
+                        str(completion.finish_reason) for completion in completions
+                    ]
 
                     _set_completion_response(
                         span,
@@ -132,9 +160,15 @@ def trace_text_completion(model_provider: str) -> Callable:
             prompt: str = kwargs["prompt"]
             settings: PromptExecutionSettings = kwargs["settings"]
 
-            model_name = getattr(settings, "ai_model_id", None) or getattr(args[0], "ai_model_id", None) or "unknown"
+            model_name = (
+                getattr(settings, "ai_model_id", None)
+                or getattr(args[0], "ai_model_id", None)
+                or "unknown"
+            )
 
-            span = _start_completion_activity(TEXT_COMPLETION_OPERATION, model_name, model_provider, prompt, settings)
+            span = _start_completion_activity(
+                TEXT_COMPLETION_OPERATION, model_name, model_provider, prompt, settings
+            )
 
             try:
                 completions: list[TextContent] = await completion_func(*args, **kwargs)
@@ -147,9 +181,9 @@ def trace_text_completion(model_provider: str) -> Callable:
             if span and completions:
                 with use_span(span, end_on_exit=True):
                     first_completion = completions[0]
-                    response_id = first_completion.metadata.get("id") or (first_completion.inner_content or {}).get(
-                        "id"
-                    )
+                    response_id = first_completion.metadata.get("id") or (
+                        first_completion.inner_content or {}
+                    ).get("id")
                     usage = first_completion.metadata.get("usage", None)
                     prompt_tokens = getattr(usage, "prompt_tokens", None)
                     completion_tokens = getattr(usage, "completion_tokens", None)

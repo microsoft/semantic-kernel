@@ -81,13 +81,17 @@ class VolatileMemoryStore(MemoryStoreBase):
             str: The unique database key of the record.
         """
         if collection_name not in self._store:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         record._key = record._id
         self._store[collection_name][record._key] = record
         return record._key
 
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord]
+    ) -> list[str]:
         """Upserts a batch of records.
 
         Args:
@@ -98,14 +102,18 @@ class VolatileMemoryStore(MemoryStoreBase):
             List[str]: The unique database keys of the records.
         """
         if collection_name not in self._store:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         for record in records:
             record._key = record._id
             self._store[collection_name][record._key] = record
         return [record._key for record in records]
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool = False
+    ) -> MemoryRecord:
         """Gets a record.
 
         Args:
@@ -117,10 +125,14 @@ class VolatileMemoryStore(MemoryStoreBase):
             MemoryRecord: The record.
         """
         if collection_name not in self._store:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         if key not in self._store[collection_name]:
-            raise ServiceResourceNotFoundError(f"Key '{key}' not found in collection '{collection_name}'")
+            raise ServiceResourceNotFoundError(
+                f"Key '{key}' not found in collection '{collection_name}'"
+            )
 
         result = self._store[collection_name][key]
 
@@ -144,9 +156,15 @@ class VolatileMemoryStore(MemoryStoreBase):
             List[MemoryRecord]: The records.
         """
         if collection_name not in self._store:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
-        results = [self._store[collection_name][key] for key in keys if key in self._store[collection_name]]
+        results = [
+            self._store[collection_name][key]
+            for key in keys
+            if key in self._store[collection_name]
+        ]
 
         if not with_embeddings:
             # create copy of results without embeddings
@@ -166,10 +184,14 @@ class VolatileMemoryStore(MemoryStoreBase):
             None
         """
         if collection_name not in self._store:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         if key not in self._store[collection_name]:
-            raise ServiceResourceNotFoundError(f"Key '{key}' not found in collection '{collection_name}'")
+            raise ServiceResourceNotFoundError(
+                f"Key '{key}' not found in collection '{collection_name}'"
+            )
 
         del self._store[collection_name][key]
 
@@ -184,7 +206,9 @@ class VolatileMemoryStore(MemoryStoreBase):
             None
         """
         if collection_name not in self._store:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         for key in keys:
             if key in self._store[collection_name]:
@@ -281,7 +305,9 @@ class VolatileMemoryStore(MemoryStoreBase):
                 result[0]._embedding = None
         return top_results
 
-    def compute_similarity_scores(self, embedding: ndarray, embedding_array: ndarray) -> ndarray:
+    def compute_similarity_scores(
+        self, embedding: ndarray, embedding_array: ndarray
+    ) -> ndarray:
         """Computes the cosine similarity scores between a query embedding and a group of embeddings.
 
         Args:
@@ -302,9 +328,9 @@ class VolatileMemoryStore(MemoryStoreBase):
         similarity_scores = array([-1.0] * embedding_array.shape[0])
 
         if valid_indices.any():
-            similarity_scores[valid_indices] = embedding.dot(embedding_array[valid_indices].T) / (
-                query_norm * collection_norm[valid_indices]
-            )
+            similarity_scores[valid_indices] = embedding.dot(
+                embedding_array[valid_indices].T
+            ) / (query_norm * collection_norm[valid_indices])
             if not valid_indices.all():
                 logger.warning(
                     "Some vectors in the embedding collection are zero vectors."

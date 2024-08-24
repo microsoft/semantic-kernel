@@ -26,7 +26,9 @@ def camel_to_snake(camel_str):
     return snake_str
 
 
-def query_results_to_records(results: "QueryResult", with_embedding: bool) -> list[MemoryRecord]:
+def query_results_to_records(
+    results: "QueryResult", with_embedding: bool
+) -> list[MemoryRecord]:
     """Turn query results into Memory Records.
 
     If results has only one record, it will be a list instead of a nested list
@@ -87,7 +89,9 @@ def query_results_to_records(results: "QueryResult", with_embedding: bool) -> li
     return memory_records
 
 
-def chroma_compute_similarity_scores(embedding: ndarray, embedding_array: ndarray, **kwargs: Any) -> ndarray:
+def chroma_compute_similarity_scores(
+    embedding: ndarray, embedding_array: ndarray, **kwargs: Any
+) -> ndarray:
     """Computes the cosine similarity scores between a query embedding and a group of embeddings.
 
     Args:
@@ -109,9 +113,9 @@ def chroma_compute_similarity_scores(embedding: ndarray, embedding_array: ndarra
     similarity_scores = array([-1.0] * embedding_array.shape[0])
 
     if valid_indices.any():
-        similarity_scores[valid_indices] = embedding.dot(embedding_array[valid_indices].T) / (
-            query_norm * collection_norm[valid_indices]
-        )
+        similarity_scores[valid_indices] = embedding.dot(
+            embedding_array[valid_indices].T
+        ) / (query_norm * collection_norm[valid_indices])
         if not valid_indices.all():
             logger.warning(
                 "Some vectors in the embedding collection are zero vectors."

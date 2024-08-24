@@ -3,15 +3,21 @@
 import pytest
 
 from semantic_kernel.functions import kernel_function
-from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+from semantic_kernel.functions.kernel_function_from_method import (
+    KernelFunctionFromMethod,
+)
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.const import JINJA2_TEMPLATE_FORMAT_NAME
-from semantic_kernel.prompt_template.utils.template_function_helpers import create_template_helper_from_function
+from semantic_kernel.prompt_template.utils.template_function_helpers import (
+    create_template_helper_from_function,
+)
 
 
 def test_create_helpers(kernel: Kernel):
     # Arrange
-    function = KernelFunctionFromMethod(kernel_function(lambda x: x + 1, name="test"), plugin_name="test")
+    function = KernelFunctionFromMethod(
+        kernel_function(lambda x: x + 1, name="test"), plugin_name="test"
+    )
     base_arguments = {}
     template_format = JINJA2_TEMPLATE_FORMAT_NAME
     allow_dangerously_set_content = False
@@ -19,7 +25,12 @@ def test_create_helpers(kernel: Kernel):
 
     # Act
     result = create_template_helper_from_function(
-        function, kernel, base_arguments, template_format, allow_dangerously_set_content, enable_async
+        function,
+        kernel,
+        base_arguments,
+        template_format,
+        allow_dangerously_set_content,
+        enable_async,
     )
 
     # Assert
@@ -38,15 +49,23 @@ def test_create_helpers(kernel: Kernel):
     ],
 )
 @pytest.mark.asyncio
-async def test_create_helpers_fail(kernel: Kernel, template_format: str, enable_async: bool, exception: bool):
+async def test_create_helpers_fail(
+    kernel: Kernel, template_format: str, enable_async: bool, exception: bool
+):
     # Arrange
-    function = KernelFunctionFromMethod(kernel_function(lambda x: x + 1, name="test"), plugin_name="test")
+    function = KernelFunctionFromMethod(
+        kernel_function(lambda x: x + 1, name="test"), plugin_name="test"
+    )
 
     if exception:
         with pytest.raises(ValueError):
-            create_template_helper_from_function(function, kernel, {}, template_format, False, enable_async)
+            create_template_helper_from_function(
+                function, kernel, {}, template_format, False, enable_async
+            )
         return
-    result = create_template_helper_from_function(function, kernel, {}, template_format, False, enable_async)
+    result = create_template_helper_from_function(
+        function, kernel, {}, template_format, False, enable_async
+    )
     if enable_async:
         res = await result(x=1)
         assert int(str(res)) == 2

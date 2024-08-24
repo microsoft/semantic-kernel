@@ -6,9 +6,15 @@ from typing import TYPE_CHECKING, Any
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.function_choice_behavior import FunctionCallChoiceConfiguration
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-    from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+    from semantic_kernel.connectors.ai.function_choice_behavior import (
+        FunctionCallChoiceConfiguration,
+    )
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
+    from semantic_kernel.functions.kernel_function_metadata import (
+        KernelFunctionMetadata,
+    )
 
 
 def update_settings_from_function_call_configuration(
@@ -40,7 +46,9 @@ def kernel_function_metadata_to_function_call_format(
             "description": metadata.description or "",
             "parameters": {
                 "type": "object",
-                "properties": {param.name: param.schema_data for param in metadata.parameters},
+                "properties": {
+                    param.name: param.schema_data for param in metadata.parameters
+                },
                 "required": [p.name for p in metadata.parameters if p.is_required],
             },
         },
@@ -64,7 +72,9 @@ def _combine_filter_dicts(*dicts: dict[str, list[str]]) -> dict:
                     for item in d[key]:
                         combined_functions[item] = None
                 else:
-                    raise ServiceInitializationError(f"Values for filter key '{key}' are not lists.")
+                    raise ServiceInitializationError(
+                        f"Values for filter key '{key}' are not lists."
+                    )
         combined_filters[key] = list(combined_functions.keys())
 
     return combined_filters

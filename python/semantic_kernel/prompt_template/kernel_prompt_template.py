@@ -19,7 +19,9 @@ from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
-    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+    from semantic_kernel.prompt_template.prompt_template_config import (
+        PromptTemplateConfig,
+    )
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -31,10 +33,14 @@ class KernelPromptTemplate(PromptTemplateBase):
 
     @field_validator("prompt_template_config")
     @classmethod
-    def validate_template_format(cls, v: "PromptTemplateConfig") -> "PromptTemplateConfig":
+    def validate_template_format(
+        cls, v: "PromptTemplateConfig"
+    ) -> "PromptTemplateConfig":
         """Validate the template format."""
         if v.template_format != KERNEL_TEMPLATE_FORMAT_NAME:
-            raise ValueError(f"Invalid prompt template format: {v.template_format}. Expected: semantic-kernel")
+            raise ValueError(
+                f"Invalid prompt template format: {v.template_format}. Expected: semantic-kernel"
+            )
         return v
 
     def model_post_init(self, _: Any) -> None:
@@ -65,7 +71,9 @@ class KernelPromptTemplate(PromptTemplateBase):
 
     def extract_blocks(self) -> list[Block]:
         """Given the prompt template, extract all the blocks (text, variables, function calls)."""
-        logger.debug(f"Extracting blocks from template: {self.prompt_template_config.template}")
+        logger.debug(
+            f"Extracting blocks from template: {self.prompt_template_config.template}"
+        )
         if not self.prompt_template_config.template:
             return []
         return TemplateTokenizer.tokenize(self.prompt_template_config.template)
@@ -74,9 +82,13 @@ class KernelPromptTemplate(PromptTemplateBase):
         # Convert variable_name to lower case to handle case-insensitivity
         if variable_name and variable_name.lower() not in seen:
             seen.add(variable_name.lower())
-            self.prompt_template_config.input_variables.append(InputVariable(name=variable_name))
+            self.prompt_template_config.input_variables.append(
+                InputVariable(name=variable_name)
+            )
 
-    async def render(self, kernel: "Kernel", arguments: "KernelArguments | None" = None) -> str:
+    async def render(
+        self, kernel: "Kernel", arguments: "KernelArguments | None" = None
+    ) -> str:
         """Render the prompt template.
 
         Using the prompt template, replace the variables with their values
@@ -94,7 +106,10 @@ class KernelPromptTemplate(PromptTemplateBase):
         return await self.render_blocks(self._blocks, kernel, arguments)
 
     async def render_blocks(
-        self, blocks: list[Block], kernel: "Kernel", arguments: "KernelArguments | None" = None
+        self,
+        blocks: list[Block],
+        kernel: "Kernel",
+        arguments: "KernelArguments | None" = None,
     ) -> str:
         """Given a list of blocks render each block and compose the final result.
 
@@ -123,8 +138,12 @@ class KernelPromptTemplate(PromptTemplateBase):
                     rendered = await block.render_code(kernel, arguments)
                 except Exception as exc:
                     logger.error(f"Error rendering code block: {exc}")
-                    raise TemplateRenderException(f"Error rendering code block: {exc}") from exc
-                rendered_blocks.append(rendered if allow_unsafe_function_output else escape(rendered))
+                    raise TemplateRenderException(
+                        f"Error rendering code block: {exc}"
+                    ) from exc
+                rendered_blocks.append(
+                    rendered if allow_unsafe_function_output else escape(rendered)
+                )
         prompt = "".join(rendered_blocks)
         logger.debug(f"Rendered prompt: {prompt}")
         return prompt

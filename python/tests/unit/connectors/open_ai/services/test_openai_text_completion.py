@@ -13,9 +13,15 @@ from openai.types import CompletionChoice as TextCompletionChoice
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
+    OpenAITextCompletion,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
@@ -23,7 +29,10 @@ def test_init(openai_unit_test_env) -> None:
     # Test successful initialization
     open_ai_text_completion = OpenAITextCompletion()
 
-    assert open_ai_text_completion.ai_model_id == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
+    assert (
+        open_ai_text_completion.ai_model_id
+        == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
+    )
     assert isinstance(open_ai_text_completion, TextCompletionClientBase)
 
 
@@ -44,7 +53,10 @@ def test_init_with_default_header(openai_unit_test_env) -> None:
         default_headers=default_headers,
     )
 
-    assert open_ai_text_completion.ai_model_id == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
+    assert (
+        open_ai_text_completion.ai_model_id
+        == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
+    )
     assert isinstance(open_ai_text_completion, TextCompletionClientBase)
     for key, value in default_headers.items():
         assert key in open_ai_text_completion.client.default_headers
@@ -83,7 +95,9 @@ def test_serialize(openai_unit_test_env) -> None:
 
     open_ai_text_completion = OpenAITextCompletion.from_dict(settings)
     dumped_settings = open_ai_text_completion.to_dict()
-    assert dumped_settings["ai_model_id"] == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
+    assert (
+        dumped_settings["ai_model_id"] == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
+    )
     assert dumped_settings["api_key"] == openai_unit_test_env["OPENAI_API_KEY"]
     # Assert that the default header we added is present in the dumped_settings default headers
     for key, value in default_headers.items():
@@ -102,7 +116,9 @@ def test_serialize_def_headers_string(openai_unit_test_env) -> None:
 
     open_ai_text_completion = OpenAITextCompletion.from_dict(settings)
     dumped_settings = open_ai_text_completion.to_dict()
-    assert dumped_settings["ai_model_id"] == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
+    assert (
+        dumped_settings["ai_model_id"] == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
+    )
     assert dumped_settings["api_key"] == openai_unit_test_env["OPENAI_API_KEY"]
     # Assert that the default header we added is present in the dumped_settings default headers
     for key, value in json.loads(default_headers).items():
@@ -119,7 +135,9 @@ def test_serialize_with_org_id(openai_unit_test_env) -> None:
 
     open_ai_text_completion = OpenAITextCompletion.from_dict(settings)
     dumped_settings = open_ai_text_completion.to_dict()
-    assert dumped_settings["ai_model_id"] == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
+    assert (
+        dumped_settings["ai_model_id"] == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
+    )
     assert dumped_settings["api_key"] == openai_unit_test_env["OPENAI_API_KEY"]
     assert dumped_settings["org_id"] == openai_unit_test_env["OPENAI_ORG_ID"]
 
@@ -160,10 +178,14 @@ async def test_tc(
     completion_response,
 ) -> None:
     mock_create.return_value = completion_response
-    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_text_completion = OpenAITextCompletion()
-    await openai_text_completion.get_text_contents(prompt="test", settings=complete_prompt_execution_settings)
+    await openai_text_completion.get_text_contents(
+        prompt="test", settings=complete_prompt_execution_settings
+    )
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_TEXT_MODEL_ID"],
         stream=False,
@@ -180,10 +202,14 @@ async def test_tc_singular(
     completion_response,
 ) -> None:
     mock_create.return_value = completion_response
-    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_text_completion = OpenAITextCompletion()
-    await openai_text_completion.get_text_content(prompt="test", settings=complete_prompt_execution_settings)
+    await openai_text_completion.get_text_content(
+        prompt="test", settings=complete_prompt_execution_settings
+    )
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_TEXT_MODEL_ID"],
         stream=False,
@@ -200,10 +226,14 @@ async def test_tc_prompt_execution_settings(
     completion_response,
 ) -> None:
     mock_create.return_value = completion_response
-    complete_prompt_execution_settings = PromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = PromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_text_completion = OpenAITextCompletion()
-    await openai_text_completion.get_text_contents(prompt="test", settings=complete_prompt_execution_settings)
+    await openai_text_completion.get_text_contents(
+        prompt="test", settings=complete_prompt_execution_settings
+    )
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_TEXT_MODEL_ID"],
         stream=False,
@@ -223,7 +253,9 @@ async def test_stc(
     streaming_completion_response,
 ) -> None:
     mock_create.return_value = streaming_completion_response
-    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_text_completion = OpenAITextCompletion()
     [
@@ -248,7 +280,9 @@ async def test_stc_singular(
     streaming_completion_response,
 ) -> None:
     mock_create.return_value = streaming_completion_response
-    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_text_completion = OpenAITextCompletion()
     [
@@ -273,7 +307,9 @@ async def test_stc_prompt_execution_settings(
     streaming_completion_response,
 ) -> None:
     mock_create.return_value = streaming_completion_response
-    complete_prompt_execution_settings = PromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = PromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_text_completion = OpenAITextCompletion()
     [
@@ -313,7 +349,9 @@ async def test_stc_empty_choices(
     stream = MagicMock(spec=AsyncStream)
     stream.__aiter__.return_value = [content1, content2]
     mock_create.return_value = stream
-    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_text_completion = OpenAITextCompletion()
     results = [

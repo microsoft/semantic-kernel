@@ -11,8 +11,12 @@ else:
 
 from pydantic import Field
 
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
+from semantic_kernel.data.vector_store_record_collection import (
+    VectorStoreRecordCollection,
+)
 from semantic_kernel.kernel_types import OneOrMany
 
 KEY_TYPES = str | int | float
@@ -45,22 +49,34 @@ class VolatileCollection(VectorStoreRecordCollection[KEY_TYPES, TModel]):
             self.inner_storage.pop(key, None)
 
     @override
-    async def _inner_get(self, keys: Sequence[KEY_TYPES], **kwargs: Any) -> Any | OneOrMany[TModel] | None:
+    async def _inner_get(
+        self, keys: Sequence[KEY_TYPES], **kwargs: Any
+    ) -> Any | OneOrMany[TModel] | None:
         return [self.inner_storage[key] for key in keys if key in self.inner_storage]
 
     @override
-    async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[KEY_TYPES]:
+    async def _inner_upsert(
+        self, records: Sequence[Any], **kwargs: Any
+    ) -> Sequence[KEY_TYPES]:
         updated_keys = []
         for record in records:
-            key = record[self._key_field_name] if isinstance(record, Mapping) else getattr(record, self._key_field_name)
+            key = (
+                record[self._key_field_name]
+                if isinstance(record, Mapping)
+                else getattr(record, self._key_field_name)
+            )
             self.inner_storage[key] = record
             updated_keys.append(key)
         return updated_keys
 
-    def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
+    def _deserialize_store_models_to_dicts(
+        self, records: Sequence[Any], **kwargs: Any
+    ) -> Sequence[dict[str, Any]]:
         return records
 
-    def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
+    def _serialize_dicts_to_store_models(
+        self, records: Sequence[dict[str, Any]], **kwargs: Any
+    ) -> Sequence[Any]:
         return records
 
     @override

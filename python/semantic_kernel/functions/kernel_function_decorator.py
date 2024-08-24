@@ -3,7 +3,14 @@
 import logging
 import types
 from collections.abc import Callable
-from inspect import Parameter, Signature, isasyncgenfunction, isclass, isgeneratorfunction, signature
+from inspect import (
+    Parameter,
+    Signature,
+    isasyncgenfunction,
+    isclass,
+    isgeneratorfunction,
+    signature,
+)
 from typing import Annotated, Any, ForwardRef, Union, get_args, get_origin
 
 NoneType = type(None)
@@ -50,9 +57,19 @@ def kernel_function(
         """The actual decorator function."""
         setattr(func, "__kernel_function__", True)
         setattr(func, "__kernel_function_description__", description or func.__doc__)
-        setattr(func, "__kernel_function_name__", name or getattr(func, "__name__", "unknown"))
-        setattr(func, "__kernel_function_streaming__", isasyncgenfunction(func) or isgeneratorfunction(func))
-        logger.debug(f"Parsing decorator for function: {getattr(func, '__kernel_function_name__')}")
+        setattr(
+            func,
+            "__kernel_function_name__",
+            name or getattr(func, "__name__", "unknown"),
+        )
+        setattr(
+            func,
+            "__kernel_function_streaming__",
+            isasyncgenfunction(func) or isgeneratorfunction(func),
+        )
+        logger.debug(
+            f"Parsing decorator for function: {getattr(func, '__kernel_function_name__')}"
+        )
         func_sig = signature(func, eval_str=True)
 
         annotations = _process_signature(func_sig)
@@ -61,12 +78,30 @@ def kernel_function(
         setattr(func, "__kernel_function_parameters__", annotations)
 
         return_annotation = (
-            _parse_parameter("return", func_sig.return_annotation, None) if func_sig.return_annotation else {}
+            _parse_parameter("return", func_sig.return_annotation, None)
+            if func_sig.return_annotation
+            else {}
         )
-        setattr(func, "__kernel_function_return_type__", return_annotation.get("type_", "None"))
-        setattr(func, "__kernel_function_return_type_object__", return_annotation.get("type_object", None))
-        setattr(func, "__kernel_function_return_description__", return_annotation.get("description", ""))
-        setattr(func, "__kernel_function_return_required__", return_annotation.get("is_required", False))
+        setattr(
+            func,
+            "__kernel_function_return_type__",
+            return_annotation.get("type_", "None"),
+        )
+        setattr(
+            func,
+            "__kernel_function_return_type_object__",
+            return_annotation.get("type_object", None),
+        )
+        setattr(
+            func,
+            "__kernel_function_return_description__",
+            return_annotation.get("description", ""),
+        )
+        setattr(
+            func,
+            "__kernel_function_return_required__",
+            return_annotation.get("is_required", False),
+        )
         return func
 
     if func:
@@ -112,7 +147,10 @@ def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
         annotation = arg.annotation
         default = arg.default if arg.default != arg.empty else None
         parsed_annotation = _parse_parameter(arg.name, annotation, default)
-        if get_origin(annotation) is Annotated or get_origin(annotation) in {Union, types.UnionType}:
+        if get_origin(annotation) is Annotated or get_origin(annotation) in {
+            Union,
+            types.UnionType,
+        }:
             underlying_type = _get_underlying_type(annotation)
         else:
             underlying_type = annotation
@@ -152,7 +190,9 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
                     arg = arg.__forward_arg__
                 args.append(_parse_parameter(name, arg, default))
             if ret.get("type_") in ["list", "dict"]:
-                ret["type_"] = f"{ret['type_']}[{', '.join([arg['type_'] for arg in args])}]"
+                ret["type_"] = (
+                    f"{ret['type_']}[{', '.join([arg['type_'] for arg in args])}]"
+                )
             elif len(args) > 1:
                 ret["type_"] = ", ".join([arg["type_"] for arg in args])
             else:

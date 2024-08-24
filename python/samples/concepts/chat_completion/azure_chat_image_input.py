@@ -4,9 +4,16 @@ import asyncio
 import logging
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents import ChatHistory, ChatMessageContent, ImageContent, TextContent
+from semantic_kernel.contents import (
+    ChatHistory,
+    ChatMessageContent,
+    ImageContent,
+    TextContent,
+)
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -21,11 +28,15 @@ service_id = "chat-gpt"
 chat_service = AzureChatCompletion(service_id=service_id)
 kernel.add_service(chat_service)
 
-req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+req_settings = kernel.get_prompt_execution_settings_from_service_id(
+    service_id=service_id
+)
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
-req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": []})
+req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
+    filters={"excluded_plugins": []}
+)
 
 chat_function = kernel.add_function(
     prompt=system_message + """{{$chat_history}}""",
@@ -41,14 +52,20 @@ async def chat(uri: str | None = None, image_path: str | None = None) -> bool:
         history.add_message(
             ChatMessageContent(
                 role="user",
-                items=[TextContent(text="What is in this image?"), ImageContent(uri=uri)],
+                items=[
+                    TextContent(text="What is in this image?"),
+                    ImageContent(uri=uri),
+                ],
             )
         )
     elif image_path:
         history.add_message(
             ChatMessageContent(
                 role="user",
-                items=[TextContent(text="What is in this image?"), ImageContent.from_image_path(image_path)],
+                items=[
+                    TextContent(text="What is in this image?"),
+                    ImageContent.from_image_path(image_path),
+                ],
             )
         )
     else:

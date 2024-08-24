@@ -4,13 +4,22 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING, TypeVar
 
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField, VectorStoreRecordVectorField
-from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
+from semantic_kernel.data.vector_store_record_fields import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordVectorField,
+)
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    VectorStoreModelException,
+)
 from semantic_kernel.kernel_types import OneOrMany
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-    from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
+    from semantic_kernel.data.vector_store_model_definition import (
+        VectorStoreRecordDefinition,
+    )
     from semantic_kernel.kernel import Kernel
 
 TModel = TypeVar("TModel", bound=object)
@@ -45,9 +54,13 @@ class VectorStoreRecordUtils:
         Optional arguments are passed onto the Kernel add_embedding_to_object call.
         """
         # dict of embedding_field.name and tuple of record, settings, field_name
-        embeddings_to_make: list[tuple[str, str, dict[str, "PromptExecutionSettings"], Callable | None]] = []
+        embeddings_to_make: list[
+            tuple[str, str, dict[str, "PromptExecutionSettings"], Callable | None]
+        ] = []
         if not data_model_definition:
-            data_model_definition = getattr(data_model_type, "__kernel_vectorstoremodel_definition__", None)
+            data_model_definition = getattr(
+                data_model_type, "__kernel_vectorstoremodel_definition__", None
+            )
         if not data_model_definition:
             raise VectorStoreModelException(
                 "Data model definition is required, either directly or from the data model type."
@@ -59,18 +72,29 @@ class VectorStoreRecordUtils:
                 or not field.embedding_property_name
             ):
                 continue
-            embedding_field = data_model_definition.fields.get(field.embedding_property_name)
+            embedding_field = data_model_definition.fields.get(
+                field.embedding_property_name
+            )
             if not isinstance(embedding_field, VectorStoreRecordVectorField):
-                raise VectorStoreModelException("Embedding field must be a VectorStoreRecordVectorField")
+                raise VectorStoreModelException(
+                    "Embedding field must be a VectorStoreRecordVectorField"
+                )
             if embedding_field.local_embedding:
-                embeddings_to_make.append((
-                    name,
-                    field.embedding_property_name,
-                    embedding_field.embedding_settings,
-                    embedding_field.deserialize_function,
-                ))
+                embeddings_to_make.append(
+                    (
+                        name,
+                        field.embedding_property_name,
+                        embedding_field.embedding_settings,
+                        embedding_field.deserialize_function,
+                    )
+                )
 
-        for field_to_embed, field_to_store, settings, cast_callable in embeddings_to_make:
+        for (
+            field_to_embed,
+            field_to_store,
+            settings,
+            cast_callable,
+        ) in embeddings_to_make:
             await self.kernel.add_embedding_to_object(
                 inputs=records,
                 field_to_embed=field_to_embed,

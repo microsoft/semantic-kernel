@@ -3,8 +3,13 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureChatCompletion,
+    OpenAIChatCompletion,
+)
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
@@ -19,8 +24,12 @@ from semantic_kernel.kernel import Kernel
 class WeatherPlugin:
     """A sample plugin that provides weather information for cities."""
 
-    @kernel_function(name="get_weather_for_city", description="Get the weather for a city")
-    def get_weather_for_city(self, city: Annotated[str, "The input city"]) -> Annotated[str, "The output is a string"]:
+    @kernel_function(
+        name="get_weather_for_city", description="Get the weather for a city"
+    )
+    def get_weather_for_city(
+        self, city: Annotated[str, "The input city"]
+    ) -> Annotated[str, "The output is a string"]:
         if city == "Boston":
             return "61 and rainy"
         if city == "London":
@@ -59,11 +68,15 @@ async def main():
     kernel.add_plugin(WeatherPlugin(), plugin_name="weather")
 
     # Example 1: Use automated function calling with a non-streaming prompt
-    print("========== Example 1: Use automated function calling with a non-streaming prompt ==========")
-    settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
-        service_id=service_id
+    print(
+        "========== Example 1: Use automated function calling with a non-streaming prompt =========="
     )
-    settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"included_plugins": ["weather", "time"]})
+    settings: OpenAIChatPromptExecutionSettings = (
+        kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+    )
+    settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
+        filters={"included_plugins": ["weather", "time"]}
+    )
 
     print(
         await kernel.invoke_prompt(
@@ -75,11 +88,15 @@ async def main():
     )
 
     # Example 2: Use automated function calling with a streaming prompt
-    print("========== Example 2: Use automated function calling with a streaming prompt ==========")
-    settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
-        service_id=service_id
+    print(
+        "========== Example 2: Use automated function calling with a streaming prompt =========="
     )
-    settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"included_plugins": ["weather", "time"]})
+    settings: OpenAIChatPromptExecutionSettings = (
+        kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+    )
+    settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
+        filters={"included_plugins": ["weather", "time"]}
+    )
 
     result = kernel.invoke_prompt_stream(
         function_name="prompt_test",
@@ -93,12 +110,14 @@ async def main():
     print("")
 
     # Example 3: Use manual function calling with a non-streaming prompt
-    print("========== Example 3: Use manual function calling with a non-streaming prompt ==========")
+    print(
+        "========== Example 3: Use manual function calling with a non-streaming prompt =========="
+    )
 
     chat: OpenAIChatCompletion | AzureChatCompletion = kernel.get_service(service_id)
     chat_history = ChatHistory()
-    settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
-        service_id=service_id
+    settings: OpenAIChatPromptExecutionSettings = (
+        kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
     )
     settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
         auto_invoke=False, filters={"included_plugins": ["weather", "time"]}
@@ -109,13 +128,17 @@ async def main():
 
     while True:
         # The result is a list of ChatMessageContent objects, grab the first one
-        result = await chat.get_chat_message_contents(chat_history=chat_history, settings=settings, kernel=kernel)
+        result = await chat.get_chat_message_contents(
+            chat_history=chat_history, settings=settings, kernel=kernel
+        )
         result = result[0]
 
         if result.content:
             print(result.content)
 
-        if not result.items or not any(isinstance(item, FunctionCallContent) for item in result.items):
+        if not result.items or not any(
+            isinstance(item, FunctionCallContent) for item in result.items
+        ):
             break
 
         chat_history.add_message(result)

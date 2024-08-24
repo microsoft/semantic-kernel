@@ -3,7 +3,10 @@
 import asyncio
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAIChatPromptExecutionSettings,
+)
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
@@ -33,10 +36,19 @@ prompt_template_config = PromptTemplateConfig(
     description="Chat with the assistant",
     template_format="semantic-kernel",
     input_variables=[
-        InputVariable(name="chat_history", description="The conversation history", is_required=False, default=""),
-        InputVariable(name="request", description="The user's request", is_required=True),
+        InputVariable(
+            name="chat_history",
+            description="The conversation history",
+            is_required=False,
+            default="",
+        ),
+        InputVariable(
+            name="request", description="The user's request", is_required=True
+        ),
     ],
-    execution_settings=OpenAIChatPromptExecutionSettings(service_id=model, max_tokens=4000, temperature=0.2),
+    execution_settings=OpenAIChatPromptExecutionSettings(
+        service_id=model, max_tokens=4000, temperature=0.2
+    ),
 )
 
 chat_function = kernel.add_function(
@@ -63,8 +75,10 @@ async def chat() -> bool:
         return False
 
     answer = await kernel.invoke(
-        function=chat_function, arguments=KernelArguments(
-            request=user_input, chat_history=chat_history,
+        function=chat_function,
+        arguments=KernelArguments(
+            request=user_input,
+            chat_history=chat_history,
         ),
     )
     chat_history.add_user_message(user_input)

@@ -8,11 +8,17 @@ from openai import AsyncAzureOpenAI
 from pydantic import ConfigDict, validate_call
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler, OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
+    OpenAIHandler,
+    OpenAIModelTypes,
+)
 from semantic_kernel.const import USER_AGENT
 from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl
-from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
+from semantic_kernel.utils.telemetry.user_agent import (
+    APP_INFO,
+    prepend_semantic_kernel_to_user_agent,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -68,8 +74,12 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 )
             if not base_url:
                 if not endpoint:
-                    raise ServiceInitializationError("Please provide an endpoint or a base_url")
-                base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}")
+                    raise ServiceInitializationError(
+                        "Please provide an endpoint or a base_url"
+                    )
+                base_url = HttpsUrl(
+                    f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}"
+                )
             client = AsyncAzureOpenAI(
                 base_url=str(base_url),
                 api_version=api_version,
@@ -95,7 +105,9 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             "api_key": self.client.api_key,
             "ad_token": getattr(self.client, "_azure_ad_token", None),
             "ad_token_provider": getattr(self.client, "_azure_ad_token_provider", None),
-            "default_headers": {k: v for k, v in self.client.default_headers.items() if k != USER_AGENT},
+            "default_headers": {
+                k: v for k, v in self.client.default_headers.items() if k != USER_AGENT
+            },
         }
         base = self.model_dump(
             exclude={

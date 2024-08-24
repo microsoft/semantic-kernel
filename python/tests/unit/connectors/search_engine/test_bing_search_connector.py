@@ -6,7 +6,10 @@ import pytest
 from httpx import HTTPStatusError, Request, RequestError, Response
 
 from semantic_kernel.connectors.search_engine.bing_connector import BingConnector
-from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidRequestError,
+)
 
 
 @pytest.fixture
@@ -27,12 +30,16 @@ def bing_connector(bing_unit_test_env):
     ],
 )
 @patch("httpx.AsyncClient.get")
-async def test_search_success(mock_get, bing_connector, status_code, response_data, expected_result):
+async def test_search_success(
+    mock_get, bing_connector, status_code, response_data, expected_result
+):
     query = "test query"
     num_results = 1
     offset = 0
 
-    mock_request = Request(method="GET", url="https://api.bing.microsoft.com/v7.0/search")
+    mock_request = Request(
+        method="GET", url="https://api.bing.microsoft.com/v7.0/search"
+    )
 
     mock_response = Response(
         status_code=status_code,
@@ -62,9 +69,13 @@ async def test_search_http_status_error(mock_get, bing_connector):
     num_results = 1
     offset = 0
 
-    mock_get.side_effect = HTTPStatusError("error", request=AsyncMock(), response=AsyncMock(status_code=500))
+    mock_get.side_effect = HTTPStatusError(
+        "error", request=AsyncMock(), response=AsyncMock(status_code=500)
+    )
 
-    with pytest.raises(ServiceInvalidRequestError, match="Failed to get search results."):
+    with pytest.raises(
+        ServiceInvalidRequestError, match="Failed to get search results."
+    ):
         await bing_connector.search(query, num_results, offset)
     mock_get.assert_awaited_once()
 
@@ -78,7 +89,10 @@ async def test_search_request_error(mock_get, bing_connector):
 
     mock_get.side_effect = RequestError("error", request=AsyncMock())
 
-    with pytest.raises(ServiceInvalidRequestError, match="A client error occurred while getting search results."):
+    with pytest.raises(
+        ServiceInvalidRequestError,
+        match="A client error occurred while getting search results.",
+    ):
         await bing_connector.search(query, num_results, offset)
     mock_get.assert_awaited_once()
 
@@ -92,7 +106,10 @@ async def test_search_general_exception(mock_get, bing_connector):
 
     mock_get.side_effect = Exception("Unexpected error")
 
-    with pytest.raises(ServiceInvalidRequestError, match="An unexpected error occurred while getting search results."):
+    with pytest.raises(
+        ServiceInvalidRequestError,
+        match="An unexpected error occurred while getting search results.",
+    ):
         await bing_connector.search(query, num_results, offset)
     mock_get.assert_awaited_once()
 
@@ -129,10 +146,14 @@ async def test_search_api_failure(bing_connector):
     offset = 0
 
     async def mock_get(*args, **kwargs):
-        raise HTTPStatusError("error", request=AsyncMock(), response=AsyncMock(status_code=500))
+        raise HTTPStatusError(
+            "error", request=AsyncMock(), response=AsyncMock(status_code=500)
+        )
 
     with (
         patch("httpx.AsyncClient.get", new=mock_get),
-        pytest.raises(ServiceInvalidRequestError, match="Failed to get search results."),
+        pytest.raises(
+            ServiceInvalidRequestError, match="Failed to get search results."
+        ),
     ):
         await bing_connector.search(query, num_results, offset)

@@ -14,12 +14,21 @@ else:
 import torch
 from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 
-from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import (
+    HuggingFacePromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceResponseException
+from semantic_kernel.exceptions import (
+    ServiceInvalidExecutionSettingsError,
+    ServiceResponseException,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -70,7 +79,9 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             model_kwargs=model_kwargs,
             **pipeline_kwargs or {},
         )
-        resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
+        resolved_device = (
+            f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
+        )
         super().__init__(
             service_id=service_id,
             ai_model_id=ai_model_id,
@@ -105,11 +116,15 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             return [self._create_text_content(results, result) for result in results]
         return [self._create_text_content(results, results)]
 
-    def _create_text_content(self, response: Any, candidate: dict[str, str]) -> TextContent:
+    def _create_text_content(
+        self, response: Any, candidate: dict[str, str]
+    ) -> TextContent:
         return TextContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
-            text=candidate["summary_text" if self.task == "summarization" else "generated_text"],
+            text=candidate[
+                "summary_text" if self.task == "summarization" else "generated_text"
+            ],
         )
 
     async def get_streaming_text_contents(
@@ -138,17 +153,24 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                     If you need multiple responses, please use the complete method.",
             )
         try:
-            streamer = TextIteratorStreamer(AutoTokenizer.from_pretrained(self.ai_model_id))
+            streamer = TextIteratorStreamer(
+                AutoTokenizer.from_pretrained(self.ai_model_id)
+            )
             # See https://github.com/huggingface/transformers/blob/main/src/transformers/generation/streamers.py#L159
             thread = Thread(
-                target=self.generator, args={prompt}, kwargs=settings.prepare_settings_dict(streamer=streamer)
+                target=self.generator,
+                args={prompt},
+                kwargs=settings.prepare_settings_dict(streamer=streamer),
             )
             thread.start()
 
             for new_text in streamer:
                 yield [
                     StreamingTextContent(
-                        choice_index=0, inner_content=new_text, text=new_text, ai_model_id=self.ai_model_id
+                        choice_index=0,
+                        inner_content=new_text,
+                        text=new_text,
+                        ai_model_id=self.ai_model_id,
                     )
                 ]
 

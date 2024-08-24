@@ -41,7 +41,9 @@ except ValidationError as e:
 
 try:
     # this will try to load the settings from the file at the given path
-    service = OpenAIChatCompletion(service_id="openai_chat_service", env_file_path="path/to/env_file")
+    service = OpenAIChatCompletion(
+        service_id="openai_chat_service", env_file_path="path/to/env_file"
+    )
 except ValidationError as e:
     print(e)
 
