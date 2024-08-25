@@ -31,7 +31,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     {
         agent.ThrowIfDeleted();
 
-        return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, pollingConfiguration, this.Logger, cancellationToken);
+        return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, pollingConfiguration, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -39,4 +39,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     {
         return AssistantThreadActions.GetMessagesAsync(this._client, this._threadId, cancellationToken);
     }
+
+    /// <inheritdoc/>
+    protected override Task ResetAsync(CancellationToken cancellationToken = default) =>
+        this._client.DeleteThreadAsync(this._threadId, cancellationToken);
 }

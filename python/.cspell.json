@@ -45,6 +45,16 @@
         "generativeai",
         "genai",
         "protos",
-        "endregion"
+        "endregion",
+        "vertexai",
+        "aiplatform",
+        "serde",
+        "datamodel",
+        "vectorstoremodel",
+        "qdrant",
+        "huggingface",
+        "pytestmark",
+        "contoso",
+        "opentelemetry"
     ]
 }

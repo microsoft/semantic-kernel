@@ -16,6 +16,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TextBlock(Block):
+    """A block with text content."""
+
     type: ClassVar[BlockTypes] = BlockTypes.TEXT
 
     @field_validator("content", mode="before")
