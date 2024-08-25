@@ -61,7 +61,7 @@ who is chatting with you in the computer lab at school while being supervised by
 
 # Resource Constraints (optional) - This defines the constraints on the conversation such as time or turns.
 # It can also help with pacing the conversation,
-# For example, here we have set an exact time limit of 25 minutes which the agent will try to fill.
+# For example, here we have set an exact time limit of 10 turns which the agent will try to fill.
 resource_constraint = ResourceConstraint(
     quantity=10,
     unit=ResourceConstraintUnit.TURNS,
