@@ -26,7 +26,7 @@ internal sealed class OpenAIParameters
     /// Set of parameters.
     /// </summary>
     [JsonPropertyName("properties")]
-    public Dictionary<string, OpenAIParameter> Properties { get; set; } = new();
+    public Dictionary<string, OpenAIParameter> Properties { get; set; } = [];
 
     /// <summary>
     /// Set of parameters.

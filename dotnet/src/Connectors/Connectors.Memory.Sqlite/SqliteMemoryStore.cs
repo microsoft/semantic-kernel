@@ -52,7 +52,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var collection in this._dbConnector.GetCollectionsAsync(this._dbConnection, cancellationToken))
+        await foreach (var collection in this._dbConnector.GetCollectionsAsync(this._dbConnection, cancellationToken).ConfigureAwait(false))
         {
             yield return collection;
         }
@@ -93,7 +93,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         foreach (var key in keys)
         {
             var result = await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (result != null)
+            if (result is not null)
             {
                 yield return result;
             }
@@ -113,7 +113,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(k => this._dbConnector.DeleteAsync(this._dbConnection, collectionName, k, cancellationToken))).ConfigureAwait(false);
+        await this._dbConnector.DeleteBatchAsync(this._dbConnection, collectionName, keys.ToArray(), cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -131,11 +131,11 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         }
 
         var collectionMemories = new List<MemoryRecord>();
-        List<(MemoryRecord Record, double Score)> embeddings = new();
+        List<(MemoryRecord Record, double Score)> embeddings = [];
 
-        await foreach (var record in this.GetAllAsync(collectionName, cancellationToken))
+        await foreach (var record in this.GetAllAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
-            if (record != null)
+            if (record is not null)
             {
                 double similarity = TensorPrimitives.CosineSimilarity(embedding.Span, record.Embedding.Span);
                 if (similarity >= minRelevanceScore)
@@ -218,8 +218,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
 
     private static DateTimeOffset? ParseTimestamp(string? str)
     {
-        if (!string.IsNullOrEmpty(str)
-            && DateTimeOffset.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset timestamp))
+        if (DateTimeOffset.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset timestamp))
         {
             return timestamp;
         }
@@ -232,7 +231,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         // delete empty entry in the database if it exists (see CreateCollection)
         await this._dbConnector.DeleteEmptyAsync(this._dbConnection, collectionName, cancellationToken).ConfigureAwait(false);
 
-        await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(this._dbConnection, collectionName, cancellationToken))
+        await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(this._dbConnection, collectionName, cancellationToken).ConfigureAwait(false))
         {
             ReadOnlyMemory<float> vector = JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntry.EmbeddingString, JsonOptionsCache.Default);
 
@@ -246,18 +245,8 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     {
         record.Key = record.Metadata.Id;
 
-        // Update
-        await this._dbConnector.UpdateAsync(
-            conn: connection,
-            collection: collectionName,
-            key: record.Key,
-            metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding, JsonOptionsCache.Default),
-            timestamp: ToTimestampString(record.Timestamp),
-            cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        // Insert if entry does not exists
-        await this._dbConnector.InsertOrIgnoreAsync(
+        // Insert or replace
+        await this._dbConnector.UpsertAsync(
             conn: connection,
             collection: collectionName,
             key: record.Key,

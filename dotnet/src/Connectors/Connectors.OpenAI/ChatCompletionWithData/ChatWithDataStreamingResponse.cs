@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used for JSON deserialization")]
 internal sealed class ChatWithDataStreamingResponse
 {
@@ -28,6 +29,7 @@ internal sealed class ChatWithDataStreamingResponse
 }
 
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used for JSON deserialization")]
 internal sealed class ChatWithDataStreamingChoice
 {
@@ -39,6 +41,7 @@ internal sealed class ChatWithDataStreamingChoice
 }
 
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used for JSON deserialization")]
 internal sealed class ChatWithDataStreamingMessage
 {
@@ -50,6 +53,7 @@ internal sealed class ChatWithDataStreamingMessage
 }
 
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 internal sealed class ChatWithDataStreamingDelta
 {
     [JsonPropertyName("role")]

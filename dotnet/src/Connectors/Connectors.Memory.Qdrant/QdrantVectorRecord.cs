@@ -74,7 +74,7 @@ public class QdrantVectorRecord
     public static QdrantVectorRecord FromJsonMetadata(string pointId, ReadOnlyMemory<float> embedding, string json, List<string>? tags = null)
     {
         var payload = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
-        if (payload != null)
+        if (payload is not null)
         {
             return new QdrantVectorRecord(pointId, embedding, payload, tags);
         }

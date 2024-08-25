@@ -11,27 +11,35 @@
 
 
 class KernelException(Exception):
-    pass
+    """The base class for all Semantic Kernel exceptions."""
 
 
 class KernelServiceNotFoundError(KernelException):
-    pass
+    """Raised when a service is not found in the kernel."""
 
 
 class KernelPluginNotFoundError(KernelException):
-    pass
+    """Raised when a plugin is not found in the kernel."""
+
+
+class KernelPluginInvalidConfigurationError(KernelException):
+    """Raised when a plugin configuration is invalid."""
 
 
 class KernelFunctionNotFoundError(KernelException):
-    pass
+    """Raised when a function is not found in the kernel."""
 
 
 class KernelFunctionAlreadyExistsError(KernelException):
-    pass
+    """Raised when a function is already registered in the kernel."""
 
 
 class KernelInvokeException(KernelException):
-    pass
+    """Raised when an error occurs while invoking a function in the kernel."""
+
+
+class OperationCancelledException(KernelException):
+    """Raised when an operation is cancelled."""
 
 
 __all__ = [
@@ -39,6 +47,8 @@ __all__ = [
     "KernelFunctionAlreadyExistsError",
     "KernelFunctionNotFoundError",
     "KernelInvokeException",
+    "KernelPluginInvalidConfigurationError",
     "KernelPluginNotFoundError",
     "KernelServiceNotFoundError",
+    "OperationCancelledException",
 ]

@@ -145,7 +145,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(id, responseId);
 
         var memoryRecordResultNoVector = await this._weaviateMemoryStore.GetAsync(collectionName, id);
-        if (memoryRecordResultNoVector == null)
+        if (memoryRecordResultNoVector is null)
         {
             Assert.Fail("Unable to retrieve record");
         }
@@ -162,7 +162,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(memoryRecordResultNoVector.Metadata.IsReference, memoryRecordResultNoVector.Metadata.IsReference);
 
         var memoryRecordResultWithVector = await this._weaviateMemoryStore.GetAsync(collectionName, id, true);
-        if (memoryRecordResultWithVector == null)
+        if (memoryRecordResultWithVector is null)
         {
             Assert.Fail("Unable to retrieve record");
         }
@@ -180,7 +180,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
 
         await this._weaviateMemoryStore.RemoveAsync(collectionName, id);
         var memoryRecordAfterDeletion = await this._weaviateMemoryStore.GetAsync(collectionName, id);
-        if (memoryRecordAfterDeletion != null)
+        if (memoryRecordAfterDeletion is not null)
         {
             Assert.Fail("Unable to delete record");
         }
@@ -231,7 +231,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
             timestamp: timestamp3);
 
         await this._weaviateMemoryStore.CreateCollectionAsync(collectionName);
-        var response = await this._weaviateMemoryStore.UpsertBatchAsync(collectionName, new[] { memoryRecord1, memoryRecord2, memoryRecord3 }).ToListAsync();
+        var response = await this._weaviateMemoryStore.UpsertBatchAsync(collectionName, [memoryRecord1, memoryRecord2, memoryRecord3]).ToListAsync();
         Assert.Equal(id1, response[0]);
         Assert.Equal(id2, response[1]);
         Assert.Equal(id3, response[2]);
@@ -275,8 +275,8 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(memoryRecord3.Metadata.ExternalSourceName, closest.Value.Item1.Metadata.ExternalSourceName);
         Assert.Equal(memoryRecord3.Metadata.IsReference, closest.Value.Item1.Metadata.IsReference);
 
-        await this._weaviateMemoryStore.RemoveBatchAsync(collectionName, new[] { id1, id2, id3 });
-        var memoryRecordsAfterDeletion = await this._weaviateMemoryStore.GetBatchAsync(collectionName, new[] { id1, id2, id3 }).ToListAsync();
+        await this._weaviateMemoryStore.RemoveBatchAsync(collectionName, [id1, id2, id3]);
+        var memoryRecordsAfterDeletion = await this._weaviateMemoryStore.GetBatchAsync(collectionName, [id1, id2, id3]).ToListAsync();
         Assert.Empty(memoryRecordsAfterDeletion);
     }
 

@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List
 
 from semantic_kernel.exceptions import (
     BlockSyntaxError,
@@ -27,8 +26,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [text-block]     ::= [any-char] | [any-char] [text-block]
 # [any-char]       ::= any char
 class TemplateTokenizer:
+    """Tokenize the template text into blocks."""
+
     @staticmethod
-    def tokenize(text: str) -> List[Block]:
+    def tokenize(text: str) -> list[Block]:
+        """Tokenize the template text into blocks."""
         code_tokenizer = CodeTokenizer()
         # An empty block consists of 4 chars: "{{}}"
         EMPTY_CODE_BLOCK_LENGTH = 4
@@ -46,7 +48,7 @@ class TemplateTokenizer:
         if len(text) < MIN_CODE_BLOCK_LENGTH:
             return [TextBlock.from_text(text)]
 
-        blocks: List[Block] = []
+        blocks: list[Block] = []
         end_of_last_block = 0
         block_start_pos = 0
         block_start_found = False
@@ -64,7 +66,11 @@ class TemplateTokenizer:
 
             # When "{{" is found outside a value
             # Note: "{{ {{x}}" => ["{{ ", "{{x}}"]
-            if not inside_text_value and current_char == Symbols.BLOCK_STARTER and next_char == Symbols.BLOCK_STARTER:
+            if (
+                not inside_text_value
+                and current_char == Symbols.BLOCK_STARTER
+                and next_char == Symbols.BLOCK_STARTER
+            ):
                 # A block starts at the first "{"
                 block_start_pos = current_char_pos
                 block_start_found = True
@@ -96,7 +102,11 @@ class TemplateTokenizer:
             if current_char == Symbols.BLOCK_ENDER and next_char == Symbols.BLOCK_ENDER:
                 blocks.extend(
                     TemplateTokenizer._extract_blocks(
-                        text, code_tokenizer, block_start_pos, end_of_last_block, next_char_pos
+                        text,
+                        code_tokenizer,
+                        block_start_pos,
+                        end_of_last_block,
+                        next_char_pos,
                     )
                 )
                 end_of_last_block = next_char_pos + 1
@@ -110,8 +120,12 @@ class TemplateTokenizer:
 
     @staticmethod
     def _extract_blocks(
-        text: str, code_tokenizer: CodeTokenizer, block_start_pos: int, end_of_last_block: int, next_char_pos: int
-    ) -> List[Block]:
+        text: str,
+        code_tokenizer: CodeTokenizer,
+        block_start_pos: int,
+        end_of_last_block: int,
+        next_char_pos: int,
+    ) -> list[Block]:
         """Extract the blocks from the found code.
 
         If there is text before the current block, create a TextBlock from that.
@@ -122,7 +136,7 @@ class TemplateTokenizer:
         If there is only a variable or value in the code block,
         return just that, instead of the CodeBlock.
         """
-        new_blocks: List[Block] = []
+        new_blocks: list[Block] = []
         if block_start_pos > end_of_last_block:
             new_blocks.append(
                 TextBlock.from_text(
@@ -132,7 +146,7 @@ class TemplateTokenizer:
                 )
             )
 
-        content_with_delimiters = text[block_start_pos : next_char_pos + 1]  # noqa: E203
+        content_with_delimiters = text[block_start_pos : next_char_pos + 1]
         content_without_delimiters = content_with_delimiters[2:-2].strip()
 
         if len(content_without_delimiters) == 0:
@@ -155,7 +169,9 @@ class TemplateTokenizer:
             new_blocks.append(code_blocks[0])
             return new_blocks
         try:
-            new_blocks.append(CodeBlock(content=content_without_delimiters, tokens=code_blocks))
+            new_blocks.append(
+                CodeBlock(content=content_without_delimiters, tokens=code_blocks)
+            )
             return new_blocks
         except CodeBlockTokenError as e:
             msg = f"Failed to tokenize code block: {content_without_delimiters}. {e}"

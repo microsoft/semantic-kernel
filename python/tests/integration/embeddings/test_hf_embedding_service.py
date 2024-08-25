@@ -13,13 +13,17 @@ async def test_hf_embeddings_with_memories():
 
     model_id = "sentence-transformers/all-MiniLM-L6-v2"
 
-    embedding_gen = sk_hf.HuggingFaceTextEmbedding(service_id=model_id, ai_model_id=model_id)
+    embedding_gen = sk_hf.HuggingFaceTextEmbedding(
+        service_id=model_id, ai_model_id=model_id
+    )
 
     # Configure LLM service
     kernel.add_service(embedding_gen)
 
-    memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
-    kernel.import_plugin_from_object(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
+    memory = SemanticTextMemory(
+        storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen
+    )
+    kernel.add_plugin(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     await memory.save_reference(
         "test",

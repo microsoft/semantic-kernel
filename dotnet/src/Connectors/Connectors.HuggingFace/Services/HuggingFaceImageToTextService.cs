@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.ImageToText;
 using Microsoft.SemanticKernel.Services;
@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 /// </summary>
 public sealed class HuggingFaceImageToTextService : IImageToTextService
 {
-    private readonly Dictionary<string, object?> _attributesInternal = new();
+    private readonly Dictionary<string, object?> _attributesInternal = [];
     private readonly HuggingFaceClient _client;
 
     /// <inheritdoc />
@@ -50,6 +50,30 @@ public sealed class HuggingFaceImageToTextService : IImageToTextService
         );
 
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HuggingFaceImageToTextService"/> class.
+    /// </summary>
+    /// <param name="endpoint">The endpoint uri including the port where HuggingFace server is hosted</param>
+    /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
+    /// <param name="httpClient">Optional HTTP client to be used for communication with the HuggingFace API.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public HuggingFaceImageToTextService(
+        Uri endpoint,
+        string? apiKey = null,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(endpoint);
+
+        this._client = new HuggingFaceClient(
+            modelId: null,
+            endpoint: endpoint,
+            apiKey: apiKey,
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
+            logger: loggerFactory?.CreateLogger(this.GetType())
+        );
     }
 
     /// <inheritdoc />

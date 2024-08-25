@@ -221,7 +221,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var memoryRecord2 = this.GetRandomMemoryRecord();
         var memoryRecord3 = this.GetRandomMemoryRecord();
 
-        var expectedMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
+        MemoryRecord[] expectedMemoryRecords = [memoryRecord1, memoryRecord2, memoryRecord3];
         var memoryRecordKeys = expectedMemoryRecords.Select(l => l.Key).ToArray();
 
         var embeddingsModel = this.GetEmbeddingsModelFromMemoryRecords(expectedMemoryRecords);
@@ -326,7 +326,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     private ChromaEmbeddingsModel GetEmbeddingsModelFromMemoryRecord(MemoryRecord memoryRecord)
     {
-        return this.GetEmbeddingsModelFromMemoryRecords(new[] { memoryRecord });
+        return this.GetEmbeddingsModelFromMemoryRecords([memoryRecord]);
     }
 
     #endregion

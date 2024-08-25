@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
+using System.Web;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -13,6 +14,11 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// </summary>
 public sealed class RestApiOperation
 {
+    /// <summary>
+    /// A static empty dictionary to default to when none is provided.
+    /// </summary>
+    private static readonly Dictionary<string, object?> s_emptyDictionary = [];
+
     /// <summary>
     /// Gets the name of an artificial parameter to be used for operation having "text/plain" payload media type.
     /// </summary>
@@ -62,6 +68,11 @@ public sealed class RestApiOperation
     /// The operation payload.
     /// </summary>
     public RestApiOperationPayload? Payload { get; }
+
+    /// <summary>
+    /// Additional unstructured metadata about the operation.
+    /// </summary>
+    public IReadOnlyDictionary<string, object?> Extensions { get; init; } = s_emptyDictionary;
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperation"/> class.
@@ -228,7 +239,7 @@ public sealed class RestApiOperation
             var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
 
             // Serializing the parameter and adding it to the path.
-            pathTemplate = pathTemplate.Replace($"{{{parameter.Name}}}", node.ToString().Trim('"'));
+            pathTemplate = pathTemplate.Replace($"{{{parameter.Name}}}", HttpUtility.UrlEncode(serializer.Invoke(parameter, node)));
         }
 
         return pathTemplate;

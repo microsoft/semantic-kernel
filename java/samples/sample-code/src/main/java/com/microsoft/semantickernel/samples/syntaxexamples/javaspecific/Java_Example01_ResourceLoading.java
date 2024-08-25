@@ -11,7 +11,7 @@ import java.io.IOException;
  * Import a skill from resources.
  */
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 public class Java_Example01_ResourceLoading {
 
     public static void main(String[] args) throws IOException {

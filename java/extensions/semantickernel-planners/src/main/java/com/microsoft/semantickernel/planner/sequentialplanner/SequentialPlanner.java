@@ -34,7 +34,7 @@ public class SequentialPlanner {
     private final boolean includeFunctionOutputs;
 
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     public SequentialPlanner(
             Kernel kernel,
             @Nullable SequentialPlannerRequestSettings config,
@@ -49,7 +49,7 @@ public class SequentialPlanner {
             @Nullable String prompt,
             boolean includeFunctionOutputs) {
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         // Verify.NotNull(kernel);
 
         if (config == null) {
@@ -83,7 +83,7 @@ public class SequentialPlanner {
 <<<<<<< HEAD
         this.includeFunctionOutputs = includeFunctionOutputs;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     }
 
     /**
@@ -115,7 +115,7 @@ public class SequentialPlanner {
                     .getFunctionsManualAsync(goal, this.config, includeFunctionOutputs)
 =======
                     .getFunctionsManualAsync(goal, this.config)
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                     .flatMap(
                             relevantFunctionsManual -> {
                                 SKContext updatedContext =

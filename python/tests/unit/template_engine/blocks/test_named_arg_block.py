@@ -48,17 +48,16 @@ def test_type_property():
     ids=["no_name", "invalid_var", "invalid_val", "empty_val", "empty_var"],
 )
 def test_syntax_error(content):
-    if "$" in content:
-        match = content.replace("$", r"\$")
-    else:
-        match = content
+    match = content.replace("$", "\\$") if "$" in content else content
     with raises(NamedArgBlockSyntaxError, match=rf".*{match}.*"):
         NamedArgBlock(content=content)
 
 
 def test_render():
     named_arg_block = NamedArgBlock(content="test=$test_var")
-    rendered_value = named_arg_block.render(Kernel(), KernelArguments(test_var="test_value"))
+    rendered_value = named_arg_block.render(
+        Kernel(), KernelArguments(test_var="test_value")
+    )
     assert rendered_value == "test_value"
 
 

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import typing as t
 
 import pytest
@@ -20,9 +22,6 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.functions.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
@@ -70,11 +69,6 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
     def create_chat_history() -> ChatHistory:
         return ChatHistory()
 
-    def create_plugin_collection() -> KernelPluginCollection:
-        """Return a plugin collection."""
-        # TODO: Add a few plugins to this collection.
-        return KernelPluginCollection()
-
     cls_obj_map = {
         Block: Block(content="foo"),
         CodeBlock: CodeBlock(content="foo"),
@@ -88,19 +82,29 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             name="foo",
             description="bar",
             default_value="baz",
-            type="string",
+            type_="string",
             is_required=True,
+            schema_data=KernelParameterMetadata.infer_schema(None, "str", "baz", "bar"),
         ),
         KernelFunctionMetadata: KernelFunctionMetadata(
             name="foo",
             plugin_name="bar",
             description="baz",
-            parameters=[KernelParameterMetadata(name="qux", description="bar", default_value="baz")],
+            parameters=[
+                KernelParameterMetadata(
+                    name="qux",
+                    description="bar",
+                    default_value="baz",
+                    type_="str",
+                    schema_data=KernelParameterMetadata.infer_schema(
+                        None, "str", "baz", "bar"
+                    ),
+                )
+            ],
             is_prompt=True,
             is_asynchronous=False,
         ),
         ChatHistory: create_chat_history(),
-        KernelPluginCollection: create_plugin_collection(),
         NullMemory: NullMemory(),
         KernelFunction: create_kernel_function(),
     }
@@ -113,14 +117,18 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
 
 PROTOCOLS = [
-    pytest.param(ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")),
+    pytest.param(
+        ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")
+    ),
     HttpPlugin,
     MathPlugin,
     TextMemoryPlugin,
     TextPlugin,
     TimePlugin,
     WaitPlugin,
-    pytest.param(WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")),
+    pytest.param(
+        WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")
+    ),
 ]
 
 BASE_CLASSES = [
@@ -145,7 +153,6 @@ PYDANTIC_MODELS = [
     NamedArgBlock,
     KernelParameterMetadata,
     KernelFunctionMetadata,
-    KernelPluginCollection,
     ChatHistory,
     pytest.param(
         KernelFunction,
@@ -178,7 +185,9 @@ class TestUsageInPydanticFields:
     @pytest.mark.parametrize("kernel_type", PYDANTIC_MODELS + STATELESS_CLASSES)
     def test_usage_as_required_field(
         self,
-        kernel_factory: t.Callable[[t.Type[KernelBaseModelFieldT]], KernelBaseModelFieldT],
+        kernel_factory: t.Callable[
+            [t.Type[KernelBaseModelFieldT]], KernelBaseModelFieldT
+        ],
         kernel_type: t.Type[KernelBaseModelFieldT],
     ) -> None:
         """Semantic Kernel objects should be valid Pydantic fields.
@@ -189,7 +198,9 @@ class TestUsageInPydanticFields:
         class TestModel(KernelBaseModel):
             """A test model."""
 
-            field: kernel_type = Field(default_factory=lambda: kernel_factory(kernel_type))
+            field: kernel_type = Field(
+                default_factory=lambda: kernel_factory(kernel_type)
+            )
 
         assert_serializable(TestModel(), TestModel)
         assert_serializable(TestModel(field=kernel_factory(kernel_type)), TestModel)

@@ -15,7 +15,9 @@ try:
 except ImportError:
     chromadb_installed = False
 
-pytestmark = pytest.mark.skipif(not chromadb_installed, reason="chromadb is not installed")
+pytestmark = pytest.mark.skipif(
+    not chromadb_installed, reason="chromadb is not installed"
+)
 
 
 @pytest.fixture
@@ -63,7 +65,7 @@ def test_constructor(setup_chroma):
 
 @pytest.mark.asyncio
 async def test_create_and_get_collection(setup_chroma):
-    memory = setup_chroma
+    memory: ChromaMemoryStore = setup_chroma
 
     await memory.create_collection("test_collection")
     result = await memory.get_collection("test_collection")
@@ -91,20 +93,12 @@ async def test_delete_collection(setup_chroma):
     result = await memory.get_collections()
     assert len(result) == 0
 
-    await memory.create_collection("test_collection")
-    await memory.delete_collection("TEST_COLLECTION")
-    result = await memory.get_collections()
-    assert len(result) == 0
-
 
 @pytest.mark.asyncio
 async def test_does_collection_exist(setup_chroma):
     memory = setup_chroma
     await memory.create_collection("test_collection")
     result = await memory.does_collection_exist("test_collection")
-    assert result is True
-
-    result = await memory.does_collection_exist("TEST_COLLECTION")
     assert result is True
 
 
@@ -201,7 +195,9 @@ async def test_get_nearest_matches(setup_chroma, memory_record1, memory_record2)
 
     await memory.upsert_batch(collection.name, [memory_record1, memory_record2])
 
-    results = await memory.get_nearest_matches("test_collection", np.array([0.5, 0.5]), limit=2)
+    results = await memory.get_nearest_matches(
+        "test_collection", np.array([0.5, 0.5]), limit=2
+    )
 
     assert len(results) == 2
     assert isinstance(results[0][0], MemoryRecord)

@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es6",
+		"strict": true,
+		"noUnusedLocals": true,
+		"outDir": "./out",
+		"lib": [
+			"es6"
+		],
+		"typeRoots": [
+			"node_modules/@types/*",
+			"*"
+		],
+		"sourceMap": true,
+		"rootDir": ".",
+		"resolveJsonModule": true,
+		"skipLibCheck": true, // Some declarations in http-proxy-agent and https-proxy-agent have issues
+	},
+	"exclude": [
+		"node_modules",
+		"gulpfile.ts",
+		"sample/*"
+	]
+}

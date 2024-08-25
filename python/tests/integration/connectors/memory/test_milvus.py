@@ -9,13 +9,15 @@ from semantic_kernel.connectors.memory.milvus import MilvusMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
-    from milvus import default_server  # noqa: F401
+    from milvus import default_server
 
     milvus_installed = True
 except ImportError:
     milvus_installed = False
 
-pytestmark = pytest.mark.skipif(not milvus_installed, reason="local milvus is not installed")
+pytestmark = pytest.mark.skipif(
+    not milvus_installed, reason="local milvus is not installed"
+)
 
 pytestmark = pytest.mark.skipif(
     platform.system() == "Windows",
@@ -28,38 +30,10 @@ def setup_milvus():
     default_server.cleanup()
     default_server.start()
     host = "http://127.0.0.1:" + str(default_server.listen_port)
-    port = None
-    yield host, port
+    token = None
+    yield host, token
     default_server.stop()
     default_server.cleanup()
-
-
-@pytest.fixture
-def memory_record1():
-    return MemoryRecord(
-        id="test_id1",
-        text="sample text1",
-        is_reference=False,
-        embedding=np.array([0.5, 0.5]),
-        description="description",
-        external_source_name="external source",
-        additional_metadata="additional metadata",
-        timestamp="timestamp",
-    )
-
-
-@pytest.fixture
-def memory_record2():
-    return MemoryRecord(
-        id="test_id2",
-        text="sample text2",
-        is_reference=False,
-        embedding=np.array([0.25, 0.75]),
-        description="description",
-        external_source_name="external source",
-        additional_metadata="additional metadata",
-        timestamp="timestamp",
-    )
 
 
 @pytest.mark.asyncio
@@ -130,7 +104,6 @@ async def test_upsert_and_get(memory_record1, setup_milvus):
     assert result._description == "description"
     assert result._external_source_name == "external source"
     assert result._additional_metadata == "additional metadata"
-    assert result._timestamp == "timestamp"
 
 
 @pytest.mark.asyncio
@@ -150,7 +123,6 @@ async def test_upsert_and_get_with_no_embedding(memory_record1, setup_milvus):
     assert result._description == "description"
     assert result._external_source_name == "external source"
     assert result._additional_metadata == "additional metadata"
-    assert result._timestamp == "timestamp"
 
 
 @pytest.mark.asyncio
@@ -171,7 +143,6 @@ async def test_upsert_and_get_batch(memory_record1, memory_record2, setup_milvus
     assert result[0]._description == "description"
     assert result[0]._external_source_name == "external source"
     assert result[0]._additional_metadata == "additional metadata"
-    assert result[0]._timestamp == "timestamp"
 
 
 @pytest.mark.asyncio
@@ -210,7 +181,9 @@ async def test_get_nearest_matches(memory_record1, memory_record2, setup_milvus)
     await memory.delete_collection(all=True)
     await memory.create_collection("test_collection", 2)
     await memory.upsert_batch("test_collection", [memory_record1, memory_record2])
-    results = await memory.get_nearest_matches("test_collection", np.array([0.5, 0.5]), limit=2)
+    results = await memory.get_nearest_matches(
+        "test_collection", np.array([0.5, 0.5]), limit=2
+    )
     assert len(results) == 2
     assert isinstance(results[0][0], MemoryRecord)
     assert results[0][1] == pytest.approx(0.5, abs=1e-5)
