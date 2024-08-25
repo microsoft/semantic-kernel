@@ -1,50 +1,56 @@
 # Get Started with Semantic Kernel ⚡
 
-Install the latest package:
+### Install the Latest Package
 
-    python -m pip install --upgrade semantic-kernel
+```bash
+python -m pip install --upgrade semantic-kernel
+```
 
-If you want to use some of the optional dependencies (OpenAI is installed by default), you can install them with:
+For optional dependencies (OpenAI is installed by default), use:
 
-    python -m pip install --upgrade semantic-kernel[hugging_face]
+```bash
+# For Hugging Face integration
+python -m pip install --upgrade semantic-kernel[hugging_face]
 
-or all of them:
-
-    python -m pip install --upgrade semantic-kernel[all]
+# To install all optional dependencies
+python -m pip install --upgrade semantic-kernel[all]
+```
 
 # AI Services
 
-## OpenAI / Azure OpenAI API keys
+## OpenAI / Azure OpenAI API Keys
 
-Make sure you have an
-[OpenAI API Key](https://platform.openai.com) or
-[Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
+Make sure you have an [OpenAI API Key](https://platform.openai.com) or [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api).
 
-There are two methods to manage keys, secrets, and endpoints:
+### Managing Keys, Secrets, and Endpoints
 
-1. Store them in environment variables. SK Python leverages pydantic settings to load keys, secrets, and endpoints. This means that there is a first attempt to load them from environment variables. The `.env` file naming applies to how the names should be stored as environment variables.
+You can manage your keys in two ways:
 
-2. If you'd like to use the `.env` file, you will need to configure the `.env` file with the following keys in the file (see the `.env.example` file):
+1. **Environment Variables**:  
+   SK Python uses pydantic settings to load keys, secrets, and endpoints. The first attempt to load them will be from environment variables. Make sure to name them according to the `.env` file format.
 
-```
-OPENAI_API_KEY=""
-OPENAI_ORG_ID=""
-AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=""
-AZURE_OPENAI_TEXT_DEPLOYMENT_NAME=""
-AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=""
-AZURE_OPENAI_ENDPOINT=""
-AZURE_OPENAI_API_KEY=""
-```
+2. **Using a `.env` File**:  
+   Configure your `.env` file with the following keys (refer to the `.env.example`):
 
-You will then configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
+   ```bash
+   OPENAI_API_KEY=""
+   OPENAI_ORG_ID=""
+   AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=""
+   AZURE_OPENAI_TEXT_DEPLOYMENT_NAME=""
+   AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=""
+   AZURE_OPENAI_ENDPOINT=""
+   AZURE_OPENAI_API_KEY=""
+   ```
 
-```python
-chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
-```
+   Then, configure the `Text/ChatCompletion` class using the `env_file_path` keyword argument:
 
-This optional `env_file_path` parameter will allow pydantic settings to use the `.env` file as a fallback to read the settings.
+   ```python
+   chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
+   ```
 
-# Running a prompt
+   This optional `env_file_path` allows pydantic to use the `.env` file as a fallback for settings.
+
+# Running a Prompt
 
 ```python
 import asyncio
@@ -54,19 +60,15 @@ from semantic_kernel.prompt_template import PromptTemplateConfig
 
 kernel = Kernel()
 
-# Prepare OpenAI service using credentials stored in the `.env` file
-service_id="chat-gpt"
+# Prepare OpenAI service using credentials from the `.env` file
+service_id = "chat-gpt"
 kernel.add_service(
-    OpenAIChatCompletion(
-        service_id=service_id,
-    )
+    OpenAIChatCompletion(service_id=service_id)
 )
 
 # Alternative using Azure:
 # kernel.add_service(
-#   AzureChatCompletion(
-#       service_id=service_id,
-#   )
+#   AzureChatCompletion(service_id=service_id)
 # )
 
 # Define the request settings
@@ -76,16 +78,12 @@ req_settings.temperature = 0.7
 req_settings.top_p = 0.8
 
 prompt = """
-1) A robot may not injure a human being or, through inaction,
-allow a human being to come to harm.
+1) A robot may not injure a human being or, through inaction, allow a human being to come to harm.
+2) A robot must obey orders given it by human beings except where such orders would conflict with the First Law.
+3) A robot must protect its own existence as long as such protection does not conflict with the First or Second Law.
 
-2) A robot must obey orders given it by human beings except where
-such orders would conflict with the First Law.
-
-3) A robot must protect its own existence as long as such protection
-does not conflict with the First or Second Law.
-
-Give me the TLDR in exactly 5 words."""
+Give me the TLDR in exactly 5 words.
+"""
 
 prompt_template_config = PromptTemplateConfig(
     template=prompt,
@@ -100,11 +98,10 @@ function = kernel.add_function(
     prompt_template_config=prompt_template_config,
 )
 
-# Run your prompt
-# Note: functions are run asynchronously
+# Run the prompt asynchronously
 async def main():
     result = await kernel.invoke(function)
-    print(result) # => Robots must not harm humans.
+    print(result)  # => Robots must not harm humans.
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -112,10 +109,10 @@ if __name__ == "__main__":
 # await main()
 ```
 
-# **Semantic Prompt Functions** are Prompts with input parameters
+# Semantic Prompt Functions: Prompts with Input Parameters
 
 ```python
-# Create a reusable function summarize function
+# Create a reusable summarize function
 summarize = kernel.add_function(
     function_name="tldr_function",
     plugin_name="tldr_plugin",
@@ -123,6 +120,7 @@ summarize = kernel.add_function(
     prompt_template_settings=req_settings,
 )
 
+# Examples of usage
 # Summarize the laws of thermodynamics
 print(await kernel.invoke(summarize, input="""
 1st Law of Thermodynamics - Energy cannot be created or destroyed.
@@ -148,15 +146,12 @@ The force is proportional to the product of the two masses and inversely proport
 
 # Semantic Kernel Notebooks
 
-The repository contains a few Python and C# notebooks that demonstrates how to
-get started with the Semantic Kernel.
-
-Python notebooks:
+Explore more with the provided notebooks:
 
 - [Getting started with Semantic Kernel](./samples/getting_started/00-getting-started.ipynb)
 - [Loading and configuring Semantic Kernel](./samples/getting_started/01-basic-loading-the-kernel.ipynb)
 - [Running AI prompts from file](./samples/getting_started/02-running-prompts-from-file.ipynb)
-- [Creating Prompt Functions at runtime (i.e. inline functions)](./samples/getting_started/03-prompt-function-inline.ipynb)
+- [Creating Prompt Functions at runtime](./samples/getting_started/03-prompt-function-inline.ipynb)
 - [Using Context Variables to Build a Chat Experience](./samples/getting_started/04-kernel-arguments-chat.ipynb)
 - [Introduction to planners](./samples/getting_started/05-using-the-planner.ipynb)
 - [Building Memory with Embeddings](./samples/getting_started/06-memory-and-embeddings.ipynb)
@@ -170,10 +165,4 @@ Python notebooks:
 
 ## How does Python SK compare to the C# version of Semantic Kernel?
 
-The two SDKs are compatible and at the core they follow the same design principles.
-Some features are still available only in the C# version, and being ported
-Refer to the [FEATURE MATRIX](../FEATURE_MATRIX.md) doc to see where
-things stand in matching the features and functionality of the main SK branch.
-Over time there will be some features available only in the Python version, and
-others only in the C# version, for example adapters to external services,
-scientific libraries, etc.
+Both SDKs are compatible and share core design principles. However, some features are still exclusive to the C# version and are being ported. For a detailed comparison, refer to the [FEATURE MATRIX](../FEATURE_MATRIX.md). In the future, some features may be unique to either the Python or C# versions.
