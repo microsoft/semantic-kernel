@@ -5,12 +5,12 @@ on:
     branches: ["main", "feature*"]
     paths:
       - "python/**"
+env:
+  # Configure a constant location for the uv cache
+  UV_CACHE_DIR: /tmp/.uv-cache
 
 jobs:
   python-unit-tests:
-    env:
-      # Configure a constant location for the uv cache
-      UV_CACHE_DIR: /tmp/.uv-cache
     name: Python Unit Tests
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
@@ -80,21 +80,23 @@ jobs:
     defaults:
       run:
         working-directory: python
+    env:
+      PYTHON_VERSION: "3.10"
     steps:
       - uses: actions/checkout@v4
       - name: Setup filename variables
         run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
       - name: Set up uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Restore uv cache
         uses: actions/cache@v4
         with:
-          path: ${{  env.UV_CACHE_DIR  }}
-          key: uv-${{ runner.os }}-${{  matrix.python-version  }}-${{ hashFiles('**/uv.lock') }}
+          path: ${{ env.UV_CACHE_DIR }}
+          key: uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/uv.lock') }}
       - name: Install the project
         run: uv sync --all-extras --dev
       - name: Test with pytest
