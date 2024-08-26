@@ -19,6 +19,11 @@ namespace Microsoft.SemanticKernel;
 [JsonDerivedType(typeof(NoneFunctionChoiceBehavior), typeDiscriminator: "none")]
 public abstract class FunctionChoiceBehavior
 {
+    /// <summary>
+    /// List of the functions to provide to AI model.
+    /// </summary>
+    private readonly IEnumerable<KernelFunction>? _functions;
+
     /// <summary>The separator used to separate plugin name and function name.</summary>
     protected const string FunctionNameSeparator = ".";
 
@@ -27,6 +32,18 @@ public abstract class FunctionChoiceBehavior
     /// </summary>
     internal FunctionChoiceBehavior()
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FunctionChoiceBehavior"/> class.
+    /// </summary>
+    /// <param name="functions">
+    /// Functions to provide to AI model. If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
+    /// If empty, no functions are provided to the model.
+    /// </param>
+    internal FunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null)
+    {
+        this._functions = functions;
     }
 
     /// <summary>
@@ -98,11 +115,10 @@ public abstract class FunctionChoiceBehavior
     /// Returns functions AI connector should provide to the AI model.
     /// </summary>
     /// <param name="functionFQNs">Functions provided as fully qualified names.</param>
-    /// <param name="functions">Functions provided as instances of <see cref="KernelFunction"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> to be used for function calling.</param>
     /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI connector.</param>
     /// <returns>The configuration.</returns>
-    protected IReadOnlyList<KernelFunction>? GetFunctions(IList<string>? functionFQNs, IEnumerable<KernelFunction>? functions, Kernel? kernel, bool autoInvoke)
+    protected IReadOnlyList<KernelFunction>? GetFunctions(IList<string>? functionFQNs, Kernel? kernel, bool autoInvoke)
     {
         // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
         // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
@@ -138,7 +154,7 @@ public abstract class FunctionChoiceBehavior
                 }
 
                 // Look up the function in the list of functions provided as instances of KernelFunction.
-                function = functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
+                function = this._functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
                 if (function is not null)
                 {
                     availableFunctions.Add(function);

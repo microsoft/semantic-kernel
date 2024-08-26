@@ -29,7 +29,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new RequiredFunctionChoiceBehavior();
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -51,7 +51,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new RequiredFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -75,7 +75,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
             Functions = ["MyPlugin.Function1", "MyPlugin.Function2"]
         };
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -95,7 +95,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new RequiredFunctionChoiceBehavior([plugin.ElementAt(0), plugin.ElementAt(1)], autoInvoke: false);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -116,7 +116,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: false);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -138,7 +138,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new RequiredFunctionChoiceBehavior();
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -155,7 +155,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: false);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -192,7 +192,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Act
         var exception = Assert.Throws<KernelException>(() =>
         {
-            choiceBehavior.GetConfiguration(new([]) { Kernel = null });
+            choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = null });
         });
 
         Assert.Equal("Auto-invocation is not supported when no kernel is provided.", exception.Message);
@@ -209,7 +209,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Act
         var exception = Assert.Throws<KernelException>(() =>
         {
-            choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+            choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
         });
 
         Assert.Equal("The specified function MyPlugin.Function1 is not available in the kernel.", exception.Message);
@@ -230,7 +230,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Act
         var exception = Assert.Throws<KernelException>(() =>
         {
-            choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+            choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
         });
 
         Assert.Equal("The specified function MyPlugin.NonKernelFunction was not found.", exception.Message);
@@ -251,7 +251,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: true, functionsSelector: FunctionsSelector);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config.Functions);
@@ -273,7 +273,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: true, functionsSelector: FunctionsSelector);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config?.Functions);

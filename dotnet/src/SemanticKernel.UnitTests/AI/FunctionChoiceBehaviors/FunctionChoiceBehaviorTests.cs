@@ -59,7 +59,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = FunctionChoiceBehavior.Auto(functions: null);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -81,7 +81,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = FunctionChoiceBehavior.Auto(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -102,7 +102,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: true);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -119,7 +119,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -136,7 +136,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = FunctionChoiceBehavior.Required(functions: null);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -158,7 +158,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = FunctionChoiceBehavior.Required(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -179,7 +179,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -201,7 +201,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true, functionsSelector: FunctionsSelector);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config.Functions);
@@ -223,7 +223,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true, functionsSelector: FunctionsSelector);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config?.Functions);
@@ -241,7 +241,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: false);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -257,7 +257,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = FunctionChoiceBehavior.None([plugin.ElementAt(0), plugin.ElementAt(2)]);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -278,7 +278,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = FunctionChoiceBehavior.None();
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);

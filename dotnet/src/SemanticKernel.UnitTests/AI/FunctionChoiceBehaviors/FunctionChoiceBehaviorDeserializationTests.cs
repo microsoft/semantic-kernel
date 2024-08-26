@@ -31,7 +31,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         var sut = JsonSerializer.Deserialize<AutoFunctionChoiceBehavior>(json);
 
         // Act
-        var config = sut!.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -61,7 +61,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         var sut = JsonSerializer.Deserialize<AutoFunctionChoiceBehavior>(json);
 
         // Act
-        var config = sut!.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -87,7 +87,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         var sut = JsonSerializer.Deserialize<AutoFunctionChoiceBehavior>(json);
 
         // Act
-        var config = sut!.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -115,7 +115,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         var sut = JsonSerializer.Deserialize<RequiredFunctionChoiceBehavior>(json);
 
         // Act
-        var config = sut!.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -145,7 +145,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         var sut = JsonSerializer.Deserialize<RequiredFunctionChoiceBehavior>(json);
 
         // Act
-        var config = sut!.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -171,7 +171,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         var sut = JsonSerializer.Deserialize<RequiredFunctionChoiceBehavior>(json);
 
         // Act
-        var config = sut!.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -199,7 +199,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         var sut = JsonSerializer.Deserialize<NoneFunctionChoiceBehavior>(json);
 
         // Act
-        var config = sut!.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -229,7 +229,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         var sut = JsonSerializer.Deserialize<NoneFunctionChoiceBehavior>(json);
 
         // Act
-        var config = sut!.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -255,7 +255,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         var sut = JsonSerializer.Deserialize<NoneFunctionChoiceBehavior>(json);
 
         // Act
-        var config = sut!.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);

@@ -13,11 +13,6 @@ namespace Microsoft.SemanticKernel;
 internal sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
 {
     /// <summary>
-    /// List of the functions to provide to AI model.
-    /// </summary>
-    private readonly IEnumerable<KernelFunction>? _functions;
-
-    /// <summary>
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </summary>
     private readonly bool _autoInvoke = true;
@@ -40,10 +35,9 @@ internal sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <param name="autoInvoke">
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </param>
-    public AutoFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true)
+    public AutoFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true) : base(functions)
     {
         this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
-        this._functions = functions;
         this._autoInvoke = autoInvoke;
     }
 
@@ -56,10 +50,9 @@ internal sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     public IList<string>? Functions { get; set; }
 
     /// <inheritdoc />
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        var functions = base.GetFunctions(this.Functions, this._functions, context.Kernel, this._autoInvoke);
+        var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
 
         return new FunctionChoiceBehaviorConfiguration()
         {
@@ -67,6 +60,5 @@ internal sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
             Functions = functions,
             AutoInvoke = this._autoInvoke,
         };
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 }

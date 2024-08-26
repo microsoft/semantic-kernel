@@ -50,7 +50,7 @@ public class KernelFunctionMarkdownTests
         var service1ExecutionSettings = function.ExecutionSettings["service1"];
         Assert.NotNull(service1ExecutionSettings?.FunctionChoiceBehavior);
 
-        var autoConfig = service1ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = kernel });
+        var autoConfig = service1ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []) { Kernel = kernel });
         Assert.NotNull(autoConfig);
         Assert.Equal(FunctionChoice.Auto, autoConfig.Choice);
         Assert.NotNull(autoConfig.Functions);
@@ -61,7 +61,7 @@ public class KernelFunctionMarkdownTests
         var service2ExecutionSettings = function.ExecutionSettings["service2"];
         Assert.NotNull(service2ExecutionSettings?.FunctionChoiceBehavior);
 
-        var requiredConfig = service2ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = kernel });
+        var requiredConfig = service2ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []) { Kernel = kernel });
         Assert.NotNull(requiredConfig);
         Assert.Equal(FunctionChoice.Required, requiredConfig.Choice);
         Assert.NotNull(requiredConfig.Functions);
@@ -72,7 +72,7 @@ public class KernelFunctionMarkdownTests
         var service3ExecutionSettings = function.ExecutionSettings["service3"];
         Assert.NotNull(service3ExecutionSettings?.FunctionChoiceBehavior);
 
-        var noneConfig = service3ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = kernel });
+        var noneConfig = service3ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []) { Kernel = kernel });
         Assert.NotNull(noneConfig);
         Assert.Equal(FunctionChoice.None, noneConfig.Choice);
         Assert.NotNull(noneConfig.Functions);
@@ -83,7 +83,7 @@ public class KernelFunctionMarkdownTests
         var service4ExecutionSettings = function.ExecutionSettings["service4"];
         Assert.NotNull(service4ExecutionSettings?.FunctionChoiceBehavior);
 
-        var autoWithEmptyFunctionsConfig = service4ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = kernel });
+        var autoWithEmptyFunctionsConfig = service4ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []) { Kernel = kernel });
         Assert.NotNull(autoWithEmptyFunctionsConfig);
         Assert.Equal(FunctionChoice.Auto, autoWithEmptyFunctionsConfig.Choice);
         Assert.Null(autoWithEmptyFunctionsConfig.Functions);
@@ -92,7 +92,7 @@ public class KernelFunctionMarkdownTests
         var service5ExecutionSettings = function.ExecutionSettings["service5"];
         Assert.NotNull(service5ExecutionSettings?.FunctionChoiceBehavior);
 
-        var autoWithNoFunctionsConfig = service5ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = kernel });
+        var autoWithNoFunctionsConfig = service5ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []) { Kernel = kernel });
         Assert.NotNull(autoWithNoFunctionsConfig);
         Assert.Equal(FunctionChoice.Auto, autoWithNoFunctionsConfig.Choice);
         Assert.NotNull(autoWithNoFunctionsConfig.Functions);

@@ -28,7 +28,7 @@ public sealed class NoneFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new NoneFunctionChoiceBehavior();
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -49,7 +49,7 @@ public sealed class NoneFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new NoneFunctionChoiceBehavior([plugin.ElementAt(0), plugin.ElementAt(2)]);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -67,7 +67,7 @@ public sealed class NoneFunctionChoiceBehaviorTests
         var choiceBehavior = new NoneFunctionChoiceBehavior();
 
         // Act
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
