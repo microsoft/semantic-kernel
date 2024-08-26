@@ -207,29 +207,28 @@ jobs:
       - name: Install Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
-          curl -fsSL https://ollama.com/install.sh | sh
-          ollama serve &
-          sleep 5
-
+          if ${{ vars.OLLAMA_MODEL != '' }}; then
+            curl -fsSL https://ollama.com/install.sh | sh
+            ollama serve &
+            sleep 5
+          fi
       - name: Pull model in Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
-          ollama pull ${{ vars.OLLAMA_MODEL }}
-          ollama list
-
+          if ${{ vars.OLLAMA_MODEL != '' }}; then
+            ollama pull ${{ vars.OLLAMA_MODEL }}
+            ollama list
+          fi
       - name: Google auth
         uses: google-github-actions/auth@v2
         with:
           project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}
           credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
-
       - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
-      
+        uses: google-github-actions/setup-gcloud@v2      
       - name: Setup Redis Stack Server
         if: matrix.os == 'ubuntu-latest'
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
-
       - name: Run Integration Tests
         id: run_tests
         shell: bash
