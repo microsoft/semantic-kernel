@@ -56,6 +56,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
+            chat.Add(new ChatMessageContent(AuthorRole.User, input));
             await agent.AddChatMessageAsync(threadId, new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");

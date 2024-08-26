@@ -4,13 +4,17 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
+    OpenAIChatCompletion,
+)
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
+from semantic_kernel.exceptions.planner_exceptions import (
+    PlannerInvalidConfigurationError,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -42,8 +46,12 @@ def get_function_call_content():
         plugin_name="plugin",
         description="A sample function",
         parameters=[
-            KernelParameterMetadata(name="param1", description="Parameter 1", default_value=None),
-            KernelParameterMetadata(name="param2", description="Parameter 2", default_value="default"),
+            KernelParameterMetadata(
+                name="param1", description="Parameter 1", default_value=None
+            ),
+            KernelParameterMetadata(
+                name="param2", description="Parameter 2", default_value="default"
+            ),
         ],
         is_prompt=False,
         is_asynchronous=True,
@@ -59,8 +67,12 @@ def get_kernel_function_metadata_list():
             plugin_name="plugin",
             description="A sample function",
             parameters=[
-                KernelParameterMetadata(name="param1", description="Parameter 1", default_value=None),
-                KernelParameterMetadata(name="param2", description="Parameter 2", default_value="default"),
+                KernelParameterMetadata(
+                    name="param1", description="Parameter 1", default_value=None
+                ),
+                KernelParameterMetadata(
+                    name="param2", description="Parameter 2", default_value="default"
+                ),
             ],
             is_prompt=False,
             is_asynchronous=True,
@@ -85,7 +97,9 @@ async def test_invoke_with_empty_question_raises_error():
 @pytest.mark.asyncio
 async def test_get_initial_plan_callback_usage():
     fake_get_initial_plan = MagicMock(return_value="custom initial plan")
-    options = FunctionCallingStepwisePlannerOptions(get_initial_plan=fake_get_initial_plan)
+    options = FunctionCallingStepwisePlannerOptions(
+        get_initial_plan=fake_get_initial_plan
+    )
     planner = FunctionCallingStepwisePlanner(service_id="test_service", options=options)
     assert planner.generate_plan_yaml == "custom initial plan"
     fake_get_initial_plan.assert_called_once()
@@ -94,7 +108,9 @@ async def test_get_initial_plan_callback_usage():
 @pytest.mark.asyncio
 async def test_get_step_prompt_callback_usage():
     fake_get_step_prompt = MagicMock(return_value="custom step prompt")
-    options = FunctionCallingStepwisePlannerOptions(get_step_prompt=fake_get_step_prompt)
+    options = FunctionCallingStepwisePlannerOptions(
+        get_step_prompt=fake_get_step_prompt
+    )
     planner = FunctionCallingStepwisePlanner(service_id="test_service", options=options)
     assert planner.step_prompt == "custom step prompt"
     fake_get_step_prompt.assert_called_once_with()
@@ -152,7 +168,9 @@ async def test_invoke_with_function_call_content_and_processing(
     question = "Test question"
     arguments = KernelArguments()
 
-    options = FunctionCallingStepwisePlannerOptions(get_available_functions=AsyncMock(), max_iterations=1)
+    options = FunctionCallingStepwisePlannerOptions(
+        get_available_functions=AsyncMock(), max_iterations=1
+    )
     options.get_available_functions.return_value = get_kernel_function_metadata_list
 
     planner = FunctionCallingStepwisePlanner(service_id="test_service", options=options)
@@ -161,8 +179,12 @@ async def test_invoke_with_function_call_content_and_processing(
     kernel_mock.get_service.return_value = chat_completion_mock
 
     planner._generate_plan = AsyncMock(return_value="generated plan")
-    planner._build_chat_history_for_step = AsyncMock(return_value=AsyncMock(spec=ChatHistory))
-    chat_completion_mock.instantiate_prompt_execution_settings.return_value = AsyncMock()
+    planner._build_chat_history_for_step = AsyncMock(
+        return_value=AsyncMock(spec=ChatHistory)
+    )
+    chat_completion_mock.instantiate_prompt_execution_settings.return_value = (
+        AsyncMock()
+    )
 
     other_function_call_content = AsyncMock(spec=FunctionCallContent)
     other_function_call_content.name = "SomeOtherFunction"
@@ -171,7 +193,9 @@ async def test_invoke_with_function_call_content_and_processing(
     chat_result.items = [other_function_call_content]
     chat_completion_mock.get_chat_message_contents.return_value = [chat_result]
 
-    chat_completion_mock._process_function_call = AsyncMock(return_value=MagicMock(function_result="Function result"))
+    chat_completion_mock._process_function_call = AsyncMock(
+        return_value=MagicMock(function_result="Function result")
+    )
 
     with patch(
         "semantic_kernel.contents.function_result_content.FunctionResultContent.from_function_call_content_and_result",
@@ -193,16 +217,22 @@ async def test_invoke_with_function_call_content_and_processing(
             function_call_behavior=chat_completion_mock.instantiate_prompt_execution_settings.return_value.function_choice_behavior,
         )
 
-        frc_mock.assert_called_with(function_call_content=other_function_call_content, result="Function result")
+        frc_mock.assert_called_with(
+            function_call_content=other_function_call_content, result="Function result"
+        )
 
 
 @pytest.mark.asyncio
-async def test_invoke_with_function_call_content_and_processing_error(get_kernel_function_metadata_list):
+async def test_invoke_with_function_call_content_and_processing_error(
+    get_kernel_function_metadata_list,
+):
     kernel_mock = AsyncMock(spec=Kernel)
     question = "Test question"
     arguments = KernelArguments()
 
-    options = FunctionCallingStepwisePlannerOptions(get_available_functions=AsyncMock(), max_iterations=1)
+    options = FunctionCallingStepwisePlannerOptions(
+        get_available_functions=AsyncMock(), max_iterations=1
+    )
     options.get_available_functions.return_value = get_kernel_function_metadata_list
 
     planner = FunctionCallingStepwisePlanner(service_id="test_service", options=options)
@@ -211,8 +241,12 @@ async def test_invoke_with_function_call_content_and_processing_error(get_kernel
     kernel_mock.get_service.return_value = chat_completion_mock
 
     planner._generate_plan = AsyncMock(return_value="generated plan")
-    planner._build_chat_history_for_step = AsyncMock(return_value=AsyncMock(spec=ChatHistory))
-    chat_completion_mock.instantiate_prompt_execution_settings.return_value = AsyncMock()
+    planner._build_chat_history_for_step = AsyncMock(
+        return_value=AsyncMock(spec=ChatHistory)
+    )
+    chat_completion_mock.instantiate_prompt_execution_settings.return_value = (
+        AsyncMock()
+    )
 
     other_function_call_content = AsyncMock(spec=FunctionCallContent)
     other_function_call_content.name = "SomeOtherFunction"
@@ -221,7 +255,9 @@ async def test_invoke_with_function_call_content_and_processing_error(get_kernel
     chat_result.items = [other_function_call_content]
     chat_completion_mock.get_chat_message_contents.return_value = [chat_result]
 
-    chat_completion_mock._process_function_call.side_effect = Exception("Function call error")
+    chat_completion_mock._process_function_call.side_effect = Exception(
+        "Function call error"
+    )
 
     with patch(
         "semantic_kernel.contents.function_result_content.FunctionResultContent.from_function_call_content_and_result",
@@ -245,7 +281,9 @@ async def test_invoke_with_function_call_content_and_processing_error(get_kernel
 
         frc_mock.assert_called_with(
             function_call_content=other_function_call_content,
-            result=TextContent(text="An error occurred during planner invocation: Function call error"),
+            result=TextContent(
+                text="An error occurred during planner invocation: Function call error"
+            ),
         )
 
 
@@ -268,8 +306,12 @@ async def test_invoke_with_no_arguments():
     kernel_mock.get_service.return_value = chat_completion_mock
 
     planner._generate_plan = AsyncMock(return_value="generated plan")
-    planner._build_chat_history_for_step = AsyncMock(return_value=AsyncMock(spec=ChatHistory))
-    chat_completion_mock.instantiate_prompt_execution_settings.return_value = AsyncMock()
+    planner._build_chat_history_for_step = AsyncMock(
+        return_value=AsyncMock(spec=ChatHistory)
+    )
+    chat_completion_mock.instantiate_prompt_execution_settings.return_value = (
+        AsyncMock()
+    )
 
     chat_completion_mock.get_chat_message_contents.return_value = [
         AsyncMock(items=[FunctionResultContent(text="Test result", id="test")])
@@ -282,7 +324,9 @@ async def test_invoke_with_no_arguments():
     assert result.iterations == planner.options.max_iterations
 
 
-@patch("semantic_kernel.planners.function_calling_stepwise_planner.function_calling_stepwise_planner.yaml.safe_load")
+@patch(
+    "semantic_kernel.planners.function_calling_stepwise_planner.function_calling_stepwise_planner.yaml.safe_load"
+)
 def test_create_config_from_yaml(mock_safe_load):
     mock_safe_load.return_value = {
         "template": "some template",

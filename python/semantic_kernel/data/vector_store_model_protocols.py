@@ -64,7 +64,9 @@ class ToDictProtocol(Protocol):
         A list of dictionaries.
     """
 
-    def __call__(self, record: Any, **kwargs: Any) -> Sequence[dict[str, Any]]: ...  # pragma: no cover  # noqa: D102
+    def __call__(
+        self, record: Any, **kwargs: Any
+    ) -> Sequence[dict[str, Any]]: ...  # pragma: no cover  # noqa: D102
 
 
 @runtime_checkable
@@ -79,7 +81,9 @@ class FromDictProtocol(Protocol):
         A record or list thereof.
     """
 
-    def __call__(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Any: ...  # noqa: D102
+    def __call__(
+        self, records: Sequence[dict[str, Any]], **kwargs: Any
+    ) -> Any: ...  # noqa: D102
 
 
 @runtime_checkable

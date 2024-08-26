@@ -5,7 +5,12 @@ import os
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.search.documents.indexes.aio import SearchIndexClient
-from azure.search.documents.indexes.models import SearchableField, SearchField, SearchFieldDataType, SimpleField
+from azure.search.documents.indexes.models import (
+    SearchableField,
+    SearchField,
+    SearchFieldDataType,
+    SimpleField,
+)
 from dotenv import load_dotenv
 
 from semantic_kernel.const import USER_AGENT
@@ -47,11 +52,15 @@ def get_search_index_async_client(
     elif os.getenv(ENV_VAR_ENDPOINT):
         service_endpoint = os.getenv(ENV_VAR_ENDPOINT)
     else:
-        raise ServiceInitializationError("Error: missing Azure Cognitive Search client endpoint.")
+        raise ServiceInitializationError(
+            "Error: missing Azure Cognitive Search client endpoint."
+        )
 
     if service_endpoint is None:
         print(service_endpoint)
-        raise ServiceInitializationError("Error: Azure Cognitive Search client not set.")
+        raise ServiceInitializationError(
+            "Error: Azure Cognitive Search client not set."
+        )
 
     # Credentials
     if admin_key:
@@ -63,18 +72,26 @@ def get_search_index_async_client(
     elif os.getenv(ENV_VAR_API_KEY):
         azure_credential = AzureKeyCredential(os.getenv(ENV_VAR_API_KEY))
     else:
-        raise ServiceInitializationError("Error: missing Azure Cognitive Search client credentials.")
+        raise ServiceInitializationError(
+            "Error: missing Azure Cognitive Search client credentials."
+        )
 
     if azure_credential is None and token_credential is None:
-        raise ServiceInitializationError("Error: Azure Cognitive Search credentials not set.")
+        raise ServiceInitializationError(
+            "Error: Azure Cognitive Search credentials not set."
+        )
 
     sk_headers = {USER_AGENT: "Semantic-Kernel"}
 
     if azure_credential:
-        return SearchIndexClient(endpoint=service_endpoint, credential=azure_credential, headers=sk_headers)
+        return SearchIndexClient(
+            endpoint=service_endpoint, credential=azure_credential, headers=sk_headers
+        )
 
     if token_credential:
-        return SearchIndexClient(endpoint=service_endpoint, credential=token_credential, headers=sk_headers)
+        return SearchIndexClient(
+            endpoint=service_endpoint, credential=token_credential, headers=sk_headers
+        )
 
     raise ValueError("Error: unable to create Azure Cognitive Search client.")
 

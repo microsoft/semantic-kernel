@@ -36,7 +36,9 @@ async def main():
     plugins_directory = os.path.join(script_directory, "plugins")
     kernel.add_plugin(parent_directory=plugins_directory, plugin_name="WriterPlugin")
     # Run the short poem function with the Kernel Argument
-    poem_result = await kernel.invoke(function_name="ShortPoem", plugin_name="WriterPlugin", input=str(current_time))
+    poem_result = await kernel.invoke(
+        function_name="ShortPoem", plugin_name="WriterPlugin", input=str(current_time)
+    )
     print(f"The poem result:\n\n{poem_result}")
     # </InvokeShortPoem>
 

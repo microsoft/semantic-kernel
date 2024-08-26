@@ -46,7 +46,10 @@ class MenuPlugin:
 # A helper method to invoke the agent with the user input
 async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) -> None:
     """Invoke the agent with the user input."""
-    await agent.add_chat_message(thread_id=thread_id, message=ChatMessageContent(role=AuthorRole.USER, content=input))
+    await agent.add_chat_message(
+        thread_id=thread_id,
+        message=ChatMessageContent(role=AuthorRole.USER, content=input),
+    )
 
     print(f"# {AuthorRole.USER}: '{input}'")
 
@@ -67,11 +70,17 @@ async def main():
     # Create the agent
     if use_azure_openai:
         agent = AzureAssistantAgent(
-            kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
+            kernel=kernel,
+            service_id=service_id,
+            name=HOST_NAME,
+            instructions=HOST_INSTRUCTIONS,
         )
     else:
         agent = OpenAIAssistantAgent(
-            kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
+            kernel=kernel,
+            service_id=service_id,
+            name=HOST_NAME,
+            instructions=HOST_INSTRUCTIONS,
         )
 
     # Next create the assistant
@@ -91,8 +100,12 @@ async def main():
 
     try:
         await invoke_agent(agent, thread_id=thread_id, input="Hello")
-        await invoke_agent(agent, thread_id=thread_id, input="What is the special soup?")
-        await invoke_agent(agent, thread_id=thread_id, input="What is the special drink?")
+        await invoke_agent(
+            agent, thread_id=thread_id, input="What is the special soup?"
+        )
+        await invoke_agent(
+            agent, thread_id=thread_id, input="What is the special drink?"
+        )
         await invoke_agent(agent, thread_id=thread_id, input="Thank you")
     finally:
         await agent.delete_thread(thread_id)

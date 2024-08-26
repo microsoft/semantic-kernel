@@ -16,8 +16,12 @@ from semantic_kernel.connectors.openai_plugin.openai_function_execution_paramete
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
-from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+from semantic_kernel.functions.kernel_function_from_method import (
+    KernelFunctionFromMethod,
+)
+from semantic_kernel.functions.kernel_function_from_prompt import (
+    KernelFunctionFromPrompt,
+)
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -44,7 +48,9 @@ def test_init_fail_no_name():
 def test_init_with_no_functions():
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
-    plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description)
+    plugin = KernelPlugin(
+        name=expected_plugin_name, description=expected_plugin_description
+    )
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
     assert not plugin.functions
@@ -55,9 +61,15 @@ def test_init_with_kernel_functions(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    native_function = KernelFunction.from_method(method=mock_function, plugin_name=function_plugin_name)
+    native_function = KernelFunction.from_method(
+        method=mock_function, plugin_name=function_plugin_name
+    )
 
-    plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description, functions=native_function)
+    plugin = KernelPlugin(
+        name=expected_plugin_name,
+        description=expected_plugin_description,
+        functions=native_function,
+    )
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
     assert len(plugin.functions) == 1
@@ -70,10 +82,14 @@ def test_init_with_kernel_functions_list(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    native_function = KernelFunction.from_method(method=mock_function, plugin_name=function_plugin_name)
+    native_function = KernelFunction.from_method(
+        method=mock_function, plugin_name=function_plugin_name
+    )
 
     plugin = KernelPlugin(
-        name=expected_plugin_name, description=expected_plugin_description, functions=[native_function]
+        name=expected_plugin_name,
+        description=expected_plugin_description,
+        functions=[native_function],
     )
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
@@ -84,12 +100,16 @@ def test_init_with_kernel_functions_list(mock_function):
 
 def test_init_with_list_other_fail():
     with raises(ValueError):
-        KernelPlugin(name="test_plugin", description="A unit test plugin", functions=["str"])
+        KernelPlugin(
+            name="test_plugin", description="A unit test plugin", functions=["str"]
+        )
 
 
 def test_init_with_other_fail():
     with raises(ValueError):
-        KernelPlugin(name="test_plugin", description="A unit test plugin", functions="str")
+        KernelPlugin(
+            name="test_plugin", description="A unit test plugin", functions="str"
+        )
 
 
 def test_init_with_kernel_functions_dict(mock_function):
@@ -97,7 +117,9 @@ def test_init_with_kernel_functions_dict(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    native_function = KernelFunction.from_method(method=mock_function, plugin_name=function_plugin_name)
+    native_function = KernelFunction.from_method(
+        method=mock_function, plugin_name=function_plugin_name
+    )
 
     plugin = KernelPlugin(
         name=expected_plugin_name,
@@ -115,7 +137,11 @@ def test_init_with_callable_functions(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description, functions=mock_function)
+    plugin = KernelPlugin(
+        name=expected_plugin_name,
+        description=expected_plugin_description,
+        functions=mock_function,
+    )
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
     assert len(plugin.functions) == 1
@@ -126,7 +152,11 @@ def test_init_with_callable_functions_list(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description, functions=[mock_function])
+    plugin = KernelPlugin(
+        name=expected_plugin_name,
+        description=expected_plugin_description,
+        functions=[mock_function],
+    )
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
     assert len(plugin.functions) == 1
@@ -138,11 +168,19 @@ def test_init_with_kernel_plugin(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    native_function = KernelFunction.from_method(method=mock_function, plugin_name=function_plugin_name)
-    first_plugin = KernelPlugin(
-        name=expected_plugin_name, description=expected_plugin_description, functions=native_function
+    native_function = KernelFunction.from_method(
+        method=mock_function, plugin_name=function_plugin_name
     )
-    plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description, functions=first_plugin)
+    first_plugin = KernelPlugin(
+        name=expected_plugin_name,
+        description=expected_plugin_description,
+        functions=native_function,
+    )
+    plugin = KernelPlugin(
+        name=expected_plugin_name,
+        description=expected_plugin_description,
+        functions=first_plugin,
+    )
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
     assert len(plugin.functions) == 1
@@ -155,11 +193,19 @@ def test_init_with_kernel_plugin_list(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    native_function = KernelFunction.from_method(method=mock_function, plugin_name=function_plugin_name)
-    first_plugin = KernelPlugin(
-        name=expected_plugin_name, description=expected_plugin_description, functions=native_function
+    native_function = KernelFunction.from_method(
+        method=mock_function, plugin_name=function_plugin_name
     )
-    plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description, functions=[first_plugin])
+    first_plugin = KernelPlugin(
+        name=expected_plugin_name,
+        description=expected_plugin_description,
+        functions=native_function,
+    )
+    plugin = KernelPlugin(
+        name=expected_plugin_name,
+        description=expected_plugin_description,
+        functions=[first_plugin],
+    )
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
     assert len(plugin.functions) == 1
@@ -171,10 +217,14 @@ def test_init_exposes_the_native_function_it_contains(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    native_function = KernelFunction.from_method(method=mock_function, plugin_name="MockPlugin")
+    native_function = KernelFunction.from_method(
+        method=mock_function, plugin_name="MockPlugin"
+    )
 
     plugin = KernelPlugin(
-        name=expected_plugin_name, description=expected_plugin_description, functions=[native_function]
+        name=expected_plugin_name,
+        description=expected_plugin_description,
+        functions=[native_function],
     )
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
@@ -183,7 +233,9 @@ def test_init_exposes_the_native_function_it_contains(mock_function):
 
 
 def test_init_with_prompt_function():
-    req_settings = PromptExecutionSettings(extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8})
+    req_settings = PromptExecutionSettings(
+        extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8}
+    )
 
     prompt = "Use this input: {{$request}}"
 
@@ -192,7 +244,9 @@ def test_init_with_prompt_function():
         name="chat",
         template_format="semantic-kernel",
         input_variables=[
-            InputVariable(name="request", description="The user input", is_required=True),
+            InputVariable(
+                name="request", description="The user input", is_required=True
+            ),
         ],
         execution_settings={"default": req_settings},
     )
@@ -209,7 +263,9 @@ def test_init_with_prompt_function():
     expected_plugin_description = "A unit test plugin"
 
     plugin = KernelPlugin(
-        name=expected_plugin_name, description=expected_plugin_description, functions=[semantic_function]
+        name=expected_plugin_name,
+        description=expected_plugin_description,
+        functions=[semantic_function],
     )
 
     assert plugin.name == expected_plugin_name
@@ -219,7 +275,9 @@ def test_init_with_prompt_function():
 
 
 def test_init_with_both_function_types(mock_function):
-    req_settings = PromptExecutionSettings(extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8})
+    req_settings = PromptExecutionSettings(
+        extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8}
+    )
 
     prompt = "Use this input: {{$request}}"
 
@@ -228,7 +286,9 @@ def test_init_with_both_function_types(mock_function):
         name="chat",
         template_format="semantic-kernel",
         input_variables=[
-            InputVariable(name="request", description="The user input", is_required=True),
+            InputVariable(
+                name="request", description="The user input", is_required=True
+            ),
         ],
         execution_settings={"default": req_settings},
     )
@@ -242,7 +302,9 @@ def test_init_with_both_function_types(mock_function):
         function_name=expected_function_name,
     )
 
-    native_function = KernelFunctionFromMethod(method=mock_function, plugin_name="MockPlugin")
+    native_function = KernelFunctionFromMethod(
+        method=mock_function, plugin_name="MockPlugin"
+    )
 
     # Add both types to the default kernel plugin
     expected_plugin_description = "A unit test plugin"
@@ -263,7 +325,9 @@ def test_init_with_both_function_types(mock_function):
 
 
 def test_init_with_same_function_names(mock_function):
-    req_settings = PromptExecutionSettings(extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8})
+    req_settings = PromptExecutionSettings(
+        extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8}
+    )
 
     prompt = "Use this input: {{$request}}"
 
@@ -272,7 +336,9 @@ def test_init_with_same_function_names(mock_function):
         name="chat",
         template_format="semantic-kernel",
         input_variables=[
-            InputVariable(name="request", description="The user input", is_required=True),
+            InputVariable(
+                name="request", description="The user input", is_required=True
+            ),
         ],
         execution_settings={"default": req_settings},
     )
@@ -286,9 +352,13 @@ def test_init_with_same_function_names(mock_function):
         function_name=expected_function_name,
     )
 
-    native_function = KernelFunctionFromMethod(method=mock_function, plugin_name="MockPlugin")
+    native_function = KernelFunctionFromMethod(
+        method=mock_function, plugin_name="MockPlugin"
+    )
 
-    plugin = KernelPlugin(name=expected_plugin_name, functions=[semantic_function, native_function])
+    plugin = KernelPlugin(
+        name=expected_plugin_name, functions=[semantic_function, native_function]
+    )
     assert len(plugin.functions) == 1
 
 
@@ -299,9 +369,13 @@ def test_set_item(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    native_function = KernelFunction.from_method(method=mock_function, plugin_name=expected_plugin_name)
+    native_function = KernelFunction.from_method(
+        method=mock_function, plugin_name=expected_plugin_name
+    )
 
-    plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description)
+    plugin = KernelPlugin(
+        name=expected_plugin_name, description=expected_plugin_description
+    )
     plugin["mock_function"] = native_function
 
     assert plugin.name == expected_plugin_name
@@ -317,9 +391,13 @@ def test_set(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    native_function = KernelFunction.from_method(method=mock_function, plugin_name=expected_plugin_name)
+    native_function = KernelFunction.from_method(
+        method=mock_function, plugin_name=expected_plugin_name
+    )
 
-    plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description)
+    plugin = KernelPlugin(
+        name=expected_plugin_name, description=expected_plugin_description
+    )
     plugin.set("mock_function", native_function)
 
     assert plugin.name == expected_plugin_name
@@ -337,10 +415,16 @@ def test_set_default(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    native_function = KernelFunction.from_method(method=mock_function, plugin_name=expected_plugin_name)
-    native_function2 = KernelFunction.from_method(method=mock_function, plugin_name="other")
+    native_function = KernelFunction.from_method(
+        method=mock_function, plugin_name=expected_plugin_name
+    )
+    native_function2 = KernelFunction.from_method(
+        method=mock_function, plugin_name="other"
+    )
 
-    plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description)
+    plugin = KernelPlugin(
+        name=expected_plugin_name, description=expected_plugin_description
+    )
     native_function == plugin.setdefault("mock_function", native_function)
     native_function == plugin.setdefault("mock_function", native_function2)
 
@@ -354,11 +438,19 @@ def test_update(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    native_function = KernelFunction.from_method(method=mock_function, plugin_name=expected_plugin_name)
-    native_function2 = KernelFunction.from_method(method=mock_function, plugin_name="p2")
-    native_function3 = KernelFunction.from_method(method=mock_function, plugin_name="p3")
+    native_function = KernelFunction.from_method(
+        method=mock_function, plugin_name=expected_plugin_name
+    )
+    native_function2 = KernelFunction.from_method(
+        method=mock_function, plugin_name="p2"
+    )
+    native_function3 = KernelFunction.from_method(
+        method=mock_function, plugin_name="p3"
+    )
 
-    plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description)
+    plugin = KernelPlugin(
+        name=expected_plugin_name, description=expected_plugin_description
+    )
     plugin.update(mock_function=native_function)
     assert len(plugin.functions) == 1
 
@@ -391,7 +483,9 @@ def test_iter():
     func3 = KernelFunctionFromPrompt("test1", expected_plugin_name, None, "test prompt")
 
     plugin = KernelPlugin(
-        name=expected_plugin_name, description=expected_plugin_description, functions=[func1, func2, func3]
+        name=expected_plugin_name,
+        description=expected_plugin_description,
+        functions=[func1, func2, func3],
     )
 
     for func in plugin:
@@ -405,9 +499,15 @@ def test_get_functions_metadata(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    native_function = KernelFunction.from_method(method=mock_function, plugin_name=expected_plugin_name)
+    native_function = KernelFunction.from_method(
+        method=mock_function, plugin_name=expected_plugin_name
+    )
 
-    plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description, functions=native_function)
+    plugin = KernelPlugin(
+        name=expected_plugin_name,
+        description=expected_plugin_description,
+        functions=native_function,
+    )
     metadatas = plugin.get_functions_metadata()
     assert len(metadatas) == 1
     assert metadatas[0] == native_function.metadata
@@ -417,7 +517,9 @@ def test_get_functions_metadata(mock_function):
 
 
 def test_from_directory():
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins")
+    plugins_directory = os.path.join(
+        os.path.dirname(__file__), "../../assets", "test_plugins"
+    )
     plugin = KernelPlugin.from_directory("TestMixedPlugin", plugins_directory)
     assert plugin is not None
     assert len(plugin.functions) == 3
@@ -429,7 +531,9 @@ def test_from_directory():
 
 def test_from_directory_parent_directory_does_not_exist():
     # import plugins
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins_fail")
+    plugins_directory = os.path.join(
+        os.path.dirname(__file__), "../../assets", "test_plugins_fail"
+    )
     # path to plugins directory
     with raises(PluginInitializationError, match="Plugin directory does not exist"):
         KernelPlugin.from_directory("TestPlugin", plugins_directory)
@@ -450,28 +554,36 @@ def test_from_python_fail():
 
 
 def test_from_python_in_directory_fail():
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins")
+    plugins_directory = os.path.join(
+        os.path.dirname(__file__), "../../assets", "test_native_plugins"
+    )
     # path to plugins directory
     with raises(PluginInitializationError, match="No functions found in folder"):
         KernelPlugin.from_directory("TestNativePluginNoClass", plugins_directory)
 
 
 def test_from_yaml_in_directory_fail():
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins")
+    plugins_directory = os.path.join(
+        os.path.dirname(__file__), "../../assets", "test_plugins"
+    )
     # path to plugins directory
     with raises(PluginInitializationError, match="No functions found in folder"):
         KernelPlugin.from_directory("TestFunctionBadYaml", plugins_directory)
 
 
 def test_from_directory_other():
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins")
+    plugins_directory = os.path.join(
+        os.path.dirname(__file__), "../../assets", "test_plugins"
+    )
     # path to plugins directory
     with raises(PluginInitializationError, match="No functions found in folder"):
         KernelPlugin.from_directory("TestNoFunction", plugins_directory)
 
 
 def test_from_directory_with_args():
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins")
+    plugins_directory = os.path.join(
+        os.path.dirname(__file__), "../../assets", "test_native_plugins"
+    )
     # path to plugins directory
     plugin = KernelPlugin.from_directory(
         "TestNativePluginArgs",
@@ -483,7 +595,9 @@ def test_from_directory_with_args():
 
 
 def test_from_object_function(decorated_native_function):
-    plugin = KernelPlugin.from_object("TestPlugin", {"getLightStatusFunc": decorated_native_function})
+    plugin = KernelPlugin.from_object(
+        "TestPlugin", {"getLightStatusFunc": decorated_native_function}
+    )
     assert plugin is not None
     assert len(plugin.functions) == 1
     assert plugin.functions.get("getLightStatus") is not None
@@ -497,14 +611,23 @@ def test_from_object_class(custom_plugin_class):
 
 
 @pytest.mark.asyncio
-@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
+@patch(
+    "semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url"
+)
 async def test_from_openai_from_file(mock_parse_openai_manifest):
-    openai_spec_file = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins")
-    with open(os.path.join(openai_spec_file, "TestOpenAIPlugin", "akv-openai.json")) as file:
+    openai_spec_file = os.path.join(
+        os.path.dirname(__file__), "../../assets/test_plugins"
+    )
+    with open(
+        os.path.join(openai_spec_file, "TestOpenAIPlugin", "akv-openai.json")
+    ) as file:
         openai_spec = file.read()
 
     openapi_spec_file_path = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestOpenAPIPlugin", "akv-openapi.yaml"
+        os.path.dirname(__file__),
+        "../../assets/test_plugins",
+        "TestOpenAPIPlugin",
+        "akv-openapi.yaml",
     )
     mock_parse_openai_manifest.return_value = openapi_spec_file_path
 
@@ -526,16 +649,24 @@ async def test_from_openai_from_file(mock_parse_openai_manifest):
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
-@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
+@patch(
+    "semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url"
+)
 async def test_from_openai_plugin_from_url(mock_parse_openai_manifest, mock_get):
     openai_spec_file_path = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestOpenAIPlugin", "akv-openai.json"
+        os.path.dirname(__file__),
+        "../../assets/test_plugins",
+        "TestOpenAIPlugin",
+        "akv-openai.json",
     )
     with open(openai_spec_file_path) as file:
         openai_spec = file.read()
 
     openapi_spec_file_path = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestOpenAPIPlugin", "akv-openapi.yaml"
+        os.path.dirname(__file__),
+        "../../assets/test_plugins",
+        "TestOpenAPIPlugin",
+        "akv-openapi.yaml",
     )
     mock_parse_openai_manifest.return_value = openapi_spec_file_path
 
@@ -559,7 +690,9 @@ async def test_from_openai_plugin_from_url(mock_parse_openai_manifest, mock_get)
     assert plugin.functions.get("GetSecret") is not None
     assert plugin.functions.get("SetSecret") is not None
 
-    mock_get.assert_awaited_once_with(fake_plugin_url, headers={"User-Agent": HTTP_USER_AGENT})
+    mock_get.assert_awaited_once_with(
+        fake_plugin_url, headers={"User-Agent": HTTP_USER_AGENT}
+    )
 
 
 @pytest.mark.asyncio
@@ -571,12 +704,17 @@ async def test_from_openai_fail():
 @pytest.mark.asyncio
 async def test_from_openai_fail_json_parsing():
     with raises(PluginInitializationError):
-        await KernelPlugin.from_openai(plugin_name="TestOpenAIPlugin", plugin_str="test")
+        await KernelPlugin.from_openai(
+            plugin_name="TestOpenAIPlugin", plugin_str="test"
+        )
 
 
 def test_from_openapi():
     openapi_spec_file = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestOpenAPIPlugin", "akv-openapi.yaml"
+        os.path.dirname(__file__),
+        "../../assets/test_plugins",
+        "TestOpenAPIPlugin",
+        "akv-openapi.yaml",
     )
 
     plugin = KernelPlugin.from_openapi(

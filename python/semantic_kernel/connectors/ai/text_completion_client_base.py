@@ -7,7 +7,9 @@ from typing import TYPE_CHECKING, Any
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
     from semantic_kernel.contents import StreamingTextContent, TextContent
 
 
@@ -30,7 +32,9 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             list[TextContent]: A string or list of strings representing the response(s) from the LLM.
         """
 
-    async def get_text_content(self, prompt: str, settings: "PromptExecutionSettings") -> "TextContent | None":
+    async def get_text_content(
+        self, prompt: str, settings: "PromptExecutionSettings"
+    ) -> "TextContent | None":
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
         Args:

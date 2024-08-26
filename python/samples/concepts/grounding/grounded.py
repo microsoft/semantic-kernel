@@ -6,7 +6,10 @@ import os
 
 from samples.concepts.resources.utils import Colors
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureChatCompletion,
+    OpenAIChatCompletion,
+)
 from semantic_kernel.functions import KernelArguments
 
 
@@ -71,7 +74,9 @@ def setup(use_azure: bool = False, plugin_name: str = "GroundingPlugin"):
         )
 
     # note: using plugins from the samples folder
-    plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
+    plugins_directory = os.path.join(
+        __file__, "../../../../../prompt_template_samples/"
+    )
 
     kernel.add_plugin(parent_directory=plugins_directory, plugin_name=plugin_name)
 
@@ -86,7 +91,9 @@ def get_summary_text():
 
 async def run_entity_extraction(kernel: Kernel, plugin_name: str, summary_text: str):
     arguments = KernelArguments(
-        topic="people and places", example_entities="John, Jane, mother, brother, Paris, Rome", input=summary_text
+        topic="people and places",
+        example_entities="John, Jane, mother, brother, Paris, Rome",
+        input=summary_text,
     )
 
     return await kernel.invoke(
@@ -103,7 +110,9 @@ async def run_reference_check(kernel: Kernel, plugin_name: str, extraction_resul
     )
 
 
-async def run_entity_excision(kernel: Kernel, plugin_name: str, summary_text, grounding_result):
+async def run_entity_excision(
+    kernel: Kernel, plugin_name: str, summary_text, grounding_result
+):
     return await kernel.invoke(
         plugin_name=plugin_name,
         function_name="ExciseEntities",
@@ -129,7 +138,9 @@ In this sample we run a simple grounding pipeline, to see if a summary text has 
 What is an 'entity' in this context? In its simplest form, it's a named object such as a person or place (so 'Dean' or 'Seattle'). However, the idea could be a _claim_ which relates concepts (such as 'Dean lives near Seattle'). In this sample, we will keep to the simpler case of named objects."""  # noqa: E501
     )
 
-    print(f"\nThe grounding text: \n{Colors.CGREY.value}{get_grounding_text()}{Colors.CEND.value}")
+    print(
+        f"\nThe grounding text: \n{Colors.CGREY.value}{get_grounding_text()}{Colors.CEND.value}"
+    )
 
     print(f"\n{ '-' * 80 }\n")
     summary_text = get_summary_text()
@@ -157,19 +168,27 @@ Now, let us start calling individual semantic functions.{Colors.CEND.value}"""
         f"{Colors.CGREEN.value}First we run the extraction function on the summary, this results in all the extracted entities.{Colors.CEND.value}"  # noqa: E501
     )
     extraction_result = await run_entity_extraction(kernel, plugin_name, summary_text)
-    print(f"Extraction result: \n{Colors.CBLUE.value}{extraction_result!s}{Colors.CEND.value}")
+    print(
+        f"Extraction result: \n{Colors.CBLUE.value}{extraction_result!s}{Colors.CEND.value}"
+    )
     print(f"\n{ '-' * 80 }\n")
     print(
         f"{Colors.CGREEN.value}Next we run the reference check function on the summary, this loads the grounding text as part of it in order to know the 'truth'. This returns a list of ungrounded entities.{Colors.CEND.value}"  # noqa: E501
     )
     grounding_result = await run_reference_check(kernel, plugin_name, extraction_result)
-    print(f"Grounding result: \n{Colors.CBLUE.value}{grounding_result!s}{Colors.CEND.value}")
+    print(
+        f"Grounding result: \n{Colors.CBLUE.value}{grounding_result!s}{Colors.CEND.value}"
+    )
     print(f"\n{ '-' * 80 }\n")
     print(
         f"{Colors.CGREEN.value}Finally we run the excision function on the summary, this removes the ungrounded entities from the summary.{Colors.CEND.value}"  # noqa: E501
     )
-    excision_result = await run_entity_excision(kernel, plugin_name, summary_text, grounding_result)
-    print(f"The final summary text: \n{Colors.CBLUE.value}{excision_result!s}{Colors.CEND.value}")
+    excision_result = await run_entity_excision(
+        kernel, plugin_name, summary_text, grounding_result
+    )
+    print(
+        f"The final summary text: \n{Colors.CBLUE.value}{excision_result!s}{Colors.CEND.value}"
+    )
     print(f"\n{ '-' * 80 }\n")
     print(f"{Colors.CBOLD.value}Finished!{Colors.CEND.value}")
 

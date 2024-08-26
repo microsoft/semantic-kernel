@@ -63,7 +63,9 @@ class QdrantMemoryStore(MemoryStoreBase):
         collection_info = self._qdrantclient.get_collections()
         return [collection.name for collection in collection_info.collections]
 
-    async def get_collection(self, collection_name: str) -> qdrant_models.CollectionInfo:
+    async def get_collection(
+        self, collection_name: str
+    ) -> qdrant_models.CollectionInfo:
         """Gets the collection based upon collection name.
 
         Returns:
@@ -96,7 +98,9 @@ class QdrantMemoryStore(MemoryStoreBase):
         raise ServiceResponseException("Upsert failed")
 
     @override
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord]
+    ) -> list[str]:
         tasks = []
         for record in records:
             tasks.append(
@@ -118,7 +122,9 @@ class QdrantMemoryStore(MemoryStoreBase):
         raise ServiceResponseException("Batch upsert failed")
 
     @override
-    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord | None:
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool = False
+    ) -> MemoryRecord | None:
         result = await self._get_existing_record_by_payload_id(
             collection_name=collection_name,
             payload_id=key,
@@ -167,7 +173,9 @@ class QdrantMemoryStore(MemoryStoreBase):
 
         if existing_record:
             pointId = existing_record.id
-            result = self._qdrantclient.delete(collection_name=collection_name, points_selector=[pointId])
+            result = self._qdrantclient.delete(
+                collection_name=collection_name, points_selector=[pointId]
+            )
             if result.status != qdrant_models.UpdateStatus.COMPLETED:
                 raise ServiceResponseException("Delete failed")
 
@@ -300,4 +308,6 @@ class QdrantMemoryStore(MemoryStoreBase):
         payload = record.__dict__.copy()
         embedding = payload.pop("_embedding")
 
-        return qdrant_models.PointStruct(id=pointId, vector=embedding.tolist(), payload=payload)
+        return qdrant_models.PointStruct(
+            id=pointId, vector=embedding.tolist(), payload=payload
+        )

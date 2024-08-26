@@ -5,9 +5,16 @@ from inspect import _empty, signature
 from types import NoneType
 from typing import Any
 
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordField, VectorStoreRecordVectorField
-from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
+from semantic_kernel.data.vector_store_record_fields import (
+    VectorStoreRecordField,
+    VectorStoreRecordVectorField,
+)
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    VectorStoreModelException,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +48,11 @@ def vectorstoremodel(
         # get fields and annotations
         cls_sig = signature(cls)
         setattr(cls, "__kernel_vectorstoremodel__", True)
-        setattr(cls, "__kernel_vectorstoremodel_definition__", _parse_signature_to_definition(cls_sig.parameters))
+        setattr(
+            cls,
+            "__kernel_vectorstoremodel_definition__",
+            _parse_signature_to_definition(cls_sig.parameters),
+        )
 
         return cls
 
@@ -75,7 +86,11 @@ def _parse_signature_to_definition(parameters) -> VectorStoreRecordDefinition:
             )
             continue
         property_type = annotation.__origin__
-        if (args := getattr(property_type, "__args__", None)) and NoneType in args and len(args) == 2:
+        if (
+            (args := getattr(property_type, "__args__", None))
+            and NoneType in args
+            and len(args) == 2
+        ):
             property_type = args[0]
         metadata = annotation.__metadata__
         field_type = None
@@ -87,7 +102,9 @@ def _parse_signature_to_definition(parameters) -> VectorStoreRecordDefinition:
                 if not field_type.property_type:
                     if hasattr(property_type, "__args__"):
                         if isinstance(item, VectorStoreRecordVectorField):
-                            field_type.property_type = property_type.__args__[0].__name__
+                            field_type.property_type = property_type.__args__[
+                                0
+                            ].__name__
                         elif property_type.__name__ == "list":
                             field_type.property_type = f"{property_type.__name__}[{property_type.__args__[0].__name__}]"
                         else:
@@ -96,7 +113,10 @@ def _parse_signature_to_definition(parameters) -> VectorStoreRecordDefinition:
                     else:
                         field_type.property_type = property_type.__name__
             elif isinstance(item, type(VectorStoreRecordField)):
-                if hasattr(property_type, "__args__") and property_type.__name__ == "list":
+                if (
+                    hasattr(property_type, "__args__")
+                    and property_type.__name__ == "list"
+                ):
                     property_type_name = f"{property_type.__name__}[{property_type.__args__[0].__name__}]"
                 else:
                     property_type_name = property_type.__name__

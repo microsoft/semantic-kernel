@@ -17,15 +17,23 @@ else:
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceEmbeddingPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import (
+    AzureAIInferenceSettings,
+)
+from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import (
+    AzureAIInferenceBase,
+)
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
+    EmbeddingGeneratorBase,
+)
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
 
 
 @experimental_class
@@ -70,11 +78,15 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
                     env_file_encoding=env_file_encoding,
                 )
             except ValidationError as e:
-                raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
+                raise ServiceInitializationError(
+                    f"Failed to validate Azure AI Inference settings: {e}"
+                ) from e
 
             client = EmbeddingsClient(
                 endpoint=str(azure_ai_inference_settings.endpoint),
-                credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
+                credential=AzureKeyCredential(
+                    azure_ai_inference_settings.api_key.get_secret_value()
+                ),
                 user_agent=SEMANTIC_KERNEL_USER_AGENT,
             )
 
@@ -95,7 +107,9 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
             settings = AzureAIInferenceEmbeddingPromptExecutionSettings()
         else:
             settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, AzureAIInferenceEmbeddingPromptExecutionSettings)  # nosec
+        assert isinstance(
+            settings, AzureAIInferenceEmbeddingPromptExecutionSettings
+        )  # nosec
         assert isinstance(self.client, EmbeddingsClient)  # nosec
 
         response: EmbeddingsResult = await self.client.embed(

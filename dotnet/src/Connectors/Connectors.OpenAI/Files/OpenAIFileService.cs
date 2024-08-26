@@ -115,7 +115,10 @@ public sealed class OpenAIFileService
         var contentUri = $"{this._serviceUri}/{id}/content";
         var (stream, mimetype) = await this.StreamGetRequestAsync(contentUri, cancellationToken).ConfigureAwait(false);
 
-        using (stream)
+        var (stream, mimetype) = await this.StreamGetRequestAsync($"{this._serviceUri}/{id}/content", cancellationToken).ConfigureAwait(false);
+
+        await using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
         {
             using var memoryStream = new MemoryStream();
 #if NETSTANDARD2_0

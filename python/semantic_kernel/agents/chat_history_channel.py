@@ -24,7 +24,9 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
-    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+    from semantic_kernel.contents.streaming_chat_message_content import (
+        StreamingChatMessageContent,
+    )
 
 
 @experimental_class
@@ -38,7 +40,9 @@ class ChatHistoryAgentProtocol(Protocol):
         ...
 
     @abstractmethod
-    def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["StreamingChatMessageContent"]:
+    def invoke_stream(
+        self, history: "ChatHistory"
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the chat history agent protocol in streaming mode."""
         ...
 
@@ -88,7 +92,9 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             # Dequeue the next message to yield.
             yield_message = message_queue.popleft()
             yield (
-                self._is_message_visible(message=yield_message, message_queue_count=len(message_queue)),
+                self._is_message_visible(
+                    message=yield_message, message_queue_count=len(message_queue)
+                ),
                 yield_message,
             )
 
@@ -96,14 +102,21 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
         while message_queue:
             yield_message = message_queue.popleft()
             yield (
-                self._is_message_visible(message=yield_message, message_queue_count=len(message_queue)),
+                self._is_message_visible(
+                    message=yield_message, message_queue_count=len(message_queue)
+                ),
                 yield_message,
             )
 
-    def _is_message_visible(self, message: ChatMessageContent, message_queue_count: int) -> bool:
+    def _is_message_visible(
+        self, message: ChatMessageContent, message_queue_count: int
+    ) -> bool:
         """Determine if a message is visible to the user."""
         return (
-            not any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in message.items)
+            not any(
+                isinstance(item, (FunctionCallContent, FunctionResultContent))
+                for item in message.items
+            )
             or message_queue_count == 0
         )
 

@@ -141,9 +141,15 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
 
     def __bytes__(self) -> bytes:
         """Return the content of the response encoded in the encoding."""
-        return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
+        return (
+            self.content.encode(self.encoding if self.encoding else "utf-8")
+            if self.content
+            else b""
+        )
 
-    def __add__(self, other: "StreamingChatMessageContent") -> "StreamingChatMessageContent":
+    def __add__(
+        self, other: "StreamingChatMessageContent"
+    ) -> "StreamingChatMessageContent":
         """When combining two StreamingChatMessageContent instances, the content fields are combined.
 
         The inner_content of the first one is used, ai_model_id and encoding should be the same,
@@ -154,13 +160,21 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
                 f"Cannot add other type to StreamingChatMessageContent, type supplied: {type(other)}"
             )
         if self.choice_index != other.choice_index:
-            raise ContentAdditionException("Cannot add StreamingChatMessageContent with different choice_index")
+            raise ContentAdditionException(
+                "Cannot add StreamingChatMessageContent with different choice_index"
+            )
         if self.ai_model_id != other.ai_model_id:
-            raise ContentAdditionException("Cannot add StreamingChatMessageContent from different ai_model_id")
+            raise ContentAdditionException(
+                "Cannot add StreamingChatMessageContent from different ai_model_id"
+            )
         if self.encoding != other.encoding:
-            raise ContentAdditionException("Cannot add StreamingChatMessageContent with different encoding")
+            raise ContentAdditionException(
+                "Cannot add StreamingChatMessageContent with different encoding"
+            )
         if self.role and other.role and self.role != other.role:
-            raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
+            raise ContentAdditionException(
+                "Cannot add StreamingChatMessageContent with different role"
+            )
         if self.items or other.items:
             for other_item in other.items:
                 added = False
@@ -179,9 +193,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         other_content = (
             other.inner_content
             if isinstance(other.inner_content, list)
-            else [other.inner_content]
-            if other.inner_content
-            else []
+            else [other.inner_content] if other.inner_content else []
         )
         self.inner_content.extend(other_content)
         return StreamingChatMessageContent(
@@ -206,7 +218,14 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         """
         root = Element(self.tag)
         for field in self.model_fields_set:
-            if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id", "choice_index"]:
+            if field not in [
+                "role",
+                "name",
+                "encoding",
+                "finish_reason",
+                "ai_model_id",
+                "choice_index",
+            ]:
                 continue
             value = getattr(self, field)
             if isinstance(value, Enum):

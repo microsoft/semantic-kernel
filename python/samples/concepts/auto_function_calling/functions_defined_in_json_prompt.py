@@ -6,11 +6,16 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAIChatPromptExecutionSettings,
+)
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
@@ -86,19 +91,25 @@ plugin_path = os.path.join(
     os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
     "resources",
 )
-chat_plugin = kernel.add_plugin(plugin_name="function_choice_json", parent_directory=plugin_path)
+chat_plugin = kernel.add_plugin(
+    plugin_name="function_choice_json", parent_directory=plugin_path
+)
 
 history = ChatHistory()
 
 history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
-history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+history.add_assistant_message(
+    "I am Mosscap, a chat bot. I'm trying to figure out what people need."
+)
 
 # To control auto function calling you can do it two ways:
 # 1. Configure the attribute `auto_invoke_kernel_functions` as False
 # 2. Configure the `maximum_auto_invoke_attempts` as 0.
 # These can be done directly on the FunctionChoiceBehavior.Auto/Required/None object or via the JSON/yaml config.
-execution_settings: OpenAIChatPromptExecutionSettings = chat_plugin["ChatBot"].prompt_execution_settings[service_id]
+execution_settings: OpenAIChatPromptExecutionSettings = chat_plugin[
+    "ChatBot"
+].prompt_execution_settings[service_id]
 
 arguments = KernelArguments()
 
@@ -154,15 +165,18 @@ async def handle_streaming(
     print("Mosscap:> ", end="")
     streamed_chunks: list[StreamingChatMessageContent] = []
     async for message in response:
-        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and isinstance(
-            message[0], StreamingChatMessageContent
+        if (
+            not execution_settings.function_choice_behavior.auto_invoke_kernel_functions
+            and isinstance(message[0], StreamingChatMessageContent)
         ):
             streamed_chunks.append(message[0])
         else:
             print(str(message[0]), end="")
 
     if streamed_chunks:
-        streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
+        streaming_chat_message = reduce(
+            lambda first, second: first + second, streamed_chunks
+        )
         print("Auto tool calls is disabled, printing returned tool calls...")
         print_tool_calls(streaming_chat_message)
 
@@ -194,8 +208,15 @@ async def chat() -> bool:
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # ChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
-        function_calls = [item for item in result.value[-1].items if isinstance(item, FunctionCallContent)]
-        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and len(function_calls) > 0:
+        function_calls = [
+            item
+            for item in result.value[-1].items
+            if isinstance(item, FunctionCallContent)
+        ]
+        if (
+            not execution_settings.function_choice_behavior.auto_invoke_kernel_functions
+            and len(function_calls) > 0
+        ):
             print_tool_calls(result.value[0])
             return True
 

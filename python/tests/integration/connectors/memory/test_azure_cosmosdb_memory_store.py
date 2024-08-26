@@ -113,7 +113,9 @@ async def azurecosmosdb_memorystore() -> MemoryStoreBase:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
+@pytest.mark.skipif(
+    skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set"
+)
 async def test_create_get_drop_exists_collection():
     store = await azurecosmosdb_memorystore()
     test_collection = "test_collection"
@@ -130,7 +132,9 @@ async def test_create_get_drop_exists_collection():
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
+@pytest.mark.skipif(
+    skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set"
+)
 async def test_upsert_and_get_and_remove(
     memory_record1: MemoryRecord,
 ):
@@ -142,30 +146,45 @@ async def test_upsert_and_get_and_remove(
 
     assert result is not None
     assert result._id == memory_record1._id
-    assert all(result._embedding[i] == memory_record1._embedding[i] for i in range(len(result._embedding)))
+    assert all(
+        result._embedding[i] == memory_record1._embedding[i]
+        for i in range(len(result._embedding))
+    )
 
     await store.remove("", memory_record1._id)
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
-async def test_upsert_batch_and_get_batch_remove_batch(memory_record2: MemoryRecord, memory_record3: MemoryRecord):
+@pytest.mark.skipif(
+    skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set"
+)
+async def test_upsert_batch_and_get_batch_remove_batch(
+    memory_record2: MemoryRecord, memory_record3: MemoryRecord
+):
     store = await azurecosmosdb_memorystore()
     doc_ids = await store.upsert_batch("", [memory_record2, memory_record3])
     assert len(doc_ids) == 2
     assert all(doc_id in [memory_record2._id, memory_record3._id] for doc_id in doc_ids)
 
-    results = await store.get_batch("", [memory_record2._id, memory_record3._id], with_embeddings=True)
+    results = await store.get_batch(
+        "", [memory_record2._id, memory_record3._id], with_embeddings=True
+    )
 
     assert len(results) == 2
-    assert all(result._id in [memory_record2._id, memory_record3._id] for result in results)
+    assert all(
+        result._id in [memory_record2._id, memory_record3._id] for result in results
+    )
 
     await store.remove_batch("", [memory_record2._id, memory_record3._id])
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
-async def test_get_nearest_match(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
+@pytest.mark.skipif(
+    skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set"
+)
+async def test_get_nearest_match(
+    memory_record1: MemoryRecord, memory_record2: MemoryRecord
+):
     store = await azurecosmosdb_memorystore()
     await store.upsert_batch("", [memory_record1, memory_record2])
     test_embedding = memory_record1.embedding.copy()
@@ -177,13 +196,18 @@ async def test_get_nearest_match(memory_record1: MemoryRecord, memory_record2: M
 
     assert result is not None
     assert result[0]._id == memory_record1._id
-    assert all(result[0]._embedding[i] == memory_record1._embedding[i] for i in range(len(result[0]._embedding)))
+    assert all(
+        result[0]._embedding[i] == memory_record1._embedding[i]
+        for i in range(len(result[0]._embedding))
+    )
 
     await store.remove_batch("", [memory_record1._id, memory_record2._id])
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
+@pytest.mark.skipif(
+    skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set"
+)
 async def test_get_nearest_matches(
     memory_record1: MemoryRecord,
     memory_record2: MemoryRecord,
@@ -194,8 +218,14 @@ async def test_get_nearest_matches(
     test_embedding = memory_record2.embedding.copy()
     test_embedding[0] = test_embedding[4] + 0.1
 
-    result = await store.get_nearest_matches("", test_embedding, limit=2, min_relevance_score=0.0, with_embeddings=True)
+    result = await store.get_nearest_matches(
+        "", test_embedding, limit=2, min_relevance_score=0.0, with_embeddings=True
+    )
     assert len(result) == 2
-    assert all(result[i][0]._id in [memory_record1._id, memory_record2._id] for i in range(2))
+    assert all(
+        result[i][0]._id in [memory_record1._id, memory_record2._id] for i in range(2)
+    )
 
-    await store.remove_batch("", [memory_record1._id, memory_record2._id, memory_record3._id])
+    await store.remove_batch(
+        "", [memory_record1._id, memory_record2._id, memory_record3._id]
+    )

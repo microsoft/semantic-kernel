@@ -7,8 +7,12 @@ from azure.core.credentials import AccessToken
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import DefaultAzureCredential
 
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import SessionsPythonTool
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
+    AzureChatCompletion,
+)
+from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import (
+    SessionsPythonTool,
+)
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.kernel import Kernel
 
@@ -23,7 +27,9 @@ async def auth_callback() -> str:
     to get an access token.
     """
     global auth_token
-    current_utc_timestamp = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+    current_utc_timestamp = int(
+        datetime.datetime.now(datetime.timezone.utc).timestamp()
+    )
 
     if not auth_token or auth_token.expires_on < current_utc_timestamp:
         credential = DefaultAzureCredential()

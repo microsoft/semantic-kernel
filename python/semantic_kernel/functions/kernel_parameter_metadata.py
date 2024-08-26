@@ -30,13 +30,19 @@ class KernelParameterMetadata(KernelBaseModel):
             type_ = data.get("type_", None)
             default_value = data.get("default_value", None)
             description = data.get("description", None)
-            inferred_schema = cls.infer_schema(type_object, type_, default_value, description)
+            inferred_schema = cls.infer_schema(
+                type_object, type_, default_value, description
+            )
             data["schema_data"] = inferred_schema
         return data
 
     @classmethod
     def infer_schema(
-        cls, type_object: type | None, parameter_type: str | None, default_value: Any, description: str | None
+        cls,
+        type_object: type | None,
+        parameter_type: str | None,
+        default_value: Any,
+        description: str | None,
     ) -> dict[str, Any] | None:
         """Infer the schema for the parameter metadata."""
         schema = None
@@ -53,5 +59,7 @@ class KernelParameterMetadata(KernelBaseModel):
                     else f"(default value: {string_default})"
                 )
 
-            schema = KernelJsonSchemaBuilder.build_from_type_name(parameter_type, description)
+            schema = KernelJsonSchemaBuilder.build_from_type_name(
+                parameter_type, description
+            )
         return schema

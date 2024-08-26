@@ -4,14 +4,18 @@ from unittest.mock import AsyncMock, MagicMock
 
 from pytest import mark, raises
 
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
 from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.data.vector_store_record_utils import VectorStoreRecordUtils
-from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    VectorStoreModelException,
+)
 from semantic_kernel.kernel import Kernel
 
 
@@ -31,7 +35,9 @@ async def test_add_vector_wrong_fields():
     data_model = VectorStoreRecordDefinition(
         fields={
             "id": VectorStoreRecordKeyField(),
-            "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="id"),
+            "content": VectorStoreRecordDataField(
+                has_embedding=True, embedding_property_name="id"
+            ),
             "vector": VectorStoreRecordVectorField(),
         }
     )

@@ -10,7 +10,9 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 
 
 class GoogleAIPromptExecutionSettings(PromptExecutionSettings):
@@ -28,8 +30,6 @@ class GoogleAIPromptExecutionSettings(PromptExecutionSettings):
 
 class GoogleAITextPromptExecutionSettings(GoogleAIPromptExecutionSettings):
     """Google AI Text Prompt Execution Settings."""
-
-    pass
 
 
 class GoogleAIChatPromptExecutionSettings(GoogleAIPromptExecutionSettings):

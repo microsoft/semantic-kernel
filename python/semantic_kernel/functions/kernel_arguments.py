@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING, Any
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
 
 
 class KernelArguments(dict):
@@ -13,9 +15,7 @@ class KernelArguments(dict):
 
     def __init__(
         self,
-        settings: (
-            "PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None"
-        ) = None,
+        settings: "PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None" = None,
         **kwargs: Any,
     ):
         """Initializes a new instance of the KernelArguments class.
@@ -39,7 +39,11 @@ class KernelArguments(dict):
             if isinstance(settings, dict):
                 settings_dict = settings
             elif isinstance(settings, list):
-                settings_dict = {s.service_id or DEFAULT_SERVICE_NAME: s for s in settings}
+                settings_dict = {
+                    s.service_id or DEFAULT_SERVICE_NAME: s for s in settings
+                }
             else:
                 settings_dict = {settings.service_id or DEFAULT_SERVICE_NAME: settings}
-        self.execution_settings: dict[str, "PromptExecutionSettings"] | None = settings_dict
+        self.execution_settings: dict[str, "PromptExecutionSettings"] | None = (
+            settings_dict
+        )

@@ -5,7 +5,9 @@ from enum import Enum
 from typing import Any, Union, get_args, get_origin, get_type_hints
 
 from semantic_kernel.const import PARSED_ANNOTATION_UNION_DELIMITER
-from semantic_kernel.exceptions.function_exceptions import FunctionInvalidParameterConfiguration
+from semantic_kernel.exceptions.function_exceptions import (
+    FunctionInvalidParameterConfiguration,
+)
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 TYPE_MAPPING = {
@@ -34,7 +36,9 @@ class KernelJsonSchemaBuilder:
     """Kernel JSON schema builder."""
 
     @classmethod
-    def build(cls, parameter_type: type | str, description: str | None = None) -> dict[str, Any]:
+    def build(
+        cls, parameter_type: type | str, description: str | None = None
+    ) -> dict[str, Any]:
         """Builds the JSON schema for a given parameter type and description.
 
         Args:
@@ -60,7 +64,9 @@ class KernelJsonSchemaBuilder:
         return schema
 
     @classmethod
-    def build_model_schema(cls, model: type, description: str | None = None) -> dict[str, Any]:
+    def build_model_schema(
+        cls, model: type, description: str | None = None
+    ) -> dict[str, Any]:
         """Builds the JSON schema for a given model and description.
 
         Args:
@@ -100,10 +106,14 @@ class KernelJsonSchemaBuilder:
 
     @classmethod
     def _is_optional(cls, field_type: Any) -> bool:
-        return get_origin(field_type) in {types.UnionType, Union} and type(None) in get_args(field_type)
+        return get_origin(field_type) in {types.UnionType, Union} and type(
+            None
+        ) in get_args(field_type)
 
     @classmethod
-    def build_from_type_name(cls, parameter_type: str, description: str | None = None) -> dict[str, Any]:
+    def build_from_type_name(
+        cls, parameter_type: str, description: str | None = None
+    ) -> dict[str, Any]:
         """Builds the JSON schema for a given parameter type name and description.
 
         Args:
@@ -140,7 +150,9 @@ class KernelJsonSchemaBuilder:
         return {"type": type_name}
 
     @classmethod
-    def handle_complex_type(cls, parameter_type: type, description: str | None = None) -> dict[str, Any]:
+    def handle_complex_type(
+        cls, parameter_type: type, description: str | None = None
+    ) -> dict[str, Any]:
         """Handles building the JSON schema for complex types.
 
         Args:
@@ -164,7 +176,9 @@ class KernelJsonSchemaBuilder:
             _, value_type = args
             additional_properties = cls.build(value_type)
             if additional_properties == {"type": "object"}:
-                additional_properties["properties"] = {}  # Account for differences in Python 3.10 dict
+                additional_properties["properties"] = (
+                    {}
+                )  # Account for differences in Python 3.10 dict
             schema = {"type": "object", "additionalProperties": additional_properties}
             if description:
                 schema["description"] = description
@@ -192,7 +206,9 @@ class KernelJsonSchemaBuilder:
         return schema
 
     @classmethod
-    def build_enum_schema(cls, enum_type: type, description: str | None = None) -> dict[str, Any]:
+    def build_enum_schema(
+        cls, enum_type: type, description: str | None = None
+    ) -> dict[str, Any]:
         """Builds the JSON schema for an enum type.
 
         Args:
@@ -203,13 +219,20 @@ class KernelJsonSchemaBuilder:
             dict[str, Any]: The JSON schema for the enum type.
         """
         if not issubclass(enum_type, Enum):
-            raise FunctionInvalidParameterConfiguration(f"{enum_type} is not a valid Enum type")
+            raise FunctionInvalidParameterConfiguration(
+                f"{enum_type} is not a valid Enum type"
+            )
 
         try:
             enum_values = [item.value for item in enum_type]
         except TypeError as ex:
-            raise FunctionInvalidParameterConfiguration(f"Failed to get enum values for {enum_type}") from ex
-        schema = {"type": TYPE_MAPPING.get(type(enum_values[0]), "string"), "enum": enum_values}
+            raise FunctionInvalidParameterConfiguration(
+                f"Failed to get enum values for {enum_type}"
+            ) from ex
+        schema = {
+            "type": TYPE_MAPPING.get(type(enum_values[0]), "string"),
+            "enum": enum_values,
+        }
         if description:
             schema["description"] = description
         return schema

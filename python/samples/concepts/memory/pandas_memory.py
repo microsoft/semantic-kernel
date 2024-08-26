@@ -9,9 +9,15 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
-from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collection import AzureAISearchCollection
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import (
+    OpenAITextEmbedding,
+)
+from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collection import (
+    AzureAISearchCollection,
+)
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
 from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -22,10 +28,14 @@ from semantic_kernel.data.vector_store_record_utils import VectorStoreRecordUtil
 model_fields = VectorStoreRecordDefinition(
     container_mode=True,
     fields={
-        "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector"),
+        "content": VectorStoreRecordDataField(
+            has_embedding=True, embedding_property_name="vector"
+        ),
         "id": VectorStoreRecordKeyField(),
         "vector": VectorStoreRecordVectorField(
-            embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)}
+            embedding_settings={
+                "embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)
+            }
         ),
     },
     to_dict=lambda record, **_: record.to_dict(orient="records"),
@@ -36,7 +46,11 @@ model_fields = VectorStoreRecordDefinition(
 async def main():
     # setup the kernel
     kernel = Kernel()
-    kernel.add_service(OpenAITextEmbedding(service_id="embedding", ai_model_id="text-embedding-3-small"))
+    kernel.add_service(
+        OpenAITextEmbedding(
+            service_id="embedding", ai_model_id="text-embedding-3-small"
+        )
+    )
 
     # create the record collection
     record_collection = AzureAISearchCollection[pd.DataFrame](
@@ -51,7 +65,9 @@ async def main():
 
     # create the dataframe and add the embeddings
     df = pd.DataFrame(records)
-    df = await VectorStoreRecordUtils(kernel).add_vector_to_records(df, None, data_model_definition=model_fields)
+    df = await VectorStoreRecordUtils(kernel).add_vector_to_records(
+        df, None, data_model_definition=model_fields
+    )
     print("Records with embeddings:")
     print(df.shape)
     print(df.head(5))

@@ -55,7 +55,9 @@ def test_syntax_error(content):
 
 def test_render():
     named_arg_block = NamedArgBlock(content="test=$test_var")
-    rendered_value = named_arg_block.render(Kernel(), KernelArguments(test_var="test_value"))
+    rendered_value = named_arg_block.render(
+        Kernel(), KernelArguments(test_var="test_value")
+    )
     assert rendered_value == "test_value"
 
 

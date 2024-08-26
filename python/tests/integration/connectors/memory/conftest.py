@@ -11,7 +11,9 @@ import numpy as np
 from pytest import fixture
 
 from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
 from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -19,7 +21,11 @@ from semantic_kernel.data.vector_store_record_fields import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-raw_record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
+raw_record = {
+    "id": "testid",
+    "content": "test content",
+    "vector": [0.1, 0.2, 0.3, 0.4, 0.5],
+}
 
 
 @fixture
@@ -27,7 +33,9 @@ def record():
     return deepcopy(raw_record)
 
 
-def DataModelArray(record) -> tuple[type | None, VectorStoreRecordDefinition | None, Any]:
+def DataModelArray(
+    record,
+) -> tuple[type | None, VectorStoreRecordDefinition | None, Any]:
     @vectorstoremodel
     @dataclass
     class MyDataModelArray:
@@ -43,9 +51,16 @@ def DataModelArray(record) -> tuple[type | None, VectorStoreRecordDefinition | N
             ),
         ] = None
         other: str | None = None
-        id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
+        id: Annotated[str, VectorStoreRecordKeyField()] = field(
+            default_factory=lambda: str(uuid4())
+        )
         content: Annotated[
-            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
+            str,
+            VectorStoreRecordDataField(
+                has_embedding=True,
+                embedding_property_name="vector",
+                property_type="str",
+            ),
         ] = "content1"
 
     record["vector"] = np.array(record["vector"])
@@ -53,7 +68,9 @@ def DataModelArray(record) -> tuple[type | None, VectorStoreRecordDefinition | N
     return MyDataModelArray, None, MyDataModelArray(**record)
 
 
-def DataModelList(record) -> tuple[type | None, VectorStoreRecordDefinition | None, Any]:
+def DataModelList(
+    record,
+) -> tuple[type | None, VectorStoreRecordDefinition | None, Any]:
     @vectorstoremodel
     @dataclass
     class MyDataModelList:
@@ -67,15 +84,24 @@ def DataModelList(record) -> tuple[type | None, VectorStoreRecordDefinition | No
             ),
         ] = None
         other: str | None = None
-        id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
+        id: Annotated[str, VectorStoreRecordKeyField()] = field(
+            default_factory=lambda: str(uuid4())
+        )
         content: Annotated[
-            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
+            str,
+            VectorStoreRecordDataField(
+                has_embedding=True,
+                embedding_property_name="vector",
+                property_type="str",
+            ),
         ] = "content1"
 
     return MyDataModelList, None, MyDataModelList(**record)
 
 
-def DataModelPandas(record) -> tuple[type | None, VectorStoreRecordDefinition | None, Any]:
+def DataModelPandas(
+    record,
+) -> tuple[type | None, VectorStoreRecordDefinition | None, Any]:
     import pandas as pd
 
     definition = VectorStoreRecordDefinition(
@@ -89,7 +115,10 @@ def DataModelPandas(record) -> tuple[type | None, VectorStoreRecordDefinition | 
             ),
             "id": VectorStoreRecordKeyField(name="id"),
             "content": VectorStoreRecordDataField(
-                name="content", has_embedding=True, embedding_property_name="vector", property_type="str"
+                name="content",
+                has_embedding=True,
+                embedding_property_name="vector",
+                property_type="str",
             ),
         },
         container_mode=True,

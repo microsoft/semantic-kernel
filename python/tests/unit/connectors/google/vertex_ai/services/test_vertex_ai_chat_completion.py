@@ -7,12 +7,18 @@ import pytest
 from google.cloud.aiplatform_v1beta1.types.content import Content
 from vertexai.generative_models import GenerativeModel
 
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_chat_completion import VertexAIChatCompletion
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_chat_completion import (
+    VertexAIChatCompletion,
+)
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import VertexAISettings
+from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import (
+    VertexAISettings,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -37,30 +43,40 @@ def test_vertex_ai_chat_completion_init(vertex_ai_unit_test_env) -> None:
     assert vertex_ai_chat_completion.service_settings.project_id == project_id
 
 
-def test_vertex_ai_chat_completion_init_with_service_id(vertex_ai_unit_test_env, service_id) -> None:
+def test_vertex_ai_chat_completion_init_with_service_id(
+    vertex_ai_unit_test_env, service_id
+) -> None:
     """Test initialization of VertexAIChatCompletion with a service id that is not the model id"""
     vertex_ai_chat_completion = VertexAIChatCompletion(service_id=service_id)
 
     assert vertex_ai_chat_completion.service_id == service_id
 
 
-def test_vertex_ai_chat_completion_init_with_model_id_in_argument(vertex_ai_unit_test_env) -> None:
+def test_vertex_ai_chat_completion_init_with_model_id_in_argument(
+    vertex_ai_unit_test_env,
+) -> None:
     """Test initialization of VertexAIChatCompletion with model id in argument"""
-    vertex_ai_chat_completion = VertexAIChatCompletion(gemini_model_id="custom_model_id")
+    vertex_ai_chat_completion = VertexAIChatCompletion(
+        gemini_model_id="custom_model_id"
+    )
 
     assert vertex_ai_chat_completion.ai_model_id == "custom_model_id"
     assert vertex_ai_chat_completion.service_id == "custom_model_id"
 
 
 @pytest.mark.parametrize("exclude_list", [["VERTEX_AI_GEMINI_MODEL_ID"]], indirect=True)
-def test_vertex_ai_chat_completion_init_with_empty_model_id(vertex_ai_unit_test_env) -> None:
+def test_vertex_ai_chat_completion_init_with_empty_model_id(
+    vertex_ai_unit_test_env,
+) -> None:
     """Test initialization of VertexAIChatCompletion with an empty model id"""
     with pytest.raises(ServiceInitializationError):
         VertexAIChatCompletion(env_file_path="fake_env_file_path.env")
 
 
 @pytest.mark.parametrize("exclude_list", [["VERTEX_AI_PROJECT_ID"]], indirect=True)
-def test_vertex_ai_chat_completion_init_with_empty_project_id(vertex_ai_unit_test_env) -> None:
+def test_vertex_ai_chat_completion_init_with_empty_project_id(
+    vertex_ai_unit_test_env,
+) -> None:
     """Test initialization of VertexAIChatCompletion with an empty project id"""
     with pytest.raises(ServiceInitializationError):
         VertexAIChatCompletion(env_file_path="fake_env_file_path.env")
@@ -68,7 +84,10 @@ def test_vertex_ai_chat_completion_init_with_empty_project_id(vertex_ai_unit_tes
 
 def test_prompt_execution_settings_class(vertex_ai_unit_test_env) -> None:
     vertex_ai_chat_completion = VertexAIChatCompletion()
-    assert vertex_ai_chat_completion.get_prompt_execution_settings_class() == VertexAIChatPromptExecutionSettings
+    assert (
+        vertex_ai_chat_completion.get_prompt_execution_settings_class()
+        == VertexAIChatPromptExecutionSettings
+    )
 
 
 # endregion init
@@ -86,22 +105,31 @@ async def test_vertex_ai_chat_completion(
     """Test chat completion with VertexAIChatCompletion"""
     settings = VertexAIChatPromptExecutionSettings()
 
-    mock_vertex_ai_model_generate_content_async.return_value = mock_vertex_ai_chat_completion_response
+    mock_vertex_ai_model_generate_content_async.return_value = (
+        mock_vertex_ai_chat_completion_response
+    )
 
     vertex_ai_chat_completion = VertexAIChatCompletion()
-    responses: list[ChatMessageContent] = await vertex_ai_chat_completion.get_chat_message_contents(
-        chat_history, settings
+    responses: list[ChatMessageContent] = (
+        await vertex_ai_chat_completion.get_chat_message_contents(
+            chat_history, settings
+        )
     )
 
     mock_vertex_ai_model_generate_content_async.assert_called_once_with(
-        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
+        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(
+            chat_history
+        ),
         generation_config=settings.prepare_settings_dict(),
         tools=None,
         tool_config=None,
     )
     assert len(responses) == 1
     assert responses[0].role == "assistant"
-    assert responses[0].content == mock_vertex_ai_chat_completion_response.candidates[0].content.parts[0].text
+    assert (
+        responses[0].content
+        == mock_vertex_ai_chat_completion_response.candidates[0].content.parts[0].text
+    )
     assert responses[0].finish_reason == FinishReason.STOP
     assert "usage" in responses[0].metadata
     assert "prompt_feedback" in responses[0].metadata
@@ -139,7 +167,9 @@ async def test_vertex_ai_chat_completion_with_function_choice_behavior(
     mock_vertex_ai_chat_completion_response_with_tool_call,
 ) -> None:
     """Test completion of VertexAIChatCompletion with function choice behavior"""
-    mock_vertex_ai_model_generate_content_async.return_value = mock_vertex_ai_chat_completion_response_with_tool_call
+    mock_vertex_ai_model_generate_content_async.return_value = (
+        mock_vertex_ai_chat_completion_response_with_tool_call
+    )
 
     settings = VertexAIChatPromptExecutionSettings(
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
@@ -174,7 +204,9 @@ async def test_vertex_ai_chat_completion_with_function_choice_behavior_no_tool_c
     mock_vertex_ai_chat_completion_response,
 ) -> None:
     """Test completion of VertexAIChatCompletion with function choice behavior but no tool call returned"""
-    mock_vertex_ai_model_generate_content_async.return_value = mock_vertex_ai_chat_completion_response
+    mock_vertex_ai_model_generate_content_async.return_value = (
+        mock_vertex_ai_chat_completion_response
+    )
 
     settings = VertexAIChatPromptExecutionSettings(
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
@@ -194,14 +226,19 @@ async def test_vertex_ai_chat_completion_with_function_choice_behavior_no_tool_c
     chat_history.remove_message(chat_history[-1])
 
     mock_vertex_ai_model_generate_content_async.assert_awaited_once_with(
-        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
+        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(
+            chat_history
+        ),
         generation_config=settings.prepare_settings_dict(),
         tools=None,
         tool_config=None,
     )
     assert len(responses) == 1
     assert responses[0].role == "assistant"
-    assert responses[0].content == mock_vertex_ai_chat_completion_response.candidates[0].content.parts[0].text
+    assert (
+        responses[0].content
+        == mock_vertex_ai_chat_completion_response.candidates[0].content.parts[0].text
+    )
 
 
 # endregion chat completion
@@ -219,10 +256,14 @@ async def test_vertex_ai_streaming_chat_completion(
     """Test chat completion with VertexAIChatCompletion"""
     settings = VertexAIChatPromptExecutionSettings()
 
-    mock_vertex_ai_model_generate_content_async.return_value = mock_vertex_ai_streaming_chat_completion_response
+    mock_vertex_ai_model_generate_content_async.return_value = (
+        mock_vertex_ai_streaming_chat_completion_response
+    )
 
     vertex_ai_chat_completion = VertexAIChatCompletion()
-    async for messages in vertex_ai_chat_completion.get_streaming_chat_message_contents(chat_history, settings):
+    async for messages in vertex_ai_chat_completion.get_streaming_chat_message_contents(
+        chat_history, settings
+    ):
         assert len(messages) == 1
         assert messages[0].role == "assistant"
         assert messages[0].finish_reason == FinishReason.STOP
@@ -230,7 +271,9 @@ async def test_vertex_ai_streaming_chat_completion(
         assert "prompt_feedback" in messages[0].metadata
 
     mock_vertex_ai_model_generate_content_async.assert_called_once_with(
-        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
+        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(
+            chat_history
+        ),
         generation_config=settings.prepare_settings_dict(),
         tools=None,
         tool_config=None,
@@ -308,7 +351,9 @@ async def test_vertex_ai_streaming_chat_completion_with_function_choice_behavior
     mock_vertex_ai_streaming_chat_completion_response,
 ) -> None:
     """Test completion of VertexAIChatCompletion with function choice behavior but no tool call returned"""
-    mock_vertex_ai_model_generate_content_async.return_value = mock_vertex_ai_streaming_chat_completion_response
+    mock_vertex_ai_model_generate_content_async.return_value = (
+        mock_vertex_ai_streaming_chat_completion_response
+    )
 
     settings = VertexAIChatPromptExecutionSettings(
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
@@ -326,7 +371,9 @@ async def test_vertex_ai_streaming_chat_completion_with_function_choice_behavior
         assert messages[0].role == "assistant"
 
     mock_vertex_ai_model_generate_content_async.assert_awaited_once_with(
-        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
+        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(
+            chat_history
+        ),
         generation_config=settings.prepare_settings_dict(),
         tools=None,
         tool_config=None,
@@ -337,7 +384,9 @@ async def test_vertex_ai_streaming_chat_completion_with_function_choice_behavior
 # endregion streaming chat completion
 
 
-def test_vertex_ai_chat_completion_parse_chat_history_correctly(vertex_ai_unit_test_env) -> None:
+def test_vertex_ai_chat_completion_parse_chat_history_correctly(
+    vertex_ai_unit_test_env,
+) -> None:
     """Test _prepare_chat_history_for_request method"""
     vertex_ai_chat_completion = VertexAIChatCompletion()
 
@@ -346,7 +395,9 @@ def test_vertex_ai_chat_completion_parse_chat_history_correctly(vertex_ai_unit_t
     chat_history.add_user_message("test_user_message")
     chat_history.add_assistant_message("test_assistant_message")
 
-    parsed_chat_history = vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history)
+    parsed_chat_history = vertex_ai_chat_completion._prepare_chat_history_for_request(
+        chat_history
+    )
 
     assert isinstance(parsed_chat_history, list)
     # System message should be ignored

@@ -8,8 +8,9 @@ from pytest import fixture
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
-    from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
-    from semantic_kernel.functions.kernel_function import KernelFunction
+    from semantic_kernel.filters.functions.function_invocation_context import (
+        FunctionInvocationContext,
+    )
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
@@ -42,7 +43,9 @@ def kernel_with_service(kernel: "Kernel", service: "AIServiceClientBase") -> "Ke
 
 
 @fixture(scope="function")
-def kernel_with_default_service(kernel: "Kernel", default_service: "AIServiceClientBase") -> "Kernel":
+def kernel_with_default_service(
+    kernel: "Kernel", default_service: "AIServiceClientBase"
+) -> "Kernel":
     kernel.add_service(default_service)
     return kernel
 
@@ -97,7 +100,9 @@ def create_mock_function() -> Callable:
     from semantic_kernel.contents.streaming_text_content import StreamingTextContent
     from semantic_kernel.functions.function_result import FunctionResult
     from semantic_kernel.functions.kernel_function import KernelFunction
-    from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+    from semantic_kernel.functions.kernel_function_metadata import (
+        KernelFunctionMetadata,
+    )
 
     async def stream_func(*args, **kwargs):
         yield [StreamingTextContent(choice_index=0, text="test", metadata={})]
@@ -127,7 +132,9 @@ def create_mock_function() -> Callable:
 
             async def _invoke_internal(self, context: "FunctionInvocationContext"):
                 self.call_count += 1
-                context.result = FunctionResult(function=kernel_function_metadata, value=value, metadata={})
+                context.result = FunctionResult(
+                    function=kernel_function_metadata, value=value, metadata={}
+                )
 
         return CustomKernelFunction(metadata=kernel_function_metadata)
 
@@ -296,7 +303,9 @@ def mistralai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 
 
 @fixture()
-def aca_python_sessions_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+def aca_python_sessions_unit_test_env(
+    monkeypatch, exclude_list, override_env_param_dict
+):
     """Fixture to set environment variables for ACA Python Unit Tests."""
     if exclude_list is None:
         exclude_list = []

@@ -2,9 +2,16 @@
 
 from pytest import raises
 
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField, VectorStoreRecordKeyField
-from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
+from semantic_kernel.data.vector_store_record_fields import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordKeyField,
+)
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    VectorStoreModelException,
+)
 
 
 def test_vector_store_record_definition():
@@ -41,7 +48,12 @@ def test_no_key_field_fail():
 
 def test_multiple_key_field_fail():
     with raises(VectorStoreModelException):
-        VectorStoreRecordDefinition(fields={"key1": VectorStoreRecordKeyField(), "key2": VectorStoreRecordKeyField()})
+        VectorStoreRecordDefinition(
+            fields={
+                "key1": VectorStoreRecordKeyField(),
+                "key2": VectorStoreRecordKeyField(),
+            }
+        )
 
 
 def test_no_matching_vector_field_fail():
@@ -49,6 +61,8 @@ def test_no_matching_vector_field_fail():
         VectorStoreRecordDefinition(
             fields={
                 "id": VectorStoreRecordKeyField(),
-                "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector"),
+                "content": VectorStoreRecordDataField(
+                    has_embedding=True, embedding_property_name="vector"
+                ),
             }
         )

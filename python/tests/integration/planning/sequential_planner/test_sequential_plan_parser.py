@@ -4,7 +4,9 @@ import pytest
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.planners.sequential_planner.sequential_planner_parser import SequentialPlanParser
+from semantic_kernel.planners.sequential_planner.sequential_planner_parser import (
+    SequentialPlanParser,
+)
 from tests.integration.fakes.email_plugin_fake import EmailPluginFake
 from tests.integration.fakes.summarize_plugin_fake import SummarizePluginFake
 from tests.integration.fakes.writer_plugin_fake import WriterPluginFake
@@ -37,7 +39,10 @@ async def test_can_call_to_plan_from_xml():
     plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
 
     assert plan is not None
-    assert plan.description == "Summarize an input, translate to french, and e-mail to John Doe"
+    assert (
+        plan.description
+        == "Summarize an input, translate to french, and e-mail to John Doe"
+    )
 
     assert len(plan._steps) == 4
     step = plan._steps[0]

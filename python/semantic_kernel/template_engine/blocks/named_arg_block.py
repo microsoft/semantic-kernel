@@ -71,7 +71,9 @@ class NamedArgBlock(Block):
         Raises:
             NamedArgBlockSyntaxError: If the content does not match the named argument syntax.
         """
-        if isinstance(fields, Block) or ("name" in fields and ("value" in fields or "variable" in fields)):
+        if isinstance(fields, Block) or (
+            "name" in fields and ("value" in fields or "variable" in fields)
+        ):
             return fields
         content = fields.get("content", "").strip()
         matches = NAMED_ARG_MATCHER.match(content)
@@ -82,12 +84,20 @@ class NamedArgBlock(Block):
             fields["name"] = name
         if value := matches_dict.get("value"):
             if matches_dict.get("var_name"):
-                fields["variable"] = VarBlock(content=value, name=matches_dict["var_name"])
+                fields["variable"] = VarBlock(
+                    content=value, name=matches_dict["var_name"]
+                )
             elif matches_dict.get("val"):
-                fields["value"] = ValBlock(content=value, value=matches_dict["val"], quote=matches_dict["quote"])
+                fields["value"] = ValBlock(
+                    content=value,
+                    value=matches_dict["val"],
+                    quote=matches_dict["quote"],
+                )
         return fields
 
-    def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> Any:
+    def render(
+        self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None
+    ) -> Any:
         """Render the named argument block."""
         if self.value:
             return self.value.render()
