@@ -102,7 +102,7 @@ public abstract class FunctionChoiceBehavior
     /// <param name="kernel">The <see cref="Kernel"/> to be used for function calling.</param>
     /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI connector.</param>
     /// <returns>The configuration.</returns>
-    public IReadOnlyList<KernelFunction>? GetFunctions(IList<string>? functionFQNs, IEnumerable<KernelFunction>? functions, Kernel? kernel, bool autoInvoke)
+    protected IReadOnlyList<KernelFunction>? GetFunctions(IList<string>? functionFQNs, IEnumerable<KernelFunction>? functions, Kernel? kernel, bool autoInvoke)
     {
         // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
         // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
