@@ -3,14 +3,25 @@ name = "semantic-kernel"
 description = "Semantic Kernel Python SDK"
 authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com"}]
 readme = "pip/README.md"
+# Version read from __version__ field in __init__.py by Flit
+dynamic = ["version"]
 packages = [{include = "semantic_kernel"}]
 requires-python = ">=3.10,<3.13"
+license = {file = "../LICENSE"}
 urls.homepage = "https://learn.microsoft.com/en-us/semantic-kernel/overview/"
 urls.source = "https://github.com/microsoft/semantic-kernel/tree/main/python"
 urls.release_notes = "https://github.com/microsoft/semantic-kernel/releases?q=tag%3Apython-1&expanded=true"
 urls.issues = "https://github.com/microsoft/semantic-kernel/issues"
-# Version read from __version__ field in __init__.py by Flit
-dynamic = ["version"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Framework :: Pydantic :: 2",
+  "Typing :: Typed",
+]
 dependencies = [
     "aiohttp ~= 3.8",
     "pydantic ~= 2.0",
