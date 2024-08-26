@@ -56,7 +56,16 @@ def are_sensitive_events_enabled() -> bool:
 
 @experimental_function
 def trace_chat_completion(model_provider: str) -> Callable:
-    """Decorator to trace chat completion activities."""
+    """Decorator to trace chat completion activities.
+
+    Args:
+        model_provider (str): The model provider should describe a family of
+            GenAI models with specific model identified by ai_model_id. For example,
+            model_provider could be "openai" and ai_model_id could be "gpt-3.5-turbo".
+            Sometimes the model provider is unknown at runtime, in which case it can be
+            set to the most specific known provider. For example, while using local models
+            hosted by Ollama, the model provider could be set to "ollama".
+    """
 
     def inner_trace_chat_completion(completion_func: Callable) -> Callable:
         @functools.wraps(completion_func)
