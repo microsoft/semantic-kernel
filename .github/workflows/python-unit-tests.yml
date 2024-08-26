@@ -46,8 +46,8 @@ jobs:
         id: cache
         uses: actions/cache@v4
         with:
-          path: /tmp/.uv-cache
-          key: uv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
+          path: ${{  env.UV_CACHE_DIR  }}
+          key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
       - name: Install the project
         run: uv sync --all-extras --dev
       - name: Test with pytest
