@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Connectors.Weaviate.ModelV2;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Weaviate.HttpV2;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateCreateCollectionSchemaRequest(WeaviateCollectionSchema collectionSchema)
 {

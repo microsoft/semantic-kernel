@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Weaviate.ModelV2;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateQueryMatch
 {

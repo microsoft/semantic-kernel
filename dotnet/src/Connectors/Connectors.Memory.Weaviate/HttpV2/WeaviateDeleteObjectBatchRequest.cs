@@ -2,9 +2,9 @@
 
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Weaviate.ModelV2;
+using Microsoft.SemanticKernel.Connectors.Weaviate;
 
-namespace Microsoft.SemanticKernel.Connectors.Weaviate.HttpV2;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateDeleteObjectBatchRequest(WeaviateQueryMatch match)
 {

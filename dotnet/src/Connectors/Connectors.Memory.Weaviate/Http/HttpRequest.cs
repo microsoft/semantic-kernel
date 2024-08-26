@@ -41,6 +41,14 @@ internal static class HttpRequest
         };
     }
 
+    public static HttpRequestMessage CreatePutRequest(string url, object? payload = null)
+    {
+        return new(HttpMethod.Put, url)
+        {
+            Content = GetJsonContent(payload)
+        };
+    }
+
     private static StringContent? GetJsonContent(object? payload)
     {
         if (payload is null)

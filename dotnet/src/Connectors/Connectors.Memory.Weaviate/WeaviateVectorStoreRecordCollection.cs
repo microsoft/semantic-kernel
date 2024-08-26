@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Weaviate.HttpV2;
-using Microsoft.SemanticKernel.Connectors.Weaviate.ModelV2;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Http;
 
@@ -47,9 +47,13 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
     private readonly Dictionary<string, string> _storagePropertyNames;
 
+    private readonly VectorStoreRecordKeyProperty _keyProperty;
+
     private readonly List<VectorStoreRecordDataProperty> _dataProperties;
 
     private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
+
+    private readonly IVectorStoreRecordMapper<TRecord, JsonNode> _mapper;
 
     /// <inheritdoc />
     public string CollectionName { get; }
@@ -77,8 +81,19 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         // Assign properties and names for later usage.
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), this._jsonSerializerOptions);
+        this._keyProperty = properties.KeyProperty;
         this._dataProperties = properties.DataProperties;
         this._vectorProperties = properties.VectorProperties;
+
+        // Assign mapper.
+        this._mapper = this._options.JsonNodeCustomMapper ??
+            new WeaviateVectorStoreRecordMapper<TRecord>(
+                this.CollectionName,
+                this._keyProperty,
+                this._dataProperties,
+                this._vectorProperties,
+                this._storagePropertyNames,
+                this._jsonSerializerOptions);
     }
 
     /// <inheritdoc />
@@ -186,25 +201,108 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <inheritdoc />
     public Task<TRecord?> GetAsync(Guid key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        const string OperationName = "GetCollectionObject";
+
+        return this.RunOperationAsync(OperationName, async () =>
+        {
+            using var request = new WeaviateGetCollectionObjectRequest(this.CollectionName, key).Build();
+
+            var jsonNode = await this.ExecuteRequestAsync<JsonNode>(request, cancellationToken).ConfigureAwait(false);
+
+            if (jsonNode is null)
+            {
+                return null;
+            }
+
+            return VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this.CollectionName,
+                OperationName,
+                () => this._mapper.MapFromStorageToDataModel(jsonNode!, new()));
+        });
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<Guid> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetBatchAsync(
+        IEnumerable<Guid> keys,
+        GetRecordOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var tasks = keys.Select(key => this.GetAsync(key, options, cancellationToken));
+
+        var records = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        foreach (var record in records)
+        {
+            if (record is not null)
+            {
+                yield return record;
+            }
+        }
     }
 
     /// <inheritdoc />
     public Task<Guid> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        const string OperationName = "UpsertCollectionObject";
+
+        return this.RunOperationAsync(OperationName, async () =>
+        {
+            var jsonNode = VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this.CollectionName,
+                OperationName,
+                () => this._mapper.MapFromDataToStorageModel(record));
+
+            if (!Guid.TryParse(jsonNode[WeaviateConstants.ReservedKeyPropertyName]?.ToString(), out var recordId))
+            {
+                throw new VectorStoreOperationException($"Property '{WeaviateConstants.ReservedKeyPropertyName}' should be initialized before {OperationName} operation.");
+            }
+
+            using var request = new WeaviateUpsertCollectionObjectRequest(this.CollectionName, recordId, jsonNode).Build();
+
+            var resultJsonNode = await this.ExecuteRequestAsync<JsonNode>(request, cancellationToken).ConfigureAwait(false);
+
+            if (resultJsonNode is null || !Guid.TryParse(resultJsonNode[WeaviateConstants.ReservedKeyPropertyName]?.ToString(), out var resultRecordId))
+            {
+                throw new VectorStoreOperationException($"Cannot get '{WeaviateConstants.ReservedKeyPropertyName}' property after {OperationName} operation.");
+            }
+
+            return resultRecordId;
+        });
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<Guid> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<Guid> UpsertBatchAsync(
+        IEnumerable<TRecord> records,
+        UpsertRecordOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        const string OperationName = "UpsertCollectionObject";
+
+        var results = await this.RunOperationAsync(OperationName, async () =>
+        {
+            var jsonNodes = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this.CollectionName,
+                OperationName,
+                () => this._mapper.MapFromDataToStorageModel(record))).ToList();
+
+            using var request = new WeaviateUpsertCollectionObjectBatchRequest(jsonNodes).Build();
+
+            return await this.ExecuteRequestAsync<List<JsonNode>>(request, cancellationToken).ConfigureAwait(false);
+        }).ConfigureAwait(false);
+
+        if (results is not null)
+        {
+            foreach (var result in results)
+            {
+                if (result is not null && Guid.TryParse(result[WeaviateConstants.ReservedKeyPropertyName]?.ToString(), out var resultRecordId))
+                {
+                    yield return resultRecordId;
+                }
+            }
+        }
     }
 
     #region private
