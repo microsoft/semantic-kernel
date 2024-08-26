@@ -35,10 +35,10 @@ internal partial class AzureClientCore
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.CreatedAt), completions.CreatedAt },
-            { ContentFilterResultForPromptKey, completions.GetContentFilterResultForPrompt() },
+            // { ContentFilterResultForPromptKey, completions.GetContentFilterResultForPrompt() },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
-            { ContentFilterResultForResponseKey, completions.GetContentFilterResultForResponse() },
+            // { ContentFilterResultForResponseKey, completions.GetContentFilterResultForResponse() },
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completions.FinishReason), completions.FinishReason.ToString() },

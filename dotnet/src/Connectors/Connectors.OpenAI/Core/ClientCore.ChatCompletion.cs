@@ -364,7 +364,7 @@ internal partial class ClientCore
             using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
             {
                 // Make the request.
-                AsyncResultCollection<StreamingChatCompletionUpdate> response;
+                AsyncCollectionResult<StreamingChatCompletionUpdate> response;
                 try
                 {
                     response = RunRequest(() => this.Client!.GetChatClient(targetModel).CompleteChatStreamingAsync(chatForRequest, chatOptions, cancellationToken));
