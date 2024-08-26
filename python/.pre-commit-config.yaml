@@ -1,11 +1,6 @@
 files: ^python/
 fail_fast: true
 repos:
-  - repo: https://github.com/floatingpurr/sync_with_poetry
-    rev: 1.1.0
-    hooks:
-      - id: sync_with_poetry
-        args: [--config=.pre-commit-config.yaml, --db=python/.conf/packages_list.json, python/poetry.lock]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
@@ -32,7 +27,7 @@ repos:
         name: Check Valid Python Notebooks
         types: ["jupyter"]
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.17.0
     hooks:
     - id: pyupgrade
       args: [--py310-plus]
@@ -41,12 +36,19 @@ repos:
     hooks:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]
+      - id: ruff-format
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.3.3
+    hooks:
+      # Update the uv lockfile
+      - id: uv-lock
   - repo: local
     hooks:
     - id: mypy
       files: ^python/semantic_kernel/
       name: mypy
-      entry: poetry -C python/ run python -m mypy -p semantic_kernel --config-file=python/mypy.ini
+      entry: cd python && uv run mypy -p semantic_kernel --config-file mypy.ini
       language: system
       types: [python]
       pass_filenames: false
