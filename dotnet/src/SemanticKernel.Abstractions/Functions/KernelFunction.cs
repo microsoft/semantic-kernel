@@ -96,14 +96,15 @@ public abstract class KernelFunction
     /// </summary>
     /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
     /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="attributes">The attributes on the function.</param>
     /// <param name="parameters">The metadata describing the parameters to the function.</param>
     /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
     /// <param name="executionSettings">
     /// The <see cref="PromptExecutionSettings"/> to use with the function. These will apply unless they've been
     /// overridden by settings passed into the invocation of the function.
     /// </param>
-    internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
-        : this(name, null, description, parameters, returnParameter, executionSettings)
+    internal KernelFunction(string name, string description, IReadOnlyList<Attribute> attributes, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
+        : this(name, null, description, attributes, parameters, returnParameter, executionSettings)
     {
     }
 
@@ -113,6 +114,7 @@ public abstract class KernelFunction
     /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
     /// <param name="pluginName">The name of the plugin this function instance has been added to.</param>
     /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="attributes">The attributes on the function.</param>
     /// <param name="parameters">The metadata describing the parameters to the function.</param>
     /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
     /// <param name="executionSettings">
@@ -120,7 +122,7 @@ public abstract class KernelFunction
     /// overridden by settings passed into the invocation of the function.
     /// </param>
     /// <param name="additionalMetadata">Properties/metadata associated with the function itself rather than its parameters and return type.</param>
-    internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
+    internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<Attribute> attributes, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
     {
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
@@ -129,6 +131,7 @@ public abstract class KernelFunction
         {
             PluginName = pluginName,
             Description = description,
+            Attributes = attributes,
             Parameters = parameters,
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
             AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary,

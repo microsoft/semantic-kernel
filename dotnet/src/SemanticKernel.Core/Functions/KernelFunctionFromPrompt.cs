@@ -252,6 +252,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             functionName ?? CreateRandomFunctionName(),
             pluginName,
             description ?? string.Empty,
+            attributes: [],
             parameters,
             returnParameter,
             executionSettings)

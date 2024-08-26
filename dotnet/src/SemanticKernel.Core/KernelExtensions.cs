@@ -26,6 +26,7 @@ public static class KernelExtensions
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="functionName">The name to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">The description to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
+    /// <param name="attributes">Optional function attributes. If null, it will default to those derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
@@ -34,13 +35,14 @@ public static class KernelExtensions
         Delegate method,
         string? functionName = null,
         string? description = null,
+        IEnumerable<Attribute>? attributes = null,
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null)
     {
         Verify.NotNull(kernel);
         Verify.NotNull(method);
 
-        return KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, attributes, parameters, returnParameter, kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -52,6 +54,7 @@ public static class KernelExtensions
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="functionName">The name to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">The description to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
+    /// <param name="attributes">Optional function attributes. If null, it will default to those derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
@@ -61,13 +64,14 @@ public static class KernelExtensions
         object? target = null,
         string? functionName = null,
         string? description = null,
+        IEnumerable<Attribute>? attributes = null,
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null)
     {
         Verify.NotNull(kernel);
         Verify.NotNull(method);
 
-        return KernelFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method, target, functionName, description, attributes, parameters, returnParameter, kernel.LoggerFactory);
     }
     #endregion
 

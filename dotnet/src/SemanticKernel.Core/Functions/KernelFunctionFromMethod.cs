@@ -37,6 +37,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="functionName">The name to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="description">The description to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
+    /// <param name="attributes">Optional function attributes. If null, it will default to those derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
@@ -46,6 +47,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         object? target = null,
         string? functionName = null,
         string? description = null,
+        IEnumerable<Attribute>? attributes = null,
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
@@ -57,6 +59,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             {
                 FunctionName = functionName,
                 Description = description,
+                Attributes = attributes,
                 Parameters = parameters,
                 ReturnParameter = returnParameter,
                 LoggerFactory = loggerFactory
@@ -87,6 +90,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             methodDetails.Function,
             methodDetails.Name,
             options?.Description ?? methodDetails.Description,
+            options?.Attributes?.ToList() ?? methodDetails.Attributes,
             options?.Parameters?.ToList() ?? methodDetails.Parameters,
             options?.ReturnParameter ?? methodDetails.ReturnParameter,
             options?.AdditionalMetadata);
@@ -160,6 +164,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             this.Name,
             pluginName,
             this.Description,
+            this.Metadata.Attributes,
             this.Metadata.Parameters,
             this.Metadata.ReturnParameter,
             this.Metadata.AdditionalProperties);
@@ -175,16 +180,17 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     private static readonly object[] s_cancellationTokenNoneArray = [CancellationToken.None];
     private readonly ImplementationFunc _function;
 
-    private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<KernelParameterMetadata> Parameters, KernelReturnParameterMetadata ReturnParameter);
+    private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<Attribute> Attributes, List<KernelParameterMetadata> Parameters, KernelReturnParameterMetadata ReturnParameter);
 
     private KernelFunctionFromMethod(
         ImplementationFunc implementationFunc,
         string functionName,
         string description,
+        IReadOnlyList<Attribute> attributes,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
-        this(implementationFunc, functionName, null, description, parameters, returnParameter, additionalMetadata)
+        this(implementationFunc, functionName, null, description, attributes, parameters, returnParameter, additionalMetadata)
     {
     }
 
@@ -193,10 +199,11 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         string functionName,
         string? pluginName,
         string description,
+        IReadOnlyList<Attribute> attributes,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
-        base(functionName, pluginName, description, parameters, returnParameter, additionalMetadata: additionalMetadata)
+        base(functionName, pluginName, description, attributes, parameters, returnParameter, additionalMetadata: additionalMetadata)
     {
         Verify.ValidFunctionName(functionName);
 
@@ -281,6 +288,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             Function = Function,
             Name = functionName!,
             Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
+            Attributes = [.. Attribute.GetCustomAttributes(method, inherit: true)],
             Parameters = argParameterViews,
             ReturnParameter = new KernelReturnParameterMetadata()
             {
@@ -470,7 +478,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                 JsonDocument document => document.Deserialize(targetType),
                 JsonNode node => node.Deserialize(targetType),
                 JsonElement element => element.Deserialize(targetType),
-                // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.  
+                // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.
                 // Since we don't take dependencies on these libraries and don't have access to the types here,
                 // the only way to deserialize those types is to convert them to a string first by calling the 'ToString' method.
                 // Attempting to use the 'JsonSerializer.Serialize' method, instead of calling the 'ToString' directly on those types, can lead to unpredictable outcomes.
@@ -739,7 +747,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                     {
                         if (input?.GetType() is Type type && converter.CanConvertFrom(type))
                         {
-                            // This line performs string to type conversion 
+                            // This line performs string to type conversion
                             return converter.ConvertFrom(context: null, culture, input);
                         }
 

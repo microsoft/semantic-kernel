@@ -228,6 +228,7 @@ public sealed class ToolCallBehaviorTests
             (string parameter1, string parameter2) => "Result1",
             "MyFunction",
             "Test Function",
+            [],
             [new KernelParameterMetadata("parameter1"), new KernelParameterMetadata("parameter2")],
             new KernelReturnParameterMetadata { ParameterType = typeof(string), Description = "Function Result" });
 

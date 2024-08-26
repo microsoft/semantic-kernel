@@ -16,6 +16,8 @@ public sealed class KernelFunctionMetadata
     private string _name = string.Empty;
     /// <summary>The description of the function.</summary>
     private string _description = string.Empty;
+    /// <summary>The function's attributes.</summary>
+    private IReadOnlyList<Attribute> _attributes = [];
     /// <summary>The function's parameters.</summary>
     private IReadOnlyList<KernelParameterMetadata> _parameters = [];
     /// <summary>The function's return parameter.</summary>
@@ -46,6 +48,7 @@ public sealed class KernelFunctionMetadata
         this.Name = metadata.Name;
         this.PluginName = metadata.PluginName;
         this.Description = metadata.Description;
+        this.Attributes = metadata.Attributes;
         this.Parameters = metadata.Parameters;
         this.ReturnParameter = metadata.ReturnParameter;
         this.AdditionalProperties = metadata.AdditionalProperties;
@@ -72,6 +75,18 @@ public sealed class KernelFunctionMetadata
     {
         get => this._description;
         init => this._description = value ?? string.Empty;
+    }
+
+    /// <summary>Gets the attributes on the function.</summary>
+    /// <remarks>If the function has no attributes, the returned list will be empty.</remarks>
+    public IReadOnlyList<Attribute> Attributes
+    {
+        get => this._attributes;
+        init
+        {
+            Verify.NotNull(value);
+            this._attributes = value;
+        }
     }
 
     /// <summary>Gets the metadata for the parameters to the function.</summary>

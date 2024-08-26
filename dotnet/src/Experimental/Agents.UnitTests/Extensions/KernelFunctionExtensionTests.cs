@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
@@ -33,8 +34,9 @@ public sealed class KernelFunctionExtensionTests
 
         var requiredParam = new KernelParameterMetadata("required") { IsRequired = true };
         var optionalParam = new KernelParameterMetadata("optional");
+        var attributes = new List<Attribute>();
         var parameters = new List<KernelParameterMetadata> { requiredParam, optionalParam };
-        var function = KernelFunctionFactory.CreateFromMethod(() => true, ToolName, FunctionDescription, parameters);
+        var function = KernelFunctionFactory.CreateFromMethod(() => true, ToolName, FunctionDescription, attributes, parameters);
 
         var toolModel = function.ToToolModel(PluginName);
         var properties = toolModel.Function?.Parameters.Properties;
