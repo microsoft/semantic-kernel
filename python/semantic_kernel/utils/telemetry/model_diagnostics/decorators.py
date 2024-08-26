@@ -202,7 +202,7 @@ def _set_completion_response(
 
     # Set the completion event
     if are_sensitive_events_enabled():
-        completion_text: str = json.dumps([str(completion) for completion in completions])
+        completion_text: str = _messages_to_openai_format(completions)
         current_span.add_event(
             gen_ai_attributes.COMPLETION_EVENT, {gen_ai_attributes.COMPLETION_EVENT_COMPLETION: completion_text}
         )
@@ -214,7 +214,7 @@ def _set_completion_error(span: Span, error: Exception) -> None:
     span.set_status(StatusCode.ERROR, repr(error))
 
 
-def _messages_to_openai_format(messages: list[ChatMessageContent]) -> str:
+def _messages_to_openai_format(messages: list[ChatMessageContent] | list[TextContent]) -> str:
     """Convert a list of ChatMessageContent to a string in the OpenAI format.
 
     OpenTelemetry recommends formatting the messages in the OpenAI format
