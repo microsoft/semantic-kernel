@@ -15,11 +15,17 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     DataSourceFieldsMapping,
     ExtraBody,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
+    AzureChatCompletion,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -35,7 +41,9 @@ try:
 except ImportError:
     azure_ai_search_installed = False
 
-if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get("AZURE_COGNITIVE_SEARCH_ADMIN_KEY"):
+if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get(
+    "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
+):
     azure_ai_search_settings = True
 else:
     azure_ai_search_settings = False
@@ -109,7 +117,12 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
 
         exec_settings = PromptExecutionSettings(
             service_id="chat-gpt-extensions",
-            extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8, "extra_body": extra},
+            extension_data={
+                "max_tokens": 2000,
+                "temperature": 0.7,
+                "top_p": 0.8,
+                "extra_body": extra,
+            },
         )
 
         prompt_template_config = PromptTemplateConfig(
@@ -117,7 +130,11 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
         )
 
         # Create the semantic function
-        kernel.add_function(function_name="chat", plugin_name="plugin", prompt_template_config=prompt_template_config)
+        kernel.add_function(
+            function_name="chat",
+            plugin_name="plugin",
+            prompt_template_config=prompt_template_config,
+        )
         chat_function = kernel.get_function("plugin", "chat")
         return chat_function, kernel, collection, memory_store
     except Exception as e:
@@ -127,13 +144,17 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
 
 @pytest.mark.asyncio
 @pytestmark
-async def test_azure_e2e_chat_completion_with_extensions(create_with_data_chat_function):
+async def test_azure_e2e_chat_completion_with_extensions(
+    create_with_data_chat_function,
+):
     # Create an index and populate it with some data
     chat_function, kernel, collection, memory_store = create_with_data_chat_function
 
     chat_history = ChatHistory()
     chat_history.add_user_message("A story about Emily and David...")
-    arguments = KernelArguments(input="who are Emily and David?", chat_history=chat_history)
+    arguments = KernelArguments(
+        input="who are Emily and David?", chat_history=chat_history
+    )
 
     # TODO: get streaming working for this test
     use_streaming = False

@@ -203,12 +203,16 @@ async def test_get_nearest_match(memory_store, memory_record1, memory_record2):
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_matches(memory_store, memory_record1, memory_record2, memory_record3):
+async def test_get_nearest_matches(
+    memory_store, memory_record1, memory_record2, memory_record3
+):
     memory = memory_store
 
     await memory.create_collection(TEST_COLLECTION_NAME)
 
-    await memory.upsert_batch(TEST_COLLECTION_NAME, [memory_record1, memory_record2, memory_record3])
+    await memory.upsert_batch(
+        TEST_COLLECTION_NAME, [memory_record1, memory_record2, memory_record3]
+    )
     test_embedding = memory_record2.embedding.copy()
     test_embedding[0] = test_embedding[0] + 0.025
 

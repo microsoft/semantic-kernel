@@ -57,7 +57,9 @@ class MockModel:
         "name": Mock(description="The name of the model"),
         "is_active": Mock(description="Whether the model is active"),
         "tags": Mock(description="Tags associated with the model"),
-        "status": Mock(description="The status of the model, either as an integer or a string"),
+        "status": Mock(
+            description="The status of the model, either as an integer or a string"
+        ),
         "scores": Mock(description="The scores associated with the model"),
         "optional_field": Mock(description="An optional field that can be null"),
         "metadata": Mock(description="The optional metadata description"),
@@ -131,13 +133,17 @@ def test_build_model_schema():
         "required": ["name", "age"],
         "description": "A model",
     }
-    result = KernelJsonSchemaBuilder.build_model_schema(ExampleModel, description="A model")
+    result = KernelJsonSchemaBuilder.build_model_schema(
+        ExampleModel, description="A model"
+    )
     assert result == expected_schema
 
 
 def test_build_from_type_name():
     expected_schema = {"type": "string", "description": "A simple string"}
-    result = KernelJsonSchemaBuilder.build_from_type_name("str", description="A simple string")
+    result = KernelJsonSchemaBuilder.build_from_type_name(
+        "str", description="A simple string"
+    )
     assert result == expected_schema
 
 
@@ -148,7 +154,9 @@ def test_build_from_type_name_with_union():
             {"type": "integer", "description": "The value"},
         ]
     }
-    result = KernelJsonSchemaBuilder.build_from_type_name("str, int", description="The value")
+    result = KernelJsonSchemaBuilder.build_from_type_name(
+        "str, int", description="The value"
+    )
     assert result == expected_schema
 
 

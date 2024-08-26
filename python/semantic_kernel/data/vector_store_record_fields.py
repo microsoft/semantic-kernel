@@ -7,7 +7,9 @@ from typing import Any
 from pydantic import Field
 from pydantic.dataclasses import dataclass
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.data.const import DistanceFunction, IndexKind
 
 

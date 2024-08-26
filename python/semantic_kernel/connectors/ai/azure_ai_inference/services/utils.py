@@ -64,7 +64,10 @@ def _format_user_message(message: ChatMessageContent) -> UserMessage:
         elif isinstance(item, ImageContent) and (item.data_uri or item.uri):
             content_items.append(
                 ImageContentItem(
-                    image_url=ImageUrl(url=item.data_uri or str(item.uri), detail=ImageDetailLevel.Auto.value)
+                    image_url=ImageUrl(
+                        url=item.data_uri or str(item.uri),
+                        detail=ImageDetailLevel.Auto.value,
+                    )
                 )
             )
         else:
@@ -98,9 +101,11 @@ def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
                     id=item.id or "",
                     function=FunctionCall(
                         name=item.name or "",
-                        arguments=json.dumps(item.arguments)
-                        if isinstance(item.arguments, dict)
-                        else item.arguments or "",
+                        arguments=(
+                            json.dumps(item.arguments)
+                            if isinstance(item.arguments, dict)
+                            else item.arguments or ""
+                        ),
                     ),
                 )
             )
@@ -111,7 +116,9 @@ def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
             )
 
     # tollCalls cannot be an empty list, so we need to set it to None if it is empty
-    return AssistantMessage(content=message.content, tool_calls=tool_calls if tool_calls else None)
+    return AssistantMessage(
+        content=message.content, tool_calls=tool_calls if tool_calls else None
+    )
 
 
 def _format_tool_message(message: ChatMessageContent) -> ToolMessage:
@@ -133,10 +140,14 @@ def _format_tool_message(message: ChatMessageContent) -> ToolMessage:
         raise ValueError("No FunctionResultContent found in the message items")
 
     # The API expects the result to be a string, so we need to convert it to a string
-    return ToolMessage(content=str(message.items[0].result), tool_call_id=message.items[0].id)
+    return ToolMessage(
+        content=str(message.items[0].result), tool_call_id=message.items[0].id
+    )
 
 
-MESSAGE_CONVERTERS: dict[AuthorRole, Callable[[ChatMessageContent], ChatRequestMessage]] = {
+MESSAGE_CONVERTERS: dict[
+    AuthorRole, Callable[[ChatMessageContent], ChatRequestMessage]
+] = {
     AuthorRole.SYSTEM: _format_system_message,
     AuthorRole.USER: _format_user_message,
     AuthorRole.ASSISTANT: _format_assistant_message,

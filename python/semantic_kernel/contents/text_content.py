@@ -50,9 +50,14 @@ class TextContent(KernelContent):
     def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
         if element.tag != cls.tag:
-            raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
+            raise ContentInitializationError(
+                f"Element tag is not {cls.tag}"
+            )  # pragma: no cover
 
-        return cls(text=unescape(element.text) if element.text else "", encoding=element.get("encoding", None))
+        return cls(
+            text=unescape(element.text) if element.text else "",
+            encoding=element.get("encoding", None),
+        )
 
     def to_dict(self) -> dict[str, str]:
         """Convert the instance to a dictionary."""

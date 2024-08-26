@@ -19,12 +19,16 @@ def test_huggingface_text_embedding_initialization():
         "semantic_kernel.connectors.ai.hugging_face.services.hf_text_embedding.sentence_transformers.SentenceTransformer"
     ) as mock_transformer:
         mock_instance = mock_transformer.return_value
-        service = HuggingFaceTextEmbedding(service_id="test", ai_model_id=model_name, device=device)
+        service = HuggingFaceTextEmbedding(
+            service_id="test", ai_model_id=model_name, device=device
+        )
 
         assert service.ai_model_id == model_name
         assert service.device == "cpu"
         assert service.generator == mock_instance
-        mock_transformer.assert_called_once_with(model_name_or_path=model_name, device="cpu")
+        mock_transformer.assert_called_once_with(
+            model_name_or_path=model_name, device="cpu"
+        )
 
 
 @pytest.mark.asyncio
@@ -40,7 +44,9 @@ async def test_generate_embeddings_success():
         mock_instance = mock_transformer.return_value
         mock_instance.encode.return_value = mock_embeddings
 
-        service = HuggingFaceTextEmbedding(service_id="test", ai_model_id=model_name, device=device)
+        service = HuggingFaceTextEmbedding(
+            service_id="test", ai_model_id=model_name, device=device
+        )
         embeddings = await service.generate_embeddings(texts)
 
         assert isinstance(embeddings, ndarray)
@@ -60,7 +66,11 @@ async def test_generate_embeddings_throws():
         mock_instance = mock_transformer.return_value
         mock_instance.encode.side_effect = Exception("Test exception")
 
-        service = HuggingFaceTextEmbedding(service_id="test", ai_model_id=model_name, device=device)
+        service = HuggingFaceTextEmbedding(
+            service_id="test", ai_model_id=model_name, device=device
+        )
 
-        with pytest.raises(ServiceResponseException, match="Hugging Face embeddings failed"):
+        with pytest.raises(
+            ServiceResponseException, match="Hugging Face embeddings failed"
+        ):
             await service.generate_embeddings(texts)

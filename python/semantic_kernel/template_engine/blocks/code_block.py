@@ -7,7 +7,10 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.exceptions import CodeBlockRenderException, CodeBlockTokenError
-from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
+from semantic_kernel.exceptions.kernel_exceptions import (
+    KernelFunctionNotFoundError,
+    KernelPluginNotFoundError,
+)
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -114,12 +117,16 @@ these will be ignored."
         # validated that if the first token is not a function_id, it is a value or variable
         return self.tokens[0].render(kernel, arguments)  # type: ignore
 
-    async def _render_function_call(self, kernel: "Kernel", arguments: "KernelArguments"):
+    async def _render_function_call(
+        self, kernel: "Kernel", arguments: "KernelArguments"
+    ):
         if not isinstance(self.tokens[0], FunctionIdBlock):
             raise CodeBlockRenderException("The first token should be a function_id")
         function_block: FunctionIdBlock = self.tokens[0]
         try:
-            function = kernel.get_function(function_block.plugin_name, function_block.function_name)
+            function = kernel.get_function(
+                function_block.plugin_name, function_block.function_name
+            )
         except (KernelFunctionNotFoundError, KernelPluginNotFoundError) as exc:
             error_msg = f"Function `{function_block.content}` not found"
             logger.error(error_msg)
@@ -127,7 +134,9 @@ these will be ignored."
 
         arguments_clone = copy(arguments)
         if len(self.tokens) > 1:
-            arguments_clone = self._enrich_function_arguments(kernel, arguments_clone, function.metadata)
+            arguments_clone = self._enrich_function_arguments(
+                kernel, arguments_clone, function.metadata
+            )
         try:
             result = await function.invoke(kernel, arguments_clone)
         except Exception as exc:

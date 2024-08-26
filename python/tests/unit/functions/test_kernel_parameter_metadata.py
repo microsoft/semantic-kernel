@@ -43,18 +43,31 @@ def test_kernel_parameter_metadata_valid():
 def test_kernel_parameter_metadata_invalid_name():
     with pytest.raises(ValidationError):
         KernelParameterMetadata(
-            name="invalid name!", description="A test parameter", default_value="default", type_="str"
+            name="invalid name!",
+            description="A test parameter",
+            default_value="default",
+            type_="str",
         )
 
 
 def test_kernel_parameter_metadata_infer_schema_with_type_object():
-    metadata = KernelParameterMetadata(name="param2", type_object=int, description="An integer parameter")
-    assert metadata.schema_data == {"type": "integer", "description": "An integer parameter"}
+    metadata = KernelParameterMetadata(
+        name="param2", type_object=int, description="An integer parameter"
+    )
+    assert metadata.schema_data == {
+        "type": "integer",
+        "description": "An integer parameter",
+    }
 
 
 def test_kernel_parameter_metadata_infer_schema_with_type_name():
-    metadata = KernelParameterMetadata(name="param3", type_="int", default_value=42, description="An integer parameter")
-    assert metadata.schema_data == {"type": "integer", "description": "An integer parameter (default value: 42)"}
+    metadata = KernelParameterMetadata(
+        name="param3", type_="int", default_value=42, description="An integer parameter"
+    )
+    assert metadata.schema_data == {
+        "type": "integer",
+        "description": "An integer parameter (default value: 42)",
+    }
 
 
 def test_kernel_parameter_metadata_without_schema_data():
@@ -64,4 +77,7 @@ def test_kernel_parameter_metadata_without_schema_data():
 
 def test_kernel_parameter_metadata_with_partial_data():
     metadata = KernelParameterMetadata(name="param5", type_="float", default_value=3.14)
-    assert metadata.schema_data == {"type": "number", "description": "(default value: 3.14)"}
+    assert metadata.schema_data == {
+        "type": "number",
+        "description": "(default value: 3.14)",
+    }

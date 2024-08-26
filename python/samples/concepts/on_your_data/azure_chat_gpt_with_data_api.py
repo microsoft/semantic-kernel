@@ -10,7 +10,9 @@ from semantic_kernel.connectors.ai.open_ai import (
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
-from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import (
+    AzureAISearchSettings,
+)
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
@@ -37,7 +39,9 @@ logging.basicConfig(level=logging.INFO)
 # Create the data source settings
 azure_ai_search_settings = AzureAISearchSettings.create()
 
-az_source = AzureAISearchDataSource.from_azure_ai_search_settings(azure_ai_search_settings=azure_ai_search_settings)
+az_source = AzureAISearchDataSource.from_azure_ai_search_settings(
+    azure_ai_search_settings=azure_ai_search_settings
+)
 extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body=extra)
 
@@ -50,13 +54,17 @@ prompt_template_config = PromptTemplateConfig(
     name="chat",
     template_format="semantic-kernel",
     input_variables=[
-        InputVariable(name="chat_history", description="The chat history", is_required=True),
+        InputVariable(
+            name="chat_history", description="The chat history", is_required=True
+        ),
         InputVariable(name="request", description="The user input", is_required=True),
     ],
     execution_settings={"default": req_settings},
 )
 chat_function = kernel.add_function(
-    plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
+    plugin_name="ChatBot",
+    function_name="Chat",
+    prompt_template_config=prompt_template_config,
 )
 
 chat_history = ChatHistory()
@@ -76,7 +84,11 @@ async def chat() -> bool:
     if user_input == "exit":
         print("\n\nExiting chat...")
         return False
-    arguments = KernelArguments(chat_history=chat_history, user_input=user_input, execution_settings=req_settings)
+    arguments = KernelArguments(
+        chat_history=chat_history,
+        user_input=user_input,
+        execution_settings=req_settings,
+    )
 
     stream = False
     if stream:

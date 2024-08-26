@@ -19,13 +19,15 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0001")]
 public class BinaryContent : KernelContent
 {
-    private string? _dataUri;
+    private string? _dataUriString;
     private ReadOnlyMemory<byte>? _data;
     private Uri? _referencedUri;
 
     /// <summary>
     /// The binary content.
     /// </summary>
+    // The 'Content' property is deprecated in favor of 'Data' to provide a more descriptive name.
+    // The 'Content' property is deprecated in favor of 'Data' to provide a more descriptive name.
     [JsonIgnore, Obsolete("Use Data instead")]
     public ReadOnlyMemory<byte>? Content => this.Data;
 

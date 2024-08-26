@@ -33,7 +33,9 @@ class OpenAPIFunctionExecutionParameters(KernelBaseModel):
         if self.server_url_override:
             parsed_url = urlparse(self.server_url_override)
             if not parsed_url.scheme or not parsed_url.netloc:
-                raise ValueError(f"Invalid server_url_override: {self.server_url_override}")
+                raise ValueError(
+                    f"Invalid server_url_override: {self.server_url_override}"
+                )
 
         if not self.user_agent:
             self.user_agent = HTTP_USER_AGENT

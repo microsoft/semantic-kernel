@@ -35,8 +35,12 @@ chat_function = kernel.add_function(
 
 chat_history = ChatHistory(system_message=system_message)
 chat_history.add_user_message("Hi there, who are you?")
-chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need")
-chat_history.add_user_message("I want to find a hotel in Seattle with free wifi and a pool.")
+chat_history.add_assistant_message(
+    "I am Mosscap, a chat bot. I'm trying to figure out what people need"
+)
+chat_history.add_user_message(
+    "I want to find a hotel in Seattle with free wifi and a pool."
+)
 
 
 async def chat() -> bool:

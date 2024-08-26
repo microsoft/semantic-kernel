@@ -19,7 +19,9 @@ from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
-from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    kernel_function_metadata_to_function_call_format,
+)
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -263,17 +265,23 @@ class OpenAIAssistantBase(Agent):
             execution_settings["max_prompt_tokens"] = self.max_prompt_tokens
 
         if self.parallel_tool_calls_enabled:
-            execution_settings["parallel_tool_calls_enabled"] = self.parallel_tool_calls_enabled
+            execution_settings["parallel_tool_calls_enabled"] = (
+                self.parallel_tool_calls_enabled
+            )
 
         if self.truncation_message_count:
-            execution_settings["truncation_message_count"] = self.truncation_message_count
+            execution_settings["truncation_message_count"] = (
+                self.truncation_message_count
+            )
 
         if execution_settings:
             if "metadata" not in create_assistant_kwargs:
                 create_assistant_kwargs["metadata"] = {}
             if self._options_metadata_key not in create_assistant_kwargs["metadata"]:
                 create_assistant_kwargs["metadata"][self._options_metadata_key] = {}
-            create_assistant_kwargs["metadata"][self._options_metadata_key] = json.dumps(execution_settings)
+            create_assistant_kwargs["metadata"][self._options_metadata_key] = (
+                json.dumps(execution_settings)
+            )
 
         self.assistant = await self.client.beta.assistants.create(
             **create_assistant_kwargs,
@@ -285,7 +293,9 @@ class OpenAIAssistantBase(Agent):
         return self.assistant
 
     @classmethod
-    def _create_open_ai_assistant_definition(cls, assistant: "Assistant") -> dict[str, Any]:
+    def _create_open_ai_assistant_definition(
+        cls, assistant: "Assistant"
+    ) -> dict[str, Any]:
         """Create an OpenAI Assistant Definition from the provided assistant dictionary.
 
         Args:
@@ -295,11 +305,18 @@ class OpenAIAssistantBase(Agent):
             An OpenAI Assistant Definition.
         """
         execution_settings = {}
-        if isinstance(assistant.metadata, dict) and OpenAIAssistantBase._options_metadata_key in assistant.metadata:
-            settings_data = assistant.metadata[OpenAIAssistantBase._options_metadata_key]
+        if (
+            isinstance(assistant.metadata, dict)
+            and OpenAIAssistantBase._options_metadata_key in assistant.metadata
+        ):
+            settings_data = assistant.metadata[
+                OpenAIAssistantBase._options_metadata_key
+            ]
             if isinstance(settings_data, str):
                 settings_data = json.loads(settings_data)
-                assistant.metadata[OpenAIAssistantBase._options_metadata_key] = settings_data
+                assistant.metadata[OpenAIAssistantBase._options_metadata_key] = (
+                    settings_data
+                )
             execution_settings = {key: value for key, value in settings_data.items()}
 
         file_ids: list[str] = []
@@ -307,11 +324,16 @@ class OpenAIAssistantBase(Agent):
 
         tool_resources = getattr(assistant, "tool_resources", None)
         if tool_resources:
-            if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
+            if (
+                hasattr(tool_resources, "code_interpreter")
+                and tool_resources.code_interpreter
+            ):
                 file_ids = getattr(tool_resources.code_interpreter, "file_ids", [])
 
             if hasattr(tool_resources, "file_search") and tool_resources.file_search:
-                vector_store_ids = getattr(tool_resources.file_search, "vector_store_ids", [])
+                vector_store_ids = getattr(
+                    tool_resources.file_search, "vector_store_ids", []
+                )
                 if vector_store_ids:
                     vector_store_id = vector_store_ids[0]
 
@@ -321,8 +343,12 @@ class OpenAIAssistantBase(Agent):
             and assistant.response_format.type == "json_object"
         )
 
-        enable_code_interpreter = any(isinstance(tool, CodeInterpreterTool) for tool in assistant.tools)
-        enable_file_search = any(isinstance(tool, FileSearchTool) for tool in assistant.tools)
+        enable_code_interpreter = any(
+            isinstance(tool, CodeInterpreterTool) for tool in assistant.tools
+        )
+        enable_file_search = any(
+            isinstance(tool, FileSearchTool) for tool in assistant.tools
+        )
 
         return {
             "ai_model_id": assistant.model,
@@ -401,7 +427,9 @@ class OpenAIAssistantBase(Agent):
                     )
                 message_contents = self._get_message_contents(message=message)
                 for content in message_contents:
-                    messages_to_add.append({"role": message.role.value, "content": content})
+                    messages_to_add.append(
+                        {"role": message.role.value, "content": content}
+                    )
             create_thread_kwargs["messages"] = messages_to_add
 
         if metadata:
@@ -429,7 +457,9 @@ class OpenAIAssistantBase(Agent):
             self._is_deleted = True
         return self._is_deleted
 
-    async def add_file(self, file_path: str, purpose: Literal["assistants", "vision"]) -> str:
+    async def add_file(
+        self, file_path: str, purpose: Literal["assistants", "vision"]
+    ) -> str:
         """Add a file.
 
         Args:
@@ -449,7 +479,9 @@ class OpenAIAssistantBase(Agent):
         except FileNotFoundError as ex:
             raise AgentFileNotFoundException(f"File not found: {file_path}") from ex
 
-    async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+    async def add_chat_message(
+        self, thread_id: str, message: ChatMessageContent
+    ) -> "Message":
         """Add a chat message.
 
         Args:
@@ -468,7 +500,9 @@ class OpenAIAssistantBase(Agent):
         if message.metadata:
             metadata = message.metadata
 
-        message_contents: list[dict[str, Any]] = self._get_message_contents(message=message)
+        message_contents: list[dict[str, Any]] = self._get_message_contents(
+            message=message
+        )
 
         return await self.client.beta.threads.messages.create(
             thread_id=thread_id,
@@ -477,7 +511,9 @@ class OpenAIAssistantBase(Agent):
             metadata=metadata,
         )
 
-    async def get_thread_messages(self, thread_id: str) -> AsyncIterable[ChatMessageContent]:
+    async def get_thread_messages(
+        self, thread_id: str
+    ) -> AsyncIterable[ChatMessageContent]:
         """Get the messages for the specified thread.
 
         Args:
@@ -488,17 +524,25 @@ class OpenAIAssistantBase(Agent):
         """
         agent_names: dict[str, Any] = {}
 
-        thread_messages = await self.client.beta.threads.messages.list(thread_id=thread_id, limit=100, order="desc")
+        thread_messages = await self.client.beta.threads.messages.list(
+            thread_id=thread_id, limit=100, order="desc"
+        )
         for message in thread_messages.data:
             assistant_name = None
             if message.assistant_id and message.assistant_id not in agent_names:
                 agent = await self.client.beta.assistants.retrieve(message.assistant_id)
                 if agent.name:
                     agent_names[message.assistant_id] = agent.name
-            assistant_name = agent_names.get(message.assistant_id) if message.assistant_id else message.assistant_id
+            assistant_name = (
+                agent_names.get(message.assistant_id)
+                if message.assistant_id
+                else message.assistant_id
+            )
             assistant_name = assistant_name or message.assistant_id
 
-            content: ChatMessageContent = self._generate_message_content(str(assistant_name), message)
+            content: ChatMessageContent = self._generate_message_content(
+                str(assistant_name), message
+            )
 
             if len(content.items) > 0:
                 yield content
@@ -651,10 +695,14 @@ class OpenAIAssistantBase(Agent):
             if run.status == "requires_action":
                 fccs = self._get_function_call_contents(run, function_steps)
                 if fccs:
-                    yield False, self._generate_function_call_content(agent_name=self.name, fccs=fccs)
+                    yield False, self._generate_function_call_content(
+                        agent_name=self.name, fccs=fccs
+                    )
 
                     chat_history = ChatHistory()
-                    _ = await self._invoke_function_calls(fccs=fccs, chat_history=chat_history)
+                    _ = await self._invoke_function_calls(
+                        fccs=fccs, chat_history=chat_history
+                    )
 
                     tool_outputs = self._format_tool_outputs(chat_history)
                     await self.client.beta.threads.runs.submit_tool_outputs(
@@ -663,10 +711,16 @@ class OpenAIAssistantBase(Agent):
                         tool_outputs=tool_outputs,  # type: ignore
                     )
 
-            steps_response = await self.client.beta.threads.runs.steps.list(run_id=run.id, thread_id=thread_id)
+            steps_response = await self.client.beta.threads.runs.steps.list(
+                run_id=run.id, thread_id=thread_id
+            )
             steps: list[RunStep] = steps_response.data
             completed_steps_to_process: list[RunStep] = sorted(
-                [s for s in steps if s.completed_at is not None and s.id not in processed_step_ids],
+                [
+                    s
+                    for s in steps
+                    if s.completed_at is not None and s.id not in processed_step_ids
+                ],
                 key=lambda s: s.created_at,
             )
 
@@ -687,7 +741,9 @@ class OpenAIAssistantBase(Agent):
                             function_step = function_steps.get(tool_call.id)
                             assert function_step is not None  # nosec
                             content = self._generate_function_result_content(
-                                agent_name=self.name, function_step=function_step, tool_call=tool_call
+                                agent_name=self.name,
+                                function_step=function_step,
+                                tool_call=tool_call,
                             )
 
                         if content:
@@ -709,7 +765,9 @@ class OpenAIAssistantBase(Agent):
 
     # region Content Generation Methods
 
-    def _generate_function_call_content(self, agent_name: str, fccs: list[FunctionCallContent]) -> ChatMessageContent:
+    def _generate_function_call_content(
+        self, agent_name: str, fccs: list[FunctionCallContent]
+    ) -> ChatMessageContent:
         """Generate function call content."""
         function_call_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.TOOL, name=agent_name)  # type: ignore
 
@@ -732,7 +790,9 @@ class OpenAIAssistantBase(Agent):
         )
         return function_call_content
 
-    def _generate_code_interpreter_content(self, agent_name: str, code: str) -> ChatMessageContent:
+    def _generate_code_interpreter_content(
+        self, agent_name: str, code: str
+    ) -> ChatMessageContent:
         """Generate code interpreter content."""
         return ChatMessageContent(
             role=AuthorRole.ASSISTANT,
@@ -741,7 +801,9 @@ class OpenAIAssistantBase(Agent):
             metadata={"code": True},
         )
 
-    def _generate_annotation_content(self, annotation: "Annotation") -> AnnotationContent:
+    def _generate_annotation_content(
+        self, annotation: "Annotation"
+    ) -> AnnotationContent:
         """Generate annotation content."""
         file_id = None
         if hasattr(annotation, "file_path"):
@@ -800,9 +862,13 @@ class OpenAIAssistantBase(Agent):
             "model": merged_options.get("ai_model_id"),
             "top_p": merged_options.get("top_p"),
             # TODO(evmattso): Support `parallel_tool_calls` when it is ready
-            "response_format": "json" if merged_options.get("enable_json_response") else None,
+            "response_format": (
+                "json" if merged_options.get("enable_json_response") else None
+            ),
             "temperature": merged_options.get("temperature"),
-            "truncation_strategy": truncation_message_count if truncation_message_count else None,
+            "truncation_strategy": (
+                truncation_message_count if truncation_message_count else None
+            ),
             "metadata": merged_options.get("metadata", None),
         }
 
@@ -824,23 +890,41 @@ class OpenAIAssistantBase(Agent):
         """Merge the run-time options with the agent level attribute options."""
         merged_options = {
             "ai_model_id": ai_model_id if ai_model_id is not None else self.ai_model_id,
-            "enable_code_interpreter": enable_code_interpreter
-            if enable_code_interpreter is not None
-            else self.enable_code_interpreter,
-            "enable_file_search": enable_file_search if enable_file_search is not None else self.enable_file_search,
-            "enable_json_response": enable_json_response
-            if enable_json_response is not None
-            else self.enable_json_response,
-            "max_completion_tokens": max_completion_tokens
-            if max_completion_tokens is not None
-            else self.max_completion_tokens,
-            "max_prompt_tokens": max_prompt_tokens if max_prompt_tokens is not None else self.max_prompt_tokens,
-            "parallel_tool_calls_enabled": parallel_tool_calls_enabled
-            if parallel_tool_calls_enabled is not None
-            else self.parallel_tool_calls_enabled,
-            "truncation_message_count": truncation_message_count
-            if truncation_message_count is not None
-            else self.truncation_message_count,
+            "enable_code_interpreter": (
+                enable_code_interpreter
+                if enable_code_interpreter is not None
+                else self.enable_code_interpreter
+            ),
+            "enable_file_search": (
+                enable_file_search
+                if enable_file_search is not None
+                else self.enable_file_search
+            ),
+            "enable_json_response": (
+                enable_json_response
+                if enable_json_response is not None
+                else self.enable_json_response
+            ),
+            "max_completion_tokens": (
+                max_completion_tokens
+                if max_completion_tokens is not None
+                else self.max_completion_tokens
+            ),
+            "max_prompt_tokens": (
+                max_prompt_tokens
+                if max_prompt_tokens is not None
+                else self.max_prompt_tokens
+            ),
+            "parallel_tool_calls_enabled": (
+                parallel_tool_calls_enabled
+                if parallel_tool_calls_enabled is not None
+                else self.parallel_tool_calls_enabled
+            ),
+            "truncation_message_count": (
+                truncation_message_count
+                if truncation_message_count is not None
+                else self.truncation_message_count
+            ),
             "temperature": temperature if temperature is not None else self.temperature,
             "top_p": top_p if top_p is not None else self.top_p,
             "metadata": metadata if metadata is not None else self.metadata,
@@ -858,13 +942,19 @@ class OpenAIAssistantBase(Agent):
 
         while True:
             # Reduce polling frequency after a couple attempts
-            await asyncio.sleep(self.polling_options.get_polling_interval(count).total_seconds())
+            await asyncio.sleep(
+                self.polling_options.get_polling_interval(count).total_seconds()
+            )
             count += 1
 
             try:
-                run = await self.client.beta.threads.runs.retrieve(run.id, thread_id=thread_id)
+                run = await self.client.beta.threads.runs.retrieve(
+                    run.id, thread_id=thread_id
+                )
             except Exception as e:
-                logging.warning(f"Failed to retrieve run for run id: `{run.id}` and thread id: `{thread_id}`: {e}")
+                logging.warning(
+                    f"Failed to retrieve run for run id: `{run.id}` and thread id: `{thread_id}`: {e}"
+                )
                 # Retry anyway
 
             if run.status not in self.polling_status:
@@ -873,7 +963,9 @@ class OpenAIAssistantBase(Agent):
         logger.info(f"Polled run status: {run.status}, {run.id}, threadId: {thread_id}")
         return run
 
-    async def _retrieve_message(self, thread_id: str, message_id: str) -> Message | None:
+    async def _retrieve_message(
+        self, thread_id: str, message_id: str
+    ) -> Message | None:
         """Retrieve a message from a thread."""
         message: Message | None = None
         count = 0
@@ -881,22 +973,32 @@ class OpenAIAssistantBase(Agent):
 
         while count < max_retries:
             try:
-                message = await self.client.beta.threads.messages.retrieve(message_id, thread_id=thread_id)
+                message = await self.client.beta.threads.messages.retrieve(
+                    message_id, thread_id=thread_id
+                )
                 break
             except Exception as ex:
-                logger.error(f"Failed to retrieve message {message_id} from thread {thread_id}: {ex}")
+                logger.error(
+                    f"Failed to retrieve message {message_id} from thread {thread_id}: {ex}"
+                )
                 count += 1
                 if count >= max_retries:
                     logger.error(
                         f"Max retries reached. Unable to retrieve message {message_id} from thread {thread_id}."
                     )
                     break
-                backoff_time: float = self.polling_options.message_synchronization_delay.total_seconds() * (2**count)
+                backoff_time: (
+                    float
+                ) = self.polling_options.message_synchronization_delay.total_seconds() * (
+                    2**count
+                )
                 await asyncio.sleep(backoff_time)
 
         return message
 
-    def _get_message_contents(self, message: ChatMessageContent) -> list[dict[str, Any]]:
+    def _get_message_contents(
+        self, message: ChatMessageContent
+    ) -> list[dict[str, Any]]:
         """Get the message contents."""
         contents: list[dict[str, Any]] = []
         for content in message.items:
@@ -906,7 +1008,9 @@ class OpenAIAssistantBase(Agent):
                 contents.append(content.to_dict())
         return contents
 
-    def _generate_message_content(self, assistant_name: str, message: Message) -> ChatMessageContent:
+    def _generate_message_content(
+        self, assistant_name: str, message: Message
+    ) -> ChatMessageContent:
         """Generate message content."""
         role = AuthorRole(message.role)
 
@@ -953,7 +1057,9 @@ class OpenAIAssistantBase(Agent):
                 tools.append({"type": "file_search"})
 
         funcs = self.kernel.get_full_list_of_function_metadata()
-        tools.extend([kernel_function_metadata_to_function_call_format(f) for f in funcs])
+        tools.extend(
+            [kernel_function_metadata_to_function_call_format(f) for f in funcs]
+        )
 
         return tools
 
@@ -971,7 +1077,9 @@ class OpenAIAssistantBase(Agent):
         """
         function_call_contents: list[FunctionCallContent] = []
         required_action = getattr(run, "required_action", None)
-        if not required_action or not getattr(required_action, "submit_tool_outputs", False):
+        if not required_action or not getattr(
+            required_action, "submit_tool_outputs", False
+        ):
             return function_call_contents
         for tool in required_action.submit_tool_outputs.tool_calls:
             fcc = FunctionCallContent(
@@ -984,7 +1092,9 @@ class OpenAIAssistantBase(Agent):
             function_steps[tool.id] = fcc
         return function_call_contents
 
-    async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+    async def _invoke_function_calls(
+        self, fccs: list[FunctionCallContent], chat_history: ChatHistory
+    ) -> list[Any]:
         """Invoke function calls and store results in chat history.
 
         Args:
@@ -995,7 +1105,9 @@ class OpenAIAssistantBase(Agent):
             List[Any]: The results.
         """
         tasks = [
-            self.kernel.invoke_function_call(function_call=function_call, chat_history=chat_history)
+            self.kernel.invoke_function_call(
+                function_call=function_call, chat_history=chat_history
+            )
             for function_call in fccs
         ]
         return await asyncio.gather(*tasks)

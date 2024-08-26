@@ -13,10 +13,19 @@ from mistralai.models.embeddings import EmbeddingResponse
 from numpy import array, ndarray
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
+    EmbeddingGeneratorBase,
+)
+from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import (
+    MistralAISettings,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
+from semantic_kernel.exceptions.service_exceptions import (
+    ServiceInitializationError,
+    ServiceResponseException,
+)
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -45,12 +54,12 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
         - MISTRALAI_EMBEDDING_MODEL_ID
 
         Args:
-            ai_model_id: (str | None): A string that is used to identify the model such as the model name. 
-            api_key (str | None): The API key for the Mistral AI service deployment. 
-            service_id (str | None): Service ID for the embedding completion service. 
-            env_file_path (str | None): The path to the environment file. 
-            env_file_encoding (str | None): The encoding of the environment file. 
-            client (MistralAsyncClient | None): The Mistral AI client to use. 
+            ai_model_id: (str | None): A string that is used to identify the model such as the model name.
+            api_key (str | None): The API key for the Mistral AI service deployment.
+            service_id (str | None): Service ID for the embedding completion service.
+            env_file_path (str | None): The path to the environment file.
+            env_file_encoding (str | None): The encoding of the environment file.
+            client (MistralAsyncClient | None): The Mistral AI client to use.
 
         Raises:
             ServiceInitializationError: If an error occurs during initialization.
@@ -63,10 +72,14 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise ServiceInitializationError(f"Failed to validate Mistral AI settings: {e}") from e
+            raise ServiceInitializationError(
+                f"Failed to validate Mistral AI settings: {e}"
+            ) from e
 
         if not mistralai_settings.embedding_model_id:
-            raise ServiceInitializationError("The MistralAI embedding model ID is required.")
+            raise ServiceInitializationError(
+                "The MistralAI embedding model ID is required."
+            )
 
         if not client:
             client = MistralAsyncClient(
@@ -86,7 +99,9 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
         settings: "PromptExecutionSettings | None" = None,
         **kwargs: Any,
     ) -> ndarray:
-        embedding_response = await self.generate_raw_embeddings(texts, settings, **kwargs)
+        embedding_response = await self.generate_raw_embeddings(
+            texts, settings, **kwargs
+        )
         return array(embedding_response)
 
     @override
@@ -100,8 +115,7 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
         try:
 
             embedding_response: EmbeddingResponse = await self.client.embeddings(
-                model=self.ai_model_id,
-                input=texts
+                model=self.ai_model_id, input=texts
             )
         except Exception as ex:
             raise ServiceResponseException(

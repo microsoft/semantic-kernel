@@ -49,7 +49,9 @@ class FunctionResult(KernelBaseModel):
                     return str(list(self.value.values())[-1])
                 return str(self.value)
             except Exception as e:
-                raise FunctionResultError(f"Failed to convert value to string: {e}") from e
+                raise FunctionResultError(
+                    f"Failed to convert value to string: {e}"
+                ) from e
         else:
             return ""
 
@@ -59,7 +61,9 @@ class FunctionResult(KernelBaseModel):
         Args:
             index (int): The index of the inner content if the inner content is a list, default 0.
         """
-        if isinstance(self.value, list) and isinstance(self.value[index], KernelContent):
+        if isinstance(self.value, list) and isinstance(
+            self.value[index], KernelContent
+        ):
             return self.value[index].inner_content
         if isinstance(self.value, KernelContent):
             return self.value.inner_content

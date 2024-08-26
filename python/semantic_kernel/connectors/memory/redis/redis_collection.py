@@ -17,10 +17,20 @@ from pydantic import ValidationError
 from redis.asyncio.client import Redis
 from redis.commands.search.indexDefinition import IndexDefinition
 
-from semantic_kernel.connectors.memory.redis.const import INDEX_TYPE_MAP, RedisCollectionTypes
-from semantic_kernel.connectors.memory.redis.utils import RedisWrapper, data_model_definition_to_redis_fields
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.connectors.memory.redis.const import (
+    INDEX_TYPE_MAP,
+    RedisCollectionTypes,
+)
+from semantic_kernel.connectors.memory.redis.utils import (
+    RedisWrapper,
+    data_model_definition_to_redis_fields,
+)
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
+from semantic_kernel.data.vector_store_record_collection import (
+    VectorStoreRecordCollection,
+)
 from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
@@ -75,7 +85,9 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
             )
             return
         try:
-            from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
+            from semantic_kernel.connectors.memory.redis.redis_settings import (
+                RedisSettings,
+            )
 
             redis_settings = RedisSettings.create(
                 connection_string=connection_string,
@@ -83,12 +95,16 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise MemoryConnectorInitializationError("Failed to create Redis settings.", ex) from ex
+            raise MemoryConnectorInitializationError(
+                "Failed to create Redis settings.", ex
+            ) from ex
         super().__init__(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             collection_name=collection_name,
-            redis_database=RedisWrapper.from_url(redis_settings.connection_string.get_secret_value()),
+            redis_database=RedisWrapper.from_url(
+                redis_settings.connection_string.get_secret_value()
+            ),
             prefix_collection_name_to_key_names=prefix_collection_name_to_key_names,
             collection_type=collection_type,
         )
@@ -115,18 +131,25 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
                     this is used instead of a index created based on the definition.
                 other kwargs are passed to the create_index method.
         """
-        if (index_definition := kwargs.pop("index_definition", None)) and (fields := kwargs.pop("fields", None)):
+        if (index_definition := kwargs.pop("index_definition", None)) and (
+            fields := kwargs.pop("fields", None)
+        ):
             if isinstance(index_definition, IndexDefinition):
                 await self.redis_database.ft(self.collection_name).create_index(
                     fields, definition=index_definition, **kwargs
                 )
                 return
             raise MemoryConnectorException("Invalid index type supplied.")
-        fields = data_model_definition_to_redis_fields(self.data_model_definition, self.collection_type)
-        index_definition = IndexDefinition(
-            prefix=f"{self.collection_name}:", index_type=INDEX_TYPE_MAP[self.collection_type]
+        fields = data_model_definition_to_redis_fields(
+            self.data_model_definition, self.collection_type
         )
-        await self.redis_database.ft(self.collection_name).create_index(fields, definition=index_definition, **kwargs)
+        index_definition = IndexDefinition(
+            prefix=f"{self.collection_name}:",
+            index_type=INDEX_TYPE_MAP[self.collection_type],
+        )
+        await self.redis_database.ft(self.collection_name).create_index(
+            fields, definition=index_definition, **kwargs
+        )
 
     @override
     async def does_collection_exist(self, **kwargs) -> bool:
@@ -181,16 +204,24 @@ class RedisHashsetCollection(RedisCollection):
         )
 
     @override
-    async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[str]:
-        return await asyncio.gather(*[self._single_upsert(record) for record in records])
+    async def _inner_upsert(
+        self, records: Sequence[Any], **kwargs: Any
+    ) -> Sequence[str]:
+        return await asyncio.gather(
+            *[self._single_upsert(record) for record in records]
+        )
 
     async def _single_upsert(self, upsert_record: Any) -> str:
         await self.redis_database.hset(**upsert_record)
         return self._unget_redis_key(upsert_record["name"])
 
     @override
-    async def _inner_get(self, keys: Sequence[str], **kwargs) -> Sequence[dict[bytes, bytes]] | None:
-        results = await asyncio.gather(*[self.redis_database.hgetall(self._get_redis_key(key)) for key in keys])
+    async def _inner_get(
+        self, keys: Sequence[str], **kwargs
+    ) -> Sequence[dict[bytes, bytes]] | None:
+        results = await asyncio.gather(
+            *[self.redis_database.hgetall(self._get_redis_key(key)) for key in keys]
+        )
         return [result for result in results if result]
 
     @override
@@ -278,21 +309,33 @@ class RedisJsonCollection(RedisCollection):
         )
 
     @override
-    async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[str]:
-        return await asyncio.gather(*[self._single_upsert(record) for record in records])
+    async def _inner_upsert(
+        self, records: Sequence[Any], **kwargs: Any
+    ) -> Sequence[str]:
+        return await asyncio.gather(
+            *[self._single_upsert(record) for record in records]
+        )
 
     async def _single_upsert(self, upsert_record: Any) -> str:
-        await self.redis_database.json().set(upsert_record["name"], "$", upsert_record["value"])
+        await self.redis_database.json().set(
+            upsert_record["name"], "$", upsert_record["value"]
+        )
         return self._unget_redis_key(upsert_record["name"])
 
     @override
-    async def _inner_get(self, keys: Sequence[str], **kwargs) -> Sequence[dict[bytes, bytes]] | None:
-        results = await self.redis_database.json().mget([self._get_redis_key(key) for key in keys], "$", **kwargs)
+    async def _inner_get(
+        self, keys: Sequence[str], **kwargs
+    ) -> Sequence[dict[bytes, bytes]] | None:
+        results = await self.redis_database.json().mget(
+            [self._get_redis_key(key) for key in keys], "$", **kwargs
+        )
         return [result[0] for result in results if result]
 
     @override
     async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
-        await asyncio.gather(*[self.redis_database.json().delete(key, **kwargs) for key in keys])
+        await asyncio.gather(
+            *[self.redis_database.json().delete(key, **kwargs) for key in keys]
+        )
 
     @override
     def _serialize_dicts_to_store_models(
@@ -325,6 +368,8 @@ class RedisJsonCollection(RedisCollection):
     ) -> Sequence[dict[str, Any]]:
         results = []
         for key, record in zip(keys, records):
-            record[self.data_model_definition.key_field_name] = self._unget_redis_key(key)
+            record[self.data_model_definition.key_field_name] = self._unget_redis_key(
+                key
+            )
             results.append(record)
         return results

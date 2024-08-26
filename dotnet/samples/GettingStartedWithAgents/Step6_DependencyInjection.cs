@@ -107,7 +107,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         {
             // Create a chat for agent interaction.
 
-            this._chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            this._chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             return this._chat.InvokeAsync(agent);
         }

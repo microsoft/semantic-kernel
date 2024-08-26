@@ -1,6 +1,16 @@
 {
   "version": "0.2.0",
   "configurations": [
+  
+    
+
+    {
+      "name": "Python Debugger: Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
+    },
     {
       "name": "C#: Concept Samples",
       "type": "coreclr",
@@ -20,7 +30,7 @@
     {
       "cwd": "${workspaceFolder}/python",
       "name": "Python: Test Module",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "pytest",
       "args": [

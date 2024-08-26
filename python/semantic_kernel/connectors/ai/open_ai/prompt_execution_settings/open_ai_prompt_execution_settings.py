@@ -12,7 +12,9 @@ else:
 from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 logger = logging.getLogger(__name__)
@@ -48,9 +50,15 @@ class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
     def check_best_of_and_n(self) -> "OpenAITextPromptExecutionSettings":
         """Check that the best_of parameter is not greater than the number_of_responses parameter."""
         best_of = self.best_of or self.extension_data.get("best_of")
-        number_of_responses = self.number_of_responses or self.extension_data.get("number_of_responses")
+        number_of_responses = self.number_of_responses or self.extension_data.get(
+            "number_of_responses"
+        )
 
-        if best_of is not None and number_of_responses is not None and best_of < number_of_responses:
+        if (
+            best_of is not None
+            and number_of_responses is not None
+            and best_of < number_of_responses
+        ):
             raise ServiceInvalidExecutionSettingsError(
                 "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
             )
@@ -94,11 +102,17 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         # we are syncing the `function_call_behavior` with `function_choice_behavior` if the former is set.
         # This allows us to make decisions off of `function_choice_behavior`. Anytime the `function_call_behavior`
         # is updated, this validation will run to ensure the `function_choice_behavior` stays in sync.
-        from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+        from semantic_kernel.connectors.ai.function_choice_behavior import (
+            FunctionChoiceBehavior,
+        )
 
-        if isinstance(data, dict) and "function_call_behavior" in data.get("extension_data", {}):
-            data["function_choice_behavior"] = FunctionChoiceBehavior.from_function_call_behavior(
-                data.get("extension_data", {}).get("function_call_behavior")
+        if isinstance(data, dict) and "function_call_behavior" in data.get(
+            "extension_data", {}
+        ):
+            data["function_choice_behavior"] = (
+                FunctionChoiceBehavior.from_function_call_behavior(
+                    data.get("extension_data", {}).get("function_call_behavior")
+                )
             )
         return data
 

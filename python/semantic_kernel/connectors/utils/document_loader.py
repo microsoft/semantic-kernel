@@ -44,7 +44,11 @@ class DocumentLoader:
             raise ServiceInvalidRequestError("Failed to get document.") from ex
         except RequestError as ex:
             logger.error(f"Client error occurred: {ex}")
-            raise ServiceInvalidRequestError("A client error occurred while getting the document.") from ex
+            raise ServiceInvalidRequestError(
+                "A client error occurred while getting the document."
+            ) from ex
         except Exception as ex:
             logger.error(f"An unexpected error occurred: {ex}")
-            raise ServiceInvalidRequestError("An unexpected error occurred while getting the document.") from ex
+            raise ServiceInvalidRequestError(
+                "An unexpected error occurred while getting the document."
+            ) from ex

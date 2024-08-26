@@ -15,8 +15,13 @@ from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings 
     ACASessionsSettings,
     SessionsPythonSettings,
 )
-from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_metadata import SessionsRemoteFileMetadata
-from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException, FunctionInitializationError
+from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_metadata import (
+    SessionsRemoteFileMetadata,
+)
+from semantic_kernel.exceptions.function_exceptions import (
+    FunctionExecutionException,
+    FunctionInitializationError,
+)
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseModel
 from semantic_kernel.utils.telemetry.user_agent import HTTP_USER_AGENT, version_info
@@ -49,11 +54,14 @@ class SessionsPythonTool(KernelBaseModel):
         """Initializes a new instance of the SessionsPythonTool class."""
         try:
             aca_settings = ACASessionsSettings.create(
-                env_file_path=env_file_path, pool_management_endpoint=pool_management_endpoint
+                env_file_path=env_file_path,
+                pool_management_endpoint=pool_management_endpoint,
             )
         except ValidationError as e:
             logger.error(f"Failed to load the ACASessionsSettings with message: {e!s}")
-            raise FunctionInitializationError(f"Failed to load the ACASessionsSettings with message: {e!s}") from e
+            raise FunctionInitializationError(
+                f"Failed to load the ACASessionsSettings with message: {e!s}"
+            ) from e
 
         if not settings:
             settings = SessionsPythonSettings()
@@ -75,8 +83,12 @@ class SessionsPythonTool(KernelBaseModel):
         try:
             auth_token = await self.auth_callback()
         except Exception as e:
-            logger.error(f"Failed to retrieve the client auth token with message: {e!s}")
-            raise FunctionExecutionException(f"Failed to retrieve the client auth token with messages: {e!s}") from e
+            logger.error(
+                f"Failed to retrieve the client auth token with message: {e!s}"
+            )
+            raise FunctionExecutionException(
+                f"Failed to retrieve the client auth token with messages: {e!s}"
+            ) from e
 
         return auth_token
 
@@ -132,7 +144,9 @@ class SessionsPythonTool(KernelBaseModel):
                      """,
         name="execute_code",
     )
-    async def execute_code(self, code: Annotated[str, "The valid Python code to execute"]) -> str:
+    async def execute_code(
+        self, code: Annotated[str, "The valid Python code to execute"]
+    ) -> str:
         """Executes the provided Python code.
 
         Args:
@@ -163,7 +177,9 @@ class SessionsPythonTool(KernelBaseModel):
         self.settings.python_code = code
 
         request_body = {
-            "properties": self.settings.model_dump(exclude_none=True, exclude={"sanitize_input"}, by_alias=True),
+            "properties": self.settings.model_dump(
+                exclude_none=True, exclude={"sanitize_input"}, by_alias=True
+            ),
         }
 
         url = self._build_url_with_version(
@@ -181,18 +197,23 @@ class SessionsPythonTool(KernelBaseModel):
             result = response.json()["properties"]
             return f"Result:\n{result['result']}Stdout:\n{result['stdout']}Stderr:\n{result['stderr']}"
         except HTTPStatusError as e:
-            error_message = e.response.text if e.response.text else e.response.reason_phrase
+            error_message = (
+                e.response.text if e.response.text else e.response.reason_phrase
+            )
             raise FunctionExecutionException(
                 f"Code execution failed with status code {e.response.status_code} and error: {error_message}"
             ) from e
 
-    @kernel_function(name="upload_file", description="Uploads a file for the current Session ID")
+    @kernel_function(
+        name="upload_file", description="Uploads a file for the current Session ID"
+    )
     async def upload_file(
         self,
         *,
         local_file_path: Annotated[str, "The path to the local file on the machine"],
         remote_file_path: Annotated[
-            str | None, "The remote path to the file in the session. Defaults to /mnt/data"
+            str | None,
+            "The remote path to the file in the session. Defaults to /mnt/data",
         ] = None,
     ) -> Annotated[SessionsRemoteFileMetadata, "The metadata of the uploaded file"]:
         """Upload a file to the session pool.
@@ -208,9 +229,13 @@ class SessionsPythonTool(KernelBaseModel):
             FunctionExecutionException: If local_file_path is not provided.
         """
         if not local_file_path:
-            raise FunctionExecutionException("Please provide a local file path to upload.")
+            raise FunctionExecutionException(
+                "Please provide a local file path to upload."
+            )
 
-        remote_file_path = self._construct_remote_file_path(remote_file_path or os.path.basename(local_file_path))
+        remote_file_path = self._construct_remote_file_path(
+            remote_file_path or os.path.basename(local_file_path)
+        )
 
         auth_token = await self._ensure_auth_token()
         self.http_client.headers.update(
@@ -232,14 +257,20 @@ class SessionsPythonTool(KernelBaseModel):
                 response = await self.http_client.post(url=url, files=files)
                 response.raise_for_status()
                 response_json = response.json()
-                return SessionsRemoteFileMetadata.from_dict(response_json["value"][0]["properties"])
+                return SessionsRemoteFileMetadata.from_dict(
+                    response_json["value"][0]["properties"]
+                )
         except HTTPStatusError as e:
-            error_message = e.response.text if e.response.text else e.response.reason_phrase
+            error_message = (
+                e.response.text if e.response.text else e.response.reason_phrase
+            )
             raise FunctionExecutionException(
                 f"Upload failed with status code {e.response.status_code} and error: {error_message}"
             ) from e
 
-    @kernel_function(name="list_files", description="Lists all files in the provided Session ID")
+    @kernel_function(
+        name="list_files", description="Lists all files in the provided Session ID"
+    )
     async def list_files(self) -> list[SessionsRemoteFileMetadata]:
         """List the files in the session pool.
 
@@ -266,9 +297,14 @@ class SessionsPythonTool(KernelBaseModel):
             )
             response.raise_for_status()
             response_json = response.json()
-            return [SessionsRemoteFileMetadata.from_dict(entry["properties"]) for entry in response_json["value"]]
+            return [
+                SessionsRemoteFileMetadata.from_dict(entry["properties"])
+                for entry in response_json["value"]
+            ]
         except HTTPStatusError as e:
-            error_message = e.response.text if e.response.text else e.response.reason_phrase
+            error_message = (
+                e.response.text if e.response.text else e.response.reason_phrase
+            )
             raise FunctionExecutionException(
                 f"List files failed with status code {e.response.status_code} and error: {error_message}"
             ) from e
@@ -276,8 +312,12 @@ class SessionsPythonTool(KernelBaseModel):
     async def download_file(
         self,
         *,
-        remote_file_name: Annotated[str, "The name of the file to download, relative to /mnt/data"],
-        local_file_path: Annotated[str | None, "The local file path to save the file to, optional"] = None,
+        remote_file_name: Annotated[
+            str, "The name of the file to download, relative to /mnt/data"
+        ],
+        local_file_path: Annotated[
+            str | None, "The local file path to save the file to, optional"
+        ] = None,
     ) -> Annotated[BytesIO | None, "The data of the downloaded file"]:
         """Download a file from the session pool.
 
@@ -315,7 +355,9 @@ class SessionsPythonTool(KernelBaseModel):
 
             return BytesIO(response.content)
         except HTTPStatusError as e:
-            error_message = e.response.text if e.response.text else e.response.reason_phrase
+            error_message = (
+                e.response.text if e.response.text else e.response.reason_phrase
+            )
             raise FunctionExecutionException(
                 f"Download failed with status code {e.response.status_code} and error: {error_message}"
             ) from e

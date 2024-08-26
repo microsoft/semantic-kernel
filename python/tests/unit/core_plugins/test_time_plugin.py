@@ -70,7 +70,9 @@ def test_date_matching_last_day_name():
 
     with mock.patch("datetime.date", wraps=datetime.date) as dt:
         dt.today.return_value = test_mock_today
-        assert plugin.date_matching_last_day_name("Friday") == "Friday, 10 January, 2031"
+        assert (
+            plugin.date_matching_last_day_name("Friday") == "Friday, 10 January, 2031"
+        )
 
 
 def test_date_matching_last_day_name_fail():

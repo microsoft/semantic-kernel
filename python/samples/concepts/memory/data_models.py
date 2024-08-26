@@ -8,7 +8,9 @@ from pandas import DataFrame
 from pydantic import Field
 
 from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
 from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -46,10 +48,15 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 @dataclass
 class DataModelDataclass:
     vector: Annotated[list[float], VectorStoreRecordVectorField]
-    key: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
-    content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")] = (
-        "content1"
+    key: Annotated[str, VectorStoreRecordKeyField()] = field(
+        default_factory=lambda: str(uuid4())
     )
+    content: Annotated[
+        str,
+        VectorStoreRecordDataField(
+            has_embedding=True, embedding_property_name="vector"
+        ),
+    ] = "content1"
     other: str | None = None
 
 
@@ -57,10 +64,15 @@ class DataModelDataclass:
 @vectorstoremodel
 class DataModelPydantic(KernelBaseModel):
     vector: Annotated[list[float], VectorStoreRecordVectorField]
-    key: Annotated[str, VectorStoreRecordKeyField()] = Field(default_factory=lambda: str(uuid4()))
-    content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")] = (
-        "content1"
+    key: Annotated[str, VectorStoreRecordKeyField()] = Field(
+        default_factory=lambda: str(uuid4())
     )
+    content: Annotated[
+        str,
+        VectorStoreRecordDataField(
+            has_embedding=True, embedding_property_name="vector"
+        ),
+    ] = "content1"
     other: str | None = None
 
 
@@ -68,10 +80,15 @@ class DataModelPydantic(KernelBaseModel):
 @vectorstoremodel
 class DataModelPydanticComplex(KernelBaseModel):
     vector: Annotated[list[float], VectorStoreRecordVectorField]
-    key: Annotated[str, Field(default_factory=lambda: str(uuid4())), VectorStoreRecordKeyField()]
-    content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")] = (
-        "content1"
-    )
+    key: Annotated[
+        str, Field(default_factory=lambda: str(uuid4())), VectorStoreRecordKeyField()
+    ]
+    content: Annotated[
+        str,
+        VectorStoreRecordDataField(
+            has_embedding=True, embedding_property_name="vector"
+        ),
+    ] = "content1"
     other: str | None = None
 
 
@@ -84,7 +101,10 @@ class DataModelPython:
         vector: Annotated[list[float], VectorStoreRecordVectorField],
         key: Annotated[str, VectorStoreRecordKeyField] = None,
         content: Annotated[
-            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")
+            str,
+            VectorStoreRecordDataField(
+                has_embedding=True, embedding_property_name="vector"
+            ),
         ] = "content1",
         other: str | None = None,
     ):
@@ -132,10 +152,18 @@ data_model_definition_pandas = VectorStoreRecordDefinition(
 
 
 if __name__ == "__main__":
-    data_item1 = DataModelDataclass(content="Hello, world!", vector=[1.0, 2.0, 3.0], other=None)
-    data_item2 = DataModelPydantic(content="Hello, world!", vector=[1.0, 2.0, 3.0], other=None)
-    data_item3 = DataModelPydanticComplex(content="Hello, world!", vector=[1.0, 2.0, 3.0], other=None)
-    data_item4 = DataModelPython(content="Hello, world!", vector=[1.0, 2.0, 3.0], other=None)
+    data_item1 = DataModelDataclass(
+        content="Hello, world!", vector=[1.0, 2.0, 3.0], other=None
+    )
+    data_item2 = DataModelPydantic(
+        content="Hello, world!", vector=[1.0, 2.0, 3.0], other=None
+    )
+    data_item3 = DataModelPydanticComplex(
+        content="Hello, world!", vector=[1.0, 2.0, 3.0], other=None
+    )
+    data_item4 = DataModelPython(
+        content="Hello, world!", vector=[1.0, 2.0, 3.0], other=None
+    )
     print("Example records:")
     print(f"DataClass:\n  {data_item1}", end="\n\n")
     print(f"Pydantic:\n  {data_item2}", end="\n\n")
@@ -143,11 +171,20 @@ if __name__ == "__main__":
     print(f"Python:\n  {data_item4}", end="\n\n")
 
     print("Item definitions:")
-    print(f"DataClass:\n  {data_item1.__kernel_vectorstoremodel_definition__}", end="\n\n")
-    print(f"Pydantic:\n  {data_item2.__kernel_vectorstoremodel_definition__}", end="\n\n")
-    print(f"Pydantic with annotations:\n  {data_item3.__kernel_vectorstoremodel_definition__}", end="\n\n")
+    print(
+        f"DataClass:\n  {data_item1.__kernel_vectorstoremodel_definition__}", end="\n\n"
+    )
+    print(
+        f"Pydantic:\n  {data_item2.__kernel_vectorstoremodel_definition__}", end="\n\n"
+    )
+    print(
+        f"Pydantic with annotations:\n  {data_item3.__kernel_vectorstoremodel_definition__}",
+        end="\n\n",
+    )
     print(f"Python:\n  {data_item4.__kernel_vectorstoremodel_definition__}", end="\n\n")
-    print(f"Definition for use with Pandas:\n  {data_model_definition_pandas}", end="\n\n")
+    print(
+        f"Definition for use with Pandas:\n  {data_model_definition_pandas}", end="\n\n"
+    )
     if (
         data_item1.__kernel_vectorstoremodel_definition__.fields
         == data_item2.__kernel_vectorstoremodel_definition__.fields

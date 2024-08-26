@@ -4,8 +4,13 @@ import asyncio
 import os
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAIChatPromptExecutionSettings,
+)
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -61,14 +66,18 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"included_plugins": ["math", "time"]}),
+    function_choice_behavior=FunctionChoiceBehavior.Auto(
+        filters={"included_plugins": ["math", "time"]}
+    ),
 )
 
 history = ChatHistory()
 
 history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
-history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+history.add_assistant_message(
+    "I am Mosscap, a chat bot. I'm trying to figure out what people need."
+)
 
 arguments = KernelArguments(settings=execution_settings)
 
@@ -97,7 +106,8 @@ async def auto_function_invocation_filter(context: AutoFunctionInvocationContext
     for fc in function_calls:
         if fc.plugin_name == "math":
             context.function_result = FunctionResult(
-                function=result.function, value="Stop trying to ask me to do math, I don't like it!"
+                function=result.function,
+                value="Stop trying to ask me to do math, I don't like it!",
             )
             context.terminate = True
 

@@ -24,7 +24,9 @@ class TextMemoryPlugin(KernelBaseModel):
     memory: SemanticTextMemoryBase
     embeddings_kwargs: dict[str, Any] = Field(default_factory=dict)
 
-    def __init__(self, memory: SemanticTextMemoryBase, embeddings_kwargs: dict[str, Any] = {}) -> None:
+    def __init__(
+        self, memory: SemanticTextMemoryBase, embeddings_kwargs: dict[str, Any] = {}
+    ) -> None:
         """Initialize a new instance of the TextMemoryPlugin.
 
         Args:
@@ -40,11 +42,15 @@ class TextMemoryPlugin(KernelBaseModel):
     async def recall(
         self,
         ask: Annotated[str, "The information to retrieve"],
-        collection: Annotated[str, "The collection to search for information."] = DEFAULT_COLLECTION,
+        collection: Annotated[
+            str, "The collection to search for information."
+        ] = DEFAULT_COLLECTION,
         relevance: Annotated[
             float, "The relevance score, from 0.0 to 1.0; 1.0 means perfect match"
         ] = DEFAULT_RELEVANCE,
-        limit: Annotated[int, "The maximum number of relevant memories to recall."] = DEFAULT_LIMIT,
+        limit: Annotated[
+            int, "The maximum number of relevant memories to recall."
+        ] = DEFAULT_LIMIT,
     ) -> str:
         """Recall a fact from the long term memory.
 
@@ -80,7 +86,9 @@ class TextMemoryPlugin(KernelBaseModel):
         self,
         text: Annotated[str, "The information to save."],
         key: Annotated[str, "The unique key to associate with the information."],
-        collection: Annotated[str, "The collection to save the information."] = DEFAULT_COLLECTION,
+        collection: Annotated[
+            str, "The collection to save the information."
+        ] = DEFAULT_COLLECTION,
     ) -> None:
         """Save a fact to the long term memory.
 
@@ -92,5 +100,8 @@ class TextMemoryPlugin(KernelBaseModel):
 
         """
         await self.memory.save_information(
-            collection=collection, text=text, id=key, embeddings_kwargs=self.embeddings_kwargs
+            collection=collection,
+            text=text,
+            id=key,
+            embeddings_kwargs=self.embeddings_kwargs,
         )

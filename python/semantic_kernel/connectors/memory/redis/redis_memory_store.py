@@ -22,7 +22,9 @@ from semantic_kernel.exceptions import (
     ServiceResourceNotFoundError,
     ServiceResponseException,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    MemoryConnectorInitializationError,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -79,12 +81,18 @@ class RedisMemoryStore(MemoryStoreBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise MemoryConnectorInitializationError("Failed to create Redis settings.", ex) from ex
+            raise MemoryConnectorInitializationError(
+                "Failed to create Redis settings.", ex
+            ) from ex
 
         if vector_size <= 0:
-            raise MemoryConnectorInitializationError("Vector dimension must be a positive integer")
+            raise MemoryConnectorInitializationError(
+                "Vector dimension must be a positive integer"
+            )
 
-        self._database = redis.Redis.from_url(redis_settings.connection_string.get_secret_value())
+        self._database = redis.Redis.from_url(
+            redis_settings.connection_string.get_secret_value()
+        )
         self._ft = self._database.ft
 
         self._query_dialect = query_dialect
@@ -111,7 +119,9 @@ class RedisMemoryStore(MemoryStoreBase):
         if await self.does_collection_exist(collection_name):
             logger.info(f'Collection "{collection_name}" already exists.')
         else:
-            index_def = IndexDefinition(prefix=f"{collection_name}:", index_type=IndexType.HASH)
+            index_def = IndexDefinition(
+                prefix=f"{collection_name}:", index_type=IndexType.HASH
+            )
             schema = (
                 TextField(name="key"),
                 TextField(name="metadata"),
@@ -128,9 +138,13 @@ class RedisMemoryStore(MemoryStoreBase):
             )
 
             try:
-                self._ft(collection_name).create_index(definition=index_def, fields=schema)
+                self._ft(collection_name).create_index(
+                    definition=index_def, fields=schema
+                )
             except Exception as e:
-                raise ServiceResponseException(f"Failed to create collection {collection_name}") from e
+                raise ServiceResponseException(
+                    f"Failed to create collection {collection_name}"
+                ) from e
 
     async def get_collections(self) -> list[str]:
         """Returns a list of names of all collection names present in the data store.
@@ -141,7 +155,9 @@ class RedisMemoryStore(MemoryStoreBase):
         # Note: FT._LIST is a temporary command that may be deprecated in the future according to Redis
         return [name.decode() for name in self._database.execute_command("FT._LIST")]
 
-    async def delete_collection(self, collection_name: str, delete_records: bool = True) -> None:
+    async def delete_collection(
+        self, collection_name: str, delete_records: bool = True
+    ) -> None:
         """Deletes a collection from the data store.
 
         If the collection does not exist, the database is left unchanged.
@@ -186,7 +202,9 @@ class RedisMemoryStore(MemoryStoreBase):
             str: Redis key associated with the upserted memory record
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
+            raise ServiceResourceNotFoundError(
+                f'Collection "{collection_name}" does not exist'
+            )
 
         # Typical Redis key structure: collection_name:{some identifier}
         record._key = get_redis_key(collection_name, record._id)
@@ -202,7 +220,9 @@ class RedisMemoryStore(MemoryStoreBase):
         except Exception as e:
             raise ServiceResponseException("Could not upsert messages.") from e
 
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord]
+    ) -> list[str]:
         """Upserts a group of memory records into the data store.
 
         Does not guarantee that the collection exists.
@@ -226,7 +246,9 @@ class RedisMemoryStore(MemoryStoreBase):
 
         return keys
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool = False
+    ) -> MemoryRecord:
         """Gets a memory record from the data store. Does not guarantee that the collection exists.
 
         Args:
@@ -238,7 +260,9 @@ class RedisMemoryStore(MemoryStoreBase):
             MemoryRecord: The memory record if found, else None
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
+            raise ServiceResourceNotFoundError(
+                f'Collection "{collection_name}" does not exist'
+            )
 
         internal_key = get_redis_key(collection_name, key)
         fields = self._database.hgetall(internal_key)
@@ -286,7 +310,9 @@ class RedisMemoryStore(MemoryStoreBase):
             key (str): ID associated with the memory to remove
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
+            raise ServiceResourceNotFoundError(
+                f'Collection "{collection_name}" does not exist'
+            )
 
         self._database.delete(get_redis_key(collection_name, key))
 
@@ -298,7 +324,9 @@ class RedisMemoryStore(MemoryStoreBase):
             keys (List[str]): IDs associated with the memory records to remove
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
+            raise ServiceResourceNotFoundError(
+                f'Collection "{collection_name}" does not exist'
+            )
 
         self._database.delete(*[get_redis_key(collection_name, key) for key in keys])
 
@@ -324,7 +352,9 @@ class RedisMemoryStore(MemoryStoreBase):
                 order, or an empty list if no relevant matches are found
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
+            raise ServiceResourceNotFoundError(
+                f'Collection "{collection_name}" does not exist'
+            )
 
         # Perform a k-nearest neighbors query, score by similarity
         query = (
@@ -350,7 +380,9 @@ class RedisMemoryStore(MemoryStoreBase):
             if score < min_relevance_score:
                 break
 
-            record = deserialize_document_to_record(self._database, match, self._vector_type, with_embeddings)
+            record = deserialize_document_to_record(
+                self._database, match, self._vector_type, with_embeddings
+            )
             relevant_records.append((record, score))
 
         return relevant_records

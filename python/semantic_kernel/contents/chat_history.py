@@ -14,7 +14,10 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.const import CHAT_HISTORY_TAG, CHAT_MESSAGE_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions import ContentInitializationError, ContentSerializationError
+from semantic_kernel.exceptions import (
+    ContentInitializationError,
+    ContentSerializationError,
+)
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
@@ -60,7 +63,9 @@ class ChatHistory(KernelBaseModel):
         system_message_content = data.pop("system_message", None)
 
         if system_message_content:
-            system_message = ChatMessageContent(role=AuthorRole.SYSTEM, content=system_message_content)
+            system_message = ChatMessageContent(
+                role=AuthorRole.SYSTEM, content=system_message_content
+            )
 
             if "messages" in data:
                 data["messages"] = [system_message] + data["messages"]
@@ -72,7 +77,9 @@ class ChatHistory(KernelBaseModel):
 
     @field_validator("messages", mode="before")
     @classmethod
-    def _validate_messages(cls, messages: list[ChatMessageContent]) -> list[ChatMessageContent]:
+    def _validate_messages(
+        cls, messages: list[ChatMessageContent]
+    ) -> list[ChatMessageContent]:
         if not messages:
             return messages
         out_msgs: list[ChatMessageContent] = []
@@ -91,57 +98,99 @@ class ChatHistory(KernelBaseModel):
     @add_system_message.register
     def add_system_message_str(self, content: str, **kwargs: Any) -> None:
         """Add a system message to the chat history."""
-        self.add_message(message=self._prepare_for_add(role=AuthorRole.SYSTEM, content=content, **kwargs))
+        self.add_message(
+            message=self._prepare_for_add(
+                role=AuthorRole.SYSTEM, content=content, **kwargs
+            )
+        )
 
     @add_system_message.register(list)
-    def add_system_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def add_system_message_list(
+        self, content: list[KernelContent], **kwargs: Any
+    ) -> None:
         """Add a system message to the chat history."""
-        self.add_message(message=self._prepare_for_add(role=AuthorRole.SYSTEM, items=content, **kwargs))
+        self.add_message(
+            message=self._prepare_for_add(
+                role=AuthorRole.SYSTEM, items=content, **kwargs
+            )
+        )
 
     @singledispatchmethod
-    def add_user_message(self, content: str | list[KernelContent], **kwargs: Any) -> None:
+    def add_user_message(
+        self, content: str | list[KernelContent], **kwargs: Any
+    ) -> None:
         """Add a user message to the chat history."""
         raise NotImplementedError
 
     @add_user_message.register
     def add_user_message_str(self, content: str, **kwargs: Any) -> None:
         """Add a user message to the chat history."""
-        self.add_message(message=self._prepare_for_add(role=AuthorRole.USER, content=content, **kwargs))
+        self.add_message(
+            message=self._prepare_for_add(
+                role=AuthorRole.USER, content=content, **kwargs
+            )
+        )
 
     @add_user_message.register(list)
-    def add_user_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def add_user_message_list(
+        self, content: list[KernelContent], **kwargs: Any
+    ) -> None:
         """Add a user message to the chat history."""
-        self.add_message(message=self._prepare_for_add(role=AuthorRole.USER, items=content, **kwargs))
+        self.add_message(
+            message=self._prepare_for_add(role=AuthorRole.USER, items=content, **kwargs)
+        )
 
     @singledispatchmethod
-    def add_assistant_message(self, content: str | list[KernelContent], **kwargs: Any) -> None:
+    def add_assistant_message(
+        self, content: str | list[KernelContent], **kwargs: Any
+    ) -> None:
         """Add an assistant message to the chat history."""
         raise NotImplementedError
 
     @add_assistant_message.register
     def add_assistant_message_str(self, content: str, **kwargs: Any) -> None:
         """Add an assistant message to the chat history."""
-        self.add_message(message=self._prepare_for_add(role=AuthorRole.ASSISTANT, content=content, **kwargs))
+        self.add_message(
+            message=self._prepare_for_add(
+                role=AuthorRole.ASSISTANT, content=content, **kwargs
+            )
+        )
 
     @add_assistant_message.register(list)
-    def add_assistant_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def add_assistant_message_list(
+        self, content: list[KernelContent], **kwargs: Any
+    ) -> None:
         """Add an assistant message to the chat history."""
-        self.add_message(message=self._prepare_for_add(role=AuthorRole.ASSISTANT, items=content, **kwargs))
+        self.add_message(
+            message=self._prepare_for_add(
+                role=AuthorRole.ASSISTANT, items=content, **kwargs
+            )
+        )
 
     @singledispatchmethod
-    def add_tool_message(self, content: str | list[KernelContent], **kwargs: Any) -> None:
+    def add_tool_message(
+        self, content: str | list[KernelContent], **kwargs: Any
+    ) -> None:
         """Add a tool message to the chat history."""
         raise NotImplementedError
 
     @add_tool_message.register
     def add_tool_message_str(self, content: str, **kwargs: Any) -> None:
         """Add a tool message to the chat history."""
-        self.add_message(message=self._prepare_for_add(role=AuthorRole.TOOL, content=content, **kwargs))
+        self.add_message(
+            message=self._prepare_for_add(
+                role=AuthorRole.TOOL, content=content, **kwargs
+            )
+        )
 
     @add_tool_message.register(list)
-    def add_tool_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def add_tool_message_list(
+        self, content: list[KernelContent], **kwargs: Any
+    ) -> None:
         """Add a tool message to the chat history."""
-        self.add_message(message=self._prepare_for_add(role=AuthorRole.TOOL, items=content, **kwargs))
+        self.add_message(
+            message=self._prepare_for_add(role=AuthorRole.TOOL, items=content, **kwargs)
+        )
 
     def add_message(
         self,
@@ -164,7 +213,9 @@ class ChatHistory(KernelBaseModel):
             self.messages.append(message)
             return
         if "role" not in message:
-            raise ContentInitializationError(f"Dictionary must contain at least the role. Got: {message}")
+            raise ContentInitializationError(
+                f"Dictionary must contain at least the role. Got: {message}"
+            )
         if encoding:
             message["encoding"] = encoding
         if metadata:
@@ -172,7 +223,11 @@ class ChatHistory(KernelBaseModel):
         self.messages.append(ChatMessageContent(**message))
 
     def _prepare_for_add(
-        self, role: AuthorRole, content: str | None = None, items: list[KernelContent] | None = None, **kwargs: Any
+        self,
+        role: AuthorRole,
+        content: str | None = None,
+        items: list[KernelContent] | None = None,
+        **kwargs: Any,
     ) -> dict[str, str]:
         """Prepare a message to be added to the history."""
         kwargs["role"] = role
@@ -264,10 +319,20 @@ class ChatHistory(KernelBaseModel):
         try:
             xml_prompt = XML(text=f"<{prompt_tag}>{prompt}</{prompt_tag}>")
         except ParseError as exc:
-            logger.info(f"Could not parse prompt {prompt} as xml, treating as text, error was: {exc}")
-            return cls(messages=[ChatMessageContent(role=AuthorRole.USER, content=unescape(prompt))])
+            logger.info(
+                f"Could not parse prompt {prompt} as xml, treating as text, error was: {exc}"
+            )
+            return cls(
+                messages=[
+                    ChatMessageContent(role=AuthorRole.USER, content=unescape(prompt))
+                ]
+            )
         if xml_prompt.text and xml_prompt.text.strip():
-            messages.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=unescape(xml_prompt.text.strip())))
+            messages.append(
+                ChatMessageContent(
+                    role=AuthorRole.SYSTEM, content=unescape(xml_prompt.text.strip())
+                )
+            )
         for item in xml_prompt:
             if item.tag == CHAT_MESSAGE_CONTENT_TAG:
                 messages.append(ChatMessageContent.from_element(item))
@@ -275,7 +340,11 @@ class ChatHistory(KernelBaseModel):
                 for message in item:
                     messages.append(ChatMessageContent.from_element(message))
             if item.tail and item.tail.strip():
-                messages.append(ChatMessageContent(role=AuthorRole.USER, content=unescape(item.tail.strip())))
+                messages.append(
+                    ChatMessageContent(
+                        role=AuthorRole.USER, content=unescape(item.tail.strip())
+                    )
+                )
         if len(messages) == 1 and messages[0].role == AuthorRole.SYSTEM:
             messages[0].role = AuthorRole.USER
         return cls(messages=messages)
@@ -292,7 +361,9 @@ class ChatHistory(KernelBaseModel):
         try:
             return self.model_dump_json(indent=2, exclude_none=True)
         except Exception as e:  # pragma: no cover
-            raise ContentSerializationError(f"Unable to serialize ChatHistory to JSON: {e}") from e
+            raise ContentSerializationError(
+                f"Unable to serialize ChatHistory to JSON: {e}"
+            ) from e
 
     @classmethod
     def restore_chat_history(cls, chat_history_json: str) -> "ChatHistory":

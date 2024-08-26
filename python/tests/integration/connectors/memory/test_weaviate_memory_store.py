@@ -7,7 +7,9 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-from semantic_kernel.connectors.memory.weaviate.weaviate_memory_store import WeaviateMemoryStore
+from semantic_kernel.connectors.memory.weaviate.weaviate_memory_store import (
+    WeaviateMemoryStore,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 if not sys.platform.startswith("linux"):
@@ -170,7 +172,9 @@ async def test_upsert(memory_store_with_empty_collection, documents):
     for doc in documents[:2]:
         await memory_store.upsert(collection_name, doc)
 
-    total_docs = memory_store.client.data_object.get(class_name=collection_name)["totalResults"]
+    total_docs = memory_store.client.data_object.get(class_name=collection_name)[
+        "totalResults"
+    ]
     assert total_docs == 2
 
 
@@ -180,7 +184,9 @@ async def test_upsert_batch(memory_store_with_empty_collection, documents):
 
     await memory_store.upsert_batch(collection_name, documents)
 
-    total_docs = memory_store.client.data_object.get(class_name=collection_name)["totalResults"]
+    total_docs = memory_store.client.data_object.get(class_name=collection_name)[
+        "totalResults"
+    ]
     assert total_docs == len(documents)
 
 
@@ -212,12 +218,16 @@ async def test_get_batch(memory_store_with_collection, documents):
 
     expected_results = [doc for doc in documents if doc._key in keys]
 
-    actual_results = await memory_store.get_batch(collection_name, keys, with_embedding=True)
+    actual_results = await memory_store.get_batch(
+        collection_name, keys, with_embedding=True
+    )
 
     for expected, actual in zip(expected_results, actual_results):
         npt.assert_equal(expected.__dict__, actual.__dict__)
 
-    actual_results = await memory_store.get_batch(collection_name, keys, with_embedding=False)
+    actual_results = await memory_store.get_batch(
+        collection_name, keys, with_embedding=False
+    )
 
     for expected, actual in zip(expected_results, actual_results):
         expected.__dict__["_embedding"] = None
@@ -232,7 +242,9 @@ async def test_remove_batch(memory_store_with_collection, documents):
 
     await memory_store.remove_batch(collection_name, keys)
 
-    remaining_docs = memory_store.client.data_object.get(class_name=collection_name)["totalResults"]
+    remaining_docs = memory_store.client.data_object.get(class_name=collection_name)[
+        "totalResults"
+    ]
     assert remaining_docs == len(documents) - len(keys)
 
 
@@ -244,7 +256,9 @@ async def test_remove(memory_store_with_collection, documents):
 
     await memory_store.remove(collection_name, key)
 
-    remaining_docs = memory_store.client.data_object.get(class_name=collection_name)["totalResults"]
+    remaining_docs = memory_store.client.data_object.get(class_name=collection_name)[
+        "totalResults"
+    ]
     assert remaining_docs == len(documents) - 1
 
 

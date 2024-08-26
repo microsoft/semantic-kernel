@@ -16,26 +16,44 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import OpenAIChatCompletionBase
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
-from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
+    AzureOpenAIConfigBase,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
+    OpenAIChatCompletionBase,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
+    OpenAIModelTypes,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
+    OpenAITextCompletionBase,
+)
+from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import (
+    AzureOpenAISettings,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-TChatMessageContent = TypeVar("TChatMessageContent", ChatMessageContent, StreamingChatMessageContent)
+TChatMessageContent = TypeVar(
+    "TChatMessageContent", ChatMessageContent, StreamingChatMessageContent
+)
 
 
-class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
+class AzureChatCompletion(
+    AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase
+):
     """Azure Chat completion class."""
 
     def __init__(
@@ -86,13 +104,17 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as exc:
-            raise ServiceInitializationError(f"Failed to validate settings: {exc}") from exc
+            raise ServiceInitializationError(
+                f"Failed to validate settings: {exc}"
+            ) from exc
 
         if not azure_openai_settings.chat_deployment_name:
             raise ServiceInitializationError("chat_deployment_name is required.")
 
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise ServiceInitializationError("Please provide either api_key, ad_token or ad_token_provider")
+            raise ServiceInitializationError(
+                "Please provide either api_key, ad_token or ad_token_provider"
+            )
 
         super().__init__(
             deployment_name=azure_openai_settings.chat_deployment_name,
@@ -100,7 +122,11 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             base_url=azure_openai_settings.base_url,
             api_version=azure_openai_settings.api_version,
             service_id=service_id,
-            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
+            api_key=(
+                azure_openai_settings.api_key.get_secret_value()
+                if azure_openai_settings.api_key
+                else None
+            ),
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
@@ -135,10 +161,15 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         return AzureChatPromptExecutionSettings
 
     def _create_chat_message_content(
-        self, response: ChatCompletion, choice: Choice, response_metadata: dict[str, Any]
+        self,
+        response: ChatCompletion,
+        choice: Choice,
+        response_metadata: dict[str, Any],
     ) -> ChatMessageContent:
         """Create an Azure chat message content object from a choice."""
-        content = super()._create_chat_message_content(response, choice, response_metadata)
+        content = super()._create_chat_message_content(
+            response, choice, response_metadata
+        )
         return self._add_tool_message_to_chat_message_content(content, choice)
 
     def _create_streaming_chat_message_content(
@@ -148,8 +179,12 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         chunk_metadata: dict[str, Any],
     ) -> "StreamingChatMessageContent":
         """Create an Azure streaming chat message content object from a choice."""
-        content = super()._create_streaming_chat_message_content(chunk, choice, chunk_metadata)
-        assert isinstance(content, StreamingChatMessageContent) and isinstance(choice, ChunkChoice)  # nosec
+        content = super()._create_streaming_chat_message_content(
+            chunk, choice, chunk_metadata
+        )
+        assert isinstance(content, StreamingChatMessageContent) and isinstance(
+            choice, ChunkChoice
+        )  # nosec
         return self._add_tool_message_to_chat_message_content(content, choice)
 
     def _add_tool_message_to_chat_message_content(
@@ -177,7 +212,9 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             content.items.insert(1, result)
         return content
 
-    def _get_tool_message_from_chat_choice(self, choice: Choice | ChunkChoice) -> dict[str, Any] | None:
+    def _get_tool_message_from_chat_choice(
+        self, choice: Choice | ChunkChoice
+    ) -> dict[str, Any] | None:
         """Get the tool message from a choice."""
         content = choice.message if isinstance(choice, Choice) else choice.delta
         if content.model_extra is not None:
@@ -197,13 +234,25 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         """
         if len(message.items) != 3:
             return [message]
-        messages = {"tool_call": deepcopy(message), "tool_result": deepcopy(message), "assistant": deepcopy(message)}
+        messages = {
+            "tool_call": deepcopy(message),
+            "tool_result": deepcopy(message),
+            "assistant": deepcopy(message),
+        }
         for key, msg in messages.items():
             if key == "tool_call":
-                msg.items = [item for item in msg.items if isinstance(item, FunctionCallContent)]
+                msg.items = [
+                    item for item in msg.items if isinstance(item, FunctionCallContent)
+                ]
                 msg.finish_reason = FinishReason.FUNCTION_CALL
             if key == "tool_result":
-                msg.items = [item for item in msg.items if isinstance(item, FunctionResultContent)]
+                msg.items = [
+                    item
+                    for item in msg.items
+                    if isinstance(item, FunctionResultContent)
+                ]
             if key == "assistant":
-                msg.items = [item for item in msg.items if isinstance(item, TextContent)]
+                msg.items = [
+                    item for item in msg.items if isinstance(item, TextContent)
+                ]
         return [messages["tool_call"], messages["tool_result"], messages["assistant"]]

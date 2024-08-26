@@ -7,27 +7,39 @@ from typing import TYPE_CHECKING, Any
 import google.generativeai as genai
 from google.generativeai import GenerativeModel
 from google.generativeai.protos import Candidate
-from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
+from google.generativeai.types import (
+    AsyncGenerateContentResponse,
+    GenerateContentResponse,
+    GenerationConfig,
+)
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import GoogleAIBase
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import (
+    GoogleAIBase,
+)
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
+from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import (
+    GoogleAISettings,
+)
 from semantic_kernel.contents import TextContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
 
 
 class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
@@ -66,9 +78,13 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise ServiceInitializationError(f"Failed to validate Google AI settings: {e}") from e
+            raise ServiceInitializationError(
+                f"Failed to validate Google AI settings: {e}"
+            ) from e
         if not google_ai_settings.gemini_model_id:
-            raise ServiceInitializationError("The Google AI Gemini model ID is required.")
+            raise ServiceInitializationError(
+                "The Google AI Gemini model ID is required."
+            )
 
         super().__init__(
             ai_model_id=google_ai_settings.gemini_model_id,
@@ -88,7 +104,9 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 
         return await self._send_request(prompt, settings)
 
-    async def _send_request(self, prompt: str, settings: GoogleAITextPromptExecutionSettings) -> list[TextContent]:
+    async def _send_request(
+        self, prompt: str, settings: GoogleAITextPromptExecutionSettings
+    ) -> list[TextContent]:
         """Send a text generation request to the Google AI service."""
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         model = GenerativeModel(
@@ -100,9 +118,14 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             generation_config=GenerationConfig(**settings.prepare_settings_dict()),
         )
 
-        return [self._create_text_content(response, candidate) for candidate in response.candidates]
+        return [
+            self._create_text_content(response, candidate)
+            for candidate in response.candidates
+        ]
 
-    def _create_text_content(self, response: AsyncGenerateContentResponse, candidate: Candidate) -> TextContent:
+    def _create_text_content(
+        self, response: AsyncGenerateContentResponse, candidate: Candidate
+    ) -> TextContent:
         """Create a text content object.
 
         Args:
@@ -155,7 +178,10 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         )
 
         async for chunk in response:
-            yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]
+            yield [
+                self._create_streaming_text_content(chunk, candidate)
+                for candidate in chunk.candidates
+            ]
 
     def _create_streaming_text_content(
         self, chunk: GenerateContentResponse, candidate: Candidate

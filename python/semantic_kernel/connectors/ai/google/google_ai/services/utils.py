@@ -4,9 +4,17 @@ import json
 import logging
 from typing import Any
 
-from google.generativeai.protos import Blob, Candidate, FunctionCall, FunctionResponse, Part
+from google.generativeai.protos import (
+    Blob,
+    Candidate,
+    FunctionCall,
+    FunctionResponse,
+    Part,
+)
 
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.function_call_choice_configuration import (
+    FunctionCallChoiceConfiguration,
+)
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
@@ -21,7 +29,9 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
+from semantic_kernel.contents.utils.finish_reason import (
+    FinishReason as SemanticKernelFinishReason,
+)
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
@@ -91,7 +101,11 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
                     function_call=FunctionCall(
                         name=item.name,
                         # Convert the arguments to a dictionary if it is a string
-                        args=json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,
+                        args=(
+                            json.loads(item.arguments)
+                            if isinstance(item.arguments, str)
+                            else item.arguments
+                        ),
                     )
                 )
             )
@@ -118,7 +132,9 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
     parts: list[Part] = []
     for item in message.items:
         if isinstance(item, FunctionResultContent):
-            gemini_function_name = format_function_result_content_name_to_gemini_function_name(item)
+            gemini_function_name = (
+                format_function_result_content_name_to_gemini_function_name(item)
+            )
             parts.append(
                 Part(
                     function_response=FunctionResponse(
@@ -134,14 +150,20 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
     return parts
 
 
-def kernel_function_metadata_to_google_ai_function_call_format(metadata: KernelFunctionMetadata) -> dict[str, Any]:
+def kernel_function_metadata_to_google_ai_function_call_format(
+    metadata: KernelFunctionMetadata,
+) -> dict[str, Any]:
     """Convert the kernel function metadata to function calling format."""
     return {
-        "name": format_kernel_function_fully_qualified_name_to_gemini_function_name(metadata),
+        "name": format_kernel_function_fully_qualified_name_to_gemini_function_name(
+            metadata
+        ),
         "description": metadata.description or "",
         "parameters": {
             "type": "object",
-            "properties": {param.name: param.schema_data for param in metadata.parameters},
+            "properties": {
+                param.name: param.schema_data for param in metadata.parameters
+            },
             "required": [p.name for p in metadata.parameters if p.is_required],
         },
     }
@@ -171,7 +193,9 @@ def update_settings_from_function_choice_configuration(
 
 def _create_image_part(image_content: ImageContent) -> Part:
     if image_content.data_uri:
-        return Part(inline_data=Blob(mime_type=image_content.mime_type, data=image_content.data))
+        return Part(
+            inline_data=Blob(mime_type=image_content.mime_type, data=image_content.data)
+        )
 
     # The Google AI API doesn't support images from arbitrary URIs:
     # https://github.com/google-gemini/generative-ai-python/issues/357

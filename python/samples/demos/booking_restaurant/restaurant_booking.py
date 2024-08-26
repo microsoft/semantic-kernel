@@ -8,11 +8,15 @@ from bookings_plugin.bookings_plugin import BookingsPlugin
 from msgraph import GraphServiceClient
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
+    OpenAIChatCompletion,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -27,14 +31,21 @@ kernel.add_service(ai_service)
 try:
     booking_sample_settings = BookingSampleSettings.create()
 except ValidationError as e:
-    raise ServiceInitializationError("Failed to initialize the booking sample settings.") from e
+    raise ServiceInitializationError(
+        "Failed to initialize the booking sample settings."
+    ) from e
 
 tenant_id = booking_sample_settings.tenant_id
 client_id = booking_sample_settings.client_id
 client_secret = booking_sample_settings.client_secret
-client_secret_credential = ClientSecretCredential(tenant_id=tenant_id, client_id=client_id, client_secret=client_secret)
+client_secret_credential = ClientSecretCredential(
+    tenant_id=tenant_id, client_id=client_id, client_secret=client_secret
+)
 
-graph_client = GraphServiceClient(credentials=client_secret_credential, scopes=["https://graph.microsoft.com/.default"])
+graph_client = GraphServiceClient(
+    credentials=client_secret_credential,
+    scopes=["https://graph.microsoft.com/.default"],
+)
 
 booking_business_id = booking_sample_settings.business_id
 booking_service_id = booking_sample_settings.service_id
@@ -54,8 +65,10 @@ chat_function = kernel.add_function(
     template_format="semantic-kernel",
 )
 
-settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
-    service_id, ChatCompletionClientBase
+settings: OpenAIChatPromptExecutionSettings = (
+    kernel.get_prompt_execution_settings_from_service_id(
+        service_id, ChatCompletionClientBase
+    )
 )
 settings.max_tokens = 2000
 settings.temperature = 0.1
@@ -84,7 +97,10 @@ async def chat() -> bool:
     # Note the reservation returned contains an ID. That ID can be used to cancel the reservation,
     # when the bookings API supports it.
     answer = await kernel.invoke(
-        chat_function, KernelArguments(settings=settings, user_input=user_input, chat_history=chat_history)
+        chat_function,
+        KernelArguments(
+            settings=settings, user_input=user_input, chat_history=chat_history
+        ),
     )
     chat_history.add_user_message(user_input)
     chat_history.add_assistant_message(str(answer))

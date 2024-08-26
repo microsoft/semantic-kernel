@@ -6,6 +6,8 @@
     "github.copilot-chat",
     "github.copilot",
     "franneck94.c-cpp-runner",
-    "ms-azuretools.vscode-azureresourcegroups"
+    "ms-azuretools.vscode-azureresourcegroups",
+    "ms-python.debugpy",
+    "atariq11700.debugpy-old"
   ]
 }

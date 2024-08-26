@@ -7,13 +7,17 @@ from typing import TYPE_CHECKING, Any
 from ollama import AsyncClient
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaEmbeddingPromptExecutionSettings
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
+    OllamaEmbeddingPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.ollama.ollama_settings import OllamaSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -22,7 +26,9 @@ else:
 
 from numpy import array, ndarray
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
+    EmbeddingGeneratorBase,
+)
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -63,7 +69,9 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise ServiceInitializationError("Failed to create Ollama settings.", ex) from ex
+            raise ServiceInitializationError(
+                "Failed to create Ollama settings.", ex
+            ) from ex
 
         super().__init__(
             service_id=service_id or ollama_settings.model,

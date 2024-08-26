@@ -5,14 +5,20 @@ from unittest.mock import Mock
 
 import pytest
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.planners.sequential_planner.sequential_planner_config import SequentialPlannerConfig
-from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import SequentialPlannerKernelExtension
+from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
+    SequentialPlannerConfig,
+)
+from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import (
+    SequentialPlannerKernelExtension,
+)
 
 
 async def _async_generator(query_result):
@@ -43,7 +49,9 @@ async def test_can_call_get_available_functions_with_no_functions(kernel: Kernel
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
+    result = await SequentialPlannerKernelExtension.get_available_functions(
+        kernel, arguments, config, semantic_query
+    )
 
     # Assert
     assert result is not None
@@ -68,15 +76,21 @@ async def test_can_call_get_available_functions_with_functions(kernel: Kernel):
         is_prompt=False,
         is_asynchronous=False,
     )
-    kernel.add_function("pluginName", create_mock_function(kernel_function_metadata, None))
-    kernel.add_function("pluginName", create_mock_function(native_kernel_function_metadata, None))
+    kernel.add_function(
+        "pluginName", create_mock_function(kernel_function_metadata, None)
+    )
+    kernel.add_function(
+        "pluginName", create_mock_function(native_kernel_function_metadata, None)
+    )
 
     # Arrange GetAvailableFunctionsAsync parameters
     config = SequentialPlannerConfig()
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
+    result = await SequentialPlannerKernelExtension.get_available_functions(
+        kernel, arguments, config, semantic_query
+    )
 
     # Assert
     assert result is not None
@@ -87,7 +101,9 @@ async def test_can_call_get_available_functions_with_functions(kernel: Kernel):
     config.included_functions.append(["nativeFunctionName"])
 
     # Act
-    result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
+    result = await SequentialPlannerKernelExtension.get_available_functions(
+        kernel, arguments, config, semantic_query
+    )
 
     # Assert
     assert result is not None
@@ -106,7 +122,9 @@ async def test_can_call_get_available_functions_with_default_relevancy(kernel: K
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
+    result = await SequentialPlannerKernelExtension.get_available_functions(
+        kernel, arguments, config, semantic_query
+    )
 
     # Assert
     assert result is not None

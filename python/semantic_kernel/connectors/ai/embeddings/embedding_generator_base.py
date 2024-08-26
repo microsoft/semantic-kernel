@@ -9,7 +9,9 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
 
 
 @experimental_class
@@ -30,7 +32,6 @@ class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
             settings (PromptExecutionSettings): The settings to use for the request, optional.
             kwargs (Any): Additional arguments to pass to the request.
         """
-        pass
 
     async def generate_raw_embeddings(
         self,

@@ -24,7 +24,9 @@ async def test_it_can_be_imported():
     assert kernel.get_plugin(plugin_name="http") is not None
     assert kernel.get_plugin(plugin_name="http").name == "http"
     assert kernel.get_function(plugin_name="http", function_name="getAsync") is not None
-    assert kernel.get_function(plugin_name="http", function_name="postAsync") is not None
+    assert (
+        kernel.get_function(plugin_name="http", function_name="postAsync") is not None
+    )
 
 
 @patch("aiohttp.ClientSession.get")
@@ -43,7 +45,7 @@ async def test_get(mock_get):
 async def test_fail_no_url(method):
     plugin = HttpPlugin()
     with pytest.raises(FunctionExecutionException):
-        await getattr(plugin, method)(url='')
+        await getattr(plugin, method)(url="")
 
 
 @pytest.mark.asyncio
@@ -60,7 +62,9 @@ async def test_post(mock_post):
     mock_post.return_value.__aenter__.return_value.status = 200
 
     plugin = HttpPlugin()
-    arguments = KernelArguments(url="https://example.org/post", body="{message: 'Hello, world!'}")
+    arguments = KernelArguments(
+        url="https://example.org/post", body="{message: 'Hello, world!'}"
+    )
     response = await plugin.post(**arguments)
     assert response == "Hello World !"
 
@@ -84,7 +88,9 @@ async def test_put(mock_put):
     mock_put.return_value.__aenter__.return_value.status = 200
 
     plugin = HttpPlugin()
-    arguments = KernelArguments(url="https://example.org/put", body="{message: 'Hello, world!'}")
+    arguments = KernelArguments(
+        url="https://example.org/put", body="{message: 'Hello, world!'}"
+    )
     response = await plugin.put(**arguments)
     assert response == "Hello World !"
 

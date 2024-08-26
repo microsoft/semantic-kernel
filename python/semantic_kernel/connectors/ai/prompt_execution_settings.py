@@ -5,7 +5,9 @@ from typing import Any, TypeVar
 
 from pydantic import Field, model_validator
 
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
@@ -38,14 +40,20 @@ class PromptExecutionSettings(KernelBaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def parse_function_choice_behavior(cls: type[_T], data: dict[str, Any]) -> dict[str, Any]:
+    def parse_function_choice_behavior(
+        cls: type[_T], data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Parse the function choice behavior data."""
         function_choice_behavior_data = data.get("function_choice_behavior")
         if function_choice_behavior_data:
             if isinstance(function_choice_behavior_data, str):
-                data["function_choice_behavior"] = FunctionChoiceBehavior.from_string(function_choice_behavior_data)
+                data["function_choice_behavior"] = FunctionChoiceBehavior.from_string(
+                    function_choice_behavior_data
+                )
             elif isinstance(function_choice_behavior_data, dict):
-                data["function_choice_behavior"] = FunctionChoiceBehavior.from_dict(function_choice_behavior_data)
+                data["function_choice_behavior"] = FunctionChoiceBehavior.from_dict(
+                    function_choice_behavior_data
+                )
         return data
 
     def __init__(self, service_id: str | None = None, **kwargs: Any):
@@ -60,7 +68,9 @@ class PromptExecutionSettings(KernelBaseModel):
         function_choice_behavior = kwargs.pop("function_choice_behavior", None)
         extension_data.update(kwargs)
         super().__init__(
-            service_id=service_id, extension_data=extension_data, function_choice_behavior=function_choice_behavior
+            service_id=service_id,
+            extension_data=extension_data,
+            function_choice_behavior=function_choice_behavior,
         )
         self.unpack_extension_data()
 
@@ -116,5 +126,8 @@ class PromptExecutionSettings(KernelBaseModel):
     def pack_extension_data(self) -> None:
         """Update the extension data from the prompt execution settings."""
         for key in self.model_fields_set:
-            if key not in ["service_id", "extension_data"] and getattr(self, key) is not None:
+            if (
+                key not in ["service_id", "extension_data"]
+                and getattr(self, key) is not None
+            ):
                 self.extension_data[key] = getattr(self, key)

@@ -13,7 +13,9 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+from semantic_kernel.functions.kernel_function_from_method import (
+    KernelFunctionFromMethod,
+)
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -42,7 +44,9 @@ class TestCodeBlockRendering:
             content="functionName",
         )
         assert target.tokens[0].type == BlockTypes.FUNCTION_ID
-        with raises(CodeBlockRenderException, match="Function `functionName` not found"):
+        with raises(
+            CodeBlockRenderException, match="Function `functionName` not found"
+        ):
             await target.render_code(kernel, KernelArguments())
 
     @mark.asyncio
@@ -52,7 +56,9 @@ class TestCodeBlockRendering:
         )
         assert target.tokens[0].type == BlockTypes.FUNCTION_ID
         kernel.add_plugin(KernelPlugin(name="test", functions=[]))
-        with raises(CodeBlockRenderException, match="Function `functionName` not found"):
+        with raises(
+            CodeBlockRenderException, match="Function `functionName` not found"
+        ):
             await target.render_code(kernel, KernelArguments())
 
     @mark.asyncio
@@ -76,7 +82,9 @@ class TestCodeBlockRendering:
             await target.render_code(kernel, KernelArguments())
 
     @mark.asyncio
-    async def test_it_renders_code_block_consisting_of_just_a_var_block1(self, kernel: Kernel):
+    async def test_it_renders_code_block_consisting_of_just_a_var_block1(
+        self, kernel: Kernel
+    ):
         code_block = CodeBlock(
             content="$var",
         )
@@ -85,7 +93,9 @@ class TestCodeBlockRendering:
         assert result == "foo"
 
     @mark.asyncio
-    async def test_it_renders_code_block_consisting_of_just_a_val_block1(self, kernel: Kernel):
+    async def test_it_renders_code_block_consisting_of_just_a_val_block1(
+        self, kernel: Kernel
+    ):
         code_block = CodeBlock(
             content="'ciao'",
         )
@@ -236,7 +246,12 @@ class TestCodeBlockRendering:
         code_block = CodeBlock(
             content=" ",
             tokens=[
-                FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName", validated=True),
+                FunctionIdBlock(
+                    content="test.funcName",
+                    plugin_name="test",
+                    function_name="funcName",
+                    validated=True,
+                ),
                 ValBlock(content=f'"{VALUE}"'),
                 NamedArgBlock(content="arg1=$arg1"),
                 NamedArgBlock(content='arg2="arg2"'),
@@ -274,7 +289,11 @@ class TestCodeBlockRendering:
         code_block = CodeBlock(
             content=" ",
             tokens=[
-                FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName"),
+                FunctionIdBlock(
+                    content="test.funcName",
+                    plugin_name="test",
+                    function_name="funcName",
+                ),
                 NamedArgBlock(content="arg1=$arg1"),
                 NamedArgBlock(content='arg2="arg2"'),
             ],
@@ -311,7 +330,11 @@ class TestCodeBlockRendering:
         code_block = CodeBlock(
             content=" ",
             tokens=[
-                FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName"),
+                FunctionIdBlock(
+                    content="test.funcName",
+                    plugin_name="test",
+                    function_name="funcName",
+                ),
                 NamedArgBlock(content="arg1=$arg1"),
                 NamedArgBlock(content='arg2="arg2"'),
             ],
@@ -454,7 +477,9 @@ def test_block_validation(token0, token1, token2):
         "invalid_named_arg_val",
     ],
 )
-def test_positional_validation(token0, token0valid, token1, token1valid, token2, token2valid):
+def test_positional_validation(
+    token0, token0valid, token1, token1valid, token2, token2valid
+):
     if not token1 and not token2valid:
         mark.skipif(f"{token0} {token1} {token2}", reason="Not applicable")
         return

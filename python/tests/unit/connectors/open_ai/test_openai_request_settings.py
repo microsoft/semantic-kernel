@@ -11,8 +11,12 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIChatPromptExecutionSettings,
     OpenAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import (
+    AzureAISearchSettings,
+)
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 
@@ -54,7 +58,9 @@ def test_custom_openai_chat_prompt_execution_settings():
 
 def test_openai_chat_prompt_execution_settings_from_default_completion_config():
     settings = PromptExecutionSettings(service_id="test_service")
-    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
+        settings
+    )
     assert chat_settings.service_id == "test_service"
     assert chat_settings.temperature is None
     assert chat_settings.top_p is None
@@ -67,21 +73,31 @@ def test_openai_chat_prompt_execution_settings_from_default_completion_config():
 
 
 def test_openai_chat_prompt_execution_settings_from_openai_prompt_execution_settings():
-    chat_settings = OpenAIChatPromptExecutionSettings(service_id="test_service", temperature=1.0)
-    new_settings = OpenAIChatPromptExecutionSettings(service_id="test_2", temperature=0.0)
+    chat_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service", temperature=1.0
+    )
+    new_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_2", temperature=0.0
+    )
     chat_settings.update_from_prompt_execution_settings(new_settings)
     assert chat_settings.service_id == "test_2"
     assert chat_settings.temperature == 0.0
 
 
 def test_openai_text_prompt_execution_settings_validation():
-    with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
+    with pytest.raises(
+        ServiceInvalidExecutionSettingsError,
+        match="best_of must be greater than number_of_responses",
+    ):
         OpenAITextPromptExecutionSettings(best_of=1, number_of_responses=2)
 
 
 def test_openai_text_prompt_execution_settings_validation_manual():
     text_oai = OpenAITextPromptExecutionSettings(best_of=1, number_of_responses=1)
-    with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
+    with pytest.raises(
+        ServiceInvalidExecutionSettingsError,
+        match="best_of must be greater than number_of_responses",
+    ):
         text_oai.number_of_responses = 2
 
 
@@ -101,7 +117,9 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config():
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
-    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
+        settings
+    )
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -128,7 +146,9 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
-    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
+        settings
+    )
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -157,7 +177,9 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
-    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
+        settings
+    )
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -211,8 +233,12 @@ def test_create_options_azure_data():
     assert options["extra_body"]["data_sources"][0]["type"] == "azure_search"
 
 
-def test_create_options_azure_data_from_azure_ai_settings(azure_ai_search_unit_test_env):
-    az_source = AzureAISearchDataSource.from_azure_ai_search_settings(AzureAISearchSettings.create())
+def test_create_options_azure_data_from_azure_ai_settings(
+    azure_ai_search_unit_test_env,
+):
+    az_source = AzureAISearchDataSource.from_azure_ai_search_settings(
+        AzureAISearchSettings.create()
+    )
     extra = ExtraBody(data_sources=[az_source])
     assert extra["data_sources"] is not None
     settings = AzureChatPromptExecutionSettings(extra_body=extra)
@@ -246,7 +272,9 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_cosmosdb_data_sources
             ]
         },
     }
-    settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
+    settings = AzureChatPromptExecutionSettings.model_validate(
+        input_dict, strict=True, from_attributes=True
+    )
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCosmosDB"
 
 
@@ -275,7 +303,9 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources
             ]
         },
     }
-    settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
+    settings = AzureChatPromptExecutionSettings.model_validate(
+        input_dict, strict=True, from_attributes=True
+    )
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCognitiveSearch"
 
 

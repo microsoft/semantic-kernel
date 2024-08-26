@@ -8,10 +8,15 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.exceptions import HandlebarsTemplateRenderException, HandlebarsTemplateSyntaxError
+from semantic_kernel.exceptions import (
+    HandlebarsTemplateRenderException,
+    HandlebarsTemplateSyntaxError,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.prompt_template.handlebars_prompt_template import HandlebarsPromptTemplate
+from semantic_kernel.prompt_template.handlebars_prompt_template import (
+    HandlebarsPromptTemplate,
+)
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
@@ -32,7 +37,10 @@ def create_handlebars_prompt_template(
 def test_init():
     template = HandlebarsPromptTemplate(
         prompt_template_config=PromptTemplateConfig(
-            name="test", description="test", template="{{input}}", template_format="handlebars"
+            name="test",
+            description="test",
+            template="{{input}}",
+            template_format="handlebars",
         )
     )
     assert template.prompt_template_config.template == "{{input}}"
@@ -42,7 +50,10 @@ def test_init_fail():
     with pytest.raises(HandlebarsTemplateSyntaxError):
         HandlebarsPromptTemplate(
             prompt_template_config=PromptTemplateConfig(
-                name="test", description="test", template="{{(input)}}", template_format="handlebars"
+                name="test",
+                description="test",
+                template="{{(input)}}",
+                template_format="handlebars",
             )
         )
 
@@ -51,20 +62,27 @@ def test_init_template_validation_fail():
     with pytest.raises(ValueError):
         HandlebarsPromptTemplate(
             prompt_template_config=PromptTemplateConfig(
-                name="test", description="test", template="{{(input)}}", template_format="semantic-kernel"
+                name="test",
+                description="test",
+                template="{{(input)}}",
+                template_format="semantic-kernel",
             )
         )
 
 
 def test_config_without_prompt():
-    config = PromptTemplateConfig(name="test", description="test", template_format="handlebars")
+    config = PromptTemplateConfig(
+        name="test", description="test", template_format="handlebars"
+    )
     template = HandlebarsPromptTemplate(prompt_template_config=config)
     assert template._template_compiler is None
 
 
 @mark.asyncio
 async def test_render_without_prompt(kernel: Kernel):
-    config = PromptTemplateConfig(name="test", description="test", template_format="handlebars")
+    config = PromptTemplateConfig(
+        name="test", description="test", template_format="handlebars"
+    )
     template = HandlebarsPromptTemplate(prompt_template_config=config)
     rendered = await template.render(kernel, None)
     assert rendered == ""
@@ -73,7 +91,9 @@ async def test_render_without_prompt(kernel: Kernel):
 @mark.asyncio
 async def test_it_renders_variables(kernel: Kernel):
     template = "Foo {{#if bar}}{{bar}}{{else}}No Bar{{/if}}"
-    target = create_handlebars_prompt_template(template, allow_dangerously_set_content=True)
+    target = create_handlebars_prompt_template(
+        template, allow_dangerously_set_content=True
+    )
 
     rendered = await target.render(kernel, KernelArguments(bar="Bar"))
     assert rendered == "Foo Bar"
@@ -113,12 +133,16 @@ async def test_it_renders_list(kernel: Kernel):
     template = "List: {{#each items}}{{this}}{{/each}}"
     target = create_handlebars_prompt_template(template)
 
-    rendered = await target.render(kernel, KernelArguments(items=["item1", "item2", "item3"]))
+    rendered = await target.render(
+        kernel, KernelArguments(items=["item1", "item2", "item3"])
+    )
     assert rendered == "List: item1item2item3"
 
 
 @mark.asyncio
-async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, decorated_native_function):
+async def test_it_renders_kernel_functions_arg_from_template(
+    kernel: Kernel, decorated_native_function
+):
     kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{plug-getLightStatus arg1='test'}}"
     target = create_handlebars_prompt_template(template)
@@ -128,7 +152,9 @@ async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, dec
 
 
 @mark.asyncio
-async def test_it_renders_kernel_functions_arg_from_arguments(kernel: Kernel, decorated_native_function):
+async def test_it_renders_kernel_functions_arg_from_arguments(
+    kernel: Kernel, decorated_native_function
+):
     kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{plug-getLightStatus}}"
     target = create_handlebars_prompt_template(template)
@@ -217,7 +243,9 @@ async def test_helpers_empty_get(kernel: Kernel):
 
 @mark.asyncio
 async def test_helpers_set_get_from_kernel_arguments(kernel: Kernel):
-    template = """{{set name="arg" value=(get 'arg1') }}{{get 'arg'}} {{arg}} {{arg1}}"""
+    template = (
+        """{{set name="arg" value=(get 'arg1') }}{{get 'arg'}} {{arg}} {{arg1}}"""
+    )
     target = create_handlebars_prompt_template(template)
 
     rendered = await target.render(kernel, KernelArguments(arg1="test"))
@@ -229,7 +257,9 @@ async def test_helpers_array_from_args(kernel: Kernel):
     template = """{{array arg1 arg2 arg3}}"""
     target = create_handlebars_prompt_template(template)
 
-    rendered = await target.render(kernel, KernelArguments(arg1="test1", arg2="test2", arg3="test3"))
+    rendered = await target.render(
+        kernel, KernelArguments(arg1="test1", arg2="test2", arg3="test3")
+    )
     assert rendered == "['test1', 'test2', 'test3']"
 
 
@@ -286,11 +316,17 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     chat_history = ChatHistory()
     chat_history.add_user_message("User message")
     chat_history.add_message(
-        ChatMessageContent(role=AuthorRole.ASSISTANT, items=[FunctionCallContent(id="1", name="plug-test")])
+        ChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            items=[FunctionCallContent(id="1", name="plug-test")],
+        )
     )
     chat_history.add_message(
         ChatMessageContent(
-            role=AuthorRole.TOOL, items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")]
+            role=AuthorRole.TOOL,
+            items=[
+                FunctionResultContent(id="1", name="plug-test", result="Tool message")
+            ],
         )
     )
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))

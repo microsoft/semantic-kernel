@@ -14,18 +14,26 @@ from typing import TYPE_CHECKING, Annotated, Any
 import httpx
 from pydantic import Field, StringConstraints
 
-from semantic_kernel.connectors.openai_plugin.openai_authentication_config import OpenAIAuthenticationConfig
+from semantic_kernel.connectors.openai_plugin.openai_authentication_config import (
+    OpenAIAuthenticationConfig,
+)
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
     OpenAIFunctionExecutionParameters,
 )
 from semantic_kernel.connectors.openai_plugin.openai_utils import OpenAIUtils
-from semantic_kernel.connectors.openapi_plugin.openapi_manager import create_functions_from_openapi
+from semantic_kernel.connectors.openapi_plugin.openapi_manager import (
+    create_functions_from_openapi,
+)
 from semantic_kernel.connectors.utils.document_loader import DocumentLoader
 from semantic_kernel.exceptions import PluginInitializationError
 from semantic_kernel.exceptions.function_exceptions import FunctionInitializationError
 from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
-from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+from semantic_kernel.functions.kernel_function_from_method import (
+    KernelFunctionFromMethod,
+)
+from semantic_kernel.functions.kernel_function_from_prompt import (
+    KernelFunctionFromPrompt,
+)
 from semantic_kernel.functions.types import KERNEL_FUNCTION_TYPE
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
@@ -34,7 +42,9 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
-    from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+    from semantic_kernel.functions.kernel_function_metadata import (
+        KernelFunctionMetadata,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +165,9 @@ class KernelPlugin(KernelBaseModel):
         """
         return self.functions[key]
 
-    def get(self, key: str, default: KernelFunction | None = None) -> KernelFunction | None:
+    def get(
+        self, key: str, default: KernelFunction | None = None
+    ) -> KernelFunction | None:
         """Get a function from the plugin.
 
         Args:
@@ -321,7 +333,9 @@ class KernelPlugin(KernelBaseModel):
         """
         plugin_directory = os.path.abspath(os.path.join(parent_directory, plugin_name))
         if not os.path.exists(plugin_directory):
-            raise PluginInitializationError(f"Plugin directory does not exist: {plugin_name}")
+            raise PluginInitializationError(
+                f"Plugin directory does not exist: {plugin_name}"
+            )
 
         functions: list[KernelFunction] = []
         for object in glob(os.path.join(plugin_directory, "*")):
@@ -330,15 +344,23 @@ class KernelPlugin(KernelBaseModel):
                 if os.path.basename(object).startswith("__"):
                     continue
                 try:
-                    functions.append(KernelFunctionFromPrompt.from_directory(path=object))
+                    functions.append(
+                        KernelFunctionFromPrompt.from_directory(path=object)
+                    )
                 except FunctionInitializationError:
-                    logger.warning(f"Failed to create function from directory: {object}")
+                    logger.warning(
+                        f"Failed to create function from directory: {object}"
+                    )
             elif object.endswith(".yaml") or object.endswith(".yml"):
                 with open(object) as file:
                     try:
-                        functions.append(KernelFunctionFromPrompt.from_yaml(file.read()))
+                        functions.append(
+                            KernelFunctionFromPrompt.from_yaml(file.read())
+                        )
                     except FunctionInitializationError:
-                        logger.warning(f"Failed to create function from YAML file: {object}")
+                        logger.warning(
+                            f"Failed to create function from YAML file: {object}"
+                        )
             elif object.endswith(".py"):
                 try:
                     functions.extend(
@@ -350,11 +372,15 @@ class KernelPlugin(KernelBaseModel):
                         )
                     )
                 except PluginInitializationError:
-                    logger.warning(f"Failed to create function from Python file: {object}")
+                    logger.warning(
+                        f"Failed to create function from Python file: {object}"
+                    )
             else:
                 logger.warning(f"Unknown file found: {object}")
         if not functions:
-            raise PluginInitializationError(f"No functions found in folder: {parent_directory}/{plugin_name}")
+            raise PluginInitializationError(
+                f"No functions found in folder: {parent_directory}/{plugin_name}"
+            )
         return cls(name=plugin_name, description=description, functions=functions)  # type: ignore
 
     @classmethod
@@ -424,26 +450,41 @@ class KernelPlugin(KernelBaseModel):
             openai_manifest = plugin_str
         elif plugin_url is not None:
             # Load plugin from the URL
-            http_client = execution_parameters.http_client if execution_parameters.http_client else httpx.AsyncClient()
+            http_client = (
+                execution_parameters.http_client
+                if execution_parameters.http_client
+                else httpx.AsyncClient()
+            )
             openai_manifest = await DocumentLoader.from_uri(
-                url=plugin_url, http_client=http_client, auth_callback=None, user_agent=execution_parameters.user_agent
+                url=plugin_url,
+                http_client=http_client,
+                auth_callback=None,
+                user_agent=execution_parameters.user_agent,
             )
         else:
-            raise PluginInitializationError("Either plugin_url or plugin_json must be provided.")
+            raise PluginInitializationError(
+                "Either plugin_url or plugin_json must be provided."
+            )
 
         try:
             plugin_json = json.loads(openai_manifest)
         except json.JSONDecodeError as ex:
-            raise PluginInitializationError("Parsing of Open AI manifest for auth config failed.") from ex
+            raise PluginInitializationError(
+                "Parsing of Open AI manifest for auth config failed."
+            ) from ex
         openai_auth_config = OpenAIAuthenticationConfig(**plugin_json["auth"])
-        openapi_spec_url = OpenAIUtils.parse_openai_manifest_for_openapi_spec_url(plugin_json=plugin_json)
+        openapi_spec_url = OpenAIUtils.parse_openai_manifest_for_openapi_spec_url(
+            plugin_json=plugin_json
+        )
 
         # Modify the auth callback in execution parameters if it's provided
         if execution_parameters and execution_parameters.auth_callback:
             initial_auth_callback = execution_parameters.auth_callback
 
             async def custom_auth_callback(**kwargs: Any):
-                return await initial_auth_callback(plugin_name, openai_auth_config, **kwargs)  # pragma: no cover
+                return await initial_auth_callback(
+                    plugin_name, openai_auth_config, **kwargs
+                )  # pragma: no cover
 
             execution_parameters.auth_callback = custom_auth_callback
 
@@ -478,8 +519,14 @@ class KernelPlugin(KernelBaseModel):
         for name, cls_instance in inspect.getmembers(module, inspect.isclass):
             if cls_instance.__module__ != module_name:
                 continue
-            instance = getattr(module, name)(**class_init_arguments.get(name, {}) if class_init_arguments else {})
-            return cls.from_object(plugin_name=plugin_name, description=description, plugin_instance=instance)
+            instance = getattr(module, name)(
+                **class_init_arguments.get(name, {}) if class_init_arguments else {}
+            )
+            return cls.from_object(
+                plugin_name=plugin_name,
+                description=description,
+                plugin_instance=instance,
+            )
         raise PluginInitializationError(f"No class found in file: {py_file}")
 
     # endregion
@@ -502,43 +549,64 @@ class KernelPlugin(KernelBaseModel):
             return {}
         if isinstance(functions, dict):
             return {
-                name: KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
+                name: KernelPlugin._parse_or_copy(
+                    function=function, plugin_name=plugin_name
+                )
                 for name, function in functions.items()
             }
         if isinstance(functions, KernelPlugin):
             return {
-                name: function.function_copy(plugin_name=plugin_name) for name, function in functions.functions.items()
+                name: function.function_copy(plugin_name=plugin_name)
+                for name, function in functions.functions.items()
             }
         if isinstance(functions, KernelFunction):
-            return {functions.name: KernelPlugin._parse_or_copy(function=functions, plugin_name=plugin_name)}
+            return {
+                functions.name: KernelPlugin._parse_or_copy(
+                    function=functions, plugin_name=plugin_name
+                )
+            }
         if callable(functions):
-            function = KernelPlugin._parse_or_copy(function=functions, plugin_name=plugin_name)
+            function = KernelPlugin._parse_or_copy(
+                function=functions, plugin_name=plugin_name
+            )
             return {function.name: function}
         if isinstance(functions, list):
             functions_dict: dict[str, KernelFunction] = {}
             for function in functions:  # type: ignore
                 if isinstance(function, KernelFunction) or callable(function):
-                    function = KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
+                    function = KernelPlugin._parse_or_copy(
+                        function=function, plugin_name=plugin_name
+                    )
                     functions_dict[function.name] = function
                 elif isinstance(function, KernelPlugin):  # type: ignore
                     functions_dict.update(
                         {
-                            name: KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
+                            name: KernelPlugin._parse_or_copy(
+                                function=function, plugin_name=plugin_name
+                            )
                             for name, function in function.functions.items()
                         }
                     )
                 else:
-                    raise ValueError(f"Invalid type for functions in list: {function} (type: {type(function)})")
+                    raise ValueError(
+                        f"Invalid type for functions in list: {function} (type: {type(function)})"
+                    )
             return functions_dict
-        raise ValueError(f"Invalid type for supplied functions: {functions} (type: {type(functions)})")
+        raise ValueError(
+            f"Invalid type for supplied functions: {functions} (type: {type(functions)})"
+        )
 
     @staticmethod
-    def _parse_or_copy(function: KERNEL_FUNCTION_TYPE, plugin_name: str) -> "KernelFunction":
+    def _parse_or_copy(
+        function: KERNEL_FUNCTION_TYPE, plugin_name: str
+    ) -> "KernelFunction":
         """Handle the function and return a KernelFunction instance."""
         if isinstance(function, KernelFunction):
             return function.function_copy(plugin_name=plugin_name)
         if callable(function):
             return KernelFunctionFromMethod(method=function, plugin_name=plugin_name)
-        raise ValueError(f"Invalid type for function: {function} (type: {type(function)})")
+        raise ValueError(
+            f"Invalid type for function: {function} (type: {type(function)})"
+        )
 
     # endregion

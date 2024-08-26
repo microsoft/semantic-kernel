@@ -4,17 +4,23 @@ from unittest.mock import Mock
 
 import pytest
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.exceptions import PlannerInvalidPlanError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.planners.sequential_planner.sequential_planner_parser import SequentialPlanParser
+from semantic_kernel.planners.sequential_planner.sequential_planner_parser import (
+    SequentialPlanParser,
+)
 
 
-def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> KernelFunction:
+def create_mock_function(
+    kernel_function_metadata: KernelFunctionMetadata,
+) -> KernelFunction:
     mock_function = Mock(spec=KernelFunction)
     mock_function.metadata = kernel_function_metadata
     mock_function.name = kernel_function_metadata.name
@@ -86,7 +92,10 @@ def test_can_call_to_plan_from_xml():
     )
 
     assert plan is not None
-    assert plan.description == "Summarize an input, translate to french, and e-mail to John Doe"
+    assert (
+        plan.description
+        == "Summarize an input, translate to french, and e-mail to John Doe"
+    )
 
     assert len(plan._steps) == 4
     assert plan._steps[0].plugin_name == "SummarizePlugin"
@@ -113,7 +122,9 @@ def test_invalid_plan_execute_plan_returns_invalid_result():
 
     # Act and Assert
     with pytest.raises(PlannerInvalidPlanError):
-        SequentialPlanParser.to_plan_from_xml("<someTag>", "Solve the equation x^2 = 2.", kernel)
+        SequentialPlanParser.to_plan_from_xml(
+            "<someTag>", "Solve the equation x^2 = 2.", kernel
+        )
 
 
 def test_can_create_plan_with_text_nodes():
@@ -166,7 +177,9 @@ def test_can_create_plan_with_text_nodes():
         ),
     ],
 )
-def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_functions):
+def test_can_create_plan_with_invalid_function_nodes(
+    plan_text, allow_missing_functions
+):
     # Arrange
     functions = [
         ("Echo", "MockPlugin", "Echo an input", True, "Mock Echo Result"),

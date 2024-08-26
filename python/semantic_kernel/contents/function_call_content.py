@@ -149,7 +149,9 @@ class FunctionCallContent(KernelContent):
         try:
             return json.loads(self.arguments)
         except json.JSONDecodeError as exc:
-            raise FunctionCallInvalidArgumentsException("Function Call arguments are not valid JSON.") from exc
+            raise FunctionCallInvalidArgumentsException(
+                "Function Call arguments are not valid JSON."
+            ) from exc
 
     def to_kernel_arguments(self) -> "KernelArguments":
         """Return the arguments as a KernelArguments instance."""
@@ -180,22 +182,48 @@ class FunctionCallContent(KernelContent):
         if self.name:
             element.set("name", self.name)
         if self.arguments:
-            element.text = json.dumps(self.arguments) if isinstance(self.arguments, dict) else self.arguments
+            element.text = (
+                json.dumps(self.arguments)
+                if isinstance(self.arguments, dict)
+                else self.arguments
+            )
         return element
 
     @classmethod
     def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
         if element.tag != cls.tag:
-            raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
+            raise ContentInitializationError(
+                f"Element tag is not {cls.tag}"
+            )  # pragma: no cover
 
-        return cls(name=element.get("name"), id=element.get("id"), arguments=element.text or "")
+        return cls(
+            name=element.get("name"), id=element.get("id"), arguments=element.text or ""
+        )
 
     def to_dict(self) -> dict[str, str | Any]:
         """Convert the instance to a dictionary."""
-        args = json.dumps(self.arguments) if isinstance(self.arguments, dict) else self.arguments
-        return {"id": self.id, "type": "function", "function": {"name": self.name, "arguments": args}}
+        args = (
+            json.dumps(self.arguments)
+            if isinstance(self.arguments, dict)
+            else self.arguments
+        )
+        return {
+            "id": self.id,
+            "type": "function",
+            "function": {"name": self.name, "arguments": args},
+        }
 
     def __hash__(self) -> int:
         """Return the hash of the function call content."""
-        return hash((self.tag, self.id, self.index, self.name, self.function_name, self.plugin_name, self.arguments))
+        return hash(
+            (
+                self.tag,
+                self.id,
+                self.index,
+                self.name,
+                self.function_name,
+                self.plugin_name,
+                self.arguments,
+            )
+        )

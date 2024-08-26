@@ -7,13 +7,19 @@ from azure.core.credentials import AccessToken
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import DefaultAzureCredential
 
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
+    AzureChatCompletion,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import SessionsPythonTool
+from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import (
+    SessionsPythonTool,
+)
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -30,7 +36,9 @@ async def auth_callback() -> str:
     to get an access token.
     """
     global auth_token
-    current_utc_timestamp = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+    current_utc_timestamp = int(
+        datetime.datetime.now(datetime.timezone.utc).timestamp()
+    )
 
     if not auth_token or auth_token.expires_on < current_utc_timestamp:
         credential = DefaultAzureCredential()
@@ -67,9 +75,13 @@ chat_function = kernel.add_function(
     function_name="Chat",
 )
 
-req_settings = AzureChatPromptExecutionSettings(service_id=service_id, tool_choice="auto")
+req_settings = AzureChatPromptExecutionSettings(
+    service_id=service_id, tool_choice="auto"
+)
 
-req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]})
+req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
+    filters={"excluded_plugins": ["ChatBot"]}
+)
 
 arguments = KernelArguments(settings=req_settings)
 

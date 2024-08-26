@@ -7,12 +7,18 @@ from google.generativeai import GenerativeModel
 from google.generativeai.protos import Content
 from google.generativeai.types import GenerationConfig
 
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
-from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import GoogleAIChatCompletion
+from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import (
+    GoogleAISettings,
+)
+from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import (
+    GoogleAIChatCompletion,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -34,33 +40,45 @@ def test_google_ai_chat_completion_init(google_ai_unit_test_env) -> None:
 
     assert isinstance(google_ai_chat_completion.service_settings, GoogleAISettings)
     assert google_ai_chat_completion.service_settings.gemini_model_id == model_id
-    assert google_ai_chat_completion.service_settings.api_key.get_secret_value() == api_key
+    assert (
+        google_ai_chat_completion.service_settings.api_key.get_secret_value() == api_key
+    )
 
 
-def test_google_ai_chat_completion_init_with_service_id(google_ai_unit_test_env, service_id) -> None:
+def test_google_ai_chat_completion_init_with_service_id(
+    google_ai_unit_test_env, service_id
+) -> None:
     """Test initialization of GoogleAIChatCompletion with a service_id that is not the model_id"""
     google_ai_chat_completion = GoogleAIChatCompletion(service_id=service_id)
 
     assert google_ai_chat_completion.service_id == service_id
 
 
-def test_google_ai_chat_completion_init_with_model_id_in_argument(google_ai_unit_test_env) -> None:
+def test_google_ai_chat_completion_init_with_model_id_in_argument(
+    google_ai_unit_test_env,
+) -> None:
     """Test initialization of GoogleAIChatCompletion with model_id in argument"""
-    google_ai_chat_completion = GoogleAIChatCompletion(gemini_model_id="custom_model_id")
+    google_ai_chat_completion = GoogleAIChatCompletion(
+        gemini_model_id="custom_model_id"
+    )
 
     assert google_ai_chat_completion.ai_model_id == "custom_model_id"
     assert google_ai_chat_completion.service_id == "custom_model_id"
 
 
 @pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_GEMINI_MODEL_ID"]], indirect=True)
-def test_google_ai_chat_completion_init_with_empty_model_id(google_ai_unit_test_env) -> None:
+def test_google_ai_chat_completion_init_with_empty_model_id(
+    google_ai_unit_test_env,
+) -> None:
     """Test initialization of GoogleAIChatCompletion with an empty model_id"""
     with pytest.raises(ServiceInitializationError):
         GoogleAIChatCompletion(env_file_path="fake_env_file_path.env")
 
 
 @pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_API_KEY"]], indirect=True)
-def test_google_ai_chat_completion_init_with_empty_api_key(google_ai_unit_test_env) -> None:
+def test_google_ai_chat_completion_init_with_empty_api_key(
+    google_ai_unit_test_env,
+) -> None:
     """Test initialization of GoogleAIChatCompletion with an empty api_key"""
     with pytest.raises(ServiceInitializationError):
         GoogleAIChatCompletion(env_file_path="fake_env_file_path.env")
@@ -68,7 +86,10 @@ def test_google_ai_chat_completion_init_with_empty_api_key(google_ai_unit_test_e
 
 def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
     google_ai_chat_completion = GoogleAIChatCompletion()
-    assert google_ai_chat_completion.get_prompt_execution_settings_class() == GoogleAIChatPromptExecutionSettings
+    assert (
+        google_ai_chat_completion.get_prompt_execution_settings_class()
+        == GoogleAIChatPromptExecutionSettings
+    )
 
 
 # endregion init
@@ -86,22 +107,31 @@ async def test_google_ai_chat_completion(
     """Test chat completion with GoogleAIChatCompletion"""
     settings = GoogleAIChatPromptExecutionSettings()
 
-    mock_google_ai_model_generate_content_async.return_value = mock_google_ai_chat_completion_response
+    mock_google_ai_model_generate_content_async.return_value = (
+        mock_google_ai_chat_completion_response
+    )
 
     google_ai_chat_completion = GoogleAIChatCompletion()
-    responses: list[ChatMessageContent] = await google_ai_chat_completion.get_chat_message_contents(
-        chat_history, settings
+    responses: list[ChatMessageContent] = (
+        await google_ai_chat_completion.get_chat_message_contents(
+            chat_history, settings
+        )
     )
 
     mock_google_ai_model_generate_content_async.assert_called_once_with(
-        contents=google_ai_chat_completion._prepare_chat_history_for_request(chat_history),
+        contents=google_ai_chat_completion._prepare_chat_history_for_request(
+            chat_history
+        ),
         generation_config=GenerationConfig(**settings.prepare_settings_dict()),
         tools=None,
         tool_config=None,
     )
     assert len(responses) == 1
     assert responses[0].role == "assistant"
-    assert responses[0].content == mock_google_ai_chat_completion_response.candidates[0].content.parts[0].text
+    assert (
+        responses[0].content
+        == mock_google_ai_chat_completion_response.candidates[0].content.parts[0].text
+    )
     assert responses[0].finish_reason == FinishReason.STOP
     assert "usage" in responses[0].metadata
     assert "prompt_feedback" in responses[0].metadata
@@ -139,7 +169,9 @@ async def test_google_ai_chat_completion_with_function_choice_behavior(
     mock_google_ai_chat_completion_response_with_tool_call,
 ) -> None:
     """Test completion of GoogleAIChatCompletion with function choice behavior"""
-    mock_google_ai_model_generate_content_async.return_value = mock_google_ai_chat_completion_response_with_tool_call
+    mock_google_ai_model_generate_content_async.return_value = (
+        mock_google_ai_chat_completion_response_with_tool_call
+    )
 
     settings = GoogleAIChatPromptExecutionSettings(
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
@@ -174,7 +206,9 @@ async def test_google_ai_chat_completion_with_function_choice_behavior_no_tool_c
     mock_google_ai_chat_completion_response,
 ) -> None:
     """Test completion of GoogleAIChatCompletion with function choice behavior but no tool call returned"""
-    mock_google_ai_model_generate_content_async.return_value = mock_google_ai_chat_completion_response
+    mock_google_ai_model_generate_content_async.return_value = (
+        mock_google_ai_chat_completion_response
+    )
 
     settings = GoogleAIChatPromptExecutionSettings(
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
@@ -194,14 +228,19 @@ async def test_google_ai_chat_completion_with_function_choice_behavior_no_tool_c
     chat_history.remove_message(chat_history[-1])
 
     mock_google_ai_model_generate_content_async.assert_awaited_once_with(
-        contents=google_ai_chat_completion._prepare_chat_history_for_request(chat_history),
+        contents=google_ai_chat_completion._prepare_chat_history_for_request(
+            chat_history
+        ),
         generation_config=GenerationConfig(**settings.prepare_settings_dict()),
         tools=None,
         tool_config=None,
     )
     assert len(responses) == 1
     assert responses[0].role == "assistant"
-    assert responses[0].content == mock_google_ai_chat_completion_response.candidates[0].content.parts[0].text
+    assert (
+        responses[0].content
+        == mock_google_ai_chat_completion_response.candidates[0].content.parts[0].text
+    )
 
 
 # endregion chat completion
@@ -219,10 +258,14 @@ async def test_google_ai_streaming_chat_completion(
     """Test streaming chat completion with GoogleAIChatCompletion"""
     settings = GoogleAIChatPromptExecutionSettings()
 
-    mock_google_ai_model_generate_content_async.return_value = mock_google_ai_streaming_chat_completion_response
+    mock_google_ai_model_generate_content_async.return_value = (
+        mock_google_ai_streaming_chat_completion_response
+    )
 
     google_ai_chat_completion = GoogleAIChatCompletion()
-    async for messages in google_ai_chat_completion.get_streaming_chat_message_contents(chat_history, settings):
+    async for messages in google_ai_chat_completion.get_streaming_chat_message_contents(
+        chat_history, settings
+    ):
         assert len(messages) == 1
         assert messages[0].role == "assistant"
         assert messages[0].finish_reason == FinishReason.STOP
@@ -230,7 +273,9 @@ async def test_google_ai_streaming_chat_completion(
         assert "prompt_feedback" in messages[0].metadata
 
     mock_google_ai_model_generate_content_async.assert_called_once_with(
-        contents=google_ai_chat_completion._prepare_chat_history_for_request(chat_history),
+        contents=google_ai_chat_completion._prepare_chat_history_for_request(
+            chat_history
+        ),
         generation_config=GenerationConfig(**settings.prepare_settings_dict()),
         tools=None,
         tool_config=None,
@@ -308,7 +353,9 @@ async def test_google_ai_streaming_chat_completion_with_function_choice_behavior
     mock_google_ai_streaming_chat_completion_response,
 ) -> None:
     """Test completion of GoogleAIChatCompletion with function choice behavior but no tool call returned"""
-    mock_google_ai_model_generate_content_async.return_value = mock_google_ai_streaming_chat_completion_response
+    mock_google_ai_model_generate_content_async.return_value = (
+        mock_google_ai_streaming_chat_completion_response
+    )
 
     settings = GoogleAIChatPromptExecutionSettings(
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
@@ -325,11 +372,16 @@ async def test_google_ai_streaming_chat_completion_with_function_choice_behavior
         assert len(messages) == 1
         assert messages[0].role == "assistant"
         assert (
-            messages[0].content == mock_google_ai_streaming_chat_completion_response.candidates[0].content.parts[0].text
+            messages[0].content
+            == mock_google_ai_streaming_chat_completion_response.candidates[0]
+            .content.parts[0]
+            .text
         )
 
     mock_google_ai_model_generate_content_async.assert_awaited_once_with(
-        contents=google_ai_chat_completion._prepare_chat_history_for_request(chat_history),
+        contents=google_ai_chat_completion._prepare_chat_history_for_request(
+            chat_history
+        ),
         generation_config=GenerationConfig(**settings.prepare_settings_dict()),
         tools=None,
         tool_config=None,
@@ -340,7 +392,9 @@ async def test_google_ai_streaming_chat_completion_with_function_choice_behavior
 # endregion streaming chat completion
 
 
-def test_google_ai_chat_completion_parse_chat_history_correctly(google_ai_unit_test_env) -> None:
+def test_google_ai_chat_completion_parse_chat_history_correctly(
+    google_ai_unit_test_env,
+) -> None:
     """Test _prepare_chat_history_for_request method"""
     google_ai_chat_completion = GoogleAIChatCompletion()
 
@@ -349,7 +403,9 @@ def test_google_ai_chat_completion_parse_chat_history_correctly(google_ai_unit_t
     chat_history.add_user_message("test_user_message")
     chat_history.add_assistant_message("test_assistant_message")
 
-    parsed_chat_history = google_ai_chat_completion._prepare_chat_history_for_request(chat_history)
+    parsed_chat_history = google_ai_chat_completion._prepare_chat_history_for_request(
+        chat_history
+    )
 
     assert isinstance(parsed_chat_history, list)
     # System message should be ignored

@@ -6,7 +6,10 @@ import os
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
-from semantic_kernel.planners import FunctionCallingStepwisePlanner, FunctionCallingStepwisePlannerOptions
+from semantic_kernel.planners import (
+    FunctionCallingStepwisePlanner,
+    FunctionCallingStepwisePlannerOptions,
+)
 
 
 async def main():
@@ -20,8 +23,8 @@ async def main():
     )
 
     plugin_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
-        "resources", 
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        "resources",
     )
     kernel.add_plugin(parent_directory=plugin_path, plugin_name="email_plugin")
 

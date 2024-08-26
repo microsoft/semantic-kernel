@@ -13,7 +13,9 @@ try:
 except ImportError:
     qdrant_client_installed = False
 
-pytestmark = pytest.mark.skipif(not qdrant_client_installed, reason="qdrant-client is not installed")
+pytestmark = pytest.mark.skipif(
+    not qdrant_client_installed, reason="qdrant-client is not installed"
+)
 
 
 def test_qdrant_constructor():
@@ -92,7 +94,9 @@ async def test_upsert_batch_and_get_batch(memory_record1, memory_record2):
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
     await qdrant_mem_store.create_collection("test_collection")
-    await qdrant_mem_store.upsert_batch("test_collection", [memory_record1, memory_record2])
+    await qdrant_mem_store.upsert_batch(
+        "test_collection", [memory_record1, memory_record2]
+    )
 
     results = await qdrant_mem_store.get_batch(
         "test_collection",
@@ -112,12 +116,16 @@ async def test_remove(memory_record1):
     await qdrant_mem_store.create_collection("test_collection")
     await qdrant_mem_store.upsert("test_collection", memory_record1)
 
-    result = await qdrant_mem_store.get("test_collection", memory_record1._id, with_embedding=True)
+    result = await qdrant_mem_store.get(
+        "test_collection", memory_record1._id, with_embedding=True
+    )
     assert result is not None
 
     await qdrant_mem_store.remove("test_collection", memory_record1._id)
 
-    result = await qdrant_mem_store.get("test_collection", memory_record1._id, with_embedding=True)
+    result = await qdrant_mem_store.get(
+        "test_collection", memory_record1._id, with_embedding=True
+    )
     assert result is None
 
 
@@ -126,15 +134,27 @@ async def test_remove_batch(memory_record1, memory_record2):
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
     await qdrant_mem_store.create_collection("test_collection")
-    await qdrant_mem_store.upsert_batch("test_collection", [memory_record1, memory_record2])
-    result = await qdrant_mem_store.get("test_collection", memory_record1._id, with_embedding=True)
+    await qdrant_mem_store.upsert_batch(
+        "test_collection", [memory_record1, memory_record2]
+    )
+    result = await qdrant_mem_store.get(
+        "test_collection", memory_record1._id, with_embedding=True
+    )
     assert result is not None
-    result = await qdrant_mem_store.get("test_collection", memory_record2._id, with_embedding=True)
+    result = await qdrant_mem_store.get(
+        "test_collection", memory_record2._id, with_embedding=True
+    )
     assert result is not None
-    await qdrant_mem_store.remove_batch("test_collection", [memory_record1._id, memory_record2._id])
-    result = await qdrant_mem_store.get("test_collection", memory_record1._id, with_embedding=True)
+    await qdrant_mem_store.remove_batch(
+        "test_collection", [memory_record1._id, memory_record2._id]
+    )
+    result = await qdrant_mem_store.get(
+        "test_collection", memory_record1._id, with_embedding=True
+    )
     assert result is None
-    result = await qdrant_mem_store.get("test_collection", memory_record2._id, with_embedding=True)
+    result = await qdrant_mem_store.get(
+        "test_collection", memory_record2._id, with_embedding=True
+    )
     assert result is None
 
 
@@ -143,11 +163,15 @@ async def test_get_nearest_match(memory_record1, memory_record2):
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
     await qdrant_mem_store.create_collection("test_collection")
-    await qdrant_mem_store.upsert_batch("test_collection", [memory_record1, memory_record2])
+    await qdrant_mem_store.upsert_batch(
+        "test_collection", [memory_record1, memory_record2]
+    )
     test_embedding = memory_record1.embedding.copy()
     test_embedding[0] = test_embedding[0] + 0.01
 
-    result = await qdrant_mem_store.get_nearest_match("test_collection", test_embedding, min_relevance_score=0.0)
+    result = await qdrant_mem_store.get_nearest_match(
+        "test_collection", test_embedding, min_relevance_score=0.0
+    )
     assert result is not None
     assert result[0]._id == memory_record1._id
     assert result[0]._text == memory_record1._text
@@ -158,7 +182,9 @@ async def test_get_nearest_matches(memory_record1, memory_record2, memory_record
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
     await qdrant_mem_store.create_collection("test_collection")
-    await qdrant_mem_store.upsert_batch("test_collection", [memory_record1, memory_record2, memory_record3])
+    await qdrant_mem_store.upsert_batch(
+        "test_collection", [memory_record1, memory_record2, memory_record3]
+    )
     test_embedding = memory_record2.embedding
     test_embedding[0] = test_embedding[0] + 0.025
 

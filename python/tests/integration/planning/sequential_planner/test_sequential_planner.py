@@ -8,7 +8,9 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.exceptions import PlannerException
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners import SequentialPlanner
-from semantic_kernel.planners.sequential_planner.sequential_planner_config import SequentialPlannerConfig
+from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
+    SequentialPlannerConfig,
+)
 from tests.integration.fakes.email_plugin_fake import EmailPluginFake
 from tests.integration.fakes.fun_plugin_fake import FunPluginFake
 from tests.integration.fakes.writer_plugin_fake import WriterPluginFake
@@ -74,7 +76,9 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
     raises=PlannerException,
     reason="Test is known to occasionally produce unexpected results.",
 )
-async def test_create_plan_function_flow(use_chat_model, prompt, expected_function, expected_plugin):
+async def test_create_plan_function_flow(
+    use_chat_model, prompt, expected_function, expected_plugin
+):
     # Arrange
     service_id = "chat_completion" if use_chat_model else "text_completion"
 
@@ -88,7 +92,10 @@ async def test_create_plan_function_flow(use_chat_model, prompt, expected_functi
     plan = await planner.create_plan(prompt)
 
     # Assert
-    assert any(step.name == expected_function and step.plugin_name == expected_plugin for step in plan._steps)
+    assert any(
+        step.name == expected_function and step.plugin_name == expected_plugin
+        for step in plan._steps
+    )
 
 
 @pytest.mark.parametrize(
@@ -107,7 +114,9 @@ async def test_create_plan_function_flow(use_chat_model, prompt, expected_functi
     raises=PlannerException,
     reason="Test is known to occasionally produce unexpected results.",
 )
-async def test_create_plan_with_defaults(prompt, expected_function, expected_plugin, expected_default):
+async def test_create_plan_with_defaults(
+    prompt, expected_function, expected_plugin, expected_default
+):
     # Arrange
     kernel = initialize_kernel()
     kernel.add_plugin(EmailPluginFake(), "email_plugin_fake")
@@ -152,11 +161,16 @@ async def test_create_plan_goal_relevant(prompt, expected_function, expected_plu
     planner = SequentialPlanner(
         kernel,
         service_id="text_completion",
-        config=SequentialPlannerConfig(relevancy_threshold=0.65, max_relevant_functions=30),
+        config=SequentialPlannerConfig(
+            relevancy_threshold=0.65, max_relevant_functions=30
+        ),
     )
 
     # Act
     plan = await retry(lambda: planner.create_plan(prompt))
 
     # Assert
-    assert any(step.name == expected_function and step.plugin_name == expected_plugin for step in plan._steps)
+    assert any(
+        step.name == expected_function and step.plugin_name == expected_plugin
+        for step in plan._steps
+    )

@@ -13,16 +13,25 @@ else:
 from ollama import AsyncClient
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
+    OllamaTextPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.ollama.ollama_settings import OllamaSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
+from semantic_kernel.exceptions.service_exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidResponseError,
+)
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -61,7 +70,9 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise ServiceInitializationError("Failed to create Ollama settings.", ex) from ex
+            raise ServiceInitializationError(
+                "Failed to create Ollama settings.", ex
+            ) from ex
 
         super().__init__(
             service_id=service_id or ollama_settings.model,
@@ -100,7 +111,11 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
 
         inner_content = response_object
         text = inner_content["response"]
-        return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
+        return [
+            TextContent(
+                inner_content=inner_content, ai_model_id=self.ai_model_id, text=text
+            )
+        ]
 
     async def get_streaming_text_contents(
         self,
@@ -137,7 +152,10 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
         async for part in response_object:
             yield [
                 StreamingTextContent(
-                    choice_index=0, inner_content=part, ai_model_id=self.ai_model_id, text=part.get("response")
+                    choice_index=0,
+                    inner_content=part,
+                    ai_model_id=self.ai_model_id,
+                    text=part.get("response"),
                 )
             ]
 

@@ -3,7 +3,10 @@
 import asyncio
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAITextEmbedding,
+)
 from semantic_kernel.core_plugins import TextMemoryPlugin
 from semantic_kernel.functions import KernelFunction
 from semantic_kernel.memory import SemanticTextMemory, VolatileMemoryStore
@@ -14,13 +17,23 @@ collection_id = "generic"
 
 async def populate_memory(memory: SemanticTextMemory) -> None:
     # Add some documents to the semantic memory
-    await memory.save_information(collection=collection_id, id="info1", text="Your budget for 2024 is $100,000")
-    await memory.save_information(collection=collection_id, id="info2", text="Your savings from 2023 are $50,000")
-    await memory.save_information(collection=collection_id, id="info3", text="Your investments are $80,000")
+    await memory.save_information(
+        collection=collection_id, id="info1", text="Your budget for 2024 is $100,000"
+    )
+    await memory.save_information(
+        collection=collection_id, id="info2", text="Your savings from 2023 are $50,000"
+    )
+    await memory.save_information(
+        collection=collection_id, id="info3", text="Your investments are $80,000"
+    )
 
 
 async def search_memory_examples(memory: SemanticTextMemory) -> None:
-    questions = ["What is my budget for 2024?", "What are my savings from 2023?", "What are my investments?"]
+    questions = [
+        "What is my budget for 2024?",
+        "What are my savings from 2023?",
+        "What are my investments?",
+    ]
 
     for question in questions:
         print(f"Question: {question}")
@@ -47,7 +60,11 @@ async def setup_chat_with_memory(
 
     prompt_template_config = PromptTemplateConfig(
         template=prompt,
-        execution_settings={service_id: kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)},
+        execution_settings={
+            service_id: kernel.get_prompt_execution_settings_from_service_id(
+                service_id=service_id
+            )
+        },
     )
 
     return kernel.add_function(
@@ -81,14 +98,18 @@ async def main() -> None:
     kernel = Kernel()
 
     service_id = "chat-gpt"
-    kernel.add_service(OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo"))
+    kernel.add_service(
+        OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo")
+    )
     embedding_gen = OpenAITextEmbedding(
         service_id="ada",
         ai_model_id="text-embedding-ada-002",
     )
     kernel.add_service(embedding_gen)
 
-    memory = SemanticTextMemory(storage=VolatileMemoryStore(), embeddings_generator=embedding_gen)
+    memory = SemanticTextMemory(
+        storage=VolatileMemoryStore(), embeddings_generator=embedding_gen
+    )
     kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     print("Populating memory...")

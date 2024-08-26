@@ -11,4 +11,6 @@ def test_setup_logging():
 
     root_logger = logging.getLogger()
     assert root_logger.handlers
-    assert any(isinstance(handler, logging.StreamHandler) for handler in root_logger.handlers)
+    assert any(
+        isinstance(handler, logging.StreamHandler) for handler in root_logger.handlers
+    )

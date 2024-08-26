@@ -14,19 +14,31 @@ from pydantic import ValidationError
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
 from qdrant_client.models import PointStruct, VectorParams
 
-from semantic_kernel.connectors.memory.qdrant.const import DISTANCE_FUNCTION_MAP, TYPE_MAPPER_VECTOR
+from semantic_kernel.connectors.memory.qdrant.const import (
+    DISTANCE_FUNCTION_MAP,
+    TYPE_MAPPER_VECTOR,
+)
 from semantic_kernel.connectors.memory.qdrant.utils import AsyncQdrantClientWrapper
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
+from semantic_kernel.data.vector_store_record_collection import (
+    VectorStoreRecordCollection,
+)
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import (
     MemoryConnectorInitializationError,
     VectorStoreModelValidationError,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    MemoryConnectorException,
+)
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
-from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
+from semantic_kernel.utils.telemetry.user_agent import (
+    APP_INFO,
+    prepend_semantic_kernel_to_user_agent,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -100,7 +112,9 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
             )
             return
 
-        from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
+        from semantic_kernel.connectors.memory.qdrant.qdrant_settings import (
+            QdrantSettings,
+        )
 
         try:
             settings = QdrantSettings.create(
@@ -116,14 +130,22 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise MemoryConnectorInitializationError("Failed to create Qdrant settings.", ex) from ex
+            raise MemoryConnectorInitializationError(
+                "Failed to create Qdrant settings.", ex
+            ) from ex
         if APP_INFO:
             kwargs.setdefault("metadata", {})
-            kwargs["metadata"] = prepend_semantic_kernel_to_user_agent(kwargs["metadata"])
+            kwargs["metadata"] = prepend_semantic_kernel_to_user_agent(
+                kwargs["metadata"]
+            )
         try:
-            client = AsyncQdrantClientWrapper(**settings.model_dump(exclude_none=True), **kwargs)
+            client = AsyncQdrantClientWrapper(
+                **settings.model_dump(exclude_none=True), **kwargs
+            )
         except ValueError as ex:
-            raise MemoryConnectorInitializationError("Failed to create Qdrant client.", ex) from ex
+            raise MemoryConnectorInitializationError(
+                "Failed to create Qdrant client.", ex
+            ) from ex
         super().__init__(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
@@ -146,7 +168,9 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
         return [record.id for record in records]
 
     @override
-    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
+    async def _inner_get(
+        self, keys: Sequence[TKey], **kwargs: Any
+    ) -> OneOrMany[Any] | None:
         if "with_vectors" not in kwargs:
             kwargs["with_vectors"] = True
         return await self.qdrant_client.retrieve(
@@ -172,9 +196,14 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
         return [
             PointStruct(
                 id=record.pop(self._key_field_name),
-                vector=record.pop(self.data_model_definition.vector_field_names[0])
-                if not self.named_vectors
-                else {field: record.pop(field) for field in self.data_model_definition.vector_field_names},
+                vector=(
+                    record.pop(self.data_model_definition.vector_field_names[0])
+                    if not self.named_vectors
+                    else {
+                        field: record.pop(field)
+                        for field in self.data_model_definition.vector_field_names
+                    }
+                ),
                 payload=record,
             )
             for record in records
@@ -193,7 +222,9 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
                 **(
                     record.vector
                     if isinstance(record.vector, dict)
-                    else {self.data_model_definition.vector_field_names[0]: record.vector}
+                    else {
+                        self.data_model_definition.vector_field_names[0]: record.vector
+                    }
                 ),
             }
             for record in records
@@ -216,20 +247,28 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
                     vector = self.data_model_definition.fields[field]
                     assert isinstance(vector, VectorStoreRecordVectorField)  # nosec
                     if not vector.dimensions:
-                        raise MemoryConnectorException("Vector field must have dimensions.")
+                        raise MemoryConnectorException(
+                            "Vector field must have dimensions."
+                        )
                     vectors_config[field] = VectorParams(
                         size=vector.dimensions,
-                        distance=DISTANCE_FUNCTION_MAP[vector.distance_function or "default"],
+                        distance=DISTANCE_FUNCTION_MAP[
+                            vector.distance_function or "default"
+                        ],
                         datatype=TYPE_MAPPER_VECTOR[vector.property_type or "default"],
                     )
             else:
-                vector = self.data_model_definition.fields[self.data_model_definition.vector_field_names[0]]
+                vector = self.data_model_definition.fields[
+                    self.data_model_definition.vector_field_names[0]
+                ]
                 assert isinstance(vector, VectorStoreRecordVectorField)  # nosec
                 if not vector.dimensions:
                     raise MemoryConnectorException("Vector field must have dimensions.")
                 vectors_config = VectorParams(
                     size=vector.dimensions,
-                    distance=DISTANCE_FUNCTION_MAP[vector.distance_function or "default"],
+                    distance=DISTANCE_FUNCTION_MAP[
+                        vector.distance_function or "default"
+                    ],
                     datatype=TYPE_MAPPER_VECTOR[vector.property_type or "default"],
                 )
             kwargs["vectors_config"] = vectors_config
@@ -239,7 +278,9 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
 
     @override
     async def does_collection_exist(self, **kwargs) -> bool:
-        return await self.qdrant_client.collection_exists(self.collection_name, **kwargs)
+        return await self.qdrant_client.collection_exists(
+            self.collection_name, **kwargs
+        )
 
     @override
     async def delete_collection(self, **kwargs) -> None:
@@ -253,5 +294,10 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
         Checks should include, allowed naming of parameters, allowed data types, allowed vector dimensions.
         """
         super()._validate_data_model()
-        if len(self.data_model_definition.vector_field_names) > 1 and not self.named_vectors:
-            raise VectorStoreModelValidationError("Only one vector field is allowed when not using named vectors.")
+        if (
+            len(self.data_model_definition.vector_field_names) > 1
+            and not self.named_vectors
+        ):
+            raise VectorStoreModelValidationError(
+                "Only one vector field is allowed when not using named vectors."
+            )

@@ -5,7 +5,9 @@ from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from copy import copy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
+    EmbeddingGeneratorBase,
+)
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -31,11 +33,15 @@ from semantic_kernel.filters.kernel_filters_extension import (
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_extension import KernelFunctionExtension
-from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+from semantic_kernel.functions.kernel_function_from_prompt import (
+    KernelFunctionFromPrompt,
+)
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
-from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
+from semantic_kernel.reliability.kernel_reliability_extension import (
+    KernelReliabilityExtension,
+)
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
 from semantic_kernel.utils.naming import generate_random_ascii_name
@@ -44,7 +50,9 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_choice_behavior import (
         FunctionChoiceBehavior,
     )
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
     from semantic_kernel.functions.kernel_function import KernelFunction
 
 T = TypeVar("T")
@@ -54,7 +62,12 @@ TDataModel = TypeVar("TDataModel")
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExtension, KernelReliabilityExtension):
+class Kernel(
+    KernelFilterExtension,
+    KernelFunctionExtension,
+    KernelServicesExtension,
+    KernelReliabilityExtension,
+):
     """The Kernel of Semantic Kernel.
 
     This is the main entry point for Semantic Kernel. It provides the ability to run
@@ -73,9 +86,14 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
     def __init__(
         self,
-        plugins: KernelPlugin | dict[str, KernelPlugin] | list[KernelPlugin] | None = None,
+        plugins: (
+            KernelPlugin | dict[str, KernelPlugin] | list[KernelPlugin] | None
+        ) = None,
         services: (
-            AI_SERVICE_CLIENT_TYPE | list[AI_SERVICE_CLIENT_TYPE] | dict[str, AI_SERVICE_CLIENT_TYPE] | None
+            AI_SERVICE_CLIENT_TYPE
+            | list[AI_SERVICE_CLIENT_TYPE]
+            | dict[str, AI_SERVICE_CLIENT_TYPE]
+            | None
         ) = None,
         ai_service_selector: AIServiceSelector | None = None,
         **kwargs: Any,
@@ -111,7 +129,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         metadata: dict[str, Any] = {},
         return_function_results: bool = False,
         **kwargs: Any,
-    ) -> AsyncGenerator[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult], Any]:
+    ) -> AsyncGenerator[
+        list["StreamingContentMixin"] | FunctionResult | list[FunctionResult], Any
+    ]:
         """Execute one or more stream functions.
 
         This will execute the functions in the order they are provided, if a list of functions is provided.
@@ -138,7 +158,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             arguments.update(kwargs)
         if not function:
             if not function_name or not plugin_name:
-                raise KernelFunctionNotFoundError("No function(s) or function- and plugin-name provided")
+                raise KernelFunctionNotFoundError(
+                    "No function(s) or function- and plugin-name provided"
+                )
             function = self.get_function(plugin_name, function_name)
 
         function_result: list[list["StreamingContentMixin"] | Any] = []
@@ -163,7 +185,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
                         output_function_result.append(copy(choice))
                     else:
                         output_function_result[choice.choice_index] += choice
-            yield FunctionResult(function=function.metadata, value=output_function_result)
+            yield FunctionResult(
+                function=function.metadata, value=output_function_result
+            )
 
     async def invoke(
         self,
@@ -196,13 +220,19 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             arguments.update(kwargs)
         if not function:
             if not function_name or not plugin_name:
-                raise KernelFunctionNotFoundError("No function, or function name and plugin name provided")
+                raise KernelFunctionNotFoundError(
+                    "No function, or function name and plugin name provided"
+                )
             function = self.get_function(plugin_name, function_name)
 
         try:
-            return await function.invoke(kernel=self, arguments=arguments, metadata=metadata)
+            return await function.invoke(
+                kernel=self, arguments=arguments, metadata=metadata
+            )
         except OperationCancelledException as exc:
-            logger.info(f"Operation cancelled during function invocation. Message: {exc}")
+            logger.info(
+                f"Operation cancelled during function invocation. Message: {exc}"
+            )
             return None
         except Exception as exc:
             logger.error(
@@ -265,7 +295,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         ] = KERNEL_TEMPLATE_FORMAT_NAME,
         return_function_results: bool | None = False,
         **kwargs: Any,
-    ) -> AsyncIterable[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult]]:
+    ) -> AsyncIterable[
+        list["StreamingContentMixin"] | FunctionResult | list[FunctionResult]
+    ]:
         """Invoke a function from the provided prompt and stream the results.
 
         Args:
@@ -285,7 +317,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         if not prompt:
             raise TemplateSyntaxError("The prompt is either null or empty.")
 
-        from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+        from semantic_kernel.functions.kernel_function_from_prompt import (
+            KernelFunctionFromPrompt,
+        )
 
         function = KernelFunctionFromPrompt(
             function_name=function_name or generate_random_ascii_name(),
@@ -296,7 +330,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
         function_result: list[list["StreamingContentMixin"] | Any] = []
 
-        async for stream_message in self.invoke_stream(function=function, arguments=arguments):
+        async for stream_message in self.invoke_stream(
+            function=function, arguments=arguments
+        ):
             if isinstance(stream_message, FunctionResult) and (
                 exception := stream_message.metadata.get(METADATA_EXCEPTION_KEY, None)
             ):
@@ -316,7 +352,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
                         output_function_result.append(copy(choice))
                     else:
                         output_function_result[choice.choice_index] += choice
-            yield FunctionResult(function=function.metadata, value=output_function_result)
+            yield FunctionResult(
+                function=function.metadata, value=output_function_result
+            )
 
     async def invoke_function_call(
         self,
@@ -334,7 +372,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             if parsed_args:
                 args_cloned.update(parsed_args)
         except (FunctionCallInvalidArgumentsException, TypeError) as exc:
-            logger.info(f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again.")
+            logger.info(
+                f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again."
+            )
             frc = FunctionResultContent.from_function_call_content_and_result(
                 function_call_content=function_call,
                 result="The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
@@ -347,15 +387,22 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
                 raise FunctionExecutionException("The function name is required.")
             if function_behavior is not None and function_behavior.filters:
                 allowed_functions = [
-                    func.fully_qualified_name for func in self.get_list_of_function_metadata(function_behavior.filters)
+                    func.fully_qualified_name
+                    for func in self.get_list_of_function_metadata(
+                        function_behavior.filters
+                    )
                 ]
                 if function_call.name not in allowed_functions:
                     raise FunctionExecutionException(
                         f"Only functions: {allowed_functions} are allowed, {function_call.name} is not allowed."
                     )
-            function_to_call = self.get_function(function_call.plugin_name, function_call.function_name)
+            function_to_call = self.get_function(
+                function_call.plugin_name, function_call.function_name
+            )
         except Exception as exc:
-            logger.exception(f"The function `{function_call.name}` is not part of the provided functions: {exc}.")
+            logger.exception(
+                f"The function `{function_call.name}` is not part of the provided functions: {exc}."
+            )
             frc = FunctionResultContent.from_function_call_content_and_result(
                 function_call_content=function_call,
                 result=(
@@ -366,7 +413,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
 
-        num_required_func_params = len([param for param in function_to_call.parameters if param.is_required])
+        num_required_func_params = len(
+            [param for param in function_to_call.parameters if param.is_required]
+        )
         if parsed_args is None or len(parsed_args) < num_required_func_params:
             msg = (
                 f"There are `{num_required_func_params}` tool call arguments required and "
@@ -382,7 +431,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
 
-        logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
+        logger.info(
+            f"Calling {function_call.name} function with args: {function_call.arguments}"
+        )
 
         _rebuild_auto_function_invocation_context()
         invocation_context = AutoFunctionInvocationContext(
@@ -390,7 +441,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             kernel=self,
             arguments=args_cloned,
             chat_history=chat_history,
-            function_result=FunctionResult(function=function_to_call.metadata, value=None),
+            function_result=FunctionResult(
+                function=function_to_call.metadata, value=None
+            ),
             function_count=function_call_count or 0,
             request_sequence_index=request_index or 0,
         )
@@ -407,24 +460,31 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             return invocation_context
 
         frc = FunctionResultContent.from_function_call_content_and_result(
-            function_call_content=function_call, result=invocation_context.function_result
+            function_call_content=function_call,
+            result=invocation_context.function_result,
         )
         chat_history.add_message(message=frc.to_chat_message_content())
         return None
 
-    async def _inner_auto_function_invoke_handler(self, context: AutoFunctionInvocationContext):
+    async def _inner_auto_function_invoke_handler(
+        self, context: AutoFunctionInvocationContext
+    ):
         """Inner auto function invocation handler."""
         try:
             result = await context.function.invoke(context.kernel, context.arguments)
             if result:
                 context.function_result = result
         except Exception as exc:
-            logger.exception(f"Error invoking function {context.function.fully_qualified_name}: {exc}.")
+            logger.exception(
+                f"Error invoking function {context.function.fully_qualified_name}: {exc}."
+            )
             value = f"An error occurred while invoking the function {context.function.fully_qualified_name}: {exc}"
             if context.function_result is not None:
                 context.function_result.value = value
             else:
-                context.function_result = FunctionResult(function=context.function.metadata, value=value)
+                context.function_result = FunctionResult(
+                    function=context.function.metadata, value=value
+                )
             return
 
     async def add_embedding_to_object(
@@ -444,7 +504,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         if container_mode:
             contents = inputs[field_to_embed].tolist()  # type: ignore
         elif isinstance(inputs, list):
-            list_of_dicts = (getter := getattr(inputs[0], "get", False)) and callable(getter)
+            list_of_dicts = (getter := getattr(inputs[0], "get", False)) and callable(
+                getter
+            )
             for record in inputs:
                 if list_of_dicts:
                     contents.append(record.get(field_to_embed))  # type: ignore

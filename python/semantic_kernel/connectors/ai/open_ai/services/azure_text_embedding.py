@@ -8,10 +8,18 @@ from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
-from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
+from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
+    AzureOpenAIConfigBase,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
+    OpenAIModelTypes,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import (
+    OpenAITextEmbeddingBase,
+)
+from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import (
+    AzureOpenAISettings,
+)
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -70,7 +78,9 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         except ValidationError as exc:
             raise ServiceInitializationError(f"Invalid settings: {exc}") from exc
         if not azure_openai_settings.embedding_deployment_name:
-            raise ServiceInitializationError("The Azure OpenAI embedding deployment name is required.")
+            raise ServiceInitializationError(
+                "The Azure OpenAI embedding deployment name is required."
+            )
 
         super().__init__(
             deployment_name=azure_openai_settings.embedding_deployment_name,
@@ -78,7 +88,11 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             base_url=azure_openai_settings.base_url,
             api_version=azure_openai_settings.api_version,
             service_id=service_id,
-            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
+            api_key=(
+                azure_openai_settings.api_key.get_secret_value()
+                if azure_openai_settings.api_key
+                else None
+            ),
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,

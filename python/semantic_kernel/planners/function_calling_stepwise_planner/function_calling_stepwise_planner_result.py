@@ -18,7 +18,9 @@ class FunctionCallingStepwisePlannerResult(KernelBaseModel):
 class UserInteraction:
     """The Kernel Function used to interact with the user."""
 
-    @kernel_function(description="The final answer to return to the user", name="SendFinalAnswer")
+    @kernel_function(
+        description="The final answer to return to the user", name="SendFinalAnswer"
+    )
     def send_final_answer(self, answer: Annotated[str, "The final answer"]) -> str:
         """Send the final answer to the user."""
         return "Thanks"

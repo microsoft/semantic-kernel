@@ -4,12 +4,16 @@ import logging
 from typing import TYPE_CHECKING, Annotated, Any
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+from semantic_kernel.functions.kernel_function_from_prompt import (
+    KernelFunctionFromPrompt,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
-    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+    from semantic_kernel.prompt_template.prompt_template_config import (
+        PromptTemplateConfig,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +35,10 @@ class ConversationSummaryPlugin:
     )
 
     def __init__(
-        self, prompt_template_config: "PromptTemplateConfig", return_key: str = "summary", **kwargs: Any
+        self,
+        prompt_template_config: "PromptTemplateConfig",
+        return_key: str = "summary",
+        **kwargs: Any
     ) -> None:
         """Initializes a new instance of the ConversationSummaryPlugin.
 
@@ -51,7 +58,9 @@ class ConversationSummaryPlugin:
             )
 
         self.return_key = return_key
-        prompt_template_config.template = ConversationSummaryPlugin._summarize_conversation_prompt_template
+        prompt_template_config.template = (
+            ConversationSummaryPlugin._summarize_conversation_prompt_template
+        )
         prompt_template_config.template_format = "semantic-kernel"
         self._summarizeConversationFunction = KernelFunctionFromPrompt(
             plugin_name=ConversationSummaryPlugin.__name__,
@@ -69,7 +78,8 @@ class ConversationSummaryPlugin:
         kernel: Annotated["Kernel", "The kernel instance."],
         arguments: Annotated["KernelArguments", "Arguments used by the kernel."],
     ) -> Annotated[
-        "KernelArguments", "KernelArguments with the summarized conversation result in key self.return_key."
+        "KernelArguments",
+        "KernelArguments with the summarized conversation result in key self.return_key.",
     ]:
         """Given a long conversation transcript, summarize the conversation.
 
@@ -84,8 +94,12 @@ class ConversationSummaryPlugin:
         from semantic_kernel.text import text_chunker
         from semantic_kernel.text.function_extension import aggregate_chunked_results
 
-        lines = text_chunker._split_text_lines(input, ConversationSummaryPlugin._max_tokens, True)
-        paragraphs = text_chunker._split_text_paragraph(lines, ConversationSummaryPlugin._max_tokens)
+        lines = text_chunker._split_text_lines(
+            input, ConversationSummaryPlugin._max_tokens, True
+        )
+        paragraphs = text_chunker._split_text_paragraph(
+            lines, ConversationSummaryPlugin._max_tokens
+        )
 
         arguments[self.return_key] = await aggregate_chunked_results(
             self._summarizeConversationFunction, paragraphs, kernel, arguments

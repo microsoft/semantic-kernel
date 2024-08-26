@@ -1,5 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+
+def test_empty_input():
+    result = your_function("")
+    assert (
+        result == expected_output
+    ), "The function should handle empty input gracefully"
+
+
+def test_empty_input():
+    result = your_function("")
+    assert (
+        result == expected_output
+    ), "The function should handle empty input gracefully"
+
+
 import os
 from functools import partial, reduce
 from typing import Any
@@ -16,32 +31,54 @@ from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
     AzureAIInferenceChatCompletion,
 )
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import GoogleAIChatCompletion
-from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_chat_completion import VertexAIChatCompletion
+from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import (
+    GoogleAIChatCompletion,
+)
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_chat_completion import (
+    VertexAIChatCompletion,
+)
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
-from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
+from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import (
+    MistralAIChatCompletion,
+)
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
+    OllamaChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import (
+    OllamaChatCompletion,
+)
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
+    AzureChatCompletion,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
+    OpenAIChatCompletion,
+)
+from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import (
+    AzureOpenAISettings,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.contents import ChatHistory, ChatMessageContent, TextContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -88,7 +125,9 @@ def history() -> ChatHistory:
 
 
 @pytest.fixture(scope="module")
-def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]:
+def services() -> (
+    dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]
+):
     azure_openai_settings = AzureOpenAISettings.create()
     endpoint = azure_openai_settings.endpoint
     deployment_name = azure_openai_settings.chat_deployment_name
@@ -116,9 +155,18 @@ def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptEx
         "openai": (OpenAIChatCompletion(), OpenAIChatPromptExecutionSettings),
         "azure": (AzureChatCompletion(), AzureChatPromptExecutionSettings),
         "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
-        "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
-        "mistral_ai": (MistralAIChatCompletion() if mistral_ai_setup else None, MistralAIChatPromptExecutionSettings),
-        "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
+        "azure_ai_inference": (
+            azure_ai_inference_client,
+            AzureAIInferenceChatPromptExecutionSettings,
+        ),
+        "mistral_ai": (
+            MistralAIChatCompletion() if mistral_ai_setup else None,
+            MistralAIChatPromptExecutionSettings,
+        ),
+        "ollama": (
+            OllamaChatCompletion() if ollama_setup else None,
+            OllamaChatPromptExecutionSettings,
+        ),
         "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
         "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
     }
@@ -131,8 +179,12 @@ pytestmark = pytest.mark.parametrize(
             "openai",
             {},
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Hello")]
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
+                ),
             ],
             ["Hello", "well"],
             id="openai_text_input",
@@ -150,7 +202,9 @@ pytestmark = pytest.mark.parametrize(
                         ),
                     ],
                 ),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]
+                ),
             ],
             ["house", "germany"],
             id="openai_image_input_uri",
@@ -164,11 +218,17 @@ pytestmark = pytest.mark.parametrize(
                     items=[
                         TextContent(text="What is in this image?"),
                         ImageContent.from_image_path(
-                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                            image_path=os.path.join(
+                                os.path.dirname(__file__),
+                                "../../",
+                                "assets/sample_image.jpg",
+                            )
                         ),
                     ],
                 ),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]
+                ),
             ],
             ["house", "germany"],
             id="openai_image_input_file",
@@ -181,7 +241,9 @@ pytestmark = pytest.mark.parametrize(
                 )
             },
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
+                ),
             ],
             ["348"],
             id="openai_tool_call_auto",
@@ -194,7 +256,9 @@ pytestmark = pytest.mark.parametrize(
                 )
             },
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
+                ),
             ],
             ["348"],
             id="openai_tool_call_non_auto",
@@ -212,13 +276,19 @@ pytestmark = pytest.mark.parametrize(
                         role=AuthorRole.ASSISTANT,
                         items=[
                             FunctionCallContent(
-                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                                id="fin",
+                                name="finance-search",
+                                arguments='{"company": "contoso", "year": 2024}',
                             )
                         ],
                     ),
                     ChatMessageContent(
                         role=AuthorRole.TOOL,
-                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                        items=[
+                            FunctionResultContent(
+                                id="fin", name="finance-search", result="1.2B"
+                            )
+                        ],
                     ),
                 ],
             ],
@@ -229,8 +299,12 @@ pytestmark = pytest.mark.parametrize(
             "azure",
             {},
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Hello")]
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
+                ),
             ],
             ["Hello", "well"],
             id="azure_text_input",
@@ -248,7 +322,9 @@ pytestmark = pytest.mark.parametrize(
                         ),
                     ],
                 ),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]
+                ),
             ],
             ["house", "germany"],
             id="azure_image_input_uri",
@@ -262,20 +338,32 @@ pytestmark = pytest.mark.parametrize(
                     items=[
                         TextContent(text="What is in this image?"),
                         ImageContent.from_image_path(
-                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                            image_path=os.path.join(
+                                os.path.dirname(__file__),
+                                "../../",
+                                "assets/sample_image.jpg",
+                            )
                         ),
                     ],
                 ),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]
+                ),
             ],
             ["house", "germany"],
             id="azure_image_input_file",
         ),
         pytest.param(
             "azure",
-            {"function_choice_behavior": FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["chat"]})},
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    filters={"excluded_plugins": ["chat"]}
+                )
+            },
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
+                ),
             ],
             ["348"],
             id="azure_tool_call_auto",
@@ -284,7 +372,9 @@ pytestmark = pytest.mark.parametrize(
             "azure",
             {"function_choice_behavior": "auto"},
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
+                ),
             ],
             ["348"],
             id="azure_tool_call_auto_as_string",
@@ -297,7 +387,9 @@ pytestmark = pytest.mark.parametrize(
                 )
             },
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
+                ),
             ],
             ["348"],
             id="azure_tool_call_non_auto",
@@ -315,13 +407,19 @@ pytestmark = pytest.mark.parametrize(
                         role=AuthorRole.ASSISTANT,
                         items=[
                             FunctionCallContent(
-                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                                id="fin",
+                                name="finance-search",
+                                arguments='{"company": "contoso", "year": 2024}',
                             )
                         ],
                     ),
                     ChatMessageContent(
                         role=AuthorRole.TOOL,
-                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                        items=[
+                            FunctionResultContent(
+                                id="fin", name="finance-search", result="1.2B"
+                            )
+                        ],
                     ),
                 ],
             ],
@@ -332,8 +430,12 @@ pytestmark = pytest.mark.parametrize(
             "azure_custom_client",
             {},
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Hello")]
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
+                ),
             ],
             ["Hello", "well"],
             id="azure_custom_client",
@@ -342,8 +444,12 @@ pytestmark = pytest.mark.parametrize(
             "azure_ai_inference",
             {},
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Hello")]
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
+                ),
             ],
             ["Hello", "well"],
             id="azure_ai_inference_text_input",
@@ -363,7 +469,9 @@ pytestmark = pytest.mark.parametrize(
                         ),
                     ],
                 ),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]
+                ),
             ],
             ["house", "germany"],
             id="azure_ai_inference_image_input_uri",
@@ -379,11 +487,17 @@ pytestmark = pytest.mark.parametrize(
                     items=[
                         TextContent(text="What is in this image?"),
                         ImageContent.from_image_path(
-                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                            image_path=os.path.join(
+                                os.path.dirname(__file__),
+                                "../../",
+                                "assets/sample_image.jpg",
+                            )
                         ),
                     ],
                 ),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]
+                ),
             ],
             ["house", "germany"],
             id="azure_ai_inference_image_input_file",
@@ -397,7 +511,9 @@ pytestmark = pytest.mark.parametrize(
                 "max_tokens": 256,
             },
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
+                ),
             ],
             ["348"],
             marks=pytest.mark.skip(
@@ -414,7 +530,9 @@ pytestmark = pytest.mark.parametrize(
                 )
             },
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
+                ),
             ],
             ["348"],
             id="azure_ai_inference_tool_call_non_auto",
@@ -432,13 +550,19 @@ pytestmark = pytest.mark.parametrize(
                         role=AuthorRole.ASSISTANT,
                         items=[
                             FunctionCallContent(
-                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                                id="fin",
+                                name="finance-search",
+                                arguments='{"company": "contoso", "year": 2024}',
                             )
                         ],
                     ),
                     ChatMessageContent(
                         role=AuthorRole.TOOL,
-                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                        items=[
+                            FunctionResultContent(
+                                id="fin", name="finance-search", result="1.2B"
+                            )
+                        ],
                     ),
                 ],
             ],
@@ -449,30 +573,46 @@ pytestmark = pytest.mark.parametrize(
             "mistral_ai",
             {},
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Hello")]
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
+                ),
             ],
             ["Hello", "well"],
-            marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
+            marks=pytest.mark.skipif(
+                not mistral_ai_setup, reason="Mistral AI Environment Variables not set"
+            ),
             id="mistral_ai_text_input",
         ),
         pytest.param(
             "ollama",
             {},
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Hello")]
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
+                ),
             ],
             ["Hello", "well"],
-            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            marks=pytest.mark.skipif(
+                not ollama_setup, reason="Need local Ollama setup"
+            ),
             id="ollama_text_input",
         ),
         pytest.param(
             "google_ai",
             {},
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Hello")]
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
+                ),
             ],
             ["Hello", "well"],
             marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
@@ -489,13 +629,21 @@ pytestmark = pytest.mark.parametrize(
                     items=[
                         TextContent(text="What is in this image?"),
                         ImageContent.from_image_path(
-                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                            image_path=os.path.join(
+                                os.path.dirname(__file__),
+                                "../../",
+                                "assets/sample_image.jpg",
+                            )
                         ),
                     ],
                 ),
                 ChatMessageContent(
                     role=AuthorRole.USER,
-                    items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
+                    items=[
+                        TextContent(
+                            text="Where was it made? Make a guess if you are not sure."
+                        )
+                    ],
                 ),
             ],
             ["house", "germany"],
@@ -510,7 +658,9 @@ pytestmark = pytest.mark.parametrize(
                 "max_tokens": 256,
             },
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
+                ),
             ],
             ["348"],
             id="google_ai_tool_call_auto",
@@ -523,7 +673,9 @@ pytestmark = pytest.mark.parametrize(
                 )
             },
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
+                ),
             ],
             ["348"],
             id="google_ai_tool_call_non_auto",
@@ -541,13 +693,19 @@ pytestmark = pytest.mark.parametrize(
                         role=AuthorRole.ASSISTANT,
                         items=[
                             FunctionCallContent(
-                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                                id="fin",
+                                name="finance-search",
+                                arguments='{"company": "contoso", "year": 2024}',
                             )
                         ],
                     ),
                     ChatMessageContent(
                         role=AuthorRole.TOOL,
-                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                        items=[
+                            FunctionResultContent(
+                                id="fin", name="finance-search", result="1.2B"
+                            )
+                        ],
                     ),
                 ],
             ],
@@ -559,8 +717,12 @@ pytestmark = pytest.mark.parametrize(
             "vertex_ai",
             {},
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="Hello")]
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
+                ),
             ],
             ["Hello", "well"],
             id="vertex_ai_text_input",
@@ -576,13 +738,21 @@ pytestmark = pytest.mark.parametrize(
                     items=[
                         TextContent(text="What is in this image?"),
                         ImageContent.from_image_path(
-                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                            image_path=os.path.join(
+                                os.path.dirname(__file__),
+                                "../../",
+                                "assets/sample_image.jpg",
+                            )
                         ),
                     ],
                 ),
                 ChatMessageContent(
                     role=AuthorRole.USER,
-                    items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
+                    items=[
+                        TextContent(
+                            text="Where was it made? Make a guess if you are not sure."
+                        )
+                    ],
                 ),
             ],
             ["house", "germany"],
@@ -597,7 +767,9 @@ pytestmark = pytest.mark.parametrize(
                 "max_tokens": 256,
             },
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
+                ),
             ],
             ["348"],
             id="vertex_ai_tool_call_auto",
@@ -610,7 +782,9 @@ pytestmark = pytest.mark.parametrize(
                 )
             },
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
+                ),
             ],
             ["348"],
             id="vertex_ai_tool_call_non_auto",
@@ -628,13 +802,19 @@ pytestmark = pytest.mark.parametrize(
                         role=AuthorRole.ASSISTANT,
                         items=[
                             FunctionCallContent(
-                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                                id="fin",
+                                name="finance-search",
+                                arguments='{"company": "contoso", "year": 2024}',
                             )
                         ],
                     ),
                     ChatMessageContent(
                         role=AuthorRole.TOOL,
-                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                        items=[
+                            FunctionResultContent(
+                                id="fin", name="finance-search", result="1.2B"
+                            )
+                        ],
                     ),
                 ],
             ],
@@ -664,7 +844,14 @@ async def test_chat_completion(
             history.add_message(message)
 
         cmc = await retry(
-            partial(execute_invoke, kernel=kernel, history=history, output=output, stream=False), retries=5
+            partial(
+                execute_invoke,
+                kernel=kernel,
+                history=history,
+                output=output,
+                stream=False,
+            ),
+            retries=5,
         )
         history.add_message(cmc)
 
@@ -687,21 +874,34 @@ async def test_streaming_chat_completion(
         else:
             history.add_message(message)
         cmc = await retry(
-            partial(execute_invoke, kernel=kernel, history=history, output=output, stream=True), retries=5
+            partial(
+                execute_invoke,
+                kernel=kernel,
+                history=history,
+                output=output,
+                stream=True,
+            ),
+            retries=5,
         )
         history.add_message(cmc)
 
 
-async def execute_invoke(kernel: Kernel, history: ChatHistory, output: str, stream: bool) -> "ChatMessageContent":
+async def execute_invoke(
+    kernel: Kernel, history: ChatHistory, output: str, stream: bool
+) -> "ChatMessageContent":
     if stream:
-        invocation = kernel.invoke_stream(function_name="chat", plugin_name="chat", chat_history=history)
+        invocation = kernel.invoke_stream(
+            function_name="chat", plugin_name="chat", chat_history=history
+        )
         parts = [part[0] async for part in invocation]
         if parts:
             response = reduce(lambda p, r: p + r, parts)
         else:
             raise AssertionError("No response")
     else:
-        invocation = await kernel.invoke(function_name="chat", plugin_name="chat", chat_history=history)
+        invocation = await kernel.invoke(
+            function_name="chat", plugin_name="chat", chat_history=history
+        )
         assert invocation is not None
         response = invocation.value[0]
     print(response)
@@ -715,4 +915,10 @@ async def execute_invoke(kernel: Kernel, history: ChatHistory, output: str, stre
                 assert item.arguments
                 assert kernel.get_function_from_fully_qualified_function_name(item.name)
         return response
-    raise AssertionError(f"Unexpected output: response: {invocation}, type: {type(invocation)}")
+    with pytest.raises(
+        AssertionError,
+        match=f"Unexpected output: response: {invocation}, type: {type(invocation)}",
+    ):
+        raise AssertionError(
+            f"Unexpected output: response: {invocation}, type: {type(invocation)}"
+        )

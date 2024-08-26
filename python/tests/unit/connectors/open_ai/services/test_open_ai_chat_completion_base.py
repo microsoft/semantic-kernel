@@ -13,14 +13,18 @@ from openai.types.chat.chat_completion_chunk import ChoiceDelta as ChunkChoiceDe
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
     OpenAIChatCompletion,
 )
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.contents import StreamingChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
@@ -36,7 +40,9 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
 
-async def mock_async_process_chat_stream_response(arg1, response, tool_call_behavior, chat_history, kernel, arguments):
+async def mock_async_process_chat_stream_response(
+    arg1, response, tool_call_behavior, chat_history, kernel, arguments
+):
     mock_content = MagicMock(spec=StreamingChatMessageContent)
     yield [mock_content], None
 
@@ -46,7 +52,11 @@ def mock_chat_completion_response() -> ChatCompletion:
     return ChatCompletion(
         id="test_id",
         choices=[
-            Choice(index=0, message=ChatCompletionMessage(content="test", role="assistant"), finish_reason="stop")
+            Choice(
+                index=0,
+                message=ChatCompletionMessage(content="test", role="assistant"),
+                finish_reason="stop",
+            )
         ],
         created=0,
         model="test",
@@ -58,7 +68,13 @@ def mock_chat_completion_response() -> ChatCompletion:
 def mock_streaming_chat_completion_response() -> AsyncStream[ChatCompletionChunk]:
     content = ChatCompletionChunk(
         id="test_id",
-        choices=[ChunkChoice(index=0, delta=ChunkChoiceDelta(content="test", role="assistant"), finish_reason="stop")],
+        choices=[
+            ChunkChoice(
+                index=0,
+                delta=ChunkChoiceDelta(content="test", role="assistant"),
+                finish_reason="stop",
+            )
+        ],
         created=0,
         model="test",
         object="chat.completion.chunk",
@@ -82,11 +98,15 @@ async def test_cmc(
 ):
     mock_create.return_value = mock_chat_completion_response
     chat_history.add_user_message("hello world")
-    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_chat_completion = OpenAIChatCompletion()
     await openai_chat_completion.get_chat_message_contents(
-        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+        chat_history=chat_history,
+        settings=complete_prompt_execution_settings,
+        kernel=kernel,
     )
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
@@ -106,11 +126,15 @@ async def test_cmc_singular(
 ):
     mock_create.return_value = mock_chat_completion_response
     chat_history.add_user_message("hello world")
-    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_chat_completion = OpenAIChatCompletion()
     await openai_chat_completion.get_chat_message_content(
-        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+        chat_history=chat_history,
+        settings=complete_prompt_execution_settings,
+        kernel=kernel,
     )
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
@@ -130,11 +154,15 @@ async def test_cmc_prompt_execution_settings(
 ):
     mock_create.return_value = mock_chat_completion_response
     chat_history.add_user_message("hello world")
-    complete_prompt_execution_settings = PromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = PromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_chat_completion = OpenAIChatCompletion()
     await openai_chat_completion.get_chat_message_contents(
-        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+        chat_history=chat_history,
+        settings=complete_prompt_execution_settings,
+        kernel=kernel,
     )
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
@@ -161,7 +189,10 @@ async def test_cmc_function_call_behavior(
                 tool_calls=[
                     {
                         "id": "test id",
-                        "function": {"name": "test-tool", "arguments": '{"key": "value"}'},
+                        "function": {
+                            "name": "test-tool",
+                            "arguments": '{"key": "value"}',
+                        },
                         "type": "function",
                     }
                 ],
@@ -173,7 +204,8 @@ async def test_cmc_function_call_behavior(
     chat_history.add_user_message("hello world")
     orig_chat_history = deepcopy(chat_history)
     complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
-        service_id="test_service_id", function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions()
+        service_id="test_service_id",
+        function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions(),
     )
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._process_function_call",
@@ -189,7 +221,9 @@ async def test_cmc_function_call_behavior(
         mock_create.assert_awaited_once_with(
             model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
             stream=False,
-            messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+            messages=openai_chat_completion._prepare_chat_history_for_request(
+                orig_chat_history
+            ),
         )
         mock_process_function_call.assert_awaited()
 
@@ -212,7 +246,10 @@ async def test_cmc_function_choice_behavior(
                 tool_calls=[
                     {
                         "id": "test id",
-                        "function": {"name": "test-tool", "arguments": '{"key": "value"}'},
+                        "function": {
+                            "name": "test-tool",
+                            "arguments": '{"key": "value"}',
+                        },
                         "type": "function",
                     }
                 ],
@@ -224,7 +261,8 @@ async def test_cmc_function_choice_behavior(
     chat_history.add_user_message("hello world")
     orig_chat_history = deepcopy(chat_history)
     complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
-        service_id="test_service_id", function_choice_behavior=FunctionChoiceBehavior.Auto()
+        service_id="test_service_id",
+        function_choice_behavior=FunctionChoiceBehavior.Auto(),
     )
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._process_function_call",
@@ -240,7 +278,9 @@ async def test_cmc_function_choice_behavior(
         mock_create.assert_awaited_once_with(
             model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
             stream=False,
-            messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+            messages=openai_chat_completion._prepare_chat_history_for_request(
+                orig_chat_history
+            ),
         )
         mock_process_function_call.assert_awaited()
 
@@ -263,7 +303,10 @@ async def test_cmc_function_choice_behavior_missing_kwargs(
                 tool_calls=[
                     {
                         "id": "test id",
-                        "function": {"name": "test-tool", "arguments": '{"key": "value"}'},
+                        "function": {
+                            "name": "test-tool",
+                            "arguments": '{"key": "value"}',
+                        },
                         "type": "function",
                     }
                 ],
@@ -274,7 +317,8 @@ async def test_cmc_function_choice_behavior_missing_kwargs(
     mock_create.return_value = mock_chat_completion_response
     chat_history.add_user_message("hello world")
     complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
-        service_id="test_service_id", function_choice_behavior=FunctionChoiceBehavior.Auto()
+        service_id="test_service_id",
+        function_choice_behavior=FunctionChoiceBehavior.Auto(),
     )
     openai_chat_completion = OpenAIChatCompletion()
     with pytest.raises(ServiceInvalidExecutionSettingsError):
@@ -319,7 +363,9 @@ async def test_cmc_no_fcc_in_response(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=False,
-        messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+        messages=openai_chat_completion._prepare_chat_history_for_request(
+            orig_chat_history
+        ),
     )
 
 
@@ -342,7 +388,10 @@ async def test_cmc_run_out_of_auto_invoke_loop(
                 tool_calls=[
                     {
                         "id": "test id",
-                        "function": {"name": "test-test", "arguments": '{"key": "value"}'},
+                        "function": {
+                            "name": "test-test",
+                            "arguments": '{"key": "value"}',
+                        },
                         "type": "function",
                     }
                 ],
@@ -379,11 +428,15 @@ async def test_scmc_prompt_execution_settings(
 ):
     mock_create.return_value = mock_streaming_chat_completion_response
     chat_history.add_user_message("hello world")
-    complete_prompt_execution_settings = PromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = PromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_chat_completion = OpenAIChatCompletion()
     async for msg in openai_chat_completion.get_streaming_chat_message_contents(
-        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+        chat_history=chat_history,
+        settings=complete_prompt_execution_settings,
+        kernel=kernel,
     ):
         assert isinstance(msg[0], StreamingChatMessageContent)
     mock_create.assert_awaited_once_with(
@@ -394,7 +447,9 @@ async def test_scmc_prompt_execution_settings(
 
 
 @pytest.mark.asyncio
-@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock, side_effect=Exception)
+@patch.object(
+    AsyncChatCompletions, "create", new_callable=AsyncMock, side_effect=Exception
+)
 async def test_cmc_general_exception(
     mock_create,
     kernel: Kernel,
@@ -404,12 +459,16 @@ async def test_cmc_general_exception(
 ):
     mock_create.return_value = mock_chat_completion_response
     chat_history.add_user_message("hello world")
-    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_chat_completion = OpenAIChatCompletion()
     with pytest.raises(ServiceResponseException):
         await openai_chat_completion.get_chat_message_contents(
-            chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+            chat_history=chat_history,
+            settings=complete_prompt_execution_settings,
+            kernel=kernel,
         )
 
 
@@ -433,7 +492,13 @@ async def test_scmc(
     )
     content2 = ChatCompletionChunk(
         id="test_id",
-        choices=[ChunkChoice(index=0, delta=ChunkChoiceDelta(content="test", role="assistant"), finish_reason="stop")],
+        choices=[
+            ChunkChoice(
+                index=0,
+                delta=ChunkChoiceDelta(content="test", role="assistant"),
+                finish_reason="stop",
+            )
+        ],
         created=0,
         model="test",
         object="chat.completion.chunk",
@@ -443,7 +508,9 @@ async def test_scmc(
     mock_create.return_value = stream
     chat_history.add_user_message("hello world")
     orig_chat_history = deepcopy(chat_history)
-    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_chat_completion = OpenAIChatCompletion()
     async for msg in openai_chat_completion.get_streaming_chat_message_contents(
@@ -456,7 +523,9 @@ async def test_scmc(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
-        messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+        messages=openai_chat_completion._prepare_chat_history_for_request(
+            orig_chat_history
+        ),
     )
 
 
@@ -477,7 +546,13 @@ async def test_scmc_singular(
     )
     content2 = ChatCompletionChunk(
         id="test_id",
-        choices=[ChunkChoice(index=0, delta=ChunkChoiceDelta(content="test", role="assistant"), finish_reason="stop")],
+        choices=[
+            ChunkChoice(
+                index=0,
+                delta=ChunkChoiceDelta(content="test", role="assistant"),
+                finish_reason="stop",
+            )
+        ],
         created=0,
         model="test",
         object="chat.completion.chunk",
@@ -487,7 +562,9 @@ async def test_scmc_singular(
     mock_create.return_value = stream
     chat_history.add_user_message("hello world")
     orig_chat_history = deepcopy(chat_history)
-    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_chat_completion = OpenAIChatCompletion()
     async for msg in openai_chat_completion.get_streaming_chat_message_content(
@@ -500,7 +577,9 @@ async def test_scmc_singular(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
-        messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+        messages=openai_chat_completion._prepare_chat_history_for_request(
+            orig_chat_history
+        ),
     )
 
 
@@ -517,7 +596,8 @@ async def test_scmc_function_call_behavior(
     chat_history.add_user_message("hello world")
     orig_chat_history = deepcopy(chat_history)
     complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
-        service_id="test_service_id", function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions()
+        service_id="test_service_id",
+        function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions(),
     )
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._process_function_call",
@@ -535,7 +615,9 @@ async def test_scmc_function_call_behavior(
         mock_create.assert_awaited_once_with(
             model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
             stream=True,
-            messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+            messages=openai_chat_completion._prepare_chat_history_for_request(
+                orig_chat_history
+            ),
         )
 
 
@@ -552,7 +634,8 @@ async def test_scmc_function_choice_behavior(
     chat_history.add_user_message("hello world")
     orig_chat_history = deepcopy(chat_history)
     complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
-        service_id="test_service_id", function_choice_behavior=FunctionChoiceBehavior.Auto()
+        service_id="test_service_id",
+        function_choice_behavior=FunctionChoiceBehavior.Auto(),
     )
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._process_function_call",
@@ -570,7 +653,9 @@ async def test_scmc_function_choice_behavior(
         mock_create.assert_awaited_once_with(
             model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
             stream=True,
-            messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+            messages=openai_chat_completion._prepare_chat_history_for_request(
+                orig_chat_history
+            ),
         )
 
 
@@ -586,7 +671,8 @@ async def test_scmc_function_choice_behavior_missing_kwargs(
     mock_create.return_value = mock_streaming_chat_completion_response
     chat_history.add_user_message("hello world")
     complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
-        service_id="test_service_id", function_choice_behavior=FunctionChoiceBehavior.Auto()
+        service_id="test_service_id",
+        function_choice_behavior=FunctionChoiceBehavior.Auto(),
     )
     openai_chat_completion = OpenAIChatCompletion()
     with pytest.raises(ServiceInvalidExecutionSettingsError):
@@ -640,7 +726,9 @@ async def test_scmc_no_fcc_in_response(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
-        messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+        messages=openai_chat_completion._prepare_chat_history_for_request(
+            orig_chat_history
+        ),
     )
 
 
@@ -665,7 +753,10 @@ async def test_scmc_run_out_of_auto_invoke_loop(
                         {
                             "index": 0,
                             "id": "test id",
-                            "function": {"name": "test-test", "arguments": '{"key": "value"}'},
+                            "function": {
+                                "name": "test-test",
+                                "arguments": '{"key": "value"}',
+                            },
                             "type": "function",
                         }
                     ],
@@ -702,11 +793,17 @@ async def test_scmc_run_out_of_auto_invoke_loop(
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc_no_stream(
-    mock_create, kernel: Kernel, chat_history: ChatHistory, openai_unit_test_env, mock_chat_completion_response
+    mock_create,
+    kernel: Kernel,
+    chat_history: ChatHistory,
+    openai_unit_test_env,
+    mock_chat_completion_response,
 ):
     mock_create.return_value = mock_chat_completion_response
     chat_history.add_user_message("hello world")
-    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_chat_completion = OpenAIChatCompletion()
     with pytest.raises(ServiceInvalidResponseError):
@@ -734,10 +831,14 @@ async def test_tc(
 ):
     mock_create.return_value = mock_chat_completion_response
     chat_history.add_user_message("hello world")
-    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service_id"
+    )
 
     openai_chat_completion = OpenAIChatCompletion()
-    tc = await openai_chat_completion.get_text_contents(prompt="test", settings=complete_prompt_execution_settings)
+    tc = await openai_chat_completion.get_text_contents(
+        prompt="test", settings=complete_prompt_execution_settings
+    )
     assert isinstance(tc[0], TextContent)
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
@@ -754,7 +855,9 @@ async def test_stc(
     openai_unit_test_env,
 ):
     mock_create.return_value = mock_streaming_chat_completion_response
-    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service_id"
+    )
     openai_chat_completion = OpenAIChatCompletion()
     async for msg in openai_chat_completion.get_streaming_text_contents(
         prompt="test",
@@ -777,7 +880,8 @@ async def test_stc_with_msgs(
 ):
     mock_create.return_value = mock_streaming_chat_completion_response
     complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
-        service_id="test_service_id", messages=[{"role": "system", "content": "system prompt"}]
+        service_id="test_service_id",
+        messages=[{"role": "system", "content": "system prompt"}],
     )
     openai_chat_completion = OpenAIChatCompletion()
     async for msg in openai_chat_completion.get_streaming_text_contents(
@@ -788,7 +892,10 @@ async def test_stc_with_msgs(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
-        messages=[{"role": "system", "content": "system prompt"}, {"role": "user", "content": "test"}],
+        messages=[
+            {"role": "system", "content": "system prompt"},
+            {"role": "user", "content": "test"},
+        ],
     )
 
 
@@ -822,7 +929,10 @@ async def test_scmc_terminate_through_filter(
                         {
                             "index": 0,
                             "id": "test id",
-                            "function": {"name": "test-test", "arguments": '{"key": "value"}'},
+                            "function": {
+                                "name": "test-test",
+                                "arguments": '{"key": "value"}',
+                            },
                             "type": "function",
                         }
                     ],

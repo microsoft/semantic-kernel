@@ -6,7 +6,9 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
-from semantic_kernel.planners.sequential_planner.sequential_planner_config import SequentialPlannerConfig
+from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
+    SequentialPlannerConfig,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -19,7 +21,11 @@ class SequentialPlannerFunctionExtension:
         """Convert the function to a manual string."""
         inputs = [
             f"  - {parameter.name}: {parameter.description}"
-            + (f" (default value: {parameter.default_value})" if parameter.default_value else "")
+            + (
+                f" (default value: {parameter.default_value})"
+                if parameter.default_value
+                else ""
+            )
             for parameter in function.parameters
         ]
         inputs = "\n".join(inputs)
@@ -28,7 +34,12 @@ class SequentialPlannerFunctionExtension:
     @staticmethod
     def to_embedding_string(function: KernelFunctionMetadata):
         """Convert the function to an embedding string."""
-        inputs = "\n".join([f"    - {parameter.name}: {parameter.description}" for parameter in function.parameters])
+        inputs = "\n".join(
+            [
+                f"    - {parameter.name}: {parameter.description}"
+                for parameter in function.parameters
+            ]
+        )
         return f"{function.name}:\n  description: {function.description}\n  inputs:\n{inputs}"
 
 
@@ -55,7 +66,12 @@ class SequentialPlannerKernelExtension:
         else:
             functions = await config.get_available_functions(config, semantic_query)
 
-        return "\n\n".join([SequentialPlannerFunctionExtension.to_manual_string(func) for func in functions])
+        return "\n\n".join(
+            [
+                SequentialPlannerFunctionExtension.to_manual_string(func)
+                for func in functions
+            ]
+        )
 
     @staticmethod
     async def get_available_functions(
@@ -71,7 +87,9 @@ class SequentialPlannerKernelExtension:
 
         available_functions = [
             func
-            for func in kernel.get_list_of_function_metadata({"excluded_plugins": excluded_plugins})
+            for func in kernel.get_list_of_function_metadata(
+                {"excluded_plugins": excluded_plugins}
+            )
             if func.name not in excluded_functions
         ]
 
@@ -81,17 +99,23 @@ class SequentialPlannerKernelExtension:
             return available_functions
 
         # Add functions that were found in the search results.
-        relevant_functions = await SequentialPlannerKernelExtension.get_relevant_functions(
-            kernel,
-            available_functions,
+        relevant_functions = (
+            await SequentialPlannerKernelExtension.get_relevant_functions(
+                kernel,
+                available_functions,
+            )
         )
 
         # Add any missing functions that were included but not found in the search results.
         missing_functions = [
-            func for func in included_functions if func not in [func.name for func in relevant_functions]
+            func
+            for func in included_functions
+            if func not in [func.name for func in relevant_functions]
         ]
 
-        relevant_functions += [func for func in available_functions if func.name in missing_functions]
+        relevant_functions += [
+            func for func in available_functions if func.name in missing_functions
+        ]
 
         return sorted(relevant_functions, key=lambda x: (x.plugin_name, x.name))
 
@@ -109,7 +133,11 @@ class SequentialPlannerKernelExtension:
             return relevant_functions
         for memory_entry in memories:
             function = next(
-                (func for func in available_functions if func.fully_qualified_name == memory_entry.id),
+                (
+                    func
+                    for func in available_functions
+                    if func.fully_qualified_name == memory_entry.id
+                ),
                 None,
             )
             if function is not None:

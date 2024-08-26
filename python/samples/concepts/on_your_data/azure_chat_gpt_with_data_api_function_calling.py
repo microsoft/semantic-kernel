@@ -5,14 +5,18 @@ import logging
 import os
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.connectors.ai.open_ai import (
     AzureAISearchDataSource,
     AzureChatCompletion,
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
-from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import (
+    AzureAISearchSettings,
+)
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins import TimePlugin
 from semantic_kernel.functions import KernelArguments
@@ -30,7 +34,9 @@ kernel = sk.Kernel()
 azure_ai_search_settings = AzureAISearchSettings.create()
 az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings.model_dump())
 extra = ExtraBody(data_sources=[az_source])
-req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_body=extra, tool_choice="auto")
+req_settings = AzureChatPromptExecutionSettings(
+    service_id="chat-gpt", extra_body=extra, tool_choice="auto"
+)
 
 # For example, AI Search index may contain the following document:
 
@@ -62,8 +68,14 @@ prompt_template_config = PromptTemplateConfig(
     name="chat",
     template_format="semantic-kernel",
     input_variables=[
-        InputVariable(name="chat_history", description="The history of the conversation", is_required=True),
-        InputVariable(name="user_input", description="The user input", is_required=True),
+        InputVariable(
+            name="chat_history",
+            description="The history of the conversation",
+            is_required=True,
+        ),
+        InputVariable(
+            name="user_input", description="The user input", is_required=True
+        ),
     ],
 )
 
@@ -73,13 +85,17 @@ history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am an AI assistant here to answer your questions.")
 
 chat_function = kernel.add_function(
-    plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
+    plugin_name="ChatBot",
+    function_name="Chat",
+    prompt_template_config=prompt_template_config,
 )
 
 # calling the chat, you could add a overloaded version of the settings here,
 # to enable or disable function calling or set the function calling to a specific plugin.
 # see the openai_function_calling example for how to use this with a unrelated function definition
-req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]})
+req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
+    filters={"excluded_plugins": ["ChatBot"]}
+)
 
 arguments = KernelArguments(settings=req_settings)
 

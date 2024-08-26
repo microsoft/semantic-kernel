@@ -5,7 +5,9 @@ from typing import Annotated
 
 from msgraph import GraphServiceClient
 from msgraph.generated.models.booking_appointment import BookingAppointment
-from msgraph.generated.models.booking_customer_information import BookingCustomerInformation
+from msgraph.generated.models.booking_customer_information import (
+    BookingCustomerInformation,
+)
 from msgraph.generated.models.date_time_time_zone import DateTimeTimeZone
 from msgraph.generated.models.location import Location
 
@@ -39,7 +41,10 @@ class BookingsPlugin:
     async def book_table(
         self,
         restaurant: Annotated[str, "The name of the restaurant"],
-        date_time: Annotated[str, "The time in UTC, formatted as an ISO datetime string, like 2024-09-15T19:00:00"],
+        date_time: Annotated[
+            str,
+            "The time in UTC, formatted as an ISO datetime string, like 2024-09-15T19:00:00",
+        ],
         party_size: Annotated[int, "The number of people in the party"],
         customer_name: Annotated[str, "The name of the customer"],
         customer_email: Annotated[str, "The email of the customer"],
@@ -58,7 +63,9 @@ class BookingsPlugin:
         Returns:
             str: The status of the booking.
         """
-        print(f"System > Do you want to book a table at {restaurant} on {date_time} for {party_size} people?")
+        print(
+            f"System > Do you want to book a table at {restaurant} on {date_time} for {party_size} people?"
+        )
         print("System > Please confirm by typing 'yes' or 'no'.")
         confirmation = input("User:> ")
         if confirmation.lower() != "yes":
@@ -74,7 +81,9 @@ class BookingsPlugin:
             ),
             end_date_time=DateTimeTimeZone(
                 odata_type="#microsoft.graph.dateTimeTimeZone",
-                date_time=(datetime.fromisoformat(date_time) + timedelta(hours=2)).isoformat(),
+                date_time=(
+                    datetime.fromisoformat(date_time) + timedelta(hours=2)
+                ).isoformat(),
                 time_zone="UTC",
             ),
             is_location_online=False,
@@ -103,18 +112,22 @@ class BookingsPlugin:
             },
         )
 
-        response = await self.graph_client.solutions.booking_businesses.by_booking_business_id(
-            self.booking_business_id
-        ).appointments.post(request_body)
+        response = (
+            await self.graph_client.solutions.booking_businesses.by_booking_business_id(
+                self.booking_business_id
+            ).appointments.post(request_body)
+        )
 
         return f"Booking successful! Your reservation ID is {response.id}."
 
     @kernel_function(name="list_revervations", description="List all reservations")
     async def list_reservations(self) -> Annotated[str, "The list of reservations"]:
         """List the reservations for the booking business."""
-        appointments = await self.graph_client.solutions.booking_businesses.by_booking_business_id(
-            self.booking_business_id
-        ).appointments.get()
+        appointments = (
+            await self.graph_client.solutions.booking_businesses.by_booking_business_id(
+                self.booking_business_id
+            ).appointments.get()
+        )
         return "\n".join(
             [
                 f"{appointment.service_location.display_name} on {appointment.start_date_time.date_time} with id: {appointment.id}"  # noqa: E501
@@ -132,10 +145,14 @@ class BookingsPlugin:
         party_size: Annotated[int, "The number of people in the party"],
     ) -> Annotated[str, "The cancellation status of the reservation"]:
         """Cancel a reservation."""
-        print(f"System > [Cancelling a reservation for {party_size} at {restaurant} on {date} at {time}]")
+        print(
+            f"System > [Cancelling a reservation for {party_size} at {restaurant} on {date} at {time}]"
+        )
 
         _ = (
-            await self.graph_client.solutions.booking_businesses.by_booking_business_id(self.booking_business_id)
+            await self.graph_client.solutions.booking_businesses.by_booking_business_id(
+                self.booking_business_id
+            )
             .appointments.by_booking_appointment_id(reservation_id)
             .delete()
         )

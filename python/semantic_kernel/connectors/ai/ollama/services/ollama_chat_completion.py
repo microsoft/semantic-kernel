@@ -13,26 +13,41 @@ else:
 from ollama import AsyncClient, Message
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
+    OllamaChatPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.ollama.ollama_settings import OllamaSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
+from semantic_kernel.exceptions.service_exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidResponseError,
+)
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionClientBase):
+class OllamaChatCompletion(
+    OllamaBase, TextCompletionClientBase, ChatCompletionClientBase
+):
     """Initializes a new instance of the OllamaChatCompletion class.
 
     Make sure to have the ollama service running either locally or remotely.
@@ -66,7 +81,9 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise ServiceInitializationError("Failed to create Ollama settings.", ex) from ex
+            raise ServiceInitializationError(
+                "Failed to create Ollama settings.", ex
+            ) from ex
 
         super().__init__(
             service_id=service_id or ollama_settings.model,
@@ -112,7 +129,9 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
                 inner_content=response_object,
                 ai_model_id=self.ai_model_id,
                 role=AuthorRole.ASSISTANT,
-                content=response_object.get("message", {"content": None}).get("content", None),
+                content=response_object.get("message", {"content": None}).get(
+                    "content", None
+                ),
             )
         ]
 
@@ -196,7 +215,9 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             TextContent(
                 inner_content=response_object,
                 ai_model_id=self.ai_model_id,
-                text=response_object.get("message", {"content": None}).get("content", None),
+                text=response_object.get("message", {"content": None}).get(
+                    "content", None
+                ),
             )
         ]
 

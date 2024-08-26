@@ -2,7 +2,11 @@
 
 import logging
 
-from semantic_kernel.exceptions import BlockSyntaxError, CodeBlockTokenError, TemplateSyntaxError
+from semantic_kernel.exceptions import (
+    BlockSyntaxError,
+    CodeBlockTokenError,
+    TemplateSyntaxError,
+)
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -62,7 +66,11 @@ class TemplateTokenizer:
 
             # When "{{" is found outside a value
             # Note: "{{ {{x}}" => ["{{ ", "{{x}}"]
-            if not inside_text_value and current_char == Symbols.BLOCK_STARTER and next_char == Symbols.BLOCK_STARTER:
+            if (
+                not inside_text_value
+                and current_char == Symbols.BLOCK_STARTER
+                and next_char == Symbols.BLOCK_STARTER
+            ):
                 # A block starts at the first "{"
                 block_start_pos = current_char_pos
                 block_start_found = True
@@ -94,7 +102,11 @@ class TemplateTokenizer:
             if current_char == Symbols.BLOCK_ENDER and next_char == Symbols.BLOCK_ENDER:
                 blocks.extend(
                     TemplateTokenizer._extract_blocks(
-                        text, code_tokenizer, block_start_pos, end_of_last_block, next_char_pos
+                        text,
+                        code_tokenizer,
+                        block_start_pos,
+                        end_of_last_block,
+                        next_char_pos,
                     )
                 )
                 end_of_last_block = next_char_pos + 1
@@ -108,7 +120,11 @@ class TemplateTokenizer:
 
     @staticmethod
     def _extract_blocks(
-        text: str, code_tokenizer: CodeTokenizer, block_start_pos: int, end_of_last_block: int, next_char_pos: int
+        text: str,
+        code_tokenizer: CodeTokenizer,
+        block_start_pos: int,
+        end_of_last_block: int,
+        next_char_pos: int,
     ) -> list[Block]:
         """Extract the blocks from the found code.
 
@@ -153,7 +169,9 @@ class TemplateTokenizer:
             new_blocks.append(code_blocks[0])
             return new_blocks
         try:
-            new_blocks.append(CodeBlock(content=content_without_delimiters, tokens=code_blocks))
+            new_blocks.append(
+                CodeBlock(content=content_without_delimiters, tokens=code_blocks)
+            )
             return new_blocks
         except CodeBlockTokenError as e:
             msg = f"Failed to tokenize code block: {content_without_delimiters}. {e}"

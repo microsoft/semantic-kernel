@@ -47,7 +47,9 @@ cosmos_container_properties = {"partition_key": partition_key}
 
 
 @pytest_asyncio.fixture
-async def azure_cosmosdb_no_sql_memory_store(cosmos_client, partition_key) -> MemoryStoreBase:
+async def azure_cosmosdb_no_sql_memory_store(
+    cosmos_client, partition_key
+) -> MemoryStoreBase:
     return AzureCosmosDBNoSQLMemoryStore(
         cosmos_client=cosmos_client,
         database_name=database_name,
@@ -88,13 +90,18 @@ async def test_upsert_and_get_and_remove(azure_cosmosdb_no_sql_memory_store):
 
     assert result is not None
     assert result.id == record.id
-    assert all(result._embedding[i] == record._embedding[i] for i in range(len(result._embedding)))
+    assert all(
+        result._embedding[i] == record._embedding[i]
+        for i in range(len(result._embedding))
+    )
     await store.remove(container_name, record.id)
 
 
 @pytest.mark.asyncio
 @pytest.mark.skipif(skip_test, reason="Skipping test because HOST or KEY is not set")
-async def test_upsert_batch_and_get_batch_remove_batch(azure_cosmosdb_no_sql_memory_store):
+async def test_upsert_batch_and_get_batch_remove_batch(
+    azure_cosmosdb_no_sql_memory_store,
+):
     store = await azure_cosmosdb_no_sql_memory_store()
     await store.create_collection(collection_name=container_name)
     records = get_vector_items()
@@ -103,7 +110,9 @@ async def test_upsert_batch_and_get_batch_remove_batch(azure_cosmosdb_no_sql_mem
     assert len(doc_ids) == 3
     assert all(doc_id in [record.id for record in records] for doc_id in doc_ids)
 
-    results = await store.get_batch(container_name, [record.id for record in records], with_embeddings=True)
+    results = await store.get_batch(
+        container_name, [record.id for record in records], with_embeddings=True
+    )
 
     assert len(results) == 3
     assert all(result["id"] in [record.id for record in records] for result in results)
@@ -122,7 +131,9 @@ async def test_get_nearest_match(azure_cosmosdb_no_sql_memory_store):
     test_embedding = get_vector_items()[0].embedding.copy()
     test_embedding[0] = test_embedding[0] + 0.1
 
-    result = await store.get_nearest_match(container_name, test_embedding, min_relevance_score=0.0, with_embedding=True)
+    result = await store.get_nearest_match(
+        container_name, test_embedding, min_relevance_score=0.0, with_embedding=True
+    )
 
     assert result is not None
     assert result[1] > 0.0
@@ -142,7 +153,11 @@ async def test_get_nearest_matches(azure_cosmosdb_no_sql_memory_store):
     test_embedding[0] = test_embedding[0] + 0.1
 
     result = await store.get_nearest_matches(
-        container_name, test_embedding, limit=3, min_relevance_score=0.0, with_embeddings=True
+        container_name,
+        test_embedding,
+        limit=3,
+        min_relevance_score=0.0,
+        with_embeddings=True,
     )
 
     assert result is not None

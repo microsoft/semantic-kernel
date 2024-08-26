@@ -16,7 +16,10 @@ class EmailPlugin:
         {{email.SendEmail}} => Sends an email with the provided subject and body.
     """
 
-    @kernel_function(name="SendEmail", description="Given an e-mail and message body, send an e-email")
+    @kernel_function(
+        name="SendEmail",
+        description="Given an e-mail and message body, send an e-email",
+    )
     def send_email(
         self,
         subject: Annotated[str, "the subject of the email"],
@@ -25,7 +28,9 @@ class EmailPlugin:
         """Sends an email with the provided subject and body."""
         return f"Email sent with subject: {subject} and body: {body}"
 
-    @kernel_function(name="GetEmailAddress", description="Given a name, find the email address")
+    @kernel_function(
+        name="GetEmailAddress", description="Given a name, find the email address"
+    )
     def get_email_address(
         self,
         input: Annotated[str, "the name of the person"],

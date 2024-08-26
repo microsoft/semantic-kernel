@@ -8,10 +8,18 @@ from typing import Any
 from openai import AsyncOpenAI
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
-from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
+    OpenAIConfigBase,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
+    OpenAIModelTypes,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
+    OpenAITextCompletionBase,
+)
+from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import (
+    OpenAISettings,
+)
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -57,13 +65,19 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
+            raise ServiceInitializationError(
+                "Failed to create OpenAI settings.", ex
+            ) from ex
         if not openai_settings.text_model_id:
             raise ServiceInitializationError("The OpenAI text model ID is required.")
         super().__init__(
             ai_model_id=openai_settings.text_model_id,
             service_id=service_id,
-            api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+            api_key=(
+                openai_settings.api_key.get_secret_value()
+                if openai_settings.api_key
+                else None
+            ),
             org_id=openai_settings.org_id,
             ai_model_type=OpenAIModelTypes.TEXT,
             default_headers=default_headers,
@@ -77,7 +91,9 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         Args:
             settings: A dictionary of settings for the service.
         """
-        if "default_headers" in settings and isinstance(settings["default_headers"], str):
+        if "default_headers" in settings and isinstance(
+            settings["default_headers"], str
+        ):
             settings["default_headers"] = json.loads(settings["default_headers"])
         return OpenAITextCompletion(
             ai_model_id=settings.get("ai_model_id"),

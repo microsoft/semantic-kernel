@@ -11,7 +11,11 @@ from pydantic import PrivateAttr
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import PromptExecutionSettings
-from semantic_kernel.exceptions import KernelFunctionNotFoundError, KernelInvokeException, KernelPluginNotFoundError
+from semantic_kernel.exceptions import (
+    KernelFunctionNotFoundError,
+    KernelInvokeException,
+    KernelPluginNotFoundError,
+)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -114,7 +118,9 @@ class Plan:
     ) -> None:
         """Initializes a new instance of the Plan class."""
         self._name = f"plan_{generate_random_ascii_name()}" if name is None else name
-        self._plugin_name = f"p_{generate_random_ascii_name()}" if plugin_name is None else plugin_name
+        self._plugin_name = (
+            f"p_{generate_random_ascii_name()}" if plugin_name is None else plugin_name
+        )
         self._description = "" if description is None else description
         self._next_step_index = 0 if next_step_index is None else next_step_index
         self._state = KernelArguments() if state is None else state
@@ -161,7 +167,9 @@ class Plan:
             try:
                 result = await self._function.invoke(kernel=kernel, arguments=arguments)
             except Exception as exc:
-                logger.error(f"Something went wrong in plan step {self._plugin_name}.{self._name}:'{exc}'")
+                logger.error(
+                    f"Something went wrong in plan step {self._plugin_name}.{self._name}:'{exc}'"
+                )
                 raise KernelInvokeException(
                     "Error occurred while running plan step: " + str(exc),
                     exc,
@@ -187,7 +195,11 @@ class Plan:
 
         result_string = str(partial_results[-1]) if len(partial_results) > 0 else ""
 
-        return FunctionResult(function=self.metadata, value=result_string, metadata={"results": partial_results})
+        return FunctionResult(
+            function=self.metadata,
+            value=result_string,
+            metadata={"results": partial_results},
+        )
 
     def set_ai_configuration(
         self,
@@ -209,7 +221,9 @@ class Plan:
             is_prompt=self._is_prompt or False,
         )
 
-    def set_available_functions(self, plan: "Plan", kernel: "Kernel", arguments: "KernelArguments") -> "Plan":
+    def set_available_functions(
+        self, plan: "Plan", kernel: "Kernel", arguments: "KernelArguments"
+    ) -> "Plan":
         """Set the available functions for the plan."""
         if len(plan.steps) == 0:
             try:
@@ -219,7 +233,6 @@ class Plan:
                 logger.error(
                     f"Something went wrong when setting available functions in {self._plugin_name}.{self._name}:'{exc}'"
                 )
-                pass
         else:
             for step in plan.steps:
                 step = self.set_available_functions(step, kernel, arguments)
@@ -263,7 +276,9 @@ class Plan:
         """Run the next step in the plan."""
         return await self.invoke_next_step(kernel, arguments)
 
-    async def invoke_next_step(self, kernel: Kernel, arguments: KernelArguments) -> Optional["FunctionResult"]:
+    async def invoke_next_step(
+        self, kernel: Kernel, arguments: KernelArguments
+    ) -> Optional["FunctionResult"]:
         """Invoke the next step in the plan."""
         if not self.has_next_step:
             return None
@@ -288,19 +303,25 @@ class Plan:
             current_plan_result = ""
             if Plan.DEFAULT_RESULT_KEY in self._state:
                 current_plan_result = self._state[Plan.DEFAULT_RESULT_KEY]
-            self._state[Plan.DEFAULT_RESULT_KEY] = current_plan_result.strip() + str(result)
+            self._state[Plan.DEFAULT_RESULT_KEY] = current_plan_result.strip() + str(
+                result
+            )
 
         # Increment the step
         self._next_step_index += 1
         return result
 
-    def add_variables_to_state(self, state: KernelArguments, variables: KernelArguments) -> None:
+    def add_variables_to_state(
+        self, state: KernelArguments, variables: KernelArguments
+    ) -> None:
         """Add variables to the state."""
         for key in variables:
             if key not in state:
                 state[key] = variables[key]
 
-    def update_arguments_with_outputs(self, arguments: KernelArguments) -> KernelArguments:
+    def update_arguments_with_outputs(
+        self, arguments: KernelArguments
+    ) -> KernelArguments:
         """Update the arguments with the outputs from the current step."""
         if Plan.DEFAULT_RESULT_KEY in self._state:
             result_string = self._state[Plan.DEFAULT_RESULT_KEY]
@@ -313,7 +334,9 @@ class Plan:
             arguments[item] = self._state.get(item, result_string)
         return arguments
 
-    def get_next_step_arguments(self, arguments: KernelArguments, step: "Plan") -> KernelArguments:
+    def get_next_step_arguments(
+        self, arguments: KernelArguments, step: "Plan"
+    ) -> KernelArguments:
         """Get the arguments for the next step."""
         # Priority for Input
         # - Parameters (expand from variables if needed)
@@ -350,7 +373,8 @@ class Plan:
                 if param.name in arguments:
                     step_arguments[param.name] = arguments[param.name]
                 elif param.name in self._state and (
-                    self._state[param.name] is not None and self._state[param.name] != ""
+                    self._state[param.name] is not None
+                    and self._state[param.name] != ""
                 ):
                     step_arguments[param.name] = self._state[param.name]
         logger.debug(f"Added other parameters: {step_arguments}")
@@ -375,12 +399,16 @@ class Plan:
 
         return step_arguments
 
-    def expand_from_arguments(self, arguments: KernelArguments, input_from_step: Any) -> str:
+    def expand_from_arguments(
+        self, arguments: KernelArguments, input_from_step: Any
+    ) -> str:
         """Expand variables in the input from the step using the arguments."""
         result = input_from_step
         variables_regex = r"\$(?P<var>\w+)"
         matches = [m for m in re.finditer(variables_regex, str(input_from_step))]
-        ordered_matches = sorted(matches, key=lambda m: len(m.group("var")), reverse=True)
+        ordered_matches = sorted(
+            matches, key=lambda m: len(m.group("var")), reverse=True
+        )
 
         for match in ordered_matches:
             var_name = match.group("var")

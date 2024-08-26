@@ -94,10 +94,16 @@ def mock_get(collection):
 
         if collection.named_vectors:
             mock_retrieve.return_value = [
-                Record(id="id1", payload={"content": "content"}, vector={"vector": [1.0, 2.0, 3.0]})
+                Record(
+                    id="id1",
+                    payload={"content": "content"},
+                    vector={"vector": [1.0, 2.0, 3.0]},
+                )
             ]
         else:
-            mock_retrieve.return_value = [Record(id="id1", payload={"content": "content"}, vector=[1.0, 2.0, 3.0])]
+            mock_retrieve.return_value = [
+                Record(id="id1", payload={"content": "content"}, vector=[1.0, 2.0, 3.0])
+            ]
         yield mock_retrieve
 
 
@@ -129,11 +135,17 @@ def test_vector_store_in_memory(qdrant_unit_test_env):
 
 
 def test_vector_store_fail():
-    with raises(MemoryConnectorInitializationError, match="Failed to create Qdrant settings."):
+    with raises(
+        MemoryConnectorInitializationError, match="Failed to create Qdrant settings."
+    ):
         QdrantStore(location="localhost", url="localhost", env_file_path="test.env")
 
-    with raises(MemoryConnectorInitializationError, match="Failed to create Qdrant client."):
-        QdrantStore(location="localhost", url="http://localhost", env_file_path="test.env")
+    with raises(
+        MemoryConnectorInitializationError, match="Failed to create Qdrant client."
+    ):
+        QdrantStore(
+            location="localhost", url="http://localhost", env_file_path="test.env"
+        )
 
 
 @mark.asyncio
@@ -143,7 +155,9 @@ async def test_store_list_collection_names(vector_store):
 
 
 def test_get_collection(vector_store, data_model_definition, qdrant_unit_test_env):
-    collection = vector_store.get_collection("test", data_model_type=dict, data_model_definition=data_model_definition)
+    collection = vector_store.get_collection(
+        "test", data_model_type=dict, data_model_definition=data_model_definition
+    )
     assert collection.collection_name == "test"
     assert collection.qdrant_client == vector_store.qdrant_client
     assert collection.data_model_type is dict
@@ -166,7 +180,9 @@ def test_collection_init(data_model_definition, qdrant_unit_test_env):
 
 
 def test_collection_init_fail(data_model_definition):
-    with raises(MemoryConnectorInitializationError, match="Failed to create Qdrant settings."):
+    with raises(
+        MemoryConnectorInitializationError, match="Failed to create Qdrant settings."
+    ):
         QdrantCollection(
             data_model_type=dict,
             collection_name="test",
@@ -174,7 +190,9 @@ def test_collection_init_fail(data_model_definition):
             url="localhost",
             env_file_path="test.env",
         )
-    with raises(MemoryConnectorInitializationError, match="Failed to create Qdrant client."):
+    with raises(
+        MemoryConnectorInitializationError, match="Failed to create Qdrant client."
+    ):
         QdrantCollection(
             data_model_type=dict,
             collection_name="test",
@@ -184,9 +202,12 @@ def test_collection_init_fail(data_model_definition):
             env_file_path="test.env",
         )
     with raises(
-        VectorStoreModelValidationError, match="Only one vector field is allowed when not using named vectors."
+        VectorStoreModelValidationError,
+        match="Only one vector field is allowed when not using named vectors.",
     ):
-        data_model_definition.fields["vector2"] = VectorStoreRecordVectorField(name="vector2", dimensions=3)
+        data_model_definition.fields["vector2"] = VectorStoreRecordVectorField(
+            name="vector2", dimensions=3
+        )
         QdrantCollection(
             data_model_type=dict,
             collection_name="test",
@@ -197,19 +218,27 @@ def test_collection_init_fail(data_model_definition):
 
 
 @mark.asyncio
-@mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
+@mark.parametrize(
+    "collection_to_use", ["collection", "collection_without_named_vectors"]
+)
 async def test_upsert(collection_to_use, request):
     from qdrant_client.models import PointStruct
 
     collection = request.getfixturevalue(collection_to_use)
     if collection.named_vectors:
-        record = PointStruct(id="id1", payload={"content": "content"}, vector={"vector": [1.0, 2.0, 3.0]})
+        record = PointStruct(
+            id="id1", payload={"content": "content"}, vector={"vector": [1.0, 2.0, 3.0]}
+        )
     else:
-        record = PointStruct(id="id1", payload={"content": "content"}, vector=[1.0, 2.0, 3.0])
+        record = PointStruct(
+            id="id1", payload={"content": "content"}, vector=[1.0, 2.0, 3.0]
+        )
     ids = await collection._inner_upsert([record])
     assert ids[0] == "id1"
 
-    ids = await collection.upsert(record={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]})
+    ids = await collection.upsert(
+        record={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]}
+    )
     assert ids == "id1"
 
 
@@ -245,25 +274,35 @@ async def test_delete_collection(collection):
             "collection",
             {
                 "collection_name": "test",
-                "vectors_config": {"vector": VectorParams(size=3, distance=Distance.COSINE, datatype=Datatype.FLOAT32)},
+                "vectors_config": {
+                    "vector": VectorParams(
+                        size=3, distance=Distance.COSINE, datatype=Datatype.FLOAT32
+                    )
+                },
             },
         ),
         (
             "collection_without_named_vectors",
             {
                 "collection_name": "test",
-                "vectors_config": VectorParams(size=3, distance=Distance.COSINE, datatype=Datatype.FLOAT32),
+                "vectors_config": VectorParams(
+                    size=3, distance=Distance.COSINE, datatype=Datatype.FLOAT32
+                ),
             },
         ),
     ],
 )
-async def test_create_index_with_named_vectors(collection_to_use, results, mock_create_collection, request):
+async def test_create_index_with_named_vectors(
+    collection_to_use, results, mock_create_collection, request
+):
     await request.getfixturevalue(collection_to_use).create_collection()
     mock_create_collection.assert_called_once_with(**results)
 
 
 @mark.asyncio
-@mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
+@mark.parametrize(
+    "collection_to_use", ["collection", "collection_without_named_vectors"]
+)
 async def test_create_index_fail(collection_to_use, request):
     collection = request.getfixturevalue(collection_to_use)
     collection.data_model_definition.fields["vector"].dimensions = None

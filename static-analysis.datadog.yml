@@ -1,0 +1,10 @@
+schema-version: v1
+rulesets:
+  - python-best-practices
+  - python-code-style
+  - python-design
+  - python-django
+  - python-flask
+  - python-inclusive
+  - python-pandas
+  - python-security

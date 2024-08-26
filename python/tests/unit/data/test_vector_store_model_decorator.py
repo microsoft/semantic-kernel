@@ -9,13 +9,17 @@ from pydantic.dataclasses import dataclass as pydantic_dataclass
 from pytest import raises
 
 from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
 from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    VectorStoreModelException,
+)
 
 
 def test_vanilla():
@@ -28,7 +32,9 @@ def test_vanilla():
             vector: Annotated[list[float], VectorStoreRecordVectorField()],
             id: Annotated[str, VectorStoreRecordKeyField()],
             non_vector_store_content: str | None = None,
-            optional_content: Annotated[str | None, VectorStoreRecordDataField()] = None,
+            optional_content: Annotated[
+                str | None, VectorStoreRecordDataField()
+            ] = None,
             annotated_content: Annotated[str | None, "description"] = None,
         ):
             self.content = content
@@ -41,7 +47,9 @@ def test_vanilla():
 
     assert hasattr(DataModelClass, "__kernel_vectorstoremodel__")
     assert hasattr(DataModelClass, "__kernel_vectorstoremodel_definition__")
-    data_model_definition: VectorStoreRecordDefinition = DataModelClass.__kernel_vectorstoremodel_definition__
+    data_model_definition: VectorStoreRecordDefinition = (
+        DataModelClass.__kernel_vectorstoremodel_definition__
+    )
     assert len(data_model_definition.fields) == 5
     assert data_model_definition.fields["content"].name == "content"
     assert data_model_definition.fields["content"].property_type == "str"
@@ -69,7 +77,9 @@ def test_vanilla_2():
 
     assert hasattr(DataModelClass, "__kernel_vectorstoremodel__")
     assert hasattr(DataModelClass, "__kernel_vectorstoremodel_definition__")
-    data_model_definition: VectorStoreRecordDefinition = DataModelClass.__kernel_vectorstoremodel_definition__
+    data_model_definition: VectorStoreRecordDefinition = (
+        DataModelClass.__kernel_vectorstoremodel_definition__
+    )
     assert len(data_model_definition.fields) == 2
 
 
@@ -87,7 +97,9 @@ def test_dataclass():
 
     assert hasattr(DataModelClass, "__kernel_vectorstoremodel__")
     assert hasattr(DataModelClass, "__kernel_vectorstoremodel_definition__")
-    data_model_definition: VectorStoreRecordDefinition = DataModelClass.__kernel_vectorstoremodel_definition__
+    data_model_definition: VectorStoreRecordDefinition = (
+        DataModelClass.__kernel_vectorstoremodel_definition__
+    )
     assert len(data_model_definition.fields) == 5
     assert data_model_definition.fields["content"].name == "content"
     assert data_model_definition.fields["content"].property_type == "str"
@@ -125,7 +137,9 @@ def test_pydantic_base_model():
 
     assert hasattr(DataModelClass, "__kernel_vectorstoremodel__")
     assert hasattr(DataModelClass, "__kernel_vectorstoremodel_definition__")
-    data_model_definition: VectorStoreRecordDefinition = DataModelClass.__kernel_vectorstoremodel_definition__
+    data_model_definition: VectorStoreRecordDefinition = (
+        DataModelClass.__kernel_vectorstoremodel_definition__
+    )
     assert len(data_model_definition.fields) == 5
     assert data_model_definition.fields["content"].name == "content"
     assert data_model_definition.fields["content"].property_type == "str"
@@ -154,7 +168,9 @@ def test_pydantic_dataclass():
 
     assert hasattr(DataModelClass, "__kernel_vectorstoremodel__")
     assert hasattr(DataModelClass, "__kernel_vectorstoremodel_definition__")
-    data_model_definition: VectorStoreRecordDefinition = DataModelClass.__kernel_vectorstoremodel_definition__
+    data_model_definition: VectorStoreRecordDefinition = (
+        DataModelClass.__kernel_vectorstoremodel_definition__
+    )
     assert len(data_model_definition.fields) == 5
     assert data_model_definition.fields["content"].name == "content"
     assert data_model_definition.fields["content"].property_type == "str"
@@ -211,7 +227,9 @@ def test_non_vector_list_and_dict():
 
     assert hasattr(DataModelClass, "__kernel_vectorstoremodel__")
     assert hasattr(DataModelClass, "__kernel_vectorstoremodel_definition__")
-    data_model_definition: VectorStoreRecordDefinition = DataModelClass.__kernel_vectorstoremodel_definition__
+    data_model_definition: VectorStoreRecordDefinition = (
+        DataModelClass.__kernel_vectorstoremodel_definition__
+    )
     assert len(data_model_definition.fields) == 5
     assert data_model_definition.fields["list1"].name == "list1"
     assert data_model_definition.fields["list1"].property_type == "list[int]"

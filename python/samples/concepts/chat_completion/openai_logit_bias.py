@@ -5,7 +5,10 @@ from typing import Any
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import PromptExecutionSettings
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextCompletion
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAITextCompletion,
+)
 from semantic_kernel.contents import AuthorRole, ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
@@ -72,7 +75,9 @@ async def chat_request_example(kernel: Kernel):
     ]
 
     # Model will try its best to avoid using any of the above words
-    settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+    settings = kernel.get_prompt_execution_settings_from_service_id(
+        service_id=service_id
+    )
     settings = _config_ban_tokens(settings, keys)
 
     prompt_template_config = PromptTemplateConfig(
@@ -81,7 +86,10 @@ async def chat_request_example(kernel: Kernel):
         template_format="semantic-kernel",
         input_variables=[
             InputVariable(
-                name="user_input", description="The history of the conversation", is_required=True, default=""
+                name="user_input",
+                description="The history of the conversation",
+                is_required=True,
+                default="",
             ),
         ],
         execution_settings=settings,
@@ -93,17 +101,25 @@ async def chat_request_example(kernel: Kernel):
     chat.add_assistant_message("I am an AI assistant here to answer your questions.")
 
     chat_function = kernel.add_function(
-        plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
+        plugin_name="ChatBot",
+        function_name="Chat",
+        prompt_template_config=prompt_template_config,
     )
 
     chat.add_system_message("You are a basketball expert")
-    chat.add_user_message("I love the LA Lakers, tell me an interesting fact about LeBron James.")
+    chat.add_user_message(
+        "I love the LA Lakers, tell me an interesting fact about LeBron James."
+    )
 
-    answer = await kernel.invoke(chat_function, KernelArguments(user_input=_prepare_input_chat(chat)))
+    answer = await kernel.invoke(
+        chat_function, KernelArguments(user_input=_prepare_input_chat(chat))
+    )
     chat.add_assistant_message(str(answer))
 
     chat.add_user_message("What are his best all-time stats?")
-    answer = await kernel.invoke(chat_function, KernelArguments(user_input=_prepare_input_chat(chat)))
+    answer = await kernel.invoke(
+        chat_function, KernelArguments(user_input=_prepare_input_chat(chat))
+    )
     chat.add_assistant_message(str(answer))
 
     print(chat)
@@ -162,7 +178,9 @@ async def text_complete_request_example(kernel: Kernel):
     ]
 
     # Model will try its best to avoid using any of the above words
-    settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+    settings = kernel.get_prompt_execution_settings_from_service_id(
+        service_id=service_id
+    )
     settings = _config_ban_tokens(settings, keys)
 
     prompt_template_config = PromptTemplateConfig(
@@ -171,7 +189,10 @@ async def text_complete_request_example(kernel: Kernel):
         template_format="semantic-kernel",
         input_variables=[
             InputVariable(
-                name="user_input", description="The history of the conversation", is_required=True, default=""
+                name="user_input",
+                description="The history of the conversation",
+                is_required=True,
+                default="",
             ),
         ],
         execution_settings=settings,
@@ -182,10 +203,14 @@ async def text_complete_request_example(kernel: Kernel):
     chat.add_user_message("The best pie flavor to have in autumn is")
 
     text_function = kernel.add_function(
-        plugin_name="TextBot", function_name="TextCompletion", prompt_template_config=prompt_template_config
+        plugin_name="TextBot",
+        function_name="TextCompletion",
+        prompt_template_config=prompt_template_config,
     )
 
-    answer = await kernel.invoke(text_function, KernelArguments(user_input=_prepare_input_chat(chat)))
+    answer = await kernel.invoke(
+        text_function, KernelArguments(user_input=_prepare_input_chat(chat))
+    )
     chat.add_assistant_message(str(answer))
 
     print(chat)
@@ -207,7 +232,10 @@ def _check_banned_words(banned_list, actual_list) -> bool:
 def _format_output(chat, banned_words) -> None:
     print("--- Checking for banned words ---")
     chat_bot_ans_words = [
-        word for msg in chat.messages if msg.role == AuthorRole.ASSISTANT for word in msg.content.split()
+        word
+        for msg in chat.messages
+        if msg.role == AuthorRole.ASSISTANT
+        for word in msg.content.split()
     ]
     if _check_banned_words(banned_words, chat_bot_ans_words):
         print("None of the banned words were found in the answer")

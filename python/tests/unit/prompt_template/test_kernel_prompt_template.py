@@ -2,7 +2,9 @@
 
 import pytest
 
-from semantic_kernel.exceptions.template_engine_exceptions import TemplateRenderException
+from semantic_kernel.exceptions.template_engine_exceptions import (
+    TemplateRenderException,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -13,7 +15,9 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
 
-def create_kernel_prompt_template(template: str, allow_dangerously_set_content: bool = False) -> KernelPromptTemplate:
+def create_kernel_prompt_template(
+    template: str, allow_dangerously_set_content: bool = False
+) -> KernelPromptTemplate:
     return KernelPromptTemplate(
         prompt_template_config=PromptTemplateConfig(
             name="test",
@@ -26,7 +30,9 @@ def create_kernel_prompt_template(template: str, allow_dangerously_set_content: 
 
 def test_init():
     template = KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template="{{$input}}")
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template="{{$input}}"
+        )
     )
     assert template._blocks == [VarBlock(content="$input", name="input")]
     assert len(template._blocks) == 1
@@ -36,13 +42,18 @@ def test_init_validate_template_format_fail():
     with pytest.raises(ValueError):
         KernelPromptTemplate(
             prompt_template_config=PromptTemplateConfig(
-                name="test", description="test", template="{{$input}}", template_format="handlebars"
+                name="test",
+                description="test",
+                template="{{$input}}",
+                template_format="handlebars",
             )
         )
 
 
 def test_input_variables():
-    config = PromptTemplateConfig(name="test", description="test", template="{{plug.func input=$input}}")
+    config = PromptTemplateConfig(
+        name="test", description="test", template="{{plug.func input=$input}}"
+    )
     assert config.input_variables == []
     KernelPromptTemplate(prompt_template_config=config)
     assert config.input_variables[0] == InputVariable(name="input")

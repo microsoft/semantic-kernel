@@ -7,15 +7,23 @@ from typing import TYPE_CHECKING, Any, Optional
 from pybars import Compiler, PybarsError
 from pydantic import PrivateAttr, field_validator
 
-from semantic_kernel.exceptions import HandlebarsTemplateRenderException, HandlebarsTemplateSyntaxError
+from semantic_kernel.exceptions import (
+    HandlebarsTemplateRenderException,
+    HandlebarsTemplateSyntaxError,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import HANDLEBARS_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
-from semantic_kernel.prompt_template.utils import HANDLEBAR_SYSTEM_HELPERS, create_template_helper_from_function
+from semantic_kernel.prompt_template.utils import (
+    HANDLEBAR_SYSTEM_HELPERS,
+    create_template_helper_from_function,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
-    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+    from semantic_kernel.prompt_template.prompt_template_config import (
+        PromptTemplateConfig,
+    )
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -44,10 +52,14 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
 
     @field_validator("prompt_template_config")
     @classmethod
-    def validate_template_format(cls, v: "PromptTemplateConfig") -> "PromptTemplateConfig":
+    def validate_template_format(
+        cls, v: "PromptTemplateConfig"
+    ) -> "PromptTemplateConfig":
         """Validate the template format."""
         if v.template_format != HANDLEBARS_TEMPLATE_FORMAT_NAME:
-            raise ValueError(f"Invalid prompt template format: {v.template_format}. Expected: handlebars")
+            raise ValueError(
+                f"Invalid prompt template format: {v.template_format}. Expected: handlebars"
+            )
         return v
 
     def model_post_init(self, __context: Any) -> None:
@@ -56,14 +68,20 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
             self._template_compiler = None
             return
         try:
-            self._template_compiler = Compiler().compile(self.prompt_template_config.template)
+            self._template_compiler = Compiler().compile(
+                self.prompt_template_config.template
+            )
         except PybarsError as e:
-            logger.error(f"Invalid handlebars template: {self.prompt_template_config.template}")
+            logger.error(
+                f"Invalid handlebars template: {self.prompt_template_config.template}"
+            )
             raise HandlebarsTemplateSyntaxError(
                 f"Invalid handlebars template: {self.prompt_template_config.template}"
             ) from e
 
-    async def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
+    async def render(
+        self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None
+    ) -> str:
         """Render the prompt template.
 
         Using the prompt template, replace the variables with their values

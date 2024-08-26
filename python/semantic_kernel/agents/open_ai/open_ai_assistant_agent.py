@@ -9,11 +9,16 @@ from openai import AsyncOpenAI
 from pydantic import ValidationError
 
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
-from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import (
+    OpenAISettings,
+)
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
-from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
+from semantic_kernel.utils.telemetry.user_agent import (
+    APP_INFO,
+    prepend_semantic_kernel_to_user_agent,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
@@ -103,13 +108,19 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         )
 
         if not client and not openai_settings.api_key:
-            raise AgentInitializationError("The OpenAI API key is required, if a client is not provided.")
+            raise AgentInitializationError(
+                "The OpenAI API key is required, if a client is not provided."
+            )
         if not openai_settings.chat_model_id:
             raise AgentInitializationError("The OpenAI chat model ID is required.")
 
         if not client:
             client = self._create_client(
-                api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+                api_key=(
+                    openai_settings.api_key.get_secret_value()
+                    if openai_settings.api_key
+                    else None
+                ),
                 org_id=openai_settings.org_id,
                 default_headers=default_headers,
             )
@@ -240,7 +251,9 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 
     @staticmethod
     def _create_client(
-        api_key: str | None = None, org_id: str | None = None, default_headers: dict[str, str] | None = None
+        api_key: str | None = None,
+        org_id: str | None = None,
+        default_headers: dict[str, str] | None = None,
     ) -> AsyncOpenAI:
         """An internal method to create the OpenAI client from the provided arguments.
 
@@ -297,7 +310,9 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise AgentInitializationError("Failed to create OpenAI settings.", ex) from ex
+            raise AgentInitializationError(
+                "Failed to create OpenAI settings.", ex
+            ) from ex
 
         return openai_settings
 
@@ -349,17 +364,25 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             env_file_encoding=env_file_encoding,
         )
         if not client and not openai_settings.api_key:
-            raise AgentInitializationError("The OpenAI API key is required, if a client is not provided.")
+            raise AgentInitializationError(
+                "The OpenAI API key is required, if a client is not provided."
+            )
         if not openai_settings.chat_model_id:
             raise AgentInitializationError("The OpenAI chat model ID is required.")
         if not client:
             client = OpenAIAssistantAgent._create_client(
-                api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+                api_key=(
+                    openai_settings.api_key.get_secret_value()
+                    if openai_settings.api_key
+                    else None
+                ),
                 org_id=openai_settings.org_id,
                 default_headers=default_headers,
             )
         assistant = await client.beta.assistants.retrieve(id)
-        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(
+            assistant
+        )
         return OpenAIAssistantAgent(kernel=kernel, **assistant_definition)
 
     # endregion

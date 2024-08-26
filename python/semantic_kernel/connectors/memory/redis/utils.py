@@ -12,9 +12,16 @@ from redis.commands.search.document import Document
 from redis.commands.search.field import Field as RedisField
 from redis.commands.search.field import NumericField, TagField, TextField, VectorField
 
-from semantic_kernel.connectors.memory.azure_ai_search.const import DISTANCE_FUNCTION_MAP
-from semantic_kernel.connectors.memory.redis.const import TYPE_MAPPER_VECTOR, RedisCollectionTypes
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.connectors.memory.azure_ai_search.const import (
+    DISTANCE_FUNCTION_MAP,
+)
+from semantic_kernel.connectors.memory.redis.const import (
+    TYPE_MAPPER_VECTOR,
+    RedisCollectionTypes,
+)
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
 from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -49,7 +56,9 @@ def split_redis_key(redis_key: str) -> tuple[str, str]:  # pragma: no cover
     return collection, record_id
 
 
-def serialize_record_to_redis(record: MemoryRecord, vector_type: np.dtype) -> dict[str, Any]:  # pragma: no cover
+def serialize_record_to_redis(
+    record: MemoryRecord, vector_type: np.dtype
+) -> dict[str, Any]:  # pragma: no cover
     """Serialize a MemoryRecord to Redis fields."""
     all_metadata = {
         "is_reference": record._is_reference,
@@ -64,7 +73,11 @@ def serialize_record_to_redis(record: MemoryRecord, vector_type: np.dtype) -> di
         "key": record._key or "",
         "timestamp": record._timestamp.isoformat() if record._timestamp else "",
         "metadata": json.dumps(all_metadata),
-        "embedding": (record._embedding.astype(vector_type).tobytes() if record._embedding is not None else ""),
+        "embedding": (
+            record._embedding.astype(vector_type).tobytes()
+            if record._embedding is not None
+            else ""
+        ),
     }
 
 
@@ -88,7 +101,9 @@ def deserialize_redis_to_record(
 
     if with_embedding:
         # Extract using the vector type, then convert to regular Python float type
-        record._embedding = np.frombuffer(fields[b"embedding"], dtype=vector_type).astype(float)
+        record._embedding = np.frombuffer(
+            fields[b"embedding"], dtype=vector_type
+        ).astype(float)
 
     return record
 
@@ -133,7 +148,8 @@ class RedisWrapper(Redis):
 
 
 def data_model_definition_to_redis_fields(
-    data_model_definition: VectorStoreRecordDefinition, collection_type: RedisCollectionTypes
+    data_model_definition: VectorStoreRecordDefinition,
+    collection_type: RedisCollectionTypes,
 ) -> list[RedisField]:
     """Create a list of fields for Redis from a data_model_definition."""
     fields: list[RedisField] = []
@@ -157,7 +173,9 @@ def _field_to_redis_field_hashset(
             attributes={
                 "type": TYPE_MAPPER_VECTOR[field.property_type or "default"],
                 "dim": field.dimensions,
-                "distance_metric": DISTANCE_FUNCTION_MAP[field.distance_function or "default"],
+                "distance_metric": DISTANCE_FUNCTION_MAP[
+                    field.distance_function or "default"
+                ],
             },
         )
     if field.property_type in ["int", "float"]:
@@ -177,7 +195,9 @@ def _field_to_redis_field_json(
             attributes={
                 "type": TYPE_MAPPER_VECTOR[field.property_type or "default"],
                 "dim": field.dimensions,
-                "distance_metric": DISTANCE_FUNCTION_MAP[field.distance_function or "default"],
+                "distance_metric": DISTANCE_FUNCTION_MAP[
+                    field.distance_function or "default"
+                ],
             },
             as_name=name,
         )

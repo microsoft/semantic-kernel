@@ -8,13 +8,21 @@ from numpy import array, ndarray
 from pydantic import ValidationError
 from vertexai.language_models import TextEmbedding, TextEmbeddingModel
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_base import VertexAIBase
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
+    EmbeddingGeneratorBase,
+)
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_base import (
+    VertexAIBase,
+)
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAIEmbeddingPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import VertexAISettings
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import (
+    VertexAISettings,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 if sys.version_info >= (3, 12):
@@ -59,9 +67,13 @@ class VertexAITextEmbedding(VertexAIBase, EmbeddingGeneratorBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise ServiceInitializationError(f"Failed to validate Vertex AI settings: {e}") from e
+            raise ServiceInitializationError(
+                f"Failed to validate Vertex AI settings: {e}"
+            ) from e
         if not vertex_ai_settings.embedding_model_id:
-            raise ServiceInitializationError("The Vertex AI embedding model ID is required.")
+            raise ServiceInitializationError(
+                "The Vertex AI embedding model ID is required."
+            )
 
         super().__init__(
             ai_model_id=vertex_ai_settings.embedding_model_id,
@@ -92,8 +104,13 @@ class VertexAITextEmbedding(VertexAIBase, EmbeddingGeneratorBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, VertexAIEmbeddingPromptExecutionSettings)  # nosec
 
-        vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
-        model = TextEmbeddingModel.from_pretrained(self.service_settings.embedding_model_id)
+        vertexai.init(
+            project=self.service_settings.project_id,
+            location=self.service_settings.region,
+        )
+        model = TextEmbeddingModel.from_pretrained(
+            self.service_settings.embedding_model_id
+        )
         response: list[TextEmbedding] = await model.get_embeddings_async(
             texts,
             **settings.prepare_settings_dict(),

@@ -5,7 +5,9 @@ from unittest.mock import MagicMock
 
 import pytest
 from google.cloud.aiplatform_v1beta1.types.content import Candidate, Content, Part
-from google.cloud.aiplatform_v1beta1.types.prediction_service import GenerateContentResponse
+from google.cloud.aiplatform_v1beta1.types.prediction_service import (
+    GenerateContentResponse,
+)
 from google.cloud.aiplatform_v1beta1.types.tool import FunctionCall
 from vertexai.generative_models import GenerationResponse
 from vertexai.language_models import TextEmbedding
@@ -86,7 +88,9 @@ def mock_vertex_ai_chat_completion_response_with_tool_call() -> GenerationRespon
 
 
 @pytest.fixture()
-def mock_vertex_ai_streaming_chat_completion_response() -> AsyncIterable[GenerationResponse]:
+def mock_vertex_ai_streaming_chat_completion_response() -> (
+    AsyncIterable[GenerationResponse]
+):
     """Mock Vertex AI streaming Chat Completion response."""
     candidate = Candidate()
     candidate.index = 0
@@ -108,7 +112,9 @@ def mock_vertex_ai_streaming_chat_completion_response() -> AsyncIterable[Generat
 
 
 @pytest.fixture()
-def mock_vertex_ai_streaming_chat_completion_response_with_tool_call() -> AsyncIterable[GenerationResponse]:
+def mock_vertex_ai_streaming_chat_completion_response_with_tool_call() -> (
+    AsyncIterable[GenerationResponse]
+):
     """Mock Vertex AI streaming Chat Completion response."""
     candidate = Candidate()
     candidate.index = 0
@@ -158,7 +164,9 @@ def mock_vertex_ai_text_completion_response() -> GenerationResponse:
 
 
 @pytest.fixture()
-def mock_vertex_ai_streaming_text_completion_response() -> AsyncIterable[GenerationResponse]:
+def mock_vertex_ai_streaming_text_completion_response() -> (
+    AsyncIterable[GenerationResponse]
+):
     """Mock Vertex AI streaming Text Completion response."""
     candidate = Candidate()
     candidate.index = 0

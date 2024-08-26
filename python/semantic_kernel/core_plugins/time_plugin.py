@@ -176,7 +176,9 @@ class TimePlugin(KernelBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%M")
 
-    @kernel_function(description="Get the date of offset from today by a provided number of days")
+    @kernel_function(
+        description="Get the date of offset from today by a provided number of days"
+    )
     def days_ago(self, days: str) -> str:
         """Get the date a provided number of days in the past.
 
@@ -191,7 +193,9 @@ class TimePlugin(KernelBaseModel):
         d = datetime.date.today() - datetime.timedelta(days=int(days))
         return d.strftime("%A, %d %B, %Y")
 
-    @kernel_function(description="""Get the date of the last day matching the supplied week day name in English.""")
+    @kernel_function(
+        description="""Get the date of the last day matching the supplied week day name in English."""
+    )
     def date_matching_last_day_name(self, day_name: str) -> str:
         """Get the date of the last day matching the supplied day name.
 
@@ -221,7 +225,9 @@ class TimePlugin(KernelBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%S")
 
-    @kernel_function(description="Get the current time zone offset", name="timeZoneOffset")
+    @kernel_function(
+        description="Get the current time zone offset", name="timeZoneOffset"
+    )
     def time_zone_offset(self) -> str:
         """Get the current time zone offset.
 

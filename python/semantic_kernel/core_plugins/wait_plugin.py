@@ -19,11 +19,18 @@ class WaitPlugin(KernelBaseModel):
     """
 
     @kernel_function
-    async def wait(self, input: Annotated[float | str, "The number of seconds to wait, can be str or float."]) -> None:
+    async def wait(
+        self,
+        input: Annotated[
+            float | str, "The number of seconds to wait, can be str or float."
+        ],
+    ) -> None:
         """Wait for a certain number of seconds."""
         if isinstance(input, str):
             try:
                 input = float(input)
             except ValueError as exc:
-                raise FunctionExecutionException("seconds text must be a number") from exc
+                raise FunctionExecutionException(
+                    "seconds text must be a number"
+                ) from exc
         await asyncio.sleep(abs(input))

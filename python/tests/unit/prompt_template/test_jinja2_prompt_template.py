@@ -8,7 +8,9 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.exceptions.template_engine_exceptions import Jinja2TemplateRenderException
+from semantic_kernel.exceptions.template_engine_exceptions import (
+    Jinja2TemplateRenderException,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.jinja2_prompt_template import Jinja2PromptTemplate
@@ -26,7 +28,10 @@ def create_jinja2_prompt_template(template: str) -> Jinja2PromptTemplate:
 def test_init():
     template = Jinja2PromptTemplate(
         prompt_template_config=PromptTemplateConfig(
-            name="test", description="test", template="{{ input }}", template_format="jinja2"
+            name="test",
+            description="test",
+            template="{{ input }}",
+            template_format="jinja2",
         )
     )
     assert template.prompt_template_config.template == "{{ input }}"
@@ -36,20 +41,27 @@ def test_init_template_validation_fail():
     with pytest.raises(ValueError):
         Jinja2PromptTemplate(
             prompt_template_config=PromptTemplateConfig(
-                name="test", description="test", template="{{ input }}", template_format="semantic-kernel"
+                name="test",
+                description="test",
+                template="{{ input }}",
+                template_format="semantic-kernel",
             )
         )
 
 
 def test_config_without_prompt():
-    config = PromptTemplateConfig(name="test", description="test", template_format="jinja2")
+    config = PromptTemplateConfig(
+        name="test", description="test", template_format="jinja2"
+    )
     template = Jinja2PromptTemplate(prompt_template_config=config)
     assert template._env is None
 
 
 @pytest.mark.asyncio
 async def test_render_without_prompt(kernel: Kernel):
-    config = PromptTemplateConfig(name="test", description="test", template_format="jinja2")
+    config = PromptTemplateConfig(
+        name="test", description="test", template_format="jinja2"
+    )
     template = Jinja2PromptTemplate(prompt_template_config=config)
     rendered = await template.render(kernel, None)
     assert rendered == ""
@@ -107,12 +119,16 @@ async def test_it_renders_list(kernel: Kernel):
     template = "List: {% for item in items %}{{ item }}{% endfor %}"
     target = create_jinja2_prompt_template(template)
 
-    rendered = await target.render(kernel, KernelArguments(items=["item1", "item2", "item3"]))
+    rendered = await target.render(
+        kernel, KernelArguments(items=["item1", "item2", "item3"])
+    )
     assert rendered == "List: item1item2item3"
 
 
 @pytest.mark.asyncio
-async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, decorated_native_function):
+async def test_it_renders_kernel_functions_arg_from_template(
+    kernel: Kernel, decorated_native_function
+):
     kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{ plug_getLightStatus(arg1='test') }}"
     target = create_jinja2_prompt_template(template)
@@ -122,7 +138,9 @@ async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, dec
 
 
 @pytest.mark.asyncio
-async def test_it_renders_kernel_functions_arg_from_arguments(kernel: Kernel, decorated_native_function):
+async def test_it_renders_kernel_functions_arg_from_arguments(
+    kernel: Kernel, decorated_native_function
+):
     kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{ plug_getLightStatus() }}"
     target = create_jinja2_prompt_template(template)
@@ -240,7 +258,9 @@ async def test_helpers_array_from_args(kernel: Kernel):
     template = """{{array(arg1, arg2, arg3)}}"""
     target = create_jinja2_prompt_template(template)
 
-    rendered = await target.render(kernel, KernelArguments(arg1="test1", arg2="test2", arg3="test3"))
+    rendered = await target.render(
+        kernel, KernelArguments(arg1="test1", arg2="test2", arg3="test3")
+    )
     assert rendered == "['test1', 'test2', 'test3']"
 
 
@@ -294,11 +314,17 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     chat_history = ChatHistory()
     chat_history.add_user_message("User message")
     chat_history.add_message(
-        ChatMessageContent(role=AuthorRole.ASSISTANT, items=[FunctionCallContent(id="1", name="plug-test")])
+        ChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            items=[FunctionCallContent(id="1", name="plug-test")],
+        )
     )
     chat_history.add_message(
         ChatMessageContent(
-            role=AuthorRole.TOOL, items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")]
+            role=AuthorRole.TOOL,
+            items=[
+                FunctionResultContent(id="1", name="plug-test", result="Tool message")
+            ],
         )
     )
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))

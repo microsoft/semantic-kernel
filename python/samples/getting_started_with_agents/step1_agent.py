@@ -20,7 +20,9 @@ streaming = True
 
 # Define the agent name and instructions
 PARROT_NAME = "Parrot"
-PARROT_INSTRUCTIONS = "Repeat the user message in the voice of a pirate and then end with a parrot sound."
+PARROT_INSTRUCTIONS = (
+    "Repeat the user message in the voice of a pirate and then end with a parrot sound."
+)
 
 
 async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory):
@@ -52,7 +54,12 @@ async def main():
     kernel.add_service(AzureChatCompletion(service_id="agent"))
 
     # Create the agent
-    agent = ChatCompletionAgent(service_id="agent", kernel=kernel, name=PARROT_NAME, instructions=PARROT_INSTRUCTIONS)
+    agent = ChatCompletionAgent(
+        service_id="agent",
+        kernel=kernel,
+        name=PARROT_NAME,
+        instructions=PARROT_INSTRUCTIONS,
+    )
 
     # Define the chat history
     chat = ChatHistory()

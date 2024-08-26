@@ -16,10 +16,14 @@ async def test_google_ai_embedding_service(kernel: Kernel):
 
     kernel.add_service(embeddings_gen)
 
-    memory = SemanticTextMemory(storage=VolatileMemoryStore(), embeddings_generator=embeddings_gen)
+    memory = SemanticTextMemory(
+        storage=VolatileMemoryStore(), embeddings_generator=embeddings_gen
+    )
     kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
-    await memory.save_information(collection="generic", id="info1", text="My budget for 2024 is $100,000")
+    await memory.save_information(
+        collection="generic", id="info1", text="My budget for 2024 is $100,000"
+    )
     await memory.save_reference(
         "test",
         external_id="info1",

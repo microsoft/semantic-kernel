@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0001")]
 public sealed class FunctionCallContentBuilder
 {
-    private Dictionary<int, string>? _functionCallIdsByIndex = null;
+private Dictionary<int, string> _functionCallIdsByIndex = new();
     private Dictionary<int, string>? _functionNamesByIndex = null;
     private Dictionary<int, StringBuilder>? _functionArgumentBuildersByIndex = null;
 

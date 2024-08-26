@@ -10,7 +10,9 @@ async def main():
     """Client"""
     kernel = sk.Kernel()
 
-    openapi_plugin = kernel.add_plugin_from_openapi(plugin_name="openApiPlugin", openapi_document_path="./openapi.yaml")
+    openapi_plugin = kernel.add_plugin_from_openapi(
+        plugin_name="openApiPlugin", openapi_document_path="./openapi.yaml"
+    )
 
     arguments = {
         "request_body": '{"input": "hello world"}',
@@ -21,7 +23,9 @@ async def main():
 
     kernel_arguments = KernelArguments(**arguments)
 
-    result = await kernel.invoke(openapi_plugin["helloWorld"], arguments=kernel_arguments)
+    result = await kernel.invoke(
+        openapi_plugin["helloWorld"], arguments=kernel_arguments
+    )
 
     print(result)
 

@@ -12,7 +12,9 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 
 def test_function_result_str_with_value():
     result = FunctionResult(
-        function=KernelFunctionMetadata(name="test_function", is_prompt=False, is_asynchronous=False),
+        function=KernelFunctionMetadata(
+            name="test_function", is_prompt=False, is_asynchronous=False
+        ),
         value="test_value",
     )
     assert str(result) == "test_value"
@@ -20,7 +22,9 @@ def test_function_result_str_with_value():
 
 def test_function_result_str_with_list_value():
     result = FunctionResult(
-        function=KernelFunctionMetadata(name="test_function", is_prompt=False, is_asynchronous=False),
+        function=KernelFunctionMetadata(
+            name="test_function", is_prompt=False, is_asynchronous=False
+        ),
         value=["test_value1", "test_value2"],
     )
     assert str(result) == "test_value1,test_value2"
@@ -43,14 +47,19 @@ def test_function_result_str_with_kernel_content_list():
 
     content = MockKernelContent(inner_content="inner_content")
     result = FunctionResult(
-        function=KernelFunctionMetadata(name="test_function", is_prompt=False, is_asynchronous=False), value=[content]
+        function=KernelFunctionMetadata(
+            name="test_function", is_prompt=False, is_asynchronous=False
+        ),
+        value=[content],
     )
     assert str(result) == "mock_content"
 
 
 def test_function_result_str_with_dict_value():
     result = FunctionResult(
-        function=KernelFunctionMetadata(name="test_function", is_prompt=False, is_asynchronous=False),
+        function=KernelFunctionMetadata(
+            name="test_function", is_prompt=False, is_asynchronous=False
+        ),
         value={"key1": "value1", "key2": "value2"},
     )
     assert str(result) == "value2"
@@ -58,7 +67,10 @@ def test_function_result_str_with_dict_value():
 
 def test_function_result_str_empty_value():
     result = FunctionResult(
-        function=KernelFunctionMetadata(name="test_function", is_prompt=False, is_asynchronous=False), value=None
+        function=KernelFunctionMetadata(
+            name="test_function", is_prompt=False, is_asynchronous=False
+        ),
+        value=None,
     )
     assert str(result) == ""
 
@@ -69,7 +81,9 @@ def test_function_result_str_with_conversion_error():
             raise ValueError("Cannot convert to string")
 
     result = FunctionResult(
-        function=KernelFunctionMetadata(name="test_function", is_prompt=False, is_asynchronous=False),
+        function=KernelFunctionMetadata(
+            name="test_function", is_prompt=False, is_asynchronous=False
+        ),
         value=Unconvertible(),
     )
     with pytest.raises(FunctionResultError, match="Failed to convert value to string"):
@@ -93,7 +107,10 @@ def test_function_result_get_inner_content_with_list():
 
     content = MockKernelContent(inner_content="inner_content")
     result = FunctionResult(
-        function=KernelFunctionMetadata(name="test_function", is_prompt=False, is_asynchronous=False), value=[content]
+        function=KernelFunctionMetadata(
+            name="test_function", is_prompt=False, is_asynchronous=False
+        ),
+        value=[content],
     )
     assert result.get_inner_content() == "inner_content"
 
@@ -115,14 +132,19 @@ def test_function_result_get_inner_content_with_kernel_content():
 
     content = MockKernelContent(inner_content="inner_content")
     result = FunctionResult(
-        function=KernelFunctionMetadata(name="test_function", is_prompt=False, is_asynchronous=False), value=content
+        function=KernelFunctionMetadata(
+            name="test_function", is_prompt=False, is_asynchronous=False
+        ),
+        value=content,
     )
     assert result.get_inner_content() == "inner_content"
 
 
 def test_function_result_get_inner_content_no_inner_content():
     result = FunctionResult(
-        function=KernelFunctionMetadata(name="test_function", is_prompt=False, is_asynchronous=False),
+        function=KernelFunctionMetadata(
+            name="test_function", is_prompt=False, is_asynchronous=False
+        ),
         value="test_value",
     )
     assert result.get_inner_content() is None

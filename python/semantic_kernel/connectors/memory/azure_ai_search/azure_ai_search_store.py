@@ -16,9 +16,14 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collection import (
     AzureAISearchCollection,
 )
-from semantic_kernel.connectors.memory.azure_ai_search.utils import get_search_client, get_search_index_client
+from semantic_kernel.connectors.memory.azure_ai_search.utils import (
+    get_search_client,
+    get_search_index_client,
+)
 from semantic_kernel.data.vector_store import VectorStore
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -26,7 +31,9 @@ if TYPE_CHECKING:
     from azure.core.credentials import AzureKeyCredential, TokenCredential
     from azure.core.credentials_async import AsyncTokenCredential
 
-    from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+    from semantic_kernel.data.vector_store_record_collection import (
+        VectorStoreRecordCollection,
+    )
 
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -77,7 +84,9 @@ class AzureAISearchStore(VectorStore):
                     env_file_encoding=env_file_encoding,
                 )
             except ValidationError as exc:
-                raise MemoryConnectorInitializationError("Failed to create Azure AI Search settings.") from exc
+                raise MemoryConnectorInitializationError(
+                    "Failed to create Azure AI Search settings."
+                ) from exc
             search_index_client = get_search_index_client(
                 azure_ai_search_settings=azure_ai_search_settings,
                 azure_credential=azure_credentials,
@@ -110,7 +119,8 @@ class AzureAISearchStore(VectorStore):
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
                 search_index_client=self.search_index_client,
-                search_client=search_client or get_search_client(self.search_index_client, collection_name),
+                search_client=search_client
+                or get_search_client(self.search_index_client, collection_name),
                 collection_name=collection_name,
                 **kwargs,
             )
@@ -120,4 +130,6 @@ class AzureAISearchStore(VectorStore):
     async def list_collection_names(self, **kwargs: Any) -> list[str]:
         if "params" not in kwargs:
             kwargs["params"] = {"select": ["name"]}
-        return [index async for index in self.search_index_client.list_index_names(**kwargs)]
+        return [
+            index async for index in self.search_index_client.list_index_names(**kwargs)
+        ]

@@ -6,7 +6,9 @@ import pytest
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.postgres import PostgresMemoryStore
-from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
+from semantic_kernel.connectors.memory.postgres.postgres_settings import (
+    PostgresSettings,
+)
 from semantic_kernel.exceptions import ServiceResourceNotFoundError
 
 try:
@@ -16,7 +18,9 @@ try:
 except ImportError:
     psycopg_installed = False
 
-pytestmark = pytest.mark.skipif(not psycopg_installed, reason="psycopg is not installed")
+pytestmark = pytest.mark.skipif(
+    not psycopg_installed, reason="psycopg is not installed"
+)
 
 try:
     import psycopg_pool  # noqa: F401
@@ -25,7 +29,9 @@ try:
 except ImportError:
     psycopg_pool_installed = False
 
-pytestmark = pytest.mark.skipif(not psycopg_pool_installed, reason="psycopg_pool is not installed")
+pytestmark = pytest.mark.skipif(
+    not psycopg_pool_installed, reason="psycopg_pool is not installed"
+)
 
 
 # Needed because the test service may not support a high volume of requests
@@ -96,7 +102,9 @@ async def test_upsert_and_get(connection_string, memory_record1):
 
     await memory.create_collection("test_collection")
     await memory.upsert("test_collection", memory_record1)
-    result = await memory.get("test_collection", memory_record1._id, with_embedding=True)
+    result = await memory.get(
+        "test_collection", memory_record1._id, with_embedding=True
+    )
     assert result is not None
     assert result._id == memory_record1._id
     assert result._text == memory_record1._text
@@ -105,9 +113,13 @@ async def test_upsert_and_get(connection_string, memory_record1):
         assert result._embedding[i] == memory_record1._embedding[i]
 
 
-@pytest.mark.xfail(reason="Test failing with reason couldn't: get a connection after 30.00 sec")
+@pytest.mark.xfail(
+    reason="Test failing with reason couldn't: get a connection after 30.00 sec"
+)
 @pytest.mark.asyncio
-async def test_upsert_batch_and_get_batch(connection_string, memory_record1, memory_record2):
+async def test_upsert_batch_and_get_batch(
+    connection_string, memory_record1, memory_record2
+):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection("test_collection")
@@ -124,7 +136,9 @@ async def test_upsert_batch_and_get_batch(connection_string, memory_record1, mem
     assert results[1]._id in [memory_record1._id, memory_record2._id]
 
 
-@pytest.mark.xfail(reason="Test failing with reason couldn't: get a connection after 30.00 sec")
+@pytest.mark.xfail(
+    reason="Test failing with reason couldn't: get a connection after 30.00 sec"
+)
 @pytest.mark.asyncio
 async def test_remove(connection_string, memory_record1):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
@@ -132,7 +146,9 @@ async def test_remove(connection_string, memory_record1):
     await memory.create_collection("test_collection")
     await memory.upsert("test_collection", memory_record1)
 
-    result = await memory.get("test_collection", memory_record1._id, with_embedding=True)
+    result = await memory.get(
+        "test_collection", memory_record1._id, with_embedding=True
+    )
     assert result is not None
 
     await memory.remove("test_collection", memory_record1._id)
@@ -140,14 +156,18 @@ async def test_remove(connection_string, memory_record1):
         _ = await memory.get("test_collection", memory_record1._id, with_embedding=True)
 
 
-@pytest.mark.xfail(reason="Test failing with reason couldn't: get a connection after 30.00 sec")
+@pytest.mark.xfail(
+    reason="Test failing with reason couldn't: get a connection after 30.00 sec"
+)
 @pytest.mark.asyncio
 async def test_remove_batch(connection_string, memory_record1, memory_record2):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection("test_collection")
     await memory.upsert_batch("test_collection", [memory_record1, memory_record2])
-    await memory.remove_batch("test_collection", [memory_record1._id, memory_record2._id])
+    await memory.remove_batch(
+        "test_collection", [memory_record1._id, memory_record2._id]
+    )
     with pytest.raises(ServiceResourceNotFoundError):
         _ = await memory.get("test_collection", memory_record1._id, with_embedding=True)
 
@@ -155,7 +175,9 @@ async def test_remove_batch(connection_string, memory_record1, memory_record2):
         _ = await memory.get("test_collection", memory_record2._id, with_embedding=True)
 
 
-@pytest.mark.xfail(reason="Test failing with reason couldn't: get a connection after 30.00 sec")
+@pytest.mark.xfail(
+    reason="Test failing with reason couldn't: get a connection after 30.00 sec"
+)
 @pytest.mark.asyncio
 async def test_get_nearest_match(connection_string, memory_record1, memory_record2):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
@@ -178,11 +200,15 @@ async def test_get_nearest_match(connection_string, memory_record1, memory_recor
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(reason="The test is failing due to a timeout.")
-async def test_get_nearest_matches(connection_string, memory_record1, memory_record2, memory_record3):
+async def test_get_nearest_matches(
+    connection_string, memory_record1, memory_record2, memory_record3
+):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection("test_collection")
-    await memory.upsert_batch("test_collection", [memory_record1, memory_record2, memory_record3])
+    await memory.upsert_batch(
+        "test_collection", [memory_record1, memory_record2, memory_record3]
+    )
     test_embedding = memory_record2.embedding
     test_embedding[0] = test_embedding[0] + 0.025
 

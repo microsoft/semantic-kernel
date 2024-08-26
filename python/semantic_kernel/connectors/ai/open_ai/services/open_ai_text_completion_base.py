@@ -23,13 +23,17 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.utils.telemetry.decorators import trace_text_completion
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -50,9 +54,15 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> list["TextContent"]:
-        if not isinstance(settings, (OpenAITextPromptExecutionSettings, OpenAIChatPromptExecutionSettings)):
+        if not isinstance(
+            settings,
+            (OpenAITextPromptExecutionSettings, OpenAIChatPromptExecutionSettings),
+        ):
             settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, (OpenAITextPromptExecutionSettings, OpenAIChatPromptExecutionSettings))  # nosec
+        assert isinstance(
+            settings,
+            (OpenAITextPromptExecutionSettings, OpenAIChatPromptExecutionSettings),
+        )  # nosec
         if isinstance(settings, OpenAITextPromptExecutionSettings):
             settings.prompt = prompt
         else:
@@ -62,7 +72,10 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         response = await self._send_request(request_settings=settings)
         assert isinstance(response, (TextCompletion, ChatCompletion))  # nosec
         metadata = self._get_metadata_from_text_response(response)
-        return [self._create_text_content(response, choice, metadata) for choice in response.choices]
+        return [
+            self._create_text_content(response, choice, metadata)
+            for choice in response.choices
+        ]
 
     @override
     async def get_streaming_text_contents(
@@ -70,9 +83,15 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
-        if not isinstance(settings, (OpenAITextPromptExecutionSettings, OpenAIChatPromptExecutionSettings)):
+        if not isinstance(
+            settings,
+            (OpenAITextPromptExecutionSettings, OpenAIChatPromptExecutionSettings),
+        ):
             settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, (OpenAITextPromptExecutionSettings, OpenAIChatPromptExecutionSettings))  # nosec
+        assert isinstance(
+            settings,
+            (OpenAITextPromptExecutionSettings, OpenAIChatPromptExecutionSettings),
+        )  # nosec
 
         if isinstance(settings, OpenAITextPromptExecutionSettings):
             settings.prompt = prompt
@@ -90,7 +109,10 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
                 continue
             assert isinstance(chunk, (TextCompletion, ChatCompletionChunk))  # nosec
             chunk_metadata = self._get_metadata_from_text_response(chunk)
-            yield [self._create_streaming_text_content(chunk, choice, chunk_metadata) for choice in chunk.choices]
+            yield [
+                self._create_streaming_text_content(chunk, choice, chunk_metadata)
+                for choice in chunk.choices
+            ]
 
     def _create_text_content(
         self,
@@ -101,7 +123,11 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         """Create a text content object from a choice."""
         choice_metadata = self._get_metadata_from_text_choice(choice)
         choice_metadata.update(response_metadata)
-        text = choice.text if isinstance(choice, TextCompletionChoice) else choice.message.content
+        text = (
+            choice.text
+            if isinstance(choice, TextCompletionChoice)
+            else choice.message.content
+        )
         return TextContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
@@ -118,7 +144,11 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         """Create a streaming text content object from a choice."""
         choice_metadata = self._get_metadata_from_text_choice(choice)
         choice_metadata.update(response_metadata)
-        text = choice.text if isinstance(choice, TextCompletionChoice) else choice.delta.content
+        text = (
+            choice.text
+            if isinstance(choice, TextCompletionChoice)
+            else choice.delta.content
+        )
         return StreamingTextContent(
             choice_index=choice.index,
             inner_content=chunk,
@@ -141,7 +171,8 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         return ret
 
     def _get_metadata_from_text_choice(
-        self, choice: TextCompletionChoice | ChatCompletionChoice | ChatCompletionChunkChoice
+        self,
+        choice: TextCompletionChoice | ChatCompletionChoice | ChatCompletionChunkChoice,
     ) -> dict[str, Any]:
         """Get metadata from a completion choice."""
         return {

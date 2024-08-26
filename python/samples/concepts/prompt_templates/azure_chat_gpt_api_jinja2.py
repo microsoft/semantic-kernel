@@ -4,7 +4,9 @@ import asyncio
 import logging
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
@@ -28,7 +30,9 @@ chat_service = AzureChatCompletion(
 )
 kernel.add_service(chat_service)
 
-req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+req_settings = kernel.get_prompt_execution_settings_from_service_id(
+    service_id=service_id
+)
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
@@ -45,7 +49,9 @@ chat_function = kernel.add_function(
 
 chat_history = ChatHistory()
 chat_history.add_user_message("Hi there, who are you?")
-chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+chat_history.add_assistant_message(
+    "I am Mosscap, a chat bot. I'm trying to figure out what people need."
+)
 
 
 async def chat() -> bool:
@@ -62,7 +68,9 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
     chat_history.add_user_message(user_input)
-    arguments = KernelArguments(system_message=system_message, chat_history=chat_history)
+    arguments = KernelArguments(
+        system_message=system_message, chat_history=chat_history
+    )
 
     stream = True
     if stream:

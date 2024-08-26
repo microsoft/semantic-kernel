@@ -29,21 +29,20 @@
     "**/build": true
   },
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "GitHub.copilot",
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit",
       "source.fixAll": "explicit"
     }
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "GitHub.copilot",
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit",
       "source.fixAll": "explicit"
     }
   },
   "typescript.updateImportsOnFileMove.enabled": "always",
-  "eslint.enable": true,
   "eslint.validate": [
     "javascript",
     "javascriptreact",
@@ -164,5 +163,14 @@
   "cSpell.enabledLanguageIds": [
     "COBOL",
     "ACUCOBOL"
-  ]
+  ],
+  "cursorless.commandHistory": true,
+  "cmake.options.statusBarVisibility": "visible",
+  "files.autoSave": "afterDelay",
+  "CodeGPT.Autocomplete.enabled": true,
+  "CodeGPT.Autocomplete.maxTokens": 1024,
+  "CodeGPT.Autocomplete.suggestionDelay": 7200,
+  "CodeGPT.Autocomplete.provider": "CodeGPT Enterprise - Plus",
+  "clojure.trace.server": "verbose",
+  "iis.configDir": ""
 }

@@ -11,7 +11,9 @@ from azure.ai.inference.models import (
     UserMessage,
 )
 
-from semantic_kernel.connectors.ai.azure_ai_inference.services.utils import MESSAGE_CONVERTERS
+from semantic_kernel.connectors.ai.azure_ai_inference.services.utils import (
+    MESSAGE_CONVERTERS,
+)
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -122,7 +124,9 @@ def test_format_assistant_message_with_unsupported_items() -> None:
 
 def test_format_tool_message() -> None:
     """Test that a tool message is formatted correctly."""
-    function_result_content = FunctionResultContent(id="test function", result="test result")
+    function_result_content = FunctionResultContent(
+        id="test function", result="test result"
+    )
 
     message = ChatMessageContent(
         role=AuthorRole.TOOL,
@@ -137,7 +141,9 @@ def test_format_tool_message() -> None:
 
 def test_format_tool_message_item_not_found_as_the_first_item() -> None:
     """Test that formatting a tool message where the function result item is not the first item."""
-    function_result_content = FunctionResultContent(id="test function", result="test result")
+    function_result_content = FunctionResultContent(
+        id="test function", result="test result"
+    )
 
     message = ChatMessageContent(
         role=AuthorRole.TOOL,
@@ -153,7 +159,9 @@ def test_format_tool_message_item_not_found_as_the_first_item() -> None:
 
 def test_format_tool_message_with_more_than_one_items() -> None:
     """Test that a tool message with more than one item is formatted correctly."""
-    function_result_content = FunctionResultContent(id="test function", result="test result")
+    function_result_content = FunctionResultContent(
+        id="test function", result="test result"
+    )
 
     message = ChatMessageContent(
         role=AuthorRole.TOOL,

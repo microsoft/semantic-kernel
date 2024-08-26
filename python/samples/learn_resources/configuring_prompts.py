@@ -20,7 +20,10 @@ service_id = "default"
 
 # The following execution settings are used for the ConversationSummaryPlugin
 execution_settings = PromptExecutionSettings(
-    service_id=service_id, max_tokens=ConversationSummaryPlugin._max_tokens, temperature=0.1, top_p=0.5
+    service_id=service_id,
+    max_tokens=ConversationSummaryPlugin._max_tokens,
+    temperature=0.1,
+    top_p=0.5,
 )
 prompt_template_config = PromptTemplateConfig(
     template=ConversationSummaryPlugin._summarize_conversation_prompt_template,
@@ -30,7 +33,9 @@ prompt_template_config = PromptTemplateConfig(
 
 # Import the ConversationSummaryPlugin
 kernel.add_plugin(
-    ConversationSummaryPlugin(kernel=kernel, prompt_template_config=prompt_template_config),
+    ConversationSummaryPlugin(
+        kernel=kernel, prompt_template_config=prompt_template_config
+    ),
     plugin_name="ConversationSummaryPlugin",
 )
 
@@ -44,12 +49,20 @@ User: {{$request}}
 Assistant:  """,
         description="Chat with the assistant",
         execution_settings=[
-            PromptExecutionSettings(service_id="default", temperature=0.0, max_tokens=1000),
-            PromptExecutionSettings(service_id="gpt-3.5-turbo", temperature=0.2, max_tokens=4000),
-            PromptExecutionSettings(service_id="gpt-4", temperature=0.3, max_tokens=8000),
+            PromptExecutionSettings(
+                service_id="default", temperature=0.0, max_tokens=1000
+            ),
+            PromptExecutionSettings(
+                service_id="gpt-3.5-turbo", temperature=0.2, max_tokens=4000
+            ),
+            PromptExecutionSettings(
+                service_id="gpt-4", temperature=0.3, max_tokens=8000
+            ),
         ],
         input_variables=[
-            InputVariable(name="request", description="The user input", is_required=True),
+            InputVariable(
+                name="request", description="The user input", is_required=True
+            ),
             InputVariable(
                 name="history",
                 description="The history of the conversation",

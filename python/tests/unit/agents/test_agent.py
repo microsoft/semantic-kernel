@@ -12,7 +12,12 @@ from semantic_kernel.agents.agent_channel import AgentChannel
 class MockAgent(Agent):
     """A mock agent for testing purposes."""
 
-    def __init__(self, name: str = "Test Agent", description: str = "A test agent", id: str = None):
+    def __init__(
+        self,
+        name: str = "Test Agent",
+        description: str = "A test agent",
+        id: str = None,
+    ):
         args = {
             "name": name,
             "description": description,

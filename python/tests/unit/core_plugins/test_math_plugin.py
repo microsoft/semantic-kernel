@@ -34,7 +34,9 @@ def test_can_be_imported():
         (-192, -13, -205),
     ],
 )
-def test_add_when_valid_parameters_should_succeed(initial_value, amount, expected_result):
+def test_add_when_valid_parameters_should_succeed(
+    initial_value, amount, expected_result
+):
     # Arrange
     plugin = MathPlugin()
     arguments = KernelArguments(input=initial_value, amount=amount)
@@ -59,7 +61,9 @@ def test_add_when_valid_parameters_should_succeed(initial_value, amount, expecte
         (-192, -13, -179),
     ],
 )
-def test_subtract_when_valid_parameters_should_succeed(initial_value, amount, expected_result):
+def test_subtract_when_valid_parameters_should_succeed(
+    initial_value, amount, expected_result
+):
     # Arrange
     plugin = MathPlugin()
     arguments = KernelArguments(input=initial_value, amount=amount)

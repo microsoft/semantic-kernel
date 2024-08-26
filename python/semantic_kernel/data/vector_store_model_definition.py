@@ -14,7 +14,9 @@ from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    VectorStoreModelException,
+)
 
 
 @dataclass
@@ -52,12 +54,20 @@ class VectorStoreRecordDefinition:
     @property
     def vector_field_names(self) -> list[str]:
         """Get the names of the vector fields."""
-        return [name for name, value in self.fields.items() if isinstance(value, VectorStoreRecordVectorField)]
+        return [
+            name
+            for name, value in self.fields.items()
+            if isinstance(value, VectorStoreRecordVectorField)
+        ]
 
     @property
     def vector_fields(self) -> list["VectorStoreRecordVectorField"]:
         """Get the names of the vector fields."""
-        return [field for field in self.fields.values() if isinstance(field, VectorStoreRecordVectorField)]
+        return [
+            field
+            for field in self.fields.values()
+            if isinstance(field, VectorStoreRecordVectorField)
+        ]
 
     def __post_init__(self):
         """Validate the fields.
@@ -87,7 +97,11 @@ class VectorStoreRecordDefinition:
                 )
             if isinstance(value, VectorStoreRecordKeyField):
                 if self.key_field_name != "":
-                    raise VectorStoreModelException("Memory record definition must have exactly one key field.")
+                    raise VectorStoreModelException(
+                        "Memory record definition must have exactly one key field."
+                    )
                 self.key_field_name = name
         if not self.key_field_name:
-            raise VectorStoreModelException("Memory record definition must have exactly one key field.")
+            raise VectorStoreModelException(
+                "Memory record definition must have exactly one key field."
+            )

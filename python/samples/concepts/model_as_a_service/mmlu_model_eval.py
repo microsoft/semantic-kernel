@@ -15,7 +15,9 @@ from samples.concepts.model_as_a_service.helpers import (
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
     AzureAIInferenceChatCompletion,
 )
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -63,11 +65,15 @@ def load_mmlu_dataset(subjects: list[str]) -> dict[str, Dataset]:
         ds: DatasetDict = load_dataset("cais/mmlu", name=subject)
         validation_ds: Dataset = ds["validation"]
         datasets[subject] = validation_ds
-        print(f"Loaded MMLU validation dataset for {subject}. This dataset has {validation_ds.num_rows} examples.")
+        print(
+            f"Loaded MMLU validation dataset for {subject}. This dataset has {validation_ds.num_rows} examples."
+        )
 
         number_of_samples += validation_ds.num_rows
 
-    print(f"Loaded {len(subjects)} datasets with a total of {number_of_samples} examples.")
+    print(
+        f"Loaded {len(subjects)} datasets with a total of {number_of_samples} examples."
+    )
 
     return datasets
 
@@ -75,7 +81,10 @@ def load_mmlu_dataset(subjects: list[str]) -> dict[str, Dataset]:
 class MMLUPlugin:
     """A plugin for evaluating the MMLU dataset."""
 
-    @kernel_function(name="evaluate", description="Run a sample and return if the answer was correct.")
+    @kernel_function(
+        name="evaluate",
+        description="Run a sample and return if the answer was correct.",
+    )
     async def evaluate(
         self,
         sample: Annotated[dict, "The sample"],
@@ -149,7 +158,9 @@ async def main():
                     service_id=ai_service,
                 )
                 result = await kernel.invoke(
-                    plugin_name="MMLUPlugin", function_name="evaluate", arguments=kernel_arguments
+                    plugin_name="MMLUPlugin",
+                    function_name="evaluate",
+                    arguments=kernel_arguments,
                 )
 
                 if result.value is True:
@@ -158,11 +169,15 @@ async def main():
         print(f"Finished evaluating {subject}.")
         for ai_service in ai_services:
             total_corrects[ai_service] += corrects[ai_service]
-            print(f"Accuracy of {ai_service}: {corrects[ai_service] / datasets[subject].num_rows * 100:.2f}%.")
+            print(
+                f"Accuracy of {ai_service}: {corrects[ai_service] / datasets[subject].num_rows * 100:.2f}%."
+            )
 
     print("Overall results:")
     for ai_service in ai_services:
-        print(f"Overall Accuracy of {ai_service}: {total_corrects[ai_service] / totals * 100:.2f}%.")
+        print(
+            f"Overall Accuracy of {ai_service}: {total_corrects[ai_service] / totals * 100:.2f}%."
+        )
 
 
 if __name__ == "__main__":

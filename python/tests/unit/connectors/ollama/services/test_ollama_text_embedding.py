@@ -6,8 +6,12 @@ import numpy
 import pytest
 from numpy import array
 
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaEmbeddingPromptExecutionSettings
-from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import OllamaTextEmbedding
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
+    OllamaEmbeddingPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import (
+    OllamaTextEmbedding,
+)
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
@@ -60,7 +64,9 @@ async def test_embedding(mock_embedding_client, model_id, prompt):
     )
 
     assert response.all() == array([0.1, 0.2, 0.3]).all()
-    mock_embedding_client.assert_called_once_with(model=model_id, prompt=prompt, options=settings.options)
+    mock_embedding_client.assert_called_once_with(
+        model=model_id, prompt=prompt, options=settings.options
+    )
 
 
 @pytest.mark.asyncio
@@ -81,7 +87,9 @@ async def test_embedding_list_input(mock_embedding_client, model_id, prompt):
     assert type(responses) is numpy.ndarray
     assert all(type(response) is numpy.ndarray for response in responses)
     assert mock_embedding_client.call_count == 2
-    mock_embedding_client.assert_called_with(model=model_id, prompt=prompt, options=settings.options)
+    mock_embedding_client.assert_called_with(
+        model=model_id, prompt=prompt, options=settings.options
+    )
 
 
 @pytest.mark.asyncio
@@ -99,7 +107,9 @@ async def test_raw_embedding(mock_embedding_client, model_id, prompt):
     )
 
     assert response == [[0.1, 0.2, 0.3]]
-    mock_embedding_client.assert_called_once_with(model=model_id, prompt=prompt, options=settings.options)
+    mock_embedding_client.assert_called_once_with(
+        model=model_id, prompt=prompt, options=settings.options
+    )
 
 
 @pytest.mark.asyncio
@@ -118,4 +128,6 @@ async def test_raw_embedding_list_input(mock_embedding_client, model_id, prompt)
 
     assert responses == [[0.1, 0.2, 0.3], [0.1, 0.2, 0.3]]
     assert mock_embedding_client.call_count == 2
-    mock_embedding_client.assert_called_with(model=model_id, prompt=prompt, options=settings.options)
+    mock_embedding_client.assert_called_with(
+        model=model_id, prompt=prompt, options=settings.options
+    )

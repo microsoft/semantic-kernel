@@ -77,6 +77,8 @@ def mock_streaming_text_response() -> AsyncIterator:
 @pytest.fixture()
 def mock_streaming_chat_response() -> AsyncIterator:
     streaming_chat_response = MagicMock(spec=AsyncGenerator)
-    streaming_chat_response.__aiter__.return_value = [{"message": {"content": "test_response"}}]
+    streaming_chat_response.__aiter__.return_value = [
+        {"message": {"content": "test_response"}}
+    ]
 
     return streaming_chat_response
