@@ -103,7 +103,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         return this.RunOperationAsync(OperationName, async () =>
         {
-            using var request = new WeaviateGetCollectionSchemaRequest(this.CollectionName).Build();
+            var request = new WeaviateGetCollectionSchemaRequest(this.CollectionName).Build();
 
             var response = await this
                 .ExecuteRequestWithNotFoundHandlingAsync<WeaviateGetCollectionSchemaResponse>(request, cancellationToken)
@@ -126,7 +126,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 this._vectorProperties,
                 this._storagePropertyNames);
 
-            using var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
+            var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
 
             return this.ExecuteRequestAsync(request, cancellationToken);
         });
@@ -148,7 +148,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         return this.RunOperationAsync(OperationName, () =>
         {
-            using var request = new WeaviateDeleteCollectionSchemaRequest(this.CollectionName).Build();
+            var request = new WeaviateDeleteCollectionSchemaRequest(this.CollectionName).Build();
 
             return this.ExecuteRequestAsync(request, cancellationToken);
         });
@@ -161,7 +161,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         return this.RunOperationAsync(OperationName, () =>
         {
-            using var request = new WeaviateDeleteObjectRequest(this.CollectionName, key).Build();
+            var request = new WeaviateDeleteObjectRequest(this.CollectionName, key).Build();
 
             return this.ExecuteRequestAsync(request, cancellationToken);
         });
@@ -192,7 +192,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 }
             };
 
-            using var request = new WeaviateDeleteObjectBatchRequest(match).Build();
+            var request = new WeaviateDeleteObjectBatchRequest(match).Build();
 
             return this.ExecuteRequestAsync(request, cancellationToken);
         });
@@ -205,7 +205,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         return this.RunOperationAsync(OperationName, async () =>
         {
-            using var request = new WeaviateGetCollectionObjectRequest(this.CollectionName, key).Build();
+            var request = new WeaviateGetCollectionObjectRequest(this.CollectionName, key).Build();
 
             var jsonNode = await this.ExecuteRequestAsync<JsonNode>(request, cancellationToken).ConfigureAwait(false);
 
@@ -259,7 +259,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 throw new VectorStoreOperationException($"Property '{WeaviateConstants.ReservedKeyPropertyName}' should be initialized before {OperationName} operation.");
             }
 
-            using var request = new WeaviateUpsertCollectionObjectRequest(this.CollectionName, recordId, jsonNode).Build();
+            var request = new WeaviateUpsertCollectionObjectRequest(this.CollectionName, recordId, jsonNode).Build();
 
             var resultJsonNode = await this.ExecuteRequestAsync<JsonNode>(request, cancellationToken).ConfigureAwait(false);
 
@@ -288,7 +288,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 OperationName,
                 () => this._mapper.MapFromDataToStorageModel(record))).ToList();
 
-            using var request = new WeaviateUpsertCollectionObjectBatchRequest(jsonNodes).Build();
+            var request = new WeaviateUpsertCollectionObjectBatchRequest(jsonNodes).Build();
 
             return await this.ExecuteRequestAsync<List<JsonNode>>(request, cancellationToken).ConfigureAwait(false);
         }).ConfigureAwait(false);

@@ -36,7 +36,11 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
             var vectorPropertyName = storagePropertyNames[property.DataModelPropertyName];
             schema.VectorConfigurations.Add(vectorPropertyName, new WeaviateCollectionSchemaVectorConfig
             {
-                VectorIndexType = MapIndexKind(property.IndexKind, vectorPropertyName)
+                VectorIndexType = MapIndexKind(property.IndexKind, vectorPropertyName),
+                VectorIndexConfig = new WeaviateCollectionSchemaVectorIndexConfig
+                {
+                    Distance = MapDistanceFunction(property.DistanceFunction, vectorPropertyName)
+                }
             });
         }
 
@@ -66,10 +70,35 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
         };
     }
 
+    private static string MapDistanceFunction(string? distanceFunction, string vectorPropertyName)
+    {
+        const string Cosine = "cosine";
+        const string Dot = "dot";
+        const string EuclideanSquared = "l2-squared";
+        const string Hamming = "hamming";
+        const string Manhattan = "manhattan";
+
+        // If distance function is not provided, use default one.
+        if (string.IsNullOrWhiteSpace(distanceFunction))
+        {
+            return Cosine;
+        }
+
+        return distanceFunction switch
+        {
+            DistanceFunction.CosineDistance => Cosine,
+            DistanceFunction.DotProductSimilarity => Dot,
+            DistanceFunction.EuclideanSquaredDistance => EuclideanSquared,
+            DistanceFunction.Hamming => Hamming,
+            DistanceFunction.ManhattanDistance => Manhattan,
+            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore.")
+        };
+    }
+
     private static string MapType(Type type)
     {
         // Check if the type is a collection.
-        if (typeof(IEnumerable).IsAssignableFrom(type))
+        if (typeof(IEnumerable).IsAssignableFrom(type) && type != typeof(string))
         {
             var elementType = GetCollectionElementType(type);
 
@@ -85,12 +114,14 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
     {
         return type switch
         {
-            Type t when t == typeof(string) => isCollection ? "string[]" : "string",
-            Type t when t == typeof(object) => isCollection ? "object[]" : "object",
-            Type t when t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) => isCollection ? "int[]" : "int",
-            Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) => isCollection ? "number[]" : "number",
-            Type t when t == typeof(DateTime) => isCollection ? "date[]" : "date",
-            Type t when t == typeof(Guid) => isCollection ? "uuid[]" : "uuid",
+            Type t when t == typeof(string) => isCollection ? "text[]" : "text",
+            Type t when t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) ||
+                        t == typeof(int?) || t == typeof(long?) || t == typeof(short?) || t == typeof(byte?) => isCollection ? "int[]" : "int",
+            Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) ||
+                        t == typeof(float?) || t == typeof(double?) || t == typeof(decimal?) => isCollection ? "number[]" : "number",
+            Type t when t == typeof(DateTime) || t == typeof(DateTime?) => isCollection ? "date[]" : "date",
+            Type t when t == typeof(Guid) || t == typeof(Guid?) => isCollection ? "uuid[]" : "uuid",
+            Type t when t == typeof(bool) || t == typeof(bool?) => isCollection ? "boolean[]" : "boolean",
             _ => isCollection ? "object[]" : "object",
         };
     }
