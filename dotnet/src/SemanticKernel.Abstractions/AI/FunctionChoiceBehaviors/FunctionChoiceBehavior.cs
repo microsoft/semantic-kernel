@@ -41,7 +41,6 @@ public abstract class FunctionChoiceBehavior
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    [Experimental("SKEXP0001")]
     public static FunctionChoiceBehavior Auto(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true)
     {
         return new AutoFunctionChoiceBehavior(functions, autoInvoke);
@@ -67,7 +66,6 @@ public abstract class FunctionChoiceBehavior
     /// In this example, the function selector can analyze chat history and decide not to advertise the 'Add' function anymore.
     /// </param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    [Experimental("SKEXP0001")]
     public static FunctionChoiceBehavior Required(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? functionsSelector = null)
     {
         return new RequiredFunctionChoiceBehavior(functions, autoInvoke, functionsSelector);
@@ -149,6 +147,11 @@ public abstract class FunctionChoiceBehavior
 
                 throw new KernelException($"The specified function {functionFQN} was not found.");
             }
+        }
+        // Disable function calling.
+        else if (functionFQNs is { Count: 0 })
+        {
+            return availableFunctions;
         }
         // Provide all kernel functions.
         else if (kernel is not null)

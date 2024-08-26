@@ -41,7 +41,8 @@ internal sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
 
     /// <summary>
     /// Fully qualified names of the functions to provide to AI model.
-    /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
+    /// If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
+    /// If empty, no functions are provided to the model, which is equivalent to disabling function calling.
     /// </summary>
     [JsonPropertyName("functions")]
     public IList<string>? Functions { get; set; }
