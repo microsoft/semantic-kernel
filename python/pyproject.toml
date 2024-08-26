@@ -30,7 +30,7 @@ dependencies = [
 
     # embeddings
     "numpy ~= 1.25.0; python_version < '3.12'",
-    "numpy ~= 1.26.0; python_version >= '3.12'",
+    "numpy >= 1.26,< 2.2; python_version >= '3.12'",
 
     # openai connector
     "openai ~= 1.0",
