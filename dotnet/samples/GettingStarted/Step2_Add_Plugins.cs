@@ -47,7 +47,7 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
-    public class TimeInformation
+    private sealed class TimeInformation
     {
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
@@ -57,7 +57,7 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
     /// <summary>
     /// A plugin that creates widgets.
     /// </summary>
-    public class WidgetFactory
+    private sealed class WidgetFactory
     {
         [KernelFunction]
         [Description("Creates a new widget of the specified type and colors")]
@@ -74,10 +74,20 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
     }
 
     /// <summary>
+    /// Represents the details associated with a Widget.
+    /// </summary>
+    private sealed class WidgetDetails
+    {
+        public string SerialNumber { get; init; }
+        public WidgetType Type { get; init; }
+        public WidgetColor[] Colors { get; init; }
+    }
+
+    /// <summary>
     /// A <see cref="JsonConverter"/> is required to correctly convert enum values.
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum WidgetType
+    private enum WidgetType
     {
         [Description("A widget that is useful.")]
         Useful,
@@ -90,7 +100,7 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
     /// A <see cref="JsonConverter"/> is required to correctly convert enum values.
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum WidgetColor
+    private enum WidgetColor
     {
         [Description("Use when creating a red item.")]
         Red,
@@ -100,12 +110,5 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
 
         [Description("Use when creating a blue item.")]
         Blue
-    }
-
-    public class WidgetDetails
-    {
-        public string SerialNumber { get; init; }
-        public WidgetType Type { get; init; }
-        public WidgetColor[] Colors { get; init; }
     }
 }

@@ -44,6 +44,7 @@ public sealed class TestConfiguration
     public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
     public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
     public static AzureCosmosDbMongoDbConfig AzureCosmosDbMongoDb => LoadSection<AzureCosmosDbMongoDbConfig>();
+    public static ApplicationInsightsConfig ApplicationInsights => LoadSection<ApplicationInsightsConfig>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -224,6 +225,11 @@ public sealed class TestConfiguration
     {
         public string ConnectionString { get; set; }
         public string DatabaseName { get; set; }
+    }
+
+    public class ApplicationInsightsConfig
+    {
+        public string ConnectionString { get; set; }
     }
 
     /// <summary>

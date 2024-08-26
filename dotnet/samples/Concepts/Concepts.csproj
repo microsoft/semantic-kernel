@@ -14,8 +14,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
     <PackageReference Include="Docker.DotNet" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="OpenTelemetry" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.abstractions" />

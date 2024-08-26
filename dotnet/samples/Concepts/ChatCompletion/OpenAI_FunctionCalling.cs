@@ -12,7 +12,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     [Fact]
     public async Task AutoInvokeKernelFunctionsAsync()
     {
-        // Create a kernel with MistralAI chat completion and WeatherPlugin
+        // Create a kernel with OpenAI chat completion and WeatherPlugin
         Kernel kernel = CreateKernelWithPlugin<WeatherPlugin>();
 
         // Invoke chat prompt with auto invocation of functions enabled
@@ -30,7 +30,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     [Fact]
     public async Task AutoInvokeKernelFunctionsMultipleCallsAsync()
     {
-        // Create a kernel with MistralAI chat completion and WeatherPlugin
+        // Create a kernel with OpenAI chat completion and WeatherPlugin
         Kernel kernel = CreateKernelWithPlugin<WeatherPlugin>();
         var service = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -53,7 +53,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     [Fact]
     public async Task AutoInvokeKernelFunctionsWithComplexParameterAsync()
     {
-        // Create a kernel with MistralAI chat completion and HolidayPlugin
+        // Create a kernel with OpenAI chat completion and HolidayPlugin
         Kernel kernel = CreateKernelWithPlugin<HolidayPlugin>();
 
         // Invoke chat prompt with auto invocation of functions enabled
