@@ -14,11 +14,6 @@ namespace Microsoft.SemanticKernel;
 internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 {
     /// <summary>
-    /// List of the functions to provide to LLM.
-    /// </summary>
-    private readonly IEnumerable<KernelFunction>? _functions;
-
-    /// <summary>
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </summary>
     private readonly bool _autoInvoke = true;
@@ -54,26 +49,25 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// the model will keep calling the 'Add' function even if the sum - 5 - is already calculated, until the 'Add' function is no longer provided to the model.
     /// In this example, the function selector can analyze chat history and decide not to advertise the 'Add' function anymore.
     /// </param>
-    public RequiredFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? functionsSelector = null)
+    public RequiredFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? functionsSelector = null) : base(functions)
     {
         this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
-        this._functions = functions;
         this._autoInvoke = autoInvoke;
         this._functionsSelector = functionsSelector;
     }
 
     /// <summary>
     /// Fully qualified names of the functions to provide to AI model.
-    /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
+    /// If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
+    /// If empty, no functions are provided to the model, which is equivalent to disabling function calling.
     /// </summary>
     [JsonPropertyName("functions")]
     public IList<string>? Functions { get; set; }
 
     /// <inheritdoc />
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        var functions = base.GetFunctions(this.Functions, this._functions, context.Kernel, this._autoInvoke);
+        var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
 
         IReadOnlyList<KernelFunction>? selectedFunctions = null;
 
@@ -93,6 +87,5 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
             Functions = selectedFunctions ?? functions,
             AutoInvoke = this._autoInvoke,
         };
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 }

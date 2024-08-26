@@ -23,10 +23,27 @@ public abstract class FunctionChoiceBehavior
     protected const string FunctionNameSeparator = ".";
 
     /// <summary>
+    /// List of the functions to provide to AI model.
+    /// </summary>
+    private readonly IEnumerable<KernelFunction>? _functions;
+
+    /// <summary>
     /// Creates a new instance of the <see cref="FunctionChoiceBehavior"/> class.
     /// </summary>
     internal FunctionChoiceBehavior()
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FunctionChoiceBehavior"/> class.
+    /// </summary>
+    /// <param name="functions">
+    /// Functions to provide to AI model. If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
+    /// If empty, no functions are provided to the model.
+    /// </param>
+    internal FunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null)
+    {
+        this._functions = functions;
     }
 
     /// <summary>
@@ -41,7 +58,6 @@ public abstract class FunctionChoiceBehavior
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    [Experimental("SKEXP0001")]
     public static FunctionChoiceBehavior Auto(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true)
     {
         return new AutoFunctionChoiceBehavior(functions, autoInvoke);
@@ -67,7 +83,6 @@ public abstract class FunctionChoiceBehavior
     /// In this example, the function selector can analyze chat history and decide not to advertise the 'Add' function anymore.
     /// </param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    [Experimental("SKEXP0001")]
     public static FunctionChoiceBehavior Required(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? functionsSelector = null)
     {
         return new RequiredFunctionChoiceBehavior(functions, autoInvoke, functionsSelector);
@@ -100,11 +115,10 @@ public abstract class FunctionChoiceBehavior
     /// Returns functions AI connector should provide to the AI model.
     /// </summary>
     /// <param name="functionFQNs">Functions provided as fully qualified names.</param>
-    /// <param name="functions">Functions provided as instances of <see cref="KernelFunction"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> to be used for function calling.</param>
     /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI connector.</param>
     /// <returns>The configuration.</returns>
-    public IReadOnlyList<KernelFunction>? GetFunctions(IList<string>? functionFQNs, IEnumerable<KernelFunction>? functions, Kernel? kernel, bool autoInvoke)
+    protected IReadOnlyList<KernelFunction>? GetFunctions(IList<string>? functionFQNs, Kernel? kernel, bool autoInvoke)
     {
         // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
         // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
@@ -140,7 +154,7 @@ public abstract class FunctionChoiceBehavior
                 }
 
                 // Look up the function in the list of functions provided as instances of KernelFunction.
-                function = functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
+                function = this._functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
                 if (function is not null)
                 {
                     availableFunctions.Add(function);
@@ -149,6 +163,11 @@ public abstract class FunctionChoiceBehavior
 
                 throw new KernelException($"The specified function {functionFQN} was not found.");
             }
+        }
+        // Disable function calling.
+        else if (functionFQNs is { Count: 0 })
+        {
+            return availableFunctions;
         }
         // Provide all kernel functions.
         else if (kernel is not null)

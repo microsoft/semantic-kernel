@@ -9,63 +9,274 @@ namespace SemanticKernel.UnitTests.AI.FunctionChoiceBehaviors;
 
 public class FunctionChoiceBehaviorDeserializationTests
 {
-    [Fact]
-    public void ItShouldDeserializeAutoFunctionChoiceBehavior()
+    private readonly Kernel _kernel;
+
+    public FunctionChoiceBehaviorDeserializationTests()
     {
-        // Arrange
-        var json = """
-            {
-                "type": "auto",
-                "functions": ["p1.f1"]
-            }
-            """;
+        var plugin = GetTestPlugin();
 
-        // Act
-        var behavior = JsonSerializer.Deserialize<AutoFunctionChoiceBehavior>(json);
-
-        // Assert
-        Assert.NotNull(behavior?.Functions);
-        Assert.Single(behavior.Functions);
-        Assert.Equal("p1.f1", behavior.Functions.Single());
+        this._kernel = new Kernel();
+        this._kernel.Plugins.Add(plugin);
     }
 
     [Fact]
-    public void ItShouldDeserializeRequiredFunctionChoiceBehavior()
+    public void ItShouldDeserializeAutoFunctionChoiceBehaviorFromJsonWithNoFunctionsProperty()
     {
         // Arrange
         var json = """
-            {
-                "type": "required",
-                "functions": ["p1.f1"]
-            }
-            """;
+        {
+            "type": "auto"
+        }
+        """;
+
+        var sut = JsonSerializer.Deserialize<AutoFunctionChoiceBehavior>(json);
 
         // Act
-        var behavior = JsonSerializer.Deserialize<RequiredFunctionChoiceBehavior>(json);
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
-        Assert.NotNull(behavior?.Functions);
-        Assert.Single(behavior.Functions);
-        Assert.Equal("p1.f1", behavior.Functions.Single());
+        Assert.NotNull(config);
+
+        Assert.Equal(FunctionChoice.Auto, config.Choice);
+
+        Assert.True(config.AutoInvoke);
+
+        Assert.NotNull(config?.Functions);
+        Assert.Equal(3, config.Functions.Count);
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function2");
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
     }
 
     [Fact]
-    public void ItShouldDeserializeNoneFunctionChoiceBehavior()
+    public void ItShouldDeserializeAutoFunctionChoiceBehaviorFromJsonWithEmptyFunctionsProperty()
     {
         // Arrange
         var json = """
-            {
-                "type": "none",
-                "functions": ["p1.f1"]
-            }
-            """;
+        {
+            "type": "auto",
+            "functions": []
+        }
+        """;
+
+        var sut = JsonSerializer.Deserialize<AutoFunctionChoiceBehavior>(json);
 
         // Act
-        var behavior = JsonSerializer.Deserialize<NoneFunctionChoiceBehavior>(json);
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
-        Assert.NotNull(behavior?.Functions);
-        Assert.Single(behavior.Functions);
-        Assert.Equal("p1.f1", behavior.Functions.Single());
+        Assert.NotNull(config);
+
+        Assert.Equal(FunctionChoice.Auto, config.Choice);
+
+        Assert.True(config.AutoInvoke);
+
+        Assert.Null(config?.Functions);
+    }
+
+    [Fact]
+    public void ItShouldDeserializeAutoFunctionChoiceBehaviorFromJsonWithNotEmptyFunctionsProperty()
+    {
+        // Arrange
+        var json = """
+        {
+            "type": "auto",
+            "functions": ["MyPlugin.Function1", "MyPlugin.Function3"]
+        }
+        """;
+
+        var sut = JsonSerializer.Deserialize<AutoFunctionChoiceBehavior>(json);
+
+        // Act
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+
+        // Assert
+        Assert.NotNull(config);
+
+        Assert.Equal(FunctionChoice.Auto, config.Choice);
+
+        Assert.True(config.AutoInvoke);
+
+        Assert.NotNull(config?.Functions);
+        Assert.Equal(2, config.Functions.Count);
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
+    }
+
+    [Fact]
+    public void ItShouldDeserializeRequiredFunctionChoiceBehaviorFromJsonWithNoFunctionsProperty()
+    {
+        // Arrange
+        var json = """
+        {
+            "type": "required"
+        }
+        """;
+
+        var sut = JsonSerializer.Deserialize<RequiredFunctionChoiceBehavior>(json);
+
+        // Act
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+
+        // Assert
+        Assert.NotNull(config);
+
+        Assert.Equal(FunctionChoice.Required, config.Choice);
+
+        Assert.True(config.AutoInvoke);
+
+        Assert.NotNull(config?.Functions);
+        Assert.Equal(3, config.Functions.Count);
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function2");
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
+    }
+
+    [Fact]
+    public void ItShouldDeserializeRequiredFunctionChoiceBehaviorFromJsonWithEmptyFunctionsProperty()
+    {
+        // Arrange
+        var json = """
+        {
+            "type": "required",
+            "functions": []
+        }
+        """;
+
+        var sut = JsonSerializer.Deserialize<RequiredFunctionChoiceBehavior>(json);
+
+        // Act
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+
+        // Assert
+        Assert.NotNull(config);
+
+        Assert.Equal(FunctionChoice.Required, config.Choice);
+
+        Assert.True(config.AutoInvoke);
+
+        Assert.Null(config?.Functions);
+    }
+
+    [Fact]
+    public void ItShouldDeserializeRequiredFunctionChoiceBehaviorFromJsonWithNotEmptyFunctionsProperty()
+    {
+        // Arrange
+        var json = """
+        {
+            "type": "required",
+            "functions": ["MyPlugin.Function1", "MyPlugin.Function3"]
+        }
+        """;
+
+        var sut = JsonSerializer.Deserialize<RequiredFunctionChoiceBehavior>(json);
+
+        // Act
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+
+        // Assert
+        Assert.NotNull(config);
+
+        Assert.Equal(FunctionChoice.Required, config.Choice);
+
+        Assert.True(config.AutoInvoke);
+
+        Assert.NotNull(config?.Functions);
+        Assert.Equal(2, config.Functions.Count);
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
+    }
+
+    [Fact]
+    public void ItShouldDeserializedNoneFunctionChoiceBehaviorFromJsonWithNoFunctionsProperty()
+    {
+        // Arrange
+        var json = """
+        {
+            "type": "none"
+        }
+        """;
+
+        var sut = JsonSerializer.Deserialize<NoneFunctionChoiceBehavior>(json);
+
+        // Act
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+
+        // Assert
+        Assert.NotNull(config);
+
+        Assert.Equal(FunctionChoice.None, config.Choice);
+
+        Assert.False(config.AutoInvoke);
+
+        Assert.NotNull(config?.Functions);
+        Assert.Equal(3, config.Functions.Count);
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function2");
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
+    }
+
+    [Fact]
+    public void ItShouldDeserializedNoneFunctionChoiceBehaviorFromJsonWithEmptyFunctionsProperty()
+    {
+        // Arrange
+        var json = """
+        {
+            "type": "none",
+            "functions": []
+        }
+        """;
+
+        var sut = JsonSerializer.Deserialize<NoneFunctionChoiceBehavior>(json);
+
+        // Act
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+
+        // Assert
+        Assert.NotNull(config);
+
+        Assert.Equal(FunctionChoice.None, config.Choice);
+
+        Assert.False(config.AutoInvoke);
+
+        Assert.Null(config?.Functions);
+    }
+
+    [Fact]
+    public void ItShouldDeserializedNoneFunctionChoiceBehaviorFromJsonWithNotEmptyFunctionsProperty()
+    {
+        // Arrange
+        var json = """
+        {
+            "type": "none",
+            "functions": ["MyPlugin.Function1", "MyPlugin.Function3"]
+        }
+        """;
+
+        var sut = JsonSerializer.Deserialize<NoneFunctionChoiceBehavior>(json);
+
+        // Act
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+
+        // Assert
+        Assert.NotNull(config);
+
+        Assert.Equal(FunctionChoice.None, config.Choice);
+
+        Assert.False(config.AutoInvoke);
+
+        Assert.NotNull(config?.Functions);
+        Assert.Equal(2, config.Functions.Count);
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
+    }
+
+    private static KernelPlugin GetTestPlugin()
+    {
+        var function1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function2");
+        var function3 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function3");
+
+        return KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2, function3]);
     }
 }
