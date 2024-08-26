@@ -13,6 +13,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class DocumentLoader:
+    """Utility class to load a document from a URL."""
+
     @staticmethod
     async def from_uri(
         url: str,

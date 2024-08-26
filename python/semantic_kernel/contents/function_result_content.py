@@ -150,12 +150,10 @@ class FunctionResultContent(KernelContent):
             metadata=metadata,
         )
 
-    def to_chat_message_content(self, unwrap: bool = False) -> "ChatMessageContent":
+    def to_chat_message_content(self) -> "ChatMessageContent":
         """Convert the instance to a ChatMessageContent."""
         from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
-        if unwrap and isinstance(self.result, str):
-            return ChatMessageContent(role=AuthorRole.TOOL, content=self.result)
         return ChatMessageContent(role=AuthorRole.TOOL, items=[self])
 
     def to_dict(self) -> dict[str, str]:
@@ -174,3 +172,7 @@ class FunctionResultContent(KernelContent):
     def serialize_result(self, value: Any) -> str:
         """Serialize the result."""
         return str(value)
+
+    def __hash__(self) -> int:
+        """Return the hash of the function result content."""
+        return hash((self.tag, self.id, self.result, self.name, self.function_name, self.plugin_name, self.encoding))

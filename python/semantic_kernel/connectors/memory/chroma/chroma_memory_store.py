@@ -27,6 +27,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class ChromaMemoryStore(MemoryStoreBase):
+    """ChromaMemoryStore provides an interface to store and retrieve data using ChromaDB."""
+
     _client: "chromadb.Client"
 
     def __init__(
