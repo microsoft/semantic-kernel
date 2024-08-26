@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -12,9 +14,12 @@ namespace Microsoft.SemanticKernel;
 internal sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
 {
     /// <summary>
-    /// List of the functions to provide to AI model.
+    /// Initializes a new instance of the <see cref="NoneFunctionChoiceBehavior"/> class.
     /// </summary>
-    private readonly IEnumerable<KernelFunction>? _functions;
+    [JsonConstructor]
+    public NoneFunctionChoiceBehavior()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NoneFunctionChoiceBehavior"/> class.
@@ -23,16 +28,23 @@ internal sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     /// Functions to provide to AI model. If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
     /// If empty, no functions are provided to the model.
     /// </param>
-    public NoneFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null)
+    public NoneFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null) : base(functions)
     {
-        this._functions = functions;
+        this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
     }
 
+    /// <summary>
+    /// Fully qualified names of the functions to provide to AI model.
+    /// If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
+    /// If empty, no functions are provided to the model, which is equivalent to disabling function calling.
+    /// </summary>
+    [JsonPropertyName("functions")]
+    public IList<string>? Functions { get; set; }
+
     /// <inheritdoc />
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        var functions = base.GetFunctions(this._functions, context.Kernel, autoInvoke: false);
+        var functions = base.GetFunctions(this.Functions, context.Kernel, autoInvoke: false);
 
         return new FunctionChoiceBehaviorConfiguration()
         {
@@ -40,6 +52,5 @@ internal sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
             Functions = functions,
             AutoInvoke = false,
         };
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 }

@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -11,8 +13,39 @@ namespace Microsoft.SemanticKernel;
 /// These behaviors define the way functions are chosen by AI model and various aspects of their invocation by AI connectors.
 /// </summary>
 [Experimental("SKEXP0001")]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonDerivedType(typeof(AutoFunctionChoiceBehavior), typeDiscriminator: "auto")]
+[JsonDerivedType(typeof(RequiredFunctionChoiceBehavior), typeDiscriminator: "required")]
+[JsonDerivedType(typeof(NoneFunctionChoiceBehavior), typeDiscriminator: "none")]
 public abstract class FunctionChoiceBehavior
 {
+    /// <summary>
+    /// List of the functions to provide to AI model.
+    /// </summary>
+    private readonly IEnumerable<KernelFunction>? _functions;
+
+    /// <summary>The separator used to separate plugin name and function name.</summary>
+    protected const string FunctionNameSeparator = ".";
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="FunctionChoiceBehavior"/> class.
+    /// </summary>
+    internal FunctionChoiceBehavior()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FunctionChoiceBehavior"/> class.
+    /// </summary>
+    /// <param name="functions">
+    /// Functions to provide to AI model. If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
+    /// If empty, no functions are provided to the model.
+    /// </param>
+    internal FunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null)
+    {
+        this._functions = functions;
+    }
+
     /// <summary>
     /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to the AI model to call or specific ones.
     /// This behavior allows the model to decide whether to call the functions and, if so, which ones to call.
@@ -25,7 +58,6 @@ public abstract class FunctionChoiceBehavior
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    [Experimental("SKEXP0001")]
     public static FunctionChoiceBehavior Auto(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true)
     {
         return new AutoFunctionChoiceBehavior(functions, autoInvoke);
@@ -51,7 +83,6 @@ public abstract class FunctionChoiceBehavior
     /// In this example, the function selector can analyze chat history and decide not to advertise the 'Add' function anymore.
     /// </param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    [Experimental("SKEXP0001")]
     public static FunctionChoiceBehavior Required(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? functionsSelector = null)
     {
         return new RequiredFunctionChoiceBehavior(functions, autoInvoke, functionsSelector);
@@ -83,11 +114,11 @@ public abstract class FunctionChoiceBehavior
     /// <summary>
     /// Returns functions AI connector should provide to the AI model.
     /// </summary>
-    /// <param name="functions">Functions provided as instances of <see cref="KernelFunction"/>.</param>
+    /// <param name="functionFQNs">Functions provided as fully qualified names.</param>
     /// <param name="kernel">The <see cref="Kernel"/> to be used for function calling.</param>
     /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI connector.</param>
     /// <returns>The configuration.</returns>
-    public IReadOnlyList<KernelFunction>? GetFunctions(IEnumerable<KernelFunction>? functions, Kernel? kernel, bool autoInvoke)
+    protected IReadOnlyList<KernelFunction>? GetFunctions(IList<string>? functionFQNs, Kernel? kernel, bool autoInvoke)
     {
         // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
         // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
@@ -101,21 +132,42 @@ public abstract class FunctionChoiceBehavior
 
         List<KernelFunction>? availableFunctions = null;
 
-        if (functions is not null)
+        if (functionFQNs is { Count: > 0 })
         {
-            availableFunctions = new List<KernelFunction>(functions);
+            availableFunctions = new List<KernelFunction>(functionFQNs.Count);
 
-            if (autoInvoke)
+            foreach (var functionFQN in functionFQNs)
             {
-                foreach (var function in availableFunctions)
+                var nameParts = FunctionName.Parse(functionFQN, FunctionNameSeparator);
+
+                // Look up the function in the kernel.
+                if (kernel is not null && kernel.Plugins.TryGetFunction(nameParts.PluginName, nameParts.Name, out var function))
                 {
-                    // If auto-invocation is requested and no function is found in the kernel, fail early.
-                    if (!kernel!.Plugins.TryGetFunction(function.PluginName, function.Name, out var _))
-                    {
-                        throw new KernelException($"The specified function {function} is not available in the kernel.");
-                    }
+                    availableFunctions.Add(function);
+                    continue;
                 }
+
+                // If auto-invocation is requested and no function is found in the kernel, fail early.
+                if (autoInvoke)
+                {
+                    throw new KernelException($"The specified function {functionFQN} is not available in the kernel.");
+                }
+
+                // Look up the function in the list of functions provided as instances of KernelFunction.
+                function = this._functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
+                if (function is not null)
+                {
+                    availableFunctions.Add(function);
+                    continue;
+                }
+
+                throw new KernelException($"The specified function {functionFQN} was not found.");
             }
+        }
+        // Disable function calling.
+        else if (functionFQNs is { Count: 0 })
+        {
+            return availableFunctions;
         }
         // Provide all kernel functions.
         else if (kernel is not null)

@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -12,14 +14,9 @@ namespace Microsoft.SemanticKernel;
 internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 {
     /// <summary>
-    /// List of the functions to provide to LLM.
-    /// </summary>
-    private readonly IEnumerable<KernelFunction>? _functions;
-
-    /// <summary>
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </summary>
-    private readonly bool _autoInvoke;
+    private readonly bool _autoInvoke = true;
 
     /// <summary>
     /// Functions selector to customize functions selection logic.
@@ -27,7 +24,15 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     private readonly Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? _functionsSelector;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AutoFunctionChoiceBehavior"/> class.
+    /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
+    /// </summary>
+    [JsonConstructor]
+    public RequiredFunctionChoiceBehavior()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
     /// </summary>
     /// <param name="functions">
     /// Functions to provide to AI model. If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
@@ -44,18 +49,25 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// the model will keep calling the 'Add' function even if the sum - 5 - is already calculated, until the 'Add' function is no longer provided to the model.
     /// In this example, the function selector can analyze chat history and decide not to advertise the 'Add' function anymore.
     /// </param>
-    public RequiredFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? functionsSelector = null)
+    public RequiredFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? functionsSelector = null) : base(functions)
     {
-        this._functions = functions;
+        this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
         this._autoInvoke = autoInvoke;
         this._functionsSelector = functionsSelector;
     }
 
+    /// <summary>
+    /// Fully qualified names of the functions to provide to AI model.
+    /// If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
+    /// If empty, no functions are provided to the model, which is equivalent to disabling function calling.
+    /// </summary>
+    [JsonPropertyName("functions")]
+    public IList<string>? Functions { get; set; }
+
     /// <inheritdoc />
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        var functions = base.GetFunctions(this._functions, context.Kernel, this._autoInvoke);
+        var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
 
         IReadOnlyList<KernelFunction>? selectedFunctions = null;
 
@@ -75,6 +87,5 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
             Functions = selectedFunctions ?? functions,
             AutoInvoke = this._autoInvoke,
         };
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 }

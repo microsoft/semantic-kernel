@@ -90,7 +90,7 @@ public class PromptExecutionSettings
     /// The intermediate messages will be retained in the provided <see cref="ChatHistory"/>.
     /// </remarks>
     [JsonPropertyName("function_choice_behavior")]
-    [Experimental("SKEXP0010")]
+    [Experimental("SKEXP0001")]
     public FunctionChoiceBehavior? FunctionChoiceBehavior
     {
         get => this._functionChoiceBehavior;

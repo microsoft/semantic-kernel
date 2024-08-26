@@ -333,7 +333,10 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
-        return openAIExecutionSettings!;
+        // Restore the function choice behavior that lost internal state(list of function instances) during serialization/deserialization process.
+        openAIExecutionSettings!.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
+
+        return openAIExecutionSettings;
     }
 
     /// <summary>

@@ -28,7 +28,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new AutoFunctionChoiceBehavior();
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -50,7 +50,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new AutoFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -61,29 +61,29 @@ public sealed class AutoFunctionChoiceBehaviorTests
         Assert.Contains(config.Functions, f => f.Name == "Function2");
     }
 
-    //[Fact]
-    //public void ItShouldAdvertiseOnlyFunctionsSuppliedInFunctionsProperty()
-    //{
-    //    // Arrange
-    //    var plugin = GetTestPlugin();
-    //    this._kernel.Plugins.Add(plugin);
+    [Fact]
+    public void ItShouldAdvertiseOnlyFunctionsSuppliedInFunctionsProperty()
+    {
+        // Arrange
+        var plugin = GetTestPlugin();
+        this._kernel.Plugins.Add(plugin);
 
-    //    // Act
-    //    var choiceBehavior = new AutoFunctionChoiceBehavior()
-    //    {
-    //        Functions = ["MyPlugin.Function1", "MyPlugin.Function2"]
-    //    };
+        // Act
+        var choiceBehavior = new AutoFunctionChoiceBehavior()
+        {
+            Functions = ["MyPlugin.Function1", "MyPlugin.Function2"]
+        };
 
-    //    var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
-    //    // Assert
-    //    Assert.NotNull(config);
+        // Assert
+        Assert.NotNull(config);
 
-    //    Assert.NotNull(config.Functions);
-    //    Assert.Equal(2, config.Functions.Count);
-    //    Assert.Contains(config.Functions, f => f.Name == "Function1");
-    //    Assert.Contains(config.Functions, f => f.Name == "Function2");
-    //}
+        Assert.NotNull(config.Functions);
+        Assert.Equal(2, config.Functions.Count);
+        Assert.Contains(config.Functions, f => f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.Name == "Function2");
+    }
 
     [Fact]
     public void ItShouldAdvertiseOnlyFunctionsSuppliedViaConstructorForManualInvocation()
@@ -94,7 +94,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new AutoFunctionChoiceBehavior([plugin.ElementAt(0), plugin.ElementAt(1)], autoInvoke: false);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -115,7 +115,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -137,7 +137,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new AutoFunctionChoiceBehavior();
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -154,30 +154,30 @@ public sealed class AutoFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false);
 
-        var config = choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
         Assert.False(config.AutoInvoke);
     }
 
-    //[Fact]
-    //public void ItShouldInitializeFunctionPropertyByFunctionsPassedViaConstructor()
-    //{
-    //    // Arrange
-    //    var plugin = GetTestPlugin();
-    //    this._kernel.Plugins.Add(plugin);
+    [Fact]
+    public void ItShouldInitializeFunctionPropertyByFunctionsPassedViaConstructor()
+    {
+        // Arrange
+        var plugin = GetTestPlugin();
+        this._kernel.Plugins.Add(plugin);
 
-    //    // Act
-    //    var choiceBehavior = new AutoFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
+        // Act
+        var choiceBehavior = new AutoFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
 
-    //    // Assert
-    //    Assert.NotNull(choiceBehavior.Functions);
-    //    Assert.Equal(2, choiceBehavior.Functions.Count);
+        // Assert
+        Assert.NotNull(choiceBehavior.Functions);
+        Assert.Equal(2, choiceBehavior.Functions.Count);
 
-    //    Assert.Equal("MyPlugin.Function1", choiceBehavior.Functions.ElementAt(0));
-    //    Assert.Equal("MyPlugin.Function2", choiceBehavior.Functions.ElementAt(1));
-    //}
+        Assert.Equal("MyPlugin.Function1", choiceBehavior.Functions.ElementAt(0));
+        Assert.Equal("MyPlugin.Function2", choiceBehavior.Functions.ElementAt(1));
+    }
 
     [Fact]
     public void ItShouldThrowExceptionIfAutoInvocationRequestedButNoKernelIsProvided()
@@ -191,7 +191,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         // Act
         var exception = Assert.Throws<KernelException>(() =>
         {
-            choiceBehavior.GetConfiguration(new([]) { Kernel = null });
+            choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = null });
         });
 
         Assert.Equal("Auto-invocation is not supported when no kernel is provided.", exception.Message);
@@ -208,32 +208,32 @@ public sealed class AutoFunctionChoiceBehaviorTests
         // Act
         var exception = Assert.Throws<KernelException>(() =>
         {
-            choiceBehavior.GetConfiguration(new([]) { Kernel = this._kernel });
+            choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
         });
 
         Assert.Equal("The specified function MyPlugin.Function1 is not available in the kernel.", exception.Message);
     }
 
-    //[Fact]
-    //public void ItShouldThrowExceptionIfNoFunctionFoundAndManualInvocationIsRequested()
-    //{
-    //    // Arrange
-    //    var plugin = GetTestPlugin();
-    //    this._kernel.Plugins.Add(plugin);
+    [Fact]
+    public void ItShouldThrowExceptionIfNoFunctionFoundAndManualInvocationIsRequested()
+    {
+        // Arrange
+        var plugin = GetTestPlugin();
+        this._kernel.Plugins.Add(plugin);
 
-    //    var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false)
-    //    {
-    //        Functions = ["MyPlugin.NonKernelFunction"]
-    //    };
+        var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false)
+        {
+            Functions = ["MyPlugin.NonKernelFunction"]
+        };
 
-    //    // Act
-    //    var exception = Assert.Throws<KernelException>(() =>
-    //    {
-    //        choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
-    //    });
+        // Act
+        var exception = Assert.Throws<KernelException>(() =>
+        {
+            choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+        });
 
-    //    Assert.Equal("The specified function MyPlugin.NonKernelFunction was not found.", exception.Message);
-    //}
+        Assert.Equal("The specified function MyPlugin.NonKernelFunction was not found.", exception.Message);
+    }
 
     private static KernelPlugin GetTestPlugin()
     {
