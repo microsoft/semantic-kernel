@@ -23,6 +23,13 @@ namespace FunctionCalling;
 /// <summary>
 /// This sample collects telemetry for function call when using AzureOpenAI.
 /// </summary>
+/// <remarks>
+/// You can configure the sample to run with whatever models you want to test.
+/// The sample will enable telemetry for the Semantic Kernel using Application Insights.
+/// When you run the sample each test will output an Operation Id.
+/// In your Application Insights instance go to Investigate -> Transaction search and enter the operation id.
+/// Select the first entry and then select the "View timeline" to see all of the chat completions and function calls.
+/// </remarks>
 public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
@@ -80,17 +87,11 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
 
         // Create filters to add function calling meters
         var functionFilter = new FunctionInvocationFilter();
-        var autoFunctionFilter = new AutoFunctionInvocationFilter();
 
-        // Create a logging handler to output HTTP requests and responses
-        LoggingHandler handler = new(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
-
-        // Create a kernel with OpenAI chat completion
+        // Create a kernel with OpenAI chatService completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.Services.AddSingleton(loggerFactory);
         kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter);
-        kernelBuilder.Services.AddSingleton<IAutoFunctionInvocationFilter>(autoFunctionFilter);
         kernelBuilder.AddAzureOpenAIChatCompletion(
                 deploymentName: deploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
@@ -100,14 +101,14 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
         kernel.Data["TargetService"] = "AzureOpenAI";
 
         using var activity = s_activitySource.StartActivity("Main");
-        Console.WriteLine($"Operation/Trace ID: {Activity.Current?.TraceId}");
+        Console.WriteLine($"Operation Id: {Activity.Current?.TraceId}");
         if (stream)
         {
-            await VerifyFunctionCallStreamingAsync(kernel, attempts, functionFilter, autoFunctionFilter);
+            await VerifyFunctionCallStreamingAsync(kernel, attempts, functionFilter);
         }
         else
         {
-            await VerifyFunctionCallAsync(kernel, attempts, functionFilter, autoFunctionFilter);
+            await VerifyFunctionCallAsync(kernel, attempts, functionFilter);
         }
     }
 
@@ -117,9 +118,11 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
     /// <summary>
     /// Verify function calling using the provided <see cref="Kernel"/>.
     /// </summary>
-    private async Task VerifyFunctionCallAsync(Kernel kernel, int attempts, FunctionInvocationFilter functionFilter, AutoFunctionInvocationFilter autoFunctionFilter)
+    private async Task VerifyFunctionCallAsync(Kernel kernel, int attempts, FunctionInvocationFilter functionFilter)
     {
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        IChatCompletionService chatService = kernel.GetRequiredService<IChatCompletionService>();
+        ChatHistory chatHistory = [];
         int success = 0;
         Random random = new();
         Array widgetColors = Enum.GetValues<WidgetColor>();
@@ -130,15 +133,14 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
             var widgetType = (WidgetType)widgetTypes.GetValue(random.Next(widgetTypes.Length))!;
 
             var functionCount = functionFilter.Counter;
-            var autoFunctionCount = autoFunctionFilter.Counter;
 
-            KernelFunction function = KernelFunctionFactory.CreateFromPrompt($"Create a {widgetType} {widgetColor} colored widget for me.", functionName: "PromptCreateWidget");
-            var result = await kernel.InvokeAsync(function, new(settings));
+            chatHistory.AddUserMessage($"Create a {widgetType} {widgetColor} colored widget for me.");
+            var result = await chatService.GetChatMessageContentsAsync(chatHistory, settings, kernel);
 
             var resultStr = result.ToString();
             if (
-                functionFilter.Counter == functionCount + 2 && // Expect the prompt function and the widget factory function to be called
-                autoFunctionFilter.Counter == autoFunctionCount + 1 && // Expect a single auto function invocation
+                resultStr is not null &&
+                functionFilter.Counter == functionCount + 2 && // Expect the widget factory function to be called
                 resultStr.Contains(widgetColor.ToString(), StringComparison.OrdinalIgnoreCase) && // Expect the color to be in the result
                 resultStr.Contains(widgetType.ToString(), StringComparison.OrdinalIgnoreCase)) // Expect the type to be in the result
             {
@@ -151,11 +153,11 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
     /// <summary>
     /// Verify function calling using the provided <see cref="Kernel"/>.
     /// </summary>
-    private async Task VerifyFunctionCallStreamingAsync(Kernel kernel, int attempts, FunctionInvocationFilter functionFilter, AutoFunctionInvocationFilter autoFunctionFilter)
+    private async Task VerifyFunctionCallStreamingAsync(Kernel kernel, int attempts, FunctionInvocationFilter functionFilter)
     {
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
-        ChatHistory chatHistory = new();
+        IChatCompletionService chatService = kernel.GetRequiredService<IChatCompletionService>();
+        ChatHistory chatHistory = [];
         int success = 0;
         Random random = new();
         Array widgetColors = Enum.GetValues<WidgetColor>();
@@ -166,12 +168,9 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
             var widgetType = (WidgetType)widgetTypes.GetValue(random.Next(widgetTypes.Length))!;
 
             var functionCount = functionFilter.Counter;
-            var autoFunctionCount = autoFunctionFilter.Counter;
 
-            //KernelFunction function = KernelFunctionFactory.CreateFromPrompt($"Create a {widgetType} {widgetColor} colored widget for me.", functionName: "PromptCreateWidget");
-            //var results = function.InvokeStreamingAsync(kernel, new(settings));
             chatHistory.AddUserMessage($"Create a {widgetType} {widgetColor} colored widget for me.");
-            var results = chat.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel);
+            var results = chatService.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel);
 
             var resultBuilder = new StringBuilder();
             await foreach (StreamingKernelContent update in results)
@@ -183,8 +182,7 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
             chatHistory.AddAssistantMessage(resultStr);
 
             if (
-                functionFilter.Counter == functionCount + 2 && // Expect the prompt function and the widget factory function to be called
-                autoFunctionFilter.Counter == autoFunctionCount + 1 && // Expect a single auto function invocation
+                functionFilter.Counter == functionCount + 1 && // Expect the widget factory function to be called
                 resultStr.Contains(widgetColor.ToString(), StringComparison.OrdinalIgnoreCase) && // Expect the color to be in the result
                 resultStr.Contains(widgetType.ToString(), StringComparison.OrdinalIgnoreCase)) // Expect the type to be in the result
             {
@@ -250,26 +248,6 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
         public string SerialNumber { get; init; }
         public WidgetType Type { get; init; }
         public WidgetColor[] Colors { get; init; }
-    }
-
-    /// <summary>Adds a counter for all auto function invocations.</summary>
-    private sealed class AutoFunctionInvocationFilter : IAutoFunctionInvocationFilter
-    {
-        public int Counter { get; private set; }
-
-        public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
-        {
-            var functionName = context.Function.Name;
-
-            var meter = new Meter("Microsoft.SemanticKernel");
-
-            var functionCallCounter = meter.CreateCounter<int>("semantic_kernel.function.auto.invocation.count");
-            functionCallCounter.Add(1, KeyValuePair.Create<string, object?>("function_name", functionName));
-
-            this.Counter++;
-
-            await next(context);
-        }
     }
 
     /// <summary>Adds a counter for all function invocations.</summary>
