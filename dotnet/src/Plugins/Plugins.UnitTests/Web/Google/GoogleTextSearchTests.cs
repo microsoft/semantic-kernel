@@ -29,6 +29,7 @@ public sealed class GoogleTextSearchTests : IDisposable
     public void Dispose()
     {
         this._messageHandlerStub.Dispose();
+        this._clientFactory.Dispose();
 
         GC.SuppressFinalize(this);
     }
@@ -177,17 +178,23 @@ public sealed class GoogleTextSearchTests : IDisposable
     private readonly Kernel _kernel;
 
     /// <summary>
-    /// Implementation of <see cref="Google.Apis.Http.IHttpClientFactory"/> which uses the <see cref="LoggingConfigurableMessageHandler"/>.
+    /// Implementation of <see cref="IHttpClientFactory"/> which uses the <see cref="MultipleHttpMessageHandlerStub"/>.
     /// </summary>
-    private sealed class CustomHttpClientFactory(MultipleHttpMessageHandlerStub handlerStub) : IHttpClientFactory
+    private sealed class CustomHttpClientFactory(MultipleHttpMessageHandlerStub handlerStub) : IHttpClientFactory, IDisposable
     {
-        private readonly MultipleHttpMessageHandlerStub _handlerStub = handlerStub;
+        private readonly ConfigurableMessageHandler _messageHandler = new(handlerStub);
 
         public ConfigurableHttpClient CreateHttpClient(CreateHttpClientArgs args)
         {
-            ConfigurableMessageHandler messageHandler = new(this._handlerStub);
-            var configurableHttpClient = new ConfigurableHttpClient(messageHandler);
+            var configurableHttpClient = new ConfigurableHttpClient(this._messageHandler);
             return configurableHttpClient;
+        }
+
+        public void Dispose()
+        {
+            this._messageHandler.Dispose();
+
+            GC.SuppressFinalize(this);
         }
     }
     #endregion
