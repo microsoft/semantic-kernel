@@ -15,14 +15,29 @@ jobs:
         python-version: ["3.10"]
     runs-on: ubuntu-latest
     continue-on-error: true
+    defaults:
+      run:
+        working-directory: python
+    env:
+      # Configure a constant location for the uv cache
+      UV_CACHE_DIR: /tmp/.uv-cache
     steps:
       - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - uses: actions/setup-python@v5
+      - name: Set up uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "poetry"
-      - name: Install dependencies
-        run: cd python && poetry install
+      - name: Restore uv cache
+        uses: actions/cache@v4
+        with:
+          path: ${{  env.UV_CACHE_DIR  }}
+          key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
+      - name: Install the project
+        run: uv sync --all-extras --dev
       - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --config python/.pre-commit-config.yaml
+      - name: Minimize uv cache
+        run: uv cache prune --ci

@@ -66,7 +66,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             httpMethod,
             "fake-description",
@@ -144,7 +144,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             httpMethod,
             "fake-description",
@@ -210,7 +210,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Get,
             "fake-description",
@@ -275,7 +275,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Get,
             "fake-description",
@@ -320,7 +320,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -384,7 +384,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -473,7 +473,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -543,7 +543,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Arrange
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -570,7 +570,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Arrange
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -601,7 +601,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -641,7 +641,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -687,7 +687,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -733,7 +733,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -788,7 +788,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Get,
             "fake-description",
@@ -836,7 +836,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Get,
             "fake-description",
@@ -884,7 +884,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Get,
             "fake-description",
@@ -923,7 +923,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Get,
             "fake-description",
@@ -954,7 +954,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -996,7 +996,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -1031,7 +1031,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -1074,7 +1074,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -1122,7 +1122,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -1170,7 +1170,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -1214,7 +1214,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -1244,7 +1244,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Arrange
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Get,
             "fake-description",
@@ -1278,7 +1278,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Get,
             "fake-description",
@@ -1310,7 +1310,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Arrange
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Get,
             "fake-description",
@@ -1397,7 +1397,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     {
         var operation = new RestApiOperation(
             "fake-id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Get,
             "fake-description",

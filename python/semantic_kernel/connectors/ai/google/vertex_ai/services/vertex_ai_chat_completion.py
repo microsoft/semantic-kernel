@@ -10,6 +10,7 @@ from google.cloud.aiplatform_v1beta1.types.content import Content
 from pydantic import ValidationError
 from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
 
+from semantic_kernel.connectors.ai.function_calling_utils import merge_function_results
 from semantic_kernel.connectors.ai.google.shared_utils import (
     configure_function_choice_behavior,
     filter_system_message,
@@ -126,10 +127,11 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
 
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
-            chat_history.add_message(message=completions[0])
-            function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
+            function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
             if (fc_count := len(function_calls)) == 0:
                 return completions
+
+            chat_history.add_message(message=completions[0])
 
             results = await invoke_function_calls(
                 function_calls=function_calls,
@@ -142,7 +144,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             )
 
             if any(result.terminate for result in results if result is not None):
-                return completions
+                return merge_function_results(chat_history.messages[-len(results) :])
         else:
             # do a final call without auto function calling
             return await self._send_chat_request(chat_history, settings)
@@ -287,7 +289,8 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             )
 
             if any(result.terminate for result in results if result is not None):
-                return
+                yield merge_function_results(chat_history.messages[-len(results) :])  # type: ignore
+                break
 
     async def _send_chat_streaming_request(
         self,
