@@ -13,6 +13,7 @@ public sealed class BingWebPage
     /// <summary>
     /// Only allow creation within this package.
     /// </summary>
+    [JsonConstructorAttribute]
     internal BingWebPage()
     {
     }

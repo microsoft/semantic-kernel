@@ -12,6 +12,7 @@ public sealed class BingMetaTag
     /// <summary>
     /// Only allow creation within this package.
     /// </summary>
+    [JsonConstructorAttribute]
     internal BingMetaTag()
     {
     }
