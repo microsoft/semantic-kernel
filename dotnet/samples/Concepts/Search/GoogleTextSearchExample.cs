@@ -111,7 +111,7 @@ public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output
     /// <summary>
     /// Implementation of <see cref="ConfigurableMessageHandler"/> which logs HTTP responses.
     /// </summary>
-    private class LoggingConfigurableMessageHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : ConfigurableMessageHandler(innerHandler)
+    private sealed class LoggingConfigurableMessageHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : ConfigurableMessageHandler(innerHandler)
     {
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };
 
@@ -155,7 +155,7 @@ public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output
     /// <summary>
     /// Implementation of <see cref="Google.Apis.Http.IHttpClientFactory"/> which uses the <see cref="LoggingConfigurableMessageHandler"/>.
     /// </summary>
-    private class CustomHttpClientFactory(ITestOutputHelper output) : Google.Apis.Http.IHttpClientFactory
+    private sealed class CustomHttpClientFactory(ITestOutputHelper output) : Google.Apis.Http.IHttpClientFactory
     {
         private readonly ITestOutputHelper _output = output;
 

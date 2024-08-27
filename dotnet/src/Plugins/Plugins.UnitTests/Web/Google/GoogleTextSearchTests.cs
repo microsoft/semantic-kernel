@@ -179,7 +179,7 @@ public sealed class GoogleTextSearchTests : IDisposable
     /// <summary>
     /// Implementation of <see cref="Google.Apis.Http.IHttpClientFactory"/> which uses the <see cref="LoggingConfigurableMessageHandler"/>.
     /// </summary>
-    private class CustomHttpClientFactory(MultipleHttpMessageHandlerStub handlerStub) : IHttpClientFactory
+    private sealed class CustomHttpClientFactory(MultipleHttpMessageHandlerStub handlerStub) : IHttpClientFactory
     {
         private readonly MultipleHttpMessageHandlerStub _handlerStub = handlerStub;
 
