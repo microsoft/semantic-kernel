@@ -110,11 +110,11 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
 
         // Search with TextSearchResult textResult type
         TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, BasicFilter = new BasicFilterOptions().Equality("site", "devblogs.microsoft.com") };
-        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, searchOptions);
+        KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, searchOptions);
         Console.WriteLine("--- Microsoft Developer Blogs Results ---");
-        await foreach (string result in stringResults.Results)
+        await foreach (TextSearchResult result in textResults.Results)
         {
-            Console.WriteLine(result);
+            Console.WriteLine(result.Link);
             Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
     }
