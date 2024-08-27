@@ -25,7 +25,7 @@ public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output
 
         var query = "What is the Semantic Kernel?";
 
-        // Search with String textResult type
+        // Search and return results as string items
         KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new() { Count = 4, Offset = 0 });
         Console.WriteLine("--- String Results ---\n");
         await foreach (string result in stringResults.Results)
@@ -34,7 +34,7 @@ public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output
             Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
-        // Search with TextSearchResult textResult type
+        // Search and return results as TextSearchResult items
         KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new() { Count = 4, Offset = 4 });
         Console.WriteLine("\n--- Text Search Results ---\n");
         await foreach (TextSearchResult result in textResults.Results)
@@ -45,7 +45,7 @@ public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output
             Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
-        // Search with a the default textResult type
+        // Search and return results as Google.Apis.CustomSearchAPI.v1.Data.Result items
         KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new() { Count = 4, Offset = 8 });
         Console.WriteLine("\n--- Google Web Page Results ---\n");
         await foreach (Google.Apis.CustomSearchAPI.v1.Data.Result result in fullResults.Results)
@@ -89,20 +89,16 @@ public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output
     [Fact]
     public async Task UseGoogleTextSearchWithSiteFilterAsync()
     {
-        // Create a logging handler to output HTTP requests and responses
-        LoggingHandler handler = new(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
-
         // Create an ITextSearch instance using Google search
         var textSearch = new GoogleTextSearch(
-            searchEngineId: TestConfiguration.Google.SearchEngineId,
-            apiKey: TestConfiguration.Google.ApiKey);
+            initializer: new() { ApiKey = TestConfiguration.Google.ApiKey, HttpClientFactory = new CustomHttpClientFactory(this.Output) },
+            searchEngineId: TestConfiguration.Google.SearchEngineId);
 
         var query = "What is the Semantic Kernel?";
 
         // Search with TextSearchResult textResult type
-        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, BasicFilter = new BasicFilterOptions().Equality("site", "devblogs.microsoft.com") };
-        KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new() { Count = 4, Offset = 4 });
+        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, BasicFilter = new BasicFilterOptions().Equality("siteSearch", "devblogs.microsoft.com") };
+        KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, searchOptions);
         Console.WriteLine("--- Microsoft Developer Blogs Results ---");
         await foreach (TextSearchResult result in textResults.Results)
         {

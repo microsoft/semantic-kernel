@@ -102,6 +102,9 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
     private readonly MapResultToString _mapToString;
     private readonly MapResultToTextSearchResult _mapToTextSearchResult;
 
+    // See https://developers.google.com/custom-search/v1/reference/rest/v1/cse/list
+    private static readonly string[] s_queryParameters = ["cr", "dateRestrict", "exactTerms", "excludeTerms", "filter", "gl", "hl", "linkSite", "lr", "orTerms", "rights", "siteSearch"];
+
     /// <summary>
     /// Execute a Google search
     /// </summary>
@@ -131,7 +134,88 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
         search.Num = count;
         search.Start = offset;
 
+        this.AddFilters(search, searchOptions);
+
         return await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Add basoc filters to the Google search metadata.
+    /// </summary>
+    /// <param name="search">Google search metadata</param>
+    /// <param name="searchOptions">Text search options</param>
+    private void AddFilters(CseResource.ListRequest search, TextSearchOptions searchOptions)
+    {
+        if (searchOptions.BasicFilter is not null)
+        {
+            var filterClauses = searchOptions.BasicFilter.FilterClauses;
+
+            foreach (var filterClause in filterClauses)
+            {
+                if (filterClause is EqualityFilterClause equalityFilterClause)
+                {
+                    var value = equalityFilterClause.Value as string;
+                    if (value is null)
+                    {
+                        continue;
+                    }
+
+                    if (equalityFilterClause.FieldName.Equals("cr", StringComparison.OrdinalIgnoreCase))
+                    {
+                        search.Cr = value;
+                    }
+                    else if (equalityFilterClause.FieldName.Equals("dateRestrict", StringComparison.OrdinalIgnoreCase))
+                    {
+                        search.DateRestrict = value;
+                    }
+                    else if (equalityFilterClause.FieldName.Equals("exactTerms", StringComparison.OrdinalIgnoreCase))
+                    {
+                        search.ExactTerms = value;
+                    }
+                    else if (equalityFilterClause.FieldName.Equals("excludeTerms", StringComparison.OrdinalIgnoreCase))
+                    {
+                        search.ExcludeTerms = value;
+                    }
+                    else if (equalityFilterClause.FieldName.Equals("filter", StringComparison.OrdinalIgnoreCase))
+                    {
+                        search.Filter = value;
+                    }
+                    else if (equalityFilterClause.FieldName.Equals("gl", StringComparison.OrdinalIgnoreCase))
+                    {
+                        search.Gl = value;
+                    }
+                    else if (equalityFilterClause.FieldName.Equals("hl", StringComparison.OrdinalIgnoreCase))
+                    {
+                        search.Hl = value;
+                    }
+                    else if (equalityFilterClause.FieldName.Equals("linkSite", StringComparison.OrdinalIgnoreCase))
+                    {
+                        search.LinkSite = value;
+                    }
+                    else if (equalityFilterClause.FieldName.Equals("lr", StringComparison.OrdinalIgnoreCase))
+                    {
+                        search.Lr = value;
+                    }
+                    else if (equalityFilterClause.FieldName.Equals("orTerms", StringComparison.OrdinalIgnoreCase))
+                    {
+                        search.OrTerms = value;
+                    }
+                    else if (equalityFilterClause.FieldName.Equals("rights", StringComparison.OrdinalIgnoreCase))
+                    {
+                        search.Rights = value;
+                    }
+                    else if (equalityFilterClause.FieldName.Equals("siteSearch", StringComparison.OrdinalIgnoreCase))
+                    {
+                        search.SiteSearch = value;
+                        search.SiteSearchFilter = CseResource.ListRequest.SiteSearchFilterEnum.I;
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Unknown equality filter clause field name, must be one of {string.Join(",", s_queryParameters)}", nameof(searchOptions));
+                    }
+                }
+            }
+        }
     }
 
     /// <summary>

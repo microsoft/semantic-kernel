@@ -13,7 +13,7 @@ using Xunit;
 
 namespace SemanticKernel.Plugins.UnitTests.Web.Google;
 
-public class GoogleTextSearchTests : IDisposable
+public sealed class GoogleTextSearchTests : IDisposable
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="GoogleTextSearchTests"/> class.
@@ -28,15 +28,9 @@ public class GoogleTextSearchTests : IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.Dispose(true);
+        this._messageHandlerStub.Dispose();
+
         GC.SuppressFinalize(this);
-    }
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._messageHandlerStub.Dispose();
-        }
     }
 
     [Fact]
@@ -121,6 +115,59 @@ public class GoogleTextSearchTests : IDisposable
             Assert.NotNull(result.DisplayLink);
             Assert.NotNull(result.Kind);
         }
+    }
+
+    private static readonly string[] s_queryParameters = ["cr", "dateRestrict", "exactTerms", "excludeTerms", "filter", "gl", "hl", "linkSite", "lr", "orTerms", "rights", "siteSearch"];
+
+
+    [Theory]
+    [InlineData("cr", "countryAF", "")]
+    [InlineData("dateRestrict", "d[5]", "")]
+    [InlineData("exactTerms", "Semantic Kernel", "")]
+    [InlineData("excludeTerms", "FooBar", "")]
+    [InlineData("filter", "0", "")]
+    [InlineData("gl", "ie", "")]
+    [InlineData("hl", "en", "")]
+    [InlineData("linkSite", "http://example.com", "")]
+    [InlineData("lr", "lang_ar", "")]
+    [InlineData("orTerms", "Microsoft", "")]
+    [InlineData("rights", "cc_publicdomain", "")]
+    [InlineData("siteSearch", "devblogs.microsoft.com", "")]
+    public async Task BuildsCorrectUriForEqualityFilterAsync(string paramName, object paramValue, string requestLink)
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
+
+        // Create an ITextSearch instance using Google search
+        var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act
+        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, BasicFilter = new BasicFilterOptions().Equality(paramName, paramValue) };
+        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
+
+        // Assert
+        var requestUris = this._messageHandlerStub.RequestUris;
+        Assert.Single(requestUris);
+        Assert.NotNull(requestUris[0]);
+        Assert.Equal(requestLink, requestUris[0]!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task DoesNotBuildsUriForInvalidQueryParameterAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
+        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, BasicFilter = new BasicFilterOptions().Equality("fooBar", "Baz") };
+
+        var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId");
+
+        // Act && Assert
+        var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
+        Assert.Equal("Unknown equality filter clause field name, must be one of  (Parameter 'searchOptions')", e.Message);
     }
 
     #region private
