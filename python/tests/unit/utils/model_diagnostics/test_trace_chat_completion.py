@@ -6,9 +6,6 @@ import pytest
 from opentelemetry.trace import StatusCode
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
-from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -20,12 +17,12 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     _messages_to_openai_format,
     trace_chat_completion,
 )
+from tests.unit.utils.model_diagnostics.conftest import MockChatCompletion
 
 pytestmark = pytest.mark.parametrize(
-    "service_type, execution_settings, mock_response, service_env_vars",
+    "execution_settings, mock_response",
     [
         pytest.param(
-            OpenAIChatCompletion,
             PromptExecutionSettings(
                 extension_data={
                     "max_tokens": 1000,
@@ -36,60 +33,50 @@ pytestmark = pytest.mark.parametrize(
             [
                 ChatMessageContent(
                     role=AuthorRole.ASSISTANT,
-                    ai_model_id="openai_chat_model_id",
+                    ai_model_id="ai_model_id",
                     content="Test content",
                     metadata={"id": "test_id"},
                     finish_reason=FinishReason.STOP,
                 )
             ],
-            {
-                "OPENAI_API_KEY": "openai_api_key",
-                "OPENAI_CHAT_MODEL_ID": "openai_chat_model_id",
-            },
-            id="openai_chat_completion",
+            id="test_execution_settings_with_extension_data",
         ),
         pytest.param(
-            OllamaChatCompletion,
             PromptExecutionSettings(),
             [
                 ChatMessageContent(
                     role=AuthorRole.ASSISTANT,
-                    ai_model_id="ollama_model",
-                    content="Test content",
-                    metadata={},
+                    ai_model_id="ai_model_id",
+                    metadata={"id": "test_id"},
+                    finish_reason=FinishReason.STOP,
                 )
             ],
-            {
-                "OLLAMA_MODEL": "ollama_model",
-                "OLLAMA_HOST": "ollama_host",
-            },
-            id="ollama_chat_completion",
+            id="test_execution_settings_no_extension_data",
         ),
         pytest.param(
-            MistralAIChatCompletion,
-            PromptExecutionSettings(
-                extension_data={
-                    "max_tokens": 1000,
-                    "temperature": 0.5,
-                    "top_p": 0.9,
-                }
-            ),
+            PromptExecutionSettings(),
             [
                 ChatMessageContent(
                     role=AuthorRole.ASSISTANT,
-                    ai_model_id="mistralai_chat_model_id",
-                    content="Test content",
+                    ai_model_id="ai_model_id",
+                    metadata={},
+                    finish_reason=FinishReason.STOP,
+                )
+            ],
+            id="test_chat_message_content_no_metadata",
+        ),
+        pytest.param(
+            PromptExecutionSettings(),
+            [
+                ChatMessageContent(
+                    role=AuthorRole.ASSISTANT,
+                    ai_model_id="ai_model_id",
                     metadata={"id": "test_id"},
                 )
             ],
-            {
-                "MISTRALAI_API_KEY": "mistralai_api_key",
-                "MISTRALAI_CHAT_MODEL_ID": "mistralai_chat_model_id",
-            },
-            id="mistralai_chat_completion",
+            id="test_chat_message_content_no_finish_reason",
         ),
     ],
-    indirect=["service_env_vars"],
 )
 
 
@@ -97,19 +84,17 @@ pytestmark = pytest.mark.parametrize(
 @patch("opentelemetry.trace.INVALID_SPAN")  # When no tracer provider is available, the span will be an INVALID_SPAN
 async def test_trace_chat_completion(
     mock_span,
-    service_type,
     execution_settings,
     mock_response,
-    service_env_vars,
     chat_history,
     model_diagnostics_unit_test_env,
 ):
     # Setup
-    chat_completion: ChatCompletionClientBase = service_type()
+    chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
 
-    with patch.object(service_type, "get_chat_message_contents", return_value=mock_response):
+    with patch.object(MockChatCompletion, "get_chat_message_contents", return_value=mock_response):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
-        service_type.get_chat_message_contents = trace_chat_completion(service_type.MODEL_PROVIDER_NAME)(
+        MockChatCompletion.get_chat_message_contents = trace_chat_completion(MockChatCompletion.MODEL_PROVIDER_NAME)(
             chat_completion.get_chat_message_contents
         )
 
@@ -122,7 +107,7 @@ async def test_trace_chat_completion(
         # Before the call to the model
         mock_span.set_attributes.assert_called_with({
             gen_ai_attributes.OPERATION: CHAT_COMPLETION_OPERATION,
-            gen_ai_attributes.SYSTEM: service_type.MODEL_PROVIDER_NAME,
+            gen_ai_attributes.SYSTEM: MockChatCompletion.MODEL_PROVIDER_NAME,
             gen_ai_attributes.MODEL: chat_completion.ai_model_id,
         })
 
@@ -163,19 +148,17 @@ async def test_trace_chat_completion(
 @patch("opentelemetry.trace.INVALID_SPAN")  # When no tracer provider is available, the span will be an INVALID_SPAN
 async def test_trace_chat_completion_exception(
     mock_span,
-    service_type,
     execution_settings,
     mock_response,
-    service_env_vars,
     chat_history,
     model_diagnostics_unit_test_env,
 ):
     # Setup
-    chat_completion: ChatCompletionClientBase = service_type()
+    chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
 
-    with patch.object(service_type, "get_chat_message_contents", side_effect=ServiceResponseException()):
+    with patch.object(MockChatCompletion, "get_chat_message_contents", side_effect=ServiceResponseException()):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
-        service_type.get_chat_message_contents = trace_chat_completion(service_type.MODEL_PROVIDER_NAME)(
+        MockChatCompletion.get_chat_message_contents = trace_chat_completion(MockChatCompletion.MODEL_PROVIDER_NAME)(
             chat_completion.get_chat_message_contents
         )
 
