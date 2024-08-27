@@ -140,7 +140,7 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
     }
 
     /// <summary>
-    /// Add basoc filters to the Google search metadata.
+    /// Add basic filters to the Google search metadata.
     /// </summary>
     /// <param name="search">Google search metadata</param>
     /// <param name="searchOptions">Text search options</param>

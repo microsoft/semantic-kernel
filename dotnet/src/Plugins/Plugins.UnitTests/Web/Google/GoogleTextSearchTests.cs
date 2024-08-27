@@ -40,7 +40,7 @@ public sealed class GoogleTextSearchTests : IDisposable
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
 
         // Create an ITextSearch instance using Google search
-        var textSearch = new GoogleTextSearch(
+        using var textSearch = new GoogleTextSearch(
             initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
             searchEngineId: "SearchEngineId");
 
@@ -66,7 +66,7 @@ public sealed class GoogleTextSearchTests : IDisposable
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
 
         // Create an ITextSearch instance using Google search
-        var textSearch = new GoogleTextSearch(
+        using var textSearch = new GoogleTextSearch(
             initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
             searchEngineId: "SearchEngineId");
 
@@ -78,7 +78,7 @@ public sealed class GoogleTextSearchTests : IDisposable
         Assert.NotNull(result.Results);
         var resultList = await result.Results.ToListAsync();
         Assert.NotNull(resultList);
-        Assert.Equal(10, resultList.Count);
+        Assert.Equal(4, resultList.Count);
         foreach (var textSearchResult in resultList)
         {
             Assert.NotNull(textSearchResult.Name);
@@ -94,7 +94,7 @@ public sealed class GoogleTextSearchTests : IDisposable
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
 
         // Create an ITextSearch instance using Google search
-        var textSearch = new GoogleTextSearch(
+        using var textSearch = new GoogleTextSearch(
             initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
             searchEngineId: "SearchEngineId");
 
@@ -106,7 +106,7 @@ public sealed class GoogleTextSearchTests : IDisposable
         Assert.NotNull(results.Results);
         var resultList = await results.Results.ToListAsync();
         Assert.NotNull(resultList);
-        Assert.Equal(10, resultList.Count);
+        Assert.Equal(4, resultList.Count);
         foreach (Result result in resultList)
         {
             Assert.NotNull(result.Title);
@@ -117,29 +117,26 @@ public sealed class GoogleTextSearchTests : IDisposable
         }
     }
 
-    private static readonly string[] s_queryParameters = ["cr", "dateRestrict", "exactTerms", "excludeTerms", "filter", "gl", "hl", "linkSite", "lr", "orTerms", "rights", "siteSearch"];
-
-
     [Theory]
-    [InlineData("cr", "countryAF", "")]
-    [InlineData("dateRestrict", "d[5]", "")]
-    [InlineData("exactTerms", "Semantic Kernel", "")]
-    [InlineData("excludeTerms", "FooBar", "")]
-    [InlineData("filter", "0", "")]
-    [InlineData("gl", "ie", "")]
-    [InlineData("hl", "en", "")]
-    [InlineData("linkSite", "http://example.com", "")]
-    [InlineData("lr", "lang_ar", "")]
-    [InlineData("orTerms", "Microsoft", "")]
-    [InlineData("rights", "cc_publicdomain", "")]
-    [InlineData("siteSearch", "devblogs.microsoft.com", "")]
+    [InlineData("cr", "countryAF", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cr=countryAF&cx=SearchEngineId&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&start=0")]
+    [InlineData("dateRestrict", "d[5]", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cx=SearchEngineId&dateRestrict=d%5B5%5D&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&start=0")]
+    [InlineData("exactTerms", "Semantic Kernel", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cx=SearchEngineId&exactTerms=Semantic%20Kernel&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&start=0")]
+    [InlineData("excludeTerms", "FooBar", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cx=SearchEngineId&excludeTerms=FooBar&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&start=0")]
+    [InlineData("filter", "0", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cx=SearchEngineId&filter=0&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&start=0")]
+    [InlineData("gl", "ie", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cx=SearchEngineId&gl=ie&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&start=0")]
+    [InlineData("hl", "en", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cx=SearchEngineId&hl=en&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&start=0")]
+    [InlineData("linkSite", "http://example.com", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cx=SearchEngineId&linkSite=http%3A%2F%2Fexample.com&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&start=0")]
+    [InlineData("lr", "lang_ar", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cx=SearchEngineId&lr=lang_ar&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&start=0")]
+    [InlineData("orTerms", "Microsoft", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cx=SearchEngineId&num=4&orTerms=Microsoft&q=What%20is%20the%20Semantic%20Kernel%3F&start=0")]
+    [InlineData("rights", "cc_publicdomain", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cx=SearchEngineId&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&rights=cc_publicdomain&start=0")]
+    [InlineData("siteSearch", "devblogs.microsoft.com", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cx=SearchEngineId&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&siteSearch=devblogs.microsoft.com&siteSearchFilter=i&start=0")]
     public async Task BuildsCorrectUriForEqualityFilterAsync(string paramName, object paramValue, string requestLink)
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
 
         // Create an ITextSearch instance using Google search
-        var textSearch = new GoogleTextSearch(
+        using var textSearch = new GoogleTextSearch(
             initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
             searchEngineId: "SearchEngineId");
 
@@ -151,6 +148,7 @@ public sealed class GoogleTextSearchTests : IDisposable
         var requestUris = this._messageHandlerStub.RequestUris;
         Assert.Single(requestUris);
         Assert.NotNull(requestUris[0]);
+        var absoluteUri = requestUris[0]!.AbsoluteUri;
         Assert.Equal(requestLink, requestUris[0]!.AbsoluteUri);
     }
 
@@ -161,13 +159,13 @@ public sealed class GoogleTextSearchTests : IDisposable
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
         TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, BasicFilter = new BasicFilterOptions().Equality("fooBar", "Baz") };
 
-        var textSearch = new GoogleTextSearch(
+        using var textSearch = new GoogleTextSearch(
             initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
             searchEngineId: "SearchEngineId");
 
         // Act && Assert
         var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
-        Assert.Equal("Unknown equality filter clause field name, must be one of  (Parameter 'searchOptions')", e.Message);
+        Assert.Equal("Unknown equality filter clause field name, must be one of cr,dateRestrict,exactTerms,excludeTerms,filter,gl,hl,linkSite,lr,orTerms,rights,siteSearch (Parameter 'searchOptions')", e.Message);
     }
 
     #region private
