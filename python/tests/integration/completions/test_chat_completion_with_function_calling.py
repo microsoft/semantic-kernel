@@ -543,12 +543,9 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
             retries=5,
         )
 
-        if test_type != FunctionChoiceTestTypes.AUTO or stream:
-            # Need to add the last response (the response from the model after it sees the tool call result)
-            # to the chat history.
-            # When not streaming: responses from within the auto invoke loop will be added to the history.
-            # When streaming, responses will not add the message to the history if the response doesn't
-            # contain a FunctionCallContent
-            history.add_message(cmc)
+        # We need to add the latest message to the history because the connector is
+        # not responsible for updating the history, unless it is related to auto function
+        # calling, when the history is updated after the function calls are invoked.
+        history.add_message(cmc)
 
         self.evaluate(history, inputs=inputs, test_type=test_type)
