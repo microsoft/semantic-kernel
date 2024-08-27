@@ -19,14 +19,14 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
     {
         // Create a logging handler to output HTTP requests and responses
         LoggingHandler handler = new(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
+        using HttpClient httpClient = new(handler);
 
         // Create an ITextSearch instance using Bing search
         var textSearch = new BingTextSearch(apiKey: TestConfiguration.Bing.ApiKey, options: new() { HttpClient = httpClient });
 
         var query = "What is the Semantic Kernel?";
 
-        // Search with String textResult type
+        // Search and return results as a string items
         KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new() { Count = 4, Offset = 0 });
         Console.WriteLine("--- String Results ---\n");
         await foreach (string result in stringResults.Results)
@@ -35,7 +35,7 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
             Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
-        // Search with TextSearchResult textResult type
+        // Search and return results as TextSearchResult items
         KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new() { Count = 4, Offset = 4 });
         Console.WriteLine("\n--- Text Search Results ---\n");
         await foreach (TextSearchResult result in textResults.Results)
@@ -46,7 +46,7 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
             Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
-        // Search with a the default textResult type
+        // Search and return s results as BingWebPage items
         KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new() { Count = 4, Offset = 8 });
         Console.WriteLine("\n--- Bing Web Page Results ---\n");
         await foreach (BingWebPage result in fullResults.Results)
@@ -68,7 +68,7 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
     {
         // Create a logging handler to output HTTP requests and responses
         LoggingHandler handler = new(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
+        using HttpClient httpClient = new(handler);
 
         // Create an ITextSearch instance using Bing search
         var textSearch = new BingTextSearch(apiKey: TestConfiguration.Bing.ApiKey, options: new()
@@ -97,7 +97,7 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
     {
         // Create a logging handler to output HTTP requests and responses
         LoggingHandler handler = new(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
+        using HttpClient httpClient = new(handler);
 
         // Create an ITextSearch instance using Bing search
         var textSearch = new BingTextSearch(apiKey: TestConfiguration.Bing.ApiKey, options: new()

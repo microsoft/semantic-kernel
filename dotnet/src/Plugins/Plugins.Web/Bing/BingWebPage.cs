@@ -11,6 +11,13 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 public sealed class BingWebPage
 {
     /// <summary>
+    /// Only allow creation within this package.
+    /// </summary>
+    internal BingWebPage()
+    {
+    }
+
+    /// <summary>
     /// The last time that Bing crawled the webpage.
     /// </summary>
     /// <remarks>

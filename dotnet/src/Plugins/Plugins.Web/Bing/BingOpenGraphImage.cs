@@ -10,6 +10,13 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 public sealed class BingOpenGraphImage
 {
     /// <summary>
+    /// Only allow creation within this package.
+    /// </summary>
+    internal BingOpenGraphImage()
+    {
+    }
+
+    /// <summary>
     /// The image's location.
     /// </summary>
     [JsonPropertyName("contentUrl")]

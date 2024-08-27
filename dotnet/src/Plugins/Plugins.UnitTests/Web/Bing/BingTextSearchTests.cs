@@ -13,7 +13,7 @@ using Xunit;
 
 namespace SemanticKernel.Plugins.UnitTests.Web.Bing;
 
-public class BingTextSearchTests : IDisposable
+public sealed class BingTextSearchTests : IDisposable
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="BingTextSearchTests"/> class.
@@ -28,16 +28,10 @@ public class BingTextSearchTests : IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.Dispose(true);
+        this._messageHandlerStub.Dispose();
+        this._httpClient.Dispose();
+
         GC.SuppressFinalize(this);
-    }
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._messageHandlerStub.Dispose();
-            this._httpClient.Dispose();
-        }
     }
 
     [Fact]

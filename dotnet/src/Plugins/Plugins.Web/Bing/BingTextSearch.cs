@@ -120,9 +120,9 @@ public sealed class BingTextSearch : ITextSearch
         var count = searchOptions.Count;
         var offset = searchOptions.Offset;
 
-        if (count is <= 0 or >= 50)
+        if (count is <= 0 or > 50)
         {
-            throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions, $"{nameof(searchOptions)} count value must be greater than 0 and less than 50.");
+            throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions, $"{nameof(searchOptions)} count value must be greater than 0 and have a maximum value of 50.");
         }
 
         Uri uri = new($"{this._uri}?q={BuildQuery(query, searchOptions)}");

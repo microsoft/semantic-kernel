@@ -10,6 +10,13 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 public sealed class BingMetaTag
 {
     /// <summary>
+    /// Only allow creation within this package.
+    /// </summary>
+    internal BingMetaTag()
+    {
+    }
+
+    /// <summary>
     /// The metadata.
     /// </summary>
     [JsonPropertyName("content")]
