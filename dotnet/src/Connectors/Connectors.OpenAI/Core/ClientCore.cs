@@ -36,7 +36,7 @@ internal partial class ClientCore
     /// <summary>
     /// Default OpenAI API endpoint.
     /// </summary>
-    private const string OpenAIV1Endpoint = "https://api.openai.com/v1";
+    private const string OpenAIV1Endpoint = "https://api.openai.com/";
 
     /// <summary>
     /// Identifier of the default model to use

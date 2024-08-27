@@ -644,7 +644,7 @@ internal partial class ClientCore
             FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
             PresencePenalty = (float?)executionSettings.PresencePenalty,
             Seed = executionSettings.Seed,
-            User = executionSettings.User,
+            EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
             ResponseFormat = GetResponseFormat(executionSettings) ?? ChatResponseFormat.Text,

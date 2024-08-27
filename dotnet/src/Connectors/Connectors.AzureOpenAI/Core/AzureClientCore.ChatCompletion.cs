@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Azure.AI.OpenAI;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -31,19 +33,36 @@ internal partial class AzureClientCore
     protected override Dictionary<string, object?> GetChatCompletionMetadata(OpenAIChatCompletion completions)
     {
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        return new Dictionary<string, object?>
+        var metadata = new Dictionary<string, object?>
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.CreatedAt), completions.CreatedAt },
-            // { ContentFilterResultForPromptKey, completions.GetContentFilterResultForPrompt() },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
-            // { ContentFilterResultForResponseKey, completions.GetContentFilterResultForResponse() },
-
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completions.FinishReason), completions.FinishReason.ToString() },
             { nameof(completions.ContentTokenLogProbabilities), completions.ContentTokenLogProbabilities },
         };
+
+        try
+        {
+            metadata[ContentFilterResultForPromptKey] = completions.GetContentFilterResultForPrompt();
+            metadata[ContentFilterResultForResponseKey] = completions.GetContentFilterResultForResponse();
+        }
+        catch (MissingFieldException ex)
+        {
+            if (!ex.Message.Contains("OpenAI.Chat.ChatCompletion._serializedAdditionalRawData"))
+            {
+                throw;
+            }
+
+            if (this.Logger!.IsEnabled(LogLevel.Error))
+            {
+                this.Logger.LogError(ex, "Unsupported OpenAI SDK version for the current Azure OpenAI SDK version");
+            }
+        }
+
+        return metadata;
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
@@ -71,7 +90,7 @@ internal partial class AzureClientCore
             FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
             PresencePenalty = (float?)executionSettings.PresencePenalty,
             Seed = executionSettings.Seed,
-            User = executionSettings.User,
+            EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
             ResponseFormat = GetResponseFormat(azureSettings) ?? ChatResponseFormat.Text,
