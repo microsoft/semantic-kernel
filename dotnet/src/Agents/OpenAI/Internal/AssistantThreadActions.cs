@@ -119,7 +119,7 @@ internal static class AssistantThreadActions
                 if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
                     !agentNames.TryGetValue(message.AssistantId, out assistantName))
                 {
-                    Assistant assistant = await client.GetAssistantAsync(message.AssistantId, cancellationToken).ConfigureAwait(false); // SDK BUG - CANCEL TOKEN (https://github.com/microsoft/semantic-kernel/issues/7431)
+                    Assistant assistant = await client.GetAssistantAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(assistant.Name))
                     {
                         agentNames.Add(assistant.Id, assistant.Name);

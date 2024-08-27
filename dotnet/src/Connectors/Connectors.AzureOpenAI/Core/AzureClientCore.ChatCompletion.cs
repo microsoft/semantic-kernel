@@ -1,15 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Azure.AI.OpenAI;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using OpenAI.Chat;
-using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -20,51 +16,10 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// </summary>
 internal partial class AzureClientCore
 {
-    private const string ContentFilterResultForPromptKey = "ContentFilterResultForPrompt";
-    private const string ContentFilterResultForResponseKey = "ContentFilterResultForResponse";
 
     /// <inheritdoc/>
     protected override OpenAIPromptExecutionSettings GetSpecializedExecutionSettings(PromptExecutionSettings? executionSettings)
-    {
-        return AzureOpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
-    }
-
-    /// <inheritdoc/>
-    protected override Dictionary<string, object?> GetChatCompletionMetadata(OpenAIChatCompletion completions)
-    {
-#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var metadata = new Dictionary<string, object?>
-        {
-            { nameof(completions.Id), completions.Id },
-            { nameof(completions.CreatedAt), completions.CreatedAt },
-            { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
-            { nameof(completions.Usage), completions.Usage },
-            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
-            { nameof(completions.FinishReason), completions.FinishReason.ToString() },
-            { nameof(completions.ContentTokenLogProbabilities), completions.ContentTokenLogProbabilities },
-        };
-
-        try
-        {
-            metadata[ContentFilterResultForPromptKey] = completions.GetContentFilterResultForPrompt();
-            metadata[ContentFilterResultForResponseKey] = completions.GetContentFilterResultForResponse();
-        }
-        catch (MissingFieldException ex)
-        {
-            if (!ex.Message.Contains("OpenAI.Chat.ChatCompletion._serializedAdditionalRawData"))
-            {
-                throw;
-            }
-
-            if (this.Logger!.IsEnabled(LogLevel.Error))
-            {
-                this.Logger.LogError(ex, "Unsupported OpenAI SDK version for the current Azure OpenAI SDK version");
-            }
-        }
-
-        return metadata;
-#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-    }
+        => AzureOpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
     /// <inheritdoc/>
     protected override Activity? StartCompletionActivity(ChatHistory chatHistory, PromptExecutionSettings settings)
