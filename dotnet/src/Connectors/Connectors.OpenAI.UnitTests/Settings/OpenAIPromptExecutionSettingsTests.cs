@@ -253,6 +253,22 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Empty(executionSettings.StopSequences);
     }
 
+    [Fact]
+    public void ItRestoresOriginalFunctionChoiceBehavior()
+    {
+        // Arrange
+        var functionChoiceBehavior = FunctionChoiceBehavior.None();
+
+        var originalExecutionSettings = new PromptExecutionSettings();
+        originalExecutionSettings.FunctionChoiceBehavior = functionChoiceBehavior;
+
+        // Act
+        var result = OpenAIPromptExecutionSettings.FromExecutionSettings(originalExecutionSettings);
+
+        // Assert
+        Assert.Equal(functionChoiceBehavior, result.FunctionChoiceBehavior);
+    }
+
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);

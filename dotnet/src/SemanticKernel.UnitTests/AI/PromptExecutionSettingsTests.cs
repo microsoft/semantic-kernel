@@ -20,7 +20,11 @@ public class PromptExecutionSettingsTests
             "temperature": 0.5,
             "top_p": 0.0,
             "presence_penalty": 0.0,
-            "frequency_penalty": 0.0
+            "frequency_penalty": 0.0,
+            "function_choice_behavior": {
+                "type": "auto",
+                "functions": ["p1.f1"]
+            }
         }
         """;
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(configPayload);
