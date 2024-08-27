@@ -54,21 +54,36 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        searchOptions ??= new TextSearchOptions();
+        var searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = searchOptions.IncludeTotalCount ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
+
+        return new KernelSearchResults<object>(this.GetResultsAsResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
-    public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        searchOptions ??= new TextSearchOptions();
+        var searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = searchOptions.IncludeTotalCount ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
+
+        return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
-    public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        searchOptions ??= new TextSearchOptions();
+        var searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = searchOptions.IncludeTotalCount ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
+
+        return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
@@ -95,9 +110,8 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
     /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <exception cref="NotSupportedException"></exception>
-    private async Task<global::Google.Apis.CustomSearchAPI.v1.Data.Search> ExecuteSearchAsync(string query, TextSearchOptions? searchOptions, CancellationToken cancellationToken)
+    private async Task<global::Google.Apis.CustomSearchAPI.v1.Data.Search> ExecuteSearchAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken)
     {
-        searchOptions ??= new TextSearchOptions();
         var count = searchOptions.Count;
         var offset = searchOptions.Offset;
 
