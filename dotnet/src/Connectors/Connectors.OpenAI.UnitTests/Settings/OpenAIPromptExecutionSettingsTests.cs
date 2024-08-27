@@ -259,8 +259,10 @@ public class OpenAIPromptExecutionSettingsTests
         // Arrange
         var functionChoiceBehavior = FunctionChoiceBehavior.None();
 
-        var originalExecutionSettings = new PromptExecutionSettings();
-        originalExecutionSettings.FunctionChoiceBehavior = functionChoiceBehavior;
+        var originalExecutionSettings = new PromptExecutionSettings
+        {
+            FunctionChoiceBehavior = functionChoiceBehavior
+        };
 
         // Act
         var result = OpenAIPromptExecutionSettings.FromExecutionSettings(originalExecutionSettings);

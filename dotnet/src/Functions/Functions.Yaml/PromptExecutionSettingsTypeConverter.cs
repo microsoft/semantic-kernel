@@ -95,7 +95,7 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
         }
 
         options.AddKeyValueTypeDiscriminator<FunctionChoiceBehavior>(discriminatorKey!, discriminatorTypeMapping);
-#pragma warning restore SKEXP0010
+#pragma warning restore SKEXP0001
     }
 
     /// <summary>

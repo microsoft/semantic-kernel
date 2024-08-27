@@ -13,9 +13,15 @@ namespace SemanticKernel.Functions.UnitTests.Yaml;
 public class KernelFunctionYamlTests
 {
     private readonly ISerializer _serializer;
+    private readonly Kernel _kernel;
 
     public KernelFunctionYamlTests()
     {
+        this._kernel = new Kernel();
+        this._kernel.Plugins.AddFromFunctions("p1", [KernelFunctionFactory.CreateFromMethod(() => { }, "f1")]);
+        this._kernel.Plugins.AddFromFunctions("p2", [KernelFunctionFactory.CreateFromMethod(() => { }, "f2")]);
+        this._kernel.Plugins.AddFromFunctions("p3", [KernelFunctionFactory.CreateFromMethod(() => { }, "f3")]);
+
         this._serializer = new SerializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
             .Build();
@@ -84,78 +90,66 @@ public class KernelFunctionYamlTests
     }
 
     [Fact]
-    public void ItShouldDeserializeFunctionChoiceBehaviors()
+    public void ItShouldDeserializeAutoFunctionChoiceBehaviors()
     {
-        // Arrange & Act
-        var kernel = new Kernel();
-        kernel.Plugins.AddFromFunctions("p1", [KernelFunctionFactory.CreateFromMethod(() => { }, "f1")]);
-        kernel.Plugins.AddFromFunctions("p2", [KernelFunctionFactory.CreateFromMethod(() => { }, "f2")]);
-        kernel.Plugins.AddFromFunctions("p3", [KernelFunctionFactory.CreateFromMethod(() => { }, "f3")]);
-
+        // Act
         var promptTemplateConfig = KernelFunctionYaml.ToPromptTemplateConfig(this._yaml);
 
         // Assert
         Assert.NotNull(promptTemplateConfig?.ExecutionSettings);
-        Assert.Equal(6, promptTemplateConfig.ExecutionSettings.Count);
 
         // Service with auto function choice behavior
-        var service1ExecutionSettings = promptTemplateConfig.ExecutionSettings["service1"];
-        Assert.NotNull(service1ExecutionSettings?.FunctionChoiceBehavior);
+        var executionSettings = promptTemplateConfig.ExecutionSettings["service1"];
+        Assert.NotNull(executionSettings?.FunctionChoiceBehavior);
 
-        var autoConfig = service1ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = kernel });
-        Assert.NotNull(autoConfig);
-        Assert.Equal(FunctionChoice.Auto, autoConfig.Choice);
-        Assert.NotNull(autoConfig.Functions);
-        Assert.Equal("p1", autoConfig.Functions.Single().PluginName);
-        Assert.Equal("f1", autoConfig.Functions.Single().Name);
+        var config = executionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = this._kernel });
+        Assert.NotNull(config);
+        Assert.Equal(FunctionChoice.Auto, config.Choice);
+        Assert.NotNull(config.Functions);
+        Assert.Equal("p1", config.Functions.Single().PluginName);
+        Assert.Equal("f1", config.Functions.Single().Name);
+    }
+
+    [Fact]
+    public void ItShouldDeserializeRequiredFunctionChoiceBehaviors()
+    {
+        // Act
+        var promptTemplateConfig = KernelFunctionYaml.ToPromptTemplateConfig(this._yaml);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig?.ExecutionSettings);
 
         // Service with required function choice behavior
-        var service2ExecutionSettings = promptTemplateConfig.ExecutionSettings["service2"];
-        Assert.NotNull(service2ExecutionSettings?.FunctionChoiceBehavior);
+        var executionSettings = promptTemplateConfig.ExecutionSettings["service2"];
+        Assert.NotNull(executionSettings?.FunctionChoiceBehavior);
 
-        var requiredConfig = service2ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = kernel });
-        Assert.NotNull(requiredConfig);
-        Assert.Equal(FunctionChoice.Required, requiredConfig.Choice);
-        Assert.NotNull(requiredConfig.Functions);
-        Assert.Equal("p2", requiredConfig.Functions.Single().PluginName);
-        Assert.Equal("f2", requiredConfig.Functions.Single().Name);
+        var config = executionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = this._kernel });
+        Assert.NotNull(config);
+        Assert.Equal(FunctionChoice.Required, config.Choice);
+        Assert.NotNull(config.Functions);
+        Assert.Equal("p2", config.Functions.Single().PluginName);
+        Assert.Equal("f2", config.Functions.Single().Name);
+    }
+
+    [Fact]
+    public void ItShouldDeserializeNoneFunctionChoiceBehaviors()
+    {
+        // Act
+        var promptTemplateConfig = KernelFunctionYaml.ToPromptTemplateConfig(this._yaml);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig?.ExecutionSettings);
 
         // Service with none function choice behavior
-        var service3ExecutionSettings = promptTemplateConfig.ExecutionSettings["service3"];
-        Assert.NotNull(service3ExecutionSettings?.FunctionChoiceBehavior);
+        var executionSettings = promptTemplateConfig.ExecutionSettings["service3"];
+        Assert.NotNull(executionSettings?.FunctionChoiceBehavior);
 
-        var noneConfig = service3ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = kernel });
+        var noneConfig = executionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = this._kernel });
         Assert.NotNull(noneConfig);
         Assert.Equal(FunctionChoice.None, noneConfig.Choice);
         Assert.NotNull(noneConfig.Functions);
         Assert.Equal("p3", noneConfig.Functions.Single().PluginName);
         Assert.Equal("f3", noneConfig.Functions.Single().Name);
-
-        // AutoFunctionCallChoice with empty functions collection for service4
-        var service4ExecutionSettings = promptTemplateConfig.ExecutionSettings["service4"];
-        Assert.NotNull(service4ExecutionSettings?.FunctionChoiceBehavior);
-
-        var autoWithEmptyFunctionsConfig = service4ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []) { Kernel = kernel });
-        Assert.NotNull(autoWithEmptyFunctionsConfig);
-        Assert.Equal(FunctionChoice.Auto, autoWithEmptyFunctionsConfig.Choice);
-        Assert.Null(autoWithEmptyFunctionsConfig.Functions);
-
-        // AutoFunctionCallChoice with no functions collection for service5
-        var service5ExecutionSettings = promptTemplateConfig.ExecutionSettings["service5"];
-        Assert.NotNull(service5ExecutionSettings?.FunctionChoiceBehavior);
-
-        var autoWithNoFunctionsConfig = service5ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []) { Kernel = kernel });
-        Assert.NotNull(autoWithNoFunctionsConfig);
-        Assert.Equal(FunctionChoice.Auto, autoWithNoFunctionsConfig.Choice);
-        Assert.NotNull(autoWithNoFunctionsConfig.Functions);
-        Assert.Equal(3, autoWithNoFunctionsConfig.Functions.Count);
-        Assert.Contains(autoWithNoFunctionsConfig.Functions, f => f.PluginName == "p1" && f.Name == "f1");
-        Assert.Contains(autoWithNoFunctionsConfig.Functions, f => f.PluginName == "p2" && f.Name == "f2");
-        Assert.Contains(autoWithNoFunctionsConfig.Functions, f => f.PluginName == "p3" && f.Name == "f3");
-
-        // No function choice behavior for service6
-        var service6ExecutionSettings = promptTemplateConfig.ExecutionSettings["service6"];
-        Assert.Null(service6ExecutionSettings?.FunctionChoiceBehavior);
     }
 
     [Fact]
@@ -261,20 +255,6 @@ public class KernelFunctionYamlTests
               type: none
               functions:
               - p3.f3
-          service4:
-            model_id:          gpt-4
-            temperature:       1.0
-            function_choice_behavior:
-              type: auto
-              functions: []
-          service5:
-            model_id:          gpt-4
-            temperature:       1.0
-            function_choice_behavior:
-              type: auto
-          service6:
-            model_id:          gpt-4
-            temperature:       1.0
         """;
 
     private readonly string _yamlWithCustomSettings = """

@@ -66,7 +66,7 @@ public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
             await next(context);
         });
 
-        var promptTemplate = """"
+        var promptTemplate = """
             template_format: semantic-kernel
             template: How many days until Christmas?
             execution_settings:
@@ -74,7 +74,7 @@ public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
                 temperature: 0.1
                 function_choice_behavior:
                   type: none
-            """";
+            """;
 
         var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
 
@@ -104,17 +104,12 @@ public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
 
         var settings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.None() };
 
-        string result = "";
-
         // Act
-        await foreach (string c in this._kernel.InvokePromptStreamingAsync<string>("How many days until Christmas?", new(settings)))
+        await foreach (string update in this._kernel.InvokePromptStreamingAsync<string>("How many days until Christmas?", new(settings)))
         {
-            result += c;
         }
 
         // Assert
-        Assert.NotNull(result);
-
         Assert.Empty(invokedFunctions);
     }
 
@@ -144,17 +139,12 @@ public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
 
         var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
 
-        string result = "";
-
         // Act
-        await foreach (string c in promptFunction.InvokeStreamingAsync<string>(this._kernel))
+        await foreach (string update in promptFunction.InvokeStreamingAsync<string>(this._kernel))
         {
-            result += c;
         }
 
         // Assert
-        Assert.NotNull(result);
-
         Assert.Empty(invokedFunctions);
     }
 
