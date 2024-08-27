@@ -43,6 +43,7 @@ repos:
     hooks:
       # Update the uv lockfile
       - id: uv-lock
+        files: ^\./python/(uv\.lock|pyproject\.toml)$
   - repo: local
     hooks:
     - id: mypy
