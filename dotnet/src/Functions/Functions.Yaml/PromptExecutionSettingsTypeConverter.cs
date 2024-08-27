@@ -44,9 +44,7 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
                     executionSettings.ModelId = s_deserializer.Deserialize<string>(parser);
                     break;
                 case "function_choice_behavior":
-#pragma warning disable SKEXP0001
                     executionSettings.FunctionChoiceBehavior = s_deserializer.Deserialize<FunctionChoiceBehavior>(parser);
-#pragma warning restore SKEXP0001
                     break;
                 default:
                     (executionSettings.ExtensionData ??= new Dictionary<string, object>()).Add(propertyName, s_deserializer.Deserialize<object>(parser));
@@ -69,7 +67,6 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
     /// <param name="options">The <see cref="ITypeDiscriminatingNodeDeserializerOptions" /> to configure the <see cref="TypeDiscriminatingNodeDeserializer" />.</param>
     private static void CreateAndRegisterTypeDiscriminatingNodeDeserializer(ITypeDiscriminatingNodeDeserializerOptions options)
     {
-#pragma warning disable SKEXP0001
         var attributes = typeof(FunctionChoiceBehavior).GetCustomAttributes(false);
 
         // Getting the type discriminator property name - "type" from the JsonPolymorphicAttribute.
@@ -95,7 +92,6 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
         }
 
         options.AddKeyValueTypeDiscriminator<FunctionChoiceBehavior>(discriminatorKey!, discriminatorTypeMapping);
-#pragma warning restore SKEXP0001
     }
 
     /// <summary>
