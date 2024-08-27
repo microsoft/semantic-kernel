@@ -118,7 +118,7 @@ public sealed class ChatPromptParserTests
     public void ItReturnsChatHistoryWithValidDataImageContent()
     {
         // Arrange
-        string prompt = GetNestedItemsValidPromptWithDataImageContent();
+        string prompt = GetValidPromptWithDataUriImageContent();
 
         // Act
         bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
@@ -244,7 +244,7 @@ public sealed class ChatPromptParserTests
             """;
     }
 
-    private static string GetNestedItemsValidPromptWithDataImageContent()
+    private static string GetValidPromptWithDataUriImageContent()
     {
         return
             """
