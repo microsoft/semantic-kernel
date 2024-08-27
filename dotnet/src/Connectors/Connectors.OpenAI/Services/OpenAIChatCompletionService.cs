@@ -71,7 +71,7 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         var providedEndpoint = endpoint ?? httpClient?.BaseAddress;
         if (providedEndpoint is not null)
         {
-            // As OpenAI Client automatically adds the chatcompletions endpoint, we remove it to avoid duplication.
+            // As OpenAI Client automatically adds the chat completions endpoint, we remove it to avoid duplication.
             const string PathAndQueryPattern = "v1/chat/completions";
             var providedEndpointText = providedEndpoint.ToString();
             int index = providedEndpointText.IndexOf(PathAndQueryPattern, StringComparison.OrdinalIgnoreCase);
