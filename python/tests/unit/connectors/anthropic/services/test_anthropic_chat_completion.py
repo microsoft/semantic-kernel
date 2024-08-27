@@ -45,7 +45,7 @@ def mock_anthropic_client_completion() -> AsyncAnthropic:
 
     chat_completion_response = AsyncMock()
     chat_completion_response.content = [TextBlock(text="Hello! It's nice to meet you.", type="text")]
-    chat_completion_response.id = "msg_018Vk4Z8oCMoh7sp2TrQGJ7q"
+    chat_completion_response.id = "test_id"
     chat_completion_response.model = "claude-3-opus-20240229"
     chat_completion_response.role = "assistant"
     chat_completion_response.stop_reason = "end_turn"
@@ -70,7 +70,7 @@ def mock_anthropic_client_completion_stream() -> AsyncAnthropic:
     # Create MagicMock instances for each event with the spec set to the appropriate class
     mock_raw_message_start_event = MagicMock(spec=RawMessageStartEvent)
     mock_raw_message_start_event.message = MagicMock(spec=Message)
-    mock_raw_message_start_event.message.id = "msg_01CDsLhtUmfhqQxqJdGaiLjd"
+    mock_raw_message_start_event.message.id = "test_message_id"
     mock_raw_message_start_event.message.content = []
     mock_raw_message_start_event.message.model = "claude-3-opus-20240229"
     mock_raw_message_start_event.message.role = "assistant"
@@ -119,7 +119,7 @@ def mock_anthropic_client_completion_stream() -> AsyncAnthropic:
     mock_message_stop_event = MagicMock(spec=MessageStopEvent)
     mock_message_stop_event.type = "message_stop"
     mock_message_stop_event.message = MagicMock(spec=Message)
-    mock_message_stop_event.message.id = "msg_01CDsLhtUmfhqQxqJdGaiLjd"
+    mock_message_stop_event.message.id = "test_message_stop_id"
     mock_message_stop_event.message.content = [MagicMock(spec=TextBlock)]
     mock_message_stop_event.message.content[0].text = "Hello! It's nice to meet you."
     mock_message_stop_event.message.content[0].type = "text"
