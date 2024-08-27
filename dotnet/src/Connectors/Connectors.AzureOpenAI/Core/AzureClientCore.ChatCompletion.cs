@@ -16,7 +16,6 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// </summary>
 internal partial class AzureClientCore
 {
-
     /// <inheritdoc/>
     protected override OpenAIPromptExecutionSettings GetSpecializedExecutionSettings(PromptExecutionSettings? executionSettings)
         => AzureOpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
