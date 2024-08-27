@@ -13,7 +13,7 @@ from guided_conversation.functions.execution import end_conversation, execution,
 from guided_conversation.functions.final_update_plan import final_update_plan_function
 from guided_conversation.plugins.agenda import Agenda
 from guided_conversation.plugins.artifact import Artifact
-from guided_conversation.utils.conversation_helpers import Conversation, ConversationMessage, ConversationMessageType
+from guided_conversation.utils.conversation_helpers import Conversation, ConversationMessageType
 from guided_conversation.utils.openai_tool_calling import (
     ToolValidationResult,
     parse_function_result,
@@ -21,6 +21,7 @@ from guided_conversation.utils.openai_tool_calling import (
 )
 from guided_conversation.utils.plugin_helpers import PluginOutput, format_kernel_functions_as_tools
 from guided_conversation.utils.resources import GCResource, ResourceConstraint
+from semantic_kernel.contents import ChatMessageContent, AuthorRole
 
 MAX_DECISION_RETRIES = 2
 
@@ -30,15 +31,6 @@ class ToolName(Enum):
     UPDATE_AGENDA_TOOL = "update_agenda"
     SEND_MSG_TOOL = "send_message_to_user"
     END_CONV_TOOL = "end_conversation"
-
-
-@dataclass
-class GCInput:
-    artifact: BaseModel
-    rules: list[str]
-    conversation_flow: str | None
-    context: str | None
-    resource_constraint: ResourceConstraint | None
 
 
 @dataclass
@@ -55,23 +47,38 @@ class GCOutput:
 
 
 class GuidedConversation:
-    def __init__(self, gc_input: GCInput, kernel: Kernel, service_id: str = "gc_main") -> None:
+    def __init__(
+        self,
+        kernel: Kernel,
+        artifact: BaseModel,
+        rules: list[str],
+        conversation_flow: str | None,
+        context: str | None,
+        resource_constraint: ResourceConstraint | None,
+        service_id: str = "gc_main",
+    ) -> None:
         """Initializes the GuidedConversation agent.
 
         Args:
-            gc_input (GCInput): The input to the guided conversation.
             kernel (Kernel): An instance of Kernel. Must come initialized with a AzureOpenAI or OpenAI service.
+            artifact (BaseModel): The artifact to be used as the goal/working memory/output of the conversation.
+            rules (list[str]): The rules to be used in the guided conversation (dos and donts).
+            conversation_flow (str | None): The conversation flow to be used in the guided conversation.
+            context (str | None): The scene-setting for the conversation.
+            resource_constraint (ResourceConstraint | None): The limit on the conversation length (for ex: number of turns).
             service_id (str): Provide a service_id associated with the kernel's service that was provided.
         """
 
         self.logger = logging.getLogger(__name__)
         self.kernel = kernel
         self.service_id = service_id
-        self.gc_input = gc_input
 
-        self.chat_history = Conversation()
-        self.resource = GCResource(gc_input.resource_constraint)
-        self.artifact = Artifact(self.kernel, self.service_id, gc_input.artifact)
+        self.conversation = Conversation()
+        self.resource = GCResource(resource_constraint)
+        self.artifact = Artifact(self.kernel, self.service_id, artifact)
+        self.rules = rules
+        self.conversation_flow = conversation_flow
+        self.context = context
         self.agenda = Agenda(self.kernel, self.service_id, self.resource.get_resource_mode(), MAX_DECISION_RETRIES)
 
         # Plugins will be executed in the order of this list.
@@ -107,12 +114,16 @@ class GuidedConversation:
     async def step_conversation(self, user_input: str | None = None) -> GCOutput:
         """Given a message from a user, this will execute the guided conversation agent up until a
         terminal plugin is called or the maximum number of decision retries is reached."""
-        self.logger.info(f"Starting conversation step {self.resource.get_turn_number()}.")
+        self.logger.info(f"Starting conversation step {self.resource.turn_number}.")
         self.resource.start_resource()
         self.current_failed_decision_attempts = 0
         if user_input:
-            self.chat_history.add_messages(
-                ConversationMessage(role="user", content=user_input, turn_number=self.resource.get_turn_number())
+            self.conversation.add_messages(
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    content=user_input,
+                    metadata={"turn_number": self.resource.turn_number, "type": ConversationMessageType.DEFAULT},
+                )
             )
 
         # Keep generating and executing plans until a terminal plugin is called
@@ -132,14 +143,14 @@ class GuidedConversation:
             # First execute all regular plugins (if any) in the order returned by _execute_plan
             for plugin_name, plugin_args in plugins:
                 if plugin_name == f"{ToolName.UPDATE_ARTIFACT_TOOL.value}-{ToolName.UPDATE_ARTIFACT_TOOL.value}":
-                    plugin_args["conversation"] = self.chat_history
+                    plugin_args["conversation"] = self.conversation
                     # Modify plugin_args such that field=field_name and value=field_value
                     plugin_args["field_name"] = plugin_args.pop("field")
                     plugin_args["field_value"] = plugin_args.pop("value")
                     await self._call_plugin(self.artifact.update_artifact, plugin_args)
                 elif plugin_name == f"{ToolName.UPDATE_AGENDA_TOOL.value}-{ToolName.UPDATE_AGENDA_TOOL.value}":
                     plugin_args["remaining_turns"] = self.resource.get_remaining_turns()
-                    plugin_args["conversation"] = self.chat_history
+                    plugin_args["conversation"] = self.conversation
                     await self._call_plugin(self.agenda.update_agenda, plugin_args)
 
             # Then execute the first terminal plugin (if any)
@@ -170,8 +181,8 @@ class GuidedConversation:
         if output.update_successful:
             # Set turn numbers
             for message in output.messages:
-                message.turn_number = self.resource.get_turn_number()
-            self.chat_history.add_messages(output.messages)
+                message.metadata["turn_number"] = self.resource.turn_number
+            self.conversation.add_messages(output.messages)
         else:
             self.logger.warning(
                 f"Plugin {plugin_function.__name__} failed to execute on attempt {self.current_failed_decision_attempts} out of {MAX_DECISION_RETRIES}."
@@ -188,22 +199,21 @@ class GuidedConversation:
         self.logger.info("Generating plan for the current state of the conversation")
         plan = await conversation_plan_function(
             self.kernel,
-            self.chat_history,
-            self.gc_input.context,
-            self.gc_input.rules,
-            self.gc_input.conversation_flow,
+            self.conversation,
+            self.context,
+            self.rules,
+            self.conversation_flow,
             self.artifact,
             self.req_settings,
             self.resource,
             self.agenda,
         )
         plan = plan.value[0].content
-        self.chat_history.add_messages(
-            ConversationMessage(
-                role="assistant",
+        self.conversation.add_messages(
+            ChatMessageContent(
+                role=AuthorRole.ASSISTANT,
                 content=plan,
-                turn_number=self.resource.turn_number,
-                type=ConversationMessageType.REASONING,
+                metadata={"turn_number": self.resource.turn_number, "type": ConversationMessageType.REASONING},
             )
         )
         return plan
@@ -266,8 +276,8 @@ class GuidedConversation:
         reasoning_response = await final_update_plan_function(
             kernel=self.kernel,
             req_settings=self.req_settings,
-            chat_history=self.chat_history,
-            context=self.gc_input.context,
+            chat_history=self.conversation,
+            context=self.context,
             artifact_schema=self.artifact.get_schema_for_prompt(),
             artifact_state=self.artifact.get_artifact_for_prompt(),
         )
@@ -305,14 +315,14 @@ class GuidedConversation:
                     plugin_output = await self.artifact.update_artifact(
                         field_name=tool_args["field_name"],
                         field_value=tool_args["field_value"],
-                        conversation=self.chat_history,
+                        conversation=self.conversation,
                     )
                     if plugin_output.update_successful:
                         self.logger.info(f"Artifact field {tool_args['field_name']} successfully updated.")
                         # Set turn numbers
                         for message in plugin_output.messages:
-                            message.turn_number = self.resource.get_turn_number()
-                        self.chat_history.add_messages(plugin_output.messages)
+                            message.turn_number = self.resource.turn_number
+                        self.conversation.add_messages(plugin_output.messages)
                     else:
                         self.logger.error(f"Final artifact field update of {tool_args['field_name']} failed.")
 
@@ -320,7 +330,7 @@ class GuidedConversation:
         return {
             "artifact": self.artifact.to_json(),
             "agenda": self.agenda.to_json(),
-            "chat_history": self.chat_history.to_json(),
+            "chat_history": self.conversation.to_json(),
             "resource": self.resource.to_json(),
         }
 
@@ -328,7 +338,6 @@ class GuidedConversation:
     def from_json(
         cls,
         json_data: dict,
-        gc_input: GCInput,
         kernel: Kernel,
         service_id: str = "gc_main",
     ) -> "GuidedConversation":
@@ -336,22 +345,18 @@ class GuidedConversation:
             json_data["artifact"],
             kernel=kernel,
             service_id=service_id,
-            input_artifact=gc_input.artifact,
+            input_artifact=cls.artifact,
             max_artifact_field_retries=MAX_DECISION_RETRIES,
         )
         agenda = Agenda.from_json(
             json_data["agenda"],
             kernel=kernel,
             service_id=service_id,
-            resource_constraint_mode=gc_input.resource_constraint.mode,
+            resource_constraint_mode=cls.resource_constraint.mode,
         )
         chat_history = Conversation.from_json(json_data["chat_history"])
         resource = GCResource.from_json(json_data["resource"])
 
-        gc = cls(gc_input, kernel, service_id)
-        gc.artifact = artifact
-        gc.agenda = agenda
-        gc.chat_history = chat_history
-        gc.resource = resource
+        gc = cls(kernel, artifact, agenda, chat_history, resource, service_id)
 
         return gc

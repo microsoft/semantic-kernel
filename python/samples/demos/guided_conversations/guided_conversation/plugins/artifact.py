@@ -10,9 +10,10 @@ from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 from guided_conversation.utils.base_model_llm import BaseModelLLM
-from guided_conversation.utils.conversation_helpers import Conversation, ConversationMessage, ConversationMessageType
+from guided_conversation.utils.conversation_helpers import Conversation, ConversationMessageType
 from guided_conversation.utils.openai_tool_calling import ToolValidationResult
 from guided_conversation.utils.plugin_helpers import PluginOutput, fix_error, update_attempts
+from semantic_kernel.contents import ChatMessageContent, AuthorRole
 
 ARTIFACT_ERROR_CORRECTION_SYSTEM_TEMPLATE = """<message role="system">You are a helpful, thoughtful, and meticulous assistant.
 You are conducting a conversation with a user. Your goal is to complete an artifact as thoroughly as possible by the end of the conversation.
@@ -134,7 +135,7 @@ class Artifact:
                 In this case, the boolean will be True and the messages may only contain messages indicated previous errors.
         """
 
-        conversation_messages: list[ConversationMessage] = []
+        conversation_messages: list[ChatMessageContent] = []
 
         # Check if the field name is valid, and return with a failure message if not
         is_valid_field, msg = self._is_valid_field(field_name)
@@ -351,12 +352,14 @@ Remember that when updating the artifact, the field will be the original field n
         artifact_model = create_model("Artifact", __base__=BaseModelLLM, **field_definitions)
         return artifact_model
 
-    def _is_valid_field(self, field_name: str) -> tuple[bool, ConversationMessage]:
+    def _is_valid_field(self, field_name: str) -> tuple[bool, ChatMessageContent]:
         """Check if the field_name is a valid field in the artifact. Returns True if it is, False and an error message otherwise."""
         if field_name not in self.artifact.model_fields:
             error_message = f'Field "{field_name}" is not a valid field in the artifact.'
-            msg = ConversationMessage(
-                role="assistant", content=error_message, type=ConversationMessageType.ARTIFACT_UPDATE
+            msg = ChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                content=error_message,
+                metadata={"type": ConversationMessageType.ARTIFACT_UPDATE, "turn_number": None},
             )
             return False, msg
         return True, None
@@ -400,10 +403,10 @@ Remember that when updating the artifact, the field will be the original field n
     ) -> None:
         """Update a field in the artifact with a new value. This will raise an error if the field_value is invalid."""
         setattr(self.artifact, field_name, field_value)
-        msg = ConversationMessage(
-            role="assistant",
+        msg = ChatMessageContent(
+            role=AuthorRole.ASSISTANT,
             content=f"Assistant updated {field_name} to {field_value}",
-            type=ConversationMessageType.ARTIFACT_UPDATE,
+            metadata={"type": ConversationMessageType.ARTIFACT_UPDATE, "turn_number": None},
         )
         return msg
 

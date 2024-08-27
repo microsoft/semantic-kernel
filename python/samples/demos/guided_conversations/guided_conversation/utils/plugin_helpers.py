@@ -7,8 +7,8 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.functions import KernelArguments
+from semantic_kernel.contents import ChatMessageContent
 
-from guided_conversation.utils.conversation_helpers import ConversationMessage
 from guided_conversation.utils.openai_tool_calling import parse_function_result, validate_tool_calling
 
 
@@ -18,12 +18,12 @@ class PluginOutput:
 
     Args:
         update_successful (bool): Whether the update was successful.
-        messages (list[ConversationMessage]): A list of messages to be used at the user's digression, it
+        messages (list[ChatMessageContent]): A list of messages to be used at the user's digression, it
         contains information about the process of calling the plugin.
     """
 
     update_successful: bool
-    messages: list[ConversationMessage]
+    messages: list[ChatMessageContent]
 
 
 def format_kernel_functions_as_tools(kernel: Kernel, functions: list[str]):

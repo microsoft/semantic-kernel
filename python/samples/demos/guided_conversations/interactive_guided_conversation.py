@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
-from guided_conversation.guided_conversation_agent import GCInput, GuidedConversation
+from guided_conversation.guided_conversation_agent import GuidedConversation
 from guided_conversation.utils.resources import ResourceConstraint, ResourceConstraintMode, ResourceConstraintUnit
 
 
@@ -89,17 +89,14 @@ async def main() -> None:
     )
     kernel.add_service(chat_service)
 
-    # Wrap these inputs into a GCInput object and instantiate the GuidedConversationAgent
-    guided_conversation_input = GCInput(
+    guided_conversation_agent = GuidedConversation(
+        kernel=kernel,
         artifact=MyArtifact,
         conversation_flow=conversation_flow,
         context=context,
         rules=rules,
         resource_constraint=resource_constraint,
-    )
-
-    guided_conversation_agent = GuidedConversation(
-        gc_input=guided_conversation_input, kernel=kernel, service_id=service_id
+        service_id=service_id,
     )
 
     # Step the conversation to start the conversation with the agent

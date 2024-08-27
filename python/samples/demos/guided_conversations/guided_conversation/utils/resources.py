@@ -111,14 +111,6 @@ class GCResource:
         """
         return self.resource_constraint.mode if self.resource_constraint is not None else None
 
-    def get_turn_number(self) -> int:
-        """Get the current turn number.
-
-        Returns:
-            int: The current turn number.
-        """
-        return self.turn_number
-
     def get_elapsed_turns(self, formatted_repr: bool = False) -> str | int:
         """Get the number of elapsed turns.
 
