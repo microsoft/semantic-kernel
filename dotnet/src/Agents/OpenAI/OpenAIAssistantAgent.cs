@@ -108,9 +108,12 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         AssistantClient client = CreateClient(provider);
 
         // Query and enumerate assistant definitions
-        await foreach (Assistant model in client.GetAssistantsAsync(ListOrder.NewestFirst, cancellationToken).ConfigureAwait(false))
+        await foreach (var page in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = ListOrder.NewestFirst }, cancellationToken).ConfigureAwait(false))
         {
-            yield return CreateAssistantDefinition(model);
+            foreach (Assistant model in page.Values)
+            {
+                yield return CreateAssistantDefinition(model);
+            }
         }
     }
 
@@ -132,7 +135,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         AssistantClient client = CreateClient(provider);
 
         // Retrieve the assistant
-        Assistant model = await client.GetAssistantAsync(id).ConfigureAwait(false); // SDK BUG - CANCEL TOKEN (https://github.com/microsoft/semantic-kernel/issues/7431)
+        Assistant model = await client.GetAssistantAsync(id, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
         return

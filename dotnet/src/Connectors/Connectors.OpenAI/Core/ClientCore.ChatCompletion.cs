@@ -364,7 +364,7 @@ internal partial class ClientCore
             using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
             {
                 // Make the request.
-                AsyncResultCollection<StreamingChatCompletionUpdate> response;
+                AsyncCollectionResult<StreamingChatCompletionUpdate> response;
                 try
                 {
                     response = RunRequest(() => this.Client!.GetChatClient(targetModel).CompleteChatStreamingAsync(chatForRequest, chatOptions, cancellationToken));
@@ -644,7 +644,7 @@ internal partial class ClientCore
             FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
             PresencePenalty = (float?)executionSettings.PresencePenalty,
             Seed = executionSettings.Seed,
-            User = executionSettings.User,
+            EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
             ResponseFormat = GetResponseFormat(executionSettings) ?? ChatResponseFormat.Text,
