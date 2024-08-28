@@ -7,6 +7,12 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateQueryMatchWhereClause
 {
-    [JsonPropertyName("operands")]
-    public List<WeaviateQueryMatchOperand> Operands { get; set; } = [];
+    [JsonPropertyName("operator")]
+    public string? Operator { get; set; }
+
+    [JsonPropertyName("path")]
+    public List<string> Path { get; set; } = [];
+
+    [JsonPropertyName("valueTextArray")]
+    public List<string> Values { get; set; } = [];
 }

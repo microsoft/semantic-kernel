@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Docker.DotNet;
@@ -31,6 +32,8 @@ public class WeaviateVectorStoreFixture : IAsyncLifetime
         this._containerId = await SetupWeaviateContainerAsync(this._client);
 
         this.HttpClient = new HttpClient { BaseAddress = new Uri("http://localhost:8080/v1/") };
+
+        await WaitForInitializationAsync(this.HttpClient);
     }
 
     public async Task DisposeAsync()
@@ -43,6 +46,41 @@ public class WeaviateVectorStoreFixture : IAsyncLifetime
     }
 
     #region private
+
+    private async static Task WaitForInitializationAsync(HttpClient httpClient)
+    {
+        const int MaxAttemptCount = 10;
+        const int DelayInterval = 1000;
+
+        int attemptCount = 0;
+        bool clusterReady = false;
+
+        do
+        {
+            await Task.Delay(DelayInterval);
+            attemptCount++;
+            clusterReady = await CheckIfClusterReadyAsync(httpClient);
+        } while (!clusterReady && attemptCount <= MaxAttemptCount);
+
+        if (!clusterReady)
+        {
+            throw new InvalidOperationException("Weaviate cluster is not ready for usage.");
+        }
+    }
+
+    private static async Task<bool> CheckIfClusterReadyAsync(HttpClient httpClient)
+    {
+        try
+        {
+            var response = await httpClient.GetAsync(new Uri("schema", UriKind.Relative));
+
+            return response.StatusCode == HttpStatusCode.OK;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+    }
 
     private static async Task<string> SetupWeaviateContainerAsync(DockerClient client)
     {

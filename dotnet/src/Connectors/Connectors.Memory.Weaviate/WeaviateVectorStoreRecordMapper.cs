@@ -55,7 +55,8 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         // Transform data model to Weaviate object model.
         var weaviateObjectModel = new JsonObject
         {
-            { WeaviateConstants.ReservedKeyPropertyName, jsonNodeDataModel[this._keyProperty] },
+            { WeaviateConstants.ReservedCollectionPropertyName, JsonValue.Create(this._collectionName) },
+            { WeaviateConstants.ReservedKeyPropertyName, jsonNodeDataModel[this._keyProperty]!.DeepClone() },
             { WeaviateConstants.ReservedDataPropertyName, new JsonObject() },
             { WeaviateConstants.ReservedVectorPropertyName, new JsonObject() },
         };
@@ -63,13 +64,23 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         // Populate data properties.
         foreach (var property in this._dataProperties)
         {
-            weaviateObjectModel[WeaviateConstants.ReservedDataPropertyName]![property] = jsonNodeDataModel[property];
+            var node = jsonNodeDataModel[property];
+
+            if (node is not null)
+            {
+                weaviateObjectModel[WeaviateConstants.ReservedDataPropertyName]![property] = node.DeepClone();
+            }
         }
 
         // Populate vector properties.
         foreach (var property in this._vectorProperties)
         {
-            weaviateObjectModel[WeaviateConstants.ReservedVectorPropertyName]![property] = jsonNodeDataModel[property];
+            var node = jsonNodeDataModel[property];
+
+            if (node is not null)
+            {
+                weaviateObjectModel[WeaviateConstants.ReservedVectorPropertyName]![property] = node.DeepClone();
+            }
         }
 
         return weaviateObjectModel;
@@ -82,19 +93,32 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         // Transform Weaviate object model to data model.
         var jsonNodeDataModel = new JsonObject
         {
-            { this._keyProperty, storageModel[WeaviateConstants.ReservedKeyPropertyName] },
+            { this._keyProperty, storageModel[WeaviateConstants.ReservedKeyPropertyName]?.DeepClone() },
         };
 
         // Populate data properties.
         foreach (var property in this._dataProperties)
         {
-            jsonNodeDataModel[property] = storageModel[WeaviateConstants.ReservedDataPropertyName]![property];
+            var node = storageModel[WeaviateConstants.ReservedDataPropertyName]?[property];
+
+            if (node is not null)
+            {
+                jsonNodeDataModel[property] = node.DeepClone();
+            }
         }
 
         // Populate vector properties.
-        foreach (var property in this._vectorProperties)
+        if (options.IncludeVectors)
         {
-            jsonNodeDataModel[property] = storageModel[WeaviateConstants.ReservedVectorPropertyName]![property];
+            foreach (var property in this._vectorProperties)
+            {
+                var node = storageModel[WeaviateConstants.ReservedVectorPropertyName]?[property];
+
+                if (node is not null)
+                {
+                    jsonNodeDataModel[property] = node.DeepClone();
+                }
+            }
         }
 
         return jsonNodeDataModel.Deserialize<TRecord>(this._jsonSerializerOptions)!;

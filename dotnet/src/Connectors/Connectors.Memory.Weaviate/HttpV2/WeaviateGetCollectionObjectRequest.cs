@@ -6,9 +6,11 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-internal sealed class WeaviateGetCollectionObjectRequest(string collectionName, Guid id)
+internal sealed class WeaviateGetCollectionObjectRequest(string collectionName, Guid id, bool includeVectors)
 {
-    private const string ApiRoute = "schema";
+    private const string ApiRoute = "objects";
+    private const string IncludeQueryParameterName = "include";
+    private const string IncludeVectorQueryParameterValue = "vector";
 
     [JsonIgnore]
     public string CollectionName { get; set; } = collectionName;
@@ -16,8 +18,18 @@ internal sealed class WeaviateGetCollectionObjectRequest(string collectionName, 
     [JsonIgnore]
     public Guid Id { get; set; } = id;
 
+    [JsonIgnore]
+    public bool IncludeVectors { get; set; } = includeVectors;
+
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreateGetRequest($"{ApiRoute}/{this.CollectionName}/{this.Id}");
+        var uri = $"{ApiRoute}/{this.CollectionName}/{this.Id}";
+
+        if (this.IncludeVectors)
+        {
+            uri += $"?{IncludeQueryParameterName}={IncludeVectorQueryParameterValue}";
+        }
+
+        return HttpRequest.CreateGetRequest(uri);
     }
 }

@@ -2,7 +2,6 @@
 
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Weaviate;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
