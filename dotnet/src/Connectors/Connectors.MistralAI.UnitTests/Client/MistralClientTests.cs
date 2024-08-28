@@ -566,7 +566,7 @@ public sealed class MistralClientTests : MistralTestBase
     private MistralClient CreateMistralClientStreaming(string modelId, string requestUri, params string[] responseData)
     {
         var responses = responseData.Select(this.GetTestResponseAsBytes).ToArray();
-        this.DelegatingHandler = new AssertingDelegatingHandler(requestUri, responses);
+        this.DelegatingHandler = new AssertingDelegatingHandler(requestUri, true, responses);
         this.HttpClient = new HttpClient(this.DelegatingHandler, false);
         var client = new MistralClient(modelId, this.HttpClient, "key");
         return client;

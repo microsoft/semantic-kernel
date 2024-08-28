@@ -28,7 +28,7 @@ public class FileReferenceContent : KernelContent
     /// </summary>
     /// <param name="fileId">The identifier of the referenced file.</param>
     /// <param name="modelId">The model ID used to generate the content.</param>
-    /// <param name="innerContent">Inner content,</param>
+    /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
     public FileReferenceContent(
         string fileId,

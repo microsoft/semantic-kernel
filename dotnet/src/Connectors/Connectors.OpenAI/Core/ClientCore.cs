@@ -1,20 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-/* 
-Phase 01 : This class was created adapting and merging ClientCore and OpenAIClientCore classes.
-System.ClientModel changes were added and adapted to the code as this package is now used as a dependency over OpenAI package.
-All logic from original ClientCore and OpenAIClientCore were preserved.
-
-Phase 02 :
-- Moved AddAttributes usage to the constructor, avoiding the need verify and adding it in the services.
-- Added ModelId attribute to the OpenAIClient constructor.
-- Added WhiteSpace instead of empty string for ApiKey to avoid exception from OpenAI Client on custom endpoints added an issue in OpenAI SDK repo. https://github.com/openai/openai-dotnet/issues/90
-
-Phase 05:
-- Model Id became not be required to support services like: File Service.
-        
-*/
-
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
@@ -51,7 +36,7 @@ internal partial class ClientCore
     /// <summary>
     /// Default OpenAI API endpoint.
     /// </summary>
-    private const string OpenAIV1Endpoint = "https://api.openai.com/v1";
+    private const string OpenAIEndpoint = "https://api.openai.com/";
 
     /// <summary>
     /// Identifier of the default model to use
@@ -119,7 +104,7 @@ internal partial class ClientCore
         if (this.Endpoint is null)
         {
             Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
-            this.Endpoint = new Uri(OpenAIV1Endpoint);
+            this.Endpoint = new Uri(OpenAIEndpoint);
         }
         else if (string.IsNullOrEmpty(apiKey))
         {

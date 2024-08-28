@@ -67,9 +67,9 @@ public partial class ClientCoreTests
         var clientCore = new ClientCore("model", "apiKey", endpoint: endpoint, httpClient: client);
 
         // Assert
-        Assert.Equal(endpoint ?? client?.BaseAddress ?? new Uri("https://api.openai.com/v1"), clientCore.Endpoint);
+        Assert.Equal(endpoint ?? client?.BaseAddress ?? new Uri("https://api.openai.com/"), clientCore.Endpoint);
         Assert.True(clientCore.Attributes.ContainsKey(AIServiceExtensions.EndpointKey));
-        Assert.Equal(endpoint?.ToString() ?? client?.BaseAddress?.ToString() ?? "https://api.openai.com/v1", clientCore.Attributes[AIServiceExtensions.EndpointKey]);
+        Assert.Equal(endpoint?.ToString() ?? client?.BaseAddress?.ToString() ?? "https://api.openai.com/", clientCore.Attributes[AIServiceExtensions.EndpointKey]);
 
         client?.Dispose();
     }

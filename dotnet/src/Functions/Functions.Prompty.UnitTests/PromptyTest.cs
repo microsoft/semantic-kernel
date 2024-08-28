@@ -70,6 +70,39 @@ public sealed class PromptyTest
     }
 
     [Fact]
+    public void ChatPromptyShouldSupportCreatingOpenAIExecutionSettingsWithJsonObject()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var chatPromptyPath = Path.Combine("TestData", "chatJsonObject.prompty");
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath);
+
+        // Assert
+        // kernel function created from chat.prompty should have a single execution setting
+        Assert.Single(kernelFunction.ExecutionSettings!);
+        Assert.True(kernelFunction.ExecutionSettings!.ContainsKey("default"));
+
+        // Arrange
+        var defaultExecutionSetting = kernelFunction.ExecutionSettings["default"];
+
+        // Act
+        var executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(defaultExecutionSetting);
+
+        // Assert
+        Assert.NotNull(executionSettings);
+        Assert.Equal("gpt-4o", executionSettings.ModelId);
+        Assert.Equal(0, executionSettings.Temperature);
+        Assert.Equal(1.0, executionSettings.TopP);
+        Assert.Null(executionSettings.StopSequences);
+        Assert.Equal("json_object", executionSettings.ResponseFormat?.ToString());
+        Assert.Null(executionSettings.TokenSelectionBiases);
+        Assert.Equal(3000, executionSettings.MaxTokens);
+        Assert.Null(executionSettings.Seed);
+    }
+
+    [Fact]
     public void ItShouldCreateFunctionFromPromptYamlWithNoExecutionSettings()
     {
         // Arrange
