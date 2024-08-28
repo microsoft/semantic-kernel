@@ -587,6 +587,36 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("2", assistantMessage2.GetProperty("tool_call_id").GetString());
     }
 
+    [Fact]
+    public async Task ItSerializesPromptExecutionSettingsCorrectlyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(ChatCompletionResponse)
+        };
+
+        var sut = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "Hello World?")
+        };
+
+        var settings = new OpenAIPromptExecutionSettings()
+        {
+            Temperature = 1.0,
+            TopP = 1.0
+        };
+
+        // Act
+        await sut.GetChatMessageContentAsync(chatHistory, settings);
+
+        // Assert
+        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(requestContent);
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

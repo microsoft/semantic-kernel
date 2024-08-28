@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -56,8 +55,7 @@ internal sealed class BingQueryContext
 /// <summary>
 /// A list of webpages that are relevant to the search query.
 /// </summary>
-[SuppressMessage("Performance", "CA1056:Change the type of parameter 'uri'...",
-Justification = "A constant Uri cannot be defined, as required by this class")]
+#pragma warning disable CA1056 // A constant Uri cannot be defined, as required by this class
 internal sealed class BingWebPages<T>
 {
     /// <summary>
@@ -93,4 +91,5 @@ internal sealed class BingWebPages<T>
     [JsonPropertyName("value")]
     public IList<T>? Value { get; set; }
 }
+#pragma warning restore CA1056
 #pragma warning restore CA1812

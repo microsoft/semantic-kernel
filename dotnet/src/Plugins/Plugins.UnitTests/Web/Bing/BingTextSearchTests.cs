@@ -25,15 +25,6 @@ public sealed class BingTextSearchTests : IDisposable
         this._kernel = new Kernel();
     }
 
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        this._messageHandlerStub.Dispose();
-        this._httpClient.Dispose();
-
-        GC.SuppressFinalize(this);
-    }
-
     [Fact]
     public async Task SearchReturnsSuccessfullyAsync()
     {
@@ -182,6 +173,15 @@ public sealed class BingTextSearchTests : IDisposable
         // Act && Assert
         var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
         Assert.Equal("Unknown equality filter clause field name, must be one of answerCount,cc,freshness,mkt,promote,responseFilter,safeSearch,setLang,textDecorations,textFormat (Parameter 'searchOptions')", e.Message);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        this._messageHandlerStub.Dispose();
+        this._httpClient.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 
     #region private

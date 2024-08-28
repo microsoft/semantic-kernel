@@ -9,7 +9,7 @@ namespace Search;
 /// <summary>
 /// This example shows how to create and use a <see cref="BingTextSearch"/>.
 /// </summary>
-public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
+public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a <see cref="BingTextSearch"/> and use it to perform a text search.
@@ -32,7 +32,7 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
         await foreach (string result in stringResults.Results)
         {
             Console.WriteLine(result);
-            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(new string('-', HorizontalRuleLength));
         }
 
         // Search and return results as TextSearchResult items
@@ -43,7 +43,7 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
             Console.WriteLine($"Name:  {result.Name}");
             Console.WriteLine($"Value: {result.Value}");
             Console.WriteLine($"Link:  {result.Link}");
-            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(new string('-', HorizontalRuleLength));
         }
 
         // Search and return s results as BingWebPage items
@@ -56,7 +56,7 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
             Console.WriteLine($"Url:             {result.Url}");
             Console.WriteLine($"DisplayUrl:      {result.DisplayUrl}");
             Console.WriteLine($"DateLastCrawled: {result.DateLastCrawled}");
-            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(new string('-', HorizontalRuleLength));
         }
     }
 
@@ -64,7 +64,7 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
     /// Show how to create a <see cref="BingTextSearch"/> with a custom mapper and use it to perform a text search.
     /// </summary>
     [Fact]
-    public async Task UseBingTextSearchWithCustomMapperAsync()
+    public async Task UsingBingTextSearchWithACustomMapperAsync()
     {
         // Create a logging handler to output HTTP requests and responses
         LoggingHandler handler = new(new HttpClientHandler(), this.Output);
@@ -85,7 +85,7 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
         await foreach (string result in stringResults.Results)
         {
             Console.WriteLine(result);
-            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(new string('-', HorizontalRuleLength));
         }
     }
 
@@ -93,7 +93,7 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
     /// Show how to create a <see cref="BingTextSearch"/> with a custom mapper and use it to perform a text search.
     /// </summary>
     [Fact]
-    public async Task UseBingTextSearchWithSiteFilterAsync()
+    public async Task UsingBingTextSearchWithASiteFilterAsync()
     {
         // Create a logging handler to output HTTP requests and responses
         LoggingHandler handler = new(new HttpClientHandler(), this.Output);
@@ -115,7 +115,11 @@ public class BingTextSearchExample(ITestOutputHelper output) : BaseTest(output)
         await foreach (TextSearchResult result in textResults.Results)
         {
             Console.WriteLine(result.Link);
-            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(new string('-', HorizontalRuleLength));
         }
     }
+
+    #region private
+    private const int HorizontalRuleLength = 80;
+    #endregion
 }
