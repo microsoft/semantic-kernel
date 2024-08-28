@@ -40,6 +40,9 @@ public record WeaviateHotel()
     [VectorStoreRecordData(IsFullTextSearchable = true)]
     public string Description { get; set; }
 
+    [VectorStoreRecordData]
+    public DateTimeOffset Timestamp { get; set; }
+
     /// <summary>A vector field.</summary>
     [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.Hnsw, DistanceFunction: DistanceFunction.CosineDistance)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Data;
 
@@ -10,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </summary>
 public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord> where TRecord : class
 {
-    public IVectorStoreRecordMapper<TRecord, JsonNode>? JsonNodeCustomMapper { get; set; } = null;
+    public IVectorStoreRecordMapper<TRecord, JsonNode>? JsonNodeCustomMapper { get; init; } = null;
 
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
 }

@@ -16,6 +16,10 @@ using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+/// <summary>
+/// Service for storing and retrieving vector records, that uses Weaviate as the underlying storage.
+/// </summary>
+/// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<Guid, TRecord> where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -38,32 +42,79 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         typeof(ReadOnlyMemory<double>?)
     ];
 
+    /// <summary>A set of types that data properties on the provided model may have.</summary>
+    private static readonly HashSet<Type> s_supportedDataTypes =
+    [
+        typeof(string),
+        typeof(int),
+        typeof(int?),
+        typeof(long),
+        typeof(long?),
+        typeof(short),
+        typeof(short?),
+        typeof(byte),
+        typeof(byte?),
+        typeof(float),
+        typeof(float?),
+        typeof(double),
+        typeof(double?),
+        typeof(decimal),
+        typeof(decimal?),
+        typeof(DateTime),
+        typeof(DateTime?),
+        typeof(DateTimeOffset),
+        typeof(DateTimeOffset?),
+        typeof(Guid),
+        typeof(Guid?),
+        typeof(bool),
+        typeof(bool?)
+    ];
+
     /// <summary>Default JSON serializer options.</summary>
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters =
+        {
+            new WeaviateDateTimeOffsetConverter(),
+            new WeaviateNullableDateTimeOffsetConverter()
+        }
     };
 
+    /// <summary><see cref="HttpClient"/> that can be used to manage the collections in Weaviate.</summary>
     private readonly HttpClient _httpClient;
 
+    /// <summary>Optional configuration options for this class.</summary>
     private readonly WeaviateVectorStoreRecordCollectionOptions<TRecord> _options;
 
+    /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 
+    /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it to JSON for data and vector properties.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames;
 
+    /// <summary>The key property of the current storage model.</summary>
     private readonly VectorStoreRecordKeyProperty _keyProperty;
 
+    /// <summary>The data properties of the current storage model.</summary>
     private readonly List<VectorStoreRecordDataProperty> _dataProperties;
 
+    /// <summary>The vector properties of the current storage model.</summary>
     private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
 
+    /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, JsonNode> _mapper;
 
     /// <inheritdoc />
     public string CollectionName { get; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WeaviateVectorStoreRecordCollection{TRecord}"/> class.
+    /// </summary>
+    /// <param name="httpClient"><see cref="HttpClient"/> that can be used to manage the collections in Weaviate.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="WeaviateVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="options">Optional configuration options for this class.</param>
     public WeaviateVectorStoreRecordCollection(
         HttpClient httpClient,
         string collectionName,
@@ -82,6 +133,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         // Validate property types.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, this._vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.DataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
 
         // Assign properties and names for later usage.

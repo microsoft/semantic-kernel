@@ -119,7 +119,8 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
                         t == typeof(int?) || t == typeof(long?) || t == typeof(short?) || t == typeof(byte?) => isCollection ? "int[]" : "int",
             Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) ||
                         t == typeof(float?) || t == typeof(double?) || t == typeof(decimal?) => isCollection ? "number[]" : "number",
-            Type t when t == typeof(DateTime) || t == typeof(DateTime?) => isCollection ? "date[]" : "date",
+            Type t when t == typeof(DateTime) || t == typeof(DateTime?) ||
+                        t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => isCollection ? "date[]" : "date",
             Type t when t == typeof(Guid) || t == typeof(Guid?) => isCollection ? "uuid[]" : "uuid",
             Type t when t == typeof(bool) || t == typeof(bool?) => isCollection ? "boolean[]" : "boolean",
             _ => isCollection ? "object[]" : "object",

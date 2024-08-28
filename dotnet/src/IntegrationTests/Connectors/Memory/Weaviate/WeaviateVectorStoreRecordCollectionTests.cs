@@ -83,6 +83,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal(record.ParkingIncluded, getResult.ParkingIncluded);
         Assert.Equal(record.Tags.ToArray(), getResult.Tags.ToArray());
         Assert.Equal(record.Description, getResult.Description);
+        Assert.Equal(record.Timestamp, getResult.Timestamp);
 
         if (includeVectors)
         {
@@ -217,6 +218,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+            Timestamp = new DateTime(2024, 8, 28, 10, 11, 12)
         };
     }
 
@@ -233,6 +235,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
+                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.CosineDistance }
             ]
         };
