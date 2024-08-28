@@ -7,16 +7,20 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>$(NoWarn);NU5104;SKEXP0001,SKEXP0010</NoWarn>
-    <EnablePackageValidation>false</EnablePackageValidation>
+    <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
+    <VersionSuffix>rc</VersionSuffix>
+  </PropertyGroup>
+  
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - Azure OpenAI connectors</Title>
-    <Description>Semantic Kernel connectors for Azure OpenAI. Contains clients for text generation, chat completion, embedding and DALL-E text to image.</Description>
+    <Description>Semantic Kernel connectors for Azure OpenAI. Contains clients for chat completion, embedding and DALL-E text to image.</Description>
   </PropertyGroup>
 
   <ItemGroup>

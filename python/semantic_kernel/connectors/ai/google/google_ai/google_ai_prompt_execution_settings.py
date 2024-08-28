@@ -35,8 +35,15 @@ class GoogleAITextPromptExecutionSettings(GoogleAIPromptExecutionSettings):
 class GoogleAIChatPromptExecutionSettings(GoogleAIPromptExecutionSettings):
     """Google AI Chat Prompt Execution Settings."""
 
-    tools: list[dict[str, Any]] | None = Field(None, max_length=64)
-    tool_choice: str | None = None
+    tools: list[dict[str, Any]] | None = Field(
+        None,
+        max_length=64,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
+    tool_config: dict[str, Any] | None = Field(
+        None,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
 
     @override
     def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
@@ -47,7 +54,7 @@ class GoogleAIChatPromptExecutionSettings(GoogleAIPromptExecutionSettings):
         """
         settings_dict = super().prepare_settings_dict(**kwargs)
         settings_dict.pop("tools", None)
-        settings_dict.pop("tool_choice", None)
+        settings_dict.pop("tool_config", None)
 
         return settings_dict
 

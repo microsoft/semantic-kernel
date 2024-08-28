@@ -10,6 +10,8 @@ from semantic_kernel.utils.validation import FUNCTION_NAME_REGEX, PLUGIN_NAME_RE
 
 
 class KernelFunctionMetadata(KernelBaseModel):
+    """The kernel function metadata."""
+
     name: str = Field(..., pattern=FUNCTION_NAME_REGEX)
     plugin_name: str | None = Field(None, pattern=PLUGIN_NAME_REGEX)
     description: str | None = Field(default=None)

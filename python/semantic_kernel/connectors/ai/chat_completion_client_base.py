@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any
 
+from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 if TYPE_CHECKING:
@@ -126,4 +128,8 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             prepared_chat_history (Any): The prepared chat history for a request.
         """
-        return [message.to_dict(role_key=role_key, content_key=content_key) for message in chat_history.messages]
+        return [
+            message.to_dict(role_key=role_key, content_key=content_key)
+            for message in chat_history.messages
+            if not isinstance(message, (AnnotationContent, FileReferenceContent))
+        ]

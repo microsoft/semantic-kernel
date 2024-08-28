@@ -76,13 +76,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData("http://localhost:1234/chat/completions", "http://localhost:1234/chat/completions")] // Uses full path when provided
-    [InlineData("http://localhost:1234/v2/chat/completions", "http://localhost:1234/v2/chat/completions")] // Uses full path when provided
-    [InlineData("http://localhost:1234", "http://localhost:1234/v1/chat/completions")]
+    [InlineData("http://localhost:1234/v1/chat/completions", "http://localhost:1234/v1/chat/completions")] // Uses full path when provided
+    [InlineData("http://localhost:1234/", "http://localhost:1234/v1/chat/completions")]
     [InlineData("http://localhost:8080", "http://localhost:8080/v1/chat/completions")]
     [InlineData("https://something:8080", "https://something:8080/v1/chat/completions")] // Accepts TLS Secured endpoints
-    [InlineData("http://localhost:1234/v2", "http://localhost:1234/v2/chat/completions")]
-    [InlineData("http://localhost:8080/v2", "http://localhost:8080/v2/chat/completions")]
     public async Task ItUsesCustomEndpointsWhenProvidedDirectlyAsync(string endpointProvided, string expectedEndpoint)
     {
         // Arrange
@@ -98,13 +95,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData("http://localhost:1234/chat/completions", "http://localhost:1234/chat/completions")] // Uses full path when provided
-    [InlineData("http://localhost:1234/v2/chat/completions", "http://localhost:1234/v2/chat/completions")] // Uses full path when provided
-    [InlineData("http://localhost:1234", "http://localhost:1234/v1/chat/completions")]
+    [InlineData("http://localhost:1234/v1/chat/completions", "http://localhost:1234/v1/chat/completions")] // Uses full path when provided
+    [InlineData("http://localhost:1234/", "http://localhost:1234/v1/chat/completions")]
     [InlineData("http://localhost:8080", "http://localhost:8080/v1/chat/completions")]
     [InlineData("https://something:8080", "https://something:8080/v1/chat/completions")] // Accepts TLS Secured endpoints
-    [InlineData("http://localhost:1234/v2", "http://localhost:1234/v2/chat/completions")]
-    [InlineData("http://localhost:8080/v2", "http://localhost:8080/v2/chat/completions")]
     public async Task ItUsesCustomEndpointsWhenProvidedAsBaseAddressAsync(string endpointProvided, string expectedEndpoint)
     {
         // Arrange
@@ -892,11 +886,177 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.True(startedChatCompletionsActivity);
     }
 
+    [Fact]
+    public async Task GetChatMessageContentShouldSendMutatedChatHistoryToLLM()
+    {
+        // Arrange
+        static void MutateChatHistory(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        {
+            // Remove the function call messages from the chat history to reduce token count.
+            context.ChatHistory.RemoveRange(1, 2); // Remove the `Date` function call and function result messages.
+
+            next(context);
+        }
+
+        var kernel = new Kernel();
+        kernel.ImportPluginFromFunctions("MyPlugin", [KernelFunctionFactory.CreateFromMethod(() => "rainy", "GetCurrentWeather")]);
+        kernel.AutoFunctionInvocationFilters.Add(new AutoFunctionInvocationFilter(MutateChatHistory));
+
+        using var firstResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/chat_completion_single_function_call_test_response.json")) };
+        this._messageHandlerStub.ResponseQueue.Enqueue(firstResponse);
+
+        using var secondResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/chat_completion_test_response.json")) };
+        this._messageHandlerStub.ResponseQueue.Enqueue(secondResponse);
+
+        var sut = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What time is it?"),
+            new ChatMessageContent(AuthorRole.Assistant, [
+                new FunctionCallContent("Date", "TimePlugin", "2")
+            ]),
+            new ChatMessageContent(AuthorRole.Tool, [
+                new FunctionResultContent("Date",  "TimePlugin", "2", "rainy")
+            ]),
+            new ChatMessageContent(AuthorRole.Assistant, "08/06/2024 00:00:00"),
+            new ChatMessageContent(AuthorRole.User, "Given the current time of day and weather, what is the likely color of the sky in Boston?")
+        };
+
+        // Act
+        await sut.GetChatMessageContentAsync(chatHistory, new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }, kernel);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(5, messages.GetArrayLength());
+
+        var userFirstPrompt = messages[0];
+        Assert.Equal("user", userFirstPrompt.GetProperty("role").GetString());
+        Assert.Equal("What time is it?", userFirstPrompt.GetProperty("content").ToString());
+
+        var assistantFirstResponse = messages[1];
+        Assert.Equal("assistant", assistantFirstResponse.GetProperty("role").GetString());
+        Assert.Equal("08/06/2024 00:00:00", assistantFirstResponse.GetProperty("content").GetString());
+
+        var userSecondPrompt = messages[2];
+        Assert.Equal("user", userSecondPrompt.GetProperty("role").GetString());
+        Assert.Equal("Given the current time of day and weather, what is the likely color of the sky in Boston?", userSecondPrompt.GetProperty("content").ToString());
+
+        var assistantSecondResponse = messages[3];
+        Assert.Equal("assistant", assistantSecondResponse.GetProperty("role").GetString());
+        Assert.Equal("1", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("id").GetString());
+        Assert.Equal("MyPlugin-GetCurrentWeather", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("function").GetProperty("name").GetString());
+
+        var functionResult = messages[4];
+        Assert.Equal("tool", functionResult.GetProperty("role").GetString());
+        Assert.Equal("rainy", functionResult.GetProperty("content").GetString());
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsShouldSendMutatedChatHistoryToLLM()
+    {
+        // Arrange
+        static void MutateChatHistory(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        {
+            // Remove the function call messages from the chat history to reduce token count.
+            context.ChatHistory.RemoveRange(1, 2); // Remove the `Date` function call and function result messages.
+
+            next(context);
+        }
+
+        var kernel = new Kernel();
+        kernel.ImportPluginFromFunctions("MyPlugin", [KernelFunctionFactory.CreateFromMethod(() => "rainy", "GetCurrentWeather")]);
+        kernel.AutoFunctionInvocationFilters.Add(new AutoFunctionInvocationFilter(MutateChatHistory));
+
+        using var firstResponse = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_single_function_call_test_response.txt")) };
+        this._messageHandlerStub.ResponseQueue.Enqueue(firstResponse);
+
+        using var secondResponse = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_test_response.txt")) };
+        this._messageHandlerStub.ResponseQueue.Enqueue(secondResponse);
+
+        var sut = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What time is it?"),
+            new ChatMessageContent(AuthorRole.Assistant, [
+                new FunctionCallContent("Date", "TimePlugin", "2")
+            ]),
+            new ChatMessageContent(AuthorRole.Tool, [
+                new FunctionResultContent("Date",  "TimePlugin", "2", "rainy")
+            ]),
+            new ChatMessageContent(AuthorRole.Assistant, "08/06/2024 00:00:00"),
+            new ChatMessageContent(AuthorRole.User, "Given the current time of day and weather, what is the likely color of the sky in Boston?")
+        };
+
+        // Act
+        await foreach (var update in sut.GetStreamingChatMessageContentsAsync(chatHistory, new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }, kernel))
+        {
+        }
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(5, messages.GetArrayLength());
+
+        var userFirstPrompt = messages[0];
+        Assert.Equal("user", userFirstPrompt.GetProperty("role").GetString());
+        Assert.Equal("What time is it?", userFirstPrompt.GetProperty("content").ToString());
+
+        var assistantFirstResponse = messages[1];
+        Assert.Equal("assistant", assistantFirstResponse.GetProperty("role").GetString());
+        Assert.Equal("08/06/2024 00:00:00", assistantFirstResponse.GetProperty("content").GetString());
+
+        var userSecondPrompt = messages[2];
+        Assert.Equal("user", userSecondPrompt.GetProperty("role").GetString());
+        Assert.Equal("Given the current time of day and weather, what is the likely color of the sky in Boston?", userSecondPrompt.GetProperty("content").ToString());
+
+        var assistantSecondResponse = messages[3];
+        Assert.Equal("assistant", assistantSecondResponse.GetProperty("role").GetString());
+        Assert.Equal("1", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("id").GetString());
+        Assert.Equal("MyPlugin-GetCurrentWeather", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("function").GetProperty("name").GetString());
+
+        var functionResult = messages[4];
+        Assert.Equal("tool", functionResult.GetProperty("role").GetString());
+        Assert.Equal("rainy", functionResult.GetProperty("content").GetString());
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
         this._multiMessageHandlerStub.Dispose();
+    }
+
+    private sealed class AutoFunctionInvocationFilter : IAutoFunctionInvocationFilter
+    {
+        private readonly Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task> _callback;
+
+        public AutoFunctionInvocationFilter(Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task> callback)
+        {
+            Verify.NotNull(callback, nameof(callback));
+            this._callback = callback;
+        }
+
+        public AutoFunctionInvocationFilter(Action<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>> callback)
+        {
+            Verify.NotNull(callback, nameof(callback));
+            this._callback = (c, n) => { callback(c, n); return Task.CompletedTask; };
+        }
+
+        public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        {
+            await this._callback(context, next);
+        }
     }
 
     private const string ChatCompletionResponse = """
@@ -911,12 +1071,17 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
               "message": {
                 "role": "assistant",
                 "content": null,
-                "function_call": {
-                  "name": "TimePlugin_Date",
-                  "arguments": "{}"
-                }
+                "tool_calls":[{
+                    "id": "1",
+                    "type": "function",
+                    "function": {
+                      "name": "TimePlugin-Date",
+                      "arguments": "{}"
+                    }
+                  }
+                ]
               },
-              "finish_reason": "stop"
+              "finish_reason": "tool_calls"
             }
           ],
           "usage": {

@@ -1,105 +1,87 @@
-# BugBash Guidance
-
-- Get the Bugbash branch `features/bugbash-prep` from `microsoft/semantic-kernel`
-- Open the Solution in Visual Studio
-- Go to `samples`, `Before` and try to build each project individually.
-
-  Each project may have different impacts on preparing it to be compatible with OpenAI V2 connector.
-
-  All required changes are what the customers will have to do to migrate their code to the new OpenAI Connector.
-
-## Goals:
-
-### 1. Low code changes required to make the code compatible
-
-### 2. (Before) Projects build successfully
-
-### 3. (Before) Tests run and pass successfully
-
-### 4. Identify any lacking information or guidance provided below towards the migration.
-
-## Troubleshooting
-
-If you are having trouble migrating, check the (After) folders on how that was done. Sometimes some thats had to be dropped/changed completely like: `Multiple Choices` and `Text Generation` for example.
-
 # OpenAI Connector Migration Guide
 
 This manual prepares you for the migration of your OpenAI Connector to the new OpenAI Connector. The new OpenAI Connector is a complete rewrite of the existing OpenAI Connector and is designed to be more efficient, reliable, and scalable. This manual will guide you through the migration process and help you understand the changes that have been made to the OpenAI Connector.
 
-## Package Setup when Using Azure
+## 1. Package Setup when Using Azure
 
 If you are working with Azure and or OpenAI public APIs, you will need to change the package from `Microsoft.SemanticKernel.Connectors.OpenAI` to `Microsoft.SemanticKernel.Connectors.AzureOpenAI`,
 
-> Note: The `Microsoft.SemanticKernel.Connectors.AzureOpenAI` package depends on the `Microsoft.SemanticKernel.Connectors.OpenAI` package so there's no need to add both to your project when using `OpenAI` related types.
-
-Before
-
-```csharp
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-```
-
-After
-
-```csharp
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-```
-
-## Breaking Glass scenarios
-
-### Metadata
-
-#### Token Usage
-
-The Token usage naming convention from `OpenAI` changed from `Completion`, `Prompt` tokens to `Output` and `Input` respectively. You will need to update your code to use the new naming.
-
-The type also changed from `CompletionsUsage` to `ChatTokenUsage`.
-
-[Example of Token Usage Metadata Changes](https://github.com/microsoft/semantic-kernel/pull/7151/files#diff-a323107b9f8dc8559a83e50080c6e34551ddf6d9d770197a473f249589e8fb47)
+> [!IMPORTANT]
+> The `Microsoft.SemanticKernel.Connectors.AzureOpenAI` package depends on the `Microsoft.SemanticKernel.Connectors.OpenAI` package so there's no need to add both to your project when using `OpenAI` related types.
 
 ```diff
-- Before
-- var usage = FunctionResult.Metadata?["Usage"] as CompletionsUsage;
-- var completionTokesn = usage?.CompletionTokens ?? 0;
-- var promptTokens = usage?.PromptTokens ?? 0;
-
+- // Before
+- using Microsoft.SemanticKernel.Connectors.OpenAI;
 + After
-+ var usage = FunctionResult.Metadata?["Usage"] as ChatTokenUsage;
-+ var promptTokens = usage?.InputTokens ?? 0;
-+ var completionTokens = completionTokens: usage?.OutputTokens ?? 0;
-
-totalTokens: usage?.TotalTokens ?? 0;
++ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 ```
 
-### OpenAIClient
+### 1.1 AzureOpenAIClient
 
-The `OpenAIClient` type previously was a Azure specific namespace type but now it is an `OpenAI` SDK namespace type, you will need to update your code to use the new `OpenAIClient` type.
+When using Azure with OpenAI, before where you were using `OpenAIClient` you will need to update your code to use the new `AzureOpenAIClient` type.
 
-When using Azure, you will need to update your code to use the new `AzureOpenAIClient` type.
+### 1.2 Services
 
-#### Pipeline Configuration
+All services below now belong to the `Microsoft.SemanticKernel.Connectors.AzureOpenAI` namespace.
 
-[Example of Pipeline Configuration](https://github.com/microsoft/semantic-kernel/pull/7151/files#diff-fab02d9a75bf43cb57f71dddc920c3f72882acf83fb125d8cad963a643d26eb3)
+- `AzureOpenAIAudioToTextService`
+- `AzureOpenAIChatCompletionService`
+- `AzureOpenAITextEmbeddingGenerationService`
+- `AzureOpenAITextToAudioService`
+- `AzureOpenAITextToImageService`
 
-```diff
-var clientOptions = new OpenAIClientOptions
-{
--    // Before: From Azure.Core.Pipeline
--    Transport = new HttpClientTransport(httpClient),
+## 2. Text Generation Deprecated
 
-+    // After: From OpenAI SDK
-+    Transport = new HttpClientPipelineTransport(httpClient),
-};
-```
+The latest `OpenAI` SDK does not support text generation modality, when migrating to their underlying SDK we had to drop the support and removed `TextGeneration` specific services but the existing `ChatCompletion` ones still supports (implements `ITextGenerationService`).
 
-## Text Generation Deprecated
+If you were using any of the `OpenAITextGenerationService` or `AzureOpenAITextGenerationService` you will need to update your code to target a chat completion model instead, using `OpenAIChatCompletionService` or `AzureOpenAIChatCompletionService` instead.
 
-The `TextGeneration` modality was deprecated in the latest version of the OpenAI Connector. You will need to update your code to use `ChatCompletion` modality instead. Keep in mind that the `ChatCompletion` services also implement the `TextGeneration` interface and that may not require any changes to your code if you were targetting the `ITextGenerationService` interface.
+> [!NOTE]
+> OpenAI and AzureOpenAI `ChatCompletion` services also implement the `ITextGenerationService` interface and that may not require any changes to your code if you were targeting the `ITextGenerationService` interface.
 
-## ChatCompletion Multiple Choices Deprecated
+tags:
+`OpenAITextGenerationService`,`AzureOpenAITextGenerationService`,
+`AddOpenAITextGeneration`,`AddAzureOpenAITextGeneration`
 
-The lastest `OpenAI` SDK does not support multiple choices anymore. The option for multiple results was removed also from the `OpenAIPromptExecutionSettings`. So any implementation that was relying on multiple choices will need to be updated.
+## 3. ChatCompletion Multiple Choices Deprecated
 
-## Using Azure with your data (Data Sources)
+The latest `OpenAI` SDK does not support multiple choices, when migrating to their underlying SDK we had to drop the support and removed `ResultsPerPrompt` also from the `OpenAIPromptExecutionSettings`.
+
+tags: `ResultsPerPrompt`,`results_per_prompt`
+
+## 4. OpenAI File Service Deprecation
+
+The `OpenAIFileService` was deprecated in the latest version of the OpenAI Connector. We strongly recommend to update your code to use the new `OpenAIClient.GetFileClient()` for file management operations.
+
+## 5. SemanticKernel MetaPackage
+
+To be retro compatible with the new OpenAI and AzureOpenAI Connectors, our `Microsoft.SemanticKernel` meta package changed its dependency to use the new `Microsoft.SemanticKernel.Connectors.AzureOpenAI` package that depends on the `Microsoft.SemanticKernel.Connectors.OpenAI` package. This way if you are using the metapackage, no change is needed to get access to `Azure` related types.
+
+## 6. Contents
+
+### 6.1 OpenAIChatMessageContent
+
+- The `Tools` property type has changed from `IReadOnlyList<ChatCompletionsToolCall>` to `IReadOnlyList<ChatToolCall>`.
+
+- Inner content type has changed from `ChatCompletionsFunctionToolCall` to `ChatToolCall`.
+
+- Metadata type `FunctionToolCalls` has changed from `IEnumerable<ChatCompletionsFunctionToolCall>` to `IEnumerable<ChatToolCall>`.
+
+### 6.2 OpenAIStreamingChatMessageContent
+
+- The `FinishReason` property type has changed from `CompletionsFinishReason` to `FinishReason`.
+- The `ToolCallUpdate` property has been renamed to `ToolCallUpdates` and its type has changed from `StreamingToolCallUpdate?` to `IReadOnlyList<StreamingToolCallUpdate>?`.
+- The `AuthorName` property is not initialized because it's not provided by the underlying library anymore.
+
+## 6.3 Metrics for AzureOpenAI Connector
+
+The meter `s_meter = new("Microsoft.SemanticKernel.Connectors.OpenAI");` and the relevant counters still have old names that contain "openai" in them, such as:
+
+- `semantic_kernel.connectors.openai.tokens.prompt`
+- `semantic_kernel.connectors.openai.tokens.completion`
+- `semantic_kernel.connectors.openai.tokens.total`
+
+## 7. Using Azure with your data (Data Sources)
 
 With the new `AzureOpenAIClient`, you can now specify your datasource thru the options and that requires a small change in your code to the new type.
 
@@ -123,7 +105,8 @@ var promptExecutionSettings = new OpenAIPromptExecutionSettings
 After
 
 ```csharp
-var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings {
+var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings
+{
     AzureChatDataSource = new AzureSearchChatDataSource
     {
          Endpoint = new Uri(TestConfiguration.AzureAISearch.Endpoint),
@@ -131,13 +114,83 @@ var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings {
          IndexName = TestConfiguration.AzureAISearch.IndexName
     }
 };
-
 ```
 
-## OpenAI File Service Deprecation
+## 8. Breaking glass scenarios
 
-The `OpenAIFileService` was deprecated in the latest version of the OpenAI Connector. We strongly recommend to update your code to use the new `OpenAIClient.GetFileClient()` for file management operations.
+Breaking glass scenarios are scenarios where you may need to update your code to use the new OpenAI Connector. Below are some of the breaking changes that you may need to be aware of.
 
-## SemanticKernel MetaPackage
+#### 8.1 KernelContent Metadata
 
-To be retro compatible with the new OpenAI and AzureOpenAI Connectors, our `Microsoft.SemanticKernel` meta package changed its dependency to use the new `Microsoft.SemanticKernel.Connectors.AzureOpenAI` package that depends on the `Microsoft.SemanticKernel.Connectors.OpenAI` package. This way if you are using the metapackage, no change is needed to get access to `Azure` related types.
+Some of the keys in the content metadata dictionary have changed, you will need to update your code to when using the previous key names.
+
+- `Created` -> `CreatedAt`
+
+#### 8.2 Prompt Filter Results
+
+The `PromptFilterResults` metadata type has changed from `IReadOnlyList<ContentFilterResultsForPrompt>` to `ContentFilterResultForPrompt`.
+
+#### 8.3 Content Filter Results
+
+The `ContentFilterResultsForPrompt` type has changed from `ContentFilterResultsForChoice` to `ContentFilterResultForResponse`.
+
+#### 8.4 Finish Reason
+
+The FinishReason metadata string value has changed from `stop` to `Stop`
+
+#### 8.5 Tool Calls
+
+The ToolCalls metadata string value has changed from `tool_calls` to `ToolCalls`
+
+#### 8.6 LogProbs / Log Probability Info
+
+The `LogProbabilityInfo` type has changed from `ChatChoiceLogProbabilityInfo` to `IReadOnlyList<ChatTokenLogProbabilityInfo>`.
+
+#### 8.7 Finish Details, Index, and Enhancements
+
+All of above have been removed.
+
+#### 8.8 Token Usage
+
+The Token usage naming convention from `OpenAI` changed from `Completion`, `Prompt` tokens to `Output` and `Input` respectively. You will need to update your code to use the new naming.
+
+The type also changed from `CompletionsUsage` to `ChatTokenUsage`.
+
+[Example of Token Usage Metadata Changes](https://github.com/microsoft/semantic-kernel/pull/7151/files#diff-a323107b9f8dc8559a83e50080c6e34551ddf6d9d770197a473f249589e8fb47)
+
+```diff
+- Before
+- var usage = FunctionResult.Metadata?["Usage"] as CompletionsUsage;
+- var completionTokesn = usage?.CompletionTokens ?? 0;
+- var promptTokens = usage?.PromptTokens ?? 0;
+
++ After
++ var usage = FunctionResult.Metadata?["Usage"] as ChatTokenUsage;
++ var promptTokens = usage?.InputTokens ?? 0;
++ var completionTokens = completionTokens: usage?.OutputTokens ?? 0;
+
+totalTokens: usage?.TotalTokens ?? 0;
+```
+
+#### 8.9 OpenAIClient
+
+The `OpenAIClient` type previously was a Azure specific namespace type but now it is an `OpenAI` SDK namespace type, you will need to update your code to use the new `OpenAIClient` type.
+
+When using Azure, you will need to update your code to use the new `AzureOpenAIClient` type.
+
+#### 8.10 Pipeline Configuration
+
+The new `OpenAI` SDK uses a different pipeline configuration, and has a dependency on `System.ClientModel` package. You will need to update your code to use the new `HttpClientPipelineTransport` transport configuration where before you were using `HttpClientTransport` from `Azure.Core.Pipeline`.
+
+[Example of Pipeline Configuration](https://github.com/microsoft/semantic-kernel/pull/7151/files#diff-fab02d9a75bf43cb57f71dddc920c3f72882acf83fb125d8cad963a643d26eb3)
+
+```diff
+var clientOptions = new OpenAIClientOptions
+{
+-    // Before: From Azure.Core.Pipeline
+-    Transport = new HttpClientTransport(httpClient),
+
++    // After: From OpenAI SDK -> System.ClientModel
++    Transport = new HttpClientPipelineTransport(httpClient),
+};
+```
