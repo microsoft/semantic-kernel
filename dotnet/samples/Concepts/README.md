@@ -26,7 +26,6 @@ Down below you can find the code snippets that demonstrate the usage of many Sem
 - [Gemini_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/Gemini_FunctionCalling.cs)
 - [OpenAI_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/OpenAI_FunctionCalling.cs)
 - [NexusRaven_HuggingFaceTextGeneration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/NexusRaven_FunctionCalling.cs)
-- [AzureOpenAI_FunctionCallingTelemetry](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/AzureOpenAI_FunctionCallingTelemetry.cs)
 
 ## Caching - Examples of caching implementations
 
@@ -155,6 +154,10 @@ Down below you can find the code snippets that demonstrate the usage of many Sem
 - [BingAndGooglePlugins](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Search/BingAndGooglePlugins.cs)
 - [MyAzureAISearchPlugin](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Search/MyAzureAISearchPlugin.cs)
 - [WebSearchQueriesPlugin](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Search/WebSearchQueriesPlugin.cs)
+
+- ## Telemetry - Examples showing how to enable telemetry for the Semantic Kernel
+
+- [AzureOpenAI_FunctionCallingTelemetry](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Telemetry/AzureOpenAI_FunctionCallingTelemetry.cs)
 
 ## TextGeneration - [`TextGeneration`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/TextGeneration/ITextGenerationService.cs) capable service with models
 

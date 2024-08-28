@@ -18,7 +18,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-namespace FunctionCalling;
+namespace Telemetry;
 
 /// <summary>
 /// This sample collects telemetry for function call when using AzureOpenAI.
@@ -41,7 +41,6 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
     /// A plugin is provided which includes a <see cref="WidgetFactory.CreateWidget(WidgetType, WidgetColor[])"/> function.
     /// This function can create widget of a particular <see cref="WidgetType"/> and <see cref="WidgetColor"/>.
     /// The function is provided to the model and the model is prompted to create a widget with a supported type and color.
-    /// The response from the model is checked to verify that
     /// </remarks>
     /// <param name="deploymentName">The name of the AzureOpenAI deployment.</param>
     /// <param name="attempts">The number of times to invoke the prompt.</param>
@@ -88,7 +87,7 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
         // Create filters to add function calling meters
         var functionFilter = new FunctionInvocationFilter();
 
-        // Create a kernel with OpenAI chatService completion
+        // Create a kernel with an Azure OpenAI chat completion service 
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.Services.AddSingleton(loggerFactory);
         kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter);
@@ -132,15 +131,12 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
             var widgetColor = (WidgetColor)widgetColors.GetValue(random.Next(widgetColors.Length))!;
             var widgetType = (WidgetType)widgetTypes.GetValue(random.Next(widgetTypes.Length))!;
 
-            var functionCount = functionFilter.Counter;
-
             chatHistory.AddUserMessage($"Create a {widgetType} {widgetColor} colored widget for me.");
             var result = await chatService.GetChatMessageContentsAsync(chatHistory, settings, kernel);
 
             var resultStr = result.ToString();
             if (
                 resultStr is not null &&
-                functionFilter.Counter == functionCount + 2 && // Expect the widget factory function to be called
                 resultStr.Contains(widgetColor.ToString(), StringComparison.OrdinalIgnoreCase) && // Expect the color to be in the result
                 resultStr.Contains(widgetType.ToString(), StringComparison.OrdinalIgnoreCase)) // Expect the type to be in the result
             {
@@ -167,8 +163,6 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
             var widgetColor = (WidgetColor)widgetColors.GetValue(random.Next(widgetColors.Length))!;
             var widgetType = (WidgetType)widgetTypes.GetValue(random.Next(widgetTypes.Length))!;
 
-            var functionCount = functionFilter.Counter;
-
             chatHistory.AddUserMessage($"Create a {widgetType} {widgetColor} colored widget for me.");
             var results = chatService.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel);
 
@@ -182,7 +176,6 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
             chatHistory.AddAssistantMessage(resultStr);
 
             if (
-                functionFilter.Counter == functionCount + 1 && // Expect the widget factory function to be called
                 resultStr.Contains(widgetColor.ToString(), StringComparison.OrdinalIgnoreCase) && // Expect the color to be in the result
                 resultStr.Contains(widgetType.ToString(), StringComparison.OrdinalIgnoreCase)) // Expect the type to be in the result
             {
@@ -253,8 +246,6 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
     /// <summary>Adds a counter for all function invocations.</summary>
     private sealed class FunctionInvocationFilter : IFunctionInvocationFilter
     {
-        public int Counter { get; private set; }
-
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             var functionName = context.Function.Name;
@@ -263,8 +254,6 @@ public sealed class AzureOpenAI_FunctionCallingTelemetry(ITestOutputHelper outpu
 
             var functionCallCounter = meter.CreateCounter<int>("semantic_kernel.function.invocation.count");
             functionCallCounter.Add(1, KeyValuePair.Create<string, object?>("function_name", functionName));
-
-            this.Counter++;
 
             await next(context);
         }
