@@ -19,13 +19,13 @@ namespace Microsoft.SemanticKernel;
 [JsonDerivedType(typeof(NoneFunctionChoiceBehavior), typeDiscriminator: "none")]
 public abstract class FunctionChoiceBehavior
 {
+    /// <summary>The separator used to separate plugin name and function name.</summary>
+    protected const string FunctionNameSeparator = ".";
+
     /// <summary>
     /// List of the functions to provide to AI model.
     /// </summary>
     private readonly IEnumerable<KernelFunction>? _functions;
-
-    /// <summary>The separator used to separate plugin name and function name.</summary>
-    protected const string FunctionNameSeparator = ".";
 
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionChoiceBehavior"/> class.

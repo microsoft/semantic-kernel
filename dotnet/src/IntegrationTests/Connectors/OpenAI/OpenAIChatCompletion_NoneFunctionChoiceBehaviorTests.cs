@@ -52,40 +52,40 @@ public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Empty(invokedFunctions);
     }
 
-    //[Fact]
-    //public async Task SpecifiedInPromptInstructsConnectorNotToInvokeKernelFunctionAsync()
-    //{
-    //    // Arrange
-    //    this._kernel.ImportPluginFromType<DateTimeUtils>();
+    [Fact]
+    public async Task SpecifiedInPromptInstructsConnectorNotToInvokeKernelFunctionAsync()
+    {
+        // Arrange
+        this._kernel.ImportPluginFromType<DateTimeUtils>();
 
-    //    var invokedFunctions = new List<string>();
+        var invokedFunctions = new List<string>();
 
-    //    this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
-    //    {
-    //        invokedFunctions.Add(context.Function.Name);
-    //        await next(context);
-    //    });
+        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
 
-    //    var promptTemplate = """"
-    //        template_format: semantic-kernel
-    //        template: How many days until Christmas?
-    //        execution_settings:
-    //          default:
-    //            temperature: 0.1
-    //            function_choice_behavior:
-    //              type: none
-    //        """";
+        var promptTemplate = """
+            template_format: semantic-kernel
+            template: How many days until Christmas?
+            execution_settings:
+              default:
+                temperature: 0.1
+                function_choice_behavior:
+                  type: none
+            """;
 
-    //    var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
+        var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
 
-    //    // Act
-    //    var result = await this._kernel.InvokeAsync(promptFunction);
+        // Act
+        var result = await this._kernel.InvokeAsync(promptFunction);
 
-    //    // Assert
-    //    Assert.NotNull(result);
+        // Assert
+        Assert.NotNull(result);
 
-    //    Assert.Empty(invokedFunctions);
-    //}
+        Assert.Empty(invokedFunctions);
+    }
 
     [Fact]
     public async Task SpecifiedInCodeInstructsConnectorNotToInvokeKernelFunctionForStreamingAsync()
@@ -104,59 +104,49 @@ public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
 
         var settings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.None() };
 
-        string result = "";
-
         // Act
-        await foreach (string c in this._kernel.InvokePromptStreamingAsync<string>("How many days until Christmas?", new(settings)))
+        await foreach (string update in this._kernel.InvokePromptStreamingAsync<string>("How many days until Christmas?", new(settings)))
         {
-            result += c;
         }
 
         // Assert
-        Assert.NotNull(result);
-
         Assert.Empty(invokedFunctions);
     }
 
-    //[Fact]
-    //public async Task SpecifiedInPromptInstructsConnectorNotToInvokeKernelFunctionForStreamingAsync()
-    //{
-    //    // Arrange
-    //    this._kernel.ImportPluginFromType<DateTimeUtils>();
+    [Fact]
+    public async Task SpecifiedInPromptInstructsConnectorNotToInvokeKernelFunctionForStreamingAsync()
+    {
+        // Arrange
+        this._kernel.ImportPluginFromType<DateTimeUtils>();
 
-    //    var invokedFunctions = new List<string>();
+        var invokedFunctions = new List<string>();
 
-    //    this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
-    //    {
-    //        invokedFunctions.Add(context.Function.Name);
-    //        await next(context);
-    //    });
+        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
 
-    //    var promptTemplate = """"
-    //        template_format: semantic-kernel
-    //        template: How many days until Christmas?
-    //        execution_settings:
-    //          default:
-    //            temperature: 0.1
-    //            function_choice_behavior:
-    //              type: none
-    //        """";
+        var promptTemplate = """"
+            template_format: semantic-kernel
+            template: How many days until Christmas?
+            execution_settings:
+              default:
+                temperature: 0.1
+                function_choice_behavior:
+                  type: none
+            """";
 
-    //    var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
+        var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
 
-    //    string result = "";
+        // Act
+        await foreach (string update in promptFunction.InvokeStreamingAsync<string>(this._kernel))
+        {
+        }
 
-    //    // Act
-    //    await foreach (string c in promptFunction.InvokeStreamingAsync<string>(this._kernel))
-    //    {
-    //        result += c;
-    //    }
-
-    //    // Assert
-    //    Assert.NotNull(result);
-
-    //    Assert.Empty(invokedFunctions);
-    //}
+        // Assert
+        Assert.Empty(invokedFunctions);
+    }
 
     private Kernel InitializeKernel()
     {
