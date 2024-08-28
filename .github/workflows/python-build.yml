@@ -23,8 +23,8 @@ jobs:
             echo "Building and uploading Python package version: ${{ github.event.release.tag_name }}"
       - name: Build the package
         run: cd python && make build
-      - name: Upload distributions
-        uses: actions/upload-artifact@v4
+      - name: Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: release-dists
-          path: python/dist/
+          files: |
+            python/dist/*
