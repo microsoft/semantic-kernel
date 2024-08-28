@@ -55,6 +55,8 @@
         "huggingface",
         "pytestmark",
         "contoso",
-        "opentelemetry"
+        "opentelemetry",
+        "SEMANTICKERNEL",
+        "OTEL"
     ]
 }
