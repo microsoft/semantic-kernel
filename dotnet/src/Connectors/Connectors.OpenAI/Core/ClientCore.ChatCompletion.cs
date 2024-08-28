@@ -27,7 +27,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 internal partial class ClientCore
 {
     protected const string ModelProvider = "openai";
-    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions Options);
+    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -1155,7 +1155,7 @@ internal partial class ClientCore
         bool autoInvoke = false;
         bool allowAnyRequestedKernelFunction = false;
         int maximumAutoInvokeAttempts = 0;
-        FunctionChoiceBehaviorOptions options = new();
+        FunctionChoiceBehaviorOptions? options = null;
 
         // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
         if (executionSettings.FunctionChoiceBehavior is { } functionChoiceBehavior)
@@ -1186,7 +1186,7 @@ internal partial class ClientCore
             Options: options);
     }
 
-    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int maximumAutoInvokeAttempts, bool AllowAnyRequestedKernelFunction) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, ToolCallBehavior toolCallBehavior)
+    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int MaximumAutoInvokeAttempts, bool AllowAnyRequestedKernelFunction) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, ToolCallBehavior toolCallBehavior)
     {
         IList<ChatTool>? tools = null;
         ChatToolChoice? choice = null;
@@ -1210,7 +1210,7 @@ internal partial class ClientCore
         return new(tools, choice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction);
     }
 
-    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int MaximumAutoInvokeAttemptsm, FunctionChoiceBehaviorOptions Options) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior, ChatHistory chatHistory)
+    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int MaximumAutoInvokeAttempts, FunctionChoiceBehaviorOptions Options) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior, ChatHistory chatHistory)
     {
         FunctionChoiceBehaviorConfiguration config = functionChoiceBehavior.GetConfiguration(new(chatHistory) { Kernel = kernel, RequestSequenceIndex = requestIndex });
 

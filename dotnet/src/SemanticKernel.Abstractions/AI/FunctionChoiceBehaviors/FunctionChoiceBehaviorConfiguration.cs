@@ -13,7 +13,7 @@ public sealed class FunctionChoiceBehaviorConfiguration
 {
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionChoiceBehaviorConfiguration"/> class.
-    /// <param name="options">The options for the behavior.</param>"
+    /// <param name="options">The behavior options.</param>
     /// </summary>
     internal FunctionChoiceBehaviorConfiguration(FunctionChoiceBehaviorOptions options)
     {
