@@ -43,7 +43,7 @@ from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, Ser
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
-from semantic_kernel.utils.telemetry.decorators import trace_chat_completion
+from semantic_kernel.utils.telemetry.model_diagnostics import trace_chat_completion
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
