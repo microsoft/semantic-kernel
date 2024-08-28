@@ -330,7 +330,7 @@ def _set_completion_response(
     first_completion = completions[0]
 
     # Set the response ID
-    response_id = first_completion.metadata.get("id") or (first_completion.inner_content or {}).get("id")
+    response_id = first_completion.metadata.get("id")
     if response_id:
         current_span.set_attribute(gen_ai_attributes.RESPONSE_ID, response_id)
 
