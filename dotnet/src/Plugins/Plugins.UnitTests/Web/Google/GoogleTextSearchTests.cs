@@ -25,15 +25,6 @@ public sealed class GoogleTextSearchTests : IDisposable
         this._kernel = new Kernel();
     }
 
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        this._messageHandlerStub.Dispose();
-        this._clientFactory.Dispose();
-
-        GC.SuppressFinalize(this);
-    }
-
     [Fact]
     public async Task SearchReturnsSuccessfullyAsync()
     {
@@ -108,7 +99,7 @@ public sealed class GoogleTextSearchTests : IDisposable
         var resultList = await results.Results.ToListAsync();
         Assert.NotNull(resultList);
         Assert.Equal(4, resultList.Count);
-        foreach (Result result in resultList)
+        foreach (Result result in resultList.Cast<Result>())
         {
             Assert.NotNull(result.Title);
             Assert.NotNull(result.Snippet);
@@ -167,6 +158,15 @@ public sealed class GoogleTextSearchTests : IDisposable
         // Act && Assert
         var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
         Assert.Equal("Unknown equality filter clause field name, must be one of cr,dateRestrict,exactTerms,excludeTerms,filter,gl,hl,linkSite,lr,orTerms,rights,siteSearch (Parameter 'searchOptions')", e.Message);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        this._messageHandlerStub.Dispose();
+        this._clientFactory.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 
     #region private

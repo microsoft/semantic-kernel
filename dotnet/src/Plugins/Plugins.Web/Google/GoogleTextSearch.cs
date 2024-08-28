@@ -154,8 +154,7 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
             {
                 if (filterClause is EqualityFilterClause equalityFilterClause)
                 {
-                    var value = equalityFilterClause.Value as string;
-                    if (value is null)
+                    if (equalityFilterClause.Value is not string value)
                     {
                         continue;
                     }

@@ -10,7 +10,7 @@ namespace Search;
 /// <summary>
 /// This example shows how to create and use a <see cref="GoogleTextSearch"/>.
 /// </summary>
-public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output)
+public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a <see cref="GoogleTextSearch"/> and use it to perform a text search.
@@ -27,27 +27,27 @@ public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output
 
         // Search and return results as string items
         KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new() { Count = 4, Offset = 0 });
-        Console.WriteLine("--- String Results ---\n");
+        Console.WriteLine("——— String Results ———\n");
         await foreach (string result in stringResults.Results)
         {
             Console.WriteLine(result);
-            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(new string('—', HorizontalRuleLength));
         }
 
         // Search and return results as TextSearchResult items
         KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new() { Count = 4, Offset = 4 });
-        Console.WriteLine("\n--- Text Search Results ---\n");
+        Console.WriteLine("\n——— Text Search Results ———\n");
         await foreach (TextSearchResult result in textResults.Results)
         {
             Console.WriteLine($"Name:  {result.Name}");
             Console.WriteLine($"Value: {result.Value}");
             Console.WriteLine($"Link:  {result.Link}");
-            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(new string('—', HorizontalRuleLength));
         }
 
         // Search and return results as Google.Apis.CustomSearchAPI.v1.Data.Result items
         KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new() { Count = 4, Offset = 8 });
-        Console.WriteLine("\n--- Google Web Page Results ---\n");
+        Console.WriteLine("\n——— Google Web Page Results ———\n");
         await foreach (Google.Apis.CustomSearchAPI.v1.Data.Result result in fullResults.Results)
         {
             Console.WriteLine($"Title:       {result.Title}");
@@ -55,7 +55,7 @@ public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output
             Console.WriteLine($"Link:        {result.Link}");
             Console.WriteLine($"DisplayLink: {result.DisplayLink}");
             Console.WriteLine($"Kind:        {result.Kind}");
-            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(new string('—', HorizontalRuleLength));
         }
     }
 
@@ -63,7 +63,7 @@ public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output
     /// Show how to create a <see cref="GoogleTextSearch"/> with a custom mapper and use it to perform a text search.
     /// </summary>
     [Fact]
-    public async Task UseGoogleTextSearchWithCustomMapperAsync()
+    public async Task UsingGoogleTextSearchWithACustomMapperAsync()
     {
         // Create an ITextSearch instance using Google search
         var textSearch = new GoogleTextSearch(
@@ -79,7 +79,7 @@ public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output
         await foreach (string result in stringResults.Results)
         {
             Console.WriteLine(result);
-            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(new string('-', HorizontalRuleLength));
         }
     }
 
@@ -87,7 +87,7 @@ public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output
     /// Show how to create a <see cref="GoogleTextSearch"/> with a custom mapper and use it to perform a text search.
     /// </summary>
     [Fact]
-    public async Task UseGoogleTextSearchWithSiteFilterAsync()
+    public async Task UsingGoogleTextSearchWithASiteSearchFilterAsync()
     {
         // Create an ITextSearch instance using Google search
         var textSearch = new GoogleTextSearch(
@@ -103,11 +103,13 @@ public class GoogleTextSearchExample(ITestOutputHelper output) : BaseTest(output
         await foreach (TextSearchResult result in textResults.Results)
         {
             Console.WriteLine(result.Link);
-            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(new string('-', HorizontalRuleLength));
         }
     }
 
     #region private
+    private const int HorizontalRuleLength = 80;
+
     /// <summary>
     /// Implementation of <see cref="ConfigurableMessageHandler"/> which logs HTTP responses.
     /// </summary>
