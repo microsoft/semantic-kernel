@@ -7,15 +7,23 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-internal sealed class WeaviateUpsertCollectionObjectBatchRequest(List<JsonNode> collectionObjects)
+internal sealed class WeaviateUpsertCollectionObjectBatchRequest
 {
     private const string ApiRoute = "batch/objects";
+
+    [JsonConstructor]
+    public WeaviateUpsertCollectionObjectBatchRequest() { }
+
+    public WeaviateUpsertCollectionObjectBatchRequest(List<JsonNode> collectionObjects)
+    {
+        this.CollectionObjects = collectionObjects;
+    }
 
     [JsonPropertyName("fields")]
     public List<string> Fields { get; set; } = [WeaviateConstants.ReservedKeyPropertyName];
 
     [JsonPropertyName("objects")]
-    public List<JsonNode> CollectionObjects { get; set; } = collectionObjects;
+    public List<JsonNode>? CollectionObjects { get; set; }
 
     public HttpRequestMessage Build()
     {

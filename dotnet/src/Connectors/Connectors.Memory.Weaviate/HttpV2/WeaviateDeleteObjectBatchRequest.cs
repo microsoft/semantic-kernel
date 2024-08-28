@@ -5,12 +5,20 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-internal sealed class WeaviateDeleteObjectBatchRequest(WeaviateQueryMatch match)
+internal sealed class WeaviateDeleteObjectBatchRequest
 {
     private const string ApiRoute = "batch/objects";
 
+    [JsonConstructor]
+    public WeaviateDeleteObjectBatchRequest() { }
+
+    public WeaviateDeleteObjectBatchRequest(WeaviateQueryMatch match)
+    {
+        this.Match = match;
+    }
+
     [JsonPropertyName("match")]
-    public WeaviateQueryMatch Match { get; set; } = match;
+    public WeaviateQueryMatch? Match { get; set; }
 
     public HttpRequestMessage Build()
     {

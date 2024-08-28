@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Data;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
+namespace SemanticKernel.Connectors.Weaviate.UnitTests;
 
 #pragma warning disable CS8618
 
