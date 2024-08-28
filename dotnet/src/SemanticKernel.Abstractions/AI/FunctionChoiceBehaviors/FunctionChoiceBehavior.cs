@@ -22,6 +22,9 @@ public abstract class FunctionChoiceBehavior
     /// <summary>The separator used to separate plugin name and function name.</summary>
     protected const string FunctionNameSeparator = ".";
 
+    /// <summary>The behavior default options.</summary>
+    protected static readonly FunctionChoiceBehaviorOptions DefaultOptions = new();
+
     /// <summary>
     /// List of the functions to provide to AI model.
     /// </summary>
@@ -57,10 +60,11 @@ public abstract class FunctionChoiceBehavior
     /// <param name="autoInvoke">
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </param>
+    /// <param name="options">The behavior options.</param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    public static FunctionChoiceBehavior Auto(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true)
+    public static FunctionChoiceBehavior Auto(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, FunctionChoiceBehaviorOptions? options = null)
     {
-        return new AutoFunctionChoiceBehavior(functions, autoInvoke);
+        return new AutoFunctionChoiceBehavior(functions, autoInvoke, options);
     }
 
     /// <summary>
@@ -82,10 +86,14 @@ public abstract class FunctionChoiceBehavior
     /// the model will keep calling the 'Add' function even if the sum - 5 - is already calculated, until the 'Add' function is no longer provided to the model.
     /// In this example, the function selector can analyze chat history and decide not to advertise the 'Add' function anymore.
     /// </param>
+    /// <param name="options">The behavior options.</param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    public static FunctionChoiceBehavior Required(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? functionsSelector = null)
+    public static FunctionChoiceBehavior Required(
+        IEnumerable<KernelFunction>? functions = null,
+        bool autoInvoke = true, Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? functionsSelector = null,
+        FunctionChoiceBehaviorOptions? options = null)
     {
-        return new RequiredFunctionChoiceBehavior(functions, autoInvoke, functionsSelector);
+        return new RequiredFunctionChoiceBehavior(functions, autoInvoke, functionsSelector, options);
     }
 
     /// <summary>
@@ -97,10 +105,11 @@ public abstract class FunctionChoiceBehavior
     /// Functions to provide to the model. If null, all of the <see cref="Kernel"/>'s plugins' functions are provided to the model.
     /// If empty, no functions are provided to the model.
     /// </param>
+    /// <param name="options">The behavior options.</param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    public static FunctionChoiceBehavior None(IEnumerable<KernelFunction>? functions = null)
+    public static FunctionChoiceBehavior None(IEnumerable<KernelFunction>? functions = null, FunctionChoiceBehaviorOptions? options = null)
     {
-        return new NoneFunctionChoiceBehavior(functions);
+        return new NoneFunctionChoiceBehavior(functions, options);
     }
 
     /// <summary>

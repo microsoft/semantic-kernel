@@ -28,9 +28,11 @@ internal sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     /// Functions to provide to AI model. If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
     /// If empty, no functions are provided to the model.
     /// </param>
-    public NoneFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null) : base(functions)
+    /// <param name="options">The behavior options.</param>
+    public NoneFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, FunctionChoiceBehaviorOptions? options = null) : base(functions)
     {
         this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
+        this.Options = options;
     }
 
     /// <summary>
@@ -41,12 +43,18 @@ internal sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     [JsonPropertyName("functions")]
     public IList<string>? Functions { get; set; }
 
+    /// <summary>
+    /// The behavior options.
+    /// </summary>
+    [JsonPropertyName("options")]
+    public FunctionChoiceBehaviorOptions? Options { get; set; }
+
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
         var functions = base.GetFunctions(this.Functions, context.Kernel, autoInvoke: false);
 
-        return new FunctionChoiceBehaviorConfiguration()
+        return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
         {
             Choice = FunctionChoice.None,
             Functions = functions,

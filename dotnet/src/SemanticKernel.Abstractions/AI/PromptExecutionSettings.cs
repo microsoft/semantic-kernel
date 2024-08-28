@@ -73,15 +73,15 @@ public class PromptExecutionSettings
     /// <item>To disable function calling, and have the model only generate a user-facing message, set the property to null (the default).</item>
     /// <item>
     /// To allow the model to decide whether to call the functions and, if so, which ones to call, set the property to an instance returned
-    /// by the <see cref="FunctionChoiceBehavior.Auto(IEnumerable{KernelFunction}?, bool)"/> method.
+    /// by the <see cref="FunctionChoiceBehavior.Auto(IEnumerable{KernelFunction}?, bool, FunctionChoiceBehaviorOptions?)"/> method.
     /// </item>
     /// <item>
     /// To force the model to always call one or more functions set the property to an instance returned
-    /// by the <see cref="FunctionChoiceBehavior.Required(IEnumerable{KernelFunction}?, bool, Func{FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList{KernelFunction}?}?)"/> method.
+    /// by the <see cref="FunctionChoiceBehavior.Required(IEnumerable{KernelFunction}?, bool, Func{FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList{KernelFunction}?}?, FunctionChoiceBehaviorOptions?)"/> method.
     /// </item>
     /// <item>
     /// To instruct the model to not call any functions and only generate a user-facing message, set the property to an instance returned
-    /// by the <see cref="FunctionChoiceBehavior.None(IEnumerable{KernelFunction}?)"/> method.
+    /// by the <see cref="FunctionChoiceBehavior.None(IEnumerable{KernelFunction}?, FunctionChoiceBehaviorOptions?)"/> method.
     /// </item>
     /// </list>
     /// For all the behaviors that presume the model to call functions, auto-invoke can be specified. If LLM

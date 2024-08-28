@@ -12,6 +12,15 @@ namespace Microsoft.SemanticKernel;
 public sealed class FunctionChoiceBehaviorConfiguration
 {
     /// <summary>
+    /// Creates a new instance of the <see cref="FunctionChoiceBehaviorConfiguration"/> class.
+    /// <param name="options">The options for the behavior.</param>"
+    /// </summary>
+    internal FunctionChoiceBehaviorConfiguration(FunctionChoiceBehaviorOptions options)
+    {
+        this.Options = options;
+    }
+
+    /// <summary>
     /// Represents an AI model's decision-making strategy for calling functions.
     /// </summary>
     public FunctionChoice Choice { get; internal init; }
@@ -25,4 +34,9 @@ public sealed class FunctionChoiceBehaviorConfiguration
     /// Indicates whether the functions should be automatically invoked by the AI connector.
     /// </summary>
     public bool AutoInvoke { get; internal init; } = true;
+
+    /// <summary>
+    /// The behavior options.
+    /// </summary>
+    public FunctionChoiceBehaviorOptions Options { get; }
 }

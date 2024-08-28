@@ -290,6 +290,51 @@ public sealed class FunctionChoiceBehaviorTests
         Assert.Contains(config.Functions, f => f.Name == "Function3");
     }
 
+    [Fact]
+    public void FunctionChoiceBehaviorShouldPassOptionsToAutoFunctionChoiceBehaviorClass()
+    {
+        // Arrange
+        var options = new FunctionChoiceBehaviorOptions();
+
+        // Act
+        var choiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false, options: options);
+
+        // Assert
+        var configuration = choiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []));
+
+        Assert.Same(options, configuration.Options);
+    }
+
+    [Fact]
+    public void FunctionChoiceBehaviorShouldPassOptionsToRequiredFunctionChoiceBehaviorClass()
+    {
+        // Arrange
+        var options = new FunctionChoiceBehaviorOptions();
+
+        // Act
+        var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: false, options: options);
+
+        // Assert
+        var configuration = choiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []));
+
+        Assert.Same(options, configuration.Options);
+    }
+
+    [Fact]
+    public void FunctionChoiceBehaviorShouldPassOptionsToNoneFunctionChoiceBehaviorClass()
+    {
+        // Arrange
+        var options = new FunctionChoiceBehaviorOptions();
+
+        // Act
+        var choiceBehavior = FunctionChoiceBehavior.None(options: options);
+
+        // Assert
+        var configuration = choiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []));
+
+        Assert.Same(options, configuration.Options);
+    }
+
     private static KernelPlugin GetTestPlugin()
     {
         var function1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");
