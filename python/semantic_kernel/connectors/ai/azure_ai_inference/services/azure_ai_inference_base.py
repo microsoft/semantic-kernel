@@ -3,6 +3,7 @@
 import asyncio
 import contextlib
 from abc import ABC
+from typing import ClassVar
 
 from azure.ai.inference.aio import ChatCompletionsClient, EmbeddingsClient
 
@@ -13,6 +14,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 @experimental_class
 class AzureAIInferenceBase(KernelBaseModel, ABC):
     """Azure AI Inference Chat Completion Service."""
+
+    MODEL_PROVIDER_NAME: ClassVar[str] = "azureai"
 
     client: ChatCompletionsClient | EmbeddingsClient
 

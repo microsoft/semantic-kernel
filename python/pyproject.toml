@@ -5,9 +5,8 @@ authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com"}]
 readme = "pip/README.md"
 # Version read from __version__ field in __init__.py by Flit
 dynamic = ["version"]
-packages = [{include = "semantic_kernel"}]
 requires-python = ">=3.10,<3.13"
-license = {file = "../LICENSE"}
+license = {file = "LICENSE"}
 urls.homepage = "https://learn.microsoft.com/en-us/semantic-kernel/overview/"
 urls.source = "https://github.com/microsoft/semantic-kernel/tree/main/python"
 urls.release_notes = "https://github.com/microsoft/semantic-kernel/releases?q=tag%3Apython-1&expanded=true"
@@ -191,7 +190,10 @@ min-file-size = 1
 targets = ["semantic_kernel"]
 exclude_dirs = ["tests"]
 
+[tool.flit.module]
+name = "semantic_kernel"
+
 [build-system]
-requires = ["flit-core >= 3.8"]
+requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
 
