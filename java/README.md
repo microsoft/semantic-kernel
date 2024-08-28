@@ -61,9 +61,13 @@ examples of common AI-enabled scenarios.
 ## Get started
 
 To run the LLM prompts and semantic functions in this kernel, make sure you have
+<<<<<<< HEAD
+an [Open AI API Key](https://platform.openai.com)
+=======
 an [Open AI API Key](https://platform.openai.com/)
 >>>>>>> origin/main-auto-tune
 >>>>>>> main
+>>>>>>> origin/111
 or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/).
 
 ### Requirements
@@ -92,11 +96,14 @@ To build the Semantic Kernel, you will need:
 
 ### Build the Semantic Kernel
 
-1. Clone this repository
+1.  Clone this repository
 
 <<<<<<< AI
         git clone -b java-development https://github.com/microsoft/semantic-kernel/
 
+<<<<<<< HEAD
+2.  Build the project with the Maven Wrapper
+=======
 2. Build the project with the Maven Wrapper
         git clone -b experimental-java https://github.com/microsoft/semantic-kernel/
 
@@ -118,6 +125,7 @@ To build the Semantic Kernel, you will need:
 2. Build the project with the Maven Wrapper
 >>>>>>> origin/main-auto-tune
 >>>>>>> main
+>>>>>>> origin/111
 
         cd semantic-kernel/java
         ./mvnw install
@@ -173,6 +181,10 @@ will need to set the following environment variable:
 
 If you are using Azure OpenAI, you will also need to set the following environment variables:
 
+<<<<<<< HEAD
+- `AZURE_OPENAI_ENDPOINT` - the Azure OpenAI endpoint found in **Keys \* Endpoint** section of the Azure OpenAI service.
+- `AZURE_OPENAI_API_KEY` - the Azure OpenAI API key found in **Keys \* Endpoint** section of the Azure OpenAI service.
+=======
 <<<<<<< main
 - `AZURE_OPENAI_ENDPOINT` - the Azure OpenAI endpoint found in **Keys * Endpoint** section of the Azure OpenAI service.
 <<<<<<< AI
@@ -185,6 +197,7 @@ If you are using Azure OpenAI, you will also need to set the following environme
 - `AZURE_OPENAI_API_KEY` - the Azure OpoenAI API key found in **Keys * Endpoint** section of the Azure OpenAI service.
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 >>>>>>> main
+>>>>>>> origin/111
 - `AZURE_OPENAI_DEPLOYMENT_NAME` - the custom name you chose for your deployment when you deployed a model. It can be
 =======
 - `CLIENT_ENDPOINT` - the Azure OpenAI endpoint found in **Keys * Endpoint** section of the Azure OpenAI service.
@@ -257,6 +270,8 @@ This project is licensed under the [MIT License](../LICENSE).
 ## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_CONDUCT.md).
+<<<<<<< HEAD
+=======
 =======
 The Semantic Kernel for Java code has moved
 to [semantic-kernel-java](https://github.com/microsoft/semantic-kernel-java), please make code changes and submit issues
@@ -265,3 +280,4 @@ aligned in their development.
 
 Project coordination is still performed within this [Project Board](https://github.com/orgs/microsoft/projects/866).
 >>>>>>> upstream/main
+>>>>>>> origin/111
