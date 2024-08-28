@@ -7,7 +7,10 @@ from collections.abc import AsyncGenerator
 from functools import reduce
 from typing import TYPE_CHECKING, Any
 
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_chat_completion,
+    trace_streaming_chat_completion,
+)
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if sys.version_info >= (3, 12):
@@ -237,6 +240,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     # endregion
 
     # region Streaming
+    @override
+    @trace_streaming_chat_completion(AzureAIInferenceBase.MODEL_PROVIDER_NAME)
     async def get_streaming_chat_message_contents(
         self,
         chat_history: ChatHistory,

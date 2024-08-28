@@ -15,7 +15,10 @@ from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_s
 )
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import GoogleAIBase
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_streaming_text_completion,
+    trace_text_completion,
+)
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -128,6 +131,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 
     # region Streaming
     @override
+    @trace_streaming_text_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
     async def get_streaming_text_contents(
         self,
         prompt: str,

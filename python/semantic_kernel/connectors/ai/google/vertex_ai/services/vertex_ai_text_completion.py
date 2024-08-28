@@ -19,7 +19,10 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_streaming_text_completion,
+    trace_text_completion,
+)
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -122,6 +125,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 
     # region Streaming
     @override
+    @trace_streaming_text_completion(VertexAIBase.MODEL_PROVIDER_NAME)
     async def get_streaming_text_contents(
         self,
         prompt: str,

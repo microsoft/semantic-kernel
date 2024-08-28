@@ -2,7 +2,8 @@
 
 import functools
 import json
-from collections.abc import Callable
+from collections.abc import AsyncGenerator, Callable
+from functools import reduce
 from typing import Any
 
 from opentelemetry.trace import Span, StatusCode, get_tracer, use_span
@@ -12,6 +13,8 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.utils.experimental_decorator import experimental_function
 from semantic_kernel.utils.telemetry.model_diagnostics import gen_ai_attributes
@@ -96,14 +99,88 @@ def trace_chat_completion(model_provider: str) -> Callable:
                     _set_completion_error(current_span, exception)
                     raise
 
+        # Mark the wrapper decorator as a chat completion decorator
+        wrapper_decorator.__model_diagnostics_chat_completion__ = True  # type: ignore
         return wrapper_decorator
 
     return inner_trace_chat_completion
 
 
 @experimental_function
+def trace_streaming_chat_completion(model_provider: str) -> Callable:
+    """Decorator to trace streaming chat completion activities.
+
+    Args:
+        model_provider (str): The model provider should describe a family of
+            GenAI models with specific model identified by ai_model_id. For example,
+            model_provider could be "openai" and ai_model_id could be "gpt-3.5-turbo".
+            Sometimes the model provider is unknown at runtime, in which case it can be
+            set to the most specific known provider. For example, while using local models
+            hosted by Ollama, the model provider could be set to "ollama".
+    """
+
+    def inner_trace_streaming_chat_completion(completion_func: Callable) -> Callable:
+        @functools.wraps(completion_func)
+        async def wrapper_decorator(
+            *args: Any, **kwargs: Any
+        ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
+            if not are_model_diagnostics_enabled():
+                # If model diagnostics are not enabled, just return the completion
+                async for streaming_chat_message_contents in completion_func(*args, **kwargs):
+                    yield streaming_chat_message_contents
+                return
+
+            completion_service: ChatCompletionClientBase = args[0]
+            chat_history: ChatHistory = kwargs["chat_history"]
+            settings: PromptExecutionSettings = kwargs["settings"]
+            all_messages: dict[int, list[StreamingChatMessageContent]] = {}
+
+            with use_span(
+                _start_completion_activity(
+                    CHAT_COMPLETION_OPERATION,
+                    completion_service.ai_model_id,
+                    model_provider,
+                    chat_history,
+                    settings,
+                ),
+                end_on_exit=True,
+            ) as current_span:
+                try:
+                    async for streaming_chat_message_contents in completion_func(*args, **kwargs):
+                        for streaming_chat_message_content in streaming_chat_message_contents:
+                            choice_index = streaming_chat_message_content.choice_index
+                            if choice_index not in all_messages:
+                                all_messages[choice_index] = []
+                            all_messages[choice_index].append(streaming_chat_message_content)
+                        yield streaming_chat_message_contents
+
+                    all_messages_flattened = [
+                        reduce(lambda x, y: x + y, messages) for messages in all_messages.values()
+                    ]
+                    _set_completion_response(current_span, all_messages_flattened)
+                except Exception as exception:
+                    _set_completion_error(current_span, exception)
+                    raise
+
+        # Mark the wrapper decorator as a streaming chat completion decorator
+        wrapper_decorator.__model_diagnostics_streaming_chat_completion__ = True  # type: ignore
+        return wrapper_decorator
+
+    return inner_trace_streaming_chat_completion
+
+
+@experimental_function
 def trace_text_completion(model_provider: str) -> Callable:
-    """Decorator to trace text completion activities."""
+    """Decorator to trace text completion activities.
+
+    Args:
+        model_provider (str): The model provider should describe a family of
+            GenAI models with specific model identified by ai_model_id. For example,
+            model_provider could be "openai" and ai_model_id could be "gpt-3.5-turbo".
+            Sometimes the model provider is unknown at runtime, in which case it can be
+            set to the most specific known provider. For example, while using local models
+            hosted by Ollama, the model provider could be set to "ollama".
+    """
 
     def inner_trace_text_completion(completion_func: Callable) -> Callable:
         @functools.wraps(completion_func)
@@ -134,9 +211,72 @@ def trace_text_completion(model_provider: str) -> Callable:
                     _set_completion_error(current_span, exception)
                     raise
 
+        # Mark the wrapper decorator as a text completion decorator
+        wrapper_decorator.__model_diagnostics_text_completion__ = True  # type: ignore
         return wrapper_decorator
 
     return inner_trace_text_completion
+
+
+@experimental_function
+def trace_streaming_text_completion(model_provider: str) -> Callable:
+    """Decorator to trace streaming text completion activities.
+
+    Args:
+        model_provider (str): The model provider should describe a family of
+            GenAI models with specific model identified by ai_model_id. For example,
+            model_provider could be "openai" and ai_model_id could be "gpt-3.5-turbo".
+            Sometimes the model provider is unknown at runtime, in which case it can be
+            set to the most specific known provider. For example, while using local models
+            hosted by Ollama, the model provider could be set to "ollama".
+    """
+
+    def inner_trace_streaming_text_completion(completion_func: Callable) -> Callable:
+        @functools.wraps(completion_func)
+        async def wrapper_decorator(*args: Any, **kwargs: Any) -> AsyncGenerator[list["StreamingTextContent"], Any]:
+            if not are_model_diagnostics_enabled():
+                # If model diagnostics are not enabled, just return the completion
+                async for streaming_text_contents in completion_func(*args, **kwargs):
+                    yield streaming_text_contents
+                return
+
+            completion_service: TextCompletionClientBase = args[0]
+            prompt: str = kwargs["prompt"]
+            settings: PromptExecutionSettings = kwargs["settings"]
+            all_text_contents: dict[int, list[StreamingTextContent]] = {}
+
+            with use_span(
+                _start_completion_activity(
+                    CHAT_COMPLETION_OPERATION,
+                    completion_service.ai_model_id,
+                    model_provider,
+                    prompt,
+                    settings,
+                ),
+                end_on_exit=True,
+            ) as current_span:
+                try:
+                    async for streaming_text_contents in completion_func(*args, **kwargs):
+                        for streaming_text_content in streaming_text_contents:
+                            choice_index = streaming_text_content.choice_index
+                            if choice_index not in all_text_contents:
+                                all_text_contents[choice_index] = []
+                            all_text_contents[choice_index].append(streaming_text_content)
+                        yield streaming_text_contents
+
+                    all_text_contents_flattened = [
+                        reduce(lambda x, y: x + y, messages) for messages in all_text_contents.values()
+                    ]
+                    _set_completion_response(current_span, all_text_contents_flattened)
+                except Exception as exception:
+                    _set_completion_error(current_span, exception)
+                    raise
+
+        # Mark the wrapper decorator as a streaming text completion decorator
+        wrapper_decorator.__model_diagnostics_streaming_text_completion__ = True  # type: ignore
+        return wrapper_decorator
+
+    return inner_trace_streaming_text_completion
 
 
 def _start_completion_activity(
@@ -181,7 +321,10 @@ def _start_completion_activity(
 
 def _set_completion_response(
     current_span: Span,
-    completions: list[ChatMessageContent] | list[TextContent],
+    completions: list[ChatMessageContent]
+    | list[TextContent]
+    | list[StreamingChatMessageContent]
+    | list[StreamingTextContent],
 ) -> None:
     """Set the a text or chat completion response for a given activity."""
     first_completion = completions[0]
@@ -223,7 +366,12 @@ def _set_completion_error(span: Span, error: Exception) -> None:
     span.set_status(StatusCode.ERROR, repr(error))
 
 
-def _messages_to_openai_format(messages: list[ChatMessageContent] | list[TextContent]) -> str:
+def _messages_to_openai_format(
+    messages: list[ChatMessageContent]
+    | list[StreamingChatMessageContent]
+    | list[TextContent]
+    | list[StreamingTextContent],
+) -> str:
     """Convert a list of ChatMessageContent to a string in the OpenAI format.
 
     OpenTelemetry recommends formatting the messages in the OpenAI format

@@ -20,7 +20,10 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_streaming_text_completion,
+    trace_text_completion,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -105,6 +108,8 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
         text = inner_content["response"]
         return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
 
+    @override
+    @trace_streaming_text_completion(OllamaBase.MODEL_PROVIDER_NAME)
     async def get_streaming_text_contents(
         self,
         prompt: str,

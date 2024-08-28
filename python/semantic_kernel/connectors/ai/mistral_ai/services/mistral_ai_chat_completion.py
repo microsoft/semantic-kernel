@@ -38,7 +38,10 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
 from semantic_kernel.utils.experimental_decorator import experimental_class
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_chat_completion,
+    trace_streaming_chat_completion,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -136,6 +139,8 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         response_metadata = self._get_metadata_from_response(response)
         return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
 
+    @override
+    @trace_streaming_chat_completion(MistralAIBase.MODEL_PROVIDER_NAME)
     async def get_streaming_chat_message_contents(
         self,
         chat_history: ChatHistory,
