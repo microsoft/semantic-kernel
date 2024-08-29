@@ -416,6 +416,40 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetStreamingChatContentsWithAsynchronousFilterWorksCorrectlyAsync()
+    {
+        // Arrange
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(AzureOpenAITestHelper.GetTestResponse("chat_completion_streaming_async_filter_response.txt")));
+
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        });
+
+        // Act & Assert
+        var enumerator = service.GetStreamingChatMessageContentsAsync("Prompt").GetAsyncEnumerator();
+
+        await enumerator.MoveNextAsync();
+        var message = enumerator.Current;
+
+        await enumerator.MoveNextAsync();
+        message = enumerator.Current;
+
+        await enumerator.MoveNextAsync();
+        message = enumerator.Current;
+
+        await enumerator.MoveNextAsync();
+        message = enumerator.Current;
+
+        await enumerator.MoveNextAsync();
+        message = enumerator.Current;
+
+        await enumerator.MoveNextAsync();
+        message = enumerator.Current;
+    }
+
+    [Fact]
     public async Task GetStreamingChatMessageContentsWorksCorrectlyAsync()
     {
         // Arrange

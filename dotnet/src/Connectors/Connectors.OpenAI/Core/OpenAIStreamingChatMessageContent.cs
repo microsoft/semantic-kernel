@@ -33,7 +33,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         string modelId,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(
-            chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
+            (chatUpdate.Role is not null) ? new AuthorRole(chatUpdate.Role.ToString()!) : null,
             null,
             chatUpdate,
             choiceIndex,
