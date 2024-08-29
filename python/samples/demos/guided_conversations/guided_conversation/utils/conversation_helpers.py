@@ -42,6 +42,9 @@ class Conversation:
         elif isinstance(messages, Conversation):
             self.conversation_messages.extend(messages.conversation_messages)
         elif isinstance(messages, ChatMessageContent):
+            # if ChatMessageContent.metadata doesn't have type, then add default
+            if "type" not in messages.metadata:
+                messages.metadata["type"] = ConversationMessageType.DEFAULT
             self.conversation_messages.append(messages)
         else:
             self.logger.warning(f"Invalid message type: {type(messages)}")
