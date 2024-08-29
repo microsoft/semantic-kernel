@@ -61,20 +61,20 @@ public sealed class Bing_RagWithTextSearch(ITestOutputHelper output) : BaseTest(
 
         // Invoke prompt and use text search plugin to provide grounding information
         var query = "What is the Semantic Kernel?";
-        string promptTemplate = @"
-{{#with (SearchPlugin-GetTextSearchResults query)}}  
-  {{#each this}}  
-    Name: {{Name}}
-    Value: {{Value}}
-    Link: {{Link}}
-    -----------------
-  {{/each}}  
-{{/with}}  
+        string promptTemplate = """
+            {{#with (SearchPlugin-GetTextSearchResults query)}}  
+              {{#each this}}  
+                Name: {{Name}}
+                Value: {{Value}}
+                Link: {{Link}}
+                -----------------
+              {{/each}}  
+            {{/with}}  
 
-{{query}}
+            {{query}}
 
-Include citations to the relevant information where it is referenced in the response.
-";
+            Include citations to the relevant information where it is referenced in the response.
+            """;
         KernelArguments arguments = new() { { "query", query } };
         HandlebarsPromptTemplateFactory promptTemplateFactory = new();
         Console.WriteLine(await kernel.InvokePromptAsync(
@@ -108,21 +108,21 @@ Include citations to the relevant information where it is referenced in the resp
 
         // Invoke prompt and use text search plugin to provide grounding information
         var query = "What is the Semantic Kernel?";
-        string promptTemplate = @"
-{{#with (SearchPlugin-GetSearchResults query)}}  
-  {{#each this}}  
-    Name: {{Name}}
-    Snippet: {{Snippet}}
-    Link: {{DisplayUrl}}
-    Date Last Crawled: {{DateLastCrawled}}
-    -----------------
-  {{/each}}  
-{{/with}}  
+        string promptTemplate = """
+            {{#with (SearchPlugin-GetSearchResults query)}}  
+              {{#each this}}  
+                Name: {{Name}}
+                Snippet: {{Snippet}}
+                Link: {{DisplayUrl}}
+                Date Last Crawled: {{DateLastCrawled}}
+                -----------------
+              {{/each}}  
+            {{/with}}  
 
-{{query}}
+            {{query}}
 
-Include citations to and the date of the relevant information where it is referenced in the response.
-";
+            Include citations to and the date of the relevant information where it is referenced in the response.
+            """;
         KernelArguments arguments = new() { { "query", query } };
         HandlebarsPromptTemplateFactory promptTemplateFactory = new();
         Console.WriteLine(await kernel.InvokePromptAsync(
@@ -160,20 +160,20 @@ Include citations to and the date of the relevant information where it is refere
 
         // Invoke prompt and use text search plugin to provide grounding information
         var query = "What is the Semantic Kernel?";
-        string promptTemplate = @"
-{{#with (SearchPlugin-GetTextSearchResults query)}}  
-  {{#each this}}  
-    Name: {{Name}}
-    Value: {{Value}}
-    Link: {{Link}}
-    -----------------
-  {{/each}}  
-{{/with}}  
+        string promptTemplate = """
+            {{#with (SearchPlugin-GetTextSearchResults query)}}  
+              {{#each this}}  
+                Name: {{Name}}
+                Value: {{Value}}
+                Link: {{Link}}
+                -----------------
+              {{/each}}  
+            {{/with}}  
 
-{{query}}
+            {{query}}
 
-Include citations to the relevant information where it is referenced in the response.
-";
+            Include citations to the relevant information where it is referenced in the response.
+            """;
         KernelArguments arguments = new() { { "query", query } };
         HandlebarsPromptTemplateFactory promptTemplateFactory = new();
         Console.WriteLine(await kernel.InvokePromptAsync(
