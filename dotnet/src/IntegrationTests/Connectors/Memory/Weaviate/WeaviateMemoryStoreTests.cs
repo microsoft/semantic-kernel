@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Weaviate;
+namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 
 /// <summary>
 /// Tests for <see cref="WeaviateMemoryStore" /> collection and upsert operations.
@@ -96,7 +96,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         await this._weaviateMemoryStore.CreateCollectionAsync(collectionName);
         Assert.True(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
-        Assert.Single((await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
+        Assert.Single(await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync());
 
         var collectionName2 = "SK" + Guid.NewGuid();
         await this._weaviateMemoryStore.CreateCollectionAsync(collectionName2);
@@ -110,17 +110,17 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     {
         await this.DeleteAllClassesAsync();
 
-        Assert.Empty((await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
+        Assert.Empty(await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync());
 
         var collectionName = "SK" + Guid.NewGuid();
         await this._weaviateMemoryStore.CreateCollectionAsync(collectionName);
         Assert.True(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
-        Assert.Single((await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
+        Assert.Single(await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync());
 
         await this._weaviateMemoryStore.DeleteCollectionAsync(collectionName);
         Assert.False(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
-        Assert.Empty((await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
+        Assert.Empty(await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync());
     }
 
     [Fact(Skip = SkipReason)]

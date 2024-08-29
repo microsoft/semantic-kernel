@@ -810,9 +810,9 @@ async def test_add_chat_message(
 async def test_add_chat_message_invalid_role(
     azure_openai_assistant_agent, mock_chat_message_content, openai_unit_test_env
 ):
-    mock_chat_message_content.role = AuthorRole.TOOL
+    mock_chat_message_content.role = AuthorRole.SYSTEM
 
-    with pytest.raises(AgentExecutionException, match="Invalid message role `tool`"):
+    with pytest.raises(AgentExecutionException, match="Invalid message role `system`"):
         await azure_openai_assistant_agent.add_chat_message("test_thread_id", mock_chat_message_content)
 
 

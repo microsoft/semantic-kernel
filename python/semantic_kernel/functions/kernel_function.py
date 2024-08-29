@@ -8,7 +8,8 @@ from copy import copy, deepcopy
 from inspect import isasyncgen, isgenerator
 from typing import TYPE_CHECKING, Any
 
-from opentelemetry import trace
+from opentelemetry import metrics, trace
+from opentelemetry.semconv.attributes.error_attributes import ERROR_TYPE
 
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
@@ -38,8 +39,11 @@ if TYPE_CHECKING:
     from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
+# Logger, tracer and meter for observability
 logger: logging.Logger = logging.getLogger(__name__)
 tracer: trace.Tracer = trace.get_tracer(__name__)
+meter: metrics.Meter = metrics.get_meter_provider().get_meter(__name__)
+MEASUREMENT_FUNCTION_TAG_NAME: str = "semantic_kernel.function.name"
 
 TEMPLATE_FORMAT_MAP = {
     KERNEL_TEMPLATE_FORMAT_NAME: KernelPromptTemplate,
@@ -70,6 +74,17 @@ class KernelFunction(KernelBaseModel):
     # some attributes are now properties, still listed here for documentation purposes
 
     metadata: KernelFunctionMetadata
+
+    invocation_duration_histogram: metrics.Histogram = meter.create_histogram(
+        "semantic_kernel.function.invocation.duration",
+        unit="s",
+        description="Measures the duration of a function's execution",
+    )
+    streaming_duration_histogram: metrics.Histogram = meter.create_histogram(
+        "semantic_kernel.function.streaming.duration",
+        unit="s",
+        description="Measures the duration of a function's streaming execution",
+    )
 
     @classmethod
     def from_prompt(
@@ -212,6 +227,7 @@ class KernelFunction(KernelBaseModel):
             KernelFunctionLogMessages.log_function_invoking(logger, self.fully_qualified_name)
             KernelFunctionLogMessages.log_function_arguments(logger, arguments)
 
+            attributes = {MEASUREMENT_FUNCTION_TAG_NAME: self.fully_qualified_name}
             starting_time_stamp = time.perf_counter()
             try:
                 stack = kernel.construct_call_stack(
@@ -225,10 +241,11 @@ class KernelFunction(KernelBaseModel):
 
                 return function_context.result
             except Exception as e:
-                self._handle_exception(current_span, e)
+                self._handle_exception(current_span, e, attributes)
                 raise e
             finally:
                 duration = time.perf_counter() - starting_time_stamp
+                self.invocation_duration_histogram.record(duration, attributes)
                 KernelFunctionLogMessages.log_function_completed(logger, duration)
 
     @abstractmethod
@@ -270,6 +287,7 @@ class KernelFunction(KernelBaseModel):
             KernelFunctionLogMessages.log_function_streaming_invoking(logger, self.fully_qualified_name)
             KernelFunctionLogMessages.log_function_arguments(logger, arguments)
 
+            attributes = {MEASUREMENT_FUNCTION_TAG_NAME: self.fully_qualified_name}
             starting_time_stamp = time.perf_counter()
             try:
                 stack = kernel.construct_call_stack(
@@ -288,10 +306,11 @@ class KernelFunction(KernelBaseModel):
                     else:
                         yield function_context.result
             except Exception as e:
-                self._handle_exception(current_span, e)
+                self._handle_exception(current_span, e, attributes)
                 raise e
             finally:
                 duration = time.perf_counter() - starting_time_stamp
+                self.streaming_duration_histogram.record(duration, attributes)
                 KernelFunctionLogMessages.log_function_streaming_completed(logger, duration)
 
     def function_copy(self, plugin_name: str | None = None) -> "KernelFunction":
@@ -309,15 +328,18 @@ class KernelFunction(KernelBaseModel):
             cop.metadata.plugin_name = plugin_name
         return cop
 
-    def _handle_exception(self, current_span: trace.Span, exception: Exception) -> None:
+    def _handle_exception(self, current_span: trace.Span, exception: Exception, attributes: dict[str, str]) -> None:
         """Handle the exception.
 
         Args:
             current_span (trace.Span): The current span.
             exception (Exception): The exception.
+            attributes (Attributes): The attributes to be modified.
         """
+        attributes[ERROR_TYPE] = type(exception).__name__
+
         current_span.record_exception(exception)
+        current_span.set_attribute(ERROR_TYPE, type(exception).__name__)
         current_span.set_status(trace.StatusCode.ERROR, description=str(exception))
-        current_span.set_attribute("error.type", type(exception).__name__)
 
         KernelFunctionLogMessages.log_function_error(logger, exception)

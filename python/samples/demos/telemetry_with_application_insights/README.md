@@ -39,3 +39,11 @@ pip install azure-monitor-opentelemetry-exporter==1.0.0b24
 ### Logs and traces
 
 Go to your Application Insights instance, click on _Transaction search_ on the left menu. Use the operation id output by the program to search for the logs and traces associated with the operation. Click on any of the search result to view the end-to-end transaction details. Read more [here](https://learn.microsoft.com/en-us/azure/azure-monitor/app/transaction-search-and-diagnostics?tabs=transaction-search).
+
+### Metrics
+
+Running the application once will only generate one set of measurements (for each metrics). Run the application a couple times to generate more sets of measurements.
+
+> Note: Make sure not to run the program too frequently. Otherwise, you may get throttled.
+
+Please refer to here on how to analyze metrics in [Azure Monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/analyze-metrics).
