@@ -50,9 +50,9 @@ public sealed class RestApiOperation
     public HttpMethod Method { get; }
 
     /// <summary>
-    /// The server URL.
+    /// The server.
     /// </summary>
-    public Uri? ServerUrl { get; }
+    public RestApiOperationServer Server { get; }
 
     /// <summary>
     /// The operation parameters.
@@ -78,7 +78,7 @@ public sealed class RestApiOperation
     /// Creates an instance of a <see cref="RestApiOperation"/> class.
     /// </summary>
     /// <param name="id">The operation identifier.</param>
-    /// <param name="serverUrl">The server URL.</param>
+    /// <param name="server">The server.</param>
     /// <param name="path">The operation path.</param>
     /// <param name="method">The operation method.</param>
     /// <param name="description">The operation description.</param>
@@ -87,7 +87,7 @@ public sealed class RestApiOperation
     /// <param name="responses">The operation responses.</param>
     public RestApiOperation(
         string id,
-        Uri? serverUrl,
+        RestApiOperationServer server,
         string path,
         HttpMethod method,
         string description,
@@ -96,7 +96,7 @@ public sealed class RestApiOperation
         IDictionary<string, RestApiOperationExpectedResponse>? responses = null)
     {
         this.Id = id;
-        this.ServerUrl = serverUrl;
+        this.Server = server;
         this.Path = path;
         this.Method = method;
         this.Description = description;
@@ -114,7 +114,7 @@ public sealed class RestApiOperation
     /// <returns>The operation Url.</returns>
     public Uri BuildOperationUrl(IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
-        var serverUrl = this.GetServerUrl(serverUrlOverride, apiHostUrl);
+        var serverUrl = this.GetServerUrl(serverUrlOverride, apiHostUrl, arguments);
 
         var path = this.BuildPath(this.Path, arguments);
 
@@ -250,8 +250,9 @@ public sealed class RestApiOperation
     /// </summary>
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
+    /// <param name="arguments">The operation arguments.</param>
     /// <returns>The operation server url.</returns>
-    private Uri GetServerUrl(Uri? serverUrlOverride, Uri? apiHostUrl)
+    private Uri GetServerUrl(Uri? serverUrlOverride, Uri? apiHostUrl, IDictionary<string, object?> arguments)
     {
         string serverUrlString;
 
@@ -259,10 +260,30 @@ public sealed class RestApiOperation
         {
             serverUrlString = serverUrlOverride.AbsoluteUri;
         }
+        else if (this.Server.Url is not null)
+        {
+            serverUrlString = this.Server.Url;
+            foreach (var variable in this.Server.Variables)
+            {
+                arguments.TryGetValue(variable.Key, out object? value);
+                string? strValue = value as string;
+                if (strValue is not null && variable.Value.IsValid(strValue))
+                {
+                    serverUrlString = serverUrlString.Replace($"{{{variable.Key}}}", strValue);
+                }
+                else if (variable.Value.Default is not null)
+                {
+                    serverUrlString = serverUrlString.Replace($"{{{variable.Key}}}", variable.Value.Default);
+                }
+                else
+                {
+                    throw new KernelException($"No value provided for the '{variable.Key}' server variable of the operation - '{this.Id}'.");
+                }
+            }
+        }
         else
         {
             serverUrlString =
-                this.ServerUrl?.AbsoluteUri ??
                 apiHostUrl?.AbsoluteUri ??
                 throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
         }
