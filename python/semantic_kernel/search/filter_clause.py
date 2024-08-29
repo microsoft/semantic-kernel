@@ -2,8 +2,8 @@
 
 from typing import Literal
 
-from semantic_kernel.data.const import FilterClauseType
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.search.const import FilterClauseType
 
 
 class FilterClause(KernelBaseModel):

@@ -6,8 +6,8 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, Generic, Literal, TypeVar
 
-from semantic_kernel.data.filter_clause import FilterClause
 from semantic_kernel.data.vector_search_options import VectorSearchOptions
+from semantic_kernel.search.filter_clause import FilterClause
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover

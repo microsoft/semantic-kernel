@@ -2,7 +2,7 @@
 
 from abc import abstractmethod
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar
+from typing import Any, Generic, Literal, TypeVar
 
 from semantic_kernel.data.const import VectorSearchQueryTypes
 from semantic_kernel.data.vector_search_options import VectorSearchOptions
@@ -10,9 +10,6 @@ from semantic_kernel.data.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorStoreSearchError
 from semantic_kernel.utils.experimental_decorator import experimental_class
-
-if TYPE_CHECKING:
-    pass
 
 TModel = TypeVar("TModel")
 TKey = TypeVar("TKey")

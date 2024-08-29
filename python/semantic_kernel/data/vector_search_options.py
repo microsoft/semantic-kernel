@@ -3,8 +3,8 @@
 
 from pydantic import Field
 
-from semantic_kernel.data.filter_clause import FilterClause
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.search.filter_clause import FilterClause
 
 
 class VectorSearchOptions(KernelBaseModel):

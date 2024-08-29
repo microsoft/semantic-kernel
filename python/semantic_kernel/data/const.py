@@ -37,10 +37,3 @@ class VectorSearchQueryTypes(str, Enum):
     VECTORIZABLE_TEXT_SEARCH_QUERY = "vectorizable_text_search_query"
     HYBRID_TEXT_VECTORIZED_SEARCH_QUERY = "hybrid_text_vectorized_search_query"
     HYBRID_VECTORIZABLE_TEXT_SEARCH_QUERY = "hybrid_vectorizable_text_search_query"
-
-
-class FilterClauseType(str, Enum):
-    """Types of filter clauses for vector search queries."""
-
-    EQUALITY = "equality"
-    TAG_LIST_CONTAINS = "tag_list_contains"
