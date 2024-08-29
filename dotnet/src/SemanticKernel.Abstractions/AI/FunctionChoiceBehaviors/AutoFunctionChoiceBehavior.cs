@@ -35,10 +35,12 @@ internal sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <param name="autoInvoke">
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </param>
-    public AutoFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true) : base(functions)
+    /// <param name="options">The behavior options.</param>
+    public AutoFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, FunctionChoiceBehaviorOptions? options = null) : base(functions)
     {
         this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
         this._autoInvoke = autoInvoke;
+        this.Options = options;
     }
 
     /// <summary>
@@ -49,12 +51,18 @@ internal sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     [JsonPropertyName("functions")]
     public IList<string>? Functions { get; set; }
 
+    /// <summary>
+    /// The behavior options.
+    /// </summary>
+    [JsonPropertyName("options")]
+    public FunctionChoiceBehaviorOptions? Options { get; set; }
+
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
         var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
 
-        return new FunctionChoiceBehaviorConfiguration()
+        return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
         {
             Choice = FunctionChoice.Auto,
             Functions = functions,

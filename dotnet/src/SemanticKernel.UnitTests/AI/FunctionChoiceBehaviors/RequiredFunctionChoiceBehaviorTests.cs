@@ -281,6 +281,33 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         Assert.Equal("Function1", config.Functions[0].Name);
     }
 
+    [Fact]
+    public void ItShouldPropagateOptionsToConfiguration()
+    {
+        // Arrange
+        var options = new FunctionChoiceBehaviorOptions();
+
+        // Act
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: false, options: options);
+
+        // Assert
+        var configuration = choiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []));
+
+        Assert.Same(options, configuration.Options);
+    }
+
+    [Fact]
+    public void ItShouldPropagateDefaultOptionsIfNoneAreProvided()
+    {
+        // Arrange & Act
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: false, options: null);
+
+        // Assert
+        var configuration = choiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []));
+
+        Assert.NotNull(configuration.Options);
+    }
+
     private static KernelPlugin GetTestPlugin()
     {
         var function1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");

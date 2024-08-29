@@ -235,6 +235,33 @@ public sealed class AutoFunctionChoiceBehaviorTests
         Assert.Equal("The specified function MyPlugin.NonKernelFunction was not found.", exception.Message);
     }
 
+    [Fact]
+    public void ItShouldPropagateOptionsToConfiguration()
+    {
+        // Arrange
+        var options = new FunctionChoiceBehaviorOptions();
+
+        // Act
+        var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false, options: options);
+
+        // Assert
+        var configuration = choiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []));
+
+        Assert.Same(options, configuration.Options);
+    }
+
+    [Fact]
+    public void ItShouldUseDefaultOptionsIfNoneAreProvided()
+    {
+        // Act
+        var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false);
+
+        // Assert
+        var configuration = choiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []));
+
+        Assert.NotNull(configuration.Options);
+    }
+
     private static KernelPlugin GetTestPlugin()
     {
         var function1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");

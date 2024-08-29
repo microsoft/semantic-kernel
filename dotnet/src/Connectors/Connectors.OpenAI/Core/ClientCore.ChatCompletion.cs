@@ -27,7 +27,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 internal partial class ClientCore
 {
     protected const string ModelProvider = "openai";
-    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction);
+    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -1155,11 +1155,12 @@ internal partial class ClientCore
         bool autoInvoke = false;
         bool allowAnyRequestedKernelFunction = false;
         int maximumAutoInvokeAttempts = 0;
+        FunctionChoiceBehaviorOptions? options = null;
 
         // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
         if (executionSettings.FunctionChoiceBehavior is { } functionChoiceBehavior)
         {
-            (tools, choice, autoInvoke, maximumAutoInvokeAttempts) = this.ConfigureFunctionCalling(kernel, requestIndex, functionChoiceBehavior, chatHistory);
+            (tools, choice, autoInvoke, maximumAutoInvokeAttempts, options) = this.ConfigureFunctionCalling(kernel, requestIndex, functionChoiceBehavior, chatHistory);
         }
         // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
         else if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
@@ -1181,10 +1182,11 @@ internal partial class ClientCore
             Tools: tools ?? [s_nonInvocableFunctionTool],
             Choice: choice ?? ChatToolChoice.None,
             AutoInvoke: autoInvoke && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes,
-            AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction);
+            AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction,
+            Options: options);
     }
 
-    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int maximumAutoInvokeAttempts, bool AllowAnyRequestedKernelFunction) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, ToolCallBehavior toolCallBehavior)
+    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int MaximumAutoInvokeAttempts, bool AllowAnyRequestedKernelFunction) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, ToolCallBehavior toolCallBehavior)
     {
         IList<ChatTool>? tools = null;
         ChatToolChoice? choice = null;
@@ -1208,7 +1210,7 @@ internal partial class ClientCore
         return new(tools, choice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction);
     }
 
-    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int maximumAutoInvokeAttempts) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior, ChatHistory chatHistory)
+    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int MaximumAutoInvokeAttempts, FunctionChoiceBehaviorOptions Options) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior, ChatHistory chatHistory)
     {
         FunctionChoiceBehaviorConfiguration config = functionChoiceBehavior.GetConfiguration(new(chatHistory) { Kernel = kernel, RequestSequenceIndex = requestIndex });
 
@@ -1244,6 +1246,6 @@ internal partial class ClientCore
             }
         }
 
-        return new(tools, toolChoice, autoInvoke, maximumAutoInvokeAttempts);
+        return new(tools, toolChoice, autoInvoke, maximumAutoInvokeAttempts, config.Options);
     }
 }

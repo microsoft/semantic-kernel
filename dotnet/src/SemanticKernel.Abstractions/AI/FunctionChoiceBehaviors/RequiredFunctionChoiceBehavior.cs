@@ -49,11 +49,17 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// the model will keep calling the 'Add' function even if the sum - 5 - is already calculated, until the 'Add' function is no longer provided to the model.
     /// In this example, the function selector can analyze chat history and decide not to advertise the 'Add' function anymore.
     /// </param>
-    public RequiredFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? functionsSelector = null) : base(functions)
+    /// <param name="options">The behavior options.</param>
+    public RequiredFunctionChoiceBehavior(
+        IEnumerable<KernelFunction>? functions = null,
+        bool autoInvoke = true,
+        Func<FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList<KernelFunction>?>? functionsSelector = null,
+        FunctionChoiceBehaviorOptions? options = null) : base(functions)
     {
         this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
         this._autoInvoke = autoInvoke;
         this._functionsSelector = functionsSelector;
+        this.Options = options;
     }
 
     /// <summary>
@@ -63,6 +69,12 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// </summary>
     [JsonPropertyName("functions")]
     public IList<string>? Functions { get; set; }
+
+    /// <summary>
+    /// The behavior options.
+    /// </summary>
+    [JsonPropertyName("options")]
+    public FunctionChoiceBehaviorOptions? Options { get; set; }
 
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
@@ -81,7 +93,7 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
             });
         }
 
-        return new FunctionChoiceBehaviorConfiguration()
+        return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
         {
             Choice = FunctionChoice.Required,
             Functions = selectedFunctions ?? functions,
