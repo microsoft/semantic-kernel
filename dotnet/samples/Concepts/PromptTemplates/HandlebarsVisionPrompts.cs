@@ -41,7 +41,7 @@ public class HandlebarsVisionPrompts(ITestOutputHelper output) : BaseTest(output
         });
 
         var response = await kernel.InvokeAsync(function, arguments);
-        Console.WriteLine(response.GetValue<string?>());
+        Console.WriteLine(response);
 
         /*
         Output:
