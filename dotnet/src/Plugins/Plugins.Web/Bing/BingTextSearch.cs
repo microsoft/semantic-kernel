@@ -256,7 +256,7 @@ public sealed class BingTextSearch : ITextSearch
                     }
                     else
                     {
-                        throw new ArgumentException($"Unknown equality filter clause field name, must be one of {string.Join(",", s_queryParameters)}", nameof(searchOptions));
+                        throw new ArgumentException($"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_queryParameters)}", nameof(searchOptions));
                     }
                 }
             }
