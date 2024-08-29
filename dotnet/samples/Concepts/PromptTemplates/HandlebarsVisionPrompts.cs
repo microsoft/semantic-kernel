@@ -40,7 +40,7 @@ public class HandlebarsVisionPrompts(ITestOutputHelper output) : BaseTest(output
             {"imageData", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAACVJREFUKFNj/KTO/J+BCMA4iBUyQX1A0I10VAizCj1oMdyISyEAFoQbHwTcuS8AAAAASUVORK5CYII="}
         });
 
-        var response = await kernel.InvokeAsync(function, null);
+        var response = await kernel.InvokeAsync(function, arguments);
         Console.WriteLine(response.GetValue<string?>());
 
         /*
