@@ -12,6 +12,7 @@ urls.source = "https://github.com/microsoft/semantic-kernel/tree/main/python"
 urls.release_notes = "https://github.com/microsoft/semantic-kernel/releases?q=tag%3Apython-1&expanded=true"
 urls.issues = "https://github.com/microsoft/semantic-kernel/issues"
 classifiers = [
+  "License :: OSI Approved :: MIT License",
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
