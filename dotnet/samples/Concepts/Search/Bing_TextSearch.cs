@@ -74,7 +74,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var textSearch = new BingTextSearch(apiKey: TestConfiguration.Bing.ApiKey, options: new()
         {
             HttpClient = httpClient,
-            StringMapper = webPage => JsonSerializer.Serialize(webPage),
+            StringMapper = new TestTextSearchStringMapper(),
         });
 
         var query = "What is the Semantic Kernel?";
@@ -103,7 +103,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var textSearch = new BingTextSearch(apiKey: TestConfiguration.Bing.ApiKey, options: new()
         {
             HttpClient = httpClient,
-            StringMapper = webPage => JsonSerializer.Serialize(webPage),
+            StringMapper = new TestTextSearchStringMapper(),
         });
 
         var query = "What is the Semantic Kernel?";
@@ -121,5 +121,17 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
 
     #region private
     private const int HorizontalRuleLength = 80;
+
+    /// <summary>
+    /// Test mapper which converts a global::Google.Apis.CustomSearchAPI.v1.Data.Result search result to a string using JSON serialization.
+    /// </summary>
+    private sealed class TestTextSearchStringMapper : ITextSearchStringMapper
+    {
+        /// <inheritdoc />
+        public string MapFromResultToString(object result)
+        {
+            return JsonSerializer.Serialize(result);
+        }
+    }
     #endregion
 }

@@ -125,7 +125,7 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Only include results from learn.microsoft.com. Include citations to the relevant information where it is referenced in the response.", arguments));
     }
 
-    private static KernelFunction CreateSearchBySite(BingTextSearch textSearch, BasicFilterOptions? basicFilter = null, MapSearchResultToString? mapToString = null)
+    private static KernelFunction CreateSearchBySite(BingTextSearch textSearch, BasicFilterOptions? basicFilter = null)
     {
         async Task<IEnumerable<object>> SearchAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
