@@ -7,7 +7,6 @@
     "github.copilot",
     "franneck94.c-cpp-runner",
     "ms-azuretools.vscode-azureresourcegroups",
-    "ms-python.debugpy",
-    "atariq11700.debugpy-old"
+    "quarto.quarto"
   ]
 }
