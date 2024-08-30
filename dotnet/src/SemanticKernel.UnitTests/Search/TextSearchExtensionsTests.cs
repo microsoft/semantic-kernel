@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -119,24 +118,6 @@ public class TextSearchExtensionsTests
         Assert.Equal(count, results.Count());
     }
 
-    [Fact]
-    public async Task CanAppMapSearchResultToStringToSearchAsync()
-    {
-        // Arrange
-        MockTextSearch textSearch = new();
-        var function = textSearch.CreateSearch(mapper: new TestTextSearchStringMapper());
-
-        // Act
-        var result = await function.InvokeAsync(new(), new() { ["query"] = "What is the Semantic Kernel?" });
-
-        // Assert
-        Assert.NotNull(result);
-        var results = result.GetValue<IEnumerable<object>>();
-        Assert.NotNull(results);
-        Assert.NotEmpty(results);
-        Assert.Equal("\"Result 1\"", results.ElementAt(0));
-    }
-
     #region private
     /// <summary>
     /// Create the default <see cref="KernelFunctionFromMethodOptions"/> for <see cref="ITextSearch.SearchAsync(string, TextSearchOptions?, CancellationToken)"/>.
@@ -153,18 +134,6 @@ public class TextSearchExtensionsTests
             ],
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
         };
-
-    /// <summary>
-    /// Test mapper which converts an arbitrary search result to a string using JSON serialization.
-    /// </summary>
-    private sealed class TestTextSearchStringMapper : ITextSearchStringMapper
-    {
-        /// <inheritdoc />
-        public string MapFromResultToString(object result)
-        {
-            return JsonSerializer.Serialize(result);
-        }
-    }
     #endregion
 }
 #pragma warning restore xUnit1026 // Theory methods should use all of their parameters

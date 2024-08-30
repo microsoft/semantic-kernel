@@ -111,7 +111,7 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
     private const int HorizontalRuleLength = 80;
 
     /// <summary>
-    /// Test mapper which converts a global::Google.Apis.CustomSearchAPI.v1.Data.Result search result to a string using JSON serialization.
+    /// Test mapper which converts an arbitrary search result to a string using JSON serialization.
     /// </summary>
     private sealed class TestTextSearchStringMapper : ITextSearchStringMapper
     {

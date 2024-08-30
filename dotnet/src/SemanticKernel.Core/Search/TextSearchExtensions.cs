@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -78,10 +77,9 @@ public static class TextSearchExtensions
     /// </summary>
     /// <param name="textSearch">The ITextSearch instance to use.</param>
     /// <param name="options">Optional KernelFunctionFromMethodOptions which allow the KernelFunction metadata to be specified.</param>
-    /// <param name="mapper">Optional <see cref="ITextSearchStringMapper" /> instance which modifies how the search result is converted to a string.</param>
     /// <param name="searchOptions">Optional TextSearchOptions which override the options provided when the function is invoked.</param>
     /// <returns>A <see cref="KernelFunction"/> instance with a Search operation that calls the provided <see cref="ITextSearch.SearchAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
-    public static KernelFunction CreateSearch(this ITextSearch textSearch, KernelFunctionFromMethodOptions? options = null, ITextSearchStringMapper? mapper = null, TextSearchOptions? searchOptions = null)
+    public static KernelFunction CreateSearch(this ITextSearch textSearch, KernelFunctionFromMethodOptions? options = null, TextSearchOptions? searchOptions = null)
     {
         async Task<IEnumerable<string>> SearchAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
@@ -101,7 +99,7 @@ public static class TextSearchExtensions
 
             var result = await textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
             var resultList = await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
-            return MapToStrings(resultList, mapper);
+            return resultList;
         }
 
         options ??= DefaultSearchMethodOptions();
@@ -204,34 +202,6 @@ public static class TextSearchExtensions
         }
 
         return defaultValue;
-    }
-
-    /// <summary>
-    /// Utility method to map a collection of arbitrary search results to a list of strings.
-    /// </summary>
-    /// <param name="resultList">Collection of search results.</param>
-    /// <param name="mapper">Optional mapper function to convert a search result to a string.</param>
-    private static IEnumerable<string> MapToStrings(IEnumerable<object> resultList, ITextSearchStringMapper? mapper = null)
-    {
-        mapper ??= new DefaultTextSearchStringMapper();
-
-        return resultList.Select(result => mapper.MapFromResultToString(result));
-    }
-
-    /// <summary>
-    /// Default mapper which converts an arbitrary search result to a string using JSON serialization.
-    /// </summary>
-    private class DefaultTextSearchStringMapper : ITextSearchStringMapper
-    {
-        /// <inheritdoc />
-        public string MapFromResultToString(object result)
-        {
-            if (result is string stringValue)
-            {
-                return stringValue;
-            }
-            return JsonSerializer.Serialize(result);
-        }
     }
 
     /// <summary>
