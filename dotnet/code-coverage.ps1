@@ -27,7 +27,7 @@ foreach ($project in $testProjects) {
     dotnet test $testProjectPath `
         --collect:"XPlat Code Coverage" `
         --results-directory:$coverageOutputPath `
-        -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute `
+        -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=GeneratedCodeAttribute, CompilerGeneratedAttribute, ExcludeFromCodeCoverageAttribute `
 
 }
 
@@ -49,8 +49,7 @@ if ($ProdPackagesOnly) {
 
     # Generate report for production assemblies only
     & reportgenerator -reports:"$coverageOutputPath/**/coverage.cobertura.xml" -targetdir:$reportOutputPath -reporttypes:Html -assemblyfilters:$assemblyFilters
-}
-else {
+} else {
     & reportgenerator -reports:"$coverageOutputPath/**/coverage.cobertura.xml" -targetdir:$reportOutputPath -reporttypes:Html
 }
 
