@@ -92,7 +92,7 @@ async def main(first_run: bool = False):
     query = "swimming pool and good internet connection"
     query_vector = (await embeddings.generate_raw_embeddings([query]))[0]
 
-    results = await store.search(query_type="vectorizable_text_search_query", query_text=query)
+    results = await store.search(query_type="vectorizable_text_search_query", query=query)
     print("Search results using text: ")
     for result in results:
         print(
@@ -119,7 +119,7 @@ async def main(first_run: bool = False):
     print("Search results using hybrid text and vector: ")
     results = await store.search(
         query_type="hybrid_text_vectorized_search_query",
-        query_text=query,
+        query=query,
         vector=query_vector,
         search_options=VectorSearchOptions(vector_field_name="description_vector"),
     )
@@ -134,11 +134,11 @@ async def main(first_run: bool = False):
     print("Search results using hybrid text and vector with filter: ")
     results = await store.search(
         query_type="hybrid_text_vectorized_search_query",
-        query_text=query,
+        query=query,
         vector=query_vector,
         search_options=VectorSearchOptions(
             vector_field_name="description_vector",
-            vector_search_filters=[
+            search_filters=[
                 FilterClause(field_name="tags", value="free wifi", clause_type="tag_list_contains"),
                 FilterClause(field_name="category", value="Luxury", clause_type="equality"),
             ],

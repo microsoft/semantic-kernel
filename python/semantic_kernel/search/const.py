@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from enum import Enum
+from typing import Final
+
+DEFAULT_COUNT: Final[int] = 5
 
 
 class FilterClauseType(str, Enum):

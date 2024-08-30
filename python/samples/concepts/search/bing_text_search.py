@@ -11,55 +11,38 @@ async def main():
     service_id = "chat-gpt"
     kernel.add_service(AzureChatCompletion(service_id=service_id))
     connector = BingSearch()
-    res = await connector.get_search_result("What is semantic kernel?", num_results=2)
-    print(res)
-
-    # print("---------------- Question 1 -----------------\n")
-
-    # query = "Which country receives the most rain per year?"
-    # search = web_plugin["search"]
-    # result = await kernel.invoke(search, query=query)
-    # print(f"Question: {query}\n")
-    # print(f"Answer: {result}\n")
-
-    # print("---------------- Question 2 -----------------\n")
-
-    # prompt = """
-    # Answer the question using only the data that is provided in the data section.
-    # Do not use any prior knowledge to answer the question.
-    # Data: {{WebSearch.search "What is semantic kernel?"}}
-    # Question: {{$question}}?
-    # Answer:
-    # """
-
-    # req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
-    # req_settings.temperature = 0.2
-
-    # prompt_template_config = PromptTemplateConfig(
-    #     template=prompt,
-    #     name="qna",
-    #     template_format="semantic-kernel",
-    #     execution_settings=req_settings,
-    # )
-
-    # question = "What is Semantic Kernel?"
-    # qna = kernel.add_function(
-    #     function_name="qna",
-    #     plugin_name="WebSearch",
-    #     prompt_template_config=prompt_template_config,
-    # )
-    # result = await qna.invoke(kernel, question=question, num_results=10, offset=0)
-
-    # print(f"Question: {question}\n")
-    # print(f"Answer: {result}\n")
-
-    # """
-    # Output:
-    # Semantic Kernel is an open-source SDK that lets you easily combine AI services like OpenAI,
-    # Azure OpenAI, and Hugging Face with conventional programming languages like C# and Python.
-    # By doing so, you can create AI apps that combine the best of both worlds.
-    # Semantic Kernel is at the center of the copilot stack.
-    # """
+    query = "What is semanti kernel?"
+    print("Query: ", query)
+    print("\n============================\n")
+    results = await connector.search(query, count=2)
+    print("String search results: ")
+    if results.metadata and results.metadata.get("altered_query", None):
+        print(f"  Altered query: {results.metadata['altered_query']}")
+    for idx, result in enumerate(results.results):
+        print(f"  result {idx + 1}:")
+        print(f"    result: {result}")
+    print("\n============================\n")
+    results = await connector.get_text_search_result(query, count=2)
+    print("Text search results: ")
+    if results.metadata and results.metadata.get("altered_query", None):
+        print(f"  Altered query: {results.metadata['altered_query']}")
+    for idx, result in enumerate(results.results):
+        print(f"  result {idx + 1}:")
+        print(f"    name: {result.name}")
+        print(f"    value: {result.value}")
+        print(f"    link: {result.link}")
+    print("\n============================\n")
+    results = await connector.get_search_result(query, count=2)
+    print("BingWebPage results: ")
+    if results.metadata and results.metadata.get("altered_query", None):
+        print(f"  Altered query: {results.metadata['altered_query']}")
+    for idx, result in enumerate(results.results):
+        print(f"  result {idx + 1}:")
+        print(f"    name: {result.name}")
+        print(f"    url: {result.url}")
+        print(f"    language: {result.language}")
+        print(f"    snippet: {result.snippet}")
+    print("\n============================\n")
 
 
 if __name__ == "__main__":

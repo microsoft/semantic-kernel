@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import Any
+
 from pydantic import Field
 
 from semantic_kernel.connectors.search.bing.bing_web_page import BingWebPage
@@ -20,5 +22,5 @@ class BingSearchResponse(KernelBaseModel):
     """The response from a Bing search."""
 
     type_: str = Field("", alias="_type")
-    query_context: dict[str, str] = Field(default_factory=dict, validation_alias="queryContext")
+    query_context: dict[str, Any] = Field(default_factory=dict, validation_alias="queryContext")
     web_pages: BingWebPages | None = Field(None, alias="webPages")

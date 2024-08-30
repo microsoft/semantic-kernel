@@ -3,10 +3,11 @@
 import asyncio
 import logging
 import sys
-from collections.abc import Sequence
-from typing import Any, ClassVar, Generic, Literal, TypeVar
+from collections.abc import Mapping, Sequence
+from typing import Any, ClassVar, Generic, TypeVar
 
 from semantic_kernel.data.vector_search_options import VectorSearchOptions
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.search.filter_clause import FilterClause
 
 if sys.version_info >= (3, 12):
@@ -25,11 +26,12 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_client,
     get_search_index_client,
 )
-from semantic_kernel.data.const import FilterClauseType, VectorSearchQueryTypes
+from semantic_kernel.data.const import VectorSearchQueryTypes
 from semantic_kernel.data.vector_search import VectorSearch
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
+from semantic_kernel.search.const import FilterClauseType
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -221,35 +223,29 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
     @override
     async def _inner_search(
         self,
-        query_type: Literal[
-            VectorSearchQueryTypes.VECTORIZED_SEARCH_QUERY,
-            VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY,
-            VectorSearchQueryTypes.HYBRID_TEXT_VECTORIZED_SEARCH_QUERY,
-            VectorSearchQueryTypes.HYBRID_VECTORIZABLE_TEXT_SEARCH_QUERY,
-        ],
-        search_options: VectorSearchOptions,
+        options: VectorSearchOptions,
         query_text: str | None = None,
         vector: list[float | int] | None = None,
         **kwargs: Any,
-    ) -> Sequence[Any] | None:
+    ) -> Sequence[Mapping[str, Any | float | None]] | None:
         search_args: dict[str, Any] = {
-            "top": search_options.limit,
-            "skip": search_options.offset,
+            "top": options.count,
+            "skip": options.offset,
         }
-        if search_options.vector_search_filters:
-            search_args["filter"] = self._build_filter_string(search_options.vector_search_filters)
-        if query_type == VectorSearchQueryTypes.VECTORIZED_SEARCH_QUERY and vector:
+        if options.search_filters:
+            search_args["filter"] = self._build_filter_string(options.search_filters)
+        if options.query_type == VectorSearchQueryTypes.VECTORIZED_SEARCH_QUERY and vector:
             search_args["search_text"] = "*"
             search_args["vector_queries"] = [
                 VectorizedQuery(
                     vector=vector,
-                    k_nearest_neighbors=search_options.limit,
-                    fields=search_options.vector_field_name,
+                    k_nearest_neighbors=options.count,
+                    fields=options.vector_field_name,
                 )
             ]
-        if query_type == VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY and query_text:
+        if options.query_type == VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY and query_text:
             search_args["search_text"] = query_text
-        if search_options.include_vectors:
+        if options.include_vectors:
             search_args["select"] = ["*"]
         else:
             search_args["select"] = [
@@ -259,8 +255,8 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
             ]
 
         return [
-            (res, res.get("@search.score", None))
-            async for res in await self.search_client.search(**search_args, **kwargs)
+            {"record": res, "score": res.get("@search.score", None)}
+            async for res in await self.search_client.search(**search_args)
         ]
 
     def _build_filter_string(self, filters: list[FilterClause]) -> str:
@@ -271,3 +267,36 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
             elif filter.clause_type == FilterClauseType.TAG_LIST_CONTAINS:
                 filter_string += f"{filter.field_name}/any(t: t eq '{filter.value}') and "
         return filter_string[:-5]
+
+    @staticmethod
+    def default_parameter_metadata() -> list[KernelParameterMetadata]:
+        """Default parameter metadata for text search functions.
+
+        This function should be overridden when necessary.
+        """
+        return [
+            KernelParameterMetadata(
+                name="query",
+                description="What to search for.",
+                type="str",
+                is_required=False,
+                default_value="*",
+                type_object=str,
+            ),
+            KernelParameterMetadata(
+                name="count",
+                description="Number of results to return.",
+                type="int",
+                is_required=False,
+                default_value=2,
+                type_object=int,
+            ),
+            KernelParameterMetadata(
+                name="skip",
+                description="Number of results to skip.",
+                type="int",
+                is_required=False,
+                default_value=0,
+                type_object=int,
+            ),
+        ]

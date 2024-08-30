@@ -1,17 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from pydantic import Field
+from typing import Literal
 
-from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.search.filter_clause import FilterClause
+from semantic_kernel.data.const import VectorSearchQueryTypes
+from semantic_kernel.search.text_search_options import TextSearchOptions
 
 
-class VectorSearchOptions(KernelBaseModel):
-    """Options for vector search."""
+class VectorSearchOptions(TextSearchOptions):
+    """Options for vector search, builds on TextSearchOptions."""
 
     vector_field_name: str | None = None
-    vector_search_filters: list[FilterClause] = Field(default_factory=list)
-    limit: int = 3
-    offset: int = 0
     include_vectors: bool = False
+    query_type: Literal[
+        VectorSearchQueryTypes.VECTORIZED_SEARCH_QUERY,
+        VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY,
+        VectorSearchQueryTypes.HYBRID_TEXT_VECTORIZED_SEARCH_QUERY,
+        VectorSearchQueryTypes.HYBRID_VECTORIZABLE_TEXT_SEARCH_QUERY,
+    ] = VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-import urllib
+from html import escape
 from typing import Any
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
@@ -9,16 +9,25 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.search.bing.bing_search_response import BingSearchResponse
 from semantic_kernel.connectors.search.bing.bing_web_page import BingWebPage
+from semantic_kernel.connectors.search.bing.const import (
+    DEFAULT_CUSTOM_URL,
+    DEFAULT_URL,
+    QUERY_ADVANCED_SEARCH_KEYWORDS,
+    QUERY_PARAMETERS,
+)
 from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.search.const import FilterClauseType
 from semantic_kernel.search.kernel_search_result import KernelSearchResult
+from semantic_kernel.search.text_search import TextSearch
+from semantic_kernel.search.text_search_options import TextSearchOptions
 from semantic_kernel.search.text_search_result import TextSearchResult
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class BingSearch(KernelBaseModel):
+class BingSearch(KernelBaseModel, TextSearch):
     """A search engine connector that uses the Bing Search API to perform a web search."""
 
     settings: BingSettings
@@ -53,50 +62,38 @@ class BingSearch(KernelBaseModel):
         super().__init__(settings=settings)
 
     async def search(
-        self, query: str, num_results: int = 1, offset: int = 0, **kwargs: Any
+        self, query: str, options: TextSearchOptions | None = None, **kwargs: Any
     ) -> "KernelSearchResult[str]":
         """Search for text, returning a KernelSearchResult with a list of strings."""
-        include_total_count = kwargs.get("include_total_count", True)
-        results = await self._inner_search(query, num_results=num_results, offset=offset)
+        options = self._get_options(options, **kwargs)
+        results = await self._inner_search(query, options=options)
         return KernelSearchResult(
             results=self._get_result_strings(results),
-            total_count=None
-            if not include_total_count
-            else results.web_pages.total_estimated_matches or None
-            if results.web_pages
-            else None,
+            total_count=self._get_total_count(results, options),
             metadata=self._get_metadata(results),
         )
 
     async def get_text_search_result(
-        self, query: str, num_results: int = 1, offset: int = 0, **kwargs
+        self, query: str, options: TextSearchOptions | None = None, **kwargs
     ) -> "KernelSearchResult[TextSearchResult]":
         """Search for text, returning a KernelSearchResult with TextSearchResults."""
-        include_total_count = kwargs.get("include_total_count", True)
-        results = await self._inner_search(query, num_results=num_results, offset=offset)
+        options = self._get_options(options, **kwargs)
+        results = await self._inner_search(query, options=options)
         return KernelSearchResult(
             results=self._get_text_search_results(results),
-            total_count=None
-            if not include_total_count
-            else results.web_pages.total_estimated_matches or None
-            if results.web_pages
-            else None,
+            total_count=self._get_total_count(results, options),
             metadata=self._get_metadata(results),
         )
 
     async def get_search_result(
-        self, query: str, num_results: int = 1, offset: int = 0, **kwargs
+        self, query: str, options: TextSearchOptions | None = None, **kwargs
     ) -> "KernelSearchResult[BingWebPage]":
         """Search for text, returning a KernelSearchResult with the results directly from the service."""
-        include_total_count = kwargs.get("include_total_count", True)
-        results = await self._inner_search(query, num_results=num_results, offset=offset)
+        options = self._get_options(options, **kwargs)
+        results = await self._inner_search(query, options=options)
         return KernelSearchResult(
             results=self._get_bing_web_pages(results),
-            total_count=None
-            if not include_total_count
-            else results.web_pages.total_estimated_matches or None
-            if results.web_pages
-            else None,
+            total_count=self._get_total_count(results, options),
             metadata=self._get_metadata(results),
         )
 
@@ -127,40 +124,44 @@ class BingSearch(KernelBaseModel):
             "altered_query": response.query_context.get("alteredQuery"),
         }
 
-    async def _inner_search(self, query: str, num_results: int, offset: int) -> BingSearchResponse:
+    def _get_total_count(self, response: BingSearchResponse, options: TextSearchOptions) -> int | None:
+        return (
+            None
+            if not options.include_total_count
+            else response.web_pages.total_estimated_matches or None
+            if response.web_pages
+            else None
+        )
+
+    def _get_options(self, options: TextSearchOptions | None, **kwargs: Any) -> TextSearchOptions:
+        if options is not None:
+            return options
+        try:
+            return TextSearchOptions(**kwargs)
+        except ValidationError:
+            return TextSearchOptions()
+
+    async def _inner_search(self, query: str, options: TextSearchOptions) -> BingSearchResponse:
         if not query:
             raise ServiceInvalidRequestError("query cannot be 'None' or empty.")
-
-        if num_results <= 0:
-            raise ServiceInvalidRequestError("num_results value must be greater than 0.")
-        if num_results >= 50:
-            raise ServiceInvalidRequestError("num_results value must be less than 50.")
-
-        if offset < 0:
-            raise ServiceInvalidRequestError("offset must be greater than 0.")
+        self._validate_options(options)
 
         logger.info(
             f"Received request for bing web search with \
-                params:\nquery: {query}\nnum_results: {num_results}\noffset: {offset}"
+                params:\nquery: {query}\nnum_results: {options.count}\noffset: {options.offset}"
         )
 
-        base_url = (
-            "https://api.bing.microsoft.com/v7.0/custom/search"
-            if self.settings.custom_config
-            else "https://api.bing.microsoft.com/v7.0/search"
-        )
-        request_url = f"{base_url}?q={urllib.parse.quote_plus(query)}&count={num_results}&offset={offset}" + (
-            f"&customConfig={self.settings.custom_config}" if self.settings.custom_config else ""
-        )
+        url = self._get_url()
+        params = self._build_request_parameters(query, options)
 
-        logger.info(f"Sending GET request to {request_url}")
+        logger.info(f"Sending GET request to {url}")
 
         if self.settings.api_key is not None:
             headers = {"Ocp-Apim-Subscription-Key": self.settings.api_key.get_secret_value()}
 
         try:
             async with AsyncClient() as client:
-                response = await client.get(request_url, headers=headers)
+                response = await client.get(url, headers=headers, params=params)
                 response.raise_for_status()
                 return BingSearchResponse.model_validate_json(response.text)
         except HTTPStatusError as ex:
@@ -172,3 +173,26 @@ class BingSearch(KernelBaseModel):
         except Exception as ex:
             logger.error(f"An unexpected error occurred: {ex}")
             raise ServiceInvalidRequestError("An unexpected error occurred while getting search results.") from ex
+
+    def _validate_options(self, options: TextSearchOptions) -> None:
+        if options.count >= 50:
+            raise ServiceInvalidRequestError("count value must be less than 50.")
+
+    def _get_url(self) -> str:
+        if not self.settings.custom_config:
+            return DEFAULT_URL
+        return f"{DEFAULT_CUSTOM_URL}&customConfig={self.settings.custom_config}"
+
+    def _build_request_parameters(self, query: str, options: TextSearchOptions) -> dict[str, str | int]:
+        params = {"count": options.count, "offset": options.offset}
+        extra_query_params = []
+
+        for filter in options.search_filters:
+            if filter.field_name in QUERY_PARAMETERS and filter.clause_type == FilterClauseType.EQUALITY:
+                params[filter.field_name] = escape(filter.value)
+            if filter.field_name in QUERY_ADVANCED_SEARCH_KEYWORDS and filter.clause_type == FilterClauseType.EQUALITY:
+                extra_query_params.append(f"{filter.field_name}:{filter.value}")
+            if filter.clause_type == FilterClauseType.TAG_LIST_CONTAINS:
+                logger.debug("Tag list contains filter is not supported by Bing Search API.")
+        params["q"] = f"{query}+{' '.join(extra_query_params)}".strip()
+        return params
