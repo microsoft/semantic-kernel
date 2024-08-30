@@ -64,6 +64,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         catch (NullReferenceException)
         {
             // Temporary bugfix for: https://github.com/openai/openai-dotnet/issues/198
+            // TODO: Remove this try-catch block once the bug is fixed.
         }
     }
 
