@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -33,7 +34,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         string modelId,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(
-            (chatUpdate.Role is not null) ? new AuthorRole(chatUpdate.Role.ToString()!) : null,
+            null,
             null,
             chatUpdate,
             choiceIndex,
@@ -41,9 +42,43 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             Encoding.UTF8,
             metadata)
     {
-        this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
+        try
+        {
+            if (chatUpdate.Role.HasValue)
+            {
+                this.Role = new AuthorRole(chatUpdate.Role.ToString()!);
+            }
+        }
+        catch (NullReferenceException)
+        {
+            // Temporary bugfix for: https://github.com/openai/openai-dotnet/issues/198
+        }
+
+        try
+        {
+            if (chatUpdate.ToolCallUpdates is not null)
+            {
+                this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
+            }
+        }
+        catch (NullReferenceException)
+        {
+            // Temporary bugfix for: https://github.com/openai/openai-dotnet/issues/198
+        }
+
+        try
+        {
+            if (chatUpdate.ContentUpdate is not null)
+            {
+                this.Items = CreateContentItems(chatUpdate.ContentUpdate);
+            }
+        }
+        catch (NullReferenceException)
+        {
+            // Temporary bugfix for: https://github.com/openai/openai-dotnet/issues/198
+        }
+
         this.FinishReason = chatUpdate.FinishReason;
-        this.Items = CreateContentItems(chatUpdate.ContentUpdate);
     }
 
     /// <summary>

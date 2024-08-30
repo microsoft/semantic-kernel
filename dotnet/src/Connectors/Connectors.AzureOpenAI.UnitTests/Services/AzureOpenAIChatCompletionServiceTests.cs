@@ -430,11 +430,18 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         // Act & Assert
         var enumerator = service.GetStreamingChatMessageContentsAsync("Prompt").GetAsyncEnumerator();
 
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         await enumerator.MoveNextAsync();
         var message = enumerator.Current;
 
-        await enumerator.MoveNextAsync();
-        message = enumerator.Current;
+        Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
+        var update = (StreamingChatCompletionUpdate)message.InnerContent;
+        var promptResults = update.GetContentFilterResultForPrompt();
+        Assert.Equal(ContentFilterSeverity.Safe, promptResults.Hate.Severity);
+        Assert.Equal(ContentFilterSeverity.Safe, promptResults.Sexual.Severity);
+        Assert.Equal(ContentFilterSeverity.Safe, promptResults.Violence.Severity);
+        Assert.Equal(ContentFilterSeverity.Safe, promptResults.SelfHarm.Severity);
+        Assert.False(promptResults.Jailbreak.Detected);
 
         await enumerator.MoveNextAsync();
         message = enumerator.Current;
@@ -447,6 +454,25 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         await enumerator.MoveNextAsync();
         message = enumerator.Current;
+
+        Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
+        update = (StreamingChatCompletionUpdate)message.InnerContent;
+
+        var filterResults = update.GetContentFilterResultForResponse();
+        Assert.Equal(ContentFilterSeverity.Safe, filterResults.Hate.Severity);
+        Assert.Equal(ContentFilterSeverity.Safe, filterResults.Sexual.Severity);
+        Assert.Equal(ContentFilterSeverity.Safe, filterResults.SelfHarm.Severity);
+        Assert.Equal(ContentFilterSeverity.Safe, filterResults.Violence.Severity);
+
+        await enumerator.MoveNextAsync();
+        message = enumerator.Current;
+
+        Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
+        update = (StreamingChatCompletionUpdate)message.InnerContent;
+        filterResults = update.GetContentFilterResultForResponse();
+        Assert.False(filterResults.ProtectedMaterialCode.Detected);
+        Assert.False(filterResults.ProtectedMaterialText.Detected);
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
     [Fact]

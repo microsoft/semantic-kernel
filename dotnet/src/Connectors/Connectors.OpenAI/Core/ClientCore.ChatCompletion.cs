@@ -416,24 +416,26 @@ internal partial class ClientCore
 
                         var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, targetModel, metadata);
 
-                        foreach (var functionCallUpdate in chatCompletionUpdate.ToolCallUpdates)
+                        if (openAIStreamingChatMessageContent.ToolCallUpdates is not null)
                         {
-                            // Using the code below to distinguish and skip non - function call related updates.
-                            // The Kind property of updates can't be reliably used because it's only initialized for the first update.
-                            if (string.IsNullOrEmpty(functionCallUpdate.Id) &&
-                                string.IsNullOrEmpty(functionCallUpdate.FunctionName) &&
-                                string.IsNullOrEmpty(functionCallUpdate.FunctionArgumentsUpdate))
+                            foreach (var functionCallUpdate in openAIStreamingChatMessageContent.ToolCallUpdates!)
                             {
-                                continue;
+                                // Using the code below to distinguish and skip non - function call related updates.
+                                // The Kind property of updates can't be reliably used because it's only initialized for the first update.
+                                if (string.IsNullOrEmpty(functionCallUpdate.Id) &&
+                                    string.IsNullOrEmpty(functionCallUpdate.FunctionName) &&
+                                    string.IsNullOrEmpty(functionCallUpdate.FunctionArgumentsUpdate))
+                                {
+                                    continue;
+                                }
+
+                                openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
+                                    callId: functionCallUpdate.Id,
+                                    name: functionCallUpdate.FunctionName,
+                                    arguments: functionCallUpdate.FunctionArgumentsUpdate,
+                                    functionCallIndex: functionCallUpdate.Index));
                             }
-
-                            openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
-                                callId: functionCallUpdate.Id,
-                                name: functionCallUpdate.FunctionName,
-                                arguments: functionCallUpdate.FunctionArgumentsUpdate,
-                                functionCallIndex: functionCallUpdate.Index));
                         }
-
                         streamedContents?.Add(openAIStreamingChatMessageContent);
                         yield return openAIStreamingChatMessageContent;
                     }
