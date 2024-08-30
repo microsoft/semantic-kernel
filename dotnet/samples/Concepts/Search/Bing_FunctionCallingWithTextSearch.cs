@@ -122,40 +122,11 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         // Invoke prompt and use text search plugin to provide grounding information
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
         KernelArguments arguments = new(settings);
-        Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Only include results from learn.microsoft.com. Include citations to the relevant information where it is referenced in the response.", arguments));
+        Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Only include results from techcommunity.microsoft.com. Include citations to the relevant information where it is referenced in the response.", arguments));
     }
 
     private static KernelFunction CreateSearchBySite(BingTextSearch textSearch, BasicFilterOptions? basicFilter = null, MapSearchResultToString? mapToString = null)
     {
-        async Task<IEnumerable<object>> SearchAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
-        {
-            arguments.TryGetValue("query", out var query);
-            if (string.IsNullOrEmpty(query?.ToString()))
-            {
-                return [];
-            }
-
-            var parameters = function.Metadata.Parameters;
-
-            arguments.TryGetValue("count", out var count);
-            arguments.TryGetValue("skip", out var skip);
-            arguments.TryGetValue("site", out var site);
-            BasicFilterOptions? basicFilter = null;
-            if (string.IsNullOrEmpty(site?.ToString()))
-            {
-                basicFilter = new BasicFilterOptions().Equality("site", site?.ToString()!);
-            }
-            TextSearchOptions searchOptions = new()
-            {
-                Count = (count as int?) ?? 2,
-                Offset = (skip as int?) ?? 0,
-                BasicFilter = basicFilter
-            };
-
-            var result = await textSearch.GetSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
-            return await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
-        }
-
         var options = new KernelFunctionFromMethodOptions()
         {
             FunctionName = "Search",
@@ -170,6 +141,6 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
         };
 
-        return KernelFunctionFactory.CreateFromMethod(SearchAsync, options);
+        return textSearch.CreateSearch(options);
     }
 }
