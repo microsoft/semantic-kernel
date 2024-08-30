@@ -1,16 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.ClientModel.Primitives;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
-using OpenAI.Audio;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
@@ -43,7 +36,7 @@ public sealed class AzureOpenAITextToAudioTests
 
         // Act
         var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");
-        
+
         // Assert
         var audioData = result.Data!.Value;
         Assert.False(audioData.IsEmpty);
