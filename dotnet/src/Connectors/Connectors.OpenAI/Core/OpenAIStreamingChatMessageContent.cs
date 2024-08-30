@@ -44,30 +44,18 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     {
         try
         {
+            this.FinishReason = chatUpdate.FinishReason;
+
             if (chatUpdate.Role.HasValue)
             {
                 this.Role = new AuthorRole(chatUpdate.Role.ToString()!);
             }
-        }
-        catch (NullReferenceException)
-        {
-            // Temporary bugfix for: https://github.com/openai/openai-dotnet/issues/198
-        }
 
-        try
-        {
             if (chatUpdate.ToolCallUpdates is not null)
             {
                 this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
             }
-        }
-        catch (NullReferenceException)
-        {
-            // Temporary bugfix for: https://github.com/openai/openai-dotnet/issues/198
-        }
 
-        try
-        {
             if (chatUpdate.ContentUpdate is not null)
             {
                 this.Items = CreateContentItems(chatUpdate.ContentUpdate);
@@ -77,8 +65,6 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         {
             // Temporary bugfix for: https://github.com/openai/openai-dotnet/issues/198
         }
-
-        this.FinishReason = chatUpdate.FinishReason;
     }
 
     /// <summary>
