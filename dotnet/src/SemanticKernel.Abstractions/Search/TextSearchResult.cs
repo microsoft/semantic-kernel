@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Search;
 /// Represents a search result retrieved from a <see cref="ITextSearch" /> instance.
 /// </summary>
 /// <remarks>
-/// An instance of <see cref="TextSearchResult"/> is a normalised search result which provides access to:
+/// An instance of <see cref="TextSearchResult"/> is a normalized search result which provides access to:
 /// - Name associated with the search result
 /// - Value associated with the search result
 /// - Link reference associated with the search result

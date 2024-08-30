@@ -124,7 +124,7 @@ public class TextSearchExtensionsTests
     {
         // Arrange
         MockTextSearch textSearch = new();
-        var function = textSearch.CreateSearch(mapToString: result => JsonSerializer.Serialize(result));
+        var function = textSearch.CreateSearch(mapper: new TestTextSearchStringMapper());
 
         // Act
         var result = await function.InvokeAsync(new(), new() { ["query"] = "What is the Semantic Kernel?" });
@@ -153,6 +153,18 @@ public class TextSearchExtensionsTests
             ],
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
         };
+
+    /// <summary>
+    /// Test mapper which converts an arbitrary search result to a string using JSON serialization.
+    /// </summary>
+    private class TestTextSearchStringMapper : ITextSearchStringMapper
+    {
+        /// <inheritdoc />
+        public string MapFromResultToString(object result)
+        {
+            return JsonSerializer.Serialize(result);
+        }
+    }
     #endregion
 }
 #pragma warning restore xUnit1026 // Theory methods should use all of their parameters

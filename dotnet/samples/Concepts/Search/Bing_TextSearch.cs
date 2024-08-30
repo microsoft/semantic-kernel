@@ -74,7 +74,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var textSearch = new BingTextSearch(apiKey: TestConfiguration.Bing.ApiKey, options: new()
         {
             HttpClient = httpClient,
-            MapToString = webPage => JsonSerializer.Serialize(webPage),
+            StringMapper = webPage => JsonSerializer.Serialize(webPage),
         });
 
         var query = "What is the Semantic Kernel?";
@@ -103,7 +103,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var textSearch = new BingTextSearch(apiKey: TestConfiguration.Bing.ApiKey, options: new()
         {
             HttpClient = httpClient,
-            MapToString = webPage => JsonSerializer.Serialize(webPage),
+            StringMapper = webPage => JsonSerializer.Serialize(webPage),
         });
 
         var query = "What is the Semantic Kernel?";

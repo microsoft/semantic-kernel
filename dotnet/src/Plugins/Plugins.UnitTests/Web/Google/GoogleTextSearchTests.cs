@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Google.Apis.CustomSearchAPI.v1.Data;
 using Google.Apis.Http;
@@ -109,6 +110,65 @@ public sealed class GoogleTextSearchTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task SearchWithCustomStringMapperReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        // Create an ITextSearch instance using Google search
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId",
+            options: new() { StringMapper = new TestTextSearchStringMapper() });
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Count = 4, Offset = 0 });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+        foreach (var stringResult in resultList)
+        {
+            Assert.NotEmpty(stringResult);
+            var googleResult = JsonSerializer.Deserialize<global::Google.Apis.CustomSearchAPI.v1.Data.Result>(stringResult);
+            Assert.NotNull(googleResult);
+        }
+    }
+
+    [Fact]
+    public async Task GetTextSearchResultsWithCustomResultMapperReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        // Create an ITextSearch instance using Google search
+        using var textSearch = new GoogleTextSearch(
+            initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
+            searchEngineId: "SearchEngineId",
+            options: new() { ResultMapper = new TestTextSearchResultMapper() });
+
+        // Act
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 4, Offset = 0 });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+        foreach (var textSearchResult in resultList)
+        {
+            Assert.NotNull(textSearchResult);
+            Assert.Equal(textSearchResult.Name, textSearchResult.Name?.ToUpperInvariant());
+            Assert.Equal(textSearchResult.Value, textSearchResult.Value?.ToUpperInvariant());
+            Assert.Equal(textSearchResult.Link, textSearchResult.Link?.ToUpperInvariant());
+        }
+    }
+
     [Theory]
     [InlineData("cr", "countryAF", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cr=countryAF&cx=SearchEngineId&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&start=0")]
     [InlineData("dateRestrict", "d[5]", "https://customsearch.googleapis.com/customsearch/v1?key=ApiKey&cx=SearchEngineId&dateRestrict=d%5B5%5D&num=4&q=What%20is%20the%20Semantic%20Kernel%3F&start=0")]
@@ -195,6 +255,40 @@ public sealed class GoogleTextSearchTests : IDisposable
             this._messageHandler.Dispose();
 
             GC.SuppressFinalize(this);
+        }
+    }
+
+    /// <summary>
+    /// Test mapper which converts a global::Google.Apis.CustomSearchAPI.v1.Data.Result search result to a string using JSON serialization.
+    /// </summary>
+    private class TestTextSearchStringMapper : ITextSearchStringMapper
+    {
+        /// <inheritdoc />
+        public string MapFromResultToString(object result)
+        {
+            return JsonSerializer.Serialize(result);
+        }
+    }
+
+    /// <summary>
+    /// Test mapper which converts a global::Google.Apis.CustomSearchAPI.v1.Data.Result search result to a string using JSON serialization.
+    /// </summary>
+    private class TestTextSearchResultMapper : ITextSearchResultMapper
+    {
+        /// <inheritdoc />
+        public TextSearchResult MapFromResultToTextSearchResult(object result)
+        {
+            if (result is not global::Google.Apis.CustomSearchAPI.v1.Data.Result googleResult)
+            {
+                throw new ArgumentException("Result must be a Google Result", nameof(result));
+            }
+
+            return new TextSearchResult
+            {
+                Name = googleResult.Title?.ToUpperInvariant(),
+                Value = googleResult.Snippet?.ToUpperInvariant(),
+                Link = googleResult.Link?.ToUpperInvariant(),
+            };
         }
     }
     #endregion

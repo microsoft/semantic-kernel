@@ -16,22 +16,12 @@ public sealed class GoogleTextSearchOptions
     public ILoggerFactory? LoggerFactory { get; init; } = null;
 
     /// <summary>
-    ///  Delegate to map a <see cref="global::Google.Apis.CustomSearchAPI.v1.Data.Result"/> instance to a <see cref="string"/>
+    /// <see cref="ITextSearchStringMapper" /> instance that can map a <see cref="global::Google.Apis.CustomSearchAPI.v1.Data.Result"/> to a <see cref="string"/>
     /// </summary>
-    public MapResultToString? MapToString { get; init; } = null;
+    public ITextSearchStringMapper? StringMapper { get; init; } = null;
 
     /// <summary>
-    /// Delegate to map a <see cref="global::Google.Apis.CustomSearchAPI.v1.Data.Result"/> instance to a <see cref="TextSearchResult"/>
+    /// <see cref="ITextSearchResultMapper" /> instance that can map a <see cref="global::Google.Apis.CustomSearchAPI.v1.Data.Result"/> to a <see cref="TextSearchResult"/>
     /// </summary>
-    public MapResultToTextSearchResult? MapToTextSearchResult { get; init; } = null;
+    public ITextSearchResultMapper? ResultMapper { get; init; } = null;
 }
-
-/// <summary>
-/// Delegate to map a <see cref="global::Google.Apis.CustomSearchAPI.v1.Data.Result"/> instance to a <see cref="string"/>
-/// </summary>
-public delegate string MapResultToString(global::Google.Apis.CustomSearchAPI.v1.Data.Result result);
-
-/// <summary>
-/// Delegate to map a <see cref="global::Google.Apis.CustomSearchAPI.v1.Data.Result"/> instance to a <see cref="TextSearchResult"/>
-/// </summary>
-public delegate TextSearchResult MapResultToTextSearchResult(global::Google.Apis.CustomSearchAPI.v1.Data.Result result);

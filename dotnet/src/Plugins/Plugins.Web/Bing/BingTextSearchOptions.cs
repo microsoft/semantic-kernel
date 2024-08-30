@@ -28,22 +28,12 @@ public sealed class BingTextSearchOptions
     public ILoggerFactory? LoggerFactory { get; init; } = null;
 
     /// <summary>
-    ///  Delegate to map a <see cref="BingWebPage"/> instance to a <see cref="string"/>
+    /// <see cref="ITextSearchStringMapper" /> instance that can map a <see cref="BingWebPage"/> to a <see cref="string"/>
     /// </summary>
-    public MapBingWebPageToString? MapToString { get; init; } = null;
+    public ITextSearchStringMapper? StringMapper { get; init; } = null;
 
     /// <summary>
-    /// Delegate to map a <see cref="BingWebPage"/> instance to a <see cref="TextSearchResult"/>
+    /// <see cref="ITextSearchResultMapper" /> instance that can map a <see cref="BingWebPage"/> to a <see cref="TextSearchResult"/>
     /// </summary>
-    public MapBingWebPageToTextSearchResult? MapToTextSearchResult { get; init; } = null;
+    public ITextSearchResultMapper? ResultMapper { get; init; } = null;
 }
-
-/// <summary>
-/// Delegate to map a <see cref="BingWebPage"/> instance to a <see cref="string"/>
-/// </summary>
-public delegate string MapBingWebPageToString(BingWebPage webPage);
-
-/// <summary>
-/// Delegate to map a <see cref="BingWebPage"/> instance to a <see cref="TextSearchResult"/>
-/// </summary>
-public delegate TextSearchResult MapBingWebPageToTextSearchResult(BingWebPage webPage);
