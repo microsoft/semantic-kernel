@@ -157,7 +157,7 @@ public class TextSearchExtensionsTests
     /// <summary>
     /// Test mapper which converts an arbitrary search result to a string using JSON serialization.
     /// </summary>
-    private class TestTextSearchStringMapper : ITextSearchStringMapper
+    private sealed class TestTextSearchStringMapper : ITextSearchStringMapper
     {
         /// <inheritdoc />
         public string MapFromResultToString(object result)

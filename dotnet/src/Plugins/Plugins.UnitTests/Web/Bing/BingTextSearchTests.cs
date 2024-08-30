@@ -222,7 +222,7 @@ public sealed class BingTextSearchTests : IDisposable
     /// <summary>
     /// Test mapper which converts a BingWebPage search result to a string using JSON serialization.
     /// </summary>
-    private class TestTextSearchStringMapper : ITextSearchStringMapper
+    private sealed class TestTextSearchStringMapper : ITextSearchStringMapper
     {
         /// <inheritdoc />
         public string MapFromResultToString(object result)
@@ -234,7 +234,7 @@ public sealed class BingTextSearchTests : IDisposable
     /// <summary>
     /// Test mapper which converts a BingWebPage search result to a string using JSON serialization.
     /// </summary>
-    private class TestTextSearchResultMapper : ITextSearchResultMapper
+    private sealed class TestTextSearchResultMapper : ITextSearchResultMapper
     {
         /// <inheritdoc />
         public TextSearchResult MapFromResultToTextSearchResult(object result)

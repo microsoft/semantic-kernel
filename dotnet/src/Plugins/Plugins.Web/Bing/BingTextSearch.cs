@@ -214,7 +214,7 @@ public sealed class BingTextSearch : ITextSearch
     /// <summary>
     /// Default implementation which maps from a <see cref="BingWebPage"/> to a <see cref="string"/>
     /// </summary>
-    private class DefaultTextSearchStringMapper : ITextSearchStringMapper
+    private sealed class DefaultTextSearchStringMapper : ITextSearchStringMapper
     {
         /// <inheritdoc />
         public string MapFromResultToString(object result)
@@ -231,7 +231,7 @@ public sealed class BingTextSearch : ITextSearch
     /// <summary>
     /// Default implementation which maps from a <see cref="BingWebPage"/> to a <see cref="TextSearchResult"/>
     /// </summary>
-    private class DefaultTextSearchResultMapper : ITextSearchResultMapper
+    private sealed class DefaultTextSearchResultMapper : ITextSearchResultMapper
     {
         /// <inheritdoc />
         public TextSearchResult MapFromResultToTextSearchResult(object result)
