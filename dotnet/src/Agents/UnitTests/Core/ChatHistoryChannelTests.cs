@@ -17,7 +17,7 @@ public class ChatHistoryChannelTests
 {
     /// <summary>
     /// Verify a <see cref="ChatHistoryChannel"/> throws if passed an agent that
-    /// does not implement <see cref="IChatHistoryHandler"/>.
+    /// does not implement <see cref="ChatHistoryKernelAgent"/>.
     /// </summary>
     [Fact]
     public async Task VerifyAgentWithoutIChatHistoryHandlerAsync()
