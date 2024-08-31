@@ -34,7 +34,7 @@ This sample uses function calling, so it only works on models newer than 0613.
 
 Configure an OpenAI endpoint
 
-```powershell
+```powershell {"id":"01J6KPWER9SP48PCB1B2SQQ1VT"}
 cd 14-Create-ChatGPT-Plugin/Solution
 
 dotnet user-secrets set "Global:LlmService" "OpenAI"
@@ -47,7 +47,7 @@ dotnet user-secrets set "OpenAI:OrgId" "... your ord ID ..."
 
 Configure an Azure OpenAI endpoint
 
-```powershell
+```powershell {"id":"01J6KPWERAMHRN5C9NEP175PZX"}
 cd 14-Create-ChatGPT-Plugin/Solution
 
 dotnet user-secrets set "Global:LlmService" "AzureOpenAI"
@@ -69,7 +69,7 @@ to build and run the console application, navigate to the [Solution](./Solution/
 
 To build and run the console application from the terminal use the following commands:
 
-```powershell
+```powershell {"id":"01J6KPWERAMHRN5C9NET01NSTY"}
 cd Solution
 dotnet build
 dotnet run

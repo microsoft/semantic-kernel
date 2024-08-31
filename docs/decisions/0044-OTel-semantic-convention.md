@@ -53,7 +53,7 @@ The following events will be optionally attached to an activity:
 
 It is crucial to establish a clear line of responsibilities, particularly since certain service providers, such as the Azure OpenAI SDK, have pre-existing instrumentation. Our objective is to position our activities as close to the model level as possible to promote a more cohesive and consistent developer experience.
 
-```mermaid
+```mermaid {"id":"01J6KNX1B06ZBR5EFF1MPQHA4J"}
 block-beta
 columns 1
     Models
@@ -94,13 +94,15 @@ These services will be discuss in the future:
 ## Considered Options
 
 - Scope of Activities
-  - All connectors, irrespective of the client SDKs used.
-  - Connectors that either lack instrumentation in their client SDKs or use custom clients.
-  - All connectors, noting that the attributes of activities derived from connectors and those from instrumented client SDKs do not overlap.
+   - All connectors, irrespective of the client SDKs used.
+   - Connectors that either lack instrumentation in their client SDKs or use custom clients.
+   - All connectors, noting that the attributes of activities derived from connectors and those from instrumented client SDKs do not overlap.
+
 - Implementations of Instrumentation
-  - Static class
+   - Static class
+
 - Switches for experimental features and the collection of sensitive data
-  - App context switch
+   - App context switch
 
 ### Scope of Activities
 
@@ -124,7 +126,7 @@ All connectors will generate activities for the purpose of tracing individual re
 
 This class will live under `dotnet\src\InternalUtilities\src\Diagnostics`.
 
-```C#
+```C# {"id":"01J6KNX1B1VWAQC68V42MWA9JN"}
 // Example
 namespace Microsoft.SemanticKernel;
 
@@ -159,7 +161,7 @@ internal static class ModelDiagnostics
 
 Example usage
 
-```C#
+```C# {"id":"01J6KNX1B1VWAQC68V43XQQ334"}
 public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
     string prompt,
     PromptExecutionSettings? executionSettings,
@@ -197,10 +199,11 @@ We will introduce two flags to facilitate the explicit activation of tracing LLM
 
 1. `Microsoft.SemanticKernel.Experimental.EnableModelDiagnostics`
    - Activating will enable the creation of activities that represent individual LLM requests.
+
 2. `Microsoft.SemanticKernel.Experimental.EnableModelDiagnosticsWithSensitiveData`
    - Activating will enable the creation of activities that represent individual LLM requests, with events that may contain PII information.
 
-```C#
+```C# {"id":"01J6KNX1B1VWAQC68V44FM177H"}
 // In application code
 if (builder.Environment.IsProduction())
 {
@@ -235,7 +238,7 @@ Chosen options:
 
 ### `AppContextSwitchHelper.cs`
 
-```C#
+```C# {"id":"01J6KNX1B1VWAQC68V45Q2EC1Q"}
 internal static class AppContextSwitchHelper
 {
     public static bool GetConfigValue(string appContextSwitchName)
@@ -252,7 +255,7 @@ internal static class AppContextSwitchHelper
 
 ### `ModelDiagnostics`
 
-```C#
+```C# {"id":"01J6KNX1B1VWAQC68V46GP9WH9"}
 internal static class ModelDiagnostics
 {
     // Consistent namespace for all connectors
@@ -294,7 +297,7 @@ internal static class ModelDiagnostics
 
 ### Extensions
 
-```C#
+```C# {"id":"01J6KNX1B1VWAQC68V4ACT6QCK"}
 internal static class ActivityExtensions
 {
     public static Activity? StartActivityWithTags(this ActivitySource source, string name, List<KeyValuePair<string, object?>> tags)

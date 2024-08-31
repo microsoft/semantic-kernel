@@ -1,9 +1,8 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: accepted
 contact: dmytrostruk
-date: 2024-04-24
+date: 2024-04-24T00:00:00Z
 deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, stoub
+status: accepted
 ---
 
 # Exception handling in filters
@@ -22,7 +21,7 @@ There is a requirement to have the ability to override function result - instead
 
 Abstraction:
 
-```csharp
+```csharp {"id":"01J6KQ0WQNPSDH127N1JV8E0K5"}
 public interface IFunctionFilter
 {
     void OnFunctionInvoking(FunctionInvokingContext context);
@@ -45,7 +44,7 @@ New interface will allow to receive exception objects, cancel exception or rethr
 
 Abstraction:
 
-```csharp
+```csharp {"id":"01J6KQ0WQNPSDH127N1M6R4B4S"}
 public interface IExceptionFilter
 {
     // ExceptionContext class will contain information about actual exception, kernel function etc.
@@ -55,7 +54,7 @@ public interface IExceptionFilter
 
 Usage:
 
-```csharp
+```csharp {"id":"01J6KQ0WQNPSDH127N1PY31ZWM"}
 public class MyFilter : IFunctionFilter, IExceptionFilter
 {
     public void OnFunctionInvoking(FunctionInvokingContext context) { }
@@ -83,7 +82,7 @@ If there was an exception, users could do nothing and the exception will be thro
 
 Abstraction:
 
-```csharp
+```csharp {"id":"01J6KQ0WQNPSDH127N1QP5X4AY"}
 public sealed class FunctionInvokedContext : FunctionFilterContext
 {
     // other properties...
@@ -94,7 +93,7 @@ public sealed class FunctionInvokedContext : FunctionFilterContext
 
 Usage:
 
-```csharp
+```csharp {"id":"01J6KQ0WQNPSDH127N1THY2VVT"}
 public class MyFilter : IFunctionFilter
 {
     public void OnFunctionInvoking(FunctionInvokingContext context) { }
@@ -139,7 +138,7 @@ This approach changes the way how filters work at the moment. Instead of having 
 
 Abstraction:
 
-```csharp
+```csharp {"id":"01J6KQ0WQNPSDH127N1Y0083XV"}
 public interface IFunctionFilter
 {
     Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next);
@@ -148,7 +147,7 @@ public interface IFunctionFilter
 
 Usage:
 
-```csharp
+```csharp {"id":"01J6KQ0WQNPSDH127N1YAFF4RG"}
 public class MyFilter : IFunctionFilter
 {
     public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
@@ -162,7 +161,7 @@ public class MyFilter : IFunctionFilter
 
 Exception handling with native `try/catch` approach:
 
-```csharp
+```csharp {"id":"01J6KQ0WQNPSDH127N21AJ3750"}
 public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
 {
     try

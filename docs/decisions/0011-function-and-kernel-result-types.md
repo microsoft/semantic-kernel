@@ -1,12 +1,12 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: accepted
+consulted: null
 contact: dmytrostruk
-date: 2023-09-21
+date: 2023-09-21T00:00:00Z
 deciders: shawncal, dmytrostruk
-consulted: 
-informed: 
+informed: null
+status: accepted
 ---
+
 # Replace SKContext as Function/Kernel result type with FunctionResult and KernelResult models
 
 ## Context and Problem Statement
@@ -41,7 +41,7 @@ For complex types and streaming, property `object Value` will be defined in `Fun
 
 Examples:
 
-```csharp
+```csharp {"id":"01J6KQ32E413Y51RZAKBA897AQ"}
 // string
 var text = (await kernel.RunAsync(function)).GetValue<string>();
 
@@ -65,7 +65,7 @@ To return additional information related to function execution - property `Dicti
 
 Examples:
 
-```csharp
+```csharp {"id":"01J6KQ32E413Y51RZAKF9QG4KM"}
 var functionResult = await function.InvokeAsync(context);
 Console.WriteLine(functionResult.Metadata["MyInfo"]);
 ```
@@ -76,7 +76,7 @@ Console.WriteLine(functionResult.Metadata["MyInfo"]);
 
 Example:
 
-```csharp
+```csharp {"id":"01J6KQ32E413Y51RZAKHVAASXW"}
 var kernelResult = await kernel.RunAsync(function1, function2, function3);
 
 var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2" && l.PluginName == "MyPlugin");

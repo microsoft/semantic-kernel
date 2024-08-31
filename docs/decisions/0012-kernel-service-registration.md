@@ -1,11 +1,10 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: accepted
-contact: dmytrostruk
-date: 2023-10-03
-deciders: dmytrostruk
 consulted: SergeyMenshykh, RogerBarreto, markwallace-microsoft
-informed:
+contact: dmytrostruk
+date: 2023-10-03T00:00:00Z
+deciders: dmytrostruk
+informed: null
+status: accepted
 ---
 
 # Kernel Service Registration
@@ -14,7 +13,7 @@ informed:
 
 Plugins may have dependencies to support complex scenarios. For example, there is `TextMemoryPlugin`, which supports functions like `retrieve`, `recall`, `save`, `remove`. Constructor is implemented in following way:
 
-```csharp
+```csharp {"id":"01J6KQ1W787M1BQ3GH6MTBGB6W"}
 public TextMemoryPlugin(ISemanticTextMemory memory)
 {
     this._memory = memory;
@@ -25,7 +24,7 @@ public TextMemoryPlugin(ISemanticTextMemory memory)
 
 At the moment, `ISemanticTextMemory` is a property of `IKernel` interface, which allows to inject `ISemanticTextMemory` into `TextMemoryPlugin` during Plugin initialization:
 
-```csharp
+```csharp {"id":"01J6KQ1W787M1BQ3GH6N150DDA"}
 kernel.ImportFunctions(new TextMemoryPlugin(kernel.Memory));
 ```
 
@@ -37,7 +36,7 @@ There should be a way how to support not only Memory-related interface, but any 
 
 User is responsible for all Plugins initialization and dependency resolution with **manual** approach.
 
-```csharp
+```csharp {"id":"01J6KQ1W787M1BQ3GH6NYTHAP1"}
 var memoryStore = new VolatileMemoryStore();
 var embeddingGeneration = new OpenAITextEmbeddingGeneration(modelId, apiKey);
 var semanticTextMemory = new SemanticTextMemory(memoryStore, embeddingGeneration);
@@ -55,7 +54,7 @@ Note: this is native .NET approach how to resolve service dependencies manually,
 
 User is responsible for all Plugins initialization and dependency resolution with **dependency injection** approach.
 
-```csharp
+```csharp {"id":"01J6KQ1W787M1BQ3GH6PVC2Y7M"}
 var serviceCollection = new ServiceCollection();
 
 serviceCollection.AddTransient<IMemoryStore, VolatileMemoryStore>();
@@ -82,7 +81,7 @@ Custom service collection and service provider on Kernel level to simplify depen
 
 Interface `IKernel` will have its own service provider `KernelServiceProvider` with minimal functionality to get required service.
 
-```csharp
+```csharp {"id":"01J6KQ1W787M1BQ3GH6SGN6ABG"}
 public interface IKernelServiceProvider
 {
     T? GetService<T>(string? name = null);
@@ -94,7 +93,7 @@ public interface IKernel
 }
 ```
 
-```csharp
+```csharp {"id":"01J6KQ1W787M1BQ3GH6T8S47Q1"}
 var kernel = Kernel.Builder
     .WithLoggerFactory(ConsoleLogger.LoggerFactory)
     .WithOpenAITextEmbeddingGenerationService(modelId, apiKey)
@@ -124,7 +123,7 @@ Cons:
 
 This solution is an improvement for last disadvantage of Solution #2.1 to handle case, when Plugin instance should be initialized manually. This will require to add new way how to import Plugin into Kernel - not with object **instance**, but with object **type**. In this case, Kernel will be responsible for `TextMemoryPlugin` initialization and injection of all required dependencies from custom service collection.
 
-```csharp
+```csharp {"id":"01J6KQ1W787M1BQ3GH6TWPTW2F"}
 // Instead of this
 var semanticTextMemory = kernel.Services.GetService<ISemanticTextMemory>();
 var memoryPlugin = new TextMemoryPlugin(semanticTextMemory);
@@ -139,7 +138,7 @@ kernel.ImportFunctions<TextMemoryPlugin>();
 
 Instead of custom service collection and service provider in Kernel, use already existing DI library - `Microsoft.Extensions.DependencyInjection`.
 
-```csharp
+```csharp {"id":"01J6KQ1W787M1BQ3GH6XQ0XN2X"}
 var serviceCollection = new ServiceCollection();
 
 serviceCollection.AddTransient<IMemoryStore, VolatileMemoryStore>();

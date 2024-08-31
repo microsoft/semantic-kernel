@@ -1,4 +1,4 @@
-﻿# Microsoft.SemanticKernel.Connectors.Postgres
+# Microsoft.SemanticKernel.Connectors.Postgres
 
 This connector uses Postgres to implement Semantic Memory. It requires the [pgvector](https://github.com/pgvector/pgvector) extension to be installed on Postgres to implement vector similarity search.
 
@@ -17,13 +17,13 @@ This extension is also available for **Azure Database for PostgreSQL - Flexible 
 
 1. To install pgvector using Docker:
 
-```bash
+```bash {"id":"01J6KNEBBQ8G1WSGWE0ND2CQET"}
 docker run -d --name postgres-pgvector -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword ankane/pgvector
 ```
 
 2. Create a database and enable pgvector extension on this database
 
-```bash
+```bash {"id":"01J6KNEBBQ8G1WSGWE0RYEQ62N"}
 docker exec -it postgres-pgvector psql -U postgres
 
 postgres=# CREATE DATABASE sk_demo;
@@ -36,7 +36,7 @@ sk_demo=# CREATE EXTENSION vector;
 3. To use Postgres as a semantic memory store:
    > See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
 
-```csharp
+```csharp {"id":"01J6KNEBBQ8G1WSGWE0SVP3MH4"}
 NpgsqlDataSourceBuilder dataSourceBuilder = new NpgsqlDataSourceBuilder("Host=localhost;Port=5432;Database=sk_demo;User Id=postgres;Password=mysecretpassword");
 dataSourceBuilder.UseVector();
 NpgsqlDataSource dataSource = dataSourceBuilder.Build();
@@ -66,7 +66,7 @@ Please read [the documentation](https://github.com/pgvector/pgvector#indexing) f
 
 Based on the data rows of your collection table, consider the following statement to create an index.
 
-```sql
+```sql {"id":"01J6KNEBBQ8G1WSGWE0THVY732"}
 DO $$
 DECLARE
     collection TEXT;
@@ -99,7 +99,7 @@ We provide the following migration script to help you migrate to the new structu
 - Table names may not exceed 63 characters in length.
 - Table names are case-insensitive, but it is recommended to use lowercase letters.
 
-```sql
+```sql {"id":"01J6KNEBBRM2853YN53A7GMZHJ"}
 -- Create new tables, each with the name of the collection field value
 DO $$
 DECLARE

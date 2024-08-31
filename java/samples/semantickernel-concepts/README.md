@@ -1,15 +1,14 @@
 # Semantic Kernel Java Version Doc
-The purpose of this article is to help you quickly grasp the key concepts in Semantic Kernel and get started quickly.
 
+The purpose of this article is to help you quickly grasp the key concepts in Semantic Kernel and get started quickly.
 
 In Semantic Kernel Java, the **builder pattern** is extensively used. If you are not familiar with the builder pattern, I recommend you check out: [Builder Design Pattern](https://refactoring.guru/design-patterns/builder)
 
 All the code examples below are from `java/samples/semantickernel-concepts/semantickernel-syntax-examples`.
 
-
 ## How to Define an AI Service?
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6KVKNRXJK"}
 ChatCompletionService chatCompletionService = ChatCompletionService.builder()
     .withOpenAIAsyncClient(client)
     .withModelId("gpt-3.5-turbo-0613")
@@ -20,25 +19,25 @@ ChatCompletionService chatCompletionService = ChatCompletionService.builder()
 ## How to Use an AI Service?
 
 - Retrieve the AI Service from the Kernel
-  
-  ```java
-  ChatCompletionService service = kernel.getService(ChatCompletionService.class);
-  ```
+
+```java {"id":"01J6KPXJRQT6T5CEH6KVS31E2W"}
+ChatCompletionService service = kernel.getService(ChatCompletionService.class);
+```
 
 - Directly call `service.getChatMessageContentsAsync` to get the LLM response
-  
-  ```java
-  ChatCompletionService service = kernel.getService(ChatCompletionService.class);
-  var chatHistory = new ChatHistory(systemMessage);
-  chatHistory.addUserMessage(userMessage);
-  var answer = service.getChatMessageContentsAsync(chatHistory, kernel, null).block();
-  ```
+
+```java {"id":"01J6KPXJRQT6T5CEH6KWNAB38W"}
+ChatCompletionService service = kernel.getService(ChatCompletionService.class);
+var chatHistory = new ChatHistory(systemMessage);
+chatHistory.addUserMessage(userMessage);
+var answer = service.getChatMessageContentsAsync(chatHistory, kernel, null).block();
+```
 
 ## How to Define a KernelBuilder?
 
 The `KernelBuilder` is a builder used to create and configure a new `Kernel` with necessary services and plugins.
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6M09ZH482"}
 ChatCompletionService chatCompletionService = ChatCompletionService.builder()
     .withOpenAIAsyncClient(client)
     .withModelId("gpt-3.5-turbo-0613")
@@ -55,7 +54,7 @@ A `Kernel` is created using the `KernelBuilder`, where various services and plug
 
 Create a Kernel using `KernelBuilder` and configure the necessary parameters
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6M0KDNH29"}
 Kernel kernel = Kernel.builder()
     .withPlugin(myPlugin)
     .withAIService(openAiChatService)
@@ -66,10 +65,9 @@ Kernel kernel = Kernel.builder()
 ## How to Define a KernelPlugin?
 
 1. Define a custom class
-
 2. Construct using `KernelPluginFactory`
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6M364H5NF"}
 public static class Time {
 
     @DefineKernelFunction(name = "date")
@@ -100,7 +98,8 @@ A native function in Semantic Kernel performs precise tasks like data retrieval,
 For more details, refer to [Microsoft Documentation on Kernel Functions.](https://learn.microsoft.com/en-us/semantic-kernel/agents/plugins/using-the-kernelfunction-decorator?tabs=Csharp)
 
 Here’s an example of how to define a native kernel function:
-```java
+
+```java {"id":"01J6KPXJRQT6T5CEH6M40ZZFX9"}
 public class TextPlugin {
     @DefineKernelFunction(description = "Change all string chars to uppercase.", name = "Uppercase")
     public String uppercase(@KernelFunctionParameter(description = "Text to uppercase", name = "input") String text) {
@@ -112,13 +111,13 @@ public class TextPlugin {
 ### Inline function
 
 To create a inline KernelFunction from a prompt, you can use either of the following methods, which are equivalent:
+
 - `KernelFunctionFromPrompt.builder().withTemplate(promptTemplate).build();`
 - `KernelFunction.createFromPrompt(message).build();`
 
-
 #### `KernelFunctionFromPrompt.builder().withTemplate(promptTemplate).build();`
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6M5X7BST8"}
 String promptTemplate = """
     Generate a creative reason or excuse for the given event.
     Be creative and be funny. Let your imagination run wild.
@@ -148,7 +147,7 @@ var excuseFunction = KernelFunctionFromPrompt.builder()
 
 #### `KernelFunction.createFromPrompt(message).build();`
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6M8E78KE4"}
 var message = "Translate this date " + date + " to French format";
 var fixedFunction = KernelFunction
         .createFromPrompt(message)
@@ -161,13 +160,12 @@ var fixedFunction = KernelFunction
         .build();
 ```
 
+The `SEMANTIC_KERNEL_TEMPLATE_FORMAT` corresponds to the '__semantic-kernel__' rendering engine, which uses the syntax `{{$variable}}` for variables.
 
-The `SEMANTIC_KERNEL_TEMPLATE_FORMAT` corresponds to the '**semantic-kernel**' rendering engine, which uses the syntax `{{$variable}}` for variables.
- 
 Another rendering engine is **'handlebars'**, which uses the syntax `{{variable}}`.
 Here's an example of how to use both:
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6MBWPS5Q0"}
  runPrompt(kernel,
          "semantic-kernel",
          "Hello AI, my name is {{$name}}. What is the origin of my name?",
@@ -178,8 +176,10 @@ Here's an example of how to use both:
          "Hello AI, my name is {{name}}. What is the origin of my name?",
          templateFactory);
 ```
+
 The `runPrompt` method is defined as follows:
-```java
+
+```java {"id":"01J6KPXJRQT6T5CEH6MEEMMZZZ"}
  public static void runPrompt(Kernel kernel, String templateFormat, String prompt,
                               PromptTemplateFactory templateFactory) {
      var function = new KernelFunctionFromPrompt.Builder<>()
@@ -196,7 +196,9 @@ The `runPrompt` method is defined as follows:
      System.out.println(result.getResult());
  }
 ```
+
 For more information, please refer to the following resources:
+
 - [Microsoft Documentation on Prompt Template Syntax](https://learn.microsoft.com/en-us/semantic-kernel/prompts/prompt-template-syntax)
 - [Microsoft Devblogs on Using Handlebars Planner in Semantic Kernel](https://devblogs.microsoft.com/semantic-kernel/using-handlebars-planner-in-semantic-kernel/)
 
@@ -204,7 +206,7 @@ For more information, please refer to the following resources:
 
 Define a function from a configuration file (json)
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6MF7SWF40"}
 var prompt = "Hello AI, what can you do for me?";
 String configPayload = """
       {
@@ -235,13 +237,13 @@ var func = KernelFunction
 
 ## How to Define a KernelFunctionArguments?
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6MHNPY67A"}
 KernelFunctionArguments.builder().withVariable("input", "Jupiter").build();
 ```
 
 This can also be done as:
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6MHV939QS"}
 KernelFunctionArguments.builder().withInput("Jupiter").build();
 ```
 
@@ -249,14 +251,14 @@ KernelFunctionArguments.builder().withInput("Jupiter").build();
 
 - Direct call：
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6MJQM65EB"}
 TextPlugin text = new TextPlugin();
 return text.uppercase("ciao!");
 ```
 
 - Invoke via `Kernel.invokeAsync(KernelFunction)`
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6MN80ST21"}
 Kernel kernel = Kernel.builder().build();
 KernelPlugin kernelPlugin = KernelPluginFactory.createFromObject(new StaticTextPlugin(), "text");
 KernelFunctionArguments arguments = KernelFunctionArguments.builder()
@@ -272,7 +274,7 @@ return kernel.invokeAsync(kernelPlugin.get("AppendDay"))
 
 OR:
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6MNJMH977"}
 var result = kernel
     .invokeAsync(excuseFunction)
     .withArguments(
@@ -293,10 +295,9 @@ The purpose of a prompt template is to:
 ### Using `KernelPromptTemplateFactory.tryCreate(PromptTemplateConfig)`
 
 1. Define the prompt template
-
 2. Create using `KernelPromptTemplateFactory()`
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6MNRY38ZB"}
 String functionDefinition = """
     Today is: {{time.date}}
     Current time is: {{time.time}}
@@ -316,7 +317,7 @@ PromptTemplate promptTemplate = new KernelPromptTemplateFactory().tryCreate(
 
 ### Create using `PromptTemplateFactory.build`
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6MSA6S03R"}
 String systemPromptTemplate = "...";
 PromptTemplate promptTemplate = PromptTemplateFactory.build(
     PromptTemplateConfig
@@ -328,7 +329,7 @@ PromptTemplate promptTemplate = PromptTemplateFactory.build(
 
 ## How to Render a Prompt Without Sending an LLM Query?
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6MTF92YA0"}
 var renderedPrompt = promptTemplate.renderAsync(kernel, KernelFunctionArguments, InvocationContext).block();
 System.out.println(renderedPrompt);
 ```
@@ -338,28 +339,28 @@ System.out.println(renderedPrompt);
 Hooks are functions triggered in specific situations attached to the kernel.
 
 - **Global Registration**: If added to `kernel.getGlobalKernelHooks()`, it is globally effective
-  
-  ```java
-  kernel.getGlobalKernelHooks().addHook("hookName", KernelHook);
-  ```
+
+```java {"id":"01J6KPXJRQT6T5CEH6MYCK9W2P"}
+kernel.getGlobalKernelHooks().addHook("hookName", KernelHook);
+```
 
 - **Single Call Registration**: If passed as a parameter in `invokeAsync`, it is effective for that call only
-  
-  ```java
-  KernelHooks kernelHooks = new KernelHooks();
-  kernelHooks.addPreChatCompletionHook(...);
-  
-  var result = kernel.invokeAsync(writerFunction)
-      .withArguments(KernelFunctionArguments.builder().build())
-      .addKernelHooks(kernelHooks)
-      .block();
-  ```
+
+```java {"id":"01J6KPXJRQT6T5CEH6MZ97AFDS"}
+KernelHooks kernelHooks = new KernelHooks();
+kernelHooks.addPreChatCompletionHook(...);
+
+var result = kernel.invokeAsync(writerFunction)
+    .withArguments(KernelFunctionArguments.builder().build())
+    .addKernelHooks(kernelHooks)
+    .block();
+```
 
 ### FunctionInvokingHook
 
 Triggered before function call.
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6N27PW4KE"}
 FunctionInvokingHook preHook = event -> {
     System.out.println(event.getFunction().getName() + " : Pre Execution Handler - Triggered");
     return event;
@@ -371,7 +372,7 @@ kernel.getGlobalKernelHooks().addHook("", preHook);
 
 Triggered after function call
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6N5720DFQ"}
 FunctionInvokedHook hook = event -> {
     String result = (String) event.getResult().getResult();
     System.out.println(event.getFunction().getName() + " : Modified result via FunctionInvokedHook: " + result);
@@ -388,7 +389,7 @@ kernel.getGlobalKernelHooks().addHook(hook);
 
 ### PromptRenderingHook
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6N73XFXFW"}
 PromptRenderingHook myRenderingHandler = event -> {
     System.out.println(event.getFunction().getName() + " : Triggered PromptRenderingHook");
     event.getArguments().put("style", ContextVariable.of("Seinfeld"));
@@ -398,7 +399,7 @@ PromptRenderingHook myRenderingHandler = event -> {
 
 ### PromptRenderedHook
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6N8X4EW42"}
 PromptRenderedHook myRenderedHandler = event -> {
     System.out.println(event.getFunction().getName() + " : Triggered PromptRenderedHook");
     String prompt = event.getPrompt() + "\nUSE SHORT, CLEAR, COMPLETE SENTENCES.";
@@ -412,7 +413,7 @@ PromptRenderedHook myRenderedHandler = event -> {
 
 Add a pre-chat completion hook to add instructions before ChatCompletion.
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6NCA43CJD"}
 kernel.getGlobalKernelHooks().addPreChatCompletionHook(event -> {
     ChatCompletionsOptions options = event.getOptions();
     List<ChatRequestMessage> messages = options.getMessages();
@@ -434,7 +435,7 @@ kernel.getGlobalKernelHooks().addPreChatCompletionHook(event -> {
 
 Add a post-chat completion hook to adjust the output format
 
-```java
+```java {"id":"01J6KPXJRQT6T5CEH6NF78EEA5"}
 kernel.getGlobalKernelHooks().addPostChatCompletionHook(event -> {
     System.out.println("------- Triggered after ChatCompletion -------");
     System.out.println("--- Output ChatCompletion and id ----");

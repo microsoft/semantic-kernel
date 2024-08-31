@@ -20,7 +20,7 @@ The sample can be configured by using the command line with .NET [Secret Manager
 
 ### Using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
 
-```powershell
+```powershell {"id":"01J6KPYX4BC26XACCKK1Q6NTKV"}
 # OpenAI (Not required if using Azure OpenAI)
 dotnet user-secrets set "OpenAI:ApiKey" "... your api key ... "
 ```
@@ -31,7 +31,7 @@ After configuring the sample, to build and run the console application just hit 
 
 To build and run the console application from the terminal use the following commands:
 
-```powershell
+```powershell {"id":"01J6KPYX4BC26XACCKK2QMWVNY"}
 dotnet build
 dotnet run
 ```

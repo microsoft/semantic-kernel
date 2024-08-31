@@ -10,13 +10,13 @@ To successfully use the Python Plugin in Semantic Kernel, you must install the `
 
 Next, as an environment variable or in the .env file, add the `poolManagementEndpoint` value from above to the variable `ACA_POOL_MANAGEMENT_ENDPOINT`. The `poolManagementEndpoint` should look something like:
 
-```html
+```html {"id":"01J6KPQPB3JXBW56YBJ6P489J4"}
 https://eastus.acasessions.io/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroup}}/sessionPools/{{sessionPool}}/python/execute
 ```
 
 It is possible to add the code interpreter plugin as follows:
 
-```python
+```python {"id":"01J6KPQPB3JXBW56YBJ9JYMTVB"}
 kernel = Kernel()
 
 service_id = "azure_oai"
@@ -41,7 +41,7 @@ Instead of hard-coding a well-formatted Python code string, you may use automati
 
 The authentication callback must return a valid token for the session pool. One possible way of doing this with a `DefaultAzureCredential` is as follows:
 
-```python
+```python {"id":"01J6KPQPB3JXBW56YBJDHT7FXV"}
 async def auth_callback() -> str:
     """Auth callback for the SessionsPythonTool.
     This is a sample auth callback that shows how to use Azure's DefaultAzureCredential

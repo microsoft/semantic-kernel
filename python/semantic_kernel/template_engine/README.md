@@ -2,7 +2,7 @@
 
 The Semantic Kernel uses the following grammar to parse prompt templates:
 
-```
+```clj {"id":"01J6KPYGBX0RZP59NQYJF695ZB"}
 # BNF parsed by TemplateTokenizer
 [template]       ::= "" | [block] | [block] [template]
 [block]          ::= [sk-block] | [text-block]

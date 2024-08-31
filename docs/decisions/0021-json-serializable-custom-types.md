@@ -1,10 +1,10 @@
 ---
-status: proposed
+consulted: null
 contact: dehoward
-date: 2023-11-06
+date: 2023-11-06T00:00:00Z
 deciders: alliscode, markwallace-microsoft
-consulted:
-informed:
+informed: null
+status: proposed
 ---
 
 # JSON Serializable Custom Types
@@ -17,7 +17,7 @@ Standardizing on a JSON-serializable type is necessary to allow functions to be 
 
 Today, use of custom types within Semantic Kernel requires developers to implement a custom `TypeConverter` to convert to/from the string representation of the type. This is demonstrated in [Functions/MethodFunctions_Advanced] as seen below:
 
-```csharp
+```csharp {"id":"01J6KNYP5NKVG6C3ZXG3CCWSQY"}
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomType
     {
@@ -49,14 +49,17 @@ The above approach will now only be needed when a custom type cannot be serializ
 **1. Fallback to serialization using `System.Text.Json` if a `TypeConverter` is not available for the given type**
 
 - Primitive types will be handled using their native `TypeConverter`s
-  - We preserve the use of the native `TypeConverter` for primitive types to prevent any lossy conversions.
+
+   - We preserve the use of the native `TypeConverter` for primitive types to prevent any lossy conversions.
+
 - Complex types will be handled by their registered `TypeConverter`, if provided.
 - If no `TypeConverter` is registered for a complex type, our own `JsonSerializationTypeConverter` will be used to attempt JSON serialization/deserialization using `System.Text.Json`.
-  - A detailed error message will be thrown if the type cannot be serialized/deserialized.
+
+   - A detailed error message will be thrown if the type cannot be serialized/deserialized.
 
 This will change the `GetTypeConverter()` method in `NativeFunction.cs` to look like the following, where before `null` was returned if no `TypeConverter` was found for the type:
 
-```csharp
+```csharp {"id":"01J6KNYP5NKVG6C3ZXG4939XAP"}
 private static TypeConverter GetTypeConverter(Type targetType)
     {
         if (targetType == typeof(byte)) { return new ByteConverter(); }

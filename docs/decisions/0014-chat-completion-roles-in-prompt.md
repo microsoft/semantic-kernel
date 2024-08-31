@@ -1,11 +1,10 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: accepted
+consulted: null
 contact: SergeyMenshykh
-date: 2023-10-23
+date: 2023-10-23T00:00:00Z
 deciders: markwallace-microsoft, matthewbolanos
-consulted:
-informed:
+informed: null
+status: accepted
 ---
 
 # SK prompt syntax for chat completion roles
@@ -29,7 +28,7 @@ Additionally, prompts can be defined using a range of template syntaxes supporte
 
 Function:
 
-```csharp
+```csharp {"id":"01J6KQ5B99ZG69EC80EHY7PJC6"}
 internal class SystemFunctions
 {
     public string Message(string role)
@@ -41,7 +40,7 @@ internal class SystemFunctions
 
 Prompt:
 
-```bash
+```bash {"id":"01J6KQ5B99ZG69EC80EKEXRJF5"}
 {{message role="system"}}
 You are a bank manager. Be helpful, respectful, appreciate diverse language styles.
 {{message role="system"}}
@@ -53,7 +52,7 @@ I want to {{$input}}
 
 Rendered prompt:
 
-```xml
+```xml {"id":"01J6KQ5B99ZG69EC80EN8C3S13"}
 <message role="system">
 You are a bank manager. Be helpful, respectful, appreciate diverse language styles.
 </message>
@@ -67,7 +66,7 @@ In the example below, to parse the prompt that uses the handlebars syntax we nee
 
 Block helpers:
 
-```csharp
+```csharp {"id":"01J6KQ5B99ZG69EC80ER55AEPK"}
 this.handlebarsEngine.RegisterHelper("system", (EncodedTextWriter output, Context context, Arguments arguments) => {
   //Emit the <message role="system"> tags
 });
@@ -78,7 +77,7 @@ this.handlebarsEngine.RegisterHelper("user", (EncodedTextWriter output, Context 
 
 Prompt:
 
-```bash
+```bash {"id":"01J6KQ5B99ZG69EC80EVVM3K34"}
 {{#system~}}
 You are a bank manager. Be helpful, respectful, appreciate diverse language styles.
 {{~/system}}
@@ -89,7 +88,7 @@ I want to {{$input}}
 
 Rendered prompt:
 
-```xml
+```xml {"id":"01J6KQ5B99ZG69EC80EWQ9CTA4"}
 <message role="system">
 You are a bank manager. Be helpful, respectful, appreciate diverse language styles.
 </message>
@@ -103,7 +102,7 @@ In the example below, the prompt the `<message role="*">` tags are marking bound
 
 Prompt:
 
-```xml
+```xml {"id":"01J6KQ5B99ZG69EC80EZ99JCD1"}
 <message role="system">
 You are a bank manager. Be helpful, respectful, appreciate diverse language styles.
 </message>
@@ -114,7 +113,7 @@ I want to {{$input}}
 
 Rendered prompt:
 
-```xml
+```xml {"id":"01J6KQ5B99ZG69EC80F1H6QQWS"}
 <message role="system">
 You are a bank manager. Be helpful, respectful, appreciate diverse language styles.
 </message>

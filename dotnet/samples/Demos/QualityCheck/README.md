@@ -27,13 +27,13 @@ It's possible to run Python server for task evaluation directly or with Docker.
 
 1. Open Python server directory:
 
-```bash
+```bash {"id":"01J6KPZDAVF1X7Y4QPQ8GPRYBZ"}
 cd python-server
 ```
 
 2. Create and active virtual environment:
 
-```bash
+```bash {"id":"01J6KPZDAVF1X7Y4QPQAH8GW5P"}
 python -m venv venv
 source venv/Scripts/activate # activate on Windows
 source venv/bin/activate # activate on Unix/MacOS
@@ -41,20 +41,20 @@ source venv/bin/activate # activate on Unix/MacOS
 
 3. Setup Hugging Face API key:
 
-```bash
+```bash {"id":"01J6KPZDAVF1X7Y4QPQBEAVCPK"}
 pip install "huggingface_hub[cli]"
 huggingface-cli login --token <your_token>
 ```
 
 4. Install dependencies:
 
-```bash
+```bash {"id":"01J6KPZDAVF1X7Y4QPQEFZW3XM"}
 pip install -r requirements.txt
 ```
 
 5. Run server:
 
-```bash
+```bash {"id":"01J6KPZDAVF1X7Y4QPQJ854X21"}
 cd app
 uvicorn main:app --port 8080 --reload
 ```
@@ -65,13 +65,13 @@ uvicorn main:app --port 8080 --reload
 
 1. Open Python server directory:
 
-```bash
+```bash {"id":"01J6KPZDAVF1X7Y4QPQKK2C1YH"}
 cd python-server
 ```
 
 2. Create following `Dockerfile`:
 
-```dockerfile
+```dockerfile {"id":"01J6KPZDAVF1X7Y4QPQPQPEEHC"}
 # syntax=docker/dockerfile:1.2
 FROM python:3.12
 
@@ -92,10 +92,9 @@ CMD ["fastapi", "run", "app/main.py", "--port", "80"]
 ```
 
 3. Create `.env/hf_token.txt` file and put Hugging Face API token in it.
-
 4. Build image and run container:
 
-```bash
+```bash {"id":"01J6KPZDAVF1X7Y4QPQTE7XAKN"}
 docker-compose up --build
 ```
 

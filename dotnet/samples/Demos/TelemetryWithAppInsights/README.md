@@ -1,4 +1,4 @@
-﻿# Semantic Kernel Telemetry with AppInsights
+# Semantic Kernel Telemetry with AppInsights
 
 This sample project shows how a .Net application can be configured to send Semantic Kernel telemetry to Application Insights.
 
@@ -54,7 +54,7 @@ You can also use environment variables if you prefer.
 
 To set your secrets with Secret Manager:
 
-```
+```sh {"id":"01J6KPT0BF2EXHQE744JMA4KJQ"}
 cd dotnet/samples/TelemetryExample
 
 dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "..."
@@ -100,7 +100,7 @@ It is also possible to use Log Analytics to query the telemetry items sent by th
 
 For example, to create a pie chart to summarize the Handlebars planner status:
 
-```kql
+```kql {"id":"01J6KPT0BF2EXHQE744MJME719"}
 dependencies
 | where name == "Microsoft.SemanticKernel.Planning.Handlebars.HandlebarsPlanner"
 | extend status = iff(success == True, "Success", "Failure")
@@ -110,7 +110,7 @@ dependencies
 
 Or to create a bar chart to summarize the Handlebars planner status by date:
 
-```kql
+```kql {"id":"01J6KPT0BGM073FVWV2SMAJMD2"}
 dependencies
 | where name == "Microsoft.SemanticKernel.Planning.Handlebars.HandlebarsPlanner"
 | extend status = iff(success == True, "Success", "Failure"), day = bin(timestamp, 1d)
@@ -125,7 +125,7 @@ dependencies
 
 Or to see status and performance of each planner run:
 
-```kql
+```kql {"id":"01J6KPT0BGM073FVWV2TFKSA42"}
 dependencies
 | where name == "Microsoft.SemanticKernel.Planning.Handlebars.HandlebarsPlanner"
 | extend status = iff(success == True, "Success", "Failure")
@@ -135,7 +135,7 @@ dependencies
 
 It is also possible to summarize the total token usage:
 
-```kql
+```kql {"id":"01J6KPT0BGM073FVWV2W9VX6GB"}
 customMetrics
 | where name == "semantic_kernel.connectors.openai.tokens.total"
 | project value
@@ -145,7 +145,7 @@ customMetrics
 
 Or track token usage by functions:
 
-```kql
+```kql {"id":"01J6KPT0BGM073FVWV2XQ77J8Y"}
 customMetrics
 | where name == "semantic_kernel.function.invocation.token_usage.prompt" and customDimensions has "semantic_kernel.function.name"
 | project customDimensions, value
@@ -166,18 +166,20 @@ You can also use the [Aspire dashboard](https://learn.microsoft.com/en-us/dotnet
 ### Steps
 
 - Follow this [code sample](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/dashboard/overview) to start an Aspire dashboard in a docker container.
+
 - Add the package to the project: **`OpenTelemetry.Exporter.OpenTelemetryProtocol`**
+
 - Replace all occurrences of
 
-  ```c#
-  .AddAzureMonitorLogExporter(...)
-  ```
+```c# {"id":"01J6KPT0BGM073FVWV301D1HY4"}
+.AddAzureMonitorLogExporter(...)
+```
 
-  with
+with
 
-  ```c#
-  .AddOtlpExporter(options => options.Endpoint = new Uri("http://localhost:4317"))
-  ```
+```c# {"id":"01J6KPT0BGM073FVWV309EXP7V"}
+.AddOtlpExporter(options => options.Endpoint = new Uri("http://localhost:4317"))
+```
 
 - Run the app and you can visual the traces in the Aspire dashboard.
 

@@ -1,10 +1,10 @@
 ---
-status: approved
-contact: markwallace-microsoft
-date: 2023-10-26
-deciders: matthewbolanos, markwallace-microsoft, SergeyMenshykh, RogerBarreto
 consulted: dmytrostruk
-informed:
+contact: markwallace-microsoft
+date: 2023-10-26T00:00:00Z
+deciders: matthewbolanos, markwallace-microsoft, SergeyMenshykh, RogerBarreto
+informed: null
+status: approved
 ---
 
 # Custom Prompt Template Formats
@@ -24,7 +24,7 @@ By default the `Kernel` uses the `BasicPromptTemplateEngine` which supports the 
 
 Below is an expanded example of how to create a semantic function from a prompt template string which uses the built-in Semantic Kernel format:
 
-```csharp
+```csharp {"id":"01J6KQ4C3ZTW4EF0Q4A5ZHZ1K5"}
 IKernel kernel = Kernel.Builder
     .WithPromptTemplateEngine(new BasicPromptTemplateEngine())
     .WithOpenAIChatCompletionService(
@@ -49,9 +49,9 @@ Also the `BasicPromptTemplateEngine` is the default prompt template engine and w
 Some issues with this:
 
 1. You need to have a `Kernel` instance to create a semantic function, which is contrary to one of the goals of allow semantic functions to be created once and reused across multiple `Kernel` instances.
-1. `Kernel` only supports a single `IPromptTemplateEngine` so we cannot support using multiple prompt templates at the same time.
-1. `IPromptTemplateEngine` is stateless and must perform a parse of the template for each render
-1. Our semantic function extension methods rely on our implementation of `IPromptTemplate` (i.e., `PromptTemplate`) which stores the template string and uses the `IPromptTemplateEngine` to render it every time. Note implementations of `IPromptTemplate` are currently stateful as they also store the parameters.
+2. `Kernel` only supports a single `IPromptTemplateEngine` so we cannot support using multiple prompt templates at the same time.
+3. `IPromptTemplateEngine` is stateless and must perform a parse of the template for each render
+4. Our semantic function extension methods rely on our implementation of `IPromptTemplate` (i.e., `PromptTemplate`) which stores the template string and uses the `IPromptTemplateEngine` to render it every time. Note implementations of `IPromptTemplate` are currently stateful as they also store the parameters.
 
 #### Performance
 
@@ -80,7 +80,7 @@ Using `HandlebarsDotNet` for the same use case results in the following timings:
 
 There are two interfaces provided:
 
-```csharp
+```csharp {"id":"01J6KQ4C3ZTW4EF0Q4A96M82NA"}
 public interface IPromptTemplateEngine
 {
     Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default);
@@ -96,7 +96,7 @@ public interface IPromptTemplate
 
 A prototype implementation of a handlebars prompt template engine could look something like this:
 
-```csharp
+```csharp {"id":"01J6KQ4C3ZTW4EF0Q4AANE0TAF"}
 public class HandlebarsTemplateEngine : IPromptTemplateEngine
 {
     private readonly ILoggerFactory _loggerFactory;
@@ -135,7 +135,7 @@ public class HandlebarsTemplateEngine : IPromptTemplateEngine
 Some issues:
 
 1. The `IPromptTemplate` interface is not used and causes confusion.
-1. There is no way to allow developers to support multiple prompt template formats at the same time.
+2. There is no way to allow developers to support multiple prompt template formats at the same time.
 
 There is one implementation of `IPromptTemplate` provided in the Semantic Kernel core package.
 The `RenderAsync` implementation just delegates to the `IPromptTemplateEngine`.
@@ -145,7 +145,7 @@ The `Parameters` list get's populated with the parameters defined in the `Prompt
 
 Handlebars does not support dynamic binding of helpers. Consider the following snippet:
 
-```csharp
+```csharp {"id":"01J6KQ4C3ZTW4EF0Q4ADC64E52"}
 HandlebarsHelper link_to = (writer, context, parameters) =>
 {
     writer.WriteSafeString($"<a href='{context["url"]}'>{context["text"]}</a>");
@@ -192,7 +192,7 @@ In no particular order:
 
 Below is an expanded example of how to create a semantic function from a prompt template string which uses the built-in Semantic Kernel format:
 
-```csharp
+```csharp {"id":"01J6KQ4C3ZTW4EF0Q4AGRS0QTG"}
 // Semantic function can be created once
 var promptTemplateFactory = new BasicPromptTemplateFactory();
 string templateString = "Today is: {{time.Date}} Is it weekend time (weekend/not weekend)?";
@@ -223,7 +223,7 @@ Console.WriteLine(result.GetValue<string>());
 
 The `BasicPromptTemplateFactory` and `BasicPromptTemplate` implementations look as follows:
 
-```csharp
+```csharp {"id":"01J6KQ4C3ZTW4EF0Q4AJD56ES7"}
 public sealed class BasicPromptTemplateFactory : IPromptTemplateFactory
 {
     private readonly IPromptTemplateFactory _promptTemplateFactory;

@@ -3,6 +3,7 @@
 This sample contains a script to run multiple models against the popular [**Measuring Massive Multitask Language Understanding** (MMLU)](https://en.wikipedia.org/wiki/MMLU) dataset and produces results for benchmarking.
 
 You can use this script as a starting point if you are planning to do the followings:
+
 1. You are developing a new dataset or augmenting an existing dataset for benchmarking Large Language Models.
 2. You would like to reproduce results from academic papers with existing datasets and models available on Azure AI Studio, such as the Phi series of models, or larger models like the Llama series and the Mistral large model. You can find model availabilities [here](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-serverless-availability).
 
@@ -13,7 +14,8 @@ In this sample, we will be using the MMLU dataset hosted on HuggingFace.
 To gain access to the dataset from HuggingFace, you will need a HuggingFace access token. Follow the steps [here](https://huggingface.co/docs/hub/security-tokens) to create one. You will be asked to provide the token when you run the sample.
 
 The MMLU dataset has many subsets, organized by subjects. You can load whichever subjects you are interested in. Add or remove subjects by modifying the following line in the script:
-```Python
+
+```Python {"id":"01J6KPVR96ZMY976MTJA9S5387"}
 datasets = load_mmlu_dataset(
     [
         "college_computer_science",
@@ -32,7 +34,8 @@ datasets = load_mmlu_dataset(
 This sample by default assumes three models: [Llama3-8b](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-llama?tabs=llama-three#deploy-meta-llama-models-as-a-serverless-api), [Phi3-mini](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-phi-3?tabs=phi-3-mini#deploy-phi-3-models-as-serverless-apis), and [Phi3-small](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-phi-3?tabs=phi-3-small#deploy-phi-3-models-as-serverless-apis). However, you are free to add or remove models as long as it's available in the [model catalog](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/model-catalog-overview).
 
 Add a new model by adding a new AI service to the kernel in the script:
-```Python
+
+```Python {"id":"01J6KPVR96ZMY976MTJB01D6XC"}
 def setup_kernel():
     """Set up the kernel."""
     ...
@@ -45,6 +48,7 @@ def setup_kernel():
     )
     ...
 ```
+
 The new service will automatically get picked up to run against the dataset.
 
 The default models are selected based on the benchmark results reported on page 6 of the paper [**Phi-3 Technical Report:
@@ -55,6 +59,7 @@ Follow the steps [here](https://learn.microsoft.com/en-us/azure/ai-studio/how-to
 > We intentionally use zero-shot so that you will have the opportunity to tune the prompt to get accuracies closer to what the report shows. You can tune the prompt in [helpers.py](helpers.py).
 
 ## Running the sample
+
 1. Deploy the required models. Follow the steps [here](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-serverless?tabs=azure-ai-studio).
 2. Fill in the API keys and endpoints in the script.
 3. Open a terminal and activate your virtual environment for the Semantic Kernel project.
@@ -64,8 +69,10 @@ Follow the steps [here](https://learn.microsoft.com/en-us/azure/ai-studio/how-to
 > If you are using VS code, you can simply select the interpreter in your virtual environment and click the run icon on the top right corner of the file panel when you focus on the script file.
 
 ## Results
+
 After the sample finishes running, you will see outputs similar to the following:
-```
+
+```sh {"id":"01J6KPVR96ZMY976MTJCEM6VVJ"}
 Finished evaluating college_biology.
 Accuracy of Llama3-8b: 75.00%.
 Accuracy of Phi3-mini: 81.25%.
