@@ -84,7 +84,6 @@
       ],
       "dependsOrder": "sequence"
     },
-<<<<<<< main
     {
       "label": "setup (contributing-python)",
       "detail": "",
@@ -141,12 +140,10 @@
         "cwd": "${workspaceFolder}/python"
       }
     },
-=======
     // ***************
     // Kernel (dotnet)
     // ***************
     // Build
->>>>>>> upstream/main
     {
       "label": "build (Semantic-Kernel)",
       "command": "dotnet",
@@ -279,7 +276,6 @@
         "cwd": "${workspaceFolder}/dotnet/src/IntegrationTests/"
       }
     },
-<<<<<<< main
     {
       "label": "test (Semantic-Kernel-Python)",
       "command": "poetry",
@@ -344,12 +340,10 @@
         "cwd": "${workspaceFolder}/python"
       }
     },
-=======
     // ****************
     // Samples (dotnet)
     // ****************
     // Kernel Syntax Examples
->>>>>>> upstream/main
     {
       "label": "build (Concepts)",
       "command": "dotnet",
