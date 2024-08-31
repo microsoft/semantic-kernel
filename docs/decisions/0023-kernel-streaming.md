@@ -327,6 +327,7 @@ static class KernelExtensions
 
 1. All benefits from Option 1 +
 2. Having StreamingFunctionResults allow sk developer to know more details about the result before consuming the stream, like:
+
    - Any metadata provided by the underlying API,
    - SKContext
    - Function Name and Details

@@ -142,11 +142,13 @@ Identified Component Oriented Concepts:
 
    - Builder
    - Functions
+
       - Arguments
       - MethodFunctions
       - PromptFunctions
       - Types
       - Results
+
          - Serialization
          - Metadata
          - Strongly typed
@@ -154,21 +156,25 @@ Identified Component Oriented Concepts:
       - InlineFunctions
 
    - Plugins
+
       - Describe Plugins
       - OpenAI Plugins
       - OpenAPI Plugins
+
          - API Manifest
 
       - gRPC Plugins
       - Mutable Plugins
 
    - AI Services (Examples using Services thru Kernel Invocation)
+
       - Chat Completion
       - Text Generation
       - Service Selector
 
    - Hooks
    - Filters
+
       - Function Filtering
       - Template Rendering Filtering
       - Function Call Filtering (When available)
@@ -179,7 +185,9 @@ Identified Component Oriented Concepts:
 
    - ExecutionSettings
    - Chat Completion
+
       - Local Models
+
          - Ollama
          - HuggingFace
          - LMStudio
@@ -191,7 +199,9 @@ Identified Component Oriented Concepts:
       - HuggingFace
 
    - Text Generation
+
       - Local Models
+
          - Ollama
          - HuggingFace
 
@@ -200,19 +210,24 @@ Identified Component Oriented Concepts:
       - HuggingFace
 
    - Text to Image
+
       - OpenAI
       - AzureOpenAI
 
    - Image to Text
+
       - HuggingFace
 
    - Text to Audio
+
       - OpenAI
 
    - Audio to Text
+
       - OpenAI
 
    - Custom
+
       - DYI
       - OpenAI
          - OpenAI File
