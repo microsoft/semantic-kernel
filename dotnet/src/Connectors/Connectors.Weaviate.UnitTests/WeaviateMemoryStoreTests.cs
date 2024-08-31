@@ -18,6 +18,11 @@ namespace SemanticKernel.Connectors.UnitTests.Weaviate;
 /// </summary>
 public sealed class WeaviateMemoryStoreTests : IDisposable
 {
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
@@ -35,7 +40,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
             }
         };
 
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(JsonSerializer.Serialize(getResponse, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }), Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(JsonSerializer.Serialize(getResponse, s_jsonSerializerOptions), Encoding.UTF8, MediaTypeNames.Application.Json);
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }

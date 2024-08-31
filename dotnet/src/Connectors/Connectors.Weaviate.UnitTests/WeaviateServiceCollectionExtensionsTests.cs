@@ -2,6 +2,7 @@
 
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Microsoft.SemanticKernel.Data;
 using Moq;

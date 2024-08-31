@@ -82,7 +82,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         }
     };
 
-    /// <summary><see cref="HttpClient"/> that can be used to manage the collections in Weaviate.</summary>
+    /// <summary><see cref="HttpClient"/> that is used to interact with Weaviate API.</summary>
     private readonly HttpClient _httpClient;
 
     /// <summary>Optional configuration options for this class.</summary>
@@ -112,7 +112,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStoreRecordCollection{TRecord}"/> class.
     /// </summary>
-    /// <param name="httpClient"><see cref="HttpClient"/> that can be used to manage the collections in Weaviate.</param>
+    /// <param name="httpClient"><see cref="HttpClient"/> that is used to interact with Weaviate API.</param>
     /// <param name="collectionName">The name of the collection that this <see cref="WeaviateVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public WeaviateVectorStoreRecordCollection(

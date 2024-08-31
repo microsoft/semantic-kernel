@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -27,14 +28,14 @@ internal sealed class WeaviateNullableDateTimeOffsetConverter : JsonConverter<Da
             return null;
         }
 
-        return DateTimeOffset.Parse(dateString);
+        return DateTimeOffset.Parse(dateString, CultureInfo.InvariantCulture);
     }
 
     public override void Write(Utf8JsonWriter writer, DateTimeOffset? value, JsonSerializerOptions options)
     {
         if (value.HasValue)
         {
-            writer.WriteStringValue(value.Value.ToString(DateTimeFormat));
+            writer.WriteStringValue(value.Value.ToString(DateTimeFormat, CultureInfo.InvariantCulture));
         }
         else
         {

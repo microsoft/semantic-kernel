@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </remarks>
 public sealed class WeaviateVectorStore : IVectorStore
 {
-    /// <summary><see cref="HttpClient"/> that can be used to manage the collections in Weaviate.</summary>
+    /// <summary><see cref="HttpClient"/> that is used to interact with Weaviate API.</summary>
     private readonly HttpClient _httpClient;
 
     /// <summary>Optional configuration options for this class.</summary>
@@ -28,7 +28,7 @@ public sealed class WeaviateVectorStore : IVectorStore
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStore"/> class.
     /// </summary>
-    /// <param name="httpClient"><see cref="HttpClient"/> that can be used to manage the collections in Weaviate.</param>
+    /// <param name="httpClient"><see cref="HttpClient"/> that is used to interact with Weaviate API.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public WeaviateVectorStore(HttpClient httpClient, WeaviateVectorStoreOptions? options = null)
     {
