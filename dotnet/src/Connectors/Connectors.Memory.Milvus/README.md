@@ -8,20 +8,20 @@ This is an implementation of the Semantic Kernel Memory Store abstraction for th
 
 1. Download the Milvus docker-compose.yml:
 
-```bash
+```bash {"id":"01J6KPSRQ5EYSZQ119T7WWFJFG"}
 wget https://github.com/milvus-io/milvus/releases/download/v2.2.14/milvus-standalone-docker-compose.yml -O docker-compose.yml
 ```
 
 2. Start Milvus:
 
-```bash
+```bash {"id":"01J6KPSRQ5EYSZQ119TAM0AE9C"}
 docker-compose up -d
 ```
 
 3. Use Semantic Kernel with Milvus, connecting to `localhost` with the default (gRPC) port of 1536:
    > See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
 
-```csharp
+```csharp {"id":"01J6KPSRQ5EYSZQ119TAPGM556"}
 using MilvusMemoryStore memoryStore = new("localhost");
 
 var embeddingGenerator = new OpenAITextEmbeddingGenerationService("text-embedding-ada-002", apiKey);

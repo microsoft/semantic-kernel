@@ -1,9 +1,8 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: accepted
 contact: dmytrostruk
-date: 2023-01-23
+date: 2023-01-23T00:00:00Z
 deciders: sergeymenshykh, markwallace, rbarreto, stephentoub, dmytrostruk
+status: accepted
 ---
 
 # Kernel Filters
@@ -12,7 +11,7 @@ deciders: sergeymenshykh, markwallace, rbarreto, stephentoub, dmytrostruk
 
 Current way of intercepting some event during function execution works as expected using Kernel Events and event handlers. Example:
 
-```csharp
+```csharp {"id":"01J6KQ3YEAW1KGPYNGEC8W5N9Z"}
 ILogger logger = loggerFactory.CreateLogger("MyLogger");
 
 var kernel = Kernel.CreateBuilder()
@@ -64,7 +63,7 @@ Two new abstractions will be used across Semantic Kernel and developers will hav
 
 For function-related events: `IFunctionFilter`
 
-```csharp
+```csharp {"id":"01J6KQ3YEAW1KGPYNGEFK1NFA3"}
 public interface IFunctionFilter
 {
     void OnFunctionInvoking(FunctionInvokingContext context);
@@ -75,7 +74,7 @@ public interface IFunctionFilter
 
 For prompt-related events: `IPromptFilter`
 
-```csharp
+```csharp {"id":"01J6KQ3YEAW1KGPYNGEJ9E7J6Q"}
 public interface IPromptFilter
 {
     void OnPromptRendering(PromptRenderingContext context);
@@ -88,7 +87,7 @@ New approach will allow developers to define filters in separate classes and eas
 
 MyFunctionFilter.cs - filter with the same logic as event handler presented above:
 
-```csharp
+```csharp {"id":"01J6KQ3YEAW1KGPYNGEK5RR5T1"}
 public sealed class MyFunctionFilter : IFunctionFilter
 {
     private readonly ILogger _logger;
@@ -117,7 +116,7 @@ public sealed class MyFunctionFilter : IFunctionFilter
 
 As soon as new filter is defined, it's easy to configure it to be used in Kernel using dependency injection (pre-construction) or add filter after Kernel initialization (post-construction):
 
-```csharp
+```csharp {"id":"01J6KQ3YEAW1KGPYNGEKSYW3N2"}
 IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
 kernelBuilder.AddOpenAIChatCompletion(
         modelId: TestConfiguration.OpenAI.ChatModelId,
@@ -136,7 +135,7 @@ var result = await kernel.InvokePromptAsync("How many days until Christmas? Expl
 
 It's also possible to configure multiple filters which will be triggered in order of registration:
 
-```csharp
+```csharp {"id":"01J6KQ3YEAW1KGPYNGEQPMS9JR"}
 kernelBuilder.Services.AddSingleton<IFunctionFilter, Filter1>();
 kernelBuilder.Services.AddSingleton<IFunctionFilter, Filter2>();
 kernelBuilder.Services.AddSingleton<IFunctionFilter, Filter3>();
@@ -144,7 +143,7 @@ kernelBuilder.Services.AddSingleton<IFunctionFilter, Filter3>();
 
 And it's possible to change the order of filter execution in runtime or remove specific filter if needed:
 
-```csharp
+```csharp {"id":"01J6KQ3YEAW1KGPYNGERDZM9NY"}
 kernel.FunctionFilters.Insert(0, new InitialFilter());
 kernel.FunctionFilters.RemoveAt(1);
 ```
