@@ -1,13 +1,13 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: proposed
 contact: crickman, mabolan, semenshi
-date: 2024-01-16
+date: 2024-01-16T00:00:00Z
+status: proposed
 ---
 
 # File Services
 
 ## Context and Problem Statement
+
 OpenAI provides a file service for uploading files to be used for *assistant retrieval* or *model fine-tuning*: `https://api.openai.com/v1/files`
 
 Other providers may also offer some type of file-service, such as Gemini.
@@ -30,30 +30,37 @@ Defining a generalized file service interface provides an extensibility point fo
 ## Pros and Cons of the Options
 
 ### Option 1. Add OpenAI file service support to `Microsoft.SemanticKernel.Experimental.Agents`
+
 **Pro:**
+
 1. No impact to existing AI connectors.
 
 **Con:**
+
 1. No reuse via AI connectors.
-1. No common abstraction.
-1. Unnatural dependency binding for uses other than with OpenAI assistants.
+2. No common abstraction.
+3. Unnatural dependency binding for uses other than with OpenAI assistants.
 
 ### Option 2. Add a file service abstraction and implement support for OpenAI
+
 **Pro:**
+
 1. Defines a common interface for file service interactions.
-1. Allows for specialization for vendor specific services.
+2. Allows for specialization for vendor specific services.
 
 **Con:**
+
 1. Other systems may diverge from existing assumptions.
 
-
 ### Option 3. Add OpenAI file service support without abstraction
+
 **Pro:**
+
 1. Provides support for OpenAI file-service.
 
 **Con:**
-1. File service offerings from other vendors supported case-by-case without commonality.
 
+1. File service offerings from other vendors supported case-by-case without commonality.
 
 ## More Information
 
@@ -63,7 +70,7 @@ Defining a generalized file service interface provides an extensibility point fo
 
 #### `Microsoft.SemanticKernel.Abstractions`
 
-```csharp
+```csharp {"id":"01J6KQ3GKCRWDCGE797WGPR3BC"}
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -88,10 +95,12 @@ public sealed class BinaryContent : KernelContent
     public Task<Stream> GetStreamAsync();
 }
 ```
+
 ### Signatures for Option 3:
 
 #### `Microsoft.SemanticKernel.Connectors.OpenAI`
-```csharp
+
+```csharp {"id":"01J6KQ3GKCRWDCGE797X9Q2N96"}
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 public sealed class OpenAIFileService

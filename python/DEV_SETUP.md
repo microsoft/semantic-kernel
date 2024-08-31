@@ -13,10 +13,9 @@ Make sure you have an
 There are two methods to manage keys, secrets, and endpoints:
 
 1. Store them in environment variables. SK Python leverages pydantic settings to load keys, secrets, and endpoints. This means that there is a first attempt to load them from environment variables. The `.env` file naming applies to how the names should be stored as environment variables.
-
 2. If you'd like to use the `.env` file, you will need to configure the `.env` file with the following keys into a `.env` file (see the `.env.example` file):
 
-```
+```sh {"id":"01J6KNPX0HTGAZ4YDQ34296TT7"}
 OPENAI_API_KEY=""
 OPENAI_ORG_ID=""
 AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=""
@@ -28,7 +27,7 @@ AZURE_OPENAI_API_KEY=""
 
 You will then configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ353PQS4G"}
 chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
 ```
 
@@ -45,7 +44,7 @@ To get started, you'll need VSCode and a local installation of Python 3.8+.
 
 You can run:
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ3625T9E4"}
     python3 --version ; pip3 --version ; code -v
 ```
 
@@ -62,11 +61,11 @@ for VSCode installed).
 You'll also need `pip3` installed. If you don't yet have a `python3` install in WSL,
 you can run:
 
-```bash
+```bash {"id":"01J6KNPX0HTGAZ4YDQ366SG3QM"}
 sudo apt-get update && sudo apt-get install python3 python3-pip
 ```
 
-ℹ️ **Note**: if you don't have your PATH setup to find executables installed by `pip3`,
+ℹ️ __Note__: if you don't have your PATH setup to find executables installed by `pip3`,
 you may need to run `~/.local/bin/poetry install` and `~/.local/bin/poetry shell`
 instead. You can fix this by adding `export PATH="$HOME/.local/bin:$PATH"` to
 your `~/.bashrc` and closing/re-opening the terminal.\_
@@ -85,37 +84,41 @@ Note: SK requires at least Poetry 1.2.0.
 
 ### Note for MacOS Users
 
-It is best to install Poetry using their 
+It is best to install Poetry using their
 [official installer](https://python-poetry.org/docs/#installing-with-the-official-installer).
 
-On MacOS, you might find that `python` commands are not recognized by default, 
-and you can only use `python3`. To make it easier to run `python ...` commands 
+On MacOS, you might find that `python` commands are not recognized by default,
+and you can only use `python3`. To make it easier to run `python ...` commands
 (which Poetry requires), you can create an alias in your shell configuration file.
 
 Follow these steps:
 
 1. **Open your shell configuration file**:
-    - For **Bash**: `nano ~/.bash_profile` or `nano ~/.bashrc`
-    - For **Zsh** (default on macOS Catalina and later): `nano ~/.zshrc`
+
+   - For __Bash__: `nano ~/.bash_profile` or `nano ~/.bashrc`
+   - For **Zsh** (default on macOS Catalina and later): `nano ~/.zshrc`
 
 2. **Add the alias**:
-    ```sh
-    alias python='python3'
-    ```
+
+```sh {"id":"01J6KNPX0HTGAZ4YDQ37NQ12T9"}
+alias python='python3'
+```
 
 3. **Save the file and exit**:
-    - In `nano`, press `CTRL + X`, then `Y`, and hit `Enter`.
+
+   - In `nano`, press `CTRL + X`, then `Y`, and hit `Enter`.
 
 4. **Apply the changes**:
-    - For **Bash**: `source ~/.bash_profile` or `source ~/.bashrc`
-    - For **Zsh**: `source ~/.zshrc`
 
-After these steps, you should be able to use `python` in your terminal to run 
+   - For __Bash__: `source ~/.bash_profile` or `source ~/.bashrc`
+   - For **Zsh**: `source ~/.zshrc`
+
+After these steps, you should be able to use `python` in your terminal to run
 Python 3 commands.
 
 ### Poetry Installation
 
-```bash
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3BB96MAY"}
 # Install poetry package if not choosing to install via their official installer
 pip3 install poetry
 
@@ -140,6 +143,7 @@ poetry run pre-commit install
 ## VSCode Setup
 
 Open the [workspace](https://code.visualstudio.com/docs/editor/workspaces) in VSCode.
+
 > The Python workspace is the `./python` folder if you are at the root of the repository.
 
 Open any of the `.py` files in the project and run the `Python: Select Interpreter`
@@ -156,7 +160,7 @@ Read more about the extension here: https://github.com/astral-sh/ruff-vscode
 
 You can run the unit tests under the [tests/unit](tests/unit/) folder.
 
-```bash
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3CVYSJC6"}
     poetry install --with unit-tests
     poetry run pytest tests/unit
 ```
@@ -166,14 +170,14 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 
 You can run the integration tests under the [tests/integration](tests/integration/) folder.
 
-```bash
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3ETP16N9"}
     poetry install --with tests
     poetry run pytest tests/integration
 ```
 
 You can also run all the tests together under the [tests](tests/) folder.
 
-```bash
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3GYN6VJR"}
     poetry install
     poetry run pytest tests
 ```
@@ -199,28 +203,31 @@ We follow the [Google Docstring](https://github.com/google/styleguide/blob/gh-pa
 They are currently not checked for private functions (functions starting with '_').
 
 They should contain:
+
 - Single line explaining what the function does, ending with a period.
 - If necessary to further explain the logic a newline follows the first line and then the explanation is given.
 - The following three sections are optional, and if used should be separated by a single empty line.
 - Arguments are then specified after a header called `Args:`, with each argument being specified in the following format:
-    - `arg_name` (`arg_type`): Explanation of the argument, arg_type is optional, as long as you are consistent.
-    - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
-    - Default values do not have to be specified, they will be pulled from the definition.
+   - `arg_name` (`arg_type`): Explanation of the argument, arg_type is optional, as long as you are consistent.
+   - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
+   - Default values do not have to be specified, they will be pulled from the definition.
+
 - Returns are specified after a header called `Returns:` or `Yields:`, with the return type and explanation of the return value.
 - Finally, a header for exceptions can be added, called `Raises:`, with each exception being specified in the following format:
-    - `ExceptionType`: Explanation of the exception.
-    - if a longer explanation is needed for a exception, it should be placed on the next line, indented by 4 spaces.
+   - `ExceptionType`: Explanation of the exception.
+   - if a longer explanation is needed for a exception, it should be placed on the next line, indented by 4 spaces.
 
 Putting them all together, gives you at minimum this:
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ3GZ160F4"}
 def equal(arg1: str, arg2: str) -> bool:
     """Compares two strings and returns True if they are the same."""
     ...
 ```
+
 Or a complete version of this:
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ3JGT3D67"}
 def equal(arg1: str, arg2: str) -> bool:
     """Compares two strings and returns True if they are the same.
 
@@ -254,7 +261,7 @@ This section describes how one can enable serialization for their class using Py
 
 Let's take the following example:
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ3JKQTX8W"}
 class A:
     def __init__(self, a: int, b: float, c: List[float], d: dict[str, tuple[float, str]] = {}):
         self.a = a
@@ -265,7 +272,7 @@ class A:
 
 You would convert this to a Pydantic class by subclassing from the `KernelBaseModel` class.
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ3JZ43C10"}
 from pydantic import Field
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -282,7 +289,7 @@ class A(KernelBaseModel):
 
 Let's take the following example:
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ3PC4NBD0"}
 from typing import TypeVar
 
 T1 = TypeVar("T1")
@@ -297,7 +304,7 @@ class A:
 
 You can use the `KernelBaseModel` to convert these to pydantic serializable classes.
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ3R7VE7KV"}
 from typing import Generic
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -315,11 +322,12 @@ class A(KernelBaseModel, Generic[T1, T2]):
 To run the same checks that run during the GitHub Action build, you can use
 this command, from the [python](../python) folder:
 
-```bash
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3RB8FHQJ"}
     poetry run pre-commit run -a
 ```
 
 or use the following task (using `Ctrl+Shift+P`):
+
 - `Python - Run Checks` to run the checks on the whole project.
 - `Python - Run Checks - Staged` to run the checks on the currently staged files only.
 
@@ -329,25 +337,29 @@ Ideally you should run these checks before committing any changes, use `poetry r
 
 We try to maintain a high code coverage for the project. To run the code coverage on the unit tests, you can use the following command:
 
-```bash
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3V7S5W7V"}
     poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
 ```
+
 or use the following task (using `Ctrl+Shift+P`):
+
 - `Python: Tests - Code Coverage` to run the code coverage on the whole project.
 
 This will show you which files are not covered by the tests, including the specific lines not covered.
 
 ## Catching up with the latest changes
+
 There are many people committing to Semantic Kernel, so it is important to keep your local repository up to date. To do this, you can run the following commands:
 
-```bash
+```bash {"id":"01J6KNPX0J3RHKXXPZZ2645V13"}
     git fetch upstream main
     git rebase upstream/main
     git push --force-with-lease
 ```
+
 or:
 
-```bash
+```bash {"id":"01J6KNPX0J3RHKXXPZZ3T5EN1R"}
     git fetch upstream main
     git merge upstream/main
     git push
