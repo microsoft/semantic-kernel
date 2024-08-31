@@ -5,6 +5,9 @@ on:
     branches: ["main", "feature*"]
     paths:
       - "python/**"
+env:
+  # Configure a constant location for the uv cache
+  UV_CACHE_DIR: /tmp/.uv-cache
 
 jobs:
   python-unit-tests:
@@ -28,34 +31,38 @@ jobs:
         working-directory: python
     steps:
       - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
+      - name: Set up uv
+        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Set up uv
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: irm https://astral.sh/uv/install.ps1 | iex
+        shell: powershell
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "poetry"
-      - name: Install dependencies
-        run: poetry install --with unit-tests
+      - name: Restore uv cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{  env.UV_CACHE_DIR  }}
+          key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
+      - name: Install the project
+        run: uv sync --all-extras --dev
       - name: Test with pytest
-        run: poetry run pytest --junitxml=pytest.xml ./tests/unit
+        run: uv run pytest --junitxml=pytest.xml ./tests/unit
       - name: Surface failing tests
         if: always()
         uses: pmeier/pytest-results-action@main
         with:
-          # A list of JUnit XML files, directories containing the former, and wildcard
-          # patterns to process.
-          # See @actions/glob for supported patterns.
           path: python/pytest.xml
-          # (Optional) Add a summary of the results at the top of the report
           summary: true
-          # (Optional) Select which results should be included in the report.
-          # Follows the same syntax as `pytest -r`
           display-options: fEX
-          # (Optional) Fail the workflow if no JUnit XML was found.
           fail-on-empty: true
-          # (Optional) Title of the test results section in the workflow summary
           title: Test results
+      - name: Minimize uv cache
+        run: uv cache prune --ci
   python-test-coverage:
     name: Python Test Coverage
     runs-on: [ubuntu-latest]
@@ -65,21 +72,27 @@ jobs:
     defaults:
       run:
         working-directory: python
+    env:
+      PYTHON_VERSION: "3.10"
     steps:
       - uses: actions/checkout@v4
       - name: Setup filename variables
         run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
-      - name: Install poetry
-        run: pipx install poetry
-      - name: Set up Python 3.10
+      - name: Set up uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
-          cache: "poetry"
-      - name: Install dependencies
-        run: poetry install --with unit-tests
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Restore uv cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.UV_CACHE_DIR }}
+          key: uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/uv.lock') }}
+      - name: Install the project
+        run: uv sync --all-extras --dev
       - name: Test with pytest
-        run: poetry run pytest -q --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt      
+        run: uv run pytest -q --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt      
       - name: Upload coverage
         if: always()
         uses: actions/upload-artifact@v4
@@ -96,3 +109,5 @@ jobs:
           path: python/pytest.xml
           overwrite: true
           retention-days: 1
+      - name: Minimize uv cache
+        run: uv cache prune --ci

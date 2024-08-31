@@ -53,6 +53,14 @@ public class AgentChatTests
         // Verify final history
         await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
+
+        // Reset verify
+        await chat.ResetAsync();
+        Assert.Equal(2, chat.Agent.InvokeCount);
+
+        // Verify final history
+        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync()); // Primary history
+        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
     }
 
     /// <summary>

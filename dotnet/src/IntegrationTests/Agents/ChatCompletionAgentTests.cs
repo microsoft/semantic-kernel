@@ -63,7 +63,7 @@ public sealed class ChatCompletionAgentTests(ITestOutputHelper output) : IDispos
             {
                 Kernel = kernel,
                 Instructions = "Answer questions about the menu.",
-                ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
+                Arguments = new(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
             };
 
         AgentGroupChat chat = new();

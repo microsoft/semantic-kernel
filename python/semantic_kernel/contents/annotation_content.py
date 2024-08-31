@@ -56,8 +56,6 @@ class AnnotationContent(KernelContent):
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
         return {
-            "file_id": self.file_id,
-            "quote": self.quote,
-            "start_index": self.start_index,
-            "end_index": self.end_index,
+            "type": "text",
+            "text": f"{self.file_id} {self.quote} (Start Index={self.start_index}->End Index={self.end_index})",
         }

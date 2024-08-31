@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 public sealed class PineconeVectorStoreOptions
 {
     /// <summary>
-    /// An optional factory to use for constructing <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> instances, if custom options are required.
+    /// An optional factory to use for constructing <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
     /// </summary>
     public IPineconeVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
 }

@@ -113,10 +113,8 @@ def test_to_dict():
         file_id="12345", quote="This is a quote.", start_index=5, end_index=20
     )
     assert annotation.to_dict() == {
-        "file_id": "12345",
-        "quote": "This is a quote.",
-        "start_index": 5,
-        "end_index": 20,
+        "type": "text",
+        "text": f"{annotation.file_id} {annotation.quote} (Start Index={annotation.start_index}->End Index={annotation.end_index})",  # noqa: E501
     }
 
 
@@ -130,9 +128,7 @@ def test_element_roundtrip(annotation):
 @pytest.mark.parametrize("annotation", test_cases)
 def test_to_dict_call(annotation):
     expected_dict = {
-        "file_id": annotation.file_id,
-        "quote": annotation.quote,
-        "start_index": annotation.start_index,
-        "end_index": annotation.end_index,
+        "type": "text",
+        "text": f"{annotation.file_id} {annotation.quote} (Start Index={annotation.start_index}->End Index={annotation.end_index})",  # noqa: E501
     }
     assert annotation.to_dict() == expected_dict

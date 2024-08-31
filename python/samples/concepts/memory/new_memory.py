@@ -30,11 +30,19 @@ from semantic_kernel.data.vector_store_record_collection import (
     VectorStoreRecordCollection,
 )
 from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings, OpenAITextEmbedding
+from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
+from semantic_kernel.connectors.memory.qdrant import QdrantCollection
+from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
+from semantic_kernel.connectors.memory.volatile import VolatileCollection
+from semantic_kernel.data import (
+    VectorStoreRecordCollection,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
+    VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
+    vectorstoremodel,
 )
-from semantic_kernel.data.vector_store_record_utils import VectorStoreRecordUtils
 
 
 @vectorstoremodel

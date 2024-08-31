@@ -15,7 +15,7 @@ public sealed class TextChunkerInternationalTests
     public sealed class StatefulTokenCounter
     {
         private readonly Dictionary<string, int> _callStats = [];
-        private readonly Tokenizer _tokenizer = Tokenizer.CreateTiktokenForModel("gpt-4");
+        private readonly Tokenizer _tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
 
         public int Count(string input)
         {
@@ -29,7 +29,7 @@ public sealed class TextChunkerInternationalTests
 
     private static TokenCounter StatelessTokenCounter => (string input) =>
     {
-        var tokenizer = Tokenizer.CreateTiktokenForModel("gpt-4");
+        var tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
         return tokenizer.CountTokens(input);
     };
 
