@@ -1,11 +1,10 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: accepted
-contact: dmytrostruk
-date: 2013-06-16
-deciders: shawncal, hario90
 consulted: dmytrostruk, matthewbolanos
+contact: dmytrostruk
+date: 2013-06-16T00:00:00Z
+deciders: shawncal, hario90
 informed: lemillermicrosoft
+status: accepted
 ---
 
 # Add support for multiple named arguments in template function calls
@@ -25,7 +24,7 @@ Native functions now support multiple parameters, populated from context values 
 
 ### Syntax idea 1: Using commas
 
-```handlebars
+```handlebars {"id":"01J6KQ1GR1BSXQPVN5ACX5DKBQ"}
 {{Skill.MyFunction street: "123 Main St", zip: "98123", city:"Seattle", age: 25}}
 ```
 
@@ -40,7 +39,7 @@ Cons:
 
 ### Syntax idea 2: JavaScript/C#-Style delimiter (colon)
 
-```handlebars
+```handlebars {"id":"01J6KQ1GR1BSXQPVN5AE8XQP6Y"}
 
 {{MyFunction street:"123 Main St" zip:"98123" city:"Seattle" age: "25"}}
 
@@ -57,7 +56,7 @@ Cons:
 
 ### Syntax idea 3: Python/Guidance-Style delimiter
 
-```handlebars
+```handlebars {"id":"01J6KQ1GR1BSXQPVN5AHRX4495"}
 {{MyFunction street="123 Main St" zip="98123" city="Seattle"}}
 ```
 
@@ -73,7 +72,7 @@ Cons:
 
 ### Syntax idea 4: Allow whitespace between arg name/value delimiter
 
-```handlebars
+```handlebars {"id":"01J6KQ1GR1BSXQPVN5AKCMBD7G"}
 {{MyFunction street="123 Main St" zip="98123" city="Seattle"}}
 ```
 
@@ -97,13 +96,13 @@ Additional decisions:
 
 Example
 
-```handlebars
+```handlebars {"id":"01J6KQ1GR1BSXQPVN5APSHAXWY"}
 {{MyFunction "inputVal" street="123 Main St" zip="98123" city="Seattle"}}
 ```
 
 - Allow arg values to be defined as strings or variables ONLY, e.g.
 
-```handlebars
+```handlebars {"id":"01J6KQ1GR1BSXQPVN5ARY00MQY"}
 {{MyFunction street=$street zip="98123" city="Seattle"}}
 ```
 

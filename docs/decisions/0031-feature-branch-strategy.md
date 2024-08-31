@@ -1,12 +1,10 @@
 ---
-# Strategy for Community Driven Connectors and Features
-
-status: approved
+consulted: null
 contact: rogerbarreto
-date: 2024-01-24
+date: 2024-01-24T00:00:00Z
 deciders: rogerbarreto, markwallace-microsoft, dmytrostruk, sergeymenshik
-consulted:
-informed:
+informed: null
+status: approved
 ---
 
 # Strategy for Community Driven Connectors and Features
@@ -20,18 +18,27 @@ In our current software development process, managing changes in the main branch
 ## Standards and Guidelines Principles
 
 - **Pattern**: The Feature Branch Strategy is a well-known pattern for managing changes in a codebase. It is widely used in the industry and is supported by most version control systems, including GitHub, this also gives further clear picture on how the community can meaningfully contribute to the development of connectors or any other bigger feature for SK.
+
 - **Isolated Development Environments**: By using feature branches, each developer can work on different aspects of the project without interfering with others' work. This isolation reduces conflicts and ensures that the main branch remains stable.
+
 - **Streamlined Integration**: Feature branches simplify the process of integrating new code into the main branch. By dealing with smaller, more manageable changes, the risk of major conflicts during integration is minimized.
+
 - **Efficiency in Code Review**: Smaller, more focused changes in feature branches lead to quicker and more efficient code reviews. This efficiency is not just about the ease of reviewing less code at a time but also about the time saved in understanding the context and impact of the changes.
+
 - **Reduced Risk of Bugs**: Isolating development in feature branches reduces the likelihood of introducing bugs into the main branch. It's easier to identify and fix issues within the confined context of a single feature.
+
 - **Timely Feature Integration**: Small, incremental pull requests allow for quicker reviews and faster integration of features into the feature branch and make it easier to merge down into main as the code was already previously reviewed. This timeliness ensures that features are merged and ready for deployment sooner, improving the responsiveness to changes.
+
 - **Code Testing, Coverage and Quality**: To keep a good code quality is imperative that any new code or feature introduced to the codebase is properly tested and validated. Any new feature or code should be covered by unit tests and integration tests. The code should also be validated by our CI/CD pipeline and follow our code quality standards and guidelines.
+
 - **Examples**: Any new feature or code should be accompanied by examples that demonstrate how to use the new feature or code. This is important to ensure that the new feature or code is properly documented and that the community can easily understand and use it.
+
 - **Signing**: Any connector that will eventually become a package needs to have the package and the assembly signing enabled (Set to Publish = Publish) in the `SK-dotnet.sln` file.
-  ```
-  {Project GUID}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
-  {Project GUID}.Publish|Any CPU.Build.0 = Publish|Any CPU
-  ```
+
+```sh {"id":"01J6KQ2NN9BCV18P3DWGV8WADZ"}
+{Project GUID}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+{Project GUID}.Publish|Any CPU.Build.0 = Publish|Any CPU
+```
 
 ### Community Feature Branch Strategy
 
