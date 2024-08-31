@@ -1,6 +1,0 @@
-zone:
-  arg_name: zone
-  default: global
-  help_text: |
-    Location to make calls. Non-global location is required for requests using AutoML models.
-    Currently, only 'us-central1' is supported as a non-global location. Defaults to 'global'.

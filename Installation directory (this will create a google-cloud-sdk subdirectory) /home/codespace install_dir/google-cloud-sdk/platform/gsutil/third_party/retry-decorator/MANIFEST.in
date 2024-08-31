@@ -1,3 +1,0 @@
-include *.txt
-include *.rst
-recursive-include docs *

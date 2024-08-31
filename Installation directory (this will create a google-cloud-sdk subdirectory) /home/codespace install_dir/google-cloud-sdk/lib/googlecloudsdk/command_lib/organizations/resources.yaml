@@ -1,9 +1,0 @@
-organization:
-  name: organization
-  api_version: v1
-  collection: cloudresourcemanager.organizations
-  attributes:
-  - parameter_name: organizationsId
-    attribute_name: organization
-    help: |
-      The ID of the organization.

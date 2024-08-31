@@ -1,3 +1,0 @@
-"""
-Test package for VPC
-"""

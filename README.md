@@ -1,3 +1,9 @@
+---
+runme:
+  id: 01J0BYQX0015D3BH4FX0NPA9QQ
+  version: v3
+---
+
 # Semantic Kernel
 
 [![Python package](https://img.shields.io/pypi/v/semantic-kernel)](https://pypi.org/project/semantic-kernel/)
@@ -60,7 +66,7 @@ feature parity between our currently supported languages.
 The quickest way to get started with the basics is to get an API key
 from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java console applications/scripts below.
 
-### For C #
+### For C
 
 1. Create a new console app.
 2. Add the semantic kernel nuget [Microsoft.SemanticKernel](https://www.nuget.org/packages/Microsoft.SemanticKernel/).
@@ -79,7 +85,8 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 ### For Java
 
 1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel.git`
-    1. To access the latest Java code, clone and checkout the Java development branch: `git clone -b java-development https://github.com/microsoft/semantic-kernel.git`
+   1. To access the latest Java code, clone and checkout the Java development branch: `git clone -b java-development https://github.com/microsoft/semantic-kernel.git`
+
 2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/main/java/samples/sample-code/README.md)
 
 ## Learning how to use Semantic Kernel
@@ -94,12 +101,12 @@ Once you've finished the getting started notebooks, you can then check out the m
 on our Learn site. Each sample comes with a completed C# and Python project that you can run locally.
 
 1. 📖 [Overview of the kernel](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/)
-1. 🔌 [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
-1. 👄 [Creating semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions)
-1. 💽 [Creating native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions)
-1. ⛓️ [Chaining functions together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
-1. 🤖 [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
-1. 💡 [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins)
+2. 🔌 [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
+3. 👄 [Creating semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions)
+4. 💽 [Creating native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions)
+5. ⛓️ [Chaining functions together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
+6. 🤖 [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
+7. 💡 [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins)
 
 Finally, refer to our API references for more details on the C# and Python APIs:
 

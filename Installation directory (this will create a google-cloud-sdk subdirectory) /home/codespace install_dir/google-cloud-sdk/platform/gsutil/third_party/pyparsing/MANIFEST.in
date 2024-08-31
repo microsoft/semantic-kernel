@@ -1,8 +1,0 @@
-include pyparsing.py
-include HowToUsePyparsing.rst pyparsingClassDiagram.*
-include README.md CODE_OF_CONDUCT.rst CHANGES LICENSE CONTRIBUTING.md modules.rst
-include examples/*.py examples/Setup.ini examples/*.dfm examples/*.ics examples/*.html examples/*.h examples/*.g examples/statemachine/*
-recursive-include docs *
-prune docs/_build/*
-recursive-include test *
-include setup.py simple_unit_tests.py unitTests.py

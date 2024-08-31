@@ -1,0 +1,175 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0</TargetFrameworks>    
+    <PackageId>Microsoft.CST.DevSkim</PackageId>
+    <PackageVersion>0.0.0</PackageVersion>
+    <PackageTags>Security Linter</PackageTags>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>Microsoft</Authors>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright> 
+    <Description>DevSkim is a framework and language analyzer that provides inline security analysis. This is a library package. For the Dotnet Tool package, see Microsoft.CST.DevSkim.CLI.</Description>
+    <PackageIcon>devskim-icon-128.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/Microsoft/DevSkim</PackageProjectUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <LangVersion>10.0</LangVersion>
+    <Nullable>Enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\Content\LICENSE.txt" Pack="true" PackagePath="" />
+    <None Include="..\Content\devskim-icon-128.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.CST.ApplicationInspector.RulesEngine" Version="1.9.19" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="..\..\rules\default\security\api\dangerous_api.json">
+        <Link>rules\default\security\api\dangerous_api.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\api\deserialization.json">
+        <Link>rules\default\security\api\deserialization.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\api\misused_api.json">
+        <Link>rules\default\security\api\misused_api.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\api\suggested_api.json">
+        <Link>rules\default\security\api\suggested_api.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\api\t_sql.json">
+        <Link>rules\default\security\api\t_sql.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\attack_surface\outbound_network.json">
+        <Link>rules\default\security\attack_surface\outbound_network.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\control_flow\dynamic_execution.json">
+        <Link>rules\default\security\control_flow\dynamic_execution.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\control_flow\format_string.json">
+        <Link>rules\default\security\control_flow\format_string.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\control_flow\permission_evelation.json">
+        <Link>rules\default\security\control_flow\permission_evelation.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\cryptography\certificate.json">
+        <Link>rules\default\security\cryptography\certificate.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\cryptography\ciphers.json">
+        <Link>rules\default\security\cryptography\ciphers.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\cryptography\general.json">
+        <Link>rules\default\security\cryptography\general.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\cryptography\hardcoded_tls.json">
+        <Link>rules\default\security\cryptography\hardcoded_tls.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\cryptography\hash_algorithm.json">
+        <Link>rules\default\security\cryptography\hash_algorithm.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\cryptography\initialization_vector.json">
+        <Link>rules\default\security\cryptography\initialization_vector.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\cryptography\protocol.json">
+        <Link>rules\default\security\cryptography\protocol.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\cryptography\random.json">
+        <Link>rules\default\security\cryptography\random.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\cryptography\underhanded.json">
+        <Link>rules\default\security\cryptography\underhanded.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\cryptography\weak_cipher_modes.json">
+        <Link>rules\default\security\cryptography\weak_cipher_modes.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\frameworks\aspnet5.json">
+        <Link>rules\default\security\frameworks\aspnet5.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\frameworks\dotnet_framework.json">
+        <Link>rules\default\security\frameworks\dotnet_framework.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\frameworks\php.json">
+        <Link>rules\default\security\frameworks\php.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\hygiene\localhost.json">
+        <Link>rules\default\security\hygiene\localhost.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\hygiene\todo.json">
+        <Link>rules\default\security\hygiene\todo.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\manualreview\dynamiccode.json">
+        <Link>rules\default\security\manualreview\dynamiccode.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\manualreview\zip_slip.json">
+        <Link>rules\default\security\manualreview\zip_slip.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\privacy\device_restrictions.json">
+        <Link>rules\default\security\privacy\device_restrictions.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\privacy\secrets.json">
+        <Link>rules\default\security\privacy\secrets.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\storage\secure_storage.json">
+        <Link>rules\default\security\storage\secure_storage.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_appconfig.json">
+        <Link>rules\default\security\TLS\tls_appconfig.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_appcontext.json">
+        <Link>rules\default\security\TLS\tls_appcontext.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_cobol.json">
+        <Link>rules\default\security\TLS\tls_cobol.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_functioncall.json">
+        <Link>rules\default\security\TLS\tls_functioncall.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_generic.json">
+        <Link>rules\default\security\TLS\tls_generic.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_go.json">
+        <Link>rules\default\security\TLS\tls_go.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_java.json">
+        <Link>rules\default\security\TLS\tls_java.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_javascript.json">
+        <Link>rules\default\security\TLS\tls_javascript.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_macos.json">
+        <Link>rules\default\security\TLS\tls_macos.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_python.json">
+        <Link>rules\default\security\TLS\tls_python.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_rust.json">
+        <Link>rules\default\security\TLS\tls_rust.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_securityprotocol.json">
+        <Link>rules\default\security\TLS\tls_securityprotocol.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_sslprotocol.json">
+        <Link>rules\default\security\TLS\tls_sslprotocol.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\TLS\tls_win32.json">
+        <Link>rules\default\security\TLS\tls_win32.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\vulnerable_libraries\microsoft_nuget.json">
+        <Link>rules\default\security\vulnerable_libraries\microsoft_nuget.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\security\xml\external_entities.json">
+        <Link>rules\default\security\xml\external_entities.json</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="..\..\rules\default\correctness\datetime.json">
+        <Link>rules\default\correctness\datetime.json</Link>
+      </EmbeddedResource>
+
+      <EmbeddedResource Include="resources\comments.json" />
+      <EmbeddedResource Include="resources\languages.json" />
+    </ItemGroup>
+
+</Project>
