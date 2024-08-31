@@ -36,6 +36,8 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidResponseError,
 )
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion, trace_text_completion
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import (
@@ -91,6 +93,8 @@ class OllamaChatCompletion(
             client=client or AsyncClient(host=ollama_settings.host),
         )
 
+    @override
+    @trace_chat_completion(OllamaBase.MODEL_PROVIDER_NAME)
     async def get_chat_message_contents(
         self,
         chat_history: ChatHistory,
@@ -181,6 +185,8 @@ class OllamaChatCompletion(
                 )
             ]
 
+    @override
+    @trace_text_completion(OllamaBase.MODEL_PROVIDER_NAME)
     async def get_text_contents(
         self,
         prompt: str,

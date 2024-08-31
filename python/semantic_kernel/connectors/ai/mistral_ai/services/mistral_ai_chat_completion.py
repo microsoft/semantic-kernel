@@ -1,8 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from collections.abc import AsyncGenerator
 from typing import Any
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from mistralai.async_client import MistralAsyncClient
 from mistralai.models.chat_completion import (
@@ -27,6 +33,9 @@ from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings impor
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_base import MistralAIBase
+from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -37,23 +46,20 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
-from semantic_kernel.exceptions.service_exceptions import (
-    ServiceInitializationError,
-    ServiceResponseException,
-)
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class MistralAIChatCompletion(ChatCompletionClientBase):
+class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
     """Mistral Chat completion class."""
 
     prompt_tokens: int = 0
     completion_tokens: int = 0
     total_tokens: int = 0
-    async_client: MistralAsyncClient
 
     def __init__(
         self,
@@ -88,6 +94,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             raise ServiceInitializationError(
                 "Failed to create MistralAI settings.", ex
             ) from ex
+            raise ServiceInitializationError("Failed to create MistralAI settings.", ex) from ex
 
         if not mistralai_settings.chat_model_id:
             raise ServiceInitializationError("The MistralAI chat model ID is required.")
@@ -103,6 +110,8 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             ai_model_id=ai_model_id or mistralai_settings.chat_model_id,
         )
 
+    @override
+    @trace_chat_completion(MistralAIBase.MODEL_PROVIDER_NAME)
     async def get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
@@ -142,6 +151,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             self._create_chat_message_content(response, choice, response_metadata)
             for choice in response.choices
         ]
+        return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
 
     async def get_streaming_chat_message_contents(
         self,
@@ -282,6 +292,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             if isinstance(choice, ChatCompletionResponseChoice)
             else choice.delta
         )
+        content = choice.message if isinstance(choice, ChatCompletionResponseChoice) else choice.delta
         if content.tool_calls is None:
             return []
 

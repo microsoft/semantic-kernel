@@ -12,13 +12,21 @@ class AgentFileNotFoundException(AgentException):
     """The requested file was not found."""
 
 
-class AgentInitializationError(AgentException):
+class AgentInitializationException(AgentException):
     """An error occurred while initializing the agent."""
 
 
-class AgentExecutionError(AgentException):
+class AgentExecutionException(AgentException):
     """An error occurred while executing the agent."""
 
 
-class AgentInvokeError(AgentException):
+class AgentInvokeException(AgentException):
     """An error occurred while invoking the agent."""
+
+    pass
+
+
+class AgentChatException(AgentException):
+    """An error occurred while invoking the agent chat."""
+
+    pass
