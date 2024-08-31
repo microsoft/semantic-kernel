@@ -68,16 +68,6 @@
       }
     },
     {
-      "type": "func",
-      "dependsOn": "build (functions)",
-      "options": {
-        "cwd": "${workspaceFolder}/dotnet/samples/CreateChatGptPlugin/MathPlugin/azure-function/bin/Debug/net6.0"
-      },
-      "command": "host start",
-      "isBackground": true,
-      "problemMatcher": "$func-dotnet-watch"
-    },
-    {
       "type": "go",
       "label": "go: build package",
       "command": "build",
@@ -89,6 +79,16 @@
       ],
       "group": "build",
       "detail": "cd /workspaces/semantic-kernel; go build ${fileDirname}"
+    },
+    {
+      "type": "func",
+      "dependsOn": "build (functions)",
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/samples/CreateChatGptPlugin/MathPlugin/azure-function/bin/Debug/net6.0"
+      },
+      "command": "host start",
+      "isBackground": true,
+      "problemMatcher": "$func-dotnet-watch"
     }
   ]
 }

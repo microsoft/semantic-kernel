@@ -490,3 +490,8 @@ swa-cli.config.json
 
 # python devcontainer
 /python/.devcontainer/*
+
+.env*
+.flaskenv*
+!.env.project
+!.env.vault
