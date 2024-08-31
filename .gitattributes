@@ -1,0 +1,6 @@
+# Auto-detect text files, ensure they use LF.
+* text=auto eol=lf working-tree-encoding=UTF-8
+
+# Bash scripts
+*.sh  text eol=lf
+*.cmd text eol=crlf

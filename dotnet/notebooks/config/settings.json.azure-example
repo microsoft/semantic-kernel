@@ -1,0 +1,7 @@
+{
+  "type":     "azure",
+  "model":    "... your Azure OpenAI deployment name ...",
+  "endpoint": "https:// ... your endpoint ... .openai.azure.com/",
+  "apikey":   "... your Azure OpenAI key ...", 
+  "org":      "" // it's not used for azure, but the parser requires it so do not delete
+}
