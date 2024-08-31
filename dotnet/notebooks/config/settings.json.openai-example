@@ -1,7 +1,0 @@
-{
-  "type":   "openai",
-  "endpoint": "NOT-USED-BUT-REQUIRED-FOR-PARSER",
-  "model":  "gpt-3.5-turbo",
-  "apikey": "... your OpenAI key ...",
-  "org":    ""
-}

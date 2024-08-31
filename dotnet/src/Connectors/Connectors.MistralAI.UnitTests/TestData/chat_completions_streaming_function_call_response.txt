@@ -1,5 +1,0 @@
-data: {"id":"355a4e457cfb44348d5feda493ce2102","object":"chat.completion.chunk","created":1712601685,"model":"mistral-small-latest","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null,"logprobs":null}]}
-
-data: {"id":"355a4e457cfb44348d5feda493ce2102","object":"chat.completion.chunk","created":1712601685,"model":"mistral-small-latest","choices":[{"index":0,"delta":{"content":null,"tool_calls":[{"function":{"name":"WeatherPlugin-GetWeather","arguments":"{\"location\": \"Paris\", \"unit\": \"celsius\"}"}}]},"finish_reason":"tool_calls","logprobs":null}],"usage":{"prompt_tokens":118,"total_tokens":149,"completion_tokens":31}}
-
-data: [DONE]

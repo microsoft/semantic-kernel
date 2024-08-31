@@ -1,7 +1,0 @@
-name: getTimes
-description: Gets the time in various cities.
-template: |
-  <message role="user">Can you help me tell the time in Seattle right now?</message>
-  <message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message>
-  <message role="user">What about New York?</message>
-template_format: handlebars
