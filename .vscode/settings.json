@@ -179,5 +179,6 @@
   },
   "editor.defaultFormatter": "GitHub.copilot",
   "notebook.defaultFormatter": "GitHub.copilot",
-  "gitlens.ai.experimental.vscode.model": "modelName:modelVersion"
+  "gitlens.ai.experimental.vscode.model": "modelName:modelVersion",
+  "wolf.disableHotModeWarning": true
 }
