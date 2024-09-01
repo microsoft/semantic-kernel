@@ -15,7 +15,7 @@ class ValBlock:
 	def __init__(self, value):
 		self._value = value
 
-	def get_value(self):
+	def get_value(self) -> str:
 		return self._value.strip('\'')
 
 class TestCodeBlock:
