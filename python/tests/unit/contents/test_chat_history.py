@@ -26,22 +26,38 @@ def test_init_with_system_message_only():
 
 
 def test_init_with_messages_only():
-    msgs = [ChatMessageContent(role=AuthorRole.USER, content=f"Message {i}") for i in range(3)]
+    msgs = [
+        ChatMessageContent(role=AuthorRole.USER, content=f"Message {i}")
+        for i in range(3)
+    ]
     chat_history = ChatHistory(messages=msgs)
-    assert chat_history.messages == msgs, "Chat history should contain exactly the provided messages"
+    assert (
+        chat_history.messages == msgs
+    ), "Chat history should contain exactly the provided messages"
 
 
 def test_init_with_messages_and_system_message():
     system_msg = "a test system prompt"
-    msgs = [ChatMessageContent(role=AuthorRole.USER, content=f"Message {i}") for i in range(3)]
+    msgs = [
+        ChatMessageContent(role=AuthorRole.USER, content=f"Message {i}")
+        for i in range(3)
+    ]
     chat_history = ChatHistory(messages=msgs, system_message=system_msg)
-    assert chat_history.messages[0].role == AuthorRole.SYSTEM, "System message should be the first in history"
-    assert chat_history.messages[0].content == system_msg, "System message should be the first in history"
-    assert chat_history.messages[1:] == msgs, "Remaining messages should follow the system message"
+    assert (
+        chat_history.messages[0].role == AuthorRole.SYSTEM
+    ), "System message should be the first in history"
+    assert (
+        chat_history.messages[0].content == system_msg
+    ), "System message should be the first in history"
+    assert (
+        chat_history.messages[1:] == msgs
+    ), "Remaining messages should follow the system message"
 
 
 def test_init_without_messages_and_system_message(chat_history: ChatHistory):
-    assert chat_history.messages == [], "Chat history should be empty if no messages and system_message are provided"
+    assert (
+        chat_history.messages == []
+    ), "Chat history should be empty if no messages and system_message are provided"
 
 
 def test_add_system_message(chat_history: ChatHistory):
@@ -111,7 +127,11 @@ def test_add_message(chat_history: ChatHistory):
     content = "Test message"
     role = AuthorRole.USER
     encoding = "utf-8"
-    chat_history.add_message(message={"role": role, "content": content}, encoding=encoding, metadata={"test": "test"})
+    chat_history.add_message(
+        message={"role": role, "content": content},
+        encoding=encoding,
+        metadata={"test": "test"},
+    )
     assert chat_history.messages[-1].content == content
     assert chat_history.messages[-1].role == role
     assert chat_history.messages[-1].encoding == encoding
@@ -230,7 +250,8 @@ def test_eq_invalid(chat_history: ChatHistory):
 def test_dump():
     system_msg = "a test system prompt"
     chat_history = ChatHistory(
-        messages=[ChatMessageContent(role=AuthorRole.USER, content="Message")], system_message=system_msg
+        messages=[ChatMessageContent(role=AuthorRole.USER, content="Message")],
+        system_message=system_msg,
     )
     dump = chat_history.model_dump(exclude_none=True)
     assert dump is not None
@@ -266,7 +287,10 @@ def test_serialize():
 
 def test_serialize_and_deserialize_to_chat_history():
     system_msg = "a test system prompt"
-    msgs = [ChatMessageContent(role=AuthorRole.USER, content=f"Message {i}") for i in range(3)]
+    msgs = [
+        ChatMessageContent(role=AuthorRole.USER, content=f"Message {i}")
+        for i in range(3)
+    ]
     chat_history = ChatHistory(messages=msgs, system_message=system_msg)
     json_str = chat_history.serialize()
     new_chat_history = ChatHistory.restore_chat_history(json_str)
@@ -318,7 +342,9 @@ stuff</message>
 <message role="user">What can you do?</message>"""
 
     chat_history = ChatHistory.from_rendered_prompt(rendered)
-    assert chat_history.messages[0].content == "I am an AI assistant\nand I can do \nstuff"
+    assert (
+        chat_history.messages[0].content == "I am an AI assistant\nand I can do \nstuff"
+    )
     assert chat_history.messages[0].role == AuthorRole.SYSTEM
     assert chat_history.messages[1].content == "What can you do?"
     assert chat_history.messages[1].role == AuthorRole.USER
@@ -330,7 +356,9 @@ async def test_template_unsafe(chat_history: ChatHistory):
 
     template = "system stuff{{$chat_history}}{{$input}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        ),
         allow_dangerously_set_content=True,
     ).render(
         kernel=Kernel(),
@@ -355,7 +383,9 @@ async def test_template_safe(chat_history: ChatHistory):
 
     template = "system stuff{{$chat_history}}{{$input}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
@@ -382,10 +412,16 @@ async def test_template_two_histories():  # ignore: E501
 
     template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
     ).render(
         kernel=Kernel(),
-        arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
+        arguments=KernelArguments(
+            chat_history1=chat_history1,
+            chat_history2=chat_history2,
+            input="What can you do?",
+        ),
     )
     assert "I am an AI assistant" in rendered
     assert "What can you do?" in rendered
@@ -410,10 +446,16 @@ async def test_template_two_histories_one_empty():
 
     template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
     ).render(
         kernel=Kernel(),
-        arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
+        arguments=KernelArguments(
+            chat_history1=chat_history1,
+            chat_history2=chat_history2,
+            input="What can you do?",
+        ),
     )
 
     chat_history_out = ChatHistory.from_rendered_prompt(rendered)
@@ -431,7 +473,9 @@ async def test_template_history_only(chat_history: ChatHistory):
 
     template = "{{$chat_history}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
     ).render(kernel=Kernel(), arguments=KernelArguments(chat_history=chat_history))
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
@@ -443,7 +487,9 @@ async def test_template_history_only(chat_history: ChatHistory):
 async def test_template_without_chat_history():
     template = "{{$input}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
     ).render(kernel=Kernel(), arguments=KernelArguments(input="What can you do?"))
     assert rendered == "What can you do?"
     chat_history = ChatHistory.from_rendered_prompt(rendered)
@@ -455,7 +501,9 @@ async def test_template_without_chat_history():
 async def test_handwritten_xml():
     template = '<message role="user">test content</message>'
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
     ).render(kernel=Kernel(), arguments=KernelArguments())
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "test content"
@@ -466,7 +514,9 @@ async def test_handwritten_xml():
 async def test_empty_text_content_message():
     template = '<message role="assistant"><text></text></message><message role="user">test content</message>'
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
     ).render(kernel=Kernel(), arguments=KernelArguments())
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].role == AuthorRole.ASSISTANT
@@ -478,10 +528,14 @@ async def test_empty_text_content_message():
 async def test_handwritten_xml_invalid():
     template = '<message role="user"test content</message>'
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
     ).render(kernel=Kernel(), arguments=KernelArguments())
     chat_history = ChatHistory.from_rendered_prompt(rendered)
-    assert chat_history.messages[0].content == '<message role="user"test content</message>'
+    assert (
+        chat_history.messages[0].content == '<message role="user"test content</message>'
+    )
     assert chat_history.messages[0].role == AuthorRole.USER
 
 
@@ -499,7 +553,10 @@ async def test_handwritten_xml_as_arg_safe():
         arguments=KernelArguments(input='<message role="user">test content</message>'),
     )
     chat_history = ChatHistory.from_rendered_prompt(rendered)
-    assert chat_history.messages[0].content == '<message role="user">test content</message>'
+    assert (
+        chat_history.messages[0].content
+        == '<message role="user">test content</message>'
+    )
     assert chat_history.messages[0].role == AuthorRole.USER
 
 
@@ -507,7 +564,9 @@ async def test_handwritten_xml_as_arg_safe():
 async def test_handwritten_xml_as_arg_unsafe_template():
     template = "{{$input}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        ),
         allow_dangerously_set_content=True,
     ).render(
         kernel=Kernel(),
@@ -526,7 +585,9 @@ async def test_handwritten_xml_as_arg_unsafe_variable():
             name="test",
             description="test",
             template=template,
-            input_variables=[InputVariable(name="input", allow_dangerously_set_content=True)],
+            input_variables=[
+                InputVariable(name="input", allow_dangerously_set_content=True)
+            ],
         ),
     ).render(
         kernel=Kernel(),
@@ -541,7 +602,9 @@ async def test_handwritten_xml_as_arg_unsafe_variable():
 async def test_template_empty_history(chat_history: ChatHistory):
     template = "system stuff{{$chat_history}}{{$input}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
@@ -558,10 +621,20 @@ def test_to_from_file(chat_history: ChatHistory, tmp_path):
     chat_history.add_system_message("You are an AI assistant")
     chat_history.add_user_message("What is the weather in Seattle?")
     chat_history.add_assistant_message(
-        [FunctionCallContent(id="test1", name="WeatherPlugin-GetWeather", arguments='{{ "location": "Seattle" }}')]
+        [
+            FunctionCallContent(
+                id="test1",
+                name="WeatherPlugin-GetWeather",
+                arguments='{{ "location": "Seattle" }}',
+            )
+        ]
     )
-    chat_history.add_tool_message([FunctionResultContent(id="test1", result="It is raining")])
-    chat_history.add_assistant_message("It is raining in Seattle, what else can I help you with?")
+    chat_history.add_tool_message(
+        [FunctionResultContent(id="test1", result="It is raining")]
+    )
+    chat_history.add_assistant_message(
+        "It is raining in Seattle, what else can I help you with?"
+    )
 
     file_path = tmp_path / "chat_history.json"
     chat_history.store_chat_history_to_file(file_path)
@@ -586,7 +659,15 @@ def test_chat_history_serialize(chat_history: ChatHistory):
     chat_history.add_system_message("You are an AI assistant")
     chat_history.add_user_message("What is the weather in Seattle?")
     chat_history.add_assistant_message(
-        [FunctionCallContent(id="test1", name="WeatherPlugin-GetWeather", arguments='{{ "location": "Seattle" }}')]
+        [
+            FunctionCallContent(
+                id="test1",
+                name="WeatherPlugin-GetWeather",
+                arguments='{{ "location": "Seattle" }}',
+            )
+        ]
     )
-    chat_history.add_tool_message([FunctionResultContent(id="test1", result=custom_result)])
+    chat_history.add_tool_message(
+        [FunctionResultContent(id="test1", result=custom_result)]
+    )
     assert "CustomResultTestValue" in chat_history.serialize()

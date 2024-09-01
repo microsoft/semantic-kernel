@@ -10,10 +10,11 @@ from typing import Any, TypeVar
 if sys.version < "3.11":
     from typing_extensions import Self  # pragma: no cover
 else:
-    from typing import Self  # pragma: no cover
+    from typing import Self  # type: ignore # pragma: no cover
 
 from pydantic import Field, ValidationError, field_validator, model_validator
 from pydantic_core import Url, PydanticCustomError
+
 
 class CustomUrl(Url):
     @classmethod
@@ -21,7 +22,10 @@ class CustomUrl(Url):
         try:
             return super().validate(value)
         except PydanticCustomError:
-            raise ValueError("Invalid URL provided. Please check the format and try again.")
+            raise ValueError(
+                "Invalid URL provided. Please check the format and try again."
+            )
+
 
 from semantic_kernel.exceptions import ContentInitializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -52,7 +56,9 @@ class DataUri(KernelBaseModel, validate_assignment=True):
     def _validate_data(cls, values: dict[str, Any]) -> dict[str, Any]:
         """Validate the data."""
         if not values.get("data_bytes") and not values.get("data_str"):
-            raise ContentInitializationError("Either data_bytes or data_str must be provided.")
+            raise ContentInitializationError(
+                "Either data_bytes or data_str must be provided."
+            )
         return values
 
     @model_validator(mode="after")
@@ -74,7 +80,9 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         return self
 
     @field_validator("parameters", mode="before")
-    def _validate_parameters(cls, value: list[str] | dict[str, str] | None = None) -> dict[str, str]:
+    def _validate_parameters(
+        cls, value: list[str] | dict[str, str] | None = None
+    ) -> dict[str, str]:
         if not value:
             return {}
         if isinstance(value, dict):
@@ -86,13 +94,17 @@ class DataUri(KernelBaseModel, validate_assignment=True):
             if not item:
                 continue
             if "=" not in item:
-                raise ContentInitializationError("Invalid data uri format. The parameter is missing a value.")
+                raise ContentInitializationError(
+                    "Invalid data uri format. The parameter is missing a value."
+                )
             name, val = item.split("=", maxsplit=1)
             new[name] = val
         return new
 
     @classmethod
-    def from_data_uri(cls: type[_T], data_uri: str | Url, default_mime_type: str = "text/plain") -> _T:
+    def from_data_uri(
+        cls: type[_T], data_uri: str | Url, default_mime_type: str = "text/plain"
+    ) -> _T:
         """Create a DataUri object from a data URI string or pydantic URL."""
         if isinstance(data_uri, str):
             try:
@@ -102,7 +114,9 @@ class DataUri(KernelBaseModel, validate_assignment=True):
 
         data = data_uri.path
         if not data or "," not in data:
-            raise ContentInitializationError("Invalid data uri format. The data is missing.")
+            raise ContentInitializationError(
+                "Invalid data uri format. The data is missing."
+            )
 
         pattern = "(((?P<mime_type>[a-zA-Z]+/[a-zA-Z-]+)(?P<parameters>(;[a-zA-Z0-9]+=+[a-zA-Z0-9]+)*))?(;+(?P<data_format>.*)))?(,(?P<data_str>.*))"  # noqa: E501
         match = re.match(pattern, data)

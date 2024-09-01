@@ -9,7 +9,9 @@ from semantic_kernel.const import USER_AGENT
 # Note that if this environment variable does not exist, telemetry is enabled.
 TELEMETRY_DISABLED_ENV_VAR = "AZURE_TELEMETRY_DISABLED"
 
-IS_TELEMETRY_ENABLED = os.environ.get(TELEMETRY_DISABLED_ENV_VAR, "false").lower() not in ["true", "1"]
+IS_TELEMETRY_ENABLED = os.environ.get(
+    TELEMETRY_DISABLED_ENV_VAR, "false"
+).lower() not in ["true", "1"]
 
 HTTP_USER_AGENT = "semantic-kernel-python"
 
@@ -40,7 +42,9 @@ def prepend_semantic_kernel_to_user_agent(headers: dict[str, Any]):
         The modified headers dictionary with "semantic-kernel-python/{version}" prepended to the User-Agent.
     """
     headers[USER_AGENT] = (
-        f"{SEMANTIC_KERNEL_USER_AGENT} {headers[USER_AGENT]}" if USER_AGENT in headers else SEMANTIC_KERNEL_USER_AGENT
+        f"{SEMANTIC_KERNEL_USER_AGENT} {headers[USER_AGENT]}"
+        if USER_AGENT in headers
+        else SEMANTIC_KERNEL_USER_AGENT
     )
 
     return headers

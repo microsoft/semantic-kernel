@@ -77,8 +77,12 @@ async def test_invoke_multi_step_plan_with_arguments(kernel: Kernel):
 
     plan = Plan(name="test")
 
-    new_step = Plan(name="test", function=test_function, parameters=KernelArguments(amount=10))
-    new_step2 = Plan(name="test", function=test_function2, parameters=KernelArguments(amount=5))
+    new_step = Plan(
+        name="test", function=test_function, parameters=KernelArguments(amount=10)
+    )
+    new_step2 = Plan(
+        name="test", function=test_function2, parameters=KernelArguments(amount=5)
+    )
 
     plan.add_steps([new_step, new_step2])
     result = await plan.invoke(kernel, KernelArguments(input=2))

@@ -15,7 +15,9 @@ try:
 except ImportError:
     chromadb_installed = False
 
-pytestmark = pytest.mark.skipif(not chromadb_installed, reason="chromadb is not installed")
+pytestmark = pytest.mark.skipif(
+    not chromadb_installed, reason="chromadb is not installed"
+)
 
 
 @pytest.fixture
@@ -193,7 +195,9 @@ async def test_get_nearest_matches(setup_chroma, memory_record1, memory_record2)
 
     await memory.upsert_batch(collection.name, [memory_record1, memory_record2])
 
-    results = await memory.get_nearest_matches("test_collection", np.array([0.5, 0.5]), limit=2)
+    results = await memory.get_nearest_matches(
+        "test_collection", np.array([0.5, 0.5]), limit=2
+    )
 
     assert len(results) == 2
     assert isinstance(results[0][0], MemoryRecord)

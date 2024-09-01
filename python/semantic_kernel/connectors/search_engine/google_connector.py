@@ -7,8 +7,13 @@ from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
-from semantic_kernel.connectors.search_engine.google_search_settings import GoogleSearchSettings
-from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.connectors.search_engine.google_search_settings import (
+    GoogleSearchSettings,
+)
+from semantic_kernel.exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidRequestError,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -44,12 +49,16 @@ class GoogleConnector(ConnectorBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise ServiceInitializationError("Failed to create Google Search settings.") from ex
+            raise ServiceInitializationError(
+                "Failed to create Google Search settings."
+            ) from ex
 
         if not self._settings.search_engine_id:
             raise ServiceInitializationError("Google search engine ID cannot be null.")
 
-    async def search(self, query: str, num_results: int = 1, offset: int = 0) -> list[str]:
+    async def search(
+        self, query: str, num_results: int = 1, offset: int = 0
+    ) -> list[str]:
         """Returns the search results of the query provided by pinging the Google Custom search API.
 
         Args:
@@ -64,9 +73,13 @@ class GoogleConnector(ConnectorBase):
             raise ServiceInvalidRequestError("query cannot be 'None' or empty.")
 
         if num_results <= 0:
-            raise ServiceInvalidRequestError("num_results value must be greater than 0.")
+            raise ServiceInvalidRequestError(
+                "num_results value must be greater than 0."
+            )
         if num_results > 10:
-            raise ServiceInvalidRequestError("num_results value must be less than or equal to 10.")
+            raise ServiceInvalidRequestError(
+                "num_results value must be less than or equal to 10."
+            )
 
         if offset < 0:
             raise ServiceInvalidRequestError("offset must be greater than 0.")
@@ -100,7 +113,11 @@ class GoogleConnector(ConnectorBase):
             raise ServiceInvalidRequestError("Failed to get search results.") from ex
         except RequestError as ex:
             logger.error(f"Client error occurred: {ex}")
-            raise ServiceInvalidRequestError("A client error occurred while getting search results.") from ex
+            raise ServiceInvalidRequestError(
+                "A client error occurred while getting search results."
+            ) from ex
         except Exception as ex:
             logger.error(f"An unexpected error occurred: {ex}")
-            raise ServiceInvalidRequestError("An unexpected error occurred while getting search results.") from ex
+            raise ServiceInvalidRequestError(
+                "An unexpected error occurred while getting search results."
+            ) from ex

@@ -5,7 +5,9 @@ import os
 import pytest
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
+    EmbeddingGeneratorBase,
+)
 from semantic_kernel.connectors.ai.mistral_ai import MistralAITextEmbedding
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
 from semantic_kernel.kernel import Kernel
@@ -19,22 +21,30 @@ except KeyError:
     mistral_ai_setup = False
 
 
-pytestmark = pytest.mark.parametrize("embeddings_generator",
+pytestmark = pytest.mark.parametrize(
+    "embeddings_generator",
     [
         pytest.param(
             MistralAITextEmbedding() if mistral_ai_setup else None,
-            marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI environment variables not set"),
-            id="MistralEmbeddings"
+            marks=pytest.mark.skipif(
+                not mistral_ai_setup, reason="Mistral AI environment variables not set"
+            ),
+            id="MistralEmbeddings",
         )
-    ]
+    ],
 )
 
 
 @pytest.mark.asyncio(scope="module")
-async def test_embedding_service(kernel: Kernel, embeddings_generator: EmbeddingGeneratorBase):
+async def test_embedding_service(
+    kernel: Kernel, embeddings_generator: EmbeddingGeneratorBase
+):
     kernel.add_service(embeddings_generator)
 
-    memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embeddings_generator)
+    memory = SemanticTextMemory(
+        storage=sk.memory.VolatileMemoryStore(),
+        embeddings_generator=embeddings_generator,
+    )
     kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     await memory.save_reference(

@@ -7,19 +7,13 @@ from semantic_kernel.exceptions.kernel_exceptions import KernelException
 class BlockException(KernelException):
     """Base class for all block exceptions."""
 
-    pass
-
 
 class BlockSyntaxError(BlockException):
     """A invalid block syntax was found."""
 
-    pass
-
 
 class BlockRenderException(BlockException):
     """An error occurred while rendering a block."""
-
-    pass
 
 
 class VarBlockSyntaxError(BlockSyntaxError):
@@ -36,8 +30,6 @@ The content provided was: {content}",
 
 class VarBlockRenderError(BlockRenderException):
     """An error occurred while rendering a VarBlock."""
-
-    pass
 
 
 class ValBlockSyntaxError(BlockSyntaxError):
@@ -82,55 +74,37 @@ The content provided was: {content}",
 class CodeBlockSyntaxError(BlockSyntaxError):
     """A invalid CodeBlock syntax was found."""
 
-    pass
-
 
 class CodeBlockTokenError(BlockException):
     """An error occurred while tokenizing a CodeBlock."""
-
-    pass
 
 
 class CodeBlockRenderException(BlockRenderException):
     """An error occurred while rendering a CodeBlock."""
 
-    pass
-
 
 class TemplateSyntaxError(BlockSyntaxError):
     """A invalid Template syntax was found."""
-
-    pass
 
 
 class TemplateRenderException(BlockRenderException):
     """An error occurred while rendering a Template."""
 
-    pass
-
 
 class HandlebarsTemplateSyntaxError(BlockSyntaxError):
     """A invalid HandlebarsTemplate syntax was found."""
-
-    pass
 
 
 class HandlebarsTemplateRenderException(BlockRenderException):
     """An error occurred while rendering a HandlebarsTemplate."""
 
-    pass
-
 
 class Jinja2TemplateSyntaxError(BlockSyntaxError):
     """A invalid Jinja2Template syntax was found."""
 
-    pass
-
 
 class Jinja2TemplateRenderException(BlockRenderException):
     """An error occurred while rendering a Jinja2Template."""
-
-    pass
 
 
 __all__ = [

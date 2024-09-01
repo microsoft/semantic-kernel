@@ -2,7 +2,9 @@
 	"image": "mcr.microsoft.com/devcontainers/universal:2",
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {},
-		"ghcr.io/devcontainers/features/dotnet:1": {
+		"ghcr.io/jayree/devcontainer-features/npm-registry:1": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
+		"ghcr.io/devcontainers/features/dotnet:2.1.3": {
 			"version": "8"
 		},
 		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {}
@@ -16,7 +18,9 @@
 				"vscjava.vscode-gradle",
 				"GitHub.copilot-chat",
 				"GitHub.copilot",
-				"franneck94.c-cpp-runner"
+				"franneck94.c-cpp-runner",
+				"ms-python.debugpy",
+				"atariq11700.debugpy-old"
 			]
 		}
 	},

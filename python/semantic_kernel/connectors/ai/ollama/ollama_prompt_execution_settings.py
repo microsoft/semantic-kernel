@@ -2,7 +2,9 @@
 
 from typing import Any, Literal
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 
 
 class OllamaPromptExecutionSettings(PromptExecutionSettings):
@@ -10,6 +12,9 @@ class OllamaPromptExecutionSettings(PromptExecutionSettings):
 
     format: Literal["json"] | None = None
     options: dict[str, Any] | None = None
+
+    # TODO(@taochen): Add individual properties for execution settings and
+    # convert them to the appropriate types in the options dictionary.
 
 
 class OllamaTextPromptExecutionSettings(OllamaPromptExecutionSettings):

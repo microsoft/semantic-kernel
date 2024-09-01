@@ -7,17 +7,29 @@ from typing import Any
 from openai import AsyncOpenAI
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import OpenAIChatCompletionBase
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
-from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
+    OpenAIChatCompletionBase,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
+    OpenAIConfigBase,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
+    OpenAIModelTypes,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
+    OpenAITextCompletionBase,
+)
+from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import (
+    OpenAISettings,
+)
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
+class OpenAIChatCompletion(
+    OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase
+):
     """OpenAI Chat completion class."""
 
     def __init__(
@@ -57,7 +69,9 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
+            raise ServiceInitializationError(
+                "Failed to create OpenAI settings.", ex
+            ) from ex
 
         if not async_client and not openai_settings.api_key:
             raise ServiceInitializationError("The OpenAI API key is required.")
@@ -66,7 +80,11 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
 
         super().__init__(
             ai_model_id=openai_settings.chat_model_id,
-            api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+            api_key=(
+                openai_settings.api_key.get_secret_value()
+                if openai_settings.api_key
+                else None
+            ),
             org_id=openai_settings.org_id,
             service_id=service_id,
             ai_model_type=OpenAIModelTypes.CHAT,

@@ -4,13 +4,19 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any
 
+from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
-    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+    from semantic_kernel.contents.streaming_chat_message_content import (
+        StreamingChatMessageContent,
+    )
 
 
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
@@ -34,10 +40,12 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             A list of chat message contents representing the response(s) from the LLM.
         """
-        pass
 
     async def get_chat_message_content(
-        self, chat_history: "ChatHistory", settings: "PromptExecutionSettings", **kwargs: Any
+        self,
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+        **kwargs: Any,
     ) -> "ChatMessageContent | None":
         """This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
@@ -50,7 +58,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             A string representing the response from the LLM.
         """
-        results = await self.get_chat_message_contents(chat_history=chat_history, settings=settings, **kwargs)
+        results = await self.get_chat_message_contents(
+            chat_history=chat_history, settings=settings, **kwargs
+        )
         if results:
             return results[0]
         # this should not happen, should error out before returning an empty list
@@ -93,9 +103,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Yields:
             A stream representing the response(s) from the LLM.
         """
-        async for streaming_chat_message_contents in self.get_streaming_chat_message_contents(
-            chat_history, settings, **kwargs
-        ):
+        async for (
+            streaming_chat_message_contents
+        ) in self.get_streaming_chat_message_contents(chat_history, settings, **kwargs):
             if streaming_chat_message_contents:
                 yield streaming_chat_message_contents[0]
             else:
@@ -126,4 +136,11 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             prepared_chat_history (Any): The prepared chat history for a request.
         """
-        return [message.to_dict(role_key=role_key, content_key=content_key) for message in chat_history.messages]
+        return [
+            message.to_dict(role_key=role_key, content_key=content_key)
+            for message in chat_history.messages
+<<<<<<< main
+=======
+            if not isinstance(message, (AnnotationContent, FileReferenceContent))
+>>>>>>> upstream/main
+        ]

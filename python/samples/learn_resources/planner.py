@@ -4,7 +4,9 @@ import os
 
 from samples.sk_service_configurator import add_service
 from semantic_kernel import Kernel
-from semantic_kernel.planners.function_calling_stepwise_planner import FunctionCallingStepwisePlanner
+from semantic_kernel.planners.function_calling_stepwise_planner import (
+    FunctionCallingStepwisePlanner,
+)
 
 
 async def main():

@@ -4,13 +4,17 @@ from unittest.mock import Mock
 
 import pytest
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.exceptions import PlannerException, PlannerInvalidGoalError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.planners.sequential_planner.sequential_planner import SequentialPlanner
+from semantic_kernel.planners.sequential_planner.sequential_planner import (
+    SequentialPlanner,
+)
 
 
 def create_mock_function(
@@ -29,7 +33,9 @@ def create_mock_function(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("goal", ["Write a poem or joke and send it in an e-mail to Kai."])
+@pytest.mark.parametrize(
+    "goal", ["Write a poem or joke and send it in an e-mail to Kai."]
+)
 async def test_it_can_create_plan(goal, kernel: Kernel):
     # Arrange
     input = [
@@ -53,7 +59,9 @@ async def test_it_can_create_plan(goal, kernel: Kernel):
             function=create_mock_function(
                 kernel_function_metadata,
                 FunctionResult(
-                    function=kernel_function_metadata, value="MOCK FUNCTION CALLED", metadata={"arguments": {}}
+                    function=kernel_function_metadata,
+                    value="MOCK FUNCTION CALLED",
+                    metadata={"arguments": {}},
                 ),
             ),
         )
@@ -72,7 +80,11 @@ async def test_it_can_create_plan(goal, kernel: Kernel):
     mock_function_flow_function = Mock(spec=KernelFunction)
     mock_function_flow_function.invoke.return_value = FunctionResult(
         function=KernelFunctionMetadata(
-            name="func", plugin_name="plugin", description="", parameters=[], is_prompt=False
+            name="func",
+            plugin_name="plugin",
+            description="",
+            parameters=[],
+            is_prompt=False,
         ),
         value=plan_string,
         metadata={},
@@ -85,7 +97,10 @@ async def test_it_can_create_plan(goal, kernel: Kernel):
 
     # Assert
     assert plan.description == goal
-    assert any(step.name in expected_functions and step.plugin_name in expected_plugins for step in plan._steps)
+    assert any(
+        step.name in expected_functions and step.plugin_name in expected_plugins
+        for step in plan._steps
+    )
     for expected_function in expected_functions:
         assert any(step.name == expected_function for step in plan._steps)
     for expectedPlugin in expected_plugins:
@@ -109,7 +124,11 @@ async def test_invalid_xml_throws(kernel: Kernel):
     plan_string = "<plan>notvalid<</plan>"
     function_result = FunctionResult(
         function=KernelFunctionMetadata(
-            name="func", plugin_name="plugin", description="", parameters=[], is_prompt=False
+            name="func",
+            plugin_name="plugin",
+            description="",
+            parameters=[],
+            is_prompt=False,
         ),
         value=plan_string,
         metadata={},

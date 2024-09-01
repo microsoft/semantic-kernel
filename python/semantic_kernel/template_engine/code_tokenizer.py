@@ -109,9 +109,13 @@ class CodeTokenizer:
                     current_token_content.clear()
                 elif current_token_type == BlockTypes.FUNCTION_ID:
                     if Symbols.NAMED_ARG_BLOCK_SEPARATOR.value in current_token_content:
-                        blocks.append(NamedArgBlock(content="".join(current_token_content)))
+                        blocks.append(
+                            NamedArgBlock(content="".join(current_token_content))
+                        )
                     else:
-                        blocks.append(FunctionIdBlock(content="".join(current_token_content)))
+                        blocks.append(
+                            FunctionIdBlock(content="".join(current_token_content))
+                        )
                     current_token_content.clear()
 
                 space_separator_found = True
@@ -124,7 +128,9 @@ class CodeTokenizer:
 
             if current_token_type is None:
                 if not space_separator_found:
-                    raise CodeBlockSyntaxError("Tokens must be separated by one space least")
+                    raise CodeBlockSyntaxError(
+                        "Tokens must be separated by one space least"
+                    )
 
                 if current_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
                     # A quoted value starts here

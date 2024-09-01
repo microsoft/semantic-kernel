@@ -14,12 +14,21 @@ from pydantic import ValidationError
 from redis.asyncio.client import Redis
 
 from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
-from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection, RedisJsonCollection
+from semantic_kernel.connectors.memory.redis.redis_collection import (
+    RedisHashsetCollection,
+    RedisJsonCollection,
+)
 from semantic_kernel.connectors.memory.redis.utils import RedisWrapper
 from semantic_kernel.data.vector_store import VectorStore
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
+from semantic_kernel.data.vector_store_record_collection import (
+    VectorStoreRecordCollection,
+)
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    MemoryConnectorInitializationError,
+)
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -51,7 +60,9 @@ class RedisStore(VectorStore):
             super().__init__(redis_database=redis_database)
             return
         try:
-            from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
+            from semantic_kernel.connectors.memory.redis.redis_settings import (
+                RedisSettings,
+            )
 
             redis_settings = RedisSettings.create(
                 connection_string=connection_string,
@@ -59,12 +70,21 @@ class RedisStore(VectorStore):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise MemoryConnectorInitializationError("Failed to create Redis settings.", ex) from ex
-        super().__init__(redis_database=RedisWrapper.from_url(redis_settings.connection_string.get_secret_value()))
+            raise MemoryConnectorInitializationError(
+                "Failed to create Redis settings.", ex
+            ) from ex
+        super().__init__(
+            redis_database=RedisWrapper.from_url(
+                redis_settings.connection_string.get_secret_value()
+            )
+        )
 
     @override
     async def list_collection_names(self, **kwargs) -> Sequence[str]:
-        return [name.decode() for name in await self.redis_database.execute_command("FT._LIST")]
+        return [
+            name.decode()
+            for name in await self.redis_database.execute_command("FT._LIST")
+        ]
 
     @override
     def get_collection(
@@ -87,12 +107,14 @@ class RedisStore(VectorStore):
         """
         if collection_name not in self.vector_record_collections:
             if collection_type == RedisCollectionTypes.HASHSET:
-                self.vector_record_collections[collection_name] = RedisHashsetCollection(
-                    data_model_type=data_model_type,
-                    data_model_definition=data_model_definition,
-                    collection_name=collection_name,
-                    redis_database=self.redis_database,
-                    **kwargs,
+                self.vector_record_collections[collection_name] = (
+                    RedisHashsetCollection(
+                        data_model_type=data_model_type,
+                        data_model_definition=data_model_definition,
+                        collection_name=collection_name,
+                        redis_database=self.redis_database,
+                        **kwargs,
+                    )
                 )
             else:
                 self.vector_record_collections[collection_name] = RedisJsonCollection(

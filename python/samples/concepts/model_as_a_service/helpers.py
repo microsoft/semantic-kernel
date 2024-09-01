@@ -8,7 +8,9 @@ def formatted_system_message(subject: str):
     """
 
 
-def formatted_question(question: str, answer_a: str, answer_b: str, answer_c: str, answer_d: str):
+def formatted_question(
+    question: str, answer_a: str, answer_b: str, answer_c: str, answer_d: str
+):
     """Return a formatted question."""
     return f"""
     Question: {question}

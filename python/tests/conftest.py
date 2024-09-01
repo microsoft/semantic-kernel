@@ -8,8 +8,9 @@ from pytest import fixture
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
-    from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
-    from semantic_kernel.functions.kernel_function import KernelFunction
+    from semantic_kernel.filters.functions.function_invocation_context import (
+        FunctionInvocationContext,
+    )
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
@@ -42,7 +43,9 @@ def kernel_with_service(kernel: "Kernel", service: "AIServiceClientBase") -> "Ke
 
 
 @fixture(scope="function")
-def kernel_with_default_service(kernel: "Kernel", default_service: "AIServiceClientBase") -> "Kernel":
+def kernel_with_default_service(
+    kernel: "Kernel", default_service: "AIServiceClientBase"
+) -> "Kernel":
     kernel.add_service(default_service)
     return kernel
 
@@ -97,7 +100,9 @@ def create_mock_function() -> Callable:
     from semantic_kernel.contents.streaming_text_content import StreamingTextContent
     from semantic_kernel.functions.function_result import FunctionResult
     from semantic_kernel.functions.kernel_function import KernelFunction
-    from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+    from semantic_kernel.functions.kernel_function_metadata import (
+        KernelFunctionMetadata,
+    )
 
     async def stream_func(*args, **kwargs):
         yield [StreamingTextContent(choice_index=0, text="test", metadata={})]
@@ -127,7 +132,9 @@ def create_mock_function() -> Callable:
 
             async def _invoke_internal(self, context: "FunctionInvocationContext"):
                 self.call_count += 1
-                context.result = FunctionResult(function=kernel_function_metadata, value=value, metadata={})
+                context.result = FunctionResult(
+                    function=kernel_function_metadata, value=value, metadata={}
+                )
 
         return CustomKernelFunction(metadata=kernel_function_metadata)
 
@@ -159,6 +166,11 @@ def chat_history() -> "ChatHistory":
     from semantic_kernel.contents.chat_history import ChatHistory
 
     return ChatHistory()
+
+
+@fixture(scope="function")
+def prompt() -> str:
+    return "test prompt"
 
 
 # @fixture(autouse=True)
@@ -224,6 +236,7 @@ def azure_openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dic
         "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME": "test_chat_deployment",
         "AZURE_OPENAI_TEXT_DEPLOYMENT_NAME": "test_text_deployment",
         "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME": "test_embedding_deployment",
+        "AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME": "test_text_to_image_deployment",
         "AZURE_OPENAI_API_KEY": "test_api_key",
         "AZURE_OPENAI_ENDPOINT": "https://test-endpoint.com",
         "AZURE_OPENAI_API_VERSION": "2023-03-15-preview",
@@ -256,6 +269,7 @@ def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         "OPENAI_CHAT_MODEL_ID": "test_chat_model_id",
         "OPENAI_TEXT_MODEL_ID": "test_text_model_id",
         "OPENAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
+        "OPENAI_TEXT_TO_IMAGE_MODEL_ID": "test_text_to_image_model_id",
     }
 
     env_vars.update(override_env_param_dict)
@@ -296,7 +310,35 @@ def mistralai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 
 
 @fixture()
+<<<<<<< main
+def aca_python_sessions_unit_test_env(
+    monkeypatch, exclude_list, override_env_param_dict
+):
+=======
+def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for AnthropicSettings."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {"ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id", "ANTHROPIC_API_KEY": "test_api_key"}
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@fixture()
 def aca_python_sessions_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+>>>>>>> upstream/main
     """Fixture to set environment variables for ACA Python Unit Tests."""
     if exclude_list is None:
         exclude_list = []

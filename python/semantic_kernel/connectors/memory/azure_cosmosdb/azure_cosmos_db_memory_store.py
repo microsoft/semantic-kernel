@@ -6,9 +6,15 @@ from typing import Literal
 from numpy import ndarray
 from pymongo import MongoClient
 
-from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
-from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmosdb_settings import AzureCosmosDBSettings
-from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import MongoStoreApi
+from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import (
+    AzureCosmosDBStoreApi,
+)
+from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmosdb_settings import (
+    AzureCosmosDBSettings,
+)
+from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import (
+    MongoStoreApi,
+)
 from semantic_kernel.connectors.memory.azure_cosmosdb.utils import (
     CosmosDBSimilarityType,
     CosmosDBVectorSearchType,
@@ -58,7 +64,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
     ):
         """Initializes a new instance of the AzureCosmosDBMemoryStore class."""
         if vector_dimensions <= 0:
-            raise MemoryConnectorInitializationError("Vector dimensions must be a positive number.")
+            raise MemoryConnectorInitializationError(
+                "Vector dimensions must be a positive number."
+            )
         if database_name is None:
             raise MemoryConnectorInitializationError("Database Name cannot be empty.")
         if index_name is None:
@@ -100,7 +108,11 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
             )
 
             mongodb_client = MongoClient(
-                cosmosdb_settings.connection_string.get_secret_value() if cosmosdb_settings.connection_string else None,
+                (
+                    cosmosdb_settings.connection_string.get_secret_value()
+                    if cosmosdb_settings.connection_string
+                    else None
+                ),
                 appname=application_name,
             )
             database = mongodb_client[database_name]
@@ -117,7 +129,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
                 ef_search=ef_search,
             )
         else:
-            raise MemoryConnectorInitializationError(f"API type {cosmos_api} is not supported.")
+            raise MemoryConnectorInitializationError(
+                f"API type {cosmos_api} is not supported."
+            )
 
         store = AzureCosmosDBMemoryStore(
             api_store,
@@ -187,7 +201,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmos_store.upsert("", record)
 
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord]
+    ) -> list[str]:
         """Upsert a batch of records.
 
         Args:
@@ -199,7 +215,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmos_store.upsert_batch("", records)
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool
+    ) -> MemoryRecord:
         """Gets a record.
 
         Args:
@@ -212,7 +230,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmos_store.get("", key, with_embedding)
 
-    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
+    async def get_batch(
+        self, collection_name: str, keys: list[str], with_embeddings: bool
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Args:
@@ -269,7 +289,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             List[Tuple[MemoryRecord, float]]: The records and their relevance scores.
         """
-        return await self.cosmos_store.get_nearest_matches("", embedding, limit, min_relevance_score, with_embeddings)
+        return await self.cosmos_store.get_nearest_matches(
+            "", embedding, limit, min_relevance_score, with_embeddings
+        )
 
     async def get_nearest_match(
         self,
@@ -289,4 +311,6 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float]: The record and the relevance score.
         """
-        return await self.cosmos_store.get_nearest_match("", embedding, min_relevance_score, with_embedding)
+        return await self.cosmos_store.get_nearest_match(
+            "", embedding, min_relevance_score, with_embedding
+        )

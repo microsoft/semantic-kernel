@@ -8,7 +8,7 @@
         {
             "label": "Python: Run Checks",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
                 "run",
                 "pre-commit",
@@ -36,7 +36,7 @@
         {
             "label": "Python: Run Checks - Staged",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
                 "run",
                 "pre-commit",
@@ -63,7 +63,7 @@
         {
             "label": "Python: Run Mypy",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
                 "run",
                 "pre-commit",
@@ -92,21 +92,17 @@
         {
             "label": "Python: Install",
             "type": "shell",
-            "command": "poetry",
-            "args": [
-                "install",
-                "--all-extras"
-            ],
+            "command": "make install PYTHON_VERSION=${input:py_version}",
             "presentation": {
-                "reveal": "silent",
-                "panel": "shared"
+                "reveal": "always",
+                "panel": "new"
             },
             "problemMatcher": []
         },
         {
             "label": "Python: Tests - Unit",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
                 "run",
                 "pytest",
@@ -122,7 +118,7 @@
         {
             "label": "Python: Tests - Unit - Failed Only",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
                 "run",
                 "pytest",
@@ -140,7 +136,7 @@
         {
             "label": "Python: Tests - Code Coverage",
             "type": "shell",
-            "command": "poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/",
+            "command": "uv run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/",
             "group": "test",
             "presentation": {
                 "reveal": "always",
@@ -151,11 +147,17 @@
         {
             "label": "Python: Tests - All",
             "type": "shell",
-            "command": "poetry",
+            "command": "uv",
             "args": [
                 "run",
                 "pytest",
-                "tests/"
+                "tests/",
+                "-n",
+                "logical",
+                "--dist",
+                "loadfile",
+                "--dist",
+                "worksteal"
             ],
             "group": "test",
             "presentation": {
@@ -163,6 +165,19 @@
                 "panel": "shared"
             },
             "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "type": "pickString",
+            "options": [
+                "3.10",
+                "3.11",
+                "3.12"
+            ],
+            "id": "py_version",
+            "description": "Python version",
+            "default": "3.10"
         }
     ]
 }

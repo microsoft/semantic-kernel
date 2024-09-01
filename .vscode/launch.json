@@ -1,4 +1,5 @@
 {
+  "program": "",
   "version": "0.2.0",
   "configurations": [
     {
@@ -7,6 +8,14 @@
       "request": "launch",
       "cwd": "${workspaceFolder}",
       "target": "."
+      "name": "C#: Concept Samples",
+      "type": "clr",
+      "request": "launch",
+      "preLaunchTask": "build (Concepts)",
+      "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
+      "console": "internalConsole"
     },
     {
       "type": "lldb",
