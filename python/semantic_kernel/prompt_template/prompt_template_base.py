@@ -22,7 +22,6 @@ class PromptTemplateBase(KernelBaseModel, ABC):
     @abstractmethod
     async def render(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
         """Render the prompt template."""
-        pass
 
     def _get_trusted_arguments(
         self,
@@ -44,7 +43,9 @@ class PromptTemplateBase(KernelBaseModel, ABC):
 
         new_args = KernelArguments(settings=arguments.execution_settings)
         for name, value in arguments.items():
-            if isinstance(value, str) and self._should_escape(name, self.prompt_template_config.input_variables):
+            if isinstance(value, str) and self._should_escape(
+                name, self.prompt_template_config.input_variables
+            ):
                 new_args[name] = escape(value)
             else:
                 new_args[name] = value

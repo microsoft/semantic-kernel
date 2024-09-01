@@ -62,7 +62,9 @@ def test_enable_kernel_functions():
 
 
 def test_enable_functions():
-    fcb = FunctionCallBehavior.EnableFunctions(auto_invoke=True, filters={"excluded_plugins": ["test"]})
+    fcb = FunctionCallBehavior.EnableFunctions(
+        auto_invoke=True, filters={"excluded_plugins": ["test"]}
+    )
     assert fcb is not None
     assert fcb.enable_kernel_functions is True
     assert fcb.max_auto_invoke_attempts == 5
@@ -71,7 +73,9 @@ def test_enable_functions():
 
 
 def test_required_function():
-    fcb = FunctionCallBehavior.RequiredFunction(auto_invoke=True, function_fully_qualified_name="test")
+    fcb = FunctionCallBehavior.RequiredFunction(
+        auto_invoke=True, function_fully_qualified_name="test"
+    )
     assert fcb is not None
     assert fcb.enable_kernel_functions is True
     assert fcb.max_auto_invoke_attempts == 1
@@ -79,7 +83,11 @@ def test_required_function():
     assert fcb.function_fully_qualified_name == "test"
 
 
-def test_configure_default(function_call_behavior: FunctionCallBehavior, update_settings_callback, kernel: "Kernel"):
+def test_configure_default(
+    function_call_behavior: FunctionCallBehavior,
+    update_settings_callback,
+    kernel: "Kernel",
+):
     function_call_behavior.configure(kernel, update_settings_callback, None)
     assert not update_settings_callback.called
 
@@ -103,7 +111,9 @@ def test_configure_enable_kernel_functions(update_settings_callback, kernel: "Ke
     assert update_settings_callback.called
 
 
-def test_configure_enable_kernel_functions_skip(update_settings_callback, kernel: "Kernel"):
+def test_configure_enable_kernel_functions_skip(
+    update_settings_callback, kernel: "Kernel"
+):
     fcb = FunctionCallBehavior.EnableKernelFunctions()
     fcb.enable_kernel_functions = False
     fcb.configure(kernel, update_settings_callback, None)
@@ -111,26 +121,36 @@ def test_configure_enable_kernel_functions_skip(update_settings_callback, kernel
 
 
 def test_configure_enable_functions(update_settings_callback, kernel: "Kernel"):
-    fcb = FunctionCallBehavior.EnableFunctions(auto_invoke=True, filters={"excluded_plugins": ["test"]})
+    fcb = FunctionCallBehavior.EnableFunctions(
+        auto_invoke=True, filters={"excluded_plugins": ["test"]}
+    )
     fcb.configure(kernel, update_settings_callback, None)
     assert update_settings_callback.called
 
 
 def test_configure_enable_functions_skip(update_settings_callback, kernel: "Kernel"):
-    fcb = FunctionCallBehavior.EnableFunctions(auto_invoke=True, filters={"excluded_plugins": ["test"]})
+    fcb = FunctionCallBehavior.EnableFunctions(
+        auto_invoke=True, filters={"excluded_plugins": ["test"]}
+    )
     fcb.enable_kernel_functions = False
     fcb.configure(kernel, update_settings_callback, None)
     assert not update_settings_callback.called
 
 
 def test_configure_required_function(update_settings_callback, kernel: "Kernel"):
-    fcb = FunctionCallBehavior.RequiredFunction(auto_invoke=True, function_fully_qualified_name="test")
+    fcb = FunctionCallBehavior.RequiredFunction(
+        auto_invoke=True, function_fully_qualified_name="test"
+    )
     fcb.configure(kernel, update_settings_callback, None)
     assert update_settings_callback.called
 
 
-def test_configure_required_function_max_invoke_updated(update_settings_callback, kernel: "Kernel"):
-    fcb = FunctionCallBehavior.RequiredFunction(auto_invoke=True, function_fully_qualified_name="test")
+def test_configure_required_function_max_invoke_updated(
+    update_settings_callback, kernel: "Kernel"
+):
+    fcb = FunctionCallBehavior.RequiredFunction(
+        auto_invoke=True, function_fully_qualified_name="test"
+    )
     fcb.max_auto_invoke_attempts = 10
     fcb.configure(kernel, update_settings_callback, None)
     assert update_settings_callback.called
@@ -138,7 +158,9 @@ def test_configure_required_function_max_invoke_updated(update_settings_callback
 
 
 def test_configure_required_function_skip(update_settings_callback, kernel: "Kernel"):
-    fcb = FunctionCallBehavior.RequiredFunction(auto_invoke=True, function_fully_qualified_name="test")
+    fcb = FunctionCallBehavior.RequiredFunction(
+        auto_invoke=True, function_fully_qualified_name="test"
+    )
     fcb.enable_kernel_functions = False
     fcb.configure(kernel, update_settings_callback, None)
     assert not update_settings_callback.called

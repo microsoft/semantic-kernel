@@ -36,7 +36,10 @@ class HttpPlugin(KernelBaseModel):
         if not url:
             raise FunctionExecutionException("url cannot be `None` or empty")
 
-        async with aiohttp.ClientSession() as session, session.get(url, raise_for_status=True) as response:
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(url, raise_for_status=True) as response,
+        ):
             return await response.text()
 
     @kernel_function(description="Makes a POST request to a uri", name="postAsync")
@@ -60,7 +63,9 @@ class HttpPlugin(KernelBaseModel):
         data = json.dumps(body)
         async with (
             aiohttp.ClientSession() as session,
-            session.post(url, headers=headers, data=data, raise_for_status=True) as response,
+            session.post(
+                url, headers=headers, data=data, raise_for_status=True
+            ) as response,
         ):
             return await response.text()
 
@@ -86,12 +91,16 @@ class HttpPlugin(KernelBaseModel):
         data = json.dumps(body)
         async with (
             aiohttp.ClientSession() as session,
-            session.put(url, headers=headers, data=data, raise_for_status=True) as response,
+            session.put(
+                url, headers=headers, data=data, raise_for_status=True
+            ) as response,
         ):
             return await response.text()
 
     @kernel_function(description="Makes a DELETE request to a uri", name="deleteAsync")
-    async def delete(self, url: Annotated[str, "The URI to send the request to."]) -> str:
+    async def delete(
+        self, url: Annotated[str, "The URI to send the request to."]
+    ) -> str:
         """Sends an HTTP DELETE request to the specified URI and returns the response body as a string.
 
         Args:
@@ -102,5 +111,8 @@ class HttpPlugin(KernelBaseModel):
         """
         if not url:
             raise FunctionExecutionException("url cannot be `None` or empty")
-        async with aiohttp.ClientSession() as session, session.delete(url, raise_for_status=True) as response:
+        async with (
+            aiohttp.ClientSession() as session,
+            session.delete(url, raise_for_status=True) as response,
+        ):
             return await response.text()

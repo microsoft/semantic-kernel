@@ -6,7 +6,10 @@ from collections.abc import Callable
 from defusedxml import ElementTree as ET
 
 from semantic_kernel.exceptions import PlannerInvalidPlanError
-from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
+from semantic_kernel.exceptions.kernel_exceptions import (
+    KernelFunctionNotFoundError,
+    KernelPluginNotFoundError,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
@@ -45,9 +48,13 @@ class SequentialPlanParser:
                 try:
                     xml_doc = ET.fromstring("<xml>" + plan_xml + "</xml>")
                 except ET.ParseError:
-                    raise PlannerInvalidPlanError(f"Failed to parse plan xml strings: '{xml_string}' or '{plan_xml}'")
+                    raise PlannerInvalidPlanError(
+                        f"Failed to parse plan xml strings: '{xml_string}' or '{plan_xml}'"
+                    )
             else:
-                raise PlannerInvalidPlanError(f"Failed to parse plan xml string: '{xml_string}'")
+                raise PlannerInvalidPlanError(
+                    f"Failed to parse plan xml string: '{xml_string}'"
+                )
 
         solution = xml_doc.findall(".//" + SOLUTION_TAG)
 
@@ -65,17 +72,26 @@ class SequentialPlanParser:
                 if get_plugin_function:
                     try:
                         func = get_plugin_function(
-                            *SequentialPlanParser.get_plugin_function_names(plugin_function_name)
+                            *SequentialPlanParser.get_plugin_function_names(
+                                plugin_function_name
+                            )
                         )
                     except Exception as exc:
                         if allow_missing_functions:
                             plan.add_steps([Plan.from_goal(plugin_function_name)])
                             continue
-                        raise PlannerInvalidPlanError(f"Failed to find function '{plugin_function_name}'.") from exc
+                        raise PlannerInvalidPlanError(
+                            f"Failed to find function '{plugin_function_name}'."
+                        ) from exc
                 else:
                     try:
-                        func = kernel.get_function_from_fully_qualified_function_name(plugin_function_name)
-                    except (KernelFunctionNotFoundError, KernelPluginNotFoundError) as exc:
+                        func = kernel.get_function_from_fully_qualified_function_name(
+                            plugin_function_name
+                        )
+                    except (
+                        KernelFunctionNotFoundError,
+                        KernelPluginNotFoundError,
+                    ) as exc:
                         if allow_missing_functions:
                             plan.add_steps([Plan.from_goal(plugin_function_name)])
                             continue
@@ -115,6 +131,12 @@ class SequentialPlanParser:
     def get_plugin_function_names(plugin_function_name: str) -> tuple[str, str]:
         """Get the plugin and function names from the plugin function name."""
         plugin_function_name_parts = plugin_function_name.split("-")
-        plugin_name = plugin_function_name_parts[0] if len(plugin_function_name_parts) > 0 else ""
-        function_name = plugin_function_name_parts[1] if len(plugin_function_name_parts) > 1 else plugin_function_name
+        plugin_name = (
+            plugin_function_name_parts[0] if len(plugin_function_name_parts) > 0 else ""
+        )
+        function_name = (
+            plugin_function_name_parts[1]
+            if len(plugin_function_name_parts) > 1
+            else plugin_function_name
+        )
         return plugin_name, function_name

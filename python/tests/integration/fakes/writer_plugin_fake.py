@@ -22,7 +22,11 @@ class WriterPluginFake:
         self,
         input: Annotated[str, "The input of the function"],
         name: Annotated[str, "The name of the function"] = "endMarker",
-        description: Annotated[str, "The marker to use to end each chapter"] = "Write an outline for a novel.",
-        default_value: Annotated[str, "The default value used for the function"] = "<!--===ENDPART===-->",
+        description: Annotated[
+            str, "The marker to use to end each chapter"
+        ] = "Write an outline for a novel.",
+        default_value: Annotated[
+            str, "The default value used for the function"
+        ] = "<!--===ENDPART===-->",
     ) -> str:
         return f"Novel outline: {input}"

@@ -6,24 +6,42 @@ from typing import Any
 import pytest
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_completion import GoogleAITextCompletion
-from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_text_completion import VertexAITextCompletion
+from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_completion import (
+    GoogleAITextCompletion,
+)
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_text_completion import (
+    VertexAITextCompletion,
+)
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
-from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import HuggingFaceTextCompletion
+from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import (
+    HuggingFacePromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import (
+    HuggingFaceTextCompletion,
+)
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import AzureTextCompletion
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
+    AzureTextCompletion,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
+    OpenAITextCompletion,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.contents import TextContent
 from tests.integration.completions.test_utils import retry
 
@@ -45,7 +63,9 @@ def setup(
 
 
 @pytest.fixture(scope="module")
-def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]]:
+def services() -> (
+    dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]]
+):
     return {
         "openai": (OpenAITextCompletion(), OpenAITextPromptExecutionSettings),
         "azure": (AzureTextCompletion(), OpenAITextPromptExecutionSettings),
@@ -154,7 +174,16 @@ async def test_text_completion(
 ):
     setup(kernel, service, execution_settings_kwargs, services)
     for message, output in zip(inputs, outputs):
-        await retry(partial(execute_invoke, kernel=kernel, input=message, output=output, stream=False), retries=5)
+        await retry(
+            partial(
+                execute_invoke,
+                kernel=kernel,
+                input=message,
+                output=output,
+                stream=False,
+            ),
+            retries=5,
+        )
 
 
 @pytest.mark.asyncio(scope="module")
@@ -168,19 +197,28 @@ async def test_streaming_text_completion(
 ):
     setup(kernel, service, execution_settings_kwargs, services)
     for message, output in zip(inputs, outputs):
-        await retry(partial(execute_invoke, kernel=kernel, input=message, output=output, stream=True), retries=5)
+        await retry(
+            partial(
+                execute_invoke, kernel=kernel, input=message, output=output, stream=True
+            ),
+            retries=5,
+        )
 
 
 async def execute_invoke(kernel: Kernel, input: str, output: str, stream: bool) -> None:
     if stream:
-        invocation = kernel.invoke_stream(function_name="text", plugin_name="text", input=input)
+        invocation = kernel.invoke_stream(
+            function_name="text", plugin_name="text", input=input
+        )
         parts = [part[0] async for part in invocation]
         if parts:
             response = reduce(lambda p, r: p + r, parts)
         else:
             raise AssertionError("No response")
     else:
-        invocation = await kernel.invoke(function_name="text", plugin_name="text", input=input)
+        invocation = await kernel.invoke(
+            function_name="text", plugin_name="text", input=input
+        )
         assert invocation is not None
         response = invocation.value[0]
     print(response)
@@ -188,4 +226,6 @@ async def execute_invoke(kernel: Kernel, input: str, output: str, stream: bool) 
         assert response.text is not None
         assert output in response.text
         return
-    raise AssertionError(f"Unexpected output: response: {invocation}, type: {type(invocation)}")
+    raise AssertionError(
+        f"Unexpected output: response: {invocation}, type: {type(invocation)}"
+    )

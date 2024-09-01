@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests;
@@ -23,9 +21,9 @@ public class AggregatorAgentTests
     [InlineData(AggregatorMode.Flat, 2)]
     public async Task VerifyAggregatorAgentUsageAsync(AggregatorMode mode, int modeOffset)
     {
-        Agent agent1 = CreateMockAgent().Object;
-        Agent agent2 = CreateMockAgent().Object;
-        Agent agent3 = CreateMockAgent().Object;
+        Agent agent1 = CreateMockAgent();
+        Agent agent2 = CreateMockAgent();
+        Agent agent3 = CreateMockAgent();
 
         AgentGroupChat groupChat =
             new(agent1, agent2, agent3)
@@ -44,7 +42,7 @@ public class AggregatorAgentTests
         AgentGroupChat uberChat = new();
 
         // Add message to outer chat (no agent has joined)
-        uberChat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test uber"));
+        uberChat.Add(new ChatMessageContent(AuthorRole.User, "test uber"));
 
         var messages = await uberChat.GetChatMessagesAsync().ToArrayAsync();
         Assert.Single(messages);
@@ -56,7 +54,7 @@ public class AggregatorAgentTests
         Assert.Empty(messages); // Agent hasn't joined chat, no broadcast
 
         // Add message to inner chat (not visible to parent)
-        groupChat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test inner"));
+        groupChat.Add(new ChatMessageContent(AuthorRole.User, "test inner"));
 
         messages = await uberChat.GetChatMessagesAsync().ToArrayAsync();
         Assert.Single(messages);
@@ -81,13 +79,5 @@ public class AggregatorAgentTests
         Assert.Equal(5, messages.Length); // Total messages on inner chat once synchronized (agent equivalent)
     }
 
-    private static Mock<ChatHistoryKernelAgent> CreateMockAgent()
-    {
-        Mock<ChatHistoryKernelAgent> agent = new();
-
-        ChatMessageContent[] messages = [new ChatMessageContent(AuthorRole.Assistant, "test agent")];
-        agent.Setup(a => a.InvokeAsync(It.IsAny<ChatHistory>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
-
-        return agent;
-    }
+    private static MockAgent CreateMockAgent() => new() { Response = [new(AuthorRole.Assistant, "test")] };
 }

@@ -4,7 +4,9 @@ import asyncio
 
 import semantic_kernel as sk
 from samples.sk_service_configurator import add_service
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins import ConversationSummaryPlugin
 from semantic_kernel.prompt_template.input_variable import InputVariable
@@ -21,7 +23,10 @@ async def main():
 
     service_id = "default"
     execution_settings = PromptExecutionSettings(
-        service_id=service_id, max_tokens=ConversationSummaryPlugin._max_tokens, temperature=0.1, top_p=0.5
+        service_id=service_id,
+        max_tokens=ConversationSummaryPlugin._max_tokens,
+        temperature=0.1,
+        top_p=0.5,
     )
 
     template = (
@@ -39,13 +44,19 @@ async def main():
         execution_settings=execution_settings,
         InputVariables=[
             InputVariable(name="input", description="The user input", is_required=True),
-            InputVariable(name="history", description="The history of the conversation", is_required=True),
+            InputVariable(
+                name="history",
+                description="The history of the conversation",
+                is_required=True,
+            ),
         ],
     )
 
     # Import the ConversationSummaryPlugin
     kernel.add_plugin(
-        ConversationSummaryPlugin(kernel=kernel, prompt_template_config=prompt_template_config),
+        ConversationSummaryPlugin(
+            kernel=kernel, prompt_template_config=prompt_template_config
+        ),
         plugin_name="ConversationSummaryPlugin",
     )
 

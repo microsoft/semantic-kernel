@@ -7,7 +7,10 @@ from promptflow import tool
 from promptflow.connections import AzureOpenAIConnection
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureTextCompletion
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureChatCompletion,
+    AzureTextCompletion,
+)
 from semantic_kernel.planning.sequential_planner import SequentialPlanner
 
 

@@ -6,7 +6,10 @@ import pytest
 
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.planners.planner_extensions import PlannerFunctionExtension, PlannerKernelExtension
+from semantic_kernel.planners.planner_extensions import (
+    PlannerFunctionExtension,
+    PlannerKernelExtension,
+)
 from semantic_kernel.planners.planner_options import PlannerOptions
 
 
@@ -17,8 +20,12 @@ def sample_function_metadata():
         plugin_name="sample_plugin",
         description="A sample function",
         parameters=[
-            KernelParameterMetadata(name="param1", description="Parameter 1", default_value=None),
-            KernelParameterMetadata(name="param2", description="Parameter 2", default_value="default"),
+            KernelParameterMetadata(
+                name="param1", description="Parameter 1", default_value=None
+            ),
+            KernelParameterMetadata(
+                name="param2", description="Parameter 2", default_value="default"
+            ),
         ],
         is_prompt=False,
         is_asynchronous=True,
@@ -34,8 +41,14 @@ def sample_function_metadata():
                 plugin_name="sample_plugin",
                 description="A sample function",
                 parameters=[
-                    KernelParameterMetadata(name="param1", description="Parameter 1", default_value=None),
-                    KernelParameterMetadata(name="param2", description="Parameter 2", default_value="default"),
+                    KernelParameterMetadata(
+                        name="param1", description="Parameter 1", default_value=None
+                    ),
+                    KernelParameterMetadata(
+                        name="param2",
+                        description="Parameter 2",
+                        default_value="default",
+                    ),
                 ],
                 is_prompt=False,
                 is_asynchronous=True,
@@ -58,8 +71,14 @@ def test_to_manual_string(function, expected_output):
                 plugin_name="sample_plugin",
                 description="A sample function",
                 parameters=[
-                    KernelParameterMetadata(name="param1", description="Parameter 1", default_value=None),
-                    KernelParameterMetadata(name="param2", description="Parameter 2", default_value="default"),
+                    KernelParameterMetadata(
+                        name="param1", description="Parameter 1", default_value=None
+                    ),
+                    KernelParameterMetadata(
+                        name="param2",
+                        description="Parameter 2",
+                        default_value="default",
+                    ),
                 ],
                 is_prompt=False,
                 is_asynchronous=True,
@@ -86,8 +105,14 @@ async def test_get_functions_manual():
                 plugin_name="sample_plugin",
                 description="A sample function",
                 parameters=[
-                    KernelParameterMetadata(name="param1", description="Parameter 1", default_value=None),
-                    KernelParameterMetadata(name="param2", description="Parameter 2", default_value="default"),
+                    KernelParameterMetadata(
+                        name="param1", description="Parameter 1", default_value=None
+                    ),
+                    KernelParameterMetadata(
+                        name="param2",
+                        description="Parameter 2",
+                        default_value="default",
+                    ),
                 ],
                 is_prompt=False,
                 is_asynchronous=True,
@@ -95,7 +120,9 @@ async def test_get_functions_manual():
         ]
     )
 
-    result = await PlannerKernelExtension.get_functions_manual(kernel, arguments, options)
+    result = await PlannerKernelExtension.get_functions_manual(
+        kernel, arguments, options
+    )
     expected_output = "sample_plugin-function:\n  description: A sample function\n  inputs:\n    - param1: Parameter 1\n  - param2: Parameter 2 (default value: default)"  # noqa: E501
     assert result == expected_output
 
@@ -113,15 +140,21 @@ async def test_get_functions_manual_with_custom_get_available_functions():
             plugin_name="sample_plugin",
             description="A sample function",
             parameters=[
-                KernelParameterMetadata(name="param1", description="Parameter 1", default_value=None),
-                KernelParameterMetadata(name="param2", description="Parameter 2", default_value="default"),
+                KernelParameterMetadata(
+                    name="param1", description="Parameter 1", default_value=None
+                ),
+                KernelParameterMetadata(
+                    name="param2", description="Parameter 2", default_value="default"
+                ),
             ],
             is_prompt=False,
             is_asynchronous=True,
         )
     ]
 
-    result = await PlannerKernelExtension.get_functions_manual(kernel, arguments, options)
+    result = await PlannerKernelExtension.get_functions_manual(
+        kernel, arguments, options
+    )
     expected_output = "sample_plugin-function:\n  description: A sample function\n  inputs:\n    - param1: Parameter 1\n  - param2: Parameter 2 (default value: default)"  # noqa: E501
     assert result == expected_output
 
@@ -140,8 +173,14 @@ async def test_get_available_functions():
                 plugin_name="sample_plugin",
                 description="A sample function",
                 parameters=[
-                    KernelParameterMetadata(name="param1", description="Parameter 1", default_value=None),
-                    KernelParameterMetadata(name="param2", description="Parameter 2", default_value="default"),
+                    KernelParameterMetadata(
+                        name="param1", description="Parameter 1", default_value=None
+                    ),
+                    KernelParameterMetadata(
+                        name="param2",
+                        description="Parameter 2",
+                        default_value="default",
+                    ),
                 ],
                 is_prompt=False,
                 is_asynchronous=True,
@@ -149,6 +188,8 @@ async def test_get_available_functions():
         ]
     )
 
-    result = await PlannerKernelExtension.get_available_functions(kernel, arguments, options)
+    result = await PlannerKernelExtension.get_available_functions(
+        kernel, arguments, options
+    )
     assert len(result) == 1
     assert result[0].name == "function"

@@ -131,6 +131,7 @@ jobs:
           VERTEX_AI_PROJECT_ID: ${{ vars.VERTEX_AI_PROJECT_ID }}
           VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
           VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
+          REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
         run: |
           cd python
           poetry run pytest ./tests/integration ./tests/samples -v --junitxml=pytest.xml
@@ -242,6 +243,7 @@ jobs:
           VERTEX_AI_PROJECT_ID: ${{ vars.VERTEX_AI_PROJECT_ID }}
           VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
           VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
+          REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest

@@ -7,12 +7,18 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.agents.chat_history_channel import ChatHistoryChannel
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelServiceNotFoundError
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -87,18 +93,25 @@ class ChatCompletionAgent(Agent):
             An async iterable of ChatMessageContent.
         """
         # Get the chat completion service
-        chat_completion_service = self.kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
+        chat_completion_service = self.kernel.get_service(
+            service_id=self.service_id, type=ChatCompletionClientBase
+        )
 
         if not chat_completion_service:
-            raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
+            raise KernelServiceNotFoundError(
+                f"Chat completion service not found with service_id: {self.service_id}"
+            )
 
         assert isinstance(chat_completion_service, ChatCompletionClientBase)  # nosec
 
         settings = (
             self.execution_settings
-            or self.kernel.get_prompt_execution_settings_from_service_id(self.service_id)
+            or self.kernel.get_prompt_execution_settings_from_service_id(
+                self.service_id
+            )
             or chat_completion_service.instantiate_prompt_execution_settings(
-                service_id=self.service_id, extension_data={"ai_model_id": chat_completion_service.ai_model_id}
+                service_id=self.service_id,
+                extension_data={"ai_model_id": chat_completion_service.ai_model_id},
             )
         )
 
@@ -106,7 +119,9 @@ class ChatCompletionAgent(Agent):
 
         message_count = len(chat)
 
-        logger.debug(f"[{type(self).__name__}] Invoking {type(chat_completion_service).__name__}.")
+        logger.debug(
+            f"[{type(self).__name__}] Invoking {type(chat_completion_service).__name__}."
+        )
 
         messages = await chat_completion_service.get_chat_message_contents(
             chat_history=chat,
@@ -129,7 +144,9 @@ class ChatCompletionAgent(Agent):
             message.name = self.name
             yield message
 
-    async def invoke_stream(self, history: ChatHistory) -> AsyncIterable[StreamingChatMessageContent]:
+    async def invoke_stream(
+        self, history: ChatHistory
+    ) -> AsyncIterable[StreamingChatMessageContent]:
         """Invoke the chat history handler in streaming mode.
 
         Args:
@@ -140,18 +157,25 @@ class ChatCompletionAgent(Agent):
             An async generator of StreamingChatMessageContent.
         """
         # Get the chat completion service
-        chat_completion_service = self.kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
+        chat_completion_service = self.kernel.get_service(
+            service_id=self.service_id, type=ChatCompletionClientBase
+        )
 
         if not chat_completion_service:
-            raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
+            raise KernelServiceNotFoundError(
+                f"Chat completion service not found with service_id: {self.service_id}"
+            )
 
         assert isinstance(chat_completion_service, ChatCompletionClientBase)  # nosec
 
         settings = (
             self.execution_settings
-            or self.kernel.get_prompt_execution_settings_from_service_id(self.service_id)
+            or self.kernel.get_prompt_execution_settings_from_service_id(
+                self.service_id
+            )
             or chat_completion_service.instantiate_prompt_execution_settings(
-                service_id=self.service_id, extension_data={"ai_model_id": chat_completion_service.ai_model_id}
+                service_id=self.service_id,
+                extension_data={"ai_model_id": chat_completion_service.ai_model_id},
             )
         )
 
@@ -159,7 +183,9 @@ class ChatCompletionAgent(Agent):
 
         message_count = len(chat)
 
-        logger.debug(f"[{type(self).__name__}] Invoking {type(chat_completion_service).__name__}.")
+        logger.debug(
+            f"[{type(self).__name__}] Invoking {type(chat_completion_service).__name__}."
+        )
 
         messages: AsyncGenerator[list[StreamingChatMessageContent], Any] = (
             chat_completion_service.get_streaming_chat_message_contents(
@@ -190,7 +216,11 @@ class ChatCompletionAgent(Agent):
         chat = []
 
         if self.instructions is not None:
-            chat.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=self.instructions, name=self.name))
+            chat.append(
+                ChatMessageContent(
+                    role=AuthorRole.SYSTEM, content=self.instructions, name=self.name
+                )
+            )
 
         chat.extend(history.messages if history.messages else [])
 

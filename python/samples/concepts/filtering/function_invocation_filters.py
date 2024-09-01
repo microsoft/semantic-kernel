@@ -6,11 +6,15 @@ import os
 from collections.abc import Callable, Coroutine
 from typing import Any
 
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
+    AzureChatCompletion,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.kernel_exceptions import OperationCancelledException
 from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.functions.function_invocation_context import (
+    FunctionInvocationContext,
+)
 from semantic_kernel.kernel import Kernel
 
 logger = logging.getLogger(__name__)
@@ -49,7 +53,10 @@ async def main() -> None:
     kernel = Kernel()
     kernel.add_service(AzureChatCompletion(service_id="chat-gpt"))
     kernel.add_plugin(
-        parent_directory=os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources"), plugin_name="chat"
+        parent_directory=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources"
+        ),
+        plugin_name="chat",
     )
     history = ChatHistory()
 
@@ -60,7 +67,8 @@ async def main() -> None:
     # you can use both the literal term and the FilterTypes enum
     @kernel.filter(filter_type=FilterTypes.FUNCTION_INVOCATION)
     async def exception_catch_filter(
-        context: FunctionInvocationContext, next: Coroutine[FunctionInvocationContext, Any, None]
+        context: FunctionInvocationContext,
+        next: Coroutine[FunctionInvocationContext, Any, None],
     ):
         try:
             await next(context)

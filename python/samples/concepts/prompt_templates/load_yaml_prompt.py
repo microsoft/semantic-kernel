@@ -21,12 +21,19 @@ async def main():
     chat_history = ChatHistory(system_message="Assistant is a large language model")
 
     plugin_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
-        "resources", 
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        "resources",
     )
-    plugin = kernel.add_plugin(plugin_name="sample_plugins", parent_directory=plugin_path)
+    plugin = kernel.add_plugin(
+        plugin_name="sample_plugins", parent_directory=plugin_path
+    )
 
-    result = await kernel.invoke(plugin["Parrot"], count=2, user_message="I love parrots.", chat_history=chat_history)
+    result = await kernel.invoke(
+        plugin["Parrot"],
+        count=2,
+        user_message="I love parrots.",
+        chat_history=chat_history,
+    )
     print(result)
 
 

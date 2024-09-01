@@ -13,14 +13,18 @@ import sentence_transformers
 import torch
 from numpy import ndarray
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
+    EmbeddingGeneratorBase,
+)
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from torch import Tensor
 
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -48,12 +52,16 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
+        resolved_device = (
+            f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
+        )
         super().__init__(
             ai_model_id=ai_model_id,
             service_id=service_id,
             device=resolved_device,
-            generator=sentence_transformers.SentenceTransformer(model_name_or_path=ai_model_id, device=resolved_device),
+            generator=sentence_transformers.SentenceTransformer(
+                model_name_or_path=ai_model_id, device=resolved_device
+            ),
         )
 
     @override
@@ -65,7 +73,9 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     ) -> ndarray:
         try:
             logger.info(f"Generating embeddings for {len(texts)} texts.")
-            return self.generator.encode(sentences=texts, convert_to_numpy=True, **kwargs)
+            return self.generator.encode(
+                sentences=texts, convert_to_numpy=True, **kwargs
+            )
         except Exception as e:
             raise ServiceResponseException("Hugging Face embeddings failed", e) from e
 

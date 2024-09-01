@@ -10,8 +10,12 @@ from openai.types import Completion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import AzureTextCompletion
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
+    AzureTextCompletion,
+)
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError
 
@@ -32,7 +36,10 @@ def test_init(azure_openai_unit_test_env) -> None:
 
     assert azure_text_completion.client is not None
     assert isinstance(azure_text_completion.client, AsyncAzureOpenAI)
-    assert azure_text_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
+    assert (
+        azure_text_completion.ai_model_id
+        == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
+    )
     assert isinstance(azure_text_completion, TextCompletionClientBase)
 
 
@@ -47,15 +54,22 @@ def test_init_with_custom_header(azure_openai_unit_test_env) -> None:
 
     assert azure_text_completion.client is not None
     assert isinstance(azure_text_completion.client, AsyncAzureOpenAI)
-    assert azure_text_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
+    assert (
+        azure_text_completion.ai_model_id
+        == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
+    )
     assert isinstance(azure_text_completion, TextCompletionClientBase)
     for key, value in default_headers.items():
         assert key in azure_text_completion.client.default_headers
         assert azure_text_completion.client.default_headers[key] == value
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True)
-def test_init_with_empty_deployment_name(monkeypatch, azure_openai_unit_test_env) -> None:
+@pytest.mark.parametrize(
+    "exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True
+)
+def test_init_with_empty_deployment_name(
+    monkeypatch, azure_openai_unit_test_env
+) -> None:
     monkeypatch.delenv("AZURE_OPENAI_TEXT_DEPLOYMENT_NAME", raising=False)
     with pytest.raises(ServiceInitializationError):
         AzureTextCompletion(
@@ -71,7 +85,9 @@ def test_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
         )
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True)
+@pytest.mark.parametrize(
+    "exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True
+)
 def test_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureTextCompletion(
@@ -79,7 +95,11 @@ def test_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> No
         )
 
 
-@pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)
+@pytest.mark.parametrize(
+    "override_env_param_dict",
+    [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}],
+    indirect=True,
+)
 def test_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureTextCompletion()
@@ -96,14 +116,20 @@ def test_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
     return_value=Mock(spec=TextContent),
 )
 async def test_call_with_parameters(
-    mock_text_content, mock_metadata, mock_create, azure_openai_unit_test_env, mock_text_completion_response
+    mock_text_content,
+    mock_metadata,
+    mock_create,
+    azure_openai_unit_test_env,
+    mock_text_completion_response,
 ) -> None:
     mock_create.return_value = mock_text_completion_response
     prompt = "hello world"
     complete_prompt_execution_settings = OpenAITextPromptExecutionSettings()
     azure_text_completion = AzureTextCompletion()
 
-    await azure_text_completion.get_text_contents(prompt=prompt, settings=complete_prompt_execution_settings)
+    await azure_text_completion.get_text_contents(
+        prompt=prompt, settings=complete_prompt_execution_settings
+    )
 
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
@@ -124,7 +150,11 @@ async def test_call_with_parameters(
     return_value=Mock(spec=TextContent),
 )
 async def test_call_with_parameters_logit_bias_not_none(
-    mock_text_content, mock_metadata, mock_create, azure_openai_unit_test_env, mock_text_completion_response
+    mock_text_content,
+    mock_metadata,
+    mock_create,
+    azure_openai_unit_test_env,
+    mock_text_completion_response,
 ) -> None:
     mock_create.return_value = mock_text_completion_response
     prompt = "hello world"
@@ -135,7 +165,9 @@ async def test_call_with_parameters_logit_bias_not_none(
 
     azure_text_completion = AzureTextCompletion()
 
-    await azure_text_completion.get_text_contents(prompt=prompt, settings=complete_prompt_execution_settings)
+    await azure_text_completion.get_text_contents(
+        prompt=prompt, settings=complete_prompt_execution_settings
+    )
 
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
@@ -151,7 +183,9 @@ def test_serialize(azure_openai_unit_test_env) -> None:
     default_headers = {"X-Test": "test"}
 
     settings = {
-        "deployment_name": azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
+        "deployment_name": azure_openai_unit_test_env[
+            "AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"
+        ],
         "endpoint": azure_openai_unit_test_env["AZURE_OPENAI_ENDPOINT"],
         "api_key": azure_openai_unit_test_env["AZURE_OPENAI_API_KEY"],
         "api_version": azure_openai_unit_test_env["AZURE_OPENAI_API_VERSION"],

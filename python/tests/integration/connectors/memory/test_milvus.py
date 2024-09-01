@@ -15,7 +15,9 @@ try:
 except ImportError:
     milvus_installed = False
 
-pytestmark = pytest.mark.skipif(not milvus_installed, reason="local milvus is not installed")
+pytestmark = pytest.mark.skipif(
+    not milvus_installed, reason="local milvus is not installed"
+)
 
 pytestmark = pytest.mark.skipif(
     platform.system() == "Windows",
@@ -179,7 +181,9 @@ async def test_get_nearest_matches(memory_record1, memory_record2, setup_milvus)
     await memory.delete_collection(all=True)
     await memory.create_collection("test_collection", 2)
     await memory.upsert_batch("test_collection", [memory_record1, memory_record2])
-    results = await memory.get_nearest_matches("test_collection", np.array([0.5, 0.5]), limit=2)
+    results = await memory.get_nearest_matches(
+        "test_collection", np.array([0.5, 0.5]), limit=2
+    )
     assert len(results) == 2
     assert isinstance(results[0][0], MemoryRecord)
     assert results[0][1] == pytest.approx(0.5, abs=1e-5)

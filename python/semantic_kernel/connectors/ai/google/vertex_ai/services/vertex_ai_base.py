@@ -2,7 +2,9 @@
 
 from abc import ABC
 
-from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import VertexAISettings
+from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import (
+    VertexAISettings,
+)
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 

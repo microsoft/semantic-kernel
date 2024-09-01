@@ -32,20 +32,22 @@ def update_settings_callback():
 
 def test_function_choice_behavior_auto():
     behavior = FunctionChoiceBehavior.Auto(auto_invoke=True)
-    assert behavior.type == FunctionChoiceType.AUTO
+    assert behavior.type_ == FunctionChoiceType.AUTO
     assert behavior.maximum_auto_invoke_attempts == DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS
 
 
 def test_function_choice_behavior_none_invoke():
     behavior = FunctionChoiceBehavior.NoneInvoke()
-    assert behavior.type == FunctionChoiceType.NONE
+    assert behavior.type_ == FunctionChoiceType.NONE
     assert behavior.maximum_auto_invoke_attempts == 0
 
 
 def test_function_choice_behavior_required():
     expected_filters = {"included_functions": ["plugin1-func1"]}
-    behavior = FunctionChoiceBehavior.Required(auto_invoke=True, filters=expected_filters)
-    assert behavior.type == FunctionChoiceType.REQUIRED
+    behavior = FunctionChoiceBehavior.Required(
+        auto_invoke=True, filters=expected_filters
+    )
+    assert behavior.type_ == FunctionChoiceType.REQUIRED
     assert behavior.maximum_auto_invoke_attempts == 1
     assert behavior.filters == expected_filters
 
@@ -53,23 +55,27 @@ def test_function_choice_behavior_required():
 def test_from_function_call_behavior_kernel_functions():
     behavior = FunctionCallBehavior.AutoInvokeKernelFunctions()
     new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
-    assert new_behavior.type == FunctionChoiceType.AUTO
+    assert new_behavior.type_ == FunctionChoiceType.AUTO
     assert new_behavior.auto_invoke_kernel_functions is True
 
 
 def test_from_function_call_behavior_required():
-    behavior = FunctionCallBehavior.RequiredFunction(auto_invoke=True, function_fully_qualified_name="plugin1-func1")
+    behavior = FunctionCallBehavior.RequiredFunction(
+        auto_invoke=True, function_fully_qualified_name="plugin1-func1"
+    )
     new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
-    assert new_behavior.type == FunctionChoiceType.REQUIRED
+    assert new_behavior.type_ == FunctionChoiceType.REQUIRED
     assert new_behavior.auto_invoke_kernel_functions is True
     assert new_behavior.filters == {"included_functions": ["plugin1-func1"]}
 
 
 def test_from_function_call_behavior_enabled_functions():
     expected_filters = {"included_functions": ["plugin1-func1"]}
-    behavior = FunctionCallBehavior.EnableFunctions(auto_invoke=True, filters=expected_filters)
+    behavior = FunctionCallBehavior.EnableFunctions(
+        auto_invoke=True, filters=expected_filters
+    )
     new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
-    assert new_behavior.type == FunctionChoiceType.AUTO
+    assert new_behavior.type_ == FunctionChoiceType.AUTO
     assert new_behavior.auto_invoke_kernel_functions is True
     assert new_behavior.filters == expected_filters
 
@@ -79,23 +85,33 @@ def test_from_function_call_behavior():
     new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
     assert new_behavior is not None
     assert new_behavior.enable_kernel_functions == behavior.enable_kernel_functions
-    assert new_behavior.maximum_auto_invoke_attempts == behavior.max_auto_invoke_attempts
+    assert (
+        new_behavior.maximum_auto_invoke_attempts == behavior.max_auto_invoke_attempts
+    )
 
 
-@pytest.mark.parametrize(("type", "max_auto_invoke_attempts"), [("auto", 5), ("none", 0), ("required", 1)])
-def test_auto_function_choice_behavior_from_dict(type: str, max_auto_invoke_attempts: int):
+@pytest.mark.parametrize(
+    ("type", "max_auto_invoke_attempts"), [("auto", 5), ("none", 0), ("required", 1)]
+)
+def test_auto_function_choice_behavior_from_dict(
+    type: str, max_auto_invoke_attempts: int
+):
     data = {
         "type": type,
         "filters": {"included_functions": ["plugin1-func1", "plugin2-func2"]},
         "maximum_auto_invoke_attempts": max_auto_invoke_attempts,
     }
     behavior = FunctionChoiceBehavior.from_dict(data)
-    assert behavior.type == FunctionChoiceType(type)
-    assert behavior.filters == {"included_functions": ["plugin1-func1", "plugin2-func2"]}
+    assert behavior.type_ == FunctionChoiceType(type)
+    assert behavior.filters == {
+        "included_functions": ["plugin1-func1", "plugin2-func2"]
+    }
     assert behavior.maximum_auto_invoke_attempts == max_auto_invoke_attempts
 
 
-@pytest.mark.parametrize(("type", "max_auto_invoke_attempts"), [("auto", 5), ("none", 0), ("required", 1)])
+@pytest.mark.parametrize(
+    ("type", "max_auto_invoke_attempts"), [("auto", 5), ("none", 0), ("required", 1)]
+)
 def test_auto_function_choice_behavior_from_dict_with_same_filters_and_functions(
     type: str, max_auto_invoke_attempts: int
 ):
@@ -106,12 +122,16 @@ def test_auto_function_choice_behavior_from_dict_with_same_filters_and_functions
         "maximum_auto_invoke_attempts": max_auto_invoke_attempts,
     }
     behavior = FunctionChoiceBehavior.from_dict(data)
-    assert behavior.type == FunctionChoiceType(type)
-    assert behavior.filters == {"included_functions": ["plugin1-func1", "plugin2-func2"]}
+    assert behavior.type_ == FunctionChoiceType(type)
+    assert behavior.filters == {
+        "included_functions": ["plugin1-func1", "plugin2-func2"]
+    }
     assert behavior.maximum_auto_invoke_attempts == max_auto_invoke_attempts
 
 
-@pytest.mark.parametrize(("type", "max_auto_invoke_attempts"), [("auto", 5), ("none", 0), ("required", 1)])
+@pytest.mark.parametrize(
+    ("type", "max_auto_invoke_attempts"), [("auto", 5), ("none", 0), ("required", 1)]
+)
 def test_auto_function_choice_behavior_from_dict_with_different_filters_and_functions(
     type: str, max_auto_invoke_attempts: int
 ):
@@ -122,12 +142,16 @@ def test_auto_function_choice_behavior_from_dict_with_different_filters_and_func
         "maximum_auto_invoke_attempts": max_auto_invoke_attempts,
     }
     behavior = FunctionChoiceBehavior.from_dict(data)
-    assert behavior.type == FunctionChoiceType(type)
-    assert behavior.filters == {"included_functions": ["plugin1-func1", "plugin2-func2", "plugin3-func3"]}
+    assert behavior.type_ == FunctionChoiceType(type)
+    assert behavior.filters == {
+        "included_functions": ["plugin1-func1", "plugin2-func2", "plugin3-func3"]
+    }
     assert behavior.maximum_auto_invoke_attempts == max_auto_invoke_attempts
 
 
-def test_function_choice_behavior_get_set(function_choice_behavior: FunctionChoiceBehavior):
+def test_function_choice_behavior_get_set(
+    function_choice_behavior: FunctionChoiceBehavior,
+):
     function_choice_behavior.enable_kernel_functions = False
     assert function_choice_behavior.enable_kernel_functions is False
     function_choice_behavior.maximum_auto_invoke_attempts = 10
@@ -158,7 +182,9 @@ def test_none_invoke_kernel_functions():
 
 
 def test_enable_functions():
-    fcb = FunctionChoiceBehavior.Auto(auto_invoke=True, filters={"excluded_plugins": ["test"]})
+    fcb = FunctionChoiceBehavior.Auto(
+        auto_invoke=True, filters={"excluded_plugins": ["test"]}
+    )
     assert fcb is not None
     assert fcb.enable_kernel_functions is True
     assert fcb.maximum_auto_invoke_attempts == 5
@@ -167,33 +193,43 @@ def test_enable_functions():
 
 
 def test_required_function():
-    fcb = FunctionChoiceBehavior.Required(auto_invoke=True, filters={"included_functions": ["test"]})
+    fcb = FunctionChoiceBehavior.Required(
+        auto_invoke=True, filters={"included_functions": ["test"]}
+    )
     assert fcb is not None
     assert fcb.enable_kernel_functions is True
     assert fcb.maximum_auto_invoke_attempts == 1
     assert fcb.auto_invoke_kernel_functions is True
 
 
-def test_configure_auto_invoke_kernel_functions(update_settings_callback, kernel: "Kernel"):
+def test_configure_auto_invoke_kernel_functions(
+    update_settings_callback, kernel: "Kernel"
+):
     fcb = FunctionChoiceBehavior.Auto(auto_invoke=True)
     fcb.configure(kernel, update_settings_callback, None)
     assert update_settings_callback.called
 
 
-def test_configure_auto_invoke_kernel_functions_skip(update_settings_callback, kernel: "Kernel"):
+def test_configure_auto_invoke_kernel_functions_skip(
+    update_settings_callback, kernel: "Kernel"
+):
     fcb = FunctionChoiceBehavior.Auto(auto_invoke=True)
     fcb.enable_kernel_functions = False
     fcb.configure(kernel, update_settings_callback, None)
     assert not update_settings_callback.called
 
 
-def test_configure_none_invoke_kernel_functions(update_settings_callback, kernel: "Kernel"):
+def test_configure_none_invoke_kernel_functions(
+    update_settings_callback, kernel: "Kernel"
+):
     fcb = FunctionChoiceBehavior.NoneInvoke()
     fcb.configure(kernel, update_settings_callback, None)
     assert update_settings_callback.called
 
 
-def test_configure_none_invoke_kernel_functions_skip(update_settings_callback, kernel: "Kernel"):
+def test_configure_none_invoke_kernel_functions_skip(
+    update_settings_callback, kernel: "Kernel"
+):
     fcb = FunctionChoiceBehavior.NoneInvoke()
     fcb.enable_kernel_functions = False
     fcb.configure(kernel, update_settings_callback, None)
@@ -201,26 +237,36 @@ def test_configure_none_invoke_kernel_functions_skip(update_settings_callback, k
 
 
 def test_configure_enable_functions(update_settings_callback, kernel: "Kernel"):
-    fcb = FunctionChoiceBehavior.Auto(auto_invoke=True, filters={"excluded_plugins": ["test"]})
+    fcb = FunctionChoiceBehavior.Auto(
+        auto_invoke=True, filters={"excluded_plugins": ["test"]}
+    )
     fcb.configure(kernel, update_settings_callback, None)
     assert update_settings_callback.called
 
 
 def test_configure_enable_functions_skip(update_settings_callback, kernel: "Kernel"):
-    fcb = FunctionChoiceBehavior.Auto(auto_invoke=True, filters={"excluded_plugins": ["test"]})
+    fcb = FunctionChoiceBehavior.Auto(
+        auto_invoke=True, filters={"excluded_plugins": ["test"]}
+    )
     fcb.enable_kernel_functions = False
     fcb.configure(kernel, update_settings_callback, None)
     assert not update_settings_callback.called
 
 
 def test_configure_required_function(update_settings_callback, kernel: "Kernel"):
-    fcb = FunctionChoiceBehavior.Required(auto_invoke=True, filters={"included_functions": ["plugin1-func1"]})
+    fcb = FunctionChoiceBehavior.Required(
+        auto_invoke=True, filters={"included_functions": ["plugin1-func1"]}
+    )
     fcb.configure(kernel, update_settings_callback, None)
     assert update_settings_callback.called
 
 
-def test_configure_required_function_max_invoke_updated(update_settings_callback, kernel: "Kernel"):
-    fcb = FunctionChoiceBehavior.Required(auto_invoke=True, filters={"included_functions": ["plugin1-func1"]})
+def test_configure_required_function_max_invoke_updated(
+    update_settings_callback, kernel: "Kernel"
+):
+    fcb = FunctionChoiceBehavior.Required(
+        auto_invoke=True, filters={"included_functions": ["plugin1-func1"]}
+    )
     fcb.maximum_auto_invoke_attempts = 10
     fcb.configure(kernel, update_settings_callback, None)
     assert update_settings_callback.called
@@ -228,7 +274,9 @@ def test_configure_required_function_max_invoke_updated(update_settings_callback
 
 
 def test_configure_required_function_skip(update_settings_callback, kernel: "Kernel"):
-    fcb = FunctionChoiceBehavior.Required(auto_invoke=True, filters={"included_functions": ["test"]})
+    fcb = FunctionChoiceBehavior.Required(
+        auto_invoke=True, filters={"included_functions": ["test"]}
+    )
     fcb.enable_kernel_functions = False
     fcb.configure(kernel, update_settings_callback, None)
     assert not update_settings_callback.called
@@ -238,7 +286,10 @@ def test_service_initialization_error():
     dict1 = {"filter1": ["a", "b", "c"]}
     dict2 = {"filter1": "not_a_list"}  # This should trigger the error
 
-    with pytest.raises(ServiceInitializationError, match="Values for filter key 'filter1' are not lists."):
+    with pytest.raises(
+        ServiceInitializationError,
+        match="Values for filter key 'filter1' are not lists.",
+    ):
         _combine_filter_dicts(dict1, dict2)
 
 

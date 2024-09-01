@@ -15,7 +15,9 @@ logger: logging.Logger = logging.getLogger(__name__)
 class PassThroughWithoutRetry(RetryMechanismBase, KernelBaseModel):
     """A retry mechanism that does not retry."""
 
-    async def execute_with_retry(self, action: Callable[[], Awaitable[T]]) -> Awaitable[T]:
+    async def execute_with_retry(
+        self, action: Callable[[], Awaitable[T]]
+    ) -> Awaitable[T]:
         """Executes the given action with retry logic.
 
         Args:

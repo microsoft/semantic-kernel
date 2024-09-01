@@ -4,14 +4,21 @@ from typing import TypeVar
 
 from pydantic import Field, field_validator, model_validator
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
+from semantic_kernel.prompt_template.const import (
+    KERNEL_TEMPLATE_FORMAT_NAME,
+    TEMPLATE_FORMAT_TYPES,
+)
 from semantic_kernel.prompt_template.input_variable import InputVariable
 
-PromptExecutionSettingsT = TypeVar("PromptExecutionSettingsT", bound=PromptExecutionSettings)
+PromptExecutionSettingsT = TypeVar(
+    "PromptExecutionSettingsT", bound=PromptExecutionSettings
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -45,14 +52,20 @@ class PromptTemplateConfig(KernelBaseModel):
         """Verify that input variable default values are string only."""
         for variable in self.input_variables:
             if variable.default and not isinstance(variable.default, str):
-                raise TypeError(f"Default value for input variable {variable.name} must be a string.")
+                raise TypeError(
+                    f"Default value for input variable {variable.name} must be a string."
+                )
         return self
 
     @field_validator("execution_settings", mode="before")
     @classmethod
     def rewrite_execution_settings(
         cls,
-        settings: None | (PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings]),
+        settings: None | (
+            PromptExecutionSettings
+            | list[PromptExecutionSettings]
+            | dict[str, PromptExecutionSettings]
+        ),
     ) -> dict[str, PromptExecutionSettings]:
         """Rewrite execution settings to a dictionary."""
         if not settings:
@@ -63,7 +76,9 @@ class PromptTemplateConfig(KernelBaseModel):
             return {s.service_id or DEFAULT_SERVICE_NAME: s for s in settings}
         return settings
 
-    def add_execution_settings(self, settings: PromptExecutionSettings, overwrite: bool = True) -> None:
+    def add_execution_settings(
+        self, settings: PromptExecutionSettings, overwrite: bool = True
+    ) -> None:
         """Add execution settings to the prompt template."""
         if settings.service_id in self.execution_settings and not overwrite:
             return
