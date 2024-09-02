@@ -98,7 +98,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5C246969-D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connectors", "connectors", "{314A2705-0F70-44B6-8988-C6DF77BDFD42}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ai", "ai", "{C7299F56-3A55-471E-B10E-B1FBE101C625}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AI", "AI", "{C7299F56-3A55-471E-B10E-B1FBE101C625}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\connectors\AI\FunctionCallsProcessor.cs = src\InternalUtilities\connectors\AI\FunctionCallsProcessor.cs
 		src\InternalUtilities\connectors\AI\AiConnectorsInternalUtilities.props = src\InternalUtilities\connectors\AI\AiConnectorsInternalUtilities.props

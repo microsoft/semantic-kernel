@@ -178,14 +178,14 @@ internal sealed class FunctionCallsProcessor
                 continue;
             }
 
-            // Look up the function in the kernel and get the function arguments.
+            // Look up the function in the kernel
             if (!kernel!.Plugins.TryGetFunction(functionCall.PluginName, functionCall.FunctionName, out KernelFunction? function))
             {
                 this.AddFunctionCallResultToChatHistory(chatHistory, functionCall, result: null, errorMessage: "Error: Requested function could not be found.");
                 continue;
             }
 
-            // Prepare context for the function invocation filters and invoke it.
+            // Prepare context for the auto function invocation filter and invoke it.
             FunctionResult functionResult = new(function) { Culture = kernel.Culture };
             AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory, chatMessageContent)
             {
