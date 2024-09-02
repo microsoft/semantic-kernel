@@ -181,7 +181,7 @@ internal partial class ClientCore
             }
 
             // If we don't want to attempt to invoke any functions, just return the result.
-            if (!toolCallingConfig.AutoInvoke)
+            if (!toolCallingConfig?.AutoInvoke ?? false)
             {
                 return [chatMessageContent];
             }
@@ -635,7 +635,7 @@ internal partial class ClientCore
     protected virtual ChatCompletionOptions CreateChatCompletionOptions(
         OpenAIPromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
-        ToolCallingConfig toolCallingConfig,
+        ToolCallingConfig? toolCallingConfig,
         Kernel? kernel)
     {
         var options = new ChatCompletionOptions
@@ -649,13 +649,24 @@ internal partial class ClientCore
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
-            ResponseFormat = GetResponseFormat(executionSettings) ?? ChatResponseFormat.Text,
-            ToolChoice = toolCallingConfig.Choice,
         };
 
-        if (toolCallingConfig.Tools is { Count: > 0 } tools)
+        
+
+        var responseFormat = GetResponseFormat(executionSettings);
+        if (responseFormat is not null)
         {
-            options.Tools.AddRange(tools);
+            options.ResponseFormat = responseFormat;
+        }
+
+        if (toolCallingConfig is not null)
+        {
+            options.ToolChoice = toolCallingConfig.Choice;
+
+            if (toolCallingConfig.Tools is { Count: > 0 } tools)
+            {
+                options.Tools.AddRange(tools);
+            }
         }
 
         if (executionSettings.TokenSelectionBiases is not null)
@@ -1134,11 +1145,11 @@ internal partial class ClientCore
         }
     }
 
-    private ToolCallingConfig GetToolCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, int requestIndex)
+    private ToolCallingConfig? GetToolCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, int requestIndex)
     {
         if (executionSettings.ToolCallBehavior is null)
         {
-            return new ToolCallingConfig(Tools: [s_nonInvocableFunctionTool], Choice: ChatToolChoice.None, AutoInvoke: false);
+            return null;
         }
 
         if (requestIndex >= executionSettings.ToolCallBehavior.MaximumUseAttempts)
