@@ -34,6 +34,14 @@ dotnet user-secrets set "OpenAI:ModelId" "gpt-3.5-turbo-instruct"
 dotnet user-secrets set "OpenAI:ChatModelId" "gpt-4"
 dotnet user-secrets set "OpenAI:ApiKey" "..."
 
+dotnet user-secrets set "OpenAIAudioToText:ServiceId" "whisper"
+dotnet user-secrets set "OpenAIAudioToText:ModelId" "whisper"
+dotnet user-secrets set "OpenAIAudioToText:ApiKey" "..."
+
+dotnet user-secrets set "OpenAITextToAudio:ServiceId" "tts"
+dotnet user-secrets set "OpenAITextToAudio:ModelId" "tts"
+dotnet user-secrets set "OpenAITextToAudio:ApiKey" "..."
+
 dotnet user-secrets set "OpenAITextToImage:ServiceId" "dall-e-3"
 dotnet user-secrets set "OpenAITextToImage:ModelId" "dall-e-3"
 dotnet user-secrets set "OpenAITextToImage:ApiKey" "..."
