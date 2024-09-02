@@ -111,6 +111,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
 
 
+
                     // Invoke functions for each tool-step
                     IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
 
@@ -213,6 +214,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                         }
                     }
                 }
+
 
 
                     // Retrieve the message
@@ -486,6 +488,27 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         }
 
         return functionTasks;
+    }
+
+    private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
+    {
+        ToolOutput[] toolOutputs = new ToolOutput[functionResults.Length];
+
+        for (int index = 0; index < functionResults.Length; ++index)
+        {
+            FunctionResultContent functionResult = functionResults[index];
+
+            object resultValue = functionResult.Result ?? string.Empty;
+
+            if (resultValue is not string textResult)
+            {
+                textResult = JsonSerializer.Serialize(resultValue);
+            }
+
+            toolOutputs[index] = new ToolOutput(functionResult.CallId, textResult!);
+        }
+
+        return toolOutputs;
     }
 
     private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)

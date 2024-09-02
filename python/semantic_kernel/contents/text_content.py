@@ -16,6 +16,8 @@ _T = TypeVar("_T", bound="TextContent")
 
 _T = TypeVar("_T", bound="TextContent")
 
+_T = TypeVar("_T", bound="TextContent")
+
 
 class TextContent(KernelContent):
     """This represents text response content.

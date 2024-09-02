@@ -1333,6 +1333,9 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         public HttpMethod? Method => this.RequestMessage?.Method;
 
+
+        public HttpMethod? Method => this.RequestMessage?.Method;
+
         public HttpRequestMessage? RequestMessage { get; private set; }
 
         public HttpResponseMessage ResponseToReturn { get; set; }

@@ -505,6 +505,8 @@ async def test_scmc(
 
 
 
+
+
 @pytest.mark.parametrize("tool_call", [False, True])
 @pytest.mark.asyncio
 async def test_complete_chat_function_choice_behavior(tool_call, kernel: Kernel):

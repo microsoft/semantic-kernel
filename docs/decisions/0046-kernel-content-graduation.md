@@ -923,6 +923,9 @@ public class AnnotationContent : KernelContent
 - `FileReferenceContent` and `AnnotationContent`: No changes, continue as experimental.
 - Data Uri parameters support (serialization included).
 - Data Uri and Base64 validation checks
+- Fully serializeable.
+- Data Uri parameters support (serialization included).
+- Data Uri and Base64 validation checks
 - Data Uri and Data can be dynamically generated
 - `CanRead` will clearly identify if the content can be read as `bytes` or `DataUri`.
 
@@ -1042,6 +1045,8 @@ Pros:
 - Fu- Fully serializeable.
 >>>>>>>-Stashed changes
 ta Uri parameters support (serialization included).
+- Fully serializeable.
+- Data Uri parameters support (serialization included).
 - Data Uri and Base64 validation checks
 - Can be retrieved
 - Data Uri and Data can be dynamically generated

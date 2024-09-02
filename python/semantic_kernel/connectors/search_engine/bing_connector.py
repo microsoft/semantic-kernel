@@ -34,7 +34,6 @@ class BingConnector(ConnectorBase):
         """
         Returns the search results of the query provided by pinging the Bing web search API.
         Returns `num_results` results and ignores the first `offset`.
-=======
     """A search engine connector that uses the Bing Search API to perform a web search."""
 
     _settings: BingSettings
