@@ -2605,6 +2605,26 @@ wheels = [
 ]
 
 [[package]]
+name = "onnxruntime-genai"
+version = "0.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", version = "1.25.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.12' and sys_platform == 'darwin') or (python_full_version < '3.12' and sys_platform == 'linux') or (python_full_version < '3.12' and sys_platform == 'win32')" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.12' and sys_platform == 'darwin') or (python_full_version >= '3.12' and sys_platform == 'linux') or (python_full_version >= '3.12' and sys_platform == 'win32')" },
+    { name = "onnxruntime", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/48/23/002880c60d3c67e6be5a9ad279e1cf67dd252036025d8b7922194dba4224/onnxruntime_genai-0.4.0-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:93247fb897659de7d4e429943ae9046db3bd99351bb125d6855fff6cb14cf6ea", size = 1699111 },
+    { url = "https://files.pythonhosted.org/packages/b8/bf/7c5033080982960aaf68297bb15ac03b0aafcdfeb55feea5410b57ac0fd0/onnxruntime_genai-0.4.0-cp310-cp310-win_amd64.whl", hash = "sha256:bfdc121393674bcd32232b9d542667a9ca9c4898cca5dc3b8d56bf7e4f030bdf", size = 982904 },
+    { url = "https://files.pythonhosted.org/packages/f3/c8/236188aae010e1fb7b71130b9221cf971f6e413000ee8a9cac201e0d05a0/onnxruntime_genai-0.4.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:4d45f2db3082ab22ed71ff1f94cc4d85f9a799535afa4be2e21e8906e459696d", size = 1699089 },
+    { url = "https://files.pythonhosted.org/packages/ad/1a/519dc5c5e28fd60a1d949a8c5d6fcf716eac0fc20269961ebf1deb2a6606/onnxruntime_genai-0.4.0-cp311-cp311-win_amd64.whl", hash = "sha256:2e4aadaa54edafe3c3ca70dbe04b74a9f3aac2c72c54cf73b0a99649732cc058", size = 983035 },
+    { url = "https://files.pythonhosted.org/packages/9d/82/27576b3c06c1a4c2b68bff5924eae1515c8386ee5bff865bafdfcdf25174/onnxruntime_genai-0.4.0-cp311-cp311-win_arm64.whl", hash = "sha256:6f38404a48ebb8cdc8b26fa0257127b0dafc1fe7244df366fb8b1edfbfd29815", size = 931971 },
+    { url = "https://files.pythonhosted.org/packages/cd/b9/aaaea05eca3457a77baf88dd30a217d17beca9b1ea9c69467ddbccc5473e/onnxruntime_genai-0.4.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:1c3dfb49b654890a46e34464e0d5b483e8af897132783ecf4cc16837abf7a791", size = 1699821 },
+    { url = "https://files.pythonhosted.org/packages/51/bb/b923d7a38d4b2129327e94a2a498aeca80c2c77a254a26859cdad290e2b8/onnxruntime_genai-0.4.0-cp312-cp312-win_amd64.whl", hash = "sha256:064c540e119c39f9462035363a4b5b096ac4927777763e43090b92bf71d8a5e8", size = 983572 },
+    { url = "https://files.pythonhosted.org/packages/2f/de/71e5fb86d61c4901ebce15590f463535da8f0e3abab7f73356b7a74d60c5/onnxruntime_genai-0.4.0-cp312-cp312-win_arm64.whl", hash = "sha256:ae29b17cad1835971d6dbbd6edfd9dcb7f7157abe8e8ee2a2d11e9facc339210", size = 931956 },
+]
+
+[[package]]
 name = "openai"
 version = "1.42.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3023,7 +3043,7 @@ dependencies = [
     { name = "pinecone-plugin-interface", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "tqdm", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "urllib3", marker = "(python_full_version < '4.0' and sys_platform == 'darwin') or (python_full_version < '4.0' and sys_platform == 'linux') or (python_full_version < '4.0' and sys_platform == 'win32')" },
+    { name = "urllib3", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/98/a4/739fe0a4a173658d541206ec7fdb0cc4c9ddc364de216af668b988bf0868/pinecone_client-5.0.1.tar.gz", hash = "sha256:11c33ff5d1c38a6ce69e69fe532c0f22f312fb28d761bb30b3767816d3181d64", size = 122207 }
 wheels = [
@@ -4254,7 +4274,7 @@ wheels = [
 
 [[package]]
 name = "semantic-kernel"
-version = "1.6.0"
+version = "1.8.2"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -4293,7 +4313,6 @@ google = [
 hugging-face = [
     { name = "sentence-transformers", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "torch", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "transformers", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "transformers", extra = ["torch"], marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 milvus = [
@@ -4312,6 +4331,9 @@ notebooks = [
 ollama = [
     { name = "ollama", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
+onnx = [
+    { name = "onnxruntime-genai", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
 pandas = [
     { name = "pandas", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
@@ -4319,15 +4341,12 @@ pinecone = [
     { name = "pinecone-client", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 postgres = [
-    { name = "psycopg", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "psycopg", extra = ["binary"], marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "psycopg", extra = ["pool"], marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "psycopg", extra = ["binary", "pool"], marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 qdrant = [
     { name = "qdrant-client", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 redis = [
-    { name = "redis", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "redis", extra = ["hiredis"], marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "types-redis", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
@@ -4348,7 +4367,6 @@ dev = [
     { name = "pytest", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "pytest-asyncio", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "pytest-cov", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "pytest-xdist", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "pytest-xdist", extra = ["psutil"], marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "ruff", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "snoop", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -4376,6 +4394,7 @@ requires-dist = [
     { name = "numpy", marker = "python_full_version < '3.12'", specifier = "~=1.25.0" },
     { name = "numpy", marker = "python_full_version >= '3.12'", specifier = "~=1.26.0" },
     { name = "ollama", marker = "extra == 'ollama'", specifier = "~=0.2" },
+    { name = "onnxruntime-genai", marker = "extra == 'onnx'", specifier = "~=0.4" },
     { name = "openai", specifier = "~=1.0" },
     { name = "openapi-core", specifier = ">=0.18,<0.20" },
     { name = "opentelemetry-api", specifier = "~=1.24" },

@@ -86,6 +86,9 @@ mistralai = [
 ollama = [
     "ollama ~= 0.2"
 ]
+onnx = [
+    "onnxruntime-genai ~= 0.4"
+]
 anthropic = [
     "anthropic ~= 0.32"
 ]
