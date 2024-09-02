@@ -269,7 +269,7 @@ class Kernel(
         Returns:
             FunctionResult | list[FunctionResult] | None: The result of the function(s)
         """
-        if not arguments:
+        if arguments is None:
             arguments = KernelArguments(**kwargs)
         if not prompt:
             raise TemplateSyntaxError("The prompt is either null or empty.")
@@ -312,7 +312,7 @@ class Kernel(
         Returns:
             AsyncIterable[StreamingContentMixin]: The content of the stream of the last function provided.
         """
-        if not arguments:
+        if arguments is None:
             arguments = KernelArguments(**kwargs)
         if not prompt:
             raise TemplateSyntaxError("The prompt is either null or empty.")

@@ -335,6 +335,11 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
     async def get_batch(
         self, keys: Sequence[TKey], include_vectors: bool = True, **kwargs: Any
+<<<<<<< main
+        self, keys: Sequence[TKey], **kwargs: Any
+=======
+        self, keys: Sequence[TKey], include_vectors: bool = True, **kwargs: Any
+>>>>>>> Stashed changes
     ) -> OneOrMany[TModel] | None:
         """Get a batch of records.
 

@@ -116,6 +116,8 @@ async def auto_function_invocation_filter(context: AutoFunctionInvocationContext
                 value="Stop trying to ask me to do math, I don't like it!",
             )
             context.terminate = True
+<<<<<<< Updated upstream
+=======
     if context.function.plugin_name == "math":
         print("Altering the Math plugin")
         context.function_result = FunctionResult(
@@ -123,6 +125,7 @@ async def auto_function_invocation_filter(context: AutoFunctionInvocationContext
             value="Stop trying to ask me to do math, I don't like it!",
         )
         context.terminate = True
+>>>>>>> Stashed changes
 
 
 def print_tool_calls(message: ChatMessageContent) -> None:

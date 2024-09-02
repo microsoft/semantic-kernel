@@ -122,7 +122,7 @@
                 "pytest",
                 "tests/unit/",
                 "--last-failed",
-                "-v"
+                "-vv"
             ],
             "group": "test",
             "presentation": {
