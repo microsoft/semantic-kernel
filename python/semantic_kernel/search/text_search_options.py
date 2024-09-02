@@ -13,6 +13,7 @@ from semantic_kernel.search.filter_clause import FilterClause
 class TextSearchOptions(KernelBaseModel):
     """Options for a text search."""
 
+    query: str | None = None
     search_filters: list[FilterClause] = Field(default_factory=list)
     count: Annotated[int, Field(gt=0)] = DEFAULT_COUNT
     offset: Annotated[int, Field(ge=0)] = 0

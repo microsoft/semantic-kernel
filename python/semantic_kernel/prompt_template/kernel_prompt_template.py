@@ -128,3 +128,22 @@ class KernelPromptTemplate(PromptTemplateBase):
         prompt = "".join(rendered_blocks)
         logger.debug(f"Rendered prompt: {prompt}")
         return prompt
+
+    @staticmethod
+    def quick_render(template: str, arguments: dict[str, Any]) -> str:
+        """Quick render a Kernel prompt template, only supports text and variable blocks.
+
+        Args:
+            template: The template to render
+            arguments: The arguments to use for rendering
+
+        Returns:
+            str: The prompt template ready to be used for an AI request
+
+        """
+        from semantic_kernel import Kernel
+
+        blocks = TemplateTokenizer.tokenize(template)
+        if any(isinstance(block, CodeBlock) for block in blocks):
+            raise ValueError("Quick render does not support code blocks.")
+        return "".join([block.render(Kernel(), arguments) for block in blocks])

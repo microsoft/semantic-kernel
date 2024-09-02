@@ -112,6 +112,9 @@ weaviate = [
 pandas = [
     "pandas ~= 2.2"
 ]
+bing = [
+    "azure-cognitiveservices-search-websearch>=2.0.1",
+]
 
 [tool.uv]
 prerelease = "if-necessary-or-explicit"

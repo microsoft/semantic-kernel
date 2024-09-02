@@ -3,15 +3,13 @@
 import logging
 from abc import abstractmethod
 from collections.abc import Mapping, Sequence
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, override
 
 from pydantic import ValidationError
 
 from semantic_kernel.data.vector_search_options import VectorSearchOptions
 from semantic_kernel.data.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.exceptions import VectorStoreSearchError
-from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.search.kernel_search_result import KernelSearchResult
 from semantic_kernel.search.text_search import TextSearch
 from semantic_kernel.search.text_search_result import TextSearchResult
@@ -31,61 +29,31 @@ class VectorSearch(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, TMod
     async def _inner_search(
         self,
         options: VectorSearchOptions | None = None,
-        query_text: str | None = None,
-        vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> Sequence[Mapping[str, Any | float | None]] | None:
         """Inner search method."""
         ...
 
-    async def _wrap_inner(
-        self,
-        query: str | None = None,
-        options: VectorSearchOptions | None = None,
-        vector: list[float | int] | None = None,
-        **kwargs: Any,
-    ) -> tuple[Sequence[Mapping[str, Any | float | None]], int]:
-        try:
-            records = await self._inner_search(options=options, query_text=query, vector=vector, **kwargs)
-            return (records, len(records)) if records else ([], 0)
-        except Exception as exc:
-            raise VectorStoreSearchError(f"Error getting records: {exc}") from exc
-
     async def search(
         self,
-        query: str | None = None,
         options: VectorSearchOptions | None = None,
-        vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResult[str]:
         """Search for vectors similar to the query."""
-        options = self._get_options(options, **kwargs)
-        records, count = await self._wrap_inner(query=query, options=options, vector=vector)
+        options = self._create_options(**kwargs)
+        raw_results = await self._inner_search(options=options)
+        count = len(raw_results)
         if count == 0:
             return KernelSearchResult(results=[], total_count=count)
-        results: list[str] = []
-        metadata: dict[str, Any] = {}
-        metadata["scores"] = []
-        for record in records:
-            try:
-                rec = self.deserialize(record["record"])
-            except Exception as exc:
-                raise VectorStoreSearchError(f"Error deserializing record: {exc}") from exc
-            if isinstance(rec, Sequence):
-                rec = rec[0]
-            results.append(rec)
-            metadata["scores"].append(record["score"])
         return KernelSearchResult(
-            results=results,
+            results=self._get_records_from_results(raw_results),
             total_count=count,
-            metadata=metadata,
+            metadata=self._get_metadata_from_results(raw_results),
         )
 
     async def get_text_search_result(
         self,
-        query: str,
         options: VectorSearchOptions = VectorSearchOptions(),
-        vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResult[TextSearchResult]:
         """Search for text, returning a KernelSearchResult with TextSearchResults."""
@@ -94,39 +62,69 @@ class VectorSearch(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, TMod
             "use `search` for strings, or `get_search_result` for vector search results with the data model."
         )
 
-    async def get_search_result(
+    async def get_vector_search_result(
         self,
-        query: str,
         options: VectorSearchOptions = VectorSearchOptions(),
-        vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResult[VectorSearchResult[TModel]]:
-        """Search for text, returning a KernelSearchResult with the results directly from the service."""
-        records, count = await self._wrap_inner(query=query, options=options, vector=vector, **kwargs)
+        """Search for text, returning a KernelSearchResult with VectorSearchResults."""
+        options = self._create_options(**kwargs)
+        raw_results = await self._inner_search(options=options)
+        count = len(raw_results)
         if count == 0:
             return KernelSearchResult(results=[], total_count=count)
-        if not options.string_content_field_name:
-            raise VectorStoreSearchError("string_content_field_name is required for search")
-        results: list[VectorSearchResult[TModel]] = []
-        for record in records:
-            try:
-                rec: OneOrMany[TModel] = self.deserialize(record)
-            except Exception as exc:
-                raise VectorStoreSearchError(f"Error deserializing record: {exc}") from exc
-            if not rec:
-                continue
-            results.append(
-                VectorSearchResult(
-                    record=rec[0] if isinstance(rec, Sequence) else rec,
-                    score=record["score"],
-                )
-            )
-        return KernelSearchResult(results=results, total_count=count)
+        return KernelSearchResult(
+            results=self._get_vector_search_results_from_results(raw_results),
+            total_count=count,
+            metadata=self._get_metadata_from_results(raw_results),
+        )
 
-    def _get_options(self, options: VectorSearchOptions | None, **kwargs: Any) -> VectorSearchOptions:
-        if options is not None:
-            return options
+    async def get_search_result(
+        self,
+        options: VectorSearchOptions = VectorSearchOptions(),
+        **kwargs: Any,
+    ) -> KernelSearchResult[Any]:
+        """Search for text, returning a KernelSearchResult with the results directly from the service."""
+        options = self._create_options(**kwargs)
+        raw_results = await self._inner_search(options=options)
+        count = len(raw_results)
+        if count == 0:
+            return KernelSearchResult(results=[], total_count=count)
+        return KernelSearchResult(
+            results=raw_results,
+            total_count=count,
+            metadata=self._get_metadata_from_results(raw_results),
+        )
+
+    @override
+    def _create_options(self, **kwargs: Any) -> VectorSearchOptions:
         try:
+            logger.debug(f"Creating VectorSearchOptions with kwargs: {kwargs}")
             return VectorSearchOptions(**kwargs)
         except ValidationError:
             return VectorSearchOptions()
+
+    def _get_records_from_results(self, results: Sequence[Any]) -> Sequence[TModel]:
+        return [self.deserialize(self._get_record_from_result(res)) for res in results]
+
+    def _get_vector_search_results_from_results(self, results: Sequence[Any]) -> Sequence[VectorSearchResult[TModel]]:
+        return [
+            VectorSearchResult(
+                record=self.deserialize(self._get_record_from_result(res)),
+                score=self._get_score_from_result(res),
+            )
+            for res in results
+        ]
+
+    def _get_metadata_from_results(self, results: Sequence[Any]) -> dict[str, Any]:
+        return {"scores": [self._get_score_from_result(res) for res in results]}
+
+    @abstractmethod
+    def _get_record_from_result(self, result: Any) -> Any:
+        """Get the record from the result."""
+        ...
+
+    @abstractmethod
+    def _get_score_from_result(self, result: Any) -> float:
+        """Get the score from the result."""
+        ...

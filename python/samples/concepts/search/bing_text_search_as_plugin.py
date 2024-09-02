@@ -23,7 +23,7 @@ service_id = "chat"
 kernel.add_service(OpenAIChatCompletion(service_id=service_id))
 connector = BingSearch()
 
-plugin = connector.create_plugin_from_search(
+plugin = connector.create_plugin(
     plugin_name="bing",
     options=TextSearchOptions(
         search_filters=[FilterClause(field_name="site", value="devblogs.microsoft.com", clause_type="equality")],

@@ -10,6 +10,7 @@ from semantic_kernel.search.text_search_options import TextSearchOptions
 class VectorSearchOptions(TextSearchOptions):
     """Options for vector search, builds on TextSearchOptions."""
 
+    vector: list[float | int] | None = None
     vector_field_name: str | None = None
     include_vectors: bool = False
     query_type: Literal[

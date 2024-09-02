@@ -2,6 +2,7 @@
 
 import logging
 from abc import ABC
+from collections.abc import Callable
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -10,11 +11,14 @@ from pydantic import Field, field_validator
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.search.text_search import TextSearch
+from semantic_kernel.search.text_search_options import TextSearchOptions
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
@@ -230,6 +234,32 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
                 openapi_document_path=openapi_document_path,
                 execution_settings=execution_settings,
                 description=description,
+            )
+        )
+
+    def add_plugin_from_search(
+        self,
+        search_service: TextSearch,
+        plugin_name: str,
+        search_function: Literal["search", "get_search_result"] = "search",
+        description: str | None = None,
+        options: TextSearchOptions | None = None,
+        parameters: list[KernelParameterMetadata] | None = None,
+        map_function: Callable[[Any], str] | None = None,
+        parameter_to_filter_value_map: dict[str, str] | None = None,
+        functions: dict[str, dict[str, Any]] | None = None,
+    ) -> KernelPlugin:
+        """Create a plugin from a search service."""
+        return self.add_plugin(
+            search_service.create_plugin(
+                search_function=search_function,
+                plugin_name=plugin_name,
+                description=description,
+                options=options,
+                parameters=parameters,
+                map_function=map_function,
+                parameter_to_filter_value_map=parameter_to_filter_value_map,
+                functions=functions,
             )
         )
 

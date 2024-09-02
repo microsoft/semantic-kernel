@@ -2,8 +2,8 @@
 
 from typing import Final
 
-DEFAULT_URL: Final[str] = "https://api.bing.microsoft.com/v7.0/search"
-DEFAULT_CUSTOM_URL: Final[str] = "https://api.bing.microsoft.com/v7.0/custom/search"
+DEFAULT_URL: Final[str] = "https://api.bing.microsoft.com/"
+DEFAULT_CUSTOM_URL: Final[str] = "https://api.bing.microsoft.com/"
 QUERY_PARAMETERS: Final[list[str]] = [
     "answerCount",
     "cc",
