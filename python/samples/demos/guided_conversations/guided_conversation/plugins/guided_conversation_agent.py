@@ -22,15 +22,20 @@ from guided_conversation.utils.openai_tool_calling import (
 from guided_conversation.utils.plugin_helpers import PluginOutput, format_kernel_functions_as_tools
 from guided_conversation.utils.resources import GCResource, ResourceConstraint
 from semantic_kernel.contents import ChatMessageContent, AuthorRole
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions import KernelArguments
 
 MAX_DECISION_RETRIES = 2
-
 
 class ToolName(Enum):
     UPDATE_ARTIFACT_TOOL = "update_artifact_field"
     UPDATE_AGENDA_TOOL = "update_agenda"
     SEND_MSG_TOOL = "send_message_to_user"
     END_CONV_TOOL = "end_conversation"
+    GENERATE_PLAN_TOOL = "generate_plan"
+    EXECUTE_PLAN_TOOL = "execute_plan"
+    FINAL_UPDATE_TOOL = "final_update"
+    GUIDED_CONVERSATION_AGENT_TOOLBOX = "gc_agent"
 
 
 @dataclass
@@ -111,6 +116,12 @@ class GuidedConversation:
             plugin_name=ToolName.UPDATE_AGENDA_TOOL.value, function=self.agenda.update_agenda_items
         )
 
+        # Set orchestrator functions for the agent
+        self.kernel_function_generate_plan = self.kernel.add_function(plugin_name="gc_agent", function=self.generate_plan)
+        self.kernel_function_execute_plan = self.kernel.add_function(plugin_name="gc_agent", function=self.execute_plan)
+        self.kernel_function_final_update = self.kernel.add_function(plugin_name="gc_agent", function=self.final_update)
+
+
     async def step_conversation(self, user_input: str | None = None) -> GCOutput:
         """Given a message from a user, this will execute the guided conversation agent up until a
         terminal plugin is called or the maximum number of decision retries is reached."""
@@ -129,8 +140,9 @@ class GuidedConversation:
         # Keep generating and executing plans until a terminal plugin is called
         # or the maximum number of decision retries is reached.
         while self.current_failed_decision_attempts < MAX_DECISION_RETRIES:
-            plan = await self._generate_plan()
-            success, plugins, terminal_plugins = await self._execute_plan(plan)
+            plan = await self.kernel.invoke(self.kernel_function_generate_plan)
+            executed_plan = await self.kernel.invoke(self.kernel_function_execute_plan, KernelArguments(plan=plan.value))
+            success, plugins, terminal_plugins = executed_plan.value
 
             if success != ToolValidationResult.SUCCESS:
                 self.logger.warning(
@@ -140,7 +152,7 @@ class GuidedConversation:
                 continue
 
             # Run a step of the orchestration logic based on the plugins called by the model.
-            # First execute all regular plugins (if any) in the order returned by _execute_plan
+            # First execute all regular plugins (if any) in the order returned by execute_plan
             for plugin_name, plugin_args in plugins:
                 if plugin_name == f"{ToolName.UPDATE_ARTIFACT_TOOL.value}-{ToolName.UPDATE_ARTIFACT_TOOL.value}":
                     plugin_args["conversation"] = self.conversation
@@ -160,7 +172,7 @@ class GuidedConversation:
                 if plugin_name == f"{ToolName.SEND_MSG_TOOL.value}-{ToolName.SEND_MSG_TOOL.value}":
                     gc_output.ai_message = plugin_args["message"]
                 elif plugin_name == f"{ToolName.END_CONV_TOOL.value}-{ToolName.END_CONV_TOOL.value}":
-                    await self._final_update()
+                    await self.kernel.invoke(self.kernel_function_final_update)
                     gc_output.ai_message = "I will terminate this conversation now. Thank you for your time!"
                     gc_output.is_conversation_over = True
                 self.resource.increment_resource()
@@ -174,22 +186,11 @@ class GuidedConversation:
         gc_output.is_conversation_over = True
         return gc_output
 
-    async def _call_plugin(self, plugin_function: Callable, plugin_args: dict):
-        """Common logic whenever any plugin is called like handling errors and appending to chat history."""
-        self.logger.info(f"Calling plugin {plugin_function.__name__}.")
-        output: PluginOutput = await plugin_function(**plugin_args)
-        if output.update_successful:
-            # Set turn numbers
-            for message in output.messages:
-                message.metadata["turn_number"] = self.resource.turn_number
-            self.conversation.add_messages(output.messages)
-        else:
-            self.logger.warning(
-                f"Plugin {plugin_function.__name__} failed to execute on attempt {self.current_failed_decision_attempts} out of {MAX_DECISION_RETRIES}."
-            )
-            self.current_failed_decision_attempts += 1
-
-    async def _generate_plan(self) -> str:
+    @kernel_function(
+        name=ToolName.GENERATE_PLAN_TOOL.value,
+        description="Generate a plan based on a time constraint for the current state of the conversation.",
+    )
+    async def generate_plan(self) -> str:
         """Generate a plan for the current state of the conversation. The idea here is to explicitly let the model plan before
         generating any plugin calls. This has been shown to increase reliability.
 
@@ -218,10 +219,14 @@ class GuidedConversation:
         )
         return plan
 
-    async def _execute_plan(
+    @kernel_function(
+        name=ToolName.EXECUTE_PLAN_TOOL.value,
+        description="Given the generated plan by the model, use that plan to generate which functions to execute."
+    )
+    async def execute_plan(
         self, plan: str
     ) -> tuple[ToolValidationResult, list[tuple[str, dict]], list[tuple[str, dict]]]:
-        """Given the generated plan by the model, use that plan to generate which functions to execution.
+        """Given the generated plan by the model, use that plan to generate which functions to execute.
         Once the tool calls are generated by the model, we sort them into two groups: regular plugins and terminal plugins
         according to the definition in __init__
 
@@ -268,7 +273,11 @@ class GuidedConversation:
 
         return validation_result, plugins, terminal_plugins
 
-    async def _final_update(self):
+    @kernel_function(
+        name=ToolName.FINAL_UPDATE_TOOL.value,
+        description="After the last message of a conversation was added to the conversation history, perform a final update of the artifact"
+    )
+    async def final_update(self):
         """Explicit final update of the artifact after the conversation ends."""
         self.logger.info("Final update of the artifact prior to terminating the conversation.")
 
@@ -333,6 +342,21 @@ class GuidedConversation:
             "chat_history": self.conversation.to_json(),
             "resource": self.resource.to_json(),
         }
+    
+    async def _call_plugin(self, plugin_function: Callable, plugin_args: dict):
+        """Common logic whenever any plugin is called like handling errors and appending to chat history."""
+        self.logger.info(f"Calling plugin {plugin_function.__name__}.")
+        output: PluginOutput = await plugin_function(**plugin_args)
+        if output.update_successful:
+            # Set turn numbers
+            for message in output.messages:
+                message.metadata["turn_number"] = self.resource.turn_number
+            self.conversation.add_messages(output.messages)
+        else:
+            self.logger.warning(
+                f"Plugin {plugin_function.__name__} failed to execute on attempt {self.current_failed_decision_attempts} out of {MAX_DECISION_RETRIES}."
+            )
+            self.current_failed_decision_attempts += 1
 
     @classmethod
     def from_json(

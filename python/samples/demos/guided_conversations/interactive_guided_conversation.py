@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
-from guided_conversation.guided_conversation_agent import GuidedConversation
+from guided_conversation.plugins.guided_conversation_agent import GuidedConversation
 from guided_conversation.utils.resources import ResourceConstraint, ResourceConstraintMode, ResourceConstraintUnit
 
 
