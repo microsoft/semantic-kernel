@@ -3,7 +3,7 @@
 import logging
 from enum import Enum
 from html import unescape
-from typing import Any, ClassVar, Literal, Union, overload
+from typing import Annotated, Any, ClassVar, Literal, overload
 from xml.etree.ElementTree import Element  # nosec
 
 from defusedxml import ElementTree
@@ -26,7 +26,6 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -41,15 +40,9 @@ TAG_CONTENT_MAP = {
     IMAGE_CONTENT_TAG: ImageContent,
 }
 
-ITEM_TYPES = Union[
-    AnnotationContent,
-    ImageContent,
-    TextContent,
-    StreamingTextContent,
-    FunctionResultContent,
-    FunctionCallContent,
-    FileReferenceContent,
-]
+ITEM_TYPES = (
+    AnnotationContent | ImageContent | TextContent | FunctionResultContent | FunctionCallContent | FileReferenceContent
+)
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +74,7 @@ class ChatMessageContent(KernelContent):
     items: list[ITEM_TYPES] = Field(
         default_factory=list, discriminator=DISCRIMINATOR_FIELD
     )
+    items: list[Annotated[ITEM_TYPES, Field(..., discriminator=DISCRIMINATOR_FIELD)]] = Field(default_factory=list)
     encoding: str | None = None
     finish_reason: FinishReason | None = None
 

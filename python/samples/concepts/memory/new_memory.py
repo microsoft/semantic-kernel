@@ -30,6 +30,8 @@ from semantic_kernel.data.vector_store_record_collection import (
     VectorStoreRecordCollection,
 )
 from semantic_kernel.data.vector_store_record_fields import (
+<<<<<<< Updated upstream
+=======
 from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings, OpenAITextEmbedding
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
@@ -37,6 +39,7 @@ from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, Redi
 from semantic_kernel.connectors.memory.volatile import VolatileCollection
 from semantic_kernel.data import (
     VectorStoreRecordCollection,
+>>>>>>> Stashed changes
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordUtils,

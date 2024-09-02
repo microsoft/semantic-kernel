@@ -123,10 +123,13 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             raise AgentInitializationError(
                 "Please provide either api_key, ad_token or ad_token_provider."
             )
+<<<<<<< Updated upstream
+=======
             raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
 
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
+>>>>>>> Stashed changes
 
         client = self._create_client(
             api_key=(
@@ -387,7 +390,11 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             raise AgentInitializationError(
                 "Failed to create Azure OpenAI settings.", ex
             ) from ex
+<<<<<<< Updated upstream
             raise AgentInitializationException("Failed to create Azure OpenAI settings.", ex) from ex
+=======
+            raise AgentInitializationException("Failed to create Azure OpenAI settings.", ex) from ex
+>>>>>>> Stashed changes
 
         return azure_openai_settings
 
@@ -451,9 +458,15 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             raise AgentInitializationError(
                 "Please provide either api_key, ad_token or ad_token_provider."
             )
+<<<<<<< Updated upstream
             raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
+=======
+            raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
+        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
+            raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
+>>>>>>> Stashed changes
 
         if not client:
             client = AzureAssistantAgent._create_client(

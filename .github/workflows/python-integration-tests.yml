@@ -151,6 +151,9 @@ jobs:
           REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
         run: |          
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
+        run: |
+          cd python
+          poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
       - name: Surface failing tests
         if: always()
         uses: pmeier/pytest-results-action@main
@@ -269,6 +272,8 @@ jobs:
           VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
           VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
           REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
+          ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
+          ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
       - name: Surface failing tests
@@ -282,6 +287,13 @@ jobs:
           title: Test results
       - name: Minimize uv cache
         run: uv cache prune --ci
+          if ${{ matrix.os == 'ubuntu-latest' }}; then
+            docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          fi
+
+          cd python
+          poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/integration -v
+          poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v
 
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   python-integration-tests-check:

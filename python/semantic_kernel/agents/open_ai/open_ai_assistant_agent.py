@@ -108,9 +108,13 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         )
 
         if not client and not openai_settings.api_key:
+<<<<<<< main
             raise AgentInitializationError(
                 "The OpenAI API key is required, if a client is not provided."
             )
+=======
+            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+>>>>>>> upstream/main
         if not openai_settings.chat_model_id:
             raise AgentInitializationException("The OpenAI chat model ID is required.")
 
@@ -347,9 +351,13 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
+<<<<<<< main
             raise AgentInitializationError(
                 "Failed to create OpenAI settings.", ex
             ) from ex
+=======
+            raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
+>>>>>>> upstream/main
 
         return openai_settings
 
@@ -401,9 +409,13 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             env_file_encoding=env_file_encoding,
         )
         if not client and not openai_settings.api_key:
+<<<<<<< main
             raise AgentInitializationError(
                 "The OpenAI API key is required, if a client is not provided."
             )
+=======
+            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+>>>>>>> upstream/main
         if not openai_settings.chat_model_id:
             raise AgentInitializationException("The OpenAI chat model ID is required.")
         if not client:
