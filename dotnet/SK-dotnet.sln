@@ -96,6 +96,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5C246969-D
 		src\InternalUtilities\test\TestInternalUtilities.props = src\InternalUtilities\test\TestInternalUtilities.props
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connectors", "connectors", "{314A2705-0F70-44B6-8988-C6DF77BDFD42}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ai", "ai", "{C7299F56-3A55-471E-B10E-B1FBE101C625}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\connectors\AI\FunctionCallsProcessor.cs = src\InternalUtilities\connectors\AI\FunctionCallsProcessor.cs
+		src\InternalUtilities\connectors\AI\AiConnectorsInternalUtilities.props = src\InternalUtilities\connectors\AI\AiConnectorsInternalUtilities.props
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{958AD708-F048-4FAF-94ED-D2F2B92748B9}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\InternalUtilities.props = src\InternalUtilities\src\InternalUtilities.props
@@ -879,6 +887,8 @@ Global
 		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4} = {24503383-A8C4-4255-9998-28D70FE8E99A}
 		{50FAE231-6F24-4779-9D02-12ABBC9A49E2} = {24503383-A8C4-4255-9998-28D70FE8E99A}
 		{5C246969-D794-4EC3-8E8F-F90D4D166420} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
+		{314A2705-0F70-44B6-8988-C6DF77BDFD42} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
+		{C7299F56-3A55-471E-B10E-B1FBE101C625} = {314A2705-0F70-44B6-8988-C6DF77BDFD42}
 		{958AD708-F048-4FAF-94ED-D2F2B92748B9} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
 		{29E7D971-1308-4171-9872-E8E4669A1134} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{B00AD427-0047-4850-BEF9-BA8237EA9D8B} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
