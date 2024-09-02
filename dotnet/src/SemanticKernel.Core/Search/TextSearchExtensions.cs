@@ -293,7 +293,7 @@ public static class TextSearchExtensions
     /// <param name="arguments">Kernel arguments.</param>
     private static BasicFilterOptions? CreateBasicFilter(KernelFunctionFromMethodOptions? options, KernelArguments arguments)
     {
-        if (options is null || options.Parameters is null)
+        if (options?.Parameters is null)
         {
             return null;
         }
