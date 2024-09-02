@@ -27,6 +27,7 @@ from semantic_kernel.functions import KernelArguments
 
 MAX_DECISION_RETRIES = 2
 
+
 class ToolName(Enum):
     UPDATE_ARTIFACT_TOOL = "update_artifact_field"
     UPDATE_AGENDA_TOOL = "update_agenda"
@@ -117,10 +118,11 @@ class GuidedConversation:
         )
 
         # Set orchestrator functions for the agent
-        self.kernel_function_generate_plan = self.kernel.add_function(plugin_name="gc_agent", function=self.generate_plan)
+        self.kernel_function_generate_plan = self.kernel.add_function(
+            plugin_name="gc_agent", function=self.generate_plan
+        )
         self.kernel_function_execute_plan = self.kernel.add_function(plugin_name="gc_agent", function=self.execute_plan)
         self.kernel_function_final_update = self.kernel.add_function(plugin_name="gc_agent", function=self.final_update)
-
 
     async def step_conversation(self, user_input: str | None = None) -> GCOutput:
         """Given a message from a user, this will execute the guided conversation agent up until a
@@ -141,7 +143,9 @@ class GuidedConversation:
         # or the maximum number of decision retries is reached.
         while self.current_failed_decision_attempts < MAX_DECISION_RETRIES:
             plan = await self.kernel.invoke(self.kernel_function_generate_plan)
-            executed_plan = await self.kernel.invoke(self.kernel_function_execute_plan, KernelArguments(plan=plan.value))
+            executed_plan = await self.kernel.invoke(
+                self.kernel_function_execute_plan, KernelArguments(plan=plan.value)
+            )
             success, plugins, terminal_plugins = executed_plan.value
 
             if success != ToolValidationResult.SUCCESS:
@@ -221,7 +225,7 @@ class GuidedConversation:
 
     @kernel_function(
         name=ToolName.EXECUTE_PLAN_TOOL.value,
-        description="Given the generated plan by the model, use that plan to generate which functions to execute."
+        description="Given the generated plan by the model, use that plan to generate which functions to execute.",
     )
     async def execute_plan(
         self, plan: str
@@ -275,7 +279,7 @@ class GuidedConversation:
 
     @kernel_function(
         name=ToolName.FINAL_UPDATE_TOOL.value,
-        description="After the last message of a conversation was added to the conversation history, perform a final update of the artifact"
+        description="After the last message of a conversation was added to the conversation history, perform a final update of the artifact",
     )
     async def final_update(self):
         """Explicit final update of the artifact after the conversation ends."""
@@ -342,7 +346,7 @@ class GuidedConversation:
             "chat_history": self.conversation.to_json(),
             "resource": self.resource.to_json(),
         }
-    
+
     async def _call_plugin(self, plugin_function: Callable, plugin_args: dict):
         """Common logic whenever any plugin is called like handling errors and appending to chat history."""
         self.logger.info(f"Calling plugin {plugin_function.__name__}.")
