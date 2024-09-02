@@ -47,6 +47,8 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
 from semantic_kernel.connectors.ai.function_choice_behavior import (
     FunctionChoiceBehavior,
 )
+<<<<<<< Updated upstream
+=======
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.azure_ai_inference.services.utils import MESSAGE_CONVERTERS
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -55,6 +57,7 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
     update_settings_from_function_call_configuration,
 )
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+>>>>>>> Stashed changes
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -201,9 +204,15 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                 for item in chat_history.messages[-1].items
                 if isinstance(item, FunctionCallContent)
             ]
+<<<<<<< Updated upstream
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
+=======
+        for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
+            completions = await self._send_chat_request(chat_history, settings)
+            function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
+>>>>>>> Stashed changes
             if (fc_count := len(function_calls)) == 0:
                 return completions
 
@@ -329,10 +338,13 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             # Auto invoke is required.
             async_generator = self._get_streaming_chat_message_contents_auto_invoke(
                 chat_history, settings, **kwargs
+<<<<<<< Updated upstream
+=======
                 kernel,  # type: ignore
                 kwargs.get("arguments"),
                 chat_history,
                 settings,
+>>>>>>> Stashed changes
             )
 
         async for messages in async_generator:
@@ -527,7 +539,11 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             settings.extra_parameters is not None
             and settings.extra_parameters.get("n", 1) > 1
         ):
+<<<<<<< Updated upstream
         if settings.extra_parameters is not None and settings.extra_parameters.get("n", 1) > 1:
+=======
+        if settings.extra_parameters is not None and settings.extra_parameters.get("n", 1) > 1:
+>>>>>>> Stashed changes
             # Currently only OpenAI models allow multiple completions but the Azure AI Inference service
             # does not expose the functionality directly. If users want to have more than 1 responses, they
             # need to configure `extra_parameters` with a key of "n" and a value greater than 1.
@@ -543,7 +559,11 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             raise ServiceInvalidExecutionSettingsError(
                 "Function choice behavior is required for tool calls."
             )
+<<<<<<< Updated upstream
             return
+=======
+            return
+>>>>>>> Stashed changes
 
         settings.function_choice_behavior.configure(
             kernel=kernel,
