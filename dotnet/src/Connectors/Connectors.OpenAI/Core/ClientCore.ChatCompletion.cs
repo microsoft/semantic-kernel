@@ -181,12 +181,12 @@ internal partial class ClientCore
             }
 
             // If we don't want to attempt to invoke any functions, just return the result.
-            if (!toolCallingConfig?.AutoInvoke ?? false)
+            if (!(toolCallingConfig?.AutoInvoke ?? false))
             {
                 return [chatMessageContent];
             }
 
-            Debug.Assert(kernel is not null);
+            // Debug.Assert(kernel is not null);
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
@@ -401,7 +401,7 @@ internal partial class ClientCore
                         finishReason = chatCompletionUpdate.FinishReason ?? default;
 
                         // If we're intending to invoke function calls, we need to consume that function call information.
-                        if (toolCallingConfig.AutoInvoke)
+                        if (toolCallingConfig?.AutoInvoke ?? false)
                         {
                             foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
                             {
@@ -458,7 +458,7 @@ internal partial class ClientCore
             // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
-            if (!toolCallingConfig.AutoInvoke ||
+            if (!(toolCallingConfig?.AutoInvoke ?? false) ||
                 toolCallIdsByIndex is not { Count: > 0 })
             {
                 yield break;
@@ -650,8 +650,6 @@ internal partial class ClientCore
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
         };
-
-        
 
         var responseFormat = GetResponseFormat(executionSettings);
         if (responseFormat is not null)

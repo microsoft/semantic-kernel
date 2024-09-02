@@ -28,7 +28,7 @@ internal partial class AzureClientCore
     protected override ChatCompletionOptions CreateChatCompletionOptions(
         OpenAIPromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
-        ToolCallingConfig toolCallingConfig,
+        ToolCallingConfig? toolCallingConfig,
         Kernel? kernel)
     {
         if (executionSettings is not AzureOpenAIPromptExecutionSettings azureSettings)
@@ -47,20 +47,29 @@ internal partial class AzureClientCore
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
-            ResponseFormat = GetResponseFormat(azureSettings) ?? ChatResponseFormat.Text,
-            ToolChoice = toolCallingConfig.Choice
         };
+
+        var responseFormat = GetResponseFormat(executionSettings);
+        if (responseFormat is not null)
+        {
+            options.ResponseFormat = responseFormat;
+        }
+
+        if (toolCallingConfig is not null)
+        {
+            options.ToolChoice = toolCallingConfig.Choice;
+
+            if (toolCallingConfig.Tools is { Count: > 0 } tools)
+            {
+                options.Tools.AddRange(tools);
+            }
+        }
 
         if (azureSettings.AzureChatDataSource is not null)
         {
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             options.AddDataSource(azureSettings.AzureChatDataSource);
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        }
-
-        if (toolCallingConfig.Tools is { Count: > 0 } tools)
-        {
-            options.Tools.AddRange(tools);
         }
 
         if (executionSettings.TokenSelectionBiases is not null)
