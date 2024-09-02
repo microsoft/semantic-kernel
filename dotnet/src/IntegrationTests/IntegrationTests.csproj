@@ -93,6 +93,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="CrossLanguage\Data\PromptWithChatRolesTestStreaming.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="CrossLanguage\Data\PromptWithComplexObjectsTestStreaming.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="CrossLanguage\Data\PromptWithHelperFunctionsTestStreaming.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="CrossLanguage\Data\PromptWithSimpleVariableTestStreaming.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="CrossLanguage\Data\SimplePromptTestStreaming.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="testsettings.development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

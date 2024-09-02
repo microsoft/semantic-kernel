@@ -27,7 +27,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 internal partial class ClientCore
 {
     protected const string ModelProvider = "openai";
-    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
+    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke);
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -649,11 +649,16 @@ internal partial class ClientCore
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
-            ResponseFormat = GetResponseFormat(executionSettings) ?? ChatResponseFormat.Text,
             ToolChoice = toolCallingConfig.Choice,
         };
 
-        if (toolCallingConfig.Tools is { Count: > 0 } tools)
+        var responseFormat = GetResponseFormat(executionSettings);
+        if (responseFormat is not null)
+        {
+            options.ResponseFormat = responseFormat;
+        }
+
+        if (toolCallingConfig?.Tools is { Count: > 0 } tools)
         {
             options.Tools.AddRange(tools);
         }
@@ -1138,7 +1143,7 @@ internal partial class ClientCore
     {
         if (executionSettings.ToolCallBehavior is null)
         {
-            return new ToolCallingConfig(Tools: [s_nonInvocableFunctionTool], Choice: ChatToolChoice.None, AutoInvoke: false);
+            return new ToolCallingConfig(Tools: null, Choice: null, AutoInvoke: false);
         }
 
         if (requestIndex >= executionSettings.ToolCallBehavior.MaximumUseAttempts)

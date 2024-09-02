@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -17,34 +18,43 @@ namespace SemanticKernel.IntegrationTests.CrossLanguage;
 internal sealed class KernelRequestTracer : IDisposable
 {
     private const string DummyResponse = @"{
-    ""id"": ""chatcmpl-abc123"",
-    ""object"": ""chat.completion"",
-    ""created"": 1677858242,
-    ""model"": ""gpt-3.5-turbo-0613"",
-    ""usage"": {
-        ""prompt_tokens"": 13,
-        ""completion_tokens"": 7,
-        ""total_tokens"": 20
-    },
-    ""choices"": [
-        {
-            ""message"": {
-                ""role"": ""assistant"",
-                ""content"": ""\n\nThis is a test!""
-            },
-            ""logprobs"": null,
-            ""finish_reason"": ""stop"",
-            ""index"": 0
-        }
-    ]
-   }";
+        ""id"": ""chatcmpl-abc123"",
+        ""object"": ""chat.completion"",
+        ""created"": 1677858242,
+        ""model"": ""gpt-3.5-turbo-0613"",
+        ""usage"": {
+            ""prompt_tokens"": 13,
+            ""completion_tokens"": 7,
+            ""total_tokens"": 20
+        },
+        ""choices"": [
+            {
+                ""message"": {
+                    ""role"": ""assistant"",
+                    ""content"": ""\n\nThis is a test!""
+                },
+                ""logprobs"": null,
+                ""finish_reason"": ""stop"",
+                ""index"": 0
+            }
+        ]
+    }";
+
+    private const string DummyStreamingResponse = @"
+    data: {""id"":""chatcmpl-96fqQVHGjG9Yzs4ZMB1K6nfy2oEoo"",""object"":""chat.completion.chunk"",""created"":1711377846,""model"":""gpt-4-0125-preview"",""system_fingerprint"":""fp_a7daf7c51e"",""choices"":[{""index"":0,""delta"":{""content"":""Test chat streaming response""},""logprobs"":null,""finish_reason"":null}]}
+
+    data: {""id"":""chatcmpl-96fqQVHGjG9Yzs4ZMB1K6nfy2oEoo"",""object"":""chat.completion.chunk"",""created"":1711377846,""model"":""gpt-4-0125-preview"",""system_fingerprint"":""fp_a7daf7c51e"",""choices"":[{""index"":0,""delta"":{},""logprobs"":null,""finish_reason"":""stop""}]}
+
+    data: [DONE]
+    ";
 
     private HttpClient? _httpClient;
     private HttpMessageHandlerStub? _httpMessageHandlerStub;
+    private MemoryStream? _stream;
 
-    public Kernel GetNewKernel()
+    public Kernel GetNewKernel(bool isStreaming)
     {
-        this.ResetHttpComponents();
+        this.ResetHttpComponents(isStreaming);
 
         return Kernel.CreateBuilder()
                      .AddOpenAIChatCompletion(
@@ -63,24 +73,8 @@ internal sealed class KernelRequestTracer : IDisposable
     {
         if (isInline)
         {
-            if (isStreaming)
-            {
-                try
-                {
-                    await foreach (var update in kernel.InvokePromptStreamingAsync<ChatMessageContent>(prompt, arguments: args))
-                    {
-                        // Do nothing with received response
-                    }
-                }
-                catch (NotSupportedException)
-                {
-                    // Ignore this exception
-                }
-            }
-            else
-            {
-                await kernel.InvokePromptAsync<ChatMessageContent>(prompt, args);
-            }
+            var function = KernelFunctionFactory.CreateFromPrompt(prompt);
+            await RunFunctionAsync(kernel, isStreaming, function, args);
         }
         else
         {
@@ -134,18 +128,29 @@ internal sealed class KernelRequestTracer : IDisposable
     {
         this._httpClient?.Dispose();
         this._httpMessageHandlerStub?.Dispose();
+        this._stream?.Dispose();
     }
 
-    private void ResetHttpComponents()
+    private void ResetHttpComponents(bool isStreaming)
     {
         this.DisposeHttpResources();
 
         this._httpMessageHandlerStub = new HttpMessageHandlerStub();
-        this._httpMessageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        if (isStreaming)
         {
-            Content = new StringContent(DummyResponse,
-                                        Encoding.UTF8, "application/json")
-        };
+            this._stream = new MemoryStream(Encoding.UTF8.GetBytes(DummyStreamingResponse));
+            this._httpMessageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(this._stream)
+            };
+        }
+        else
+        {
+            this._httpMessageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(DummyResponse, Encoding.UTF8, "application/json")
+            };
+        }
         this._httpClient = new HttpClient(this._httpMessageHandlerStub);
     }
 }

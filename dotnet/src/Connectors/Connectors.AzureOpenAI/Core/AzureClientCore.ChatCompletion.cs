@@ -47,9 +47,14 @@ internal partial class AzureClientCore
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
-            ResponseFormat = GetResponseFormat(azureSettings) ?? ChatResponseFormat.Text,
             ToolChoice = toolCallingConfig.Choice
         };
+
+        var responseFormat = GetResponseFormat(azureSettings);
+        if (responseFormat is not null)
+        {
+            options.ResponseFormat = responseFormat;
+        }
 
         if (azureSettings.AzureChatDataSource is not null)
         {

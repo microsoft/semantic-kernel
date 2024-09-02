@@ -24,7 +24,7 @@ public class PromptWithHelperFunctionsTest
     public async Task PromptWithHelperFunctionsAsync(bool isInline, bool isStreaming, string templateFormat, string prompt)
     {
         using var kernelProvider = new KernelRequestTracer();
-        Kernel kernel = kernelProvider.GetNewKernel();
+        Kernel kernel = kernelProvider.GetNewKernel(isStreaming);
         kernel.Plugins.AddFromFunctions("Time",
                 [KernelFunctionFactory.CreateFromMethod(() => $"{PromptWithHelperFunctionsTest.UtcNow:r}", "Now", "Gets the current date and time")]);
 
@@ -37,7 +37,8 @@ public class PromptWithHelperFunctionsTest
         JsonNode? obtainedObject = JsonNode.Parse(requestContent);
         Assert.NotNull(obtainedObject);
 
-        string expected = await File.ReadAllTextAsync("./CrossLanguage/Data/PromptWithHelperFunctionsTest.json");
+        string expected = await File.ReadAllTextAsync(
+            isStreaming ? "./CrossLanguage/Data/PromptWithHelperFunctionsTestStreaming.json" : "./CrossLanguage/Data/PromptWithHelperFunctionsTest.json");
         JsonNode? expectedObject = JsonNode.Parse(expected);
         Assert.NotNull(expectedObject);
 

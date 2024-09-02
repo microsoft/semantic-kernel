@@ -28,7 +28,7 @@ public class PromptWithComplexObjectsTest
     public async Task PromptWithComplexObjectsAsync(bool isInline, bool isStreaming, string templateFormat, string prompt)
     {
         using var kernelProvider = new KernelRequestTracer();
-        Kernel kernel = kernelProvider.GetNewKernel();
+        Kernel kernel = kernelProvider.GetNewKernel(isStreaming);
 
         await KernelRequestTracer.RunPromptAsync(kernel, isInline, isStreaming, templateFormat, prompt, new()
         {
@@ -39,14 +39,10 @@ public class PromptWithComplexObjectsTest
         JsonNode? obtainedObject = JsonNode.Parse(requestContent);
         Assert.NotNull(obtainedObject);
 
-        string expected = await File.ReadAllTextAsync("./CrossLanguage/Data/PromptWithComplexObjectsTest.json");
+        string expected = await File.ReadAllTextAsync(
+            isStreaming ? "./CrossLanguage/Data/PromptWithComplexObjectsTestStreaming.json" : "./CrossLanguage/Data/PromptWithComplexObjectsTest.json");
         JsonNode? expectedObject = JsonNode.Parse(expected);
         Assert.NotNull(expectedObject);
-
-        if (isStreaming)
-        {
-            expectedObject["stream"] = true;
-        }
 
         Assert.True(JsonNode.DeepEquals(obtainedObject, expectedObject));
     }

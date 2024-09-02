@@ -102,7 +102,7 @@ public class OpenApiTest
     private async Task<HttpMessageHandlerStub> SetUpOpenApiFunctionCallAsync(string functionName, KernelArguments args)
     {
         using var kernelProvider = new KernelRequestTracer();
-        Kernel kernel = kernelProvider.GetNewKernel();
+        Kernel kernel = kernelProvider.GetNewKernel(false);
 
         using var httpMessageHandlerStub = new HttpMessageHandlerStub();
         var execParams = new OpenApiFunctionExecutionParameters { HttpClient = new HttpClient(httpMessageHandlerStub) };

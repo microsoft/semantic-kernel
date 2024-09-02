@@ -12,16 +12,16 @@ namespace SemanticKernel.IntegrationTests.CrossLanguage;
 public class YamlPromptTest
 {
     [Theory]
-    [InlineData(false, "./CrossLanguage/Data/SimplePromptTest.yaml", "./CrossLanguage/Data/SimplePromptTest.json")]
-    [InlineData(true, "./CrossLanguage/Data/SimplePromptTest.yaml", "./CrossLanguage/Data/SimplePromptTest.json")]
-    [InlineData(false, "./CrossLanguage/Data/PromptWithChatRolesTest-HB.yaml", "./CrossLanguage/Data/PromptWithChatRolesTest.json")]
-    [InlineData(true, "./CrossLanguage/Data/PromptWithChatRolesTest-HB.yaml", "./CrossLanguage/Data/PromptWithChatRolesTest.json")]
-    [InlineData(false, "./CrossLanguage/Data/PromptWithSimpleVariableTest.yaml", "./CrossLanguage/Data/PromptWithSimpleVariableTest.json")]
-    [InlineData(true, "./CrossLanguage/Data/PromptWithSimpleVariableTest.yaml", "./CrossLanguage/Data/PromptWithSimpleVariableTest.json")]
-    public async Task YamlPromptAsync(bool isStreaming, string promptPath, string expectedResultPath)
+    [InlineData(false, "./CrossLanguage/Data/SimplePromptTest.yaml", "./CrossLanguage/Data/SimplePromptTest.json", "./CrossLanguage/Data/SimplePromptTestStreaming.json")]
+    [InlineData(true, "./CrossLanguage/Data/SimplePromptTest.yaml", "./CrossLanguage/Data/SimplePromptTest.json", "./CrossLanguage/Data/SimplePromptTestStreaming.json")]
+    [InlineData(false, "./CrossLanguage/Data/PromptWithChatRolesTest-HB.yaml", "./CrossLanguage/Data/PromptWithChatRolesTest.json", "./CrossLanguage/Data/PromptWithChatRolesTestStreaming.json")]
+    [InlineData(true, "./CrossLanguage/Data/PromptWithChatRolesTest-HB.yaml", "./CrossLanguage/Data/PromptWithChatRolesTest.json", "./CrossLanguage/Data/PromptWithChatRolesTestStreaming.json")]
+    [InlineData(false, "./CrossLanguage/Data/PromptWithSimpleVariableTest.yaml", "./CrossLanguage/Data/PromptWithSimpleVariableTest.json", "./CrossLanguage/Data/PromptWithSimpleVariableTestStreaming.json")]
+    [InlineData(true, "./CrossLanguage/Data/PromptWithSimpleVariableTest.yaml", "./CrossLanguage/Data/PromptWithSimpleVariableTest.json", "./CrossLanguage/Data/PromptWithSimpleVariableTestStreaming.json")]
+    public async Task YamlPromptAsync(bool isStreaming, string promptPath, string expectedResultPath, string expectedStreamingResultPath)
     {
         using var kernelProvider = new KernelRequestTracer();
-        Kernel kernel = kernelProvider.GetNewKernel();
+        Kernel kernel = kernelProvider.GetNewKernel(isStreaming);
         var promptTemplateFactory = new AggregatorPromptTemplateFactory(
                                         new KernelPromptTemplateFactory(),
                                         new HandlebarsPromptTemplateFactory());
@@ -35,14 +35,9 @@ public class YamlPromptTest
         JsonNode? obtainedObject = JsonNode.Parse(requestContent);
         Assert.NotNull(obtainedObject);
 
-        string expected = await File.ReadAllTextAsync(expectedResultPath);
+        string expected = await File.ReadAllTextAsync(isStreaming ? expectedStreamingResultPath : expectedResultPath);
         JsonNode? expectedObject = JsonNode.Parse(expected);
         Assert.NotNull(expectedObject);
-
-        if (isStreaming)
-        {
-            expectedObject["stream"] = true;
-        }
 
         Assert.True(JsonNode.DeepEquals(obtainedObject, expectedObject));
     }

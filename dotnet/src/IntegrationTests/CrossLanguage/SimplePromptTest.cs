@@ -22,7 +22,7 @@ public class SimplePromptTest
     public async Task SimplePromptAsync(bool isInline, bool isStreaming, string templateFormat, string prompt)
     {
         using var kernelProvider = new KernelRequestTracer();
-        Kernel kernel = kernelProvider.GetNewKernel();
+        Kernel kernel = kernelProvider.GetNewKernel(isStreaming);
 
         await KernelRequestTracer.RunPromptAsync(kernel, isInline, isStreaming, templateFormat, prompt);
 
@@ -30,14 +30,11 @@ public class SimplePromptTest
         JsonNode? obtainedObject = JsonNode.Parse(requestContent);
         Assert.NotNull(obtainedObject);
 
-        string expected = await File.ReadAllTextAsync("./CrossLanguage/Data/SimplePromptTest.json");
+        string expected = await File.ReadAllTextAsync(
+            isStreaming ? "./CrossLanguage/Data/SimplePromptTestStreaming.json" : "./CrossLanguage/Data/SimplePromptTest.json");
+
         JsonNode? expectedObject = JsonNode.Parse(expected);
         Assert.NotNull(expectedObject);
-
-        if (isStreaming)
-        {
-            expectedObject["stream"] = true;
-        }
 
         Assert.True(JsonNode.DeepEquals(obtainedObject, expectedObject));
     }
