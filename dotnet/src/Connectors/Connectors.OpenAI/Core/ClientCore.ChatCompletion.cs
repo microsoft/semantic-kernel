@@ -181,12 +181,10 @@ internal partial class ClientCore
             }
 
             // If we don't want to attempt to invoke any functions, just return the result.
-            if (!(toolCallingConfig?.AutoInvoke ?? false))
+            if (!toolCallingConfig.AutoInvoke)
             {
                 return [chatMessageContent];
             }
-
-            // Debug.Assert(kernel is not null);
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
@@ -401,7 +399,7 @@ internal partial class ClientCore
                         finishReason = chatCompletionUpdate.FinishReason ?? default;
 
                         // If we're intending to invoke function calls, we need to consume that function call information.
-                        if (toolCallingConfig?.AutoInvoke ?? false)
+                        if (toolCallingConfig.AutoInvoke)
                         {
                             foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
                             {
@@ -458,7 +456,7 @@ internal partial class ClientCore
             // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
-            if (!(toolCallingConfig?.AutoInvoke ?? false) ||
+            if (!toolCallingConfig.AutoInvoke ||
                 toolCallIdsByIndex is not { Count: > 0 })
             {
                 yield break;
@@ -635,7 +633,7 @@ internal partial class ClientCore
     protected virtual ChatCompletionOptions CreateChatCompletionOptions(
         OpenAIPromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
-        ToolCallingConfig? toolCallingConfig,
+        ToolCallingConfig toolCallingConfig,
         Kernel? kernel)
     {
         var options = new ChatCompletionOptions
@@ -657,14 +655,11 @@ internal partial class ClientCore
             options.ResponseFormat = responseFormat;
         }
 
-        if (toolCallingConfig is not null)
-        {
-            options.ToolChoice = toolCallingConfig.Choice;
+        options.ToolChoice = toolCallingConfig.Choice;
 
-            if (toolCallingConfig.Tools is { Count: > 0 } tools)
-            {
-                options.Tools.AddRange(tools);
-            }
+        if (toolCallingConfig.Tools is { Count: > 0 } tools)
+        {
+            options.Tools.AddRange(tools);
         }
 
         if (executionSettings.TokenSelectionBiases is not null)
@@ -1143,11 +1138,11 @@ internal partial class ClientCore
         }
     }
 
-    private ToolCallingConfig? GetToolCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, int requestIndex)
+    private ToolCallingConfig GetToolCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, int requestIndex)
     {
         if (executionSettings.ToolCallBehavior is null)
         {
-            return null;
+            return new ToolCallingConfig(Tools: null, Choice: null, AutoInvoke: false);
         }
 
         if (requestIndex >= executionSettings.ToolCallBehavior.MaximumUseAttempts)

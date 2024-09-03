@@ -28,7 +28,7 @@ internal partial class AzureClientCore
     protected override ChatCompletionOptions CreateChatCompletionOptions(
         OpenAIPromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
-        ToolCallingConfig? toolCallingConfig,
+        ToolCallingConfig toolCallingConfig,
         Kernel? kernel)
     {
         if (executionSettings is not AzureOpenAIPromptExecutionSettings azureSettings)
@@ -55,14 +55,11 @@ internal partial class AzureClientCore
             options.ResponseFormat = responseFormat;
         }
 
-        if (toolCallingConfig is not null)
-        {
-            options.ToolChoice = toolCallingConfig.Choice;
+        options.ToolChoice = toolCallingConfig.Choice;
 
-            if (toolCallingConfig.Tools is { Count: > 0 } tools)
-            {
-                options.Tools.AddRange(tools);
-            }
+        if (toolCallingConfig.Tools is { Count: > 0 } tools)
+        {
+            options.Tools.AddRange(tools);
         }
 
         if (azureSettings.AzureChatDataSource is not null)
