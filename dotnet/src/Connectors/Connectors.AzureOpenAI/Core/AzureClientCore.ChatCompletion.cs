@@ -55,7 +55,10 @@ internal partial class AzureClientCore
             options.ResponseFormat = responseFormat;
         }
 
-        options.ToolChoice = toolCallingConfig.Choice;
+        if (toolCallingConfig.Choice is not null)
+        {
+            options.ToolChoice = toolCallingConfig.Choice;
+        }
 
         if (toolCallingConfig.Tools is { Count: > 0 } tools)
         {
