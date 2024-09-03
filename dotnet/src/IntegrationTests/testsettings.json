@@ -45,6 +45,10 @@
     "Endpoint": "",
     "ApiKey": ""
   },
+  "OpenAITextToImage": {
+    "ModelId": "dall-e-2",
+    "ApiKey": ""
+  },
   "AzureOpenAITextToImage": {
     "ServiceId": "azure-dalle3",
     "DeploymentName": "dall-e-3",
