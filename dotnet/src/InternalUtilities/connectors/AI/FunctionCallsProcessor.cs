@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
@@ -149,7 +148,8 @@ internal sealed class FunctionCallsProcessor
             foreach (var call in functionCalls)
             {
                 var argumentsString = call.Arguments is not null ? $"({string.Join(",", call.Arguments.Select(a => $"{a.Key}={a.Value}"))})" : "()";
-                messages.Add($"{call.FunctionName}{argumentsString}");
+                var pluginName = string.IsNullOrEmpty(call.PluginName) ? string.Empty : $"{call.PluginName}-";
+                messages.Add($"{pluginName}{call.FunctionName}{argumentsString}");
             }
             this._logger.LogTrace("Function calls: {Calls}", string.Join(", ", messages));
         }
@@ -260,7 +260,6 @@ internal sealed class FunctionCallsProcessor
         // Log any error
         if (errorMessage is not null && this._logger.IsEnabled(LogLevel.Debug))
         {
-            Debug.Assert(result is null);
             this._logger.LogDebug("Failed to handle function request ({Id}). {Error}", functionCall.Id, errorMessage);
         }
 

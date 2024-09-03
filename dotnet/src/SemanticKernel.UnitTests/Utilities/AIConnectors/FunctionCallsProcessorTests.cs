@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 #pragma warning disable IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Connectors.AI;
 #pragma warning restore IDE0005 // Using directive is unnecessary
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Utilities.AIConnectors;
@@ -42,6 +43,22 @@ public class FunctionCallsProcessorTests
 
         // Assert
         Assert.True(config!.AutoInvoke);
+    }
+
+    [Fact]
+    public void ItShouldDisableAutoInvocationIfNoKernelIsProvided()
+    {
+        // Arrange
+        var behaviorMock = new Mock<FunctionChoiceBehavior>();
+        behaviorMock
+            .Setup(b => b.GetConfiguration(It.IsAny<FunctionChoiceBehaviorConfigurationContext>()))
+            .Returns(new FunctionChoiceBehaviorConfiguration(options: new FunctionChoiceBehaviorOptions()));
+
+        // Act
+        var config = this._sut.GetConfiguration(behavior: behaviorMock.Object, chatHistory: [], requestIndex: 128, kernel: null); // No kernel provided
+
+        // Assert
+        Assert.False(config!.AutoInvoke);
     }
 
     [Fact]
@@ -609,6 +626,74 @@ public class FunctionCallsProcessorTests
         }
 
         return builder.Build();
+    }
+
+    [Fact]
+    public async Task ItShouldHandleChatMessageContentAsFunctionResultAsync()
+    {
+        // Arrange
+        var function1 = KernelFunctionFactory.CreateFromMethod(() => { return new ChatMessageContent(AuthorRole.User, "function1-result"); }, "Function1");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1]);
+
+        var kernel = CreateKernel(plugin);
+
+        var chatHistory = new ChatHistory();
+
+        var chatMessageContent = new ChatMessageContent();
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin"));
+
+        // Act
+        await this._sut.ProcessFunctionCallsAsync(
+                chatMessageContent: chatMessageContent,
+                chatHistory: chatHistory,
+                requestIndex: 0,
+                checkIfFunctionAdvertised: (_) => true,
+                kernel: kernel,
+                resultSerializerOptions: null,
+                cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.Equal(2, chatHistory.Count);
+
+        var function1Result = chatHistory[1].Items.OfType<FunctionResultContent>().Single();
+        Assert.Equal("MyPlugin", function1Result.PluginName);
+        Assert.Equal("Function1", function1Result.FunctionName);
+        Assert.IsType<string>(function1Result.Result);
+        Assert.Equal("function1-result", function1Result.Result);
+    }
+
+    [Fact]
+    public async Task ItShouldSerializeFunctionResultOfUnknowTypeAsync()
+    {
+        // Arrange
+        var function1 = KernelFunctionFactory.CreateFromMethod(() => { return new { a = 2, b = "test" }; }, "Function1");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1]);
+
+        var kernel = CreateKernel(plugin);
+
+        var chatHistory = new ChatHistory();
+
+        var chatMessageContent = new ChatMessageContent();
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin"));
+
+        // Act
+        await this._sut.ProcessFunctionCallsAsync(
+                chatMessageContent: chatMessageContent,
+                chatHistory: chatHistory,
+                requestIndex: 0,
+                checkIfFunctionAdvertised: (_) => true,
+                kernel: kernel,
+                resultSerializerOptions: null,
+                cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.Equal(2, chatHistory.Count);
+
+        var function1Result = chatHistory[1].Items.OfType<FunctionResultContent>().Single();
+        Assert.Equal("MyPlugin", function1Result.PluginName);
+        Assert.Equal("Function1", function1Result.FunctionName);
+        Assert.IsType<string>(function1Result.Result);
+        Assert.Equal("{\"a\":2,\"b\":\"test\"}", function1Result.Result);
     }
 
     private sealed class AutoFunctionInvocationFilter(
