@@ -136,7 +136,7 @@ class TextSearch:
         function_name: str | None = None,
         description: str | None = None,
         map_function: Callable[[TMapInput], str] | None = None,
-        parameter_to_filter_value_map: dict[str, str] | None = None,
+        parameter_to_filter_value_map: dict[str, str] = {},
     ) -> KernelFunction:
         """Create a function from a search service."""
         if not map_function:
@@ -174,7 +174,7 @@ class TextSearch:
         self,
         options: dict[str, Any],
         parameters: list[KernelParameterMetadata],
-        parameter_to_filter_value_map: dict[str, str],
+        parameter_to_filter_value_map: dict[str, str] = {},
         **kwargs: Any,
     ) -> TextSearchOptions:
         """Set options and filters from keyword arguments."""

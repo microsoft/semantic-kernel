@@ -4,9 +4,7 @@ import logging
 from html import escape
 from typing import Any
 
-from azure.cognitiveservices.search.websearch import WebSearchClient
-from azure.cognitiveservices.search.websearch.models import ErrorResponseException
-from msrest.authentication import CognitiveServicesCredentials
+from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.search.bing.bing_search_response import BingSearchResponse
@@ -33,13 +31,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 class BingSearch(KernelBaseModel, TextSearch):
     """A search engine connector that uses the Bing Search API to perform a web search."""
 
-    client: WebSearchClient
+    settings: BingSettings
 
     def __init__(
         self,
         api_key: str | None = None,
         custom_config: str | None = None,
-        client: WebSearchClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
@@ -55,8 +52,6 @@ class BingSearch(KernelBaseModel, TextSearch):
                 the settings are read from this file path location.
             env_file_encoding: The optional encoding of the .env file.
         """
-        if client:
-            super().__init__(client=client)
         try:
             settings = BingSettings.create(
                 api_key=api_key,
@@ -66,13 +61,8 @@ class BingSearch(KernelBaseModel, TextSearch):
             )
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create Bing settings.") from ex
-        client = WebSearchClient(
-            endpoint=f"{DEFAULT_CUSTOM_URL}&customConfig={settings.custom_config}"
-            if settings.custom_config
-            else DEFAULT_URL,
-            credentials=CognitiveServicesCredentials(settings.api_key.get_secret_value()),
-        )
-        super().__init__(client=client)
+
+        super().__init__(settings=settings)
 
     async def search(self, options: TextSearchOptions | None = None, **kwargs: Any) -> "KernelSearchResult[str]":
         """Search for text, returning a KernelSearchResult with a list of strings."""
@@ -154,13 +144,32 @@ class BingSearch(KernelBaseModel, TextSearch):
 
     async def _inner_search(self, options: TextSearchOptions) -> BingSearchResponse:
         self._validate_options(options)
-        dict_options = self._update_options(options)
+
+        logger.info(
+            f"Received request for bing web search with \
+                params:\nquery: {options.query}\nnum_results: {options.count}\noffset: {options.offset}"
+        )
+
+        url = self._get_url()
+        params = self._build_request_parameters(options)
+
+        logger.info(f"Sending GET request to {url}")
+
+        headers = {
+            "Ocp-Apim-Subscription-Key": self.settings.api_key.get_secret_value(),
+            "user_agent": SEMANTIC_KERNEL_USER_AGENT,
+        }
         try:
-            response = self.client.web.search(**dict_options)
-            return BingSearchResponse.model_validate_json(response.text)
-        except ErrorResponseException as ex:
+            async with AsyncClient() as client:
+                response = await client.get(url, headers=headers, params=params)
+                response.raise_for_status()
+                return BingSearchResponse.model_validate_json(response.text)
+        except HTTPStatusError as ex:
             logger.error(f"Failed to get search results: {ex}")
             raise ServiceInvalidRequestError("Failed to get search results.") from ex
+        except RequestError as ex:
+            logger.error(f"Client error occurred: {ex}")
+            raise ServiceInvalidRequestError("A client error occurred while getting search results.") from ex
         except Exception as ex:
             logger.error(f"An unexpected error occurred: {ex}")
             raise ServiceInvalidRequestError("An unexpected error occurred while getting search results.") from ex
@@ -176,7 +185,7 @@ class BingSearch(KernelBaseModel, TextSearch):
             return DEFAULT_URL
         return f"{DEFAULT_CUSTOM_URL}&customConfig={self.settings.custom_config}"
 
-    def _update_options(self, options: TextSearchOptions) -> dict[str, Any]:
+    def _build_request_parameters(self, options: TextSearchOptions) -> dict[str, str | int]:
         params = {"count": options.count, "offset": options.offset}
         extra_query_params = []
 
@@ -187,7 +196,5 @@ class BingSearch(KernelBaseModel, TextSearch):
                 extra_query_params.append(f"{filter.field_name}:{filter.value}")
             if filter.clause_type == FilterClauseType.TAG_LIST_CONTAINS:
                 logger.debug("Tag list contains filter is not supported by Bing Search API.")
-        params["query"] = f"{options.query}+{' '.join(extra_query_params)}".strip()
-        if "user_agent" not in params:
-            params["user_agent"] = SEMANTIC_KERNEL_USER_AGENT
+        params["q"] = f"{options.query}+{' '.join(extra_query_params)}".strip()
         return params

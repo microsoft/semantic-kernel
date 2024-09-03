@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 import logging
 from abc import abstractmethod
 from collections.abc import Mapping, Sequence
@@ -42,12 +43,11 @@ class VectorSearch(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, TMod
         """Search for vectors similar to the query."""
         options = self._create_options(**kwargs)
         raw_results = await self._inner_search(options=options)
-        count = len(raw_results)
-        if count == 0:
-            return KernelSearchResult(results=[], total_count=count)
+        if raw_results is None or len(raw_results) == 0:
+            return KernelSearchResult(results=[], total_count=0)
         return KernelSearchResult(
-            results=self._get_records_from_results(raw_results),
-            total_count=count,
+            results=self._get_strings_from_records(self._get_records_from_results(raw_results)),
+            total_count=len(raw_results),
             metadata=self._get_metadata_from_results(raw_results),
         )
 
@@ -70,12 +70,11 @@ class VectorSearch(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, TMod
         """Search for text, returning a KernelSearchResult with VectorSearchResults."""
         options = self._create_options(**kwargs)
         raw_results = await self._inner_search(options=options)
-        count = len(raw_results)
-        if count == 0:
-            return KernelSearchResult(results=[], total_count=count)
+        if raw_results is None or len(raw_results) == 0:
+            return KernelSearchResult(results=[], total_count=0)
         return KernelSearchResult(
             results=self._get_vector_search_results_from_results(raw_results),
-            total_count=count,
+            total_count=len(raw_results),
             metadata=self._get_metadata_from_results(raw_results),
         )
 
@@ -87,12 +86,11 @@ class VectorSearch(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, TMod
         """Search for text, returning a KernelSearchResult with the results directly from the service."""
         options = self._create_options(**kwargs)
         raw_results = await self._inner_search(options=options)
-        count = len(raw_results)
-        if count == 0:
-            return KernelSearchResult(results=[], total_count=count)
+        if raw_results is None or len(raw_results) == 0:
+            return KernelSearchResult(results=[], total_count=0)
         return KernelSearchResult(
             results=raw_results,
-            total_count=count,
+            total_count=len(raw_results),
             metadata=self._get_metadata_from_results(raw_results),
         )
 
@@ -103,6 +101,9 @@ class VectorSearch(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, TMod
             return VectorSearchOptions(**kwargs)
         except ValidationError:
             return VectorSearchOptions()
+
+    def _get_strings_from_records(self, records: Sequence[TModel]) -> Sequence[str]:
+        return [json.dumps(record) for record in records]
 
     def _get_records_from_results(self, results: Sequence[Any]) -> Sequence[TModel]:
         return [self.deserialize(self._get_record_from_result(res)) for res in results]
