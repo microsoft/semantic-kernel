@@ -117,6 +117,9 @@ jobs:
           AzureOpenAIAudioToText__ApiKey: ${{ secrets.AZUREOPENAIAUDIOTOTEXT__APIKEY }}
           AzureOpenAIAudioToText__Endpoint: ${{ secrets.AZUREOPENAIAUDIOTOTEXT__ENDPOINT }}
           AzureOpenAIAudioToText__DeploymentName: ${{ vars.AZUREOPENAIAUDIOTOTEXT__DEPLOYMENTNAME }}
+          AzureOpenAITextToImage__ApiKey: ${{ secrets.AZUREOPENAITEXTTOIMAGE__APIKEY }}
+          AzureOpenAITextToImage__Endpoint: ${{ secrets.AZUREOPENAITEXTTOIMAGE__ENDPOINT }}
+          AzureOpenAITextToImage__DeploymentName: ${{ vars.AZUREOPENAITEXTTOIMAGE__DEPLOYMENTNAME }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
           OpenAI__ChatModelId: ${{ vars.OPENAI__CHATMODELID }}
