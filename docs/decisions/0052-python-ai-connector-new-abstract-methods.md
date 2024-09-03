@@ -1,11 +1,11 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: { proposed }
+status: { accepted }
 contact: { Tao Chen }
-date: { 2024-08-30 }
-deciders: {}
-consulted: {}
-informed: {}
+date: { 2024-09-03 }
+deciders: { Eduard van Valkenburg, Ben Thomas }
+consulted: { Eduard van Valkenburg }
+informed: { Eduard van Valkenburg, Ben Thomas }
 ---
 
 # New abstract methods in `ChatCompletionClientBase` and `TextCompletionClientBase` (Semantic Kernel Python)
@@ -48,4 +48,33 @@ async def _send_streaming_chat_request(
     settings: PromptExecutionSettings
 ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
     pass
+```
+
+### A new `ClassVar[bool]` variable in `ChatCompletionClientBase` to indicate whether a connector supports function calling
+
+This class variable will be overridden in derived classes and be used in the default implementations of `get_chat_message_contents` and `get_streaming_chat_message_contents`.
+
+```python
+class ChatCompletionClientBase(AIServiceClientBase, ABC):
+    """Base class for chat completion AI services."""
+
+    FUNCTION_CALLING_SUPPORT: ClassVar[bool] = False
+    ...
+```
+
+```python
+class MockChatCompletionThatSupportsFunctionCalling(ChatCompletionClientBase):
+
+    FUNCTION_CALLING_SUPPORT: ClassVar[bool] = True
+
+    @override
+    async def get_chat_message_contents(
+        self,
+        chat_history: ChatHistory,
+        settings: "PromptExecutionSettings",
+        **kwargs: Any,
+    ) -> list[ChatMessageContent]:
+        if not self.FUNCTION_CALLING_SUPPORT:
+            return ...
+        ...
 ```
