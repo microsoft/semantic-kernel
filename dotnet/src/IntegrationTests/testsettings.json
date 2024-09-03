@@ -46,6 +46,7 @@
     "ApiKey": ""
   },
   "OpenAITextToImage": {
+    "ServiceId": "dall-e-2",
     "ModelId": "dall-e-2",
     "ApiKey": ""
   },
