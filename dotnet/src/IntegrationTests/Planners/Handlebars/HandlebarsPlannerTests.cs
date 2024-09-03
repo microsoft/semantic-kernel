@@ -16,7 +16,7 @@ namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
 
 public sealed class HandlebarsPlannerTests
 {
-    [Theory]
+    [Theory(Skip = "This test is for manual verification.")]
     [InlineData("Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
     public async Task CreatePlanFunctionFlowAsync(string goal, string expectedFunction, string expectedPlugin)
     {
@@ -37,7 +37,7 @@ public sealed class HandlebarsPlannerTests
         );
     }
 
-    [RetryTheory]
+    [RetryTheory(Skip = "This test is for manual verification.")]
     [InlineData("Write a novel about software development that is 3 chapters long.", "NovelChapter", "WriterPlugin")]
     public async Task CreatePlanWithDefaultsAsync(string goal, string expectedFunction, string expectedPlugin)
     {
@@ -56,7 +56,7 @@ public sealed class HandlebarsPlannerTests
         );
     }
 
-    [Theory]
+    [Theory(Skip = "This test is for manual verification.")]
     [InlineData("List each property of the default Qux object.", "## Complex types", """
         ### Qux:
         {

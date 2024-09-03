@@ -111,6 +111,8 @@ jobs:
           OpenAITextToAudio__ModelId: ${{ vars.OPENAITEXTTOAUDIO__MODELID }}
           OpenAIAudioToText__ApiKey: ${{ secrets.OPENAIAUDIOTOTEXT__APIKEY }}
           OpenAIAudioToText__ModelId: ${{ vars.OPENAIAUDIOTOTEXT__MODELID }}
+          OpenAITextToImage__ApiKey: ${{ secrets.OPENAITEXTTOIMAGE__APIKEY }}
+          OpenAITextToImage__ModelId: ${{ vars.OPENAITEXTTOIMAGE__MODELID }}
           AzureOpenAITextToAudio__ApiKey: ${{ secrets.AZUREOPENAITEXTTOAUDIO__APIKEY }}
           AzureOpenAITextToAudio__Endpoint: ${{ secrets.AZUREOPENAITEXTTOAUDIO__ENDPOINT }}
           AzureOpenAITextToAudio__DeploymentName: ${{ vars.AZUREOPENAITEXTTOAUDIO__DEPLOYMENTNAME }}
