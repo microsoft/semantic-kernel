@@ -42,7 +42,7 @@ internal
     {
         if (options is null)
         {
-           ThrowHelpers.ThrowArgumentNullException(nameof(options));
+            ThrowHelpers.ThrowArgumentNullException(nameof(options));
         }
 
         if (type is null)
