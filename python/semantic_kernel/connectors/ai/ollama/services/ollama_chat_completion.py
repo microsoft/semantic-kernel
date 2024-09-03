@@ -3,7 +3,7 @@
 import logging
 import sys
 from collections.abc import AsyncGenerator, AsyncIterator, Mapping
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -25,7 +25,7 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion, trace_text_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -38,6 +38,8 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
 
     Make sure to have the ollama service running either locally or remotely.
     """
+
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
 
     def __init__(
         self,
@@ -75,26 +77,24 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             client=client or AsyncClient(host=ollama_settings.host),
         )
 
+    # region Overriding base class methods
+
+    # Override from AIServiceClientBase
     @override
-    @trace_chat_completion(OllamaBase.MODEL_PROVIDER_NAME)
-    async def get_chat_message_contents(
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        """Get the request settings class."""
+        return OllamaChatPromptExecutionSettings
+
+    @override
+    async def _send_chat_request(
         self,
-        chat_history: ChatHistory,
+        chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Any,
-    ) -> list[ChatMessageContent]:
-        """This is the method that is called from the kernel to get a response from a chat-optimized LLM.
+    ) -> list["ChatMessageContent"]:
+        if not isinstance(settings, OllamaChatPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, OllamaChatPromptExecutionSettings)  # nosec
 
-        Args:
-            chat_history (ChatHistory): A chat history that contains a list of chat messages,
-                that can be rendered into a set of messages, from system, user, assistant and function.
-            settings (PromptExecutionSettings): Settings for the request.
-            kwargs (Dict[str, Any]): The optional arguments.
-
-        Returns:
-            List[ChatMessageContent]: A list of ChatMessageContent objects representing the response(s) from the LLM.
-        """
-        settings = self.get_prompt_execution_settings_from_settings(settings)
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
         response_object = await self.client.chat(
@@ -119,26 +119,16 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             )
         ]
 
-    async def get_streaming_chat_message_contents(
+    @override
+    async def _send_streaming_chat_request(
         self,
-        chat_history: ChatHistory,
+        chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Any,
-    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
-        """Streams a text completion using an Ollama model.
+    ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
+        if not isinstance(settings, OllamaChatPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, OllamaChatPromptExecutionSettings)  # nosec
 
-        Note that this method does not support multiple responses.
-
-        Args:
-            chat_history (ChatHistory): A chat history that contains a list of chat messages,
-                that can be rendered into a set of messages, from system, user, assistant and function.
-            settings (PromptExecutionSettings): Request settings.
-            kwargs (Dict[str, Any]): The optional arguments.
-
-        Yields:
-            List[StreamingChatMessageContent]: Stream of StreamingChatMessageContent objects.
-        """
-        settings = self.get_prompt_execution_settings_from_settings(settings)
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
         response_object = await self.client.chat(
@@ -164,6 +154,8 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
                     content=part.get("message", {"content": None}).get("content", None),
                 )
             ]
+
+    # endregion
 
     @override
     @trace_text_completion(OllamaBase.MODEL_PROVIDER_NAME)
@@ -246,8 +238,3 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
                     text=part.get("message", {"content": None}).get("content", None),
                 )
             ]
-
-    @override
-    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
-        """Get the request settings class."""
-        return OllamaChatPromptExecutionSettings
