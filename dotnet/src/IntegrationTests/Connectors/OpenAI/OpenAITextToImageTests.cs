@@ -23,7 +23,7 @@ public sealed class OpenAITextToImageTests
     public async Task OpenAITextToImageByModelTestAsync(string modelId, int width, int height)
     {
         // Arrange
-        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAITextToImage").Get<OpenAIConfiguration>();
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
         var kernel = Kernel.CreateBuilder()
@@ -44,7 +44,7 @@ public sealed class OpenAITextToImageTests
     public async Task OpenAITextToImageUseDallE2ByDefaultAsync()
     {
         // Arrange
-        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAITextToImage").Get<OpenAIConfiguration>();
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
         var kernel = Kernel.CreateBuilder()
