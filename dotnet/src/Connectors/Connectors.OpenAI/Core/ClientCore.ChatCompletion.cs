@@ -27,7 +27,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 internal partial class ClientCore
 {
     protected const string ModelProvider = "openai";
-    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
+    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke);
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -185,8 +185,6 @@ internal partial class ClientCore
             {
                 return [chatMessageContent];
             }
-
-            Debug.Assert(kernel is not null);
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
@@ -649,9 +647,15 @@ internal partial class ClientCore
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
-            ResponseFormat = GetResponseFormat(executionSettings) ?? ChatResponseFormat.Text,
-            ToolChoice = toolCallingConfig.Choice,
         };
+
+        var responseFormat = GetResponseFormat(executionSettings);
+        if (responseFormat is not null)
+        {
+            options.ResponseFormat = responseFormat;
+        }
+
+        options.ToolChoice = toolCallingConfig.Choice;
 
         if (toolCallingConfig.Tools is { Count: > 0 } tools)
         {
@@ -1138,7 +1142,7 @@ internal partial class ClientCore
     {
         if (executionSettings.ToolCallBehavior is null)
         {
-            return new ToolCallingConfig(Tools: [s_nonInvocableFunctionTool], Choice: ChatToolChoice.None, AutoInvoke: false);
+            return new ToolCallingConfig(Tools: null, Choice: null, AutoInvoke: false);
         }
 
         if (requestIndex >= executionSettings.ToolCallBehavior.MaximumUseAttempts)
