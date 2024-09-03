@@ -52,12 +52,14 @@ class UserAssignedManagedIdentityAuthentication(AzureChatRequestBase):
     """User assigned managed identity authentication."""
 
     type: Annotated[Literal["UserAssignedManagedIdentity", "user_assigned_managed_identity"], AfterValidator(to_snake)] = "user_assigned_managed_identity"
+    managed_identity_resource_id: str | None = None
 
 
 class AccessTokenAuthentication(AzureChatRequestBase):
     """Access token authentication."""
 
     type: Annotated[Literal["AccessToken", "access_token"], AfterValidator(to_snake)] = "access_token"
+    access_token: str | None = None
 
 
 class AzureEmbeddingDependency(AzureChatRequestBase):
