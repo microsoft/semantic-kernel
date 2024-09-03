@@ -1,8 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from collections.abc import AsyncGenerator
-from typing import Any
+from typing import Any, ClassVar
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from anthropic import AsyncAnthropic
 from anthropic.types import (
@@ -29,11 +35,9 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
-from semantic_kernel.exceptions.service_exceptions import (
-    ServiceInitializationError,
-    ServiceResponseException,
-)
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 
 # map finish reasons from Anthropic to Semantic Kernel
 ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP = {
@@ -49,8 +53,10 @@ logger: logging.Logger = logging.getLogger(__name__)
 class AnthropicChatCompletion(ChatCompletionClientBase):
     """Antropic ChatCompletion class."""
 
+    MODEL_PROVIDER_NAME: ClassVar[str] = "anthropic"
+
     async_client: AsyncAnthropic
-    
+
     def __init__(
         self,
         ai_model_id: str | None = None,
@@ -68,10 +74,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             service_id: Service ID tied to the execution settings.
             api_key: The optional API key to use. If provided will override,
                 the env vars or .env file value.
-            async_client: An existing client to use. 
+            async_client: An existing client to use.
             env_file_path: Use the environment settings file as a fallback
-                to environment variables. 
-            env_file_encoding: The encoding of the environment settings file. 
+                to environment variables.
+            env_file_encoding: The encoding of the environment settings file.
         """
         try:
             anthropic_settings = AnthropicSettings.create(
@@ -82,7 +88,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             )
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create Anthropic settings.", ex) from ex
-        
+
         if not anthropic_settings.chat_model_id:
             raise ServiceInitializationError("The Anthropic chat model ID is required.")
 
@@ -97,12 +103,14 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             ai_model_id=anthropic_settings.chat_model_id,
         )
 
+    @override
+    @trace_chat_completion(MODEL_PROVIDER_NAME)
     async def get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
         **kwargs: Any,
-    ) -> list["ChatMessageContent"]: 
+    ) -> list["ChatMessageContent"]:
         """Executes a chat completion request and returns the result.
 
         Args:
@@ -127,22 +135,23 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the prompt",
                 ex,
-        ) from ex
-        
+            ) from ex
+
         metadata: dict[str, Any] = {"id": response.id}
         # Check if usage exists and has a value, then add it to the metadata
         if hasattr(response, "usage") and response.usage is not None:
             metadata["usage"] = response.usage
 
-        return [self._create_chat_message_content(response, content_block, metadata) 
-                for content_block in response.content]
-        
+        return [
+            self._create_chat_message_content(response, content_block, metadata) for content_block in response.content
+        ]
+
     async def get_streaming_chat_message_contents(
         self,
         chat_history: ChatHistory,
-        settings: PromptExecutionSettings, 
+        settings: PromptExecutionSettings,
         **kwargs: Any,
-    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]: 
+    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Executes a streaming chat completion request and returns the result.
 
         Args:
@@ -166,17 +175,18 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 author_role = None
                 metadata: dict[str, Any] = {"usage": {}, "id": None}
                 content_block_idx = 0
-                
+
                 async for stream_event in stream:
                     if isinstance(stream_event, RawMessageStartEvent):
                         author_role = stream_event.message.role
                         metadata["usage"]["input_tokens"] = stream_event.message.usage.input_tokens
                         metadata["id"] = stream_event.message.id
                     elif isinstance(stream_event, (RawContentBlockDeltaEvent, RawMessageDeltaEvent)):
-                        yield [self._create_streaming_chat_message_content(stream_event, 
-                                                                           content_block_idx, 
-                                                                           author_role, 
-                                                                           metadata)]
+                        yield [
+                            self._create_streaming_chat_message_content(
+                                stream_event, content_block_idx, author_role, metadata
+                            )
+                        ]
                     elif isinstance(stream_event, ContentBlockStopEvent):
                         content_block_idx += 1
 
@@ -187,21 +197,18 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             ) from ex
 
     def _create_chat_message_content(
-        self, 
-        response: Message, 
-        content: TextBlock, 
-        response_metadata: dict[str, Any]
+        self, response: Message, content: TextBlock, response_metadata: dict[str, Any]
     ) -> "ChatMessageContent":
         """Create a chat message content object."""
         items: list[ITEM_TYPES] = []
-        
+
         if content.text:
             items.append(TextContent(text=content.text))
 
         finish_reason = None
         if response.stop_reason:
             finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[response.stop_reason]
-        
+
         return ChatMessageContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
@@ -212,20 +219,20 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         )
 
     def _create_streaming_chat_message_content(
-        self, 
-        stream_event: RawContentBlockDeltaEvent | RawMessageDeltaEvent, 
-        content_block_idx: int, 
-        role: str | None = None, 
-        metadata: dict[str, Any] = {}
+        self,
+        stream_event: RawContentBlockDeltaEvent | RawMessageDeltaEvent,
+        content_block_idx: int,
+        role: str | None = None,
+        metadata: dict[str, Any] = {},
     ) -> StreamingChatMessageContent:
         """Create a streaming chat message content object from a choice."""
         text_content = ""
-            
+
         if stream_event.delta and hasattr(stream_event.delta, "text"):
             text_content = stream_event.delta.text
-        
+
         items: list[STREAMING_ITEM_TYPES] = [StreamingTextContent(choice_index=content_block_idx, text=text_content)]
-        
+
         finish_reason = None
         if isinstance(stream_event, RawMessageDeltaEvent):
             if stream_event.delta.stop_reason:
@@ -246,4 +253,3 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     def get_prompt_execution_settings_class(self) -> "type[AnthropicChatPromptExecutionSettings]":
         """Create a request settings object."""
         return AnthropicChatPromptExecutionSettings
-    
