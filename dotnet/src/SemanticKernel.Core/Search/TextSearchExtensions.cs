@@ -94,7 +94,8 @@ public static class TextSearchExtensions
             searchOptions ??= new()
             {
                 Count = GetArgumentValue(arguments, parameters, "count", 2),
-                Offset = GetArgumentValue(arguments, parameters, "skip", 0)
+                Offset = GetArgumentValue(arguments, parameters, "skip", 0),
+                BasicFilter = CreateBasicFilter(options, arguments)
             };
 
             var result = await textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
@@ -130,7 +131,8 @@ public static class TextSearchExtensions
             searchOptions ??= new()
             {
                 Count = GetArgumentValue(arguments, parameters, "count", 2),
-                Offset = GetArgumentValue(arguments, parameters, "skip", 0)
+                Offset = GetArgumentValue(arguments, parameters, "skip", 0),
+                BasicFilter = CreateBasicFilter(options, arguments)
             };
 
             var result = await textSearch.GetTextSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
@@ -165,7 +167,8 @@ public static class TextSearchExtensions
             searchOptions ??= new()
             {
                 Count = GetArgumentValue(arguments, parameters, "count", 2),
-                Offset = GetArgumentValue(arguments, parameters, "skip", 0)
+                Offset = GetArgumentValue(arguments, parameters, "skip", 0),
+                BasicFilter = CreateBasicFilter(options, arguments)
             };
 
             var result = await textSearch.GetSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
@@ -254,5 +257,36 @@ public static class TextSearchExtensions
             ],
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
         };
+
+    /// <summary>
+    /// Create a <see cref="BasicFilterOptions" /> for the search based on any additional parameters included in the <see cref="KernelFunctionFromMethodOptions"/>
+    /// </summary>
+    /// <param name="options">Kernel function method options.</param>
+    /// <param name="arguments">Kernel arguments.</param>
+    private static BasicFilterOptions? CreateBasicFilter(KernelFunctionFromMethodOptions? options, KernelArguments arguments)
+    {
+        if (options?.Parameters is null)
+        {
+            return null;
+        }
+
+        BasicFilterOptions? filter = null;
+        foreach (var parameter in options.Parameters)
+        {
+            // treat non standard parameters as equality filter clauses
+            if (!parameter.Name.Equals("query", System.StringComparison.Ordinal) &&
+                !parameter.Name.Equals("count", System.StringComparison.Ordinal) &&
+                !parameter.Name.Equals("skip", System.StringComparison.Ordinal))
+            {
+                if (arguments.TryGetValue(parameter.Name, out var value) && value is not null)
+                {
+                    filter ??= new BasicFilterOptions();
+                    filter.Equality(parameter.Name, value);
+                }
+            }
+        }
+
+        return filter;
+    }
     #endregion
 }
