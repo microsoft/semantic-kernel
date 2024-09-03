@@ -187,6 +187,29 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         if hasattr(settings, "tools"):
             delattr(settings, "tools")
 
+    @override
+    def _prepare_chat_history_for_request(
+        self,
+        chat_history: ChatHistory,
+        role_key: str = "role",
+        content_key: str = "content",
+    ) -> list[Content]:
+        chat_request_messages: list[Content] = []
+
+        for message in chat_history.messages:
+            if message.role == AuthorRole.SYSTEM:
+                # Skip system messages since they are not part of the chat request.
+                # System message will be provided as system_instruction in the model.
+                continue
+            if message.role == AuthorRole.USER:
+                chat_request_messages.append(Content(role="user", parts=format_user_message(message)))
+            elif message.role == AuthorRole.ASSISTANT:
+                chat_request_messages.append(Content(role="model", parts=format_assistant_message(message)))
+            elif message.role == AuthorRole.TOOL:
+                chat_request_messages.append(Content(role="function", parts=format_tool_message(message)))
+
+        return chat_request_messages
+
     # endregion
 
     # region Non-streaming
@@ -288,29 +311,6 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         )
 
     # endregion
-
-    @override
-    def _prepare_chat_history_for_request(
-        self,
-        chat_history: ChatHistory,
-        role_key: str = "role",
-        content_key: str = "content",
-    ) -> list[Content]:
-        chat_request_messages: list[Content] = []
-
-        for message in chat_history.messages:
-            if message.role == AuthorRole.SYSTEM:
-                # Skip system messages since they are not part of the chat request.
-                # System message will be provided as system_instruction in the model.
-                continue
-            if message.role == AuthorRole.USER:
-                chat_request_messages.append(Content(role="user", parts=format_user_message(message)))
-            elif message.role == AuthorRole.ASSISTANT:
-                chat_request_messages.append(Content(role="model", parts=format_assistant_message(message)))
-            elif message.role == AuthorRole.TOOL:
-                chat_request_messages.append(Content(role="function", parts=format_tool_message(message)))
-
-        return chat_request_messages
 
     def _get_metadata_from_response(
         self, response: AsyncGenerateContentResponse | GenerateContentResponse
