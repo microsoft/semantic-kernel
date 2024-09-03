@@ -130,7 +130,6 @@ public sealed class BingTextSearchTests : IDisposable
     }
 
     [Theory]
-    [InlineData("site", "devblogs.microsoft.com", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+site%3Adevblogs.microsoft.com&count=4&offset=0")]
     [InlineData("answerCount", 5, "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F&count=4&offset=0&answerCount=5")]
     [InlineData("cc", "AR", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F&count=4&offset=0&cc=AR")]
     [InlineData("freshness", "2019-02-01..2019-05-30", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F&count=4&offset=0&freshness=2019-02-01..2019-05-30")]
@@ -141,6 +140,21 @@ public sealed class BingTextSearchTests : IDisposable
     [InlineData("setLang", "ar", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F&count=4&offset=0&setLang=ar")]
     [InlineData("textDecorations", true, "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F&count=4&offset=0&textDecorations=True")]
     [InlineData("textFormat", "HTML", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F&count=4&offset=0&textFormat=HTML")]
+    [InlineData("contains", "wma", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+contains%3Awma&count=4&offset=0")]
+    [InlineData("ext", "docx", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+ext%3Adocx&count=4&offset=0")]
+    [InlineData("filetype", "pdf", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+filetype%3Apdf&count=4&offset=0")]
+    [InlineData("inanchor", "msn", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+inanchor%3Amsn&count=4&offset=0")]
+    [InlineData("inbody", "msn", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+inbody%3Amsn&count=4&offset=0")]
+    [InlineData("intitle", "msn", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+intitle%3Amsn&count=4&offset=0")]
+    [InlineData("ip", "127.0.0.1", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+ip%3A127.0.0.1&count=4&offset=0")]
+    [InlineData("language", "en", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+language%3Aen&count=4&offset=0")]
+    [InlineData("loc", "IE", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+loc%3AIE&count=4&offset=0")]
+    [InlineData("location", "IE", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+location%3AIE&count=4&offset=0")]
+    [InlineData("prefer", "organization", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+prefer%3Aorganization&count=4&offset=0")]
+    [InlineData("feed", "football", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+feed%3Afootball&count=4&offset=0")]
+    [InlineData("hasfeed", "football", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+hasfeed%3Afootball&count=4&offset=0")]
+    [InlineData("url", "microsoft.com", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+url%3Amicrosoft.com&count=4&offset=0")]
+    [InlineData("site", "devblogs.microsoft.com", "https://api.bing.microsoft.com/v7.0/search?q=What%20is%20the%20Semantic%20Kernel%3F+site%3Adevblogs.microsoft.com&count=4&offset=0")]
     public async Task BuildsCorrectUriForEqualityFilterAsync(string paramName, object paramValue, string requestLink)
     {
         // Arrange
@@ -172,7 +186,7 @@ public sealed class BingTextSearchTests : IDisposable
 
         // Act && Assert
         var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions));
-        Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of answerCount,cc,freshness,mkt,promote,responseFilter,safeSearch,setLang,textDecorations,textFormat (Parameter 'searchOptions')", e.Message);
+        Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of answerCount,cc,freshness,mkt,promote,responseFilter,safeSearch,setLang,textDecorations,textFormat,contains,ext,filetype,inanchor,inbody,intitle,ip,language,loc,location,prefer,site,feed,hasfeed,url (Parameter 'searchOptions')", e.Message);
     }
 
     /// <inheritdoc/>
