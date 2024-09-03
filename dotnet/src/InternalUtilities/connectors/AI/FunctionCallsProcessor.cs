@@ -55,6 +55,7 @@ internal sealed class FunctionCallsProcessor
     /// <remarks>
     /// It is temporarily made internal to allow code that uses the old function model to read it and decide whether to continue auto-invocation or not.
     /// It should be made private when the old model is deprecated.
+    /// Despite the field being static, its value is unique per execution flow. So if thousands of requests hit it in parallel, each request will see its unique value.
     /// </remarks>
     internal static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
 
