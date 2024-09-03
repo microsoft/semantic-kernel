@@ -3,6 +3,7 @@
 from collections import OrderedDict
 from typing import TYPE_CHECKING, Any
 
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 def update_settings_from_function_call_configuration(
     function_choice_configuration: "FunctionCallChoiceConfiguration",
     settings: "PromptExecutionSettings",
-    type: str,
+    type: FunctionChoiceType,
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""
     if (
