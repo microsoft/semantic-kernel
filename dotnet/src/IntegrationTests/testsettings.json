@@ -45,6 +45,12 @@
     "Endpoint": "",
     "ApiKey": ""
   },
+  "AzureOpenAITextToImage": {
+    "ServiceId": "azure-dalle3",
+    "DeploymentName": "dall-e-3",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
   "HuggingFace": {
     "ApiKey": ""
   },
