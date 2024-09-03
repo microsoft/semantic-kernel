@@ -23,12 +23,17 @@
   <ItemGroup>
     <None Remove="CrossLanguage\Data\LightBulbApi.json" />
     <None Remove="CrossLanguage\Data\LightBulbApiTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithChatRolesStreamingTest.json" />
     <None Remove="CrossLanguage\Data\PromptWithChatRolesTest-HB.yaml" />
     <None Remove="CrossLanguage\Data\PromptWithChatRolesTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithComplexObjectsStreamingTest.json" />
     <None Remove="CrossLanguage\Data\PromptWithComplexObjectsTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithHelperFunctionsStreamingTest.json" />
     <None Remove="CrossLanguage\Data\PromptWithHelperFunctionsTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithSimpleVariableStreamingTest.json" />
     <None Remove="CrossLanguage\Data\PromptWithSimpleVariableTest.json" />
     <None Remove="CrossLanguage\Data\PromptWithSimpleVariableTest.yaml" />
+    <None Remove="CrossLanguage\Data\SimplePromptStreamingTest.json" />
     <None Remove="CrossLanguage\Data\SimplePromptTest.json" />
     <None Remove="CrossLanguage\Data\SimplePromptTest.yaml" />
     <None Remove="prompts\GenerateStoryHandlebars.yaml" />
@@ -105,22 +110,37 @@
     <Content Include="CrossLanguage\Data\LightBulbApiTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="CrossLanguage\Data\PromptWithChatRolesStreamingTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="CrossLanguage\Data\PromptWithChatRolesTest-HB.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="CrossLanguage\Data\PromptWithChatRolesTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="CrossLanguage\Data\PromptWithComplexObjectsStreamingTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="CrossLanguage\Data\PromptWithComplexObjectsTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="CrossLanguage\Data\PromptWithHelperFunctionsStreamingTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="CrossLanguage\Data\PromptWithHelperFunctionsTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithSimpleVariableStreamingTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="CrossLanguage\Data\PromptWithSimpleVariableTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="CrossLanguage\Data\PromptWithSimpleVariableTest.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\SimplePromptStreamingTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="CrossLanguage\Data\SimplePromptTest.yaml">

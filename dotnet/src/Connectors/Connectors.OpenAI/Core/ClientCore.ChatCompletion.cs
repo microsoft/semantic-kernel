@@ -27,7 +27,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 internal partial class ClientCore
 {
     protected const string ModelProvider = "openai";
-    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
+    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -195,8 +195,6 @@ internal partial class ClientCore
             {
                 return [chatMessageContent];
             }
-
-            Debug.Assert(kernel is not null);
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
@@ -426,24 +424,26 @@ internal partial class ClientCore
 
                         var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, targetModel, metadata);
 
-                        foreach (var functionCallUpdate in chatCompletionUpdate.ToolCallUpdates)
+                        if (openAIStreamingChatMessageContent.ToolCallUpdates is not null)
                         {
-                            // Using the code below to distinguish and skip non - function call related updates.
-                            // The Kind property of updates can't be reliably used because it's only initialized for the first update.
-                            if (string.IsNullOrEmpty(functionCallUpdate.Id) &&
-                                string.IsNullOrEmpty(functionCallUpdate.FunctionName) &&
-                                string.IsNullOrEmpty(functionCallUpdate.FunctionArgumentsUpdate))
+                            foreach (var functionCallUpdate in openAIStreamingChatMessageContent.ToolCallUpdates!)
                             {
-                                continue;
+                                // Using the code below to distinguish and skip non - function call related updates.
+                                // The Kind property of updates can't be reliably used because it's only initialized for the first update.
+                                if (string.IsNullOrEmpty(functionCallUpdate.Id) &&
+                                    string.IsNullOrEmpty(functionCallUpdate.FunctionName) &&
+                                    string.IsNullOrEmpty(functionCallUpdate.FunctionArgumentsUpdate))
+                                {
+                                    continue;
+                                }
+
+                                openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
+                                    callId: functionCallUpdate.Id,
+                                    name: functionCallUpdate.FunctionName,
+                                    arguments: functionCallUpdate.FunctionArgumentsUpdate,
+                                    functionCallIndex: functionCallUpdate.Index));
                             }
-
-                            openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
-                                callId: functionCallUpdate.Id,
-                                name: functionCallUpdate.FunctionName,
-                                arguments: functionCallUpdate.FunctionArgumentsUpdate,
-                                functionCallIndex: functionCallUpdate.Index));
                         }
-
                         streamedContents?.Add(openAIStreamingChatMessageContent);
                         yield return openAIStreamingChatMessageContent;
                     }
@@ -657,9 +657,15 @@ internal partial class ClientCore
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
-            ResponseFormat = GetResponseFormat(executionSettings) ?? ChatResponseFormat.Text,
-            ToolChoice = toolCallingConfig.Choice,
         };
+
+        var responseFormat = GetResponseFormat(executionSettings);
+        if (responseFormat is not null)
+        {
+            options.ResponseFormat = responseFormat;
+        }
+
+        options.ToolChoice = toolCallingConfig.Choice;
 
         if (toolCallingConfig.Tools is { Count: > 0 } tools)
         {

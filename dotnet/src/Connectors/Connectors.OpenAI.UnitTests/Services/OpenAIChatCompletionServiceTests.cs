@@ -551,8 +551,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         var settings = new OpenAIPromptExecutionSettings() { ChatSystemPrompt = SystemMessage };
 
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        { Content = new StringContent(ChatCompletionResponse) };
+        using var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(ChatCompletionResponse) };
+        this._messageHandlerStub.ResponseToReturn = response;
 
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage(Prompt);
