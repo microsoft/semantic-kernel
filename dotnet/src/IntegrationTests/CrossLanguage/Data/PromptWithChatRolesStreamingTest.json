@@ -13,5 +13,9 @@
       "role": "user"
     }
   ],
-  "model": "Dummy"
+  "model": "Dummy",
+  "stream": true,
+  "stream_options": {
+    "include_usage": true
+  }
 }
