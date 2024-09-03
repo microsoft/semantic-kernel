@@ -8,9 +8,9 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace JsonSchemaMapper;
 
-    /// <summary>
-    /// Defines the context in which a JSON schema within a type graph is being generated.
-    /// </summary>
+/// <summary>
+/// Defines the context in which a JSON schema within a type graph is being generated.
+/// </summary>
 #if EXPOSE_JSON_SCHEMA_MAPPER
 public
 #else
