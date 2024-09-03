@@ -19,14 +19,4 @@ public static class VectorSearchQueryType
     /// A type of query that searches a vector store using a text string that will be vectorized downstream.
     /// </summary>
     public const string VectorizableTextSearchQuery = nameof(VectorizableTextSearchQuery);
-
-    /// <summary>
-    /// A type of query that does a hybrid search in a vector store using a vector and text.
-    /// </summary>
-    public const string HybridTextVectorizedSearchQuery = nameof(HybridTextVectorizedSearchQuery);
-
-    /// <summary>
-    /// A type of query that does a hybrid search using a text string that will be vectorized downstream.
-    /// </summary>
-    public const string HybridVectorizableTextSearchQuery = nameof(HybridVectorizableTextSearchQuery);
 }
