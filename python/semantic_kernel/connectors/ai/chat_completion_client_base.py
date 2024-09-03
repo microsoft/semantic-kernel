@@ -71,31 +71,6 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         if False:
             yield
 
-    @abstractmethod
-    def _verify_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
-        """Additional verification to validate settings for function choice behavior.
-
-        Args:
-            settings (PromptExecutionSettings): The settings to verify.
-        """
-        pass
-
-    @abstractmethod
-    def _update_function_choice_settings_callback(
-        self,
-    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
-        """Return the callback function to update the settings from a function call configuration."""
-        pass
-
-    @abstractmethod
-    def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
-        """Reset the settings updated by `_update_function_choice_settings_callback`.
-
-        Args:
-            settings (PromptExecutionSettings): The prompt execution settings to reset.
-        """
-        ...
-
     # endregion
 
     # region Public methods
@@ -379,5 +354,35 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             for message in chat_history.messages
             if not isinstance(message, (AnnotationContent, FileReferenceContent))
         ]
+
+    def _verify_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
+        """Additional verification to validate settings for function choice behavior.
+
+        Override this method to add additional verification for the settings.
+
+        Args:
+            settings (PromptExecutionSettings): The settings to verify.
+        """
+        return
+
+    def _update_function_choice_settings_callback(
+        self,
+    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+        """Return the callback function to update the settings from a function call configuration.
+
+        Override this method to provide a custom callback function to
+        update the settings from a function call configuration.
+        """
+        return lambda configuration, settings, choice_type: None
+
+    def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
+        """Reset the settings updated by `_update_function_choice_settings_callback`.
+
+        Override this method to reset the settings updated by `_update_function_choice_settings_callback`.
+
+        Args:
+            settings (PromptExecutionSettings): The prompt execution settings to reset.
+        """
+        return
 
     # endregion
