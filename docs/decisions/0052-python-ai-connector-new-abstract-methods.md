@@ -58,14 +58,14 @@ This class variable will be overridden in derived classes and be used in the def
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
     """Base class for chat completion AI services."""
 
-    FUNCTION_CALLING_SUPPORT: ClassVar[bool] = False
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
     ...
 ```
 
 ```python
 class MockChatCompletionThatSupportsFunctionCalling(ChatCompletionClientBase):
 
-    FUNCTION_CALLING_SUPPORT: ClassVar[bool] = True
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
 
     @override
     async def get_chat_message_contents(
@@ -74,7 +74,7 @@ class MockChatCompletionThatSupportsFunctionCalling(ChatCompletionClientBase):
         settings: "PromptExecutionSettings",
         **kwargs: Any,
     ) -> list[ChatMessageContent]:
-        if not self.FUNCTION_CALLING_SUPPORT:
+        if not self.SUPPORTS_FUNCTION_CALLING:
             return ...
         ...
 ```
