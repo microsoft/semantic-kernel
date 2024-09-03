@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+#pragma warning disable IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Connectors.AI;
+#pragma warning restore IDE0005 // Using directive is unnecessary
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Utilities.AIConnectors;
