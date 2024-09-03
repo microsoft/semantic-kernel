@@ -197,23 +197,27 @@ public async Task VectorSearchAsync(IVectorSearch<Glossary> vectorSearch)
 
 See the [Interface](#interface) section above for a description of this option.
 
-The benefit is that it can support multiple query types, each with different options.
-It's easy to add more query types in future without it being a breaking change.
+Pros:
 
-The drawback of this option is that any query type that isn't supported by a connector
-implementation will cause an exception to be thrown.
+- It can support multiple query types, each with different options.
+- It is easy to add more query types in future without it being a breaking change.
+
+Cons:
+
+- Any query type that isn't supported by a connector implementation will cause an exception to be thrown.
 
 ### Option 2: Vector only
 
-Only allow searching by vectors in the abstraction.
-
-The benefit is that the user doesn't need to know which query types are supported by which vector store connector types.
+The abstraction will only support the most basic functionality and all other functionality is supported on the concrete implementation.
 E.g. Some vector databases do not support generating embeddings in the service, so the connector would not support `VectorizableTextSearchQuery` from option 1.
-The connector will therefore throw when the user calls it with such a query, unless we layer an embedding decorator on top of the connector, which generates
-an embedding automatically on the client side.
 
-The drawback of this option is that the abstraction does not support this scenario where a vector search is done using text that will be vectorized in the service.
-Adding support for this later would be a breaking change.
+Pros:
+
+- The user doesn't need to know which query types are supported by which vector store connector types.
+
+Cons:
+
+- Only allows searching by vectors in the abstraction which is a very low common denominator.
 
 ```csharp
 interface IVectorSearch<TRecord>
@@ -256,31 +260,44 @@ but isn't necessarily writable.
 
 Therefore a hierarchy of abstract base classes would be required.
 
+We also considered default interface methods, but there is no support in .net Framework for this, and SK has to support .net Framework.
+
+Pros:
+
+- It can support multiple query types, each with different options.
+- It is easy to add more query types in future without it being a breaking change.
+- Allows different return types for each search type.
+
+Cons:
+
+- Any query type that isn't supported by a connector implementation will cause an exception to be thrown.
+- Doesn't support multiple inheritence, so where multiple key types need to be supported this doesn't work.
+- Doesn't support multiple inheritence, so any additional functionality that needs to be added to `VectorStoreRecordCollection`, won't be possible to be added using a similar mechanism.
+
 ```csharp
-abstract class BaseVectorSearch
+abstract class BaseVectorSearch<TRecord>
+    where TRecord : class
 {
-    public virtual IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TRecord, TVector>(
+    public virtual IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TVector>(
         this IVectorSearch<TRecord> search,
         TVector vector,
         VectorSearchOptions? options = default,
         CancellationToken cancellationToken = default)
-        where TRecord : class
     {
         throw new NotSupportedException($"Vectorized search is not supported by the {this._connectorName} connector");
     }
 
-    public virtual IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TRecord>(
+    public virtual IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync(
         this IVectorSearch<TRecord> search,
         string searchText,
         VectorSearchOptions? options = default,
         CancellationToken cancellationToken = default)
-        where TRecord : class
     {
         throw new NotSupportedException($"Vectorizable text search is not supported by the {this._connectorName} connector");
     }
 }
 
-abstract class BaseVectorStoreRecordCollection : BaseVectorSearch
+abstract class BaseVectorStoreRecordCollection<TKey, TRecord> : BaseVectorSearch<TRecord>
 {
     public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
@@ -291,14 +308,66 @@ abstract class BaseVectorStoreRecordCollection : BaseVectorSearch
     }
 }
 
-class QdrantVectorStoreRecordCollection : BaseVectorStoreRecordCollection
+// We support multiple types of keys here, but we cannot inherit from multiple base classes.
+class QdrantVectorStoreRecordCollection<TRecord> : BaseVectorStoreRecordCollection<ulong, TRecord> : BaseVectorStoreRecordCollection<Guid, TRecord>
 {
 }
 ```
 
-The risk here is that any additional functionality added to `VectorStoreRecordCollection` will not be able to follow a similar pattern
-due to the fact that you can only inherit from a single class.
+### Option 4: Interface per search type
 
-We also considered default interface methods, but there is no support in .net Framework for this, and SK has to support .net Framework.
+One of the main requirements is to allow future extensibility with additional query types.
+One way to achieve this is to add additional interfaces as implementations support additional functionality.
+
+Pros:
+
+- Allows different implementations to support different search types without needing to throw exceptions for not supported functionality.
+- Allows different return types for each search type.
+
+Cons:
+
+- Users will still need to know which interfaces are implemented by each implementation to cast to those as necessary.
+- We will not be able to add more Search functionality to `IVectorStoreRecordCollection` over time, since it would be a breaking change. Therefore, a user that has an instance of `IVectorStoreRecordCollection`, but wants to e.g. do a hybrid search, will need to cast to `IHybridTextVectorizedSearch` first before being able to search.
+
+```csharp
+
+// Vector search using vector.
+interface IVectorizedSearch<TRecord>
+{
+    IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TVector>(
+        TVector vector,
+        VectorSearchOptions? searchOptions);
+}
+
+// Vector search using query text that will be vectorized downstream.
+interface IVectorizableTextSearch<TRecord>
+{
+    IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TVector>(
+        string queryText,
+        VectorSearchOptions? searchOptions);
+}
+
+// Hybrid search using a vector and a text portion that will be used for a keyword search.
+interface IHybridTextVectorizedSearch<TRecord>
+{
+    IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TVector>(
+        TVector vector,
+        string queryText,
+        HybridVectorSearchOptions? searchOptions);
+}
+
+// Hybrid search using text that will be vectorized downstream and also used for a keyword search.
+interface IHybridVectorizableTextSearch<TRecord>
+{
+    IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TVector>(
+    string queryText,
+    HybridVectorSearchOptions? searchOptions);
+}
+
+class AzureAISearchVectorStoreRecordCollection<TRecord>: IVectorStoreRecordCollection<string, TRecord>, IVectorizedSearch<TRecord>, IVectorizableTextSearch<TRecord>
+{
+}
+
+```
 
 ## Decision Outcome
