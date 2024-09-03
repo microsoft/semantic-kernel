@@ -20,7 +20,7 @@ public sealed class MixedAgentTests
 {
     private const string AssistantModel = "gpt-4o"; // Model must be able to support assistant API
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .AddUserSecrets<MixedAgentTests>()
@@ -36,7 +36,8 @@ public sealed class MixedAgentTests
         OpenAIConfiguration openAISettings = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
         Assert.NotNull(openAISettings);
 
-        await this.ExecuteAgentAsync(
+        // Arrange, Act & Assert
+        await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(openAISettings),
             new(openAISettings.ApiKey),
             AssistantModel);
@@ -52,13 +53,14 @@ public sealed class MixedAgentTests
         AzureOpenAIConfiguration azureOpenAISettings = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
         Assert.NotNull(azureOpenAISettings);
 
-        await this.ExecuteAgentAsync(
+        // Arrange, Act & Assert
+        await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(azureOpenAISettings),
             new(azureOpenAISettings.ApiKey, azureOpenAISettings.Endpoint),
             AssistantModel);
     }
 
-    private async Task ExecuteAgentAsync(
+    private async Task VerifyAgentExecutionAsync(
         Kernel chatCompletionKernel,
         OpenAIAssistantConfiguration config,
         string modelName)
@@ -87,12 +89,12 @@ public sealed class MixedAgentTests
                     ModelId = modelName,
                 });
 
-        // Act
+        // Act & Assert
         try
         {
             AgentGroupChat chat = new(chatAgent, assistantAgent);
-            await this.InvokeAgentAsync(chat, chatAgent, "What is the special soup?", "Clam Chowder");
-            await this.InvokeAgentAsync(chat, assistantAgent, "What is the special drink?", "Chai Tea");
+            await this.AssertAgentInvocationAsync(chat, chatAgent, "What is the special soup?", "Clam Chowder");
+            await this.AssertAgentInvocationAsync(chat, assistantAgent, "What is the special drink?", "Chai Tea");
         }
         finally
         {
@@ -100,7 +102,7 @@ public sealed class MixedAgentTests
         }
     }
 
-    private async Task InvokeAgentAsync(AgentGroupChat chat, Agent agent, string input, string expected)
+    private async Task AssertAgentInvocationAsync(AgentGroupChat chat, Agent agent, string input, string expected)
     {
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
 

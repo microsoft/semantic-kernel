@@ -23,7 +23,7 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
     private const string AssistantModel = "gpt-4o"; // Model must be able to support assistant API
     private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .AddUserSecrets<OpenAIAssistantAgentTests>()
