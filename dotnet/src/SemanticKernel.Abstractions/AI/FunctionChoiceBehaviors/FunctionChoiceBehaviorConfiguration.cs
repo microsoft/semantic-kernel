@@ -33,7 +33,7 @@ public sealed class FunctionChoiceBehaviorConfiguration
     /// <summary>
     /// Indicates whether the functions should be automatically invoked by the AI connector.
     /// </summary>
-    public bool AutoInvoke { get; internal init; } = true;
+    public bool AutoInvoke { get; set; } = true;
 
     /// <summary>
     /// The behavior options.
