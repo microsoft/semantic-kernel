@@ -271,8 +271,8 @@ Pros:
 Cons:
 
 - Any query type that isn't supported by a connector implementation will cause an exception to be thrown.
-- Doesn't support multiple inheritence, so where multiple key types need to be supported this doesn't work.
-- Doesn't support multiple inheritence, so any additional functionality that needs to be added to `VectorStoreRecordCollection`, won't be possible to be added using a similar mechanism.
+- Doesn't support multiple inheritance, so where multiple key types need to be supported this doesn't work.
+- Doesn't support multiple inheritance, so any additional functionality that needs to be added to `VectorStoreRecordCollection`, won't be possible to be added using a similar mechanism.
 
 ```csharp
 abstract class BaseVectorSearch<TRecord>
