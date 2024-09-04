@@ -95,10 +95,10 @@ public sealed class KernelFunctionHelpersTests
     public async Task ItRendersFunctionHelpersWitHashArgumentsAndInputVariableAsync()
     {
         // Arrange and Act
-        const string varName = "param_x";
+        const string VarName = "param_x";
         var template = """{{Foo-StringifyInt (param_x)}}""";
-        var inputVariables = new List<InputVariable> { new() { Name = varName } };
-        var arguments = new KernelArguments { [varName] = 5 };
+        var inputVariables = new List<InputVariable> { new() { Name = VarName } };
+        var arguments = new KernelArguments { [VarName] = 5 };
 
         var result = await this.RenderPromptTemplateAsync(template, inputVariables, arguments);
 
