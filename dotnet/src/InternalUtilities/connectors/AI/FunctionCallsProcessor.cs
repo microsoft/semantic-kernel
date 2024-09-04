@@ -125,7 +125,6 @@ internal sealed class FunctionCallsProcessor
     /// <param name="requestIndex">AI model function(s) call request sequence index.</param>
     /// <param name="checkIfFunctionAdvertised">Callback to check if a function was advertised to AI model or not.</param>
     /// <param name="kernel">The <see cref="Kernel"/>.</param>
-    /// <param name="resultSerializerOptions">Options to control function result serialization behavior.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Last chat history message if function invocation filter requested processing termination, otherwise null.</returns>
     public async Task<ChatMessageContent?> ProcessFunctionCallsAsync(
@@ -134,7 +133,6 @@ internal sealed class FunctionCallsProcessor
         int requestIndex,
         Func<FunctionCallContent, bool> checkIfFunctionAdvertised,
         Kernel? kernel,
-        JsonSerializerOptions? resultSerializerOptions,
         CancellationToken cancellationToken)
     {
         var functionCalls = FunctionCallContent.GetFunctionCalls(chatMessageContent).ToList();
@@ -230,7 +228,7 @@ internal sealed class FunctionCallsProcessor
 
             object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
 
-            var result = ProcessFunctionResult(functionResultValue, resultSerializerOptions);
+            var result = ProcessFunctionResult(functionResultValue);
 
             this.AddFunctionCallResultToChatHistory(chatHistory, functionCall, result);
 
@@ -317,9 +315,8 @@ internal sealed class FunctionCallsProcessor
     /// Processes the function result.
     /// </summary>
     /// <param name="functionResult">The result of the function call.</param>
-    /// <param name="resultSerializerOptions">The serializer options to use for the function result.</param>
     /// <returns>A string representation of the function result.</returns>
-    private static string? ProcessFunctionResult(object functionResult, JsonSerializerOptions? resultSerializerOptions)
+    private static string? ProcessFunctionResult(object functionResult)
     {
         if (functionResult is string stringResult)
         {
@@ -333,10 +330,6 @@ internal sealed class FunctionCallsProcessor
             return chatMessageContent.ToString();
         }
 
-        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,  
-        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
-        // For more details about the polymorphic serialization, see the article at:  
-        // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
-        return JsonSerializer.Serialize(functionResult, resultSerializerOptions);
+        return JsonSerializer.Serialize(functionResult);
     }
 }

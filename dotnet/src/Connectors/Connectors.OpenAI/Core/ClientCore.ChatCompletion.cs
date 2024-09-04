@@ -186,16 +186,13 @@ internal partial class ClientCore
             // Process function calls by invoking the functions and adding the results to the chat history.
             // Each function call will trigger auto-function-invocation filters, which can terminate the process.
             // In such cases, we'll return the last message in the chat history.
-#pragma warning disable CS0618 // Type or member is obsolete
             var lastMessage = await this.FunctionCallsProcessor.ProcessFunctionCallsAsync(
                 chatMessageContent,
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
                 kernel,
-                chatExecutionSettings.ToolCallBehavior?.ToolCallResultSerializerOptions,
                 cancellationToken).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
             if (lastMessage != null)
             {
                 return [lastMessage];
@@ -364,16 +361,13 @@ internal partial class ClientCore
             // Process function calls by invoking the functions and adding the results to the chat history.
             // Each function call will trigger auto-function-invocation filters, which can terminate the process.
             // In such cases, we'll return the last message in the chat history.  
-#pragma warning disable CS0618 // Type or member is obsolete
             var lastMessage = await this.FunctionCallsProcessor.ProcessFunctionCallsAsync(
                 chatMessageContent,
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
                 kernel,
-                chatExecutionSettings.ToolCallBehavior?.ToolCallResultSerializerOptions,
                 cancellationToken).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
             if (lastMessage != null)
             {
                 yield return new OpenAIStreamingChatMessageContent(lastMessage.Role, lastMessage.Content);
