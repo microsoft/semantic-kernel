@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
+using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -38,6 +39,9 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
         await InvokeAgentAsync(agent, threadId, "Fortune favors the bold.");
         await InvokeAgentAsync(agent, threadId, "I came, I saw, I conquered.");
         await InvokeAgentAsync(agent, threadId, "Practice makes perfect.");
+
+        // Output the entire chat history
+        await DisplayChatHistoryAsync(agent, threadId);
     }
 
     [Fact]
@@ -67,6 +71,9 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
         // Respond to user input
         await InvokeAgentAsync(agent, threadId, "What is the special soup?");
         await InvokeAgentAsync(agent, threadId, "What is the special drink?");
+
+        // Output the entire chat history
+        await DisplayChatHistoryAsync(agent, threadId);
     }
 
     // Local function to invoke agent and display the conversation messages.
@@ -98,6 +105,20 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
         foreach (ChatMessageContent content in history)
         {
             this.WriteAgentChatMessage(content);
+        }
+    }
+
+    private async Task DisplayChatHistoryAsync(OpenAIAssistantAgent agent, string threadId)
+    {
+
+        Console.WriteLine("================================");
+        Console.WriteLine("CHAT HISTORY");
+        Console.WriteLine("================================");
+
+        ChatMessageContent[] messages = await agent.GetThreadMessagesAsync(threadId).ToArrayAsync();
+        for (int index = messages.Length - 1; index >= 0; --index)
+        {
+            this.WriteAgentChatMessage(messages[index]);
         }
     }
 

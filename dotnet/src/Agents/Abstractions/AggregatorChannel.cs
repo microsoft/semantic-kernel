@@ -55,9 +55,12 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
     {
         int messageCount = await this._chat.GetChatMessagesAsync(cancellationToken).CountAsync(cancellationToken).ConfigureAwait(false);
 
-        await foreach (StreamingChatMessageContent message in this._chat.InvokeStreamingAsync(cancellationToken).ConfigureAwait(false)) // %%% NOISY / NEEDED ???
+        if (agent.Mode == AggregatorMode.Flat)
         {
-            yield return message;
+            await foreach (StreamingChatMessageContent message in this._chat.InvokeStreamingAsync(cancellationToken).ConfigureAwait(false))
+            {
+                yield return message;
+            }
         }
 
         ChatMessageContent[] history = await this._chat.GetChatMessagesAsync(cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
