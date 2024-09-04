@@ -6,11 +6,10 @@
     "ApiKey": ""
   },
   "AzureOpenAI": {
-    "ServiceId": "azure-gpt-35-turbo-instruct",
+    "ServiceId": "azure-gpt",
     "DeploymentName": "gpt-35-turbo-instruct",
     "ChatDeploymentName": "gpt-4o",
-    "Endpoint": "",
-    "ApiKey": ""
+    "Endpoint": ""
   },
   "OpenAIEmbeddings": {
     "ServiceId": "text-embedding-ada-002",
@@ -20,8 +19,7 @@
   "AzureOpenAIEmbeddings": {
     "ServiceId": "azure-text-embedding-ada-002",
     "DeploymentName": "ada-002",
-    "Endpoint": "",
-    "ApiKey": ""
+    "Endpoint": ""
   },
   "OpenAITextToAudio": {
     "ServiceId": "tts-1",
@@ -31,8 +29,7 @@
   "AzureOpenAITextToAudio": {
     "ServiceId": "azure-tts",
     "DeploymentName": "tts",
-    "Endpoint": "",
-    "ApiKey": ""
+    "Endpoint": ""
   },
   "OpenAIAudioToText": {
     "ServiceId": "whisper-1",
@@ -42,8 +39,7 @@
   "AzureOpenAIAudioToText": {
     "ServiceId": "azure-whisper",
     "DeploymentName": "whisper",
-    "Endpoint": "",
-    "ApiKey": ""
+    "Endpoint": ""
   },
   "OpenAITextToImage": {
     "ServiceId": "dall-e-2",
@@ -52,9 +48,8 @@
   },
   "AzureOpenAITextToImage": {
     "ServiceId": "azure-dalle3",
-    "DeploymentName": "dall-e-3",
-    "Endpoint": "",
-    "ApiKey": ""
+    "DeploymentName": "Dalle3",
+    "Endpoint": ""
   },
   "HuggingFace": {
     "ApiKey": ""
