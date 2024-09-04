@@ -13,11 +13,13 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
 {
     private readonly AgentChat _chat = chat;
 
+    /// <inheritdoc/>
     protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken = default)
     {
         return this._chat.GetChatMessagesAsync(cancellationToken);
     }
 
+    /// <inheritdoc/>
     protected internal override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(AggregatorAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ChatMessageContent? lastMessage = null;

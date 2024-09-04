@@ -308,7 +308,7 @@ public abstract class AgentChat
     /// The activity signal is used to manage ability and visibility for taking actions based
     /// on conversation history.
     /// </remarks>
-    private void SetActivityOrThrow()
+    protected void SetActivityOrThrow()
     {
         // Note: Interlocked is the absolute lightest synchronization mechanism available in dotnet.
         int wasActive = Interlocked.CompareExchange(ref this._isActive, 1, 0);

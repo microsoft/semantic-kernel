@@ -11,72 +11,50 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 public sealed class OpenAITextToImageTests
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
-        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<OpenAITextToAudioTests>()
+        .AddUserSecrets<OpenAITextToImageTests>()
         .Build();
 
-    [Fact(Skip = "This test is for manual verification.")]
-    public async Task OpenAITextToImageTestAsync()
+    [Theory(Skip = "This test is for manual verification.")]
+    [InlineData("dall-e-2", 512, 512)]
+    [InlineData("dall-e-3", 1024, 1024)]
+    public async Task OpenAITextToImageByModelTestAsync(string modelId, int width, int height)
     {
         // Arrange
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAITextToImage").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
         var kernel = Kernel.CreateBuilder()
-            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey)
+            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: modelId)
             .Build();
 
         var service = kernel.GetRequiredService<ITextToImageService>();
 
         // Act
-        var result = await service.GenerateImageAsync("The sun rises in the east and sets in the west.", 512, 512);
+        var result = await service.GenerateImageAsync("The sun rises in the east and sets in the west.", width, height);
 
         // Assert
         Assert.NotNull(result);
         Assert.NotEmpty(result);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
-    public async Task OpenAITextToImageByModelTestAsync()
+    [Fact]
+    public async Task OpenAITextToImageUseDallE2ByDefaultAsync()
     {
         // Arrange
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAITextToImage").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
         var kernel = Kernel.CreateBuilder()
-            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: openAIConfiguration.ModelId)
+            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: null)
             .Build();
 
         var service = kernel.GetRequiredService<ITextToImageService>();
 
         // Act
-        var result = await service.GenerateImageAsync("The sun rises in the east and sets in the west.", 1024, 1024);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.NotEmpty(result);
-    }
-
-    [Fact(Skip = "This test is for manual verification.")]
-    public async Task AzureOpenAITextToImageTestAsync()
-    {
-        // Arrange
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAITextToImage").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
-        var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAITextToImage(
-                azureOpenAIConfiguration.DeploymentName,
-                azureOpenAIConfiguration.Endpoint,
-                azureOpenAIConfiguration.ApiKey)
-            .Build();
-
-        var service = kernel.GetRequiredService<ITextToImageService>();
-
-        // Act
-        var result = await service.GenerateImageAsync("The sun rises in the east and sets in the west.", 1024, 1024);
+        var result = await service.GenerateImageAsync("The sun rises in the east and sets in the west.", 256, 256);
 
         // Assert
         Assert.NotNull(result);

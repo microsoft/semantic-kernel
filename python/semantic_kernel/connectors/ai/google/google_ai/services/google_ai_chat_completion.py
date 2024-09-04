@@ -13,6 +13,7 @@ from google.generativeai.protos import Candidate, Content
 from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.function_calling_utils import merge_function_results
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
 )
@@ -39,6 +40,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -108,6 +110,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 
     # region Non-streaming
     @override
+    @trace_chat_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
     async def get_chat_message_contents(
         self,
         chat_history: ChatHistory,
@@ -132,10 +135,11 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
-            chat_history.add_message(message=completions[0])
-            function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
+            function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
             if (fc_count := len(function_calls)) == 0:
                 return completions
+
+            chat_history.add_message(message=completions[0])
 
             results = await invoke_function_calls(
                 function_calls=function_calls,
@@ -148,7 +152,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             )
 
             if any(result.terminate for result in results if result is not None):
-                return completions
+                return merge_function_results(chat_history.messages[-len(results) :])
         else:
             # do a final call without auto function calling
             return await self._send_chat_request(chat_history, settings)
@@ -294,7 +298,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             )
 
             if any(result.terminate for result in results if result is not None):
-                return
+                yield merge_function_results(chat_history.messages[-len(results) :])  # type: ignore
+                break
 
     async def _send_chat_streaming_request(
         self,
