@@ -10,7 +10,7 @@ from typing import Any, TypeVar
 if sys.version < "3.11":
     from typing_extensions import Self  # pragma: no cover
 else:
-    from typing import Self  # pragma: no cover
+    from typing import Self  # type: ignore # pragma: no cover
 
 from pydantic import Field, ValidationError, field_validator, model_validator
 from pydantic_core import Url
@@ -24,6 +24,8 @@ _T = TypeVar("_T", bound="DataUri")
 
 
 class DataUri(KernelBaseModel, validate_assignment=True):
+    """A class to represent a data uri."""
+
     data_bytes: bytes | None = None
     data_str: str | None = None
     mime_type: str | None = None

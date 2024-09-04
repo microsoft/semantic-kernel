@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
-from pydantic import Field
+from pydantic import Field, field_serializer
 from typing_extensions import deprecated
 
 from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CONTENT_TAG, ContentTypes
@@ -150,12 +150,10 @@ class FunctionResultContent(KernelContent):
             metadata=metadata,
         )
 
-    def to_chat_message_content(self, unwrap: bool = False) -> "ChatMessageContent":
+    def to_chat_message_content(self) -> "ChatMessageContent":
         """Convert the instance to a ChatMessageContent."""
         from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
-        if unwrap and isinstance(self.result, str):
-            return ChatMessageContent(role=AuthorRole.TOOL, content=self.result)
         return ChatMessageContent(role=AuthorRole.TOOL, items=[self])
 
     def to_dict(self) -> dict[str, str]:
@@ -169,3 +167,12 @@ class FunctionResultContent(KernelContent):
     def split_name(self) -> list[str]:
         """Split the name into a plugin and function name."""
         return [self.plugin_name or "", self.function_name]
+
+    @field_serializer("result")
+    def serialize_result(self, value: Any) -> str:
+        """Serialize the result."""
+        return str(value)
+
+    def __hash__(self) -> int:
+        """Return the hash of the function result content."""
+        return hash((self.tag, self.id, self.result, self.name, self.function_name, self.plugin_name, self.encoding))

@@ -31,6 +31,8 @@ TYPE_MAPPING = {
 
 
 class KernelJsonSchemaBuilder:
+    """Kernel JSON schema builder."""
+
     @classmethod
     def build(cls, parameter_type: type | str, description: str | None = None) -> dict[str, Any]:
         """Builds the JSON schema for a given parameter type and description.
@@ -202,7 +204,7 @@ class KernelJsonSchemaBuilder:
         """
         if not issubclass(enum_type, Enum):
             raise FunctionInvalidParameterConfiguration(f"{enum_type} is not a valid Enum type")
-    
+
         try:
             enum_values = [item.value for item in enum_type]
         except TypeError as ex:
