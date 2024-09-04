@@ -18,7 +18,6 @@ namespace SemanticKernel.IntegrationTests.Agents;
 
 public sealed class MixedAgentTests
 {
-    private const string AssistantModel = "gpt-4o"; // Model must be able to support assistant API
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
@@ -40,7 +39,7 @@ public sealed class MixedAgentTests
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(openAISettings),
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
-            AssistantModel);
+            openAISettings.ChatModelId!);
     }
 
     /// <summary>
@@ -57,7 +56,7 @@ public sealed class MixedAgentTests
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(azureOpenAISettings),
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAISettings.ApiKey, new Uri(azureOpenAISettings.Endpoint)),
-            AssistantModel);
+            azureOpenAISettings.ChatDeploymentName!);
     }
 
     private async Task VerifyAgentExecutionAsync(
@@ -133,7 +132,7 @@ public sealed class MixedAgentTests
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
 
         kernelBuilder.AddOpenAIChatCompletion(
-            configuration.ModelId!,
+            configuration.ChatModelId!,
             configuration.ApiKey);
 
         return kernelBuilder.Build();

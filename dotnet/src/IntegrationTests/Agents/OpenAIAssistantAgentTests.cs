@@ -37,7 +37,7 @@ public sealed class OpenAIAssistantAgentTests
 
         await this.ExecuteAgentAsync(
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
-            openAISettings.ModelId,
+            openAISettings.ChatModelId!,
             input,
             expectedAnswerContains);
     }
