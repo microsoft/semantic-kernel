@@ -86,7 +86,7 @@ public sealed class WeaviateVectorStoreTests : IDisposable
         var expectedCollectionNames = new List<string> { "Collection1", "Collection2", "Collection3" };
         var response = new WeaviateGetCollectionsResponse
         {
-            Collections = expectedCollectionNames.Select(name => new WeaviateCollectionSchema { CollectionName = name }).ToList()
+            Collections = expectedCollectionNames.Select(name => new WeaviateCollectionSchema(name)).ToList()
         };
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)

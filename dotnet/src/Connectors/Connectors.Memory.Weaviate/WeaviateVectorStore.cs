@@ -80,10 +80,7 @@ public sealed class WeaviateVectorStore : IVectorStore
         {
             foreach (var collection in collectionResponse.Collections)
             {
-                if (!string.IsNullOrWhiteSpace(collection.CollectionName))
-                {
-                    yield return collection.CollectionName!;
-                }
+                yield return collection.CollectionName;
             }
         }
     }
