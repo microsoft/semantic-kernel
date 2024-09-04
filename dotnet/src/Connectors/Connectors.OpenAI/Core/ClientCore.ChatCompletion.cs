@@ -618,7 +618,7 @@ internal partial class ClientCore
                     continue;
                 }
 
-                var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
+                var stringResult = FunctionCalling.FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty);
 
                 toolMessages.Add(new ToolChatMessage(resultContent.CallId, stringResult ?? string.Empty));
             }
@@ -843,73 +843,6 @@ internal partial class ClientCore
         s_totalTokensCounter.Add(usage.TotalTokens);
     }
 
-    /// <summary>
-    /// Processes the function result.
-    /// </summary>
-    /// <param name="functionResult">The result of the function call.</param>
-    /// <param name="toolCallBehavior">The ToolCallBehavior object containing optional settings like JsonSerializerOptions.TypeInfoResolver.</param>
-    /// <returns>A string representation of the function result.</returns>
-    private static string? ProcessFunctionResult(object functionResult, ToolCallBehavior? toolCallBehavior)
-    {
-        if (functionResult is string stringResult)
-        {
-            return stringResult;
-        }
-
-        // This is an optimization to use ChatMessageContent content directly  
-        // without unnecessary serialization of the whole message content class.  
-        if (functionResult is ChatMessageContent chatMessageContent)
-        {
-            return chatMessageContent.ToString();
-        }
-
-        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,  
-        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
-        // For more details about the polymorphic serialization, see the article at:  
-        // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
-#pragma warning disable CS0618 // Type or member is obsolete
-        return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
-#pragma warning restore CS0618 // Type or member is obsolete
-    }
-
-    /// <summary>
-    /// Executes auto function invocation filters and/or function itself.
-    /// This method can be moved to <see cref="Kernel"/> when auto function invocation logic will be extracted to common place.
-    /// </summary>
-    private static async Task<AutoFunctionInvocationContext> OnAutoFunctionInvocationAsync(
-        Kernel kernel,
-        AutoFunctionInvocationContext context,
-        Func<AutoFunctionInvocationContext, Task> functionCallCallback)
-    {
-        await InvokeFilterOrFunctionAsync(kernel.AutoFunctionInvocationFilters, functionCallCallback, context).ConfigureAwait(false);
-
-        return context;
-    }
-
-    /// <summary>
-    /// This method will execute auto function invocation filters and function recursively.
-    /// If there are no registered filters, just function will be executed.
-    /// If there are registered filters, filter on <paramref name="index"/> position will be executed.
-    /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or function if there are no remaining filters to execute.
-    /// Function will be always executed as last step after all filters.
-    /// </summary>
-    private static async Task InvokeFilterOrFunctionAsync(
-        IList<IAutoFunctionInvocationFilter>? autoFunctionInvocationFilters,
-        Func<AutoFunctionInvocationContext, Task> functionCallCallback,
-        AutoFunctionInvocationContext context,
-        int index = 0)
-    {
-        if (autoFunctionInvocationFilters is { Count: > 0 } && index < autoFunctionInvocationFilters.Count)
-        {
-            await autoFunctionInvocationFilters[index].OnAutoFunctionInvocationAsync(context,
-                (context) => InvokeFilterOrFunctionAsync(autoFunctionInvocationFilters, functionCallCallback, context, index + 1)).ConfigureAwait(false);
-        }
-        else
-        {
-            await functionCallCallback(context).ConfigureAwait(false);
-        }
-    }
-
     private ToolCallingConfig GetFunctionCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory, int requestIndex)
     {
         // If neither behavior is specified, we just return default configuration with no tool and no choice
@@ -950,7 +883,7 @@ internal partial class ClientCore
                 }
             }
             // Disable auto invocation if we've exceeded the allowed limit of in-flight auto-invokes.
-            else if (Microsoft.SemanticKernel.Connectors.FunctionCalling.FunctionCallsProcessor.s_inflightAutoInvokes.Value >= MaxInflightAutoInvokes)
+            else if (FunctionCalling.FunctionCallsProcessor.s_inflightAutoInvokes.Value >= MaxInflightAutoInvokes)
             {
                 autoInvoke = false;
             }

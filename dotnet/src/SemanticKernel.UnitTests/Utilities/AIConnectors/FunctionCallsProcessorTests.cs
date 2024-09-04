@@ -161,6 +161,37 @@ public class FunctionCallsProcessorTests
     }
 
     [Fact]
+    public async Task ItShouldAddFunctionInvocationExceptionToChatHistoryAsync()
+    {
+        // Arrange
+        var function1 = KernelFunctionFactory.CreateFromMethod(() => { throw new InvalidOperationException("This is test exception."); }, "Function1");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1]);
+
+        var kernel = CreateKernel(plugin);
+
+        var chatHistory = new ChatHistory();
+
+        var chatMessageContent = new ChatMessageContent();
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin"));
+
+        // Act
+        await this._sut.ProcessFunctionCallsAsync(
+                chatMessageContent: chatMessageContent,
+                chatHistory: chatHistory,
+                requestIndex: 0,
+                checkIfFunctionAdvertised: (_) => true,
+                kernel: kernel,
+                cancellationToken: CancellationToken.None);
+
+        // Assert
+        var functionResult = chatHistory[1].Items.OfType<FunctionResultContent>().Single();
+
+        Assert.Equal("MyPlugin", functionResult.PluginName);
+        Assert.Equal("Function1", functionResult.FunctionName);
+        Assert.Equal("Error: Exception while invoking function. This is test exception.", functionResult.Result);
+    }
+
+    [Fact]
     public async Task ItShouldAddErrorToChatHistoryIfFunctionCallNotAdvertisedAsync()
     {
         // Arrange
@@ -679,6 +710,45 @@ public class FunctionCallsProcessorTests
         Assert.Equal("Function1", function1Result.FunctionName);
         Assert.IsType<string>(function1Result.Result);
         Assert.Equal("{\"a\":2,\"b\":\"test\"}", function1Result.Result);
+    }
+
+    [Fact]
+    public void ItShouldHandleFunctionResultsOfStringType()
+    {
+        // Arrange
+        string functionResult = "Test result";
+
+        // Act
+        var result = FunctionCallsProcessor.ProcessFunctionResult(functionResult);
+
+        // Assert
+        Assert.Equal(functionResult, result);
+    }
+
+    [Fact]
+    public void ItShouldHandleFunctionResultsOfChatMessageContentType()
+    {
+        // Arrange
+        var functionResult = new ChatMessageContent(AuthorRole.User, "Test result");
+
+        // Act
+        var result = FunctionCallsProcessor.ProcessFunctionResult(functionResult);
+
+        // Assert
+        Assert.Equal("Test result", result);
+    }
+
+    [Fact]
+    public void ItShouldSerializeFunctionResultsOfComplexType()
+    {
+        // Arrange
+        var functionResult = new { a = 2, b = "test" };
+
+        // Act
+        var result = FunctionCallsProcessor.ProcessFunctionResult(functionResult);
+
+        // Assert
+        Assert.Equal("{\"a\":2,\"b\":\"test\"}", result);
     }
 
     private sealed class AutoFunctionInvocationFilter(
