@@ -8,6 +8,7 @@ using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -23,7 +24,7 @@ public class RestApiOperationTests
         // Arrange
         var sut = new RestApiOperation(
             "fake_id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "/",
             HttpMethod.Get,
             "fake_description",
@@ -45,7 +46,7 @@ public class RestApiOperationTests
         // Arrange
         var sut = new RestApiOperation(
             "fake_id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "/",
             HttpMethod.Get,
             "fake_description",
@@ -86,7 +87,7 @@ public class RestApiOperationTests
 
         var sut = new RestApiOperation(
             "fake_id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "/{p1}/{p2}/other_fake_path_section",
             HttpMethod.Get,
             "fake_description",
@@ -129,7 +130,7 @@ public class RestApiOperationTests
 
         var sut = new RestApiOperation(
             "fake_id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "/{p1}/{p2}/other_fake_path_section",
             HttpMethod.Get,
             "fake_description",
@@ -171,7 +172,7 @@ public class RestApiOperationTests
 
         var sut = new RestApiOperation(
             "fake_id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "{fake-path}/",
             HttpMethod.Get,
             "fake_description",
@@ -212,7 +213,7 @@ public class RestApiOperationTests
 
         var sut = new RestApiOperation(
             "fake_id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path/",
             HttpMethod.Get,
             "fake_description",
@@ -246,7 +247,7 @@ public class RestApiOperationTests
 
         var sut = new RestApiOperation(
             "fake_id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path/",
             HttpMethod.Get,
             "fake_description",
@@ -279,7 +280,7 @@ public class RestApiOperationTests
 
         var sut = new RestApiOperation(
             "fake_id",
-            new Uri("https://fake-random-test-host"),
+            new RestApiOperationServer("https://fake-random-test-host"),
             "fake-path/",
             HttpMethod.Get,
             "fake_description",
@@ -326,7 +327,7 @@ public class RestApiOperationTests
             { "fake_header_two", "fake_header_two_value" }
         };
 
-        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", parameters);
+        var sut = new RestApiOperation("fake_id", new RestApiOperationServer("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", parameters);
 
         // Act
         var headers = sut.BuildHeaders(arguments);
@@ -351,7 +352,7 @@ public class RestApiOperationTests
             new(name: "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
         };
 
-        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new RestApiOperationServer("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         void Act() => sut.BuildHeaders(new Dictionary<string, object?>());
@@ -375,7 +376,7 @@ public class RestApiOperationTests
             ["fake_header_one"] = "fake_header_one_value"
         };
 
-        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new RestApiOperationServer("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var headers = sut.BuildHeaders(arguments);
@@ -403,7 +404,7 @@ public class RestApiOperationTests
             ["h2"] = "[1,2,3]"
         };
 
-        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new RestApiOperationServer("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var headers = sut.BuildHeaders(arguments);
@@ -432,7 +433,7 @@ public class RestApiOperationTests
             ["h2"] = true
         };
 
-        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new RestApiOperationServer("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var headers = sut.BuildHeaders(arguments);
@@ -461,7 +462,7 @@ public class RestApiOperationTests
             ["h2"] = "false"
         };
 
-        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new RestApiOperationServer("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var headers = sut.BuildHeaders(arguments);
@@ -568,7 +569,7 @@ public class RestApiOperationTests
     {
         var builder = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddAzureOpenAITextGeneration(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai");
+            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai");
 
         builder.Services.AddSingleton<IFormatProvider>(CultureInfo.InvariantCulture);
         builder.Services.AddSingleton<IFormatProvider>(CultureInfo.CurrentCulture);
@@ -577,10 +578,10 @@ public class RestApiOperationTests
         Kernel kernel = builder.Build();
 
         Assert.IsType<OpenAIChatCompletionService>(kernel.GetRequiredService<IChatCompletionService>("openai"));
-        Assert.IsType<AzureOpenAITextGenerationService>(kernel.GetRequiredService<ITextGenerationService>("azureopenai"));
+        Assert.IsType<AzureOpenAIChatCompletionService>(kernel.GetRequiredService<IChatCompletionService>("azureopenai"));
 
         Assert.Equal(2, kernel.GetAllServices<ITextGenerationService>().Count());
-        Assert.Single(kernel.GetAllServices<IChatCompletionService>());
+        Assert.Equal(2, kernel.GetAllServices<IChatCompletionService>().Count());
 
         Assert.Equal(3, kernel.GetAllServices<IFormatProvider>().Count());
     }
@@ -700,5 +701,73 @@ public class RestApiOperationTests
         Assert.NotNull(provider.GetService<Dictionary<string, string>>());
         Assert.NotNull(provider.GetService<KernelPluginCollection>());
         Assert.NotNull(provider.GetService<Kernel>());
+    }
+
+    [Fact]
+    public void ItShouldUseDefaultServerVariableIfNoOverrideProvided()
+    {
+        // Arrange
+        var sut = new RestApiOperation(
+            "fake_id",
+            new RestApiOperationServer("https://example.com/{version}", new Dictionary<string, RestApiOperationServerVariable> { { "version", new RestApiOperationServerVariable("v2") } }),
+            "/items",
+            HttpMethod.Get,
+            "fake_description",
+            []
+        );
+
+        var arguments = new Dictionary<string, object?>();
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert
+        Assert.Equal("https://example.com/v2/items", url.OriginalString);
+    }
+
+    [Fact]
+    public void ItShouldUseDefaultServerVariableIfInvalidOverrideProvided()
+    {
+        // Arrange
+        var version = new RestApiOperationServerVariable("v2", null, ["v1", "v2"]);
+        var sut = new RestApiOperation(
+            "fake_id",
+            new RestApiOperationServer("https://example.com/{version}", new Dictionary<string, RestApiOperationServerVariable> { { "version", version } }),
+            "/items",
+            HttpMethod.Get,
+            "fake_description",
+            []
+        );
+
+        var arguments = new Dictionary<string, object?>() { { "version", "v3" } };
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert
+        Assert.Equal("https://example.com/v2/items", url.OriginalString);
+    }
+
+    [Fact]
+    public void ItShouldUseServerVariableOverrideIfProvided()
+    {
+        // Arrange
+        var version = new RestApiOperationServerVariable("v2", null, ["v1", "v2", "v3"]);
+        var sut = new RestApiOperation(
+            "fake_id",
+            new RestApiOperationServer("https://example.com/{version}", new Dictionary<string, RestApiOperationServerVariable> { { "version", version } }),
+            "/items",
+            HttpMethod.Get,
+            "fake_description",
+            []
+        );
+
+        var arguments = new Dictionary<string, object?>() { { "version", "v3" } };
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert
+        Assert.Equal("https://example.com/v3/items", url.OriginalString);
     }
 }
