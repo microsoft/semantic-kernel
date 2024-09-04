@@ -39,7 +39,7 @@ public sealed class MixedAgentTests
         // Arrange, Act & Assert
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(openAISettings),
-            new(openAISettings.ApiKey),
+            OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
             AssistantModel);
     }
 
@@ -56,13 +56,13 @@ public sealed class MixedAgentTests
         // Arrange, Act & Assert
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(azureOpenAISettings),
-            new(azureOpenAISettings.ApiKey, azureOpenAISettings.Endpoint),
+            OpenAIClientProvider.ForAzureOpenAI(azureOpenAISettings.ApiKey, new Uri(azureOpenAISettings.Endpoint)),
             AssistantModel);
     }
 
     private async Task VerifyAgentExecutionAsync(
         Kernel chatCompletionKernel,
-        OpenAIAssistantConfiguration config,
+        OpenAIClientProvider config,
         string modelName)
     {
         // Arrange
@@ -83,10 +83,9 @@ public sealed class MixedAgentTests
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
                 config,
-                new()
+                new(modelName)
                 {
-                    Instructions = "Answer questions about the menu.",
-                    ModelId = modelName,
+                    Instructions = "Answer questions about the menu."
                 });
 
         // Act & Assert
