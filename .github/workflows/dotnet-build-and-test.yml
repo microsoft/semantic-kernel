@@ -86,6 +86,7 @@ jobs:
           done
 
       - name: Azure CLI Login
+        if: github.event_name != 'pull_request' && matrix.integration-tests
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
