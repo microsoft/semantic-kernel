@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
+using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -34,6 +35,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
         await InvokeAgentAsync(agent, chat, "Fortune favors the bold.");
         await InvokeAgentAsync(agent, chat, "I came, I saw, I conquered.");
         await InvokeAgentAsync(agent, chat, "Practice makes perfect.");
+
+        // Output the entire chat history
+        DisplayChatHistory(chat);
     }
 
     [Fact]
@@ -60,6 +64,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
         // Respond to user input
         await InvokeAgentAsync(agent, chat, "What is the special soup?");
         await InvokeAgentAsync(agent, chat, "What is the special drink?");
+
+        // Output the entire chat history
+        DisplayChatHistory(chat);
     }
 
     // Local function to invoke agent and display the conversation messages.
@@ -94,6 +101,19 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             {
                 this.WriteAgentChatMessage(chat[index]);
             }
+        }
+    }
+
+    private void DisplayChatHistory(ChatHistory history)
+    {
+        // Display the chat history.
+        Console.WriteLine("================================");
+        Console.WriteLine("CHAT HISTORY");
+        Console.WriteLine("================================");
+
+        foreach (ChatMessageContent message in history)
+        {
+            this.WriteAgentChatMessage(message);
         }
     }
 

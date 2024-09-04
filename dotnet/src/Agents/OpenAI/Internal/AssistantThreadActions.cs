@@ -201,11 +201,7 @@ internal static class AssistantThreadActions
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
 
-            List<RunStep> steps = [];
-            await foreach (PageResult<RunStep> page in client.GetRunStepsAsync(run).ConfigureAwait(false))
-            {
-                steps.AddRange(page.Values);
-            };
+            IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run).ConfigureAwait(false);
 
             // Is tool action required?
             if (run.Status == RunStatus.RequiresAction)
@@ -213,14 +209,19 @@ internal static class AssistantThreadActions
                 logger.LogOpenAIAssistantProcessingRunSteps(nameof(InvokeAsync), run.Id, threadId);
 
                 // Execute functions in parallel and post results at once.
-                FunctionCallContent[] activeFunctionSteps = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
-                if (activeFunctionSteps.Length > 0)
+                FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
+                // Capture function-call for message processing
+                foreach (FunctionCallContent functionCall in functionCalls)
+                {
+                    functionSteps.Add(functionCall.Id!, functionCall);
+                }
+                if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
-                    yield return (IsVisible: false, Message: GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps));
+                    yield return (IsVisible: false, Message: GenerateFunctionCallContent(agent.GetName(), functionCalls));
 
                     // Invoke functions for each tool-step
-                    IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
+                    IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, functionCalls, cancellationToken);
 
                     // Block for function results
                     FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
@@ -231,7 +232,7 @@ internal static class AssistantThreadActions
                     await client.SubmitToolOutputsToRunAsync(threadId, run.Id, toolOutputs, cancellationToken).ConfigureAwait(false);
                 }
 
-                logger.LogOpenAIAssistantProcessedRunSteps(nameof(InvokeAsync), activeFunctionSteps.Length, run.Id, threadId);
+                logger.LogOpenAIAssistantProcessedRunSteps(nameof(InvokeAsync), functionCalls.Length, run.Id, threadId);
             }
 
             // Enumerate completed messages
@@ -328,24 +329,6 @@ internal static class AssistantThreadActions
 
             logger.LogOpenAIAssistantPolledRunStatus(nameof(PollRunStatusAsync), run.Status, run.Id, threadId);
         }
-
-        // Local function to capture kernel function state for further processing (participates in method closure).
-        IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
-        {
-            if (step.Status == RunStepStatus.InProgress && step.Type == RunStepType.ToolCalls)
-            {
-                foreach (RunStepToolCall toolCall in step.Details.ToolCalls)
-                {
-                    (FunctionName nameParts, KernelArguments functionArguments) = ParseFunctionCall(toolCall.FunctionName, toolCall.FunctionArguments);
-
-                    FunctionCallContent content = new(nameParts.Name, nameParts.PluginName, toolCall.ToolCallId, functionArguments);
-
-                    functionSteps.Add(toolCall.ToolCallId, content);
-
-                    yield return content;
-                }
-            }
-        }
     }
 
     /// <summary>
@@ -390,23 +373,13 @@ internal static class AssistantThreadActions
 
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
-        List<FunctionCallContent> functionCalls = [];
-        List<Task<FunctionResultContent>> functionResultTasks = [];
         HashSet<string> messageIds = [];
 
         ThreadRun? run = null;
         IAsyncEnumerable<StreamingUpdate> asyncUpdates = client.CreateRunStreamingAsync(threadId, agent.Id, options, cancellationToken);
-
         do
         {
-            functionCalls.Clear();
-            functionResultTasks.Clear();
             messageIds.Clear();
-
-            if (run != null)
-            {
-                Debugger.Break();
-            }
 
             await foreach (StreamingUpdate update in asyncUpdates.ConfigureAwait(false))
             {
@@ -416,15 +389,6 @@ internal static class AssistantThreadActions
 
                     logger.LogOpenAIAssistantCreatedRun(nameof(InvokeAsync), run.Id, threadId);
                 }
-                else if (update is RequiredActionUpdate actionUpdate)
-                {
-                    (FunctionName nameParts, KernelArguments functionArguments) = ParseFunctionCall(actionUpdate.FunctionName, actionUpdate.FunctionArguments);
-                    FunctionCallContent functionCall = new(nameParts.Name, nameParts.PluginName, actionUpdate.ToolCallId, functionArguments);
-                    functionCalls.Add(functionCall);
-
-                    Task<FunctionResultContent> functionResultTask = ExecuteFunctionStep(agent, functionCall, cancellationToken);
-                    functionResultTasks.Add(functionResultTask);
-                }
                 else if (update is MessageContentUpdate contentUpdate)
                 {
                     messageIds.Add(contentUpdate.MessageId);
@@ -432,27 +396,42 @@ internal static class AssistantThreadActions
                 }
             }
 
-            if (run != null)
+            if (run == null)
             {
-                // Is in terminal state?
-                if (s_terminalStatuses.Contains(run.Status))
-                {
-                    throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
-                }
+                throw new KernelException($"Agent Failure - Run not created for thread: ${threadId}");
             }
 
-            if (functionCalls.Count > 0)
+            // Is in terminal state?
+            if (s_terminalStatuses.Contains(run.Status))
             {
-                messages.Add(GenerateFunctionCallContent(agent.GetName(), functionCalls));
+                throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
+            }
 
-                // Block for function results
-                FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
+            if (run.Status == RunStatus.RequiresAction)
+            {
+                IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run).ConfigureAwait(false);
 
-                // Process tool output
-                ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
-                asyncUpdates = client.SubmitToolOutputsToRunStreamingAsync(run, toolOutputs);
+                //logger.LogOpenAIAssistantProcessingRunSteps(nameof(InvokeAsync), run.Id, threadId);
 
-                messages.Add(GenerateFunctionResultsContent(agent.GetName(), functionResults));
+                // Execute functions in parallel and post results at once.
+                FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
+                if (functionCalls.Length > 0)
+                {
+                    // Emit function-call content
+                    messages.Add(GenerateFunctionCallContent(agent.GetName(), functionCalls));
+
+                    // Invoke functions for each tool-step
+                    IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, functionCalls, cancellationToken);
+
+                    // Block for function results
+                    FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
+
+                    // Process tool output
+                    ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
+                    asyncUpdates = client.SubmitToolOutputsToRunStreamingAsync(run, toolOutputs);
+
+                    messages.Add(GenerateFunctionResultsContent(agent.GetName(), functionResults));
+                }
             }
 
             if (messageIds.Count > 0)
@@ -476,6 +455,18 @@ internal static class AssistantThreadActions
         while (run?.Status != RunStatus.Completed);
 
         logger.LogOpenAIAssistantCompletedRun(nameof(InvokeAsync), run?.Id ?? "Failed", threadId);
+    }
+
+    private static async Task<IReadOnlyList<RunStep>> GetRunStepsAsync(AssistantClient client, ThreadRun run)
+    {
+        List<RunStep> steps = [];
+
+        await foreach (PageResult<RunStep> page in client.GetRunStepsAsync(run).ConfigureAwait(false))
+        {
+            steps.AddRange(page.Values);
+        };
+
+        return steps;
     }
 
     private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message)
@@ -599,6 +590,23 @@ internal static class AssistantThreadActions
                 AuthorName = agentName,
                 Metadata = new Dictionary<string, object?> { { OpenAIAssistantAgent.CodeInterpreterMetadataKey, true } },
             };
+    }
+
+    private static IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
+    {
+        if (step.Status == RunStepStatus.InProgress && step.Type == RunStepType.ToolCalls)
+        {
+            foreach (RunStepToolCall toolCall in step.Details.ToolCalls)
+            {
+                (FunctionName nameParts, KernelArguments functionArguments) = ParseFunctionCall(toolCall.FunctionName, toolCall.FunctionArguments);
+
+                FunctionCallContent content = new(nameParts.Name, nameParts.PluginName, toolCall.ToolCallId, functionArguments);
+
+                //functionSteps.Add(toolCall.ToolCallId, content);
+
+                yield return content;
+            }
+        }
     }
 
     private static (FunctionName functionName, KernelArguments arguments) ParseFunctionCall(string functionName, string? functionArguments)
