@@ -16,6 +16,10 @@ on:
 permissions:
   contents: read
 
+env:
+  # Configure a constant location for the uv cache
+  UV_CACHE_DIR: /tmp/.uv-cache
+
 jobs:
   paths-filter:
     runs-on: ubuntu-latest
@@ -49,27 +53,37 @@ jobs:
       matrix:
         python-version: ["3.11"]
         os: [ubuntu-latest]
+    defaults:
+      run:
+        working-directory: python
     steps:
       - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
+      - name: Set up uv
+        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Set up uv
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: irm https://astral.sh/uv/install.ps1 | iex
+        shell: powershell
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "poetry"
+      - name: Restore uv cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{  env.UV_CACHE_DIR  }}
+          key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
       - name: Install dependencies with hnswlib native disabled
         if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
         run: |
           export HNSWLIB_NO_NATIVE=1
-          python -m pip install --upgrade pip setuptools wheel
-          cd python && poetry install --with tests
+          uv sync --all-extras --dev
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
-          python -m pip install --upgrade pip setuptools wheel
-          cd python
-          poetry install --with tests
+          uv sync --all-extras --dev
       - name: Install Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -98,7 +112,7 @@ jobs:
       - name: Run Integration Tests
         id: run_tests
         shell: bash
-        env: # Set Azure credentials secret as an input
+        env:
           HNSWLIB_NO_NATIVE: 1
           Python_Integration_Tests: Python_Integration_Tests
           AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
@@ -135,26 +149,19 @@ jobs:
           VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
           VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
           REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
-        run: |
-          cd python
-          poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
+        run: |          
+          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
       - name: Surface failing tests
         if: always()
         uses: pmeier/pytest-results-action@main
         with:
-          # A list of JUnit XML files, directories containing the former, and wildcard
-          # patterns to process.
-          # See @actions/glob for supported patterns.
           path: python/pytest.xml
-          # (Optional) Add a summary of the results at the top of the report
           summary: true
-          # (Optional) Select which results should be included in the report.
-          # Follows the same syntax as `pytest -r`
           display-options: fEX
-          # (Optional) Fail the workflow if no JUnit XML was found.
           fail-on-empty: true
-          # (Optional) Title of the test results section in the workflow summary
           title: Test results
+      - name: Minimize uv cache
+        run: uv cache prune --ci
 
   python-integration-tests:
     needs: paths-filter
@@ -166,54 +173,66 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
+    defaults:
+      run:
+        working-directory: python
     steps:
       - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
+      - name: Set up uv
+        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Set up uv
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: irm https://astral.sh/uv/install.ps1 | iex
+        shell: powershell
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "poetry"
+      - name: Restore uv cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.UV_CACHE_DIR }}
+          key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
       - name: Install dependencies with hnswlib native disabled
         if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
         run: |
           export HNSWLIB_NO_NATIVE=1
-          python -m pip install --upgrade pip setuptools wheel
-          cd python && poetry install --with tests
-
+          uv sync --all-extras --dev
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
-          python -m pip install --upgrade pip setuptools wheel
-          cd python && poetry install --with tests
-
+          uv sync --all-extras --dev
       - name: Install Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
-          curl -fsSL https://ollama.com/install.sh | sh
-          ollama serve &
-          sleep 5
-
+          if ${{ vars.OLLAMA_MODEL != '' }}; then
+            curl -fsSL https://ollama.com/install.sh | sh
+            ollama serve &
+            sleep 5
+          fi
       - name: Pull model in Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
-          ollama pull ${{ vars.OLLAMA_MODEL }}
-          ollama list
-
+          if ${{ vars.OLLAMA_MODEL != '' }}; then
+            ollama pull ${{ vars.OLLAMA_MODEL }}
+            ollama list
+          fi
       - name: Google auth
         uses: google-github-actions/auth@v2
         with:
           project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}
           credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
-
       - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
-
+        uses: google-github-actions/setup-gcloud@v2      
+      - name: Setup Redis Stack Server
+        if: matrix.os == 'ubuntu-latest'
+        run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
       - name: Run Integration Tests
         id: run_tests
         shell: bash
-        env: # Set Azure credentials secret as an input
+        env: 
           HNSWLIB_NO_NATIVE: 1
           Python_Integration_Tests: Python_Integration_Tests
           AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
@@ -240,6 +259,8 @@ jobs:
           MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
           MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
           MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
+          ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
+          ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
           OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
           GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
           GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
@@ -248,16 +269,19 @@ jobs:
           VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
           VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
           REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
-          ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
-          ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
         run: |
-          if ${{ matrix.os == 'ubuntu-latest' }}; then
-            docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
-          fi
-
-          cd python
-          poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/integration -v
-          poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v
+          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
+      - name: Surface failing tests
+        if: always()
+        uses: pmeier/pytest-results-action@main
+        with:
+          path: python/pytest.xml
+          summary: true
+          display-options: fEX
+          fail-on-empty: true
+          title: Test results
+      - name: Minimize uv cache
+        run: uv cache prune --ci
 
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   python-integration-tests-check:
