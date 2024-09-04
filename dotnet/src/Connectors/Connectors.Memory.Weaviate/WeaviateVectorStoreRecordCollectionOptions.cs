@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Data;
 
@@ -24,4 +25,17 @@ public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord> where TR
     /// See <see cref="VectorStoreRecordKeyAttribute"/>, <see cref="VectorStoreRecordDataAttribute"/> and <see cref="VectorStoreRecordVectorAttribute"/>.
     /// </remarks>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+
+    /// <summary>
+    /// Weaviate endpoint for remote or local cluster.
+    /// </summary>
+    public Uri? Endpoint { get; set; } = null;
+
+    /// <summary>
+    /// Weaviate API key.
+    /// </summary>
+    /// <remarks>
+    /// This parameter is optional because authentication may be disabled in local clusters for testing purposes.
+    /// </remarks>
+    public string? ApiKey { get; set; } = null;
 }

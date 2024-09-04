@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -106,29 +107,43 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, JsonNode> _mapper;
 
+    /// <summary>Weaviate endpoint.</summary>
+    private readonly Uri _endpoint;
+
+    /// <summary>Weaviate API key.</summary>
+    private readonly string? _apiKey;
+
     /// <inheritdoc />
     public string CollectionName { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStoreRecordCollection{TRecord}"/> class.
     /// </summary>
-    /// <param name="httpClient"><see cref="HttpClient"/> that is used to interact with Weaviate API.</param>
+    /// <param name="httpClient">
+    /// <see cref="HttpClient"/> that is used to interact with Weaviate API.
+    /// <see cref="HttpClient.BaseAddress"/> should point to remote or local cluster and API key can be configured via <see cref="HttpClient.DefaultRequestHeaders"/>.
+    /// It's also possible to provide these parameters via <see cref="WeaviateVectorStoreRecordCollectionOptions{TRecord}"/>.
+    /// </param>
     /// <param name="collectionName">The name of the collection that this <see cref="WeaviateVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public WeaviateVectorStoreRecordCollection(
         HttpClient httpClient,
         string collectionName,
-        WeaviateVectorStoreRecordCollectionOptions<TRecord>? options = null)
+        WeaviateVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(httpClient);
         Verify.NotNullOrWhiteSpace(collectionName);
 
+        var endpoint = (options?.Endpoint ?? httpClient.BaseAddress) ?? throw new ArgumentException($"Weaviate endpoint should be provided via HttpClient.BaseAddress property or {nameof(WeaviateVectorStoreRecordCollectionOptions<TRecord>)} options parameter.");
+
         // Assign.
         this._httpClient = httpClient;
+        this._endpoint = endpoint;
         this.CollectionName = collectionName;
         this._options = options ?? new();
         this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), supportsMultipleVectors: true);
+        this._apiKey = this._options.ApiKey;
 
         // Validate property types.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, this._vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
@@ -338,6 +353,13 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
     private Task<HttpResponseMessage> ExecuteRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        request.RequestUri = new Uri(this._endpoint, request.RequestUri!);
+
+        if (!string.IsNullOrWhiteSpace(this._apiKey))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._apiKey);
+        }
+
         return this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken);
     }
 

@@ -25,7 +25,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 
     public WeaviateVectorStoreRecordCollectionTests()
     {
-        this._mockHttpClient = new(this._messageHandlerStub, false) { BaseAddress = new Uri("http://test") };
+        this._mockHttpClient = new(this._messageHandlerStub, false) { BaseAddress = new Uri("http://default-endpoint") };
     }
 
     [Fact]
@@ -34,6 +34,17 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => new WeaviateVectorStoreRecordCollection<object>(this._mockHttpClient, "collection"));
         Assert.Contains("No key property found", exception.Message);
+    }
+
+    [Fact]
+    public void ConstructorWithoutEndpointThrowsException()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => new WeaviateVectorStoreRecordCollection<WeaviateHotel>(httpClient, "collection"));
+        Assert.Contains("Weaviate endpoint should be provided", exception.Message);
     }
 
     [Fact]
@@ -129,7 +140,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         await sut.DeleteCollectionAsync();
 
         // Assert
-        Assert.Equal("http://test/schema/Collection", this._messageHandlerStub.RequestUri?.AbsoluteUri);
+        Assert.Equal("http://default-endpoint/schema/Collection", this._messageHandlerStub.RequestUri?.AbsoluteUri);
         Assert.Equal(HttpMethod.Delete, this._messageHandlerStub.Method);
     }
 
@@ -146,7 +157,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         await sut.DeleteAsync(id);
 
         // Assert
-        Assert.Equal("http://test/objects/Collection/55555555-5555-5555-5555-555555555555", this._messageHandlerStub.RequestUri?.AbsoluteUri);
+        Assert.Equal("http://default-endpoint/objects/Collection/55555555-5555-5555-5555-555555555555", this._messageHandlerStub.RequestUri?.AbsoluteUri);
         Assert.Equal(HttpMethod.Delete, this._messageHandlerStub.Method);
     }
 
@@ -391,6 +402,31 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         Assert.NotNull(result);
         Assert.Equal(id, result.HotelId);
         Assert.Equal("Test Name from mapper", result.HotelName);
+    }
+
+    [Theory]
+    [InlineData(true, "http://test-endpoint/schema", "Bearer fake-key")]
+    [InlineData(false, "http://default-endpoint/schema", null)]
+    public async Task ItUsesHttpClientParametersAsync(bool initializeOptions, string expectedEndpoint, string? expectedHeader)
+    {
+        // Arrange
+        const string CollectionName = "Collection";
+
+        var options = initializeOptions ?
+            new WeaviateVectorStoreRecordCollectionOptions<WeaviateHotel>() { Endpoint = new Uri("http://test-endpoint"), ApiKey = "fake-key" } :
+            null;
+
+        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, CollectionName, options);
+
+        // Act
+        await sut.CreateCollectionAsync();
+
+        var headers = this._messageHandlerStub.RequestHeaders;
+        var endpoint = this._messageHandlerStub.RequestUri;
+
+        // Assert
+        Assert.Equal(expectedEndpoint, endpoint?.AbsoluteUri);
+        Assert.Equal(expectedHeader, headers?.Authorization?.ToString());
     }
 
     public void Dispose()

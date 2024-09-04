@@ -28,7 +28,11 @@ public sealed class WeaviateVectorStore : IVectorStore
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStore"/> class.
     /// </summary>
-    /// <param name="httpClient"><see cref="HttpClient"/> that is used to interact with Weaviate API.</param>
+    /// <param name="httpClient">
+    /// <see cref="HttpClient"/> that is used to interact with Weaviate API.
+    /// <see cref="HttpClient.BaseAddress"/> should point to remote or local cluster and API key can be configured via <see cref="HttpClient.DefaultRequestHeaders"/>.
+    /// It's also possible to provide these parameters via <see cref="WeaviateVectorStoreOptions"/>.
+    /// </param>
     /// <param name="options">Optional configuration options for this class.</param>
     public WeaviateVectorStore(HttpClient httpClient, WeaviateVectorStoreOptions? options = null)
     {
@@ -61,7 +65,9 @@ public sealed class WeaviateVectorStore : IVectorStore
             name,
             new()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Endpoint = this._options.Endpoint,
+                ApiKey = this._options.ApiKey
             }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
         return recordCollection!;
