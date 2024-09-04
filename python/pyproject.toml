@@ -89,6 +89,9 @@ ollama = [
 anthropic = [
     "anthropic ~= 0.32"
 ]
+groq = [
+    "groq ~= 0.11"
+]
 pinecone = [
     "pinecone-client ~= 5.0"
 ]

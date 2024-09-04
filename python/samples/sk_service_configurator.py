@@ -4,6 +4,7 @@ from pydantic import ValidationError
 
 from samples.service_settings import ServiceSettings
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.groq.services.groq_chat_completion import GroqChatCompletion
 from semantic_kernel.connectors.ai.open_ai import (
     AzureChatCompletion,
     AzureTextCompletion,
@@ -56,13 +57,18 @@ def add_service(
             kernel.add_service(OpenAITextCompletion(service_id=service_id))
             # </OpenAITextCompletionKernelCreation>
     else:
-        if use_chat:
-            # <TypicalKernelCreation>
-            kernel.add_service(AzureChatCompletion(service_id=service_id))
-            # </TypicalKernelCreation>
+        if settings.global_llm_service == "Groq":
+            if use_chat:
+                # <OpenAIKernelCreation>
+                kernel.add_service(GroqChatCompletion(service_id=service_id))
+                # </OpenAIKernelCreation>
         else:
-            # <TextCompletionKernelCreation>
-            kernel.add_service(AzureTextCompletion(service_id=service_id))
-            # </TextCompletionKernelCreation>
-
+            if use_chat:
+                # <TypicalKernelCreation>
+                kernel.add_service(AzureChatCompletion(service_id=service_id))
+                # </TypicalKernelCreation>
+            else:
+                # <TextCompletionKernelCreation>
+                kernel.add_service(AzureTextCompletion(service_id=service_id))
+                # </TextCompletionKernelCreation>
     return kernel

@@ -3,7 +3,7 @@
 import asyncio
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.anthropic import AnthropicChatCompletion
+from semantic_kernel.connectors.ai.groq import GroqChatCompletion
 from semantic_kernel.contents import ChatHistory
 
 system_message = """
@@ -17,8 +17,8 @@ flowery prose.
 
 kernel = Kernel()
 
-service_id = "anthropic-ai-chat"
-kernel.add_service(AnthropicChatCompletion(service_id=service_id, ai_model_id="claude-3-opus-20240229"))
+service_id = "groq-ai-chat"
+kernel.add_service(GroqChatCompletion(service_id=service_id, ai_model_id="llama-3.1-70b-versatile"))
 
 settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
 settings.max_tokens = 2000
