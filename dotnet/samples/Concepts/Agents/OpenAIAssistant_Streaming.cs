@@ -109,7 +109,6 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 
     private async Task DisplayChatHistoryAsync(OpenAIAssistantAgent agent, string threadId)
     {
-
         Console.WriteLine("================================");
         Console.WriteLine("CHAT HISTORY");
         Console.WriteLine("================================");
