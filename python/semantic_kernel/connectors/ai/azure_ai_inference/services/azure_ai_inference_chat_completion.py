@@ -6,6 +6,7 @@ from collections.abc import AsyncGenerator, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if sys.version_info >= (3, 12):
@@ -122,6 +123,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         return AzureAIInferenceChatPromptExecutionSettings
 
     @override
+    @trace_chat_completion(AzureAIInferenceBase.MODEL_PROVIDER_NAME)
     async def _send_chat_request(
         self,
         chat_history: "ChatHistory",

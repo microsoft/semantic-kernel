@@ -53,20 +53,18 @@ class MockChatCompletion(ChatCompletionClientBase):
     MODEL_PROVIDER_NAME: ClassVar[str] = "mock"
 
     @override
-    async def get_chat_message_contents(
+    async def _send_chat_request(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Any,
     ) -> list["ChatMessageContent"]:
         return []
 
     @override
-    async def get_streaming_chat_message_contents(
+    async def _send_streaming_chat_request(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Any,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         yield []
 
@@ -75,7 +73,7 @@ class MockTextCompletion(TextCompletionClientBase):
     MODEL_PROVIDER_NAME: ClassVar[str] = "mock"
 
     @override
-    async def get_text_contents(
+    async def _send_text_request(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
@@ -83,7 +81,7 @@ class MockTextCompletion(TextCompletionClientBase):
         return []
 
     @override
-    async def get_streaming_text_contents(
+    async def _send_streaming_text_request(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",

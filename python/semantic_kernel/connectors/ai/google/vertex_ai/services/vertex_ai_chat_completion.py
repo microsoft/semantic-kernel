@@ -9,6 +9,7 @@ from google.cloud.aiplatform_v1beta1.types.content import Content
 from pydantic import ValidationError
 from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
 
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.google.shared_utils import (
@@ -41,13 +42,12 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
 )
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
-
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 
 
 class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
@@ -107,6 +107,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         return VertexAIChatPromptExecutionSettings
 
     @override
+    @trace_chat_completion(VertexAIBase.MODEL_PROVIDER_NAME)
     async def _send_chat_request(
         self,
         chat_history: "ChatHistory",

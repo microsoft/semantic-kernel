@@ -4,7 +4,7 @@ import logging
 import sys
 from collections.abc import AsyncGenerator
 from threading import Thread
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -20,12 +20,15 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceResponseException
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class HuggingFaceTextCompletion(TextCompletionClientBase):
     """Hugging Face text completion service."""
+
+    MODEL_PROVIDER_NAME: ClassVar[str] = "huggingface"
 
     task: Literal["summarization", "text-generation", "text2text-generation"]
     device: str
@@ -87,6 +90,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         return HuggingFacePromptExecutionSettings
 
     @override
+    @trace_text_completion(MODEL_PROVIDER_NAME)
     async def _send_text_request(
         self,
         prompt: str,

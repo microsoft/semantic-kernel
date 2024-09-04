@@ -36,6 +36,7 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -113,6 +114,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         return GoogleAIChatPromptExecutionSettings
 
     @override
+    @trace_chat_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
     async def _send_chat_request(
         self,
         chat_history: "ChatHistory",

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -62,6 +63,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         return OpenAIChatPromptExecutionSettings
 
     @override
+    @trace_chat_completion(MODEL_PROVIDER_NAME)
     async def _send_chat_request(
         self,
         chat_history: "ChatHistory",
