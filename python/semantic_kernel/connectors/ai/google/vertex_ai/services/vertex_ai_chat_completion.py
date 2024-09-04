@@ -177,9 +177,9 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
     @override
     def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
         if hasattr(settings, "tool_config"):
-            delattr(settings, "tool_config")
+            settings.tool_config = None
         if hasattr(settings, "tools"):
-            delattr(settings, "tools")
+            settings.tools = None
 
     @override
     def _prepare_chat_history_for_request(

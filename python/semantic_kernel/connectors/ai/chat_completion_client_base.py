@@ -289,11 +289,6 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             if any(result.terminate for result in results if result is not None):
                 yield merge_function_results(chat_history.messages[-len(results) :])  # type: ignore
                 break
-        else:
-            # Do a final call, without function calling when the max has been reached.
-            self._reset_function_choice_settings(settings)
-            async for streaming_chat_message_contents in self._send_streaming_chat_request(chat_history, settings):
-                yield streaming_chat_message_contents
 
     async def get_streaming_chat_message_content(
         self,

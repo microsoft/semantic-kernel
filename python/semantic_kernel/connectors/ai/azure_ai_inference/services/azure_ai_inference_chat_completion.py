@@ -190,9 +190,9 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     @override
     def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
         if hasattr(settings, "tool_choice"):
-            delattr(settings, "tool_choice")
+            settings.tool_choice = None
         if hasattr(settings, "tools"):
-            delattr(settings, "tools")
+            settings.tools = None
 
     @override
     def _prepare_chat_history_for_request(
