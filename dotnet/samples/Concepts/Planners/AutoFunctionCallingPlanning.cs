@@ -7,13 +7,13 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Planning;
+using OpenAI.Chat;
 
 namespace Planners;
 
@@ -328,7 +328,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
         {
             if (message.Metadata is not null &&
                 message.Metadata.TryGetValue("Usage", out object? usage) &&
-                usage is CompletionsUsage completionsUsage &&
+                usage is ChatTokenUsage completionsUsage &&
                 completionsUsage is not null)
             {
                 tokens += completionsUsage.TotalTokens;
