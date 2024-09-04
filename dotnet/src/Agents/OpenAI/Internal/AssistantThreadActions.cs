@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -114,7 +115,7 @@ internal static class AssistantThreadActions
 
         await foreach (PageResult<ThreadMessage> page in client.GetMessagesAsync(threadId, new() { Order = ListOrder.NewestFirst }, cancellationToken).ConfigureAwait(false))
         {
-            foreach (var message in page.Values)
+            foreach (ThreadMessage message in page.Values)
             {
                 AuthorRole role = new(message.Role.ToString());
 
@@ -201,7 +202,7 @@ internal static class AssistantThreadActions
             }
 
             List<RunStep> steps = [];
-            await foreach (var page in client.GetRunStepsAsync(run).ConfigureAwait(false))
+            await foreach (PageResult<RunStep> page in client.GetRunStepsAsync(run).ConfigureAwait(false))
             {
                 steps.AddRange(page.Values);
             };
@@ -275,7 +276,7 @@ internal static class AssistantThreadActions
                 else if (completedStep.Type == RunStepType.MessageCreation)
                 {
                     // Retrieve the message
-                    ThreadMessage? message = await RetrieveMessageAsync(completedStep.Details.CreatedMessageId, cancellationToken).ConfigureAwait(false);
+                    ThreadMessage? message = await RetrieveMessageAsync(client, threadId, completedStep.Details.CreatedMessageId, agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
 
                     if (message is not null)
                     {
@@ -339,8 +340,6 @@ internal static class AssistantThreadActions
 
                     FunctionCallContent content = new(nameParts.Name, nameParts.PluginName, toolCall.ToolCallId, functionArguments);
 
-                    var content = new FunctionCallContent(nameParts.Name, nameParts.PluginName, toolCall.ToolCallId, functionArguments);
-
                     functionSteps.Add(toolCall.ToolCallId, content);
 
                     yield return content;
@@ -375,7 +374,7 @@ internal static class AssistantThreadActions
         Kernel kernel,
         KernelArguments? arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
+    {
         if (agent.IsDeleted)
         {
             throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {agent.Id}.");
@@ -398,19 +397,19 @@ internal static class AssistantThreadActions
         ThreadRun? run = null;
         IAsyncEnumerable<StreamingUpdate> asyncUpdates = client.CreateRunStreamingAsync(threadId, agent.Id, options, cancellationToken);
 
-            do
-            {
+        do
+        {
             functionCalls.Clear();
             functionResultTasks.Clear();
             messageIds.Clear();
 
             if (run != null)
-                {
+            {
                 Debugger.Break();
-                }
+            }
 
             await foreach (StreamingUpdate update in asyncUpdates.ConfigureAwait(false))
-                {
+            {
                 if (update is RunUpdate runUpdate)
                 {
                     run = runUpdate.Value;
@@ -469,8 +468,7 @@ internal static class AssistantThreadActions
                         ChatMessageContent content = GenerateMessageContent(agent.GetName(), message);
                         messages.Add(content);
                     }
-            }
-            while (retry);
+                }
 
                 logger.LogOpenAIAssistantProcessedRunMessages(nameof(InvokeAsync), messageIds.Count, run!.Id, threadId);
             }

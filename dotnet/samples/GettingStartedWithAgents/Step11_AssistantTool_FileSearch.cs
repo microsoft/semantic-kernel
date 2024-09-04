@@ -64,7 +64,7 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
             await agent.DeleteThreadAsync(threadId);
             await agent.DeleteAsync();
             await vectorStoreClient.DeleteVectorStoreAsync(vectorStore);
-            await fileClient.DeleteFileAsync(fileInfo);
+            await fileClient.DeleteFileAsync(fileInfo.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
