@@ -84,9 +84,9 @@ public sealed class BingTextSearch : ITextSearch
 
     // See https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/reference/query-parameters
     private static readonly string[] s_queryParameters = ["answerCount", "cc", "freshness", "mkt", "promote", "responseFilter", "safeSearch", "setLang", "textDecorations", "textFormat"];
+    private static readonly string[] s_advancedSearchKeywords = ["contains", "ext", "filetype", "inanchor", "inbody", "intitle", "ip", "language", "loc", "location", "prefer", "site", "feed", "hasfeed", "url"];
 
     private const string DefaultUri = "https://api.bing.microsoft.com/v7.0/search";
-    private const string SiteQueryParam = "site";
 
     /// <summary>
     /// Execute a Bing search query and return the results.
@@ -232,9 +232,7 @@ public sealed class BingTextSearch : ITextSearch
     private static string BuildQuery(string query, TextSearchOptions searchOptions)
     {
         StringBuilder fullQuery = new();
-
         fullQuery.Append(Uri.EscapeDataString(query.Trim()));
-
         StringBuilder queryParams = new();
         if (searchOptions.BasicFilter is not null)
         {
@@ -244,10 +242,9 @@ public sealed class BingTextSearch : ITextSearch
             {
                 if (filterClause is EqualityFilterClause equalityFilterClause)
                 {
-                    // site query parameter requires special handling
-                    if (equalityFilterClause.FieldName.Equals(SiteQueryParam, StringComparison.OrdinalIgnoreCase))
+                    if (s_advancedSearchKeywords.Contains(equalityFilterClause.FieldName, StringComparer.OrdinalIgnoreCase) && equalityFilterClause.Value is not null)
                     {
-                        fullQuery.Append("+site%3A").Append(equalityFilterClause.Value);
+                        fullQuery.Append($"+{equalityFilterClause.FieldName}%3A").Append(Uri.EscapeDataString(equalityFilterClause.Value.ToString()!));
                     }
                     else if (s_queryParameters.Contains(equalityFilterClause.FieldName, StringComparer.OrdinalIgnoreCase) && equalityFilterClause.Value is not null)
                     {
@@ -256,7 +253,7 @@ public sealed class BingTextSearch : ITextSearch
                     }
                     else
                     {
-                        throw new ArgumentException($"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_queryParameters)}", nameof(searchOptions));
+                        throw new ArgumentException($"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_queryParameters)},{string.Join(",", s_advancedSearchKeywords)}", nameof(searchOptions));
                     }
                 }
             }
