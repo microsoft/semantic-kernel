@@ -10,7 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+#pragma warning disable IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Connectors.AI;
+#pragma warning restore IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using OpenAI;

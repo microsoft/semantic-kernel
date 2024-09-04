@@ -8,7 +8,9 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+#pragma warning disable IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Connectors.AI;
+#pragma warning restore IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
