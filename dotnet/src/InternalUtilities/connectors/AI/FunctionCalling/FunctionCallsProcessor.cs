@@ -316,7 +316,7 @@ internal sealed class FunctionCallsProcessor
     /// </summary>
     /// <param name="functionResult">The result of the function call.</param>
     /// <returns>A string representation of the function result.</returns>
-    private static string? ProcessFunctionResult(object functionResult)
+    public static string? ProcessFunctionResult(object functionResult)
     {
         if (functionResult is string stringResult)
         {
