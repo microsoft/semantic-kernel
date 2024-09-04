@@ -40,7 +40,7 @@ internal partial class ClientCore
             Speed = audioExecutionSettings.Speed,
         };
 
-        ClientResult<BinaryData> response = await RunRequestAsync(() => this.Client!.GetAudioClient(targetModel).GenerateSpeechFromTextAsync(prompt, GetGeneratedSpeechVoice(audioExecutionSettings?.Voice), options, cancellationToken)).ConfigureAwait(false);
+        ClientResult<BinaryData> response = await RunRequestAsync(() => this.Client!.GetAudioClient(targetModel).GenerateSpeechAsync(prompt, GetGeneratedSpeechVoice(audioExecutionSettings?.Voice), options, cancellationToken)).ConfigureAwait(false);
 
         return [new AudioContent(response.Value.ToArray(), mimeType)];
     }

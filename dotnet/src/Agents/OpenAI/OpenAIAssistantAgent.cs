@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
-using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Files;
@@ -109,9 +108,12 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         AssistantClient client = CreateClient(provider);
 
         // Query and enumerate assistant definitions
-        await foreach (Assistant model in client.GetAssistantsAsync(ListOrder.NewestFirst, cancellationToken).ConfigureAwait(false))
+        await foreach (var page in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = ListOrder.NewestFirst }, cancellationToken).ConfigureAwait(false))
         {
-            yield return CreateAssistantDefinition(model);
+            foreach (Assistant model in page.Values)
+            {
+                yield return CreateAssistantDefinition(model);
+            }
         }
     }
 
@@ -269,6 +271,25 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
+    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        string threadId,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+            => this.InvokeAsync(threadId, options: null, arguments, kernel, cancellationToken);
+
+    /// <summary>
+    /// Invoke the assistant on the specified thread.
+    /// </summary>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="options">Optional invocation options</param>
+    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
+    /// </remarks>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
         OpenAIAssistantInvocationOptions? options,
@@ -360,8 +381,6 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
 
-        this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
-
         OpenAIAssistantChannel channel =
             new(this._client, thread.Id)
             {
@@ -393,8 +412,6 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this._assistant = model;
         this._client = provider.Client.GetAssistantClient();
         this._channelKeys = provider.ConfigurationKeys.ToArray();
-
-        this.Definition = CreateAssistantDefinition(model);
 
         this.Definition = CreateAssistantDefinition(model);
 
@@ -452,18 +469,14 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 NucleusSamplingFactor = definition.TopP,
             };
 
-        if (definition.Metadata != null)
+        assistantCreationOptions.FileIds.AddRange(definition.FileIds ?? []);
+
+        if (definition.EnableCodeInterpreter)
         {
             foreach (KeyValuePair<string, string> item in definition.Metadata)
             {
                 assistantCreationOptions.Metadata[item.Key] = item.Value;
             }
-        }
-
-        if (definition.ExecutionOptions != null)
-        {
-            string optionsJson = JsonSerializer.Serialize(definition.ExecutionOptions);
-            assistantCreationOptions.Metadata[OptionsMetadataKey] = optionsJson;
         }
 
         if (definition.ExecutionOptions != null)

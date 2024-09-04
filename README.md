@@ -48,7 +48,7 @@ Semantic Kernel was designed to be future proof, easily connecting your code to 
 
 ## Getting started with Semantic Kernel
 
-The Semantic Kernel SDK is available in C#, Python, and Java. To get started, choose your preferred language below. See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) to see a breakdown of
+The Semantic Kernel SDK is available in C#, Python, and Java. To get started, choose your preferred language below. See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) for a breakdown of
 feature parity between our currently supported languages.
 
 <table width=100%>

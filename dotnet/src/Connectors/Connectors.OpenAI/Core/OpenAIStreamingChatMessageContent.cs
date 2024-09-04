@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -33,7 +34,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         string modelId,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(
-            chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
+            null,
             null,
             chatUpdate,
             choiceIndex,
@@ -41,9 +42,30 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             Encoding.UTF8,
             metadata)
     {
-        this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
-        this.FinishReason = chatUpdate.FinishReason;
-        this.Items = CreateContentItems(chatUpdate.ContentUpdate);
+        try
+        {
+            this.FinishReason = chatUpdate.FinishReason;
+
+            if (chatUpdate.Role.HasValue)
+            {
+                this.Role = new AuthorRole(chatUpdate.Role.ToString()!);
+            }
+
+            if (chatUpdate.ToolCallUpdates is not null)
+            {
+                this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
+            }
+
+            if (chatUpdate.ContentUpdate is not null)
+            {
+                this.Items = CreateContentItems(chatUpdate.ContentUpdate);
+            }
+        }
+        catch (NullReferenceException)
+        {
+            // Temporary bugfix for: https://github.com/openai/openai-dotnet/issues/198
+            // TODO: Remove this try-catch block once the bug is fixed.
+        }
     }
 
     /// <summary>

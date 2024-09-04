@@ -46,10 +46,17 @@ internal static class KernelFunctionExtensions
                     required,
                 };
 
-            return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName), function.Description, BinaryData.FromObjectAsJson(spec));
+            return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName))
+            {
+                Description = function.Description,
+                Parameters = BinaryData.FromObjectAsJson(spec)
+            };
         }
 
-        return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName), function.Description);
+        return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName))
+        {
+            Description = function.Description
+        };
     }
 
     private static string ConvertType(Type? type)

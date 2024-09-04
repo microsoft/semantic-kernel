@@ -23,7 +23,6 @@ public class AgentChannelTests
         // Arrange
         MockChannel channel = new();
         // Assert
-        // Assert
         Assert.Equal(0, channel.InvokeCount);
 
         // Act
@@ -34,7 +33,6 @@ public class AgentChannelTests
         // Act
         Mock<Agent> mockAgent = new();
         await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAgentAsync(mockAgent.Object).ToArrayAsync().AsTask());
-        // Assert
         // Assert
         Assert.Equal(1, channel.InvokeCount);
     }

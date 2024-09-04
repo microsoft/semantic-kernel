@@ -34,7 +34,10 @@ public class PromptWithSimpleVariableTest
         JsonNode? obtainedObject = JsonNode.Parse(requestContent);
         Assert.NotNull(obtainedObject);
 
-        string expected = await File.ReadAllTextAsync("./CrossLanguage/Data/PromptWithSimpleVariableTest.json");
+        string expected = await File.ReadAllTextAsync(isStreaming
+            ? "./CrossLanguage/Data/PromptWithSimpleVariableStreamingTest.json"
+            : "./CrossLanguage/Data/PromptWithSimpleVariableTest.json");
+
         JsonNode? expectedObject = JsonNode.Parse(expected);
         Assert.NotNull(expectedObject);
 

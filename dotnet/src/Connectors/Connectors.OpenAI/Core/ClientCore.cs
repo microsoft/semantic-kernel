@@ -36,7 +36,7 @@ internal partial class ClientCore
     /// <summary>
     /// Default OpenAI API endpoint.
     /// </summary>
-    private const string OpenAIV1Endpoint = "https://api.openai.com/v1";
+    private const string OpenAIEndpoint = "https://api.openai.com/";
 
     /// <summary>
     /// Identifier of the default model to use
@@ -104,7 +104,7 @@ internal partial class ClientCore
         if (this.Endpoint is null)
         {
             Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
-            this.Endpoint = new Uri(OpenAIV1Endpoint);
+            this.Endpoint = new Uri(OpenAIEndpoint);
         }
         else if (string.IsNullOrEmpty(apiKey))
         {

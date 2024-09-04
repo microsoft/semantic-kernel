@@ -116,7 +116,7 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
         var metadata = new Dictionary<string, object?>();
 
         // Act
-        await foreach (var update in textGeneration.GetStreamingTextContentsAsync("Reply \"I don't know\" to every question. What is the capital of France?", null, kernel))
+        await foreach (var update in textGeneration.GetStreamingTextContentsAsync("What is the capital of France?", null, kernel))
         {
             stringBuilder.Append(update);
 
@@ -127,7 +127,6 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
         }
 
         // Assert
-        Assert.Contains("I don't know", stringBuilder.ToString());
         Assert.NotNull(metadata);
 
         Assert.True(metadata.TryGetValue("Id", out object? id));

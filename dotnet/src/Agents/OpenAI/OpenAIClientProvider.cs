@@ -50,7 +50,7 @@ public sealed class OpenAIClientProvider
         Verify.NotNull(apiKey, nameof(apiKey));
         Verify.NotNull(endpoint, nameof(endpoint));
 
-        AzureOpenAIClientOptions clientOptions = CreateAzureClientOptions(endpoint, httpClient);
+        AzureOpenAIClientOptions clientOptions = CreateAzureClientOptions(httpClient);
 
         return new(new AzureOpenAIClient(endpoint, apiKey!, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
     }
@@ -66,7 +66,7 @@ public sealed class OpenAIClientProvider
         Verify.NotNull(credential, nameof(credential));
         Verify.NotNull(endpoint, nameof(endpoint));
 
-        AzureOpenAIClientOptions clientOptions = CreateAzureClientOptions(endpoint, httpClient);
+        AzureOpenAIClientOptions clientOptions = CreateAzureClientOptions(httpClient);
 
         return new(new AzureOpenAIClient(endpoint, credential, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
     }
@@ -102,12 +102,11 @@ public sealed class OpenAIClientProvider
         return new(client, [client.GetType().FullName!, client.GetHashCode().ToString()]);
     }
 
-    private static AzureOpenAIClientOptions CreateAzureClientOptions(Uri? endpoint, HttpClient? httpClient)
+    private static AzureOpenAIClientOptions CreateAzureClientOptions(HttpClient? httpClient)
     {
         AzureOpenAIClientOptions options = new()
         {
-            ApplicationId = HttpHeaderConstant.Values.UserAgent,
-            Endpoint = endpoint,
+            ApplicationId = HttpHeaderConstant.Values.UserAgent
         };
 
         ConfigureClientOptions(httpClient, options);
@@ -128,7 +127,7 @@ public sealed class OpenAIClientProvider
         return options;
     }
 
-    private static void ConfigureClientOptions(HttpClient? httpClient, OpenAIClientOptions options)
+    private static void ConfigureClientOptions(HttpClient? httpClient, ClientPipelineOptions options)
     {
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIAssistantAgent))), PipelinePosition.PerCall);
 
