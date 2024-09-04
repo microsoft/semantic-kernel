@@ -18,7 +18,7 @@
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/openai/OpenAIUtilities.props" />
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/AiConnectorsInternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/AIConnectorsInternalUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->

@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI;
+namespace Microsoft.SemanticKernel.Connectors.FunctionCalling;
 
 /// <summary>
 /// Class responsible for providing function calling configuration and processing AI function calls. As part of the processing, it will:

@@ -100,8 +100,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connectors", "connectors", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AI", "AI", "{C7299F56-3A55-471E-B10E-B1FBE101C625}"
 	ProjectSection(SolutionItems) = preProject
-		src\InternalUtilities\connectors\AI\FunctionCallsProcessor.cs = src\InternalUtilities\connectors\AI\FunctionCallsProcessor.cs
-		src\InternalUtilities\connectors\AI\AiConnectorsInternalUtilities.props = src\InternalUtilities\connectors\AI\AiConnectorsInternalUtilities.props
+		src\InternalUtilities\connectors\AI\AIConnectorsInternalUtilities.props = src\InternalUtilities\connectors\AI\AIConnectorsInternalUtilities.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{958AD708-F048-4FAF-94ED-D2F2B92748B9}"
@@ -328,17 +327,22 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Qdrant.UnitTests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureCosmosDBMongoDB.UnitTests", "src\Connectors\Connectors.AzureCosmosDBMongoDB.UnitTests\Connectors.AzureCosmosDBMongoDB.UnitTests.csproj", "{2918478E-BC86-4D53-9D01-9C318F80C14F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureCosmosDBMongoDB.UnitTests", "src\Connectors\Connectors.AzureCosmosDBMongoDB.UnitTests\Connectors.AzureCosmosDBMongoDB.UnitTests.csproj", "{2918478E-BC86-4D53-9D01-9C318F80C14F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureCosmosDBNoSQL.UnitTests", "src\Connectors\Connectors.AzureCosmosDBNoSQL.UnitTests\Connectors.AzureCosmosDBNoSQL.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureCosmosDBNoSQL.UnitTests", "src\Connectors\Connectors.AzureCosmosDBNoSQL.UnitTests\Connectors.AzureCosmosDBNoSQL.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.OpenAI.UnitTests", "src\Connectors\Connectors.OpenAI.UnitTests\Connectors.OpenAI.UnitTests.csproj", "{36DDC119-C030-407E-AC51-A877E9E0F660}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.OpenAI.UnitTests", "src\Connectors\Connectors.OpenAI.UnitTests\Connectors.OpenAI.UnitTests.csproj", "{36DDC119-C030-407E-AC51-A877E9E0F660}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI", "src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj", "{7AAD7388-307D-41FB-B80A-EF9E3A4E31F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureOpenAI", "src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj", "{7AAD7388-307D-41FB-B80A-EF9E3A4E31F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI.UnitTests", "src\Connectors\Connectors.AzureOpenAI.UnitTests\Connectors.AzureOpenAI.UnitTests.csproj", "{8CF06B22-50F3-4F71-A002-622DB49DF0F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureOpenAI.UnitTests", "src\Connectors\Connectors.AzureOpenAI.UnitTests\Connectors.AzureOpenAI.UnitTests.csproj", "{8CF06B22-50F3-4F71-A002-622DB49DF0F5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FunctionCalling", "FunctionCalling", "{F58468D3-D635-4774-98B1-E1B5DE90A7FF}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallsProcessor.cs = src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallsProcessor.cs
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -968,6 +972,7 @@ Global
 		{36DDC119-C030-407E-AC51-A877E9E0F660} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{7AAD7388-307D-41FB-B80A-EF9E3A4E31F0} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{8CF06B22-50F3-4F71-A002-622DB49DF0F5} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
+		{F58468D3-D635-4774-98B1-E1B5DE90A7FF} = {C7299F56-3A55-471E-B10E-B1FBE101C625}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

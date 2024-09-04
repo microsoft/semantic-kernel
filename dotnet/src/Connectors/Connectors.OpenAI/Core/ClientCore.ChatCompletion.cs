@@ -950,7 +950,7 @@ internal partial class ClientCore
                 }
             }
             // Disable auto invocation if we've exceeded the allowed limit of in-flight auto-invokes.
-            else if (Microsoft.SemanticKernel.Connectors.AI.FunctionCallsProcessor.s_inflightAutoInvokes.Value >= MaxInflightAutoInvokes)
+            else if (Microsoft.SemanticKernel.Connectors.FunctionCalling.FunctionCallsProcessor.s_inflightAutoInvokes.Value >= MaxInflightAutoInvokes)
             {
                 autoInvoke = false;
             }
