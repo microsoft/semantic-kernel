@@ -8,8 +8,20 @@ using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+/// <summary>
+/// Class to construct Weaviate collection schema with configuration for data and vector properties.
+/// More information here: <see href="https://weaviate.io/developers/weaviate/config-refs/schema"/>.
+/// </summary>
 internal static class WeaviateVectorStoreCollectionCreateMapping
 {
+    /// <summary>
+    /// Maps record type properties to Weaviate collection schema for collection creation.
+    /// </summary>
+    /// <param name="collectionName">The name of the vector store collection.</param>
+    /// <param name="dataProperties">Collection of record data properties.</param>
+    /// <param name="vectorProperties">Collection of record vector properties.</param>
+    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name that should be used when serializing it to JSON for data and vector properties.</param>
+    /// <returns>Weaviate collection schema.</returns>
     public static WeaviateCollectionSchema MapToSchema(
         string collectionName,
         IEnumerable<VectorStoreRecordDataProperty> dataProperties,
@@ -49,6 +61,10 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
 
     #region private
 
+    /// <summary>
+    /// Maps record vector property index kind to Weaviate index kind.
+    /// More information here: <see href="https://weaviate.io/developers/weaviate/config-refs/schema/vector-index"/>.
+    /// </summary>
     private static string MapIndexKind(string? indexKind, string vectorPropertyName)
     {
         const string Hnsw = "hnsw";
@@ -66,10 +82,19 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
             IndexKind.Hnsw => Hnsw,
             IndexKind.Flat => Flat,
             IndexKind.Dynamic => Dynamic,
-            _ => throw new InvalidOperationException($"Index kind '{indexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore.")
+            _ => throw new InvalidOperationException(
+                $"Index kind '{indexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. " +
+                $"Supported index kinds: {string.Join(", ",
+                    IndexKind.Hnsw,
+                    IndexKind.Flat,
+                    IndexKind.Dynamic)}")
         };
     }
 
+    /// <summary>
+    /// Maps record vector property distance function to Weaviate distance function.
+    /// More information here: <see href="https://weaviate.io/developers/weaviate/config-refs/distances"/>.
+    /// </summary>
     private static string MapDistanceFunction(string? distanceFunction, string vectorPropertyName)
     {
         const string Cosine = "cosine";
@@ -91,10 +116,20 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
             DistanceFunction.EuclideanSquaredDistance => EuclideanSquared,
             DistanceFunction.Hamming => Hamming,
             DistanceFunction.ManhattanDistance => Manhattan,
-            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore.")
+            _ => throw new InvalidOperationException(
+                $"Distance function '{distanceFunction}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. " +
+                $"Supported distance functions: {string.Join(", ",
+                    DistanceFunction.CosineDistance,
+                    DistanceFunction.DotProductSimilarity,
+                    DistanceFunction.EuclideanSquaredDistance,
+                    DistanceFunction.Hamming,
+                    DistanceFunction.ManhattanDistance)}")
         };
     }
 
+    /// <summary>
+    /// Maps record property type to Weaviate data type taking into account if the type is a collection or single value.
+    /// </summary>
     private static string MapType(Type type)
     {
         // Check if the type is a collection.
@@ -110,6 +145,10 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
         return MapType(type, isCollection: false);
     }
 
+    /// <summary>
+    /// Maps record property type to Weaviate data type.
+    /// More information here: <see href="https://weaviate.io/developers/weaviate/config-refs/datatypes"/>.
+    /// </summary>
     private static string MapType(Type type, bool isCollection)
     {
         return type switch
