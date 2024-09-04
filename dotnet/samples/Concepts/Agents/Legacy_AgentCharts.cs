@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
+using OpenAI;
+using OpenAI.Files;
 
 namespace Agents;
 
@@ -13,27 +15,14 @@ namespace Agents;
 public sealed class Legacy_AgentCharts(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Specific model is required that supports agents and parallel function calling.
-    /// Currently this is limited to Open AI hosted services.
-    /// </summary>
-    private const string OpenAIFunctionEnabledModel = "gpt-4-1106-preview";
-
-    /// <summary>
-    /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
-    /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
-    /// If 'false', Azure takes precedence.
-    /// </summary>
-    private new const bool ForceOpenAI = false;
-
-    /// <summary>
     /// Create a chart and retrieve by file_id.
     /// </summary>
-    [Fact(Skip = "Launches external processes")]
+    [Fact]
     public async Task CreateChartAsync()
     {
         Console.WriteLine("======== Using CodeInterpreter tool ========");
 
-        var fileService = CreateFileService();
+        FileClient fileClient = CreateFileClient();
 
         var agent = await CreateAgentBuilder().WithCodeInterpreter().BuildAsync();
 
@@ -69,11 +58,11 @@ Sum      426  1622     856 2904
                 {
                     var filename = $"{imageName}.jpg";
                     var path = Path.Combine(Environment.CurrentDirectory, filename);
-                    Console.WriteLine($"# {message.Role}: {message.Content}");
+                    var fileId = message.Content;
+                    Console.WriteLine($"# {message.Role}: {fileId}");
                     Console.WriteLine($"# {message.Role}: {path}");
-                    var content = await fileService.GetFileContentAsync(message.Content);
-                    await using var outputStream = File.OpenWrite(filename);
-                    await outputStream.WriteAsync(content.Data!.Value);
+                    BinaryData content = await fileClient.DownloadFileAsync(fileId);
+                    File.WriteAllBytes(filename, content.ToArray());
                     Process.Start(
                         new ProcessStartInfo
                         {
@@ -91,19 +80,23 @@ Sum      426  1622     856 2904
         }
     }
 
-    private static OpenAIFileService CreateFileService()
-    {
-        return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new OpenAIFileService(TestConfiguration.OpenAI.ApiKey) :
-                new OpenAIFileService(new Uri(TestConfiguration.AzureOpenAI.Endpoint), apiKey: TestConfiguration.AzureOpenAI.ApiKey);
-    }
+    private FileClient CreateFileClient()
 
-    private static AgentBuilder CreateAgentBuilder()
+    {
+        OpenAIClient client =
+            this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
+                new OpenAIClient(TestConfiguration.OpenAI.ApiKey) :
+                new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), TestConfiguration.AzureOpenAI.ApiKey);
+
+        return client.GetFileClient();
+    }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+    private AgentBuilder CreateAgentBuilder()
     {
         return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
+            this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
+                new AgentBuilder().WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey) :
                 new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
     }
 }

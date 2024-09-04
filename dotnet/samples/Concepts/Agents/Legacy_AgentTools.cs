@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
+using OpenAI;
+using OpenAI.Files;
 using Resources;
 
 namespace Agents;
@@ -13,21 +14,8 @@ namespace Agents;
 /// </summary>
 public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(output)
 {
-    /// <summary>
-    /// Specific model is required that supports agents and parallel function calling.
-    /// Currently this is limited to Open AI hosted services.
-    /// </summary>
-    private const string OpenAIFunctionEnabledModel = "gpt-4-1106-preview";
-
-    /// <summary>
-    /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
-    /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
-    /// If 'false', Azure takes precedence.
-    /// </summary>
-    /// <remarks>
-    /// NOTE: Retrieval tools is not currently available on Azure.
-    /// </remarks>
-    private new const bool ForceOpenAI = true;
+    /// <inheritdoc/>
+    protected override bool ForceOpenAI => true;
 
     // Track agents for clean-up
     private readonly List<IAgent> _agents = [];
@@ -79,12 +67,13 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
             return;
         }
 
-        Kernel kernel = CreateFileEnabledKernel();
-        var fileService = kernel.GetRequiredService<OpenAIFileService>();
-        var result =
-            await fileService.UploadContentAsync(
-                new BinaryContent(await EmbeddedResource.ReadAllAsync("travelinfo.txt")!, "text/plain"),
-                new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
+        FileClient fileClient = CreateFileClient();
+
+        OpenAIFileInfo result =
+            await fileClient.UploadFileAsync(
+                new BinaryData(await EmbeddedResource.ReadAllAsync("travelinfo.txt")!),
+                "travelinfo.txt",
+                FileUploadPurpose.Assistants);
 
         var fileId = result.Id;
         Console.WriteLine($"! {fileId}");
@@ -110,7 +99,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
         }
         finally
         {
-            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()).Append(fileService.DeleteFileAsync(fileId)));
+            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()).Append(fileClient.DeleteFileAsync(fileId)));
         }
     }
 
@@ -165,19 +154,21 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
         }
     }
 
-    private static Kernel CreateFileEnabledKernel()
+    private FileClient CreateFileClient()
     {
-        return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build() :
-                Kernel.CreateBuilder().AddAzureOpenAIFiles(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey).Build();
+        OpenAIClient client =
+            this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
+                new OpenAIClient(TestConfiguration.OpenAI.ApiKey) :
+                new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), TestConfiguration.AzureOpenAI.ApiKey);
+
+        return client.GetFileClient();
     }
 
-    private static AgentBuilder CreateAgentBuilder()
+    private AgentBuilder CreateAgentBuilder()
     {
         return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
+            this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
+                new AgentBuilder().WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey) :
                 new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
     }
 

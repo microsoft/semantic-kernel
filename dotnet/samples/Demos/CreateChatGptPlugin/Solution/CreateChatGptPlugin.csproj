@@ -16,14 +16,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\..\..\src\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
-    <ProjectReference Include="..\..\..\..\src\SemanticKernel.MetaPackage\SemanticKernel.MetaPackage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="config\appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(RepoRoot)/dotnet/samples/Demos/CreateChatGptPlugin/*.md" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
