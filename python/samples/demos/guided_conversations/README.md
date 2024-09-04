@@ -55,7 +55,7 @@ See the [interactive script](./interactive_guided_conversation.py) for an exampl
 Edit plugins at [plugins](./guided_conversation/plugins/)
 
 ### Editing the Orchestrator
-Go to [guided_conversation_agent.py](./guided_conversation/guided_conversation_agent.py). 
+Go to [guided_conversation_agent.py](./guided_conversation/plugins/guided_conversation_agent.py). 
 
 ### Reusing Plugins
 We also encourage the open source community to pull in the artifact and agenda plugins to accelerate existing work. We believe that these plugins alone can improve goal-following in other agents.
