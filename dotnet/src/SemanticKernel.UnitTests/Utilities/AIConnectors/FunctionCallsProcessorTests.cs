@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 #pragma warning disable IDE0005 // Using directive is unnecessary
-using Microsoft.SemanticKernel.Connectors.AI;
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 #pragma warning restore IDE0005 // Using directive is unnecessary
 using Moq;
 using Xunit;

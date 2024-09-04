@@ -37,10 +37,11 @@
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/FunctionCalling/FunctionCallingUtilities.props" />
+
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/openai/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
