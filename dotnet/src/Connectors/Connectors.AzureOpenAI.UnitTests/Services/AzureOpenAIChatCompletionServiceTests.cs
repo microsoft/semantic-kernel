@@ -1244,6 +1244,38 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         Assert.Equal("required", optionsJson.GetProperty("tool_choice").ToString());
     }
+
+    [Fact]
+    public async Task ItDoesNotChangeDefaultsForToolsAndChoiceIfNeitherOfFunctionCallingConfigurationsSetAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        var executionSettings = new OpenAIPromptExecutionSettings(); // Neither ToolCallBehavior nor FunctionChoiceBehavior is set.
+
+        // Act
+        await sut.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.False(optionsJson.TryGetProperty("tools", out var _));
+        Assert.False(optionsJson.TryGetProperty("tool_choice", out var _));
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
