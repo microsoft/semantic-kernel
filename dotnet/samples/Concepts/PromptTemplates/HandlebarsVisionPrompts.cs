@@ -36,7 +36,7 @@ public class HandlebarsVisionPrompts(ITestOutputHelper output) : BaseTest(output
 
         var arguments = new KernelArguments(new Dictionary<string, object?>
         {
-            {"request","Describe this image:"},
+            {"request", "Describe this image:"},
             {"imageData", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAACVJREFUKFNj/KTO/J+BCMA4iBUyQX1A0I10VAizCj1oMdyISyEAFoQbHwTcuS8AAAAASUVORK5CYII="}
         });
 
