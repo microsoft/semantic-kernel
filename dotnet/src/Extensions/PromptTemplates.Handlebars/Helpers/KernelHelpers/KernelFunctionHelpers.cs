@@ -9,7 +9,6 @@ using System.Threading;
 using System.Web;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
-using static Microsoft.SemanticKernel.Http.HttpHeaderConstant;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 

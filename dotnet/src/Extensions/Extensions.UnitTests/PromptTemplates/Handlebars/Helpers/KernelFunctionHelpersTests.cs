@@ -96,7 +96,7 @@ public sealed class KernelFunctionHelpersTests
     {
         // Arrange and Act
         const string VarName = "param_x";
-        var template = """{{Foo-StringifyInt (param_x)}}""";
+        var template = """{{Foo-StringifyInt (""" + VarName + """)}}""";
         var inputVariables = new List<InputVariable> { new() { Name = VarName } };
         var arguments = new KernelArguments { [VarName] = 5 };
 
