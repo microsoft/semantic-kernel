@@ -9,6 +9,7 @@ using System.Threading;
 using System.Web;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
+using static Microsoft.SemanticKernel.Http.HttpHeaderConstant;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 
@@ -101,8 +102,13 @@ internal static class KernelFunctionHelpers
     /// </summary>
     /// <param name="parameterMetadata">Function parameter metadata.</param>
     /// <param name="argument">Handlebar argument.</param>
-    private static bool IsExpectedParameterType(KernelParameterMetadata parameterMetadata, object argument)
+    private static bool IsExpectedParameterType(KernelParameterMetadata parameterMetadata, object? argument)
     {
+        if (argument == null)
+        {
+            return false;
+        }
+
         var actualParameterType = parameterMetadata.ParameterType is Type parameterType && Nullable.GetUnderlyingType(parameterType) is Type underlyingType
             ? underlyingType
             : parameterMetadata.ParameterType;
@@ -140,13 +146,13 @@ internal static class KernelFunctionHelpers
             if (handlebarsArguments is not null && (handlebarsArguments.TryGetValue(fullyQualifiedParamName, out var value) || handlebarsArguments.TryGetValue(param.Name, out value)))
             {
                 value = KernelHelpersUtils.GetArgumentValue(value, executionContext);
-                if (value is not null && IsExpectedParameterType(param, value))
+                if (IsExpectedParameterType(param, value))
                 {
                     executionContext[param.Name] = value;
                 }
                 else
                 {
-                    throw new KernelException($"Invalid argument type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {value?.GetType()}.");
+                    throw new KernelException($"Invalid argument type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {value?.GetType().ToString() ?? "<null>"}.");
                 }
             }
             else if (param.IsRequired)
@@ -180,7 +186,7 @@ internal static class KernelFunctionHelpers
                 }
                 else
                 {
-                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {arg.GetType()}.");
+                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {arg?.GetType().ToString() ?? "<null>"}.");
                 }
             }
         }
