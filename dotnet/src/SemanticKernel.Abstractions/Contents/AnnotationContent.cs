@@ -44,7 +44,7 @@ public class AnnotationContent : KernelContent
     /// Initializes a new instance of the <see cref="AnnotationContent"/> class.
     /// </summary>
     /// <param name="modelId">The model ID used to generate the content.</param>
-    /// <param name="innerContent">Inner content,</param>
+    /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
     public AnnotationContent(
         string? modelId = null,
