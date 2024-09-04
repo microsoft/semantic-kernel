@@ -104,13 +104,13 @@ public sealed class BingTextSearchTests : IDisposable
     }
 
     [Fact]
-    public async Task SearchWithCustomMapperReturnsSuccessfullyAsync()
+    public async Task SearchWithCustomStringMapperReturnsSuccessfullyAsync()
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
 
         // Create an ITextSearch instance using Bing search
-        var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, MapToString = webPage => JsonSerializer.Serialize(webPage) });
+        var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, StringMapper = new TestTextSearchStringMapper() });
 
         // Act
         KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Count = 10, Offset = 0 });
@@ -126,6 +126,33 @@ public sealed class BingTextSearchTests : IDisposable
             Assert.NotEmpty(stringResult);
             var webPage = JsonSerializer.Deserialize<BingWebPage>(stringResult);
             Assert.NotNull(webPage);
+        }
+    }
+
+    [Fact]
+    public async Task GetTextSearchResultsWithCustomResultMapperReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        // Create an ITextSearch instance using Bing search
+        var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, ResultMapper = new TestTextSearchResultMapper() });
+
+        // Act
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 10, Offset = 0 });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(10, resultList.Count);
+        foreach (var textSearchResult in resultList)
+        {
+            Assert.NotNull(textSearchResult);
+            Assert.Equal(textSearchResult.Name, textSearchResult.Name?.ToUpperInvariant());
+            Assert.Equal(textSearchResult.Value, textSearchResult.Value?.ToUpperInvariant());
+            Assert.Equal(textSearchResult.Link, textSearchResult.Link?.ToUpperInvariant());
         }
     }
 
@@ -205,5 +232,39 @@ public sealed class BingTextSearchTests : IDisposable
     private readonly MultipleHttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly Kernel _kernel;
+
+    /// <summary>
+    /// Test mapper which converts a BingWebPage search result to a string using JSON serialization.
+    /// </summary>
+    private sealed class TestTextSearchStringMapper : ITextSearchStringMapper
+    {
+        /// <inheritdoc />
+        public string MapFromResultToString(object result)
+        {
+            return JsonSerializer.Serialize(result);
+        }
+    }
+
+    /// <summary>
+    /// Test mapper which converts a BingWebPage search result to a string using JSON serialization.
+    /// </summary>
+    private sealed class TestTextSearchResultMapper : ITextSearchResultMapper
+    {
+        /// <inheritdoc />
+        public TextSearchResult MapFromResultToTextSearchResult(object result)
+        {
+            if (result is not BingWebPage webPage)
+            {
+                throw new ArgumentException("Result must be a BingWebPage", nameof(result));
+            }
+
+            return new TextSearchResult
+            {
+                Name = webPage.Name?.ToUpperInvariant(),
+                Value = webPage.Snippet?.ToUpperInvariant(),
+                Link = webPage.DisplayUrl?.ToUpperInvariant(),
+            };
+        }
+    }
     #endregion
 }

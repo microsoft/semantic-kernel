@@ -36,12 +36,12 @@ public sealed class BingTextSearch : ITextSearch
         this._httpClient = options?.HttpClient ?? HttpClientProvider.GetHttpClient();
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BingTextSearch)));
-        this._mapToString = options?.MapToString ?? DefaultMapToString;
-        this._mapToTextSearchResult = options?.MapToTextSearchResult ?? DefaultMapToTextSearchResult;
+        this._stringMapper = options?.StringMapper ?? s_defaultStringMapper;
+        this._resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
     }
 
     /// <inheritdoc/>
-    async public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
         BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
@@ -52,7 +52,7 @@ public sealed class BingTextSearch : ITextSearch
     }
 
     /// <inheritdoc/>
-    async public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
         BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
@@ -63,7 +63,7 @@ public sealed class BingTextSearch : ITextSearch
     }
 
     /// <inheritdoc/>
-    async public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
         BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
@@ -79,8 +79,11 @@ public sealed class BingTextSearch : ITextSearch
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
     private readonly Uri? _uri = null;
-    private readonly MapBingWebPageToString _mapToString;
-    private readonly MapBingWebPageToTextSearchResult _mapToTextSearchResult;
+    private readonly ITextSearchStringMapper _stringMapper;
+    private readonly ITextSearchResultMapper _resultMapper;
+
+    private static readonly ITextSearchStringMapper s_defaultStringMapper = new DefaultTextSearchStringMapper();
+    private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
 
     // See https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/reference/query-parameters
     private static readonly string[] s_queryParameters = ["answerCount", "cc", "freshness", "mkt", "promote", "responseFilter", "safeSearch", "setLang", "textDecorations", "textFormat"];
@@ -170,7 +173,7 @@ public sealed class BingTextSearch : ITextSearch
 
         foreach (var webPage in searchResponse.WebPages.Value)
         {
-            yield return this._mapToTextSearchResult(webPage);
+            yield return this._resultMapper.MapFromResultToTextSearchResult(webPage);
             await Task.Yield();
         }
     }
@@ -189,7 +192,7 @@ public sealed class BingTextSearch : ITextSearch
 
         foreach (var webPage in searchResponse.WebPages.Value)
         {
-            yield return this._mapToString(webPage);
+            yield return this._stringMapper.MapFromResultToString(webPage);
             await Task.Yield();
         }
     }
@@ -211,17 +214,35 @@ public sealed class BingTextSearch : ITextSearch
     /// <summary>
     /// Default implementation which maps from a <see cref="BingWebPage"/> to a <see cref="string"/>
     /// </summary>
-    private static string DefaultMapToString(BingWebPage webPage)
+    private sealed class DefaultTextSearchStringMapper : ITextSearchStringMapper
     {
-        return webPage.Snippet ?? string.Empty;
+        /// <inheritdoc />
+        public string MapFromResultToString(object result)
+        {
+            if (result is not BingWebPage webPage)
+            {
+                throw new ArgumentException("Result must be a BingWebPage", nameof(result));
+            }
+
+            return webPage.Snippet ?? string.Empty;
+        }
     }
 
     /// <summary>
     /// Default implementation which maps from a <see cref="BingWebPage"/> to a <see cref="TextSearchResult"/>
     /// </summary>
-    private static TextSearchResult DefaultMapToTextSearchResult(BingWebPage webPage)
+    private sealed class DefaultTextSearchResultMapper : ITextSearchResultMapper
     {
-        return new TextSearchResult(webPage.Name, webPage.Snippet, webPage.Url);
+        /// <inheritdoc />
+        public TextSearchResult MapFromResultToTextSearchResult(object result)
+        {
+            if (result is not BingWebPage webPage)
+            {
+                throw new ArgumentException("Result must be a BingWebPage", nameof(result));
+            }
+
+            return new TextSearchResult(webPage.Name, webPage.Snippet, webPage.Url);
+        }
     }
 
     /// <summary>

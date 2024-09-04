@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -117,24 +116,6 @@ public class TextSearchExtensionsTests
         Assert.NotNull(results);
         Assert.NotEmpty(results);
         Assert.Equal(count, results.Count());
-    }
-
-    [Fact]
-    public async Task CanAppMapSearchResultToStringToSearchAsync()
-    {
-        // Arrange
-        MockTextSearch textSearch = new();
-        var function = textSearch.CreateSearch(mapToString: result => JsonSerializer.Serialize(result));
-
-        // Act
-        var result = await function.InvokeAsync(new(), new() { ["query"] = "What is the Semantic Kernel?" });
-
-        // Assert
-        Assert.NotNull(result);
-        var results = result.GetValue<IEnumerable<object>>();
-        Assert.NotNull(results);
-        Assert.NotEmpty(results);
-        Assert.Equal("\"Result 1\"", results.ElementAt(0));
     }
 
     #region private

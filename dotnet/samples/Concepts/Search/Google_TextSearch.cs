@@ -69,7 +69,7 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var textSearch = new GoogleTextSearch(
             searchEngineId: TestConfiguration.Google.SearchEngineId,
             apiKey: TestConfiguration.Google.ApiKey,
-            options: new() { MapToString = webPage => JsonSerializer.Serialize(webPage) });
+            options: new() { StringMapper = new TestTextSearchStringMapper() });
 
         var query = "What is the Semantic Kernel?";
 
@@ -109,6 +109,18 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
 
     #region private
     private const int HorizontalRuleLength = 80;
+
+    /// <summary>
+    /// Test mapper which converts an arbitrary search result to a string using JSON serialization.
+    /// </summary>
+    private sealed class TestTextSearchStringMapper : ITextSearchStringMapper
+    {
+        /// <inheritdoc />
+        public string MapFromResultToString(object result)
+        {
+            return JsonSerializer.Serialize(result);
+        }
+    }
 
     /// <summary>
     /// Implementation of <see cref="ConfigurableMessageHandler"/> which logs HTTP responses.

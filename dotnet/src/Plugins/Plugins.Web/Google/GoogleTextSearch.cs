@@ -49,8 +49,8 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
         this._search = new CustomSearchAPIService(initializer);
         this._searchEngineId = searchEngineId;
         this._logger = options?.LoggerFactory?.CreateLogger(typeof(GoogleTextSearch)) ?? NullLogger.Instance;
-        this._mapToString = options?.MapToString ?? DefaultMapToString;
-        this._mapToTextSearchResult = options?.MapToTextSearchResult ?? DefaultMapToTextSearchResult;
+        this._stringMapper = options?.StringMapper ?? s_defaultStringMapper;
+        this._resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
     }
 
     /// <inheritdoc/>
@@ -99,8 +99,11 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
     private readonly ILogger _logger;
     private readonly CustomSearchAPIService _search;
     private readonly string? _searchEngineId;
-    private readonly MapResultToString _mapToString;
-    private readonly MapResultToTextSearchResult _mapToTextSearchResult;
+    private readonly ITextSearchStringMapper _stringMapper;
+    private readonly ITextSearchResultMapper _resultMapper;
+
+    private static readonly ITextSearchStringMapper s_defaultStringMapper = new DefaultTextSearchStringMapper();
+    private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
 
     // See https://developers.google.com/custom-search/v1/reference/rest/v1/cse/list
     private static readonly string[] s_queryParameters = ["cr", "dateRestrict", "exactTerms", "excludeTerms", "filter", "gl", "hl", "linkSite", "lr", "orTerms", "rights", "siteSearch"];
@@ -203,7 +206,7 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
 
         foreach (var item in searchResponse.Items)
         {
-            yield return this._mapToTextSearchResult(item);
+            yield return this._resultMapper.MapFromResultToTextSearchResult(item);
             await Task.Yield();
         }
     }
@@ -222,7 +225,7 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
 
         foreach (var item in searchResponse.Items)
         {
-            yield return this._mapToString(item);
+            yield return this._stringMapper.MapFromResultToString(item);
             await Task.Yield();
         }
     }
@@ -261,18 +264,35 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
     /// <summary>
     /// Default implementation which maps from a <see cref="global::Google.Apis.CustomSearchAPI.v1.Data.Result"/> to a <see cref="string"/>
     /// </summary>
-    private static string DefaultMapToString(global::Google.Apis.CustomSearchAPI.v1.Data.Result result)
+    private sealed class DefaultTextSearchStringMapper : ITextSearchStringMapper
     {
-        return result.Snippet ?? string.Empty;
+        /// <inheritdoc />
+        public string MapFromResultToString(object result)
+        {
+            if (result is not global::Google.Apis.CustomSearchAPI.v1.Data.Result googleResult)
+            {
+                throw new ArgumentException("Result must be a Google Result", nameof(result));
+            }
+
+            return googleResult.Snippet ?? string.Empty;
+        }
     }
 
     /// <summary>
     /// Default implementation which maps from a <see cref="global::Google.Apis.CustomSearchAPI.v1.Data.Result"/> to a <see cref="TextSearchResult"/>
     /// </summary>
-    private static TextSearchResult DefaultMapToTextSearchResult(global::Google.Apis.CustomSearchAPI.v1.Data.Result result)
+    private sealed class DefaultTextSearchResultMapper : ITextSearchResultMapper
     {
-        return new TextSearchResult(result.Title, result.Snippet, result.Link);
-    }
+        /// <inheritdoc />
+        public TextSearchResult MapFromResultToTextSearchResult(object result)
+        {
+            if (result is not global::Google.Apis.CustomSearchAPI.v1.Data.Result googleResult)
+            {
+                throw new ArgumentException("Result must be a Google Result", nameof(result));
+            }
 
+            return new TextSearchResult(googleResult.Title, googleResult.Snippet, googleResult.Link);
+        }
+    }
     #endregion
 }
