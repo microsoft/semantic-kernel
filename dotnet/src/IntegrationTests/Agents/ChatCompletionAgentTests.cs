@@ -44,7 +44,7 @@ public sealed class ChatCompletionAgentTests()
         this._kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: configuration.ChatDeploymentName!,
             endpoint: configuration.Endpoint,
-            credentials: new DefaultAzureCredential());
+            credentials: new AzureCliCredential());
 
         if (useAutoFunctionTermination)
         {
