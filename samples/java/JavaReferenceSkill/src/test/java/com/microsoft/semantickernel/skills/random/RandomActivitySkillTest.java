@@ -88,7 +88,7 @@ public class RandomActivitySkillTest {
 
     private void extracted(HttpClient httpClient, CompletableFuture<HttpResponse<String>> responseFuture) {
         HttpClient mockHttpClient = mock(HttpClient.class);
-        CompletableFuture<HttpResponse<String>> mockResponseFuture = CompletableFuture.completedFuture(mock(HttpResponse.<String>class));
+        CompletableFuture<HttpResponse<String>> mockResponseFuture = CompletableFuture.<HttpResponse<String>>completedFuture(mock(HttpResponse.class));
     
         // Use type parameters explicitly
         @SuppressWarnings("unchecked")
