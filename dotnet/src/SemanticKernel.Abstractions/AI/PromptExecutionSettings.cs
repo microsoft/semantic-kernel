@@ -77,7 +77,7 @@ public class PromptExecutionSettings
     /// </item>
     /// <item>
     /// To force the model to always call one or more functions set the property to an instance returned
-    /// by the <see cref="FunctionChoiceBehavior.Required(IEnumerable{KernelFunction}?, bool, Func{FunctionChoiceBehaviorFunctionsSelectorContext, IReadOnlyList{KernelFunction}?}?, FunctionChoiceBehaviorOptions?)"/> method.
+    /// by the <see cref="FunctionChoiceBehavior.Required(IEnumerable{KernelFunction}?, bool, FunctionChoiceBehaviorOptions?)"/> method.
     /// </item>
     /// <item>
     /// To instruct the model to not call any functions and only generate a user-facing message, set the property to an instance returned
