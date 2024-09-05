@@ -40,8 +40,7 @@ logger = logging.getLogger(__name__)
 
 
 class KernelPlugin(KernelBaseModel):
-    """
-    Represents a Kernel Plugin with functions.
+    """Represents a Kernel Plugin with functions.
 
     This class behaves mostly like a dictionary, with functions as values and their names as keys.
     When you add a function, through `.set` or `__setitem__`, the function is copied, the metadata is deep-copied
@@ -104,7 +103,7 @@ class KernelPlugin(KernelBaseModel):
             | None
         ) = None,
     ):
-        """Create a KernelPlugin
+        """Create a KernelPlugin.
 
         Args:
             name: The name of the plugin. The name can be upper/lower
@@ -184,6 +183,7 @@ class KernelPlugin(KernelBaseModel):
 
     @singledispatchmethod
     def add(self, functions: Any) -> None:
+        """Add functions to the plugin."""
         raise TypeError(f"Unknown type being added, type was {type(functions)}")
 
     @add.register(list)
@@ -203,6 +203,7 @@ class KernelPlugin(KernelBaseModel):
             self[name] = function
 
     def setdefault(self, key: str, value: KernelFunction | None = None):
+        """Set a default value for a key."""
         if key not in self.functions:
             if value is None:
                 raise ValueError("Value must be provided for new key.")
@@ -214,14 +215,14 @@ class KernelPlugin(KernelBaseModel):
         yield from self.functions.values()
 
     def __contains__(self, key: str) -> bool:
+        """Check if a function is in the plugin."""
         return key in self.functions
 
     # endregion
     # region Properties
 
     def get_functions_metadata(self) -> list["KernelFunctionMetadata"]:
-        """
-        Get the metadata for the functions in the plugin.
+        """Get the metadata for the functions in the plugin.
 
         Returns:
             A list of KernelFunctionMetadata instances.
@@ -233,16 +234,19 @@ class KernelPlugin(KernelBaseModel):
 
     @classmethod
     def from_object(
-        cls, plugin_name: str, plugin_instance: Any | dict[str, Any], description: str | None = None
+        cls,
+        plugin_name: str,
+        plugin_instance: Any | dict[str, Any],
+        description: str | None = None,
     ) -> "KernelPlugin":
-        """
-        Creates a plugin that wraps the specified target object and imports it into the kernel's plugin collection
+        """Creates a plugin that wraps the specified target object and imports it into the kernel's plugin collection.
 
         Args:
+            plugin_name (str): The name of the plugin. Allows chars: upper, lower ASCII and underscores.
             plugin_instance (Any | dict[str, Any]): The plugin instance. This can be a custom class or a
                 dictionary of classes that contains methods with the kernel_function decorator for one or
                 several methods. See `TextMemoryPlugin` as an example.
-            plugin_name (str): The name of the plugin. Allows chars: upper, lower ASCII and underscores.
+            description (str | None): The description of the plugin.
 
         Returns:
             KernelPlugin: The imported plugin of type KernelPlugin.
@@ -365,9 +369,8 @@ class KernelPlugin(KernelBaseModel):
 
         Args:
             plugin_name (str): The name of the plugin
-            plugin_url (str | None): The URL of the plugin
-            plugin_str (str | None): The JSON string of the plugin
-            execution_parameters (OpenAIFunctionExecutionParameters | None): The execution parameters
+            openapi_document_path (str): The path to the OpenAPI document
+            execution_settings (OpenAPIFunctionExecutionParameters | None): The execution parameters
             description (str | None): The description of the plugin
 
         Returns:
@@ -376,7 +379,6 @@ class KernelPlugin(KernelBaseModel):
         Raises:
             PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided
         """
-
         if not openapi_document_path:
             raise PluginInitializationError("OpenAPI document path is required.")
 
@@ -406,6 +408,7 @@ class KernelPlugin(KernelBaseModel):
             plugin_url (str | None): The URL of the plugin
             plugin_str (str | None): The JSON string of the plugin
             execution_parameters (OpenAIFunctionExecutionParameters | None): The execution parameters
+            description (str | None): The description of the plugin
 
         Returns:
             KernelPlugin: The created plugin
@@ -413,7 +416,6 @@ class KernelPlugin(KernelBaseModel):
         Raises:
             PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided
         """
-
         if execution_parameters is None:
             execution_parameters = OpenAIFunctionExecutionParameters()
 
@@ -463,6 +465,7 @@ class KernelPlugin(KernelBaseModel):
         description: str | None = None,
         class_init_arguments: dict[str, dict[str, Any]] | None = None,
     ) -> "KernelPlugin":
+        """Create a plugin from a Python file."""
         module_name = os.path.basename(py_file).replace(".py", "")
         spec = importlib.util.spec_from_file_location(module_name, py_file)
         if not spec:

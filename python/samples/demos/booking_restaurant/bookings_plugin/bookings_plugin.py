@@ -132,7 +132,6 @@ class BookingsPlugin:
         party_size: Annotated[int, "The number of people in the party"],
     ) -> Annotated[str, "The cancellation status of the reservation"]:
         """Cancel a reservation."""
-
         print(f"System > [Cancelling a reservation for {party_size} at {restaurant} on {date} at {time}]")
 
         _ = (

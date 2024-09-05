@@ -2,7 +2,8 @@
 
 import logging
 from collections import OrderedDict
-from typing import TYPE_CHECKING, Any, Generator
+from collections.abc import Generator
+from typing import TYPE_CHECKING, Any, Final
 from urllib.parse import urlparse
 
 from prance import ResolvingParser
@@ -35,8 +36,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class OpenApiParser:
-    """
-    NOTE: SK Python only supports the OpenAPI Spec >=3.0
+    """NOTE: SK Python only supports the OpenAPI Spec >=3.0.
 
     Import an OpenAPI file.
 
@@ -51,8 +51,8 @@ class OpenApiParser:
     :return: The parsed OpenAPI file
     """
 
-    PAYLOAD_PROPERTIES_HIERARCHY_MAX_DEPTH = 10
-    supported_media_types = ["application/json", "text/plain"]
+    PAYLOAD_PROPERTIES_HIERARCHY_MAX_DEPTH: int = 10
+    SUPPORTED_MEDIA_TYPES: Final[list[str]] = ["application/json", "text/plain"]
 
     def parse(self, openapi_document: str) -> Any | dict[str, Any] | None:
         """Parse the OpenAPI document."""
@@ -118,20 +118,26 @@ class OpenApiParser:
 
     def _create_rest_api_operation_payload(
         self, operation_id: str, request_body: dict[str, Any]
-    ) -> RestApiOperationPayload:
+    ) -> RestApiOperationPayload | None:
         if request_body is None or request_body.get("content") is None:
             return None
-        media_type = next((mt for mt in OpenApiParser.supported_media_types if mt in request_body.get("content")), None)
+
+        content = request_body.get("content")
+        if content is None:
+            return None
+
+        media_type = next((mt for mt in OpenApiParser.SUPPORTED_MEDIA_TYPES if mt in content), None)
         if media_type is None:
             raise Exception(f"Neither of the media types of {operation_id} is supported.")
-        media_type_metadata = request_body.get("content")[media_type]
+
+        media_type_metadata = content[media_type]
         payload_properties = self._get_payload_properties(
             operation_id, media_type_metadata["schema"], media_type_metadata["schema"].get("required", set())
         )
         return RestApiOperationPayload(
             media_type,
             payload_properties,
-            request_body.get("description", None),
+            request_body.get("description"),
             schema=media_type_metadata.get("schema", None),
         )
 
@@ -140,7 +146,7 @@ class OpenApiParser:
     ) -> Generator[tuple[str, RestApiOperationExpectedResponse], None, None]:
         for response_key, response_value in responses.items():
             media_type = next(
-                (mt for mt in OpenApiParser.supported_media_types if mt in response_value.get("content", {})), None
+                (mt for mt in OpenApiParser.SUPPORTED_MEDIA_TYPES if mt in response_value.get("content", {})), None
             )
             if media_type is not None:
                 matching_schema = response_value["content"][media_type].get("schema", {})

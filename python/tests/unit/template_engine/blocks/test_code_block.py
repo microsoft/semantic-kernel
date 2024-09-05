@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from pytest import mark, raises
 
 from semantic_kernel.exceptions import (

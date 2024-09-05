@@ -23,6 +23,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <PackageReference Include="Scriban" />
+    <PackageReference Include="Fluid.Core" />
   </ItemGroup>
 </Project>

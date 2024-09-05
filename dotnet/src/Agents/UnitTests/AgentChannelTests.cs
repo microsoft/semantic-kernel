@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Xunit;
@@ -24,28 +23,34 @@ public class AgentChannelTests
     [Fact]
     public async Task VerifyAgentChannelUpcastAsync()
     {
+        // Arrange
         TestChannel channel = new();
+        // Assert
         Assert.Equal(0, channel.InvokeCount);
 
-        var messages = channel.InvokeAgentAsync(new TestAgent()).ToArrayAsync();
+        // Act
+        var messages = channel.InvokeAgentAsync(new MockAgent()).ToArrayAsync();
+        // Assert
         Assert.Equal(1, channel.InvokeCount);
 
+        // Act
         await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAgentAsync(new NextAgent()).ToArrayAsync().AsTask());
+        // Assert
         Assert.Equal(1, channel.InvokeCount);
     }
 
     /// <summary>
     /// Not using mock as the goal here is to provide entrypoint to protected method.
     /// </summary>
-    private sealed class TestChannel : AgentChannel<TestAgent>
+    private sealed class TestChannel : AgentChannel<MockAgent>
     {
         public int InvokeCount { get; private set; }
 
-        public IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(Agent agent, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAgentAsync(Agent agent, CancellationToken cancellationToken = default)
             => base.InvokeAsync(agent, cancellationToken);
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(TestAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        protected internal override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(MockAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             this.InvokeCount++;
@@ -58,24 +63,16 @@ public class AgentChannelTests
             throw new NotImplementedException();
         }
 
-        protected internal override Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
     }
 
-    private sealed class NextAgent : TestAgent;
-
-    private class TestAgent : KernelAgent
-    {
-        protected internal override Task<AgentChannel> CreateChannelAsync(ILogger logger, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected internal override IEnumerable<string> GetChannelKeys()
-        {
-            throw new NotImplementedException();
-        }
-    }
+    private sealed class NextAgent : MockAgent;
 }

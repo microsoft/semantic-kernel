@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 from collections.abc import Awaitable, Callable
 from typing import Any
 from urllib.parse import urlparse
@@ -28,7 +27,8 @@ class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     operations_to_exclude: list[str] = Field(default_factory=list)
 
     def model_post_init(self, __context: Any) -> None:
-        from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
+        """Post initialization method for the model."""
+        from semantic_kernel.utils.telemetry.user_agent import HTTP_USER_AGENT
 
         if self.server_url_override:
             parsed_url = urlparse(self.server_url_override)

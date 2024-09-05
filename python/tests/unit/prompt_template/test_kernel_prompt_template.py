@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import pytest
 
 from semantic_kernel.exceptions.template_engine_exceptions import TemplateRenderException

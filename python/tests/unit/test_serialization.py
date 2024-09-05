@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import typing as t
 
 import pytest

@@ -19,7 +19,7 @@ flowery prose.
 kernel = Kernel()
 
 service_id = "chat-gpt"
-kernel.add_service(OpenAIChatCompletion(service_id=service_id))
+kernel.add_service(OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo"))
 
 settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
 settings.max_tokens = 2000

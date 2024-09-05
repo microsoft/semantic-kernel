@@ -7,8 +7,7 @@ from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 
 class PromptRenderingResult(KernelBaseModel):
-    """
-    Represents the result of rendering a prompt template.
+    """Represents the result of rendering a prompt template.
 
     Attributes:
         rendered_prompt (str): The rendered prompt.

@@ -7,6 +7,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class RestApiOperationPayloadProperty:
+    """RestApiOperationPayloadProperty."""
+
     def __init__(
         self,
         name: str,
@@ -17,6 +19,7 @@ class RestApiOperationPayloadProperty:
         default_value: Any | None = None,
         schema: str | None = None,
     ):
+        """Initialize the RestApiOperationPayloadProperty."""
         self.name = name
         self.type = type
         self.properties = properties

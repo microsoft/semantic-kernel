@@ -13,12 +13,14 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
 {
     private readonly AgentChat _chat = chat;
 
+    /// <inheritdoc/>
     protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken = default)
     {
         return this._chat.GetChatMessagesAsync(cancellationToken);
     }
 
-    protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(AggregatorAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    protected internal override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(AggregatorAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ChatMessageContent? lastMessage = null;
 
@@ -27,7 +29,7 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
             // For AggregatorMode.Flat, the entire aggregated chat is merged into the owning chat.
             if (agent.Mode == AggregatorMode.Flat)
             {
-                yield return message;
+                yield return (IsVisible: true, message);
             }
 
             lastMessage = message;
@@ -43,15 +45,20 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
                     AuthorName = agent.Name
                 };
 
-            yield return message;
+            yield return (IsVisible: true, message);
         }
     }
 
-    protected internal override Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // Always receive the initial history from the owning chat.
         this._chat.AddChatMessages([.. history]);
 
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc/>
+    protected internal override Task ResetAsync(CancellationToken cancellationToken = default) =>
+        this._chat.ResetAsync(cancellationToken);
 }

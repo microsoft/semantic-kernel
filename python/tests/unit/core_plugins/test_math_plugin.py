@@ -93,11 +93,8 @@ def test_add_when_invalid_initial_value_should_throw(initial_value):
     arguments = KernelArguments(input=initial_value, amount=1)
 
     # Act
-    with pytest.raises(ValueError) as exception:
+    with pytest.raises(ValueError):
         plugin.add(**arguments)
-
-    # Assert
-    assert exception.type == ValueError
 
 
 @pytest.mark.parametrize(
@@ -122,10 +119,8 @@ def test_add_when_invalid_amount_should_throw(amount):
     arguments = KernelArguments(input=1, amount=amount)
 
     # Act / Assert
-    with pytest.raises(ValueError) as exception:
+    with pytest.raises(ValueError):
         plugin.add(**arguments)
-
-    assert exception.type == ValueError
 
 
 @pytest.mark.parametrize(
@@ -150,11 +145,8 @@ def test_subtract_when_invalid_initial_value_should_throw(initial_value):
     arguments = KernelArguments(input=initial_value, amount=1)
 
     # Act / Assert
-    with pytest.raises(ValueError) as exception:
+    with pytest.raises(ValueError):
         plugin.subtract(**arguments)
-
-    # Assert
-    assert exception.type == ValueError
 
 
 @pytest.mark.parametrize(
@@ -179,8 +171,5 @@ def test_subtract_when_invalid_amount_should_throw(amount):
     arguments = KernelArguments(input=1, amount=amount)
 
     # Act / Assert
-    with pytest.raises(ValueError) as exception:
+    with pytest.raises(ValueError):
         plugin.subtract(**arguments)
-
-    # Assert
-    assert exception.type == ValueError

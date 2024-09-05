@@ -7,8 +7,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 class EmailPlugin:
-    """
-    Description: EmailPlugin provides a set of functions to send emails.
+    """Description: EmailPlugin provides a set of functions to send emails.
 
     Usage:
         kernel.add_plugin(EmailPlugin(), plugin_name="email")

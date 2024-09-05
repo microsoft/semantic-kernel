@@ -53,10 +53,7 @@ def test_valid_syntax(name):
     ids=["prefix_only", "invalid_characters", "no_prefix", "invalid_characters2", "invalid_characters3"],
 )
 def test_syntax_errors(content):
-    if "$" in content:
-        match = content.replace("$", r"\$")
-    else:
-        match = content
+    match = content.replace("$", "\\$") if "$" in content else content
     with raises(VarBlockSyntaxError, match=rf".*{match}.*"):
         VarBlock(content=content)
 

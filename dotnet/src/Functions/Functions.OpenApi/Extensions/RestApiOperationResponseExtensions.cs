@@ -33,7 +33,7 @@ public static class RestApiOperationResponseExtensions
             return true;
         }
 
-        return response.ContentType switch
+        return response.ContentType! switch
         {
             var ct when ct.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) => ValidateJson(response),
             var ct when ct.StartsWith("application/xml", StringComparison.OrdinalIgnoreCase) => ValidateXml(response),
@@ -47,7 +47,7 @@ public static class RestApiOperationResponseExtensions
         try
         {
             var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(response.ExpectedSchema));
-            using var contentDoc = JsonDocument.Parse(response.Content.ToString() ?? "");
+            using var contentDoc = JsonDocument.Parse(response.Content?.ToString() ?? string.Empty);
             var result = jsonSchema.Evaluate(contentDoc);
             return result.IsValid;
         }

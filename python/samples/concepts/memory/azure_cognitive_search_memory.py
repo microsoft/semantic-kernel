@@ -5,7 +5,6 @@ import asyncio
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureTextCompletion, AzureTextEmbedding
 from semantic_kernel.connectors.memory.azure_cognitive_search import AzureCognitiveSearchMemoryStore
-from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.core_plugins import TextMemoryPlugin
 from semantic_kernel.memory import SemanticTextMemory
 
@@ -43,41 +42,19 @@ async def search_acs_memory_questions(memory: SemanticTextMemory) -> None:
 async def main() -> None:
     kernel = Kernel()
 
-    azure_ai_search_settings = AzureAISearchSettings()
-
     vector_size = 1536
 
     # Setting up OpenAI services for text completion and text embedding
-    text_complete_service_id = "dv"
-    kernel.add_service(
-        AzureTextCompletion(
-            service_id=text_complete_service_id,
-        ),
-    )
-    embedding_service_id = "ada"
-    embedding_gen = AzureTextEmbedding(
-        service_id=embedding_service_id,
-    )
-    kernel.add_service(
-        embedding_gen,
-    )
+    kernel.add_service(AzureTextCompletion(service_id="dv"))
+    async with AzureCognitiveSearchMemoryStore(vector_size=vector_size) as acs_connector:
+        memory = SemanticTextMemory(storage=acs_connector, embeddings_generator=AzureTextEmbedding(service_id="ada"))
+        kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
-    acs_connector = AzureCognitiveSearchMemoryStore(
-        vector_size=vector_size,
-        search_endpoint=azure_ai_search_settings.endpoint,
-        admin_key=azure_ai_search_settings.api_key,
-    )
+        print("Populating memory...")
+        await populate_memory(memory)
 
-    memory = SemanticTextMemory(storage=acs_connector, embeddings_generator=embedding_gen)
-    kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
-
-    print("Populating memory...")
-    await populate_memory(memory)
-
-    print("Asking questions... (manually)")
-    await search_acs_memory_questions(memory)
-
-    await acs_connector.close()
+        print("Asking questions... (manually)")
+        await search_acs_memory_questions(memory)
 
 
 if __name__ == "__main__":

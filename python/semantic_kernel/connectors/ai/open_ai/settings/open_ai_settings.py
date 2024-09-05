@@ -1,11 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import ClassVar
+
 from pydantic import SecretStr
-from pydantic_settings import BaseSettings
+
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
 
 
-class OpenAISettings(BaseSettings):
-    """OpenAI model settings
+class OpenAISettings(KernelBaseSettings):
+    """OpenAI model settings.
 
     The settings are first loaded from environment variables with the prefix 'OPENAI_'. If the
     environment variables are not found, the settings can be loaded from a .env file with the
@@ -23,27 +26,16 @@ class OpenAISettings(BaseSettings):
         (Env var OPENAI_TEXT_MODEL_ID)
     - embedding_model_id: str | None - The OpenAI embedding model ID to use, for example, text-embedding-ada-002.
         (Env var OPENAI_EMBEDDING_MODEL_ID)
+    - text_to_image_model_id: str | None - The OpenAI text to image model ID to use, for example, dall-e-3.
+        (Env var OPENAI_TEXT_TO_IMAGE_MODEL_ID)
     - env_file_path: str | None - if provided, the .env settings are read from this file path location
     """
 
-    env_file_path: str | None = None
-    org_id: str | None = None
+    env_prefix: ClassVar[str] = "OPENAI_"
+
     api_key: SecretStr | None = None
+    org_id: str | None = None
     chat_model_id: str | None = None
     text_model_id: str | None = None
     embedding_model_id: str | None = None
-
-    class Config:
-        env_prefix = "OPENAI_"
-        env_file = None
-        env_file_encoding = "utf-8"
-        extra = "ignore"
-        case_sensitive = False
-
-    @classmethod
-    def create(cls, **kwargs):
-        if "env_file_path" in kwargs and kwargs["env_file_path"]:
-            cls.Config.env_file = kwargs["env_file_path"]
-        else:
-            cls.Config.env_file = None
-        return cls(**kwargs)
+    text_to_image_model_id: str | None = None

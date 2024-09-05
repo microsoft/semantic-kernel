@@ -16,12 +16,17 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TextBlock(Block):
+    """A block with text content."""
+
     type: ClassVar[BlockTypes] = BlockTypes.TEXT
 
     @field_validator("content", mode="before")
     @classmethod
     def content_strip(cls, content: str):
-        # overload strip method text blocks are not stripped.
+        """Strip the content of the text block.
+
+        Overload strip method, text blocks are not stripped.
+        """
         return content
 
     @classmethod
@@ -31,11 +36,12 @@ class TextBlock(Block):
         start_index: int | None = None,
         stop_index: int | None = None,
     ):
+        """Create a text block from a string."""
         if text is None:
             return cls(content="")
         if start_index is not None and stop_index is not None:
             if start_index > stop_index:
-                raise ValueError(f"start_index ({start_index}) must be less than " f"stop_index ({stop_index})")
+                raise ValueError(f"start_index ({start_index}) must be less than stop_index ({stop_index})")
 
             if start_index < 0:
                 raise ValueError(f"start_index ({start_index}) must be greater than 0")
@@ -49,4 +55,5 @@ class TextBlock(Block):
         return cls(content=text)
 
     def render(self, *_: tuple[Optional["Kernel"], Optional["KernelArguments"]]) -> str:
+        """Render the text block."""
         return self.content

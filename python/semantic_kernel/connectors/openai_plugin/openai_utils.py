@@ -15,7 +15,6 @@ class OpenAIUtils:
     @staticmethod
     def parse_openai_manifest_for_openapi_spec_url(plugin_json: dict[str, Any]) -> str:
         """Extract the OpenAPI Spec URL from the plugin JSON."""
-
         try:
             api_type = plugin_json["api"]["type"]
         except KeyError as ex:

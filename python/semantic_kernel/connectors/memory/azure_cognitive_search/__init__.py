@@ -5,4 +5,4 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_se
     AzureCognitiveSearchMemoryStore,
 )
 
-__all__ = ["AzureCognitiveSearchMemoryStore", "AzureAISearchSettings"]
+__all__ = ["AzureAISearchSettings", "AzureCognitiveSearchMemoryStore"]

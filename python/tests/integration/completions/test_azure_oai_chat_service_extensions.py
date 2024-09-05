@@ -6,8 +6,8 @@ from random import randint
 
 import numpy as np
 import pytest
+import pytest_asyncio
 
-import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     ApiKeyAuthentication,
     AzureAISearchDataSource,
@@ -15,6 +15,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     DataSourceFieldsMapping,
     ExtraBody,
 )
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -45,8 +46,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.fixture(scope="function")
-@pytest.mark.asyncio
+@pytest_asyncio.fixture(scope="function")
 async def create_memory_store():
     # Create an index and populate it with some data
     collection = f"int-tests-chat-extensions-{randint(1000, 9999)}"
@@ -70,15 +70,14 @@ of climate change.",
         await memory_store.upsert(collection, rec)
         time.sleep(1)
         return collection, memory_store
-    except:
+    except Exception as e:
         await memory_store.delete_collection(collection)
-        raise
+        raise e
 
 
-@pytest.fixture(scope="function")
-@pytest.mark.asyncio
+@pytest_asyncio.fixture(scope="function")
 async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
-    collection, memory_store = await create_memory_store
+    collection, memory_store = create_memory_store
     try:
         # Load Azure OpenAI with data settings
         search_endpoint = os.getenv("AZURE_COGNITIVE_SEARCH_ENDPOINT")
@@ -101,7 +100,7 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
                 )
             ]
         )
-        chat_service = sk_oai.AzureChatCompletion(
+        chat_service = AzureChatCompletion(
             service_id="chat-gpt-extensions",
         )
         kernel.add_service(chat_service)
@@ -121,23 +120,16 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
         kernel.add_function(function_name="chat", plugin_name="plugin", prompt_template_config=prompt_template_config)
         chat_function = kernel.get_function("plugin", "chat")
         return chat_function, kernel, collection, memory_store
-    except:
+    except Exception as e:
         await memory_store.delete_collection(collection)
-        raise
+        raise e
 
 
 @pytest.mark.asyncio
 @pytestmark
-async def test_azure_e2e_chat_completion_with_extensions(
-    create_with_data_chat_function,
-):
+async def test_azure_e2e_chat_completion_with_extensions(create_with_data_chat_function):
     # Create an index and populate it with some data
-    (
-        chat_function,
-        kernel,
-        collection,
-        memory_store,
-    ) = await create_with_data_chat_function
+    chat_function, kernel, collection, memory_store = create_with_data_chat_function
 
     chat_history = ChatHistory()
     chat_history.add_user_message("A story about Emily and David...")
@@ -163,6 +155,6 @@ async def test_azure_e2e_chat_completion_with_extensions(
             print(f"Answer using input string: '{result}'")
 
         await memory_store.delete_collection(collection)
-    except:
+    except Exception as e:
         await memory_store.delete_collection(collection)
-        raise
+        raise e

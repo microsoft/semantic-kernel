@@ -27,6 +27,7 @@ async def retry(func, retries=1):
         except Exception as e:
             print(e)
             time.sleep(i * 2)
+    return None
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -38,7 +39,7 @@ def slow_down_tests():
 @pytest.fixture(scope="session")
 def get_astradb_config():
     try:
-        astradb_settings = AstraDBSettings()
+        astradb_settings = AstraDBSettings.create()
         app_token = astradb_settings.app_token.get_secret_value()
         db_id = astradb_settings.db_id
         region = astradb_settings.region

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class FunctionResult(KernelBaseModel):
     """The result of a function.
 
-    Arguments:
+    Args:
         function (KernelFunctionMetadata): The metadata of the function that was invoked.
         value (Any): The value of the result.
         metadata (Mapping[str, Any]): The metadata of the result.
@@ -43,8 +43,8 @@ class FunctionResult(KernelBaseModel):
                         if isinstance(self.value[0], KernelContent)
                         else ",".join(map(str, self.value))
                     )
-                elif isinstance(self.value, dict):
-                    # TODO: remove this once function result doesn't include input args
+                if isinstance(self.value, dict):
+                    # TODO (eavanvalkenburg): remove this once function result doesn't include input args
                     # This is so an integration test can pass.
                     return str(list(self.value.values())[-1])
                 return str(self.value)
@@ -56,12 +56,11 @@ class FunctionResult(KernelBaseModel):
     def get_inner_content(self, index: int = 0) -> Any | None:
         """Get the inner content of the function result.
 
-        Arguments:
+        Args:
             index (int): The index of the inner content if the inner content is a list, default 0.
         """
-        if isinstance(self.value, list):
-            if isinstance(self.value[index], KernelContent):
-                return self.value[index].inner_content
+        if isinstance(self.value, list) and isinstance(self.value[index], KernelContent):
+            return self.value[index].inner_content
         if isinstance(self.value, KernelContent):
             return self.value.inner_content
         return None

@@ -50,13 +50,11 @@ async def setup_chat_with_memory(
         execution_settings={service_id: kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)},
     )
 
-    chat_func = kernel.add_function(
+    return kernel.add_function(
         function_name="chat_with_memory",
         plugin_name="TextMemoryPlugin",
         prompt_template_config=prompt_template_config,
     )
-
-    return chat_func
 
 
 async def chat(kernel: Kernel, chat_func: KernelFunction) -> bool:

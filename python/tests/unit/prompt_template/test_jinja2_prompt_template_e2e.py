@@ -57,7 +57,7 @@ async def test_it_allows_to_pass_variables_to_functions(kernel: Kernel):
     result = await create_jinja2_prompt_template(template).render(kernel, arguments)
 
     # Assert
-    assert "== 123 ok ==" == result
+    assert result == "== 123 ok =="
 
 
 @mark.asyncio
@@ -70,7 +70,7 @@ async def test_it_allows_to_pass_values_to_functions(kernel: Kernel):
     result = await create_jinja2_prompt_template(template).render(kernel, None)
 
     # Assert
-    assert "== 234 != 123 ==" == result
+    assert result == "== 234 != 123 =="
 
 
 @mark.asyncio
@@ -82,7 +82,7 @@ async def test_it_allows_to_pass_escaped_values1_to_functions(kernel: Kernel):
     result = await create_jinja2_prompt_template(template).render(kernel, None)
 
     # Assert
-    assert "== a'b != 123 ==" == result
+    assert result == "== a'b != 123 =="
 
 
 @mark.asyncio
@@ -95,7 +95,7 @@ async def test_it_allows_to_pass_escaped_values2_to_functions(kernel: Kernel):
     result = await create_jinja2_prompt_template(template).render(kernel, None)
 
     # Assert
-    assert '== a"b != 123 ==' == result
+    assert result == '== a"b != 123 =='
 
 
 @mark.asyncio

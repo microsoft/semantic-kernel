@@ -10,6 +10,8 @@ from semantic_kernel.utils.validation import FUNCTION_NAME_REGEX, PLUGIN_NAME_RE
 
 
 class KernelFunctionMetadata(KernelBaseModel):
+    """The kernel function metadata."""
+
     name: str = Field(..., pattern=FUNCTION_NAME_REGEX)
     plugin_name: str | None = Field(None, pattern=PLUGIN_NAME_REGEX)
     description: str | None = Field(default=None)
@@ -21,8 +23,7 @@ class KernelFunctionMetadata(KernelBaseModel):
 
     @property
     def fully_qualified_name(self) -> str:
-        """
-        Get the fully qualified name of the function.
+        """Get the fully qualified name of the function.
 
         Returns:
             The fully qualified name of the function.
@@ -30,8 +31,7 @@ class KernelFunctionMetadata(KernelBaseModel):
         return f"{self.plugin_name}-{self.name}" if self.plugin_name else self.name
 
     def __eq__(self, other: object) -> bool:
-        """
-        Compare to another KernelFunctionMetadata instance.
+        """Compare to another KernelFunctionMetadata instance.
 
         Args:
             other (KernelFunctionMetadata): The other KernelFunctionMetadata instance.

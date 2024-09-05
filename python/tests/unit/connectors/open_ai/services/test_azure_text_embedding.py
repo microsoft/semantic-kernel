@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock, call, patch
 import pytest
 from openai import AsyncAzureOpenAI
 from openai.resources.embeddings import AsyncEmbeddings
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
@@ -24,20 +23,26 @@ def test_azure_text_embedding_init(azure_openai_unit_test_env) -> None:
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"]], indirect=True)
 def test_azure_text_embedding_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ValidationError):
-        AzureTextEmbedding()
+    with pytest.raises(ServiceInitializationError):
+        AzureTextEmbedding(
+            env_file_path="test.env",
+        )
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
 def test_azure_text_embedding_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
-        AzureTextEmbedding()
+        AzureTextEmbedding(
+            env_file_path="test.env",
+        )
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True)
 def test_azure_text_embedding_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
-        AzureTextEmbedding()
+        AzureTextEmbedding(
+            env_file_path="test.env",
+        )
 
 
 @pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)

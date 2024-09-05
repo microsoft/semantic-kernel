@@ -27,7 +27,7 @@ foreach ($project in $testProjects) {
     dotnet test $testProjectPath `
         --collect:"XPlat Code Coverage" `
         --results-directory:$coverageOutputPath `
-        -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=ObsoleteAttribute,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute `
+        -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute `
 
 }
 
