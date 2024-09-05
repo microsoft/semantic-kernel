@@ -4,12 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using Microsoft.SemanticKernel.TextGeneration;
 using OllamaSharp;
+using OllamaSharp.Models;
+using OllamaSharp.Models.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
@@ -58,13 +61,30 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var content = await this._client.GetCompletion(prompt, null, cancellationToken).ConfigureAwait(false);
+        var fullContent = new StringBuilder();
+        List<GenerateResponseStream> innerContent = [];
+        string? modelId = null;
 
-        return [new(content.Response, modelId: this._client.SelectedModel, innerContent: content, metadata:
-            new Dictionary<string, object?>()
+        var settings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var request = CreateRequest(settings, this._client.SelectedModel);
+
+        await foreach (var responseStreamChunk in this._client.Generate(request, cancellationToken).ConfigureAwait(false))
+        {
+            if (responseStreamChunk is null)
             {
-                ["Context"] = content.Context
-            })];
+                continue;
+            }
+
+            innerContent.Add(responseStreamChunk);
+            fullContent.Append(responseStreamChunk.Response);
+
+            modelId ??= responseStreamChunk.Model;
+        }
+
+        return [new TextContent(
+                text: fullContent.ToString(),
+                modelId: modelId,
+                innerContent: innerContent)];
     }
 
     /// <inheritdoc />
@@ -74,9 +94,27 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var content in this._client.StreamCompletion(prompt, null, cancellationToken).ConfigureAwait(false))
+        var settings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var request = CreateRequest(settings, this._client.SelectedModel);
+
+        await foreach (var content in this._client.Generate(request, cancellationToken).ConfigureAwait(false))
         {
-            yield return new StreamingTextContent(content?.Response, modelId: content?.Model, innerContent: content, metadata: new OllamaMetadata(content));
+            yield return new StreamingTextContent(
+                text: content?.Response,
+                modelId: content?.Model,
+                innerContent: content);
         }
+    }
+
+    private static GenerateRequest CreateRequest(OllamaPromptExecutionSettings settings, string selectedModel)
+    {
+        var request = new GenerateRequest
+        {
+            Options = settings.RequestOptions,
+            Model = selectedModel,
+            Stream = true
+        };
+
+        return request;
     }
 }

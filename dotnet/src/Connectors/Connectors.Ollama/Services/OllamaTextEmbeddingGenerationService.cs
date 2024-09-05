@@ -59,13 +59,13 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var request = new GenerateEmbeddingRequest
+        var request = new EmbedRequest
         {
             Model = this.GetModelId()!,
-            Input = data.ToList()
+            Input = data.ToList(),
         };
 
-        var response = await this._client.GenerateEmbeddings(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var response = await this._client.Embed(request, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         List<ReadOnlyMemory<float>> embeddings = [];
         foreach (var embedding in response.Embeddings)

@@ -2,17 +2,28 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
+using OllamaSharp.Models;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
 /// <summary>
-/// Ollama Prompt Execution Settings.
+/// Ollama Chat Completion and Text Generation Execution Settings.
 /// </summary>
 public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OllamaPromptExecutionSettings"/> class.
+    /// </summary>
+    /// <param name="requestOptions">Optional breaking glass request options</param>
+    public OllamaPromptExecutionSettings(RequestOptions? requestOptions = null)
+    {
+        this._requestOptions = requestOptions ?? new();
+    }
+
     /// <summary>
     /// Gets the specialization for the Ollama execution settings.
     /// </summary>
@@ -43,18 +54,18 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Sets the stop sequences to use. When this pattern is encountered the
     /// LLM will stop generating text and return. Multiple stop patterns may
-    /// be set by specifying multiple separate stop parameters in a modelfile.
+    /// be set by specifying multiple separate stop parameters in a model file.
     /// </summary>
     [JsonPropertyName("stop")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<string>? Stop
+    public IList<string>? Stop
     {
-        get => this._stop;
+        get => this._requestOptions.Stop;
 
         set
         {
             this.ThrowIfFrozen();
-            this._stop = value;
+            this._requestOptions.Stop = value?.ToArray();
         }
     }
 
@@ -67,12 +78,12 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? TopK
     {
-        get => this._topK;
+        get => this._requestOptions.TopK;
 
         set
         {
             this.ThrowIfFrozen();
-            this._topK = value;
+            this._requestOptions.TopK = value;
         }
     }
 
@@ -85,12 +96,12 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? TopP
     {
-        get => this._topP;
+        get => this._requestOptions.TopP;
 
         set
         {
             this.ThrowIfFrozen();
-            this._topP = value;
+            this._requestOptions.TopP = value;
         }
     }
 
@@ -102,21 +113,23 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? Temperature
     {
-        get => this._temperature;
+        get => this._requestOptions.Temperature;
 
         set
         {
             this.ThrowIfFrozen();
-            this._temperature = value;
+            this._requestOptions.Temperature = value;
         }
     }
 
+    /// <summary>
+    /// The breaking glass request options.
+    /// </summary>
+    internal RequestOptions RequestOptions => this._requestOptions;
+
     #region private
 
-    private List<string>? _stop;
-    private float? _temperature;
-    private float? _topP;
-    private int? _topK;
+    private readonly RequestOptions _requestOptions;
 
     #endregion
 }
