@@ -124,7 +124,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
 
     @override
     @trace_chat_completion(AzureAIInferenceBase.MODEL_PROVIDER_NAME)
-    async def _send_chat_request(
+    async def _inner_get_chat_message_content(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -144,7 +144,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
 
     @override
-    async def _send_streaming_chat_request(
+    async def _inner_get_streaming_chat_message_content(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",

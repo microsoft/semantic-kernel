@@ -82,7 +82,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 
     @override
     @trace_text_completion(VertexAIBase.MODEL_PROVIDER_NAME)
-    async def _send_text_request(
+    async def _inner_get_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
@@ -102,7 +102,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
         return [self._create_text_content(response, candidate) for candidate in response.candidates]
 
     @override
-    async def _send_streaming_text_request(
+    async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",

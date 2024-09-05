@@ -48,7 +48,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 
     @override
     @trace_text_completion(MODEL_PROVIDER_NAME)
-    async def _send_text_request(
+    async def _inner_get_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
@@ -71,7 +71,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         return [self._create_text_content(response, choice, metadata) for choice in response.choices]
 
     @override
-    async def _send_streaming_text_request(
+    async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",

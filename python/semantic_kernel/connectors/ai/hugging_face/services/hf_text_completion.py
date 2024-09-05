@@ -91,7 +91,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
     @override
     @trace_text_completion(MODEL_PROVIDER_NAME)
-    async def _send_text_request(
+    async def _inner_get_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
@@ -110,7 +110,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         return [self._create_text_content(results, results)]
 
     @override
-    async def _send_streaming_text_request(
+    async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",

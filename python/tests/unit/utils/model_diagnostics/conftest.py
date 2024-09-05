@@ -53,7 +53,7 @@ class MockChatCompletion(ChatCompletionClientBase):
     MODEL_PROVIDER_NAME: ClassVar[str] = "mock"
 
     @override
-    async def _send_chat_request(
+    async def _inner_get_chat_message_content(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -61,7 +61,7 @@ class MockChatCompletion(ChatCompletionClientBase):
         return []
 
     @override
-    async def _send_streaming_chat_request(
+    async def _inner_get_streaming_chat_message_content(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -73,7 +73,7 @@ class MockTextCompletion(TextCompletionClientBase):
     MODEL_PROVIDER_NAME: ClassVar[str] = "mock"
 
     @override
-    async def _send_text_request(
+    async def _inner_get_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
@@ -81,7 +81,7 @@ class MockTextCompletion(TextCompletionClientBase):
         return []
 
     @override
-    async def _send_streaming_text_request(
+    async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",

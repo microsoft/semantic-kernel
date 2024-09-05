@@ -76,10 +76,10 @@ async def test_trace_text_completion(
     # Setup
     text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
 
-    with patch.object(MockTextCompletion, "_send_text_request", return_value=mock_response):
+    with patch.object(MockTextCompletion, "_inner_get_text_contents", return_value=mock_response):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
-        MockTextCompletion._send_text_request = trace_text_completion(MockTextCompletion.MODEL_PROVIDER_NAME)(
-            text_completion._send_text_request
+        MockTextCompletion._inner_get_text_contents = trace_text_completion(MockTextCompletion.MODEL_PROVIDER_NAME)(
+            text_completion._inner_get_text_contents
         )
 
         results: list[ChatMessageContent] = await text_completion.get_text_contents(
@@ -134,10 +134,10 @@ async def test_trace_text_completion_exception(
     # Setup
     text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
 
-    with patch.object(MockTextCompletion, "_send_text_request", side_effect=ServiceResponseException()):
+    with patch.object(MockTextCompletion, "_inner_get_text_contents", side_effect=ServiceResponseException()):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
-        MockTextCompletion._send_text_request = trace_text_completion(MockTextCompletion.MODEL_PROVIDER_NAME)(
-            text_completion._send_text_request
+        MockTextCompletion._inner_get_text_contents = trace_text_completion(MockTextCompletion.MODEL_PROVIDER_NAME)(
+            text_completion._inner_get_text_contents
         )
 
         with pytest.raises(ServiceResponseException):

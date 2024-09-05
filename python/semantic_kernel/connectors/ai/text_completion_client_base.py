@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import copy
-from abc import ABC, abstractmethod
+from abc import ABC
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any
 
@@ -15,10 +15,9 @@ if TYPE_CHECKING:
 class TextCompletionClientBase(AIServiceClientBase, ABC):
     """Base class for text completion AI services."""
 
-    # region Abstract methods
+    # region Internal methods to be implemented by the derived classes
 
-    @abstractmethod
-    async def _send_text_request(
+    async def _inner_get_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
@@ -32,10 +31,9 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             list[TextContent]: A string or list of strings representing the response(s) from the LLM.
         """
-        ...
+        raise NotImplementedError
 
-    @abstractmethod
-    async def _send_streaming_text_request(
+    async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
@@ -50,10 +48,13 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             list[StreamingTextContent]: A stream representing the response(s) from the LLM.
         """
         # Below is needed for mypy: https://mypy.readthedocs.io/en/stable/more_types.html#asynchronous-iterators
+        raise NotImplementedError
         if False:
             yield
 
     # endregion
+
+    # region Public methods
 
     async def get_text_contents(
         self,
@@ -72,7 +73,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
 
-        return await self._send_text_request(prompt, settings)
+        return await self._inner_get_text_contents(prompt, settings)
 
     async def get_text_content(self, prompt: str, settings: "PromptExecutionSettings") -> "TextContent | None":
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
@@ -107,7 +108,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
 
-        async for contents in self._send_streaming_text_request(prompt, settings):
+        async for contents in self._inner_get_streaming_text_contents(prompt, settings):
             yield contents
 
     async def get_streaming_text_content(
@@ -128,3 +129,5 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             else:
                 # this should not happen, should error out before returning an empty list
                 yield None  # pragma: no cover
+
+    # endregion
