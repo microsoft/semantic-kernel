@@ -5,17 +5,17 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// FilterClause which filters using equality of a field value.
+/// <see cref="FilterClause"/> which filters using equality of a field value.
 /// </summary>
 [Experimental("SKEXP0001")]
-public sealed class EqualityFilterClause : FilterClause
+public sealed class EqualToFilterClause : FilterClause
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="EqualityFilterClause"/> class.
+    /// Initializes a new instance of the <see cref="EqualToFilterClause"/> class.
     /// </summary>
     /// <param name="fieldName">Field name.</param>
     /// <param name="value">Field value.</param>
-    internal EqualityFilterClause(string fieldName, object value) : base(FilterClauseType.Equality)
+    internal EqualToFilterClause(string fieldName, object value)
     {
         this.FieldName = fieldName;
         this.Value = value;

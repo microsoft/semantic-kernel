@@ -36,12 +36,12 @@ internal static class QdrantVectorStoreCollectionSearchMapping
 
             // In Qdrant, tag list contains is handled using a keyword match, which is the same as a string equality check.
             // We can therefore just extract the field name and value from each clause and handle them the same.
-            if (filterClause is EqualityFilterClause equalityFilterClause)
+            if (filterClause is EqualToFilterClause equalityFilterClause)
             {
                 fieldName = equalityFilterClause.FieldName;
                 filterValue = equalityFilterClause.Value;
             }
-            else if (filterClause is TagListContainsFilterClause tagListContainsClause)
+            else if (filterClause is AnyTagEqualToFilterClause tagListContainsClause)
             {
                 fieldName = tagListContainsClause.FieldName;
                 filterValue = tagListContainsClause.Value;

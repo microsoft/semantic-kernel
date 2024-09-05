@@ -11,8 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Search;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 
@@ -255,13 +255,13 @@ public sealed class BingTextSearch : ITextSearch
         StringBuilder fullQuery = new();
         fullQuery.Append(Uri.EscapeDataString(query.Trim()));
         StringBuilder queryParams = new();
-        if (searchOptions.BasicFilter is not null)
+        if (searchOptions.Filter is not null)
         {
-            var filterClauses = searchOptions.BasicFilter.FilterClauses;
+            var filterClauses = searchOptions.Filter.FilterClauses;
 
             foreach (var filterClause in filterClauses)
             {
-                if (filterClause is EqualityFilterClause equalityFilterClause)
+                if (filterClause is EqualToFilterClause equalityFilterClause)
                 {
                     if (s_advancedSearchKeywords.Contains(equalityFilterClause.FieldName, StringComparer.OrdinalIgnoreCase) && equalityFilterClause.Value is not null)
                     {

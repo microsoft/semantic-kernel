@@ -440,7 +440,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         });
         var sut = this.CreateRecordCollection(useDefinition);
 
-        var filter = new VectorSearchFilter().Equality(nameof(SinglePropsModel.Data), "data 1");
+        var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel.Data), "data 1");
 
         // Act.
         var actual = await sut!.SearchAsync(VectorSearchQuery.CreateQuery(
@@ -448,7 +448,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             new()
             {
                 IncludeVectors = includeVectors,
-                VectorSearchFilter = filter,
+                Filter = filter,
                 Limit = 5,
                 Offset = 2
             })).ToListAsync();

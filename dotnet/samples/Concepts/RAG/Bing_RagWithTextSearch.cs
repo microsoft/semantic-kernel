@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-using Microsoft.SemanticKernel.Search;
 
 namespace RAG;
 
@@ -151,8 +151,8 @@ public sealed class Bing_RagWithTextSearch(ITestOutputHelper output) : BaseTest(
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search and add to the kernel
-        var basicFilter = new BasicFilterOptions().Equality("site", "devblogs.microsoft.com");
-        var searchOptions = new TextSearchOptions() { BasicFilter = basicFilter };
+        var filter = new TextSearchFilter().Equality("site", "devblogs.microsoft.com");
+        var searchOptions = new TextSearchOptions() { Filter = filter };
         var searchPlugin = KernelPluginFactory.CreateFromFunctions(
             "SearchPlugin", "Search Microsoft Developer Blogs site only",
             [textSearch.CreateGetTextSearchResults(searchOptions: searchOptions)]);

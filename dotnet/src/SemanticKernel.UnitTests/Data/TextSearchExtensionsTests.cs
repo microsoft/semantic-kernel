@@ -5,10 +5,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Search;
+using Microsoft.SemanticKernel.Data;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Search;
+namespace SemanticKernel.UnitTests.Data;
 
 #pragma warning disable xUnit1026 // Theory methods should use all of their parameters
 public class TextSearchExtensionsTests

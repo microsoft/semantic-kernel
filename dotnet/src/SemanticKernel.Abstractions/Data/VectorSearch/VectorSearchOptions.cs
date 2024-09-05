@@ -18,7 +18,7 @@ public class VectorSearchOptions
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
     /// </summary>
-    public VectorSearchFilter? VectorSearchFilter { get; init; }
+    public VectorSearchFilter? Filter { get; init; }
 
     /// <summary>
     /// Gets or sets the name of the vector field to search.

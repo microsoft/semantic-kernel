@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Search;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Options which can be applied when using <see cref="ITextSearch"/>.
@@ -24,9 +24,9 @@ public sealed class TextSearchOptions
     public bool IncludeTotalCount { get; set; } = false;
 
     /// <summary>
-    /// The basic filter expression to apply to the search query.
+    /// The filter expression to apply to the search query.
     /// </summary>
-    public BasicFilterOptions? BasicFilter { get; set; }
+    public TextSearchFilter? Filter { get; set; }
 
     /// <summary>
     /// Number of search results to return.
