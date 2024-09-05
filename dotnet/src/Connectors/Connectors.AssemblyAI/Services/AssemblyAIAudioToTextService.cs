@@ -6,10 +6,10 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AssemblyAI;
+using AssemblyAI.Transcripts;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AudioToText;
-using Microsoft.SemanticKernel.Connectors.AssemblyAI.Core;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 
@@ -40,11 +40,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     )
     {
         Verify.NotNullOrWhiteSpace(apiKey);
-        this._client = new AssemblyAIClient(
-            httpClient: HttpClientProvider.GetHttpClient(httpClient),
-            endpoint: endpoint,
-            apiKey: apiKey,
-            logger: loggerFactory?.CreateLogger(this.GetType()));
+        this._client = AssemblyAIClientFactory.Create(apiKey, endpoint, httpClient, loggerFactory);
     }
 
     /// <inheritdoc />
@@ -57,17 +53,27 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     {
         Verify.NotNull(content);
 
+        if (executionSettings?.ExtensionData is not null && executionSettings.ExtensionData.Count > 0)
+        {
+            throw new ArgumentException("ExtensionData is not supported by AssemblyAI, use AssemblyAIAudioToTextExecutionSettings.TranscriptParams.", nameof(executionSettings));
+        }
+
         string uploadUrl;
         if (content.Data is { IsEmpty: false })
         {
-            uploadUrl = await this._client.UploadFileAsync(content.Data.Value, cancellationToken).ConfigureAwait(false);
+            var response = await this._client.Files.UploadAsync(
+                content.Data.Value,
+                null,
+                cancellationToken
+            ).ConfigureAwait(false);
+            uploadUrl = response.UploadUrl;
         }
         else if (content.Uri is not null)
         {
             // to prevent unintentional file uploads by injection attack
             if (content.Uri.IsFile)
             {
-                throw new ArgumentException("File URI is not allowed. Use `AudioContent.Stream` or `AudioContent.File` to transcribe a local file instead.");
+                throw new ArgumentException("File URI is not supported.");
             }
 
             uploadUrl = content.Uri.ToString();
@@ -77,19 +83,42 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             throw new ArgumentException("AudioContent doesn't have any content.", nameof(content));
         }
 
-        var transcriptId = await this._client.CreateTranscriptAsync(uploadUrl, executionSettings, cancellationToken)
-            .ConfigureAwait(false);
-        var transcript = await this._client.WaitForTranscriptToProcessAsync(transcriptId, executionSettings, cancellationToken)
+        TimeSpan? pollingInterval = null;
+        TimeSpan? pollingTimeout = null;
+        TranscriptOptionalParams? transcriptParams = null;
+        if (executionSettings is AssemblyAIAudioToTextExecutionSettings aaiExecSettings)
+        {
+            pollingInterval = aaiExecSettings.PollingInterval;
+            pollingTimeout = aaiExecSettings.PollingTimeout;
+            transcriptParams = aaiExecSettings.TranscriptParams;
+        }
+
+        Transcript transcript = await this._client.Transcripts.SubmitAsync(
+                new Uri(uploadUrl),
+                transcriptParams ?? new TranscriptOptionalParams(),
+                null,
+                cancellationToken
+            )
             .ConfigureAwait(false);
 
-        return [
+        transcript = await this._client.Transcripts.WaitUntilReady(
+            transcript.Id,
+            pollingInterval: pollingInterval,
+            pollingTimeout: pollingTimeout,
+            cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
+
+        transcript.EnsureStatusCompleted();
+
+        return
+        [
             new TextContent(
-                text: transcript.GetProperty("text").GetString(),
+                text: transcript.Text,
                 modelId: null,
-                // TODO: change to typed object when AAI SDK is shipped
                 innerContent: transcript,
                 encoding: Encoding.UTF8,
-                metadata: null)
-            ];
+                metadata: null
+            )
+        ];
     }
 }

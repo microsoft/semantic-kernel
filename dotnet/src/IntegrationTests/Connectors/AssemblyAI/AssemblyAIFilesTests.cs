@@ -70,18 +70,16 @@ public sealed class AssemblyAIFilesTests : IDisposable
     public async Task AssemblyAIAudioToTextWithLocalhostBaseAddressShouldThrowAsync()
     {
         // Arrange
-        using var httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri("https://localhost:9999");
         const string Filename = "test_audio.wav";
 
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIFileService(apiKey, httpClient: httpClient);
+        var service = new AssemblyAIFileService(apiKey, endpoint: new Uri("http://localhost:9999"));
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<HttpOperationException>(
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(
             async () => await service.UploadAsync(audio)
         );
         Assert.Equal(

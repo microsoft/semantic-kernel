@@ -5,9 +5,8 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using AssemblyAI;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.AssemblyAI.Core;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 
@@ -33,11 +32,7 @@ public sealed class AssemblyAIFileService
     )
     {
         Verify.NotNullOrWhiteSpace(apiKey);
-        this._client = new AssemblyAIClient(
-            httpClient: HttpClientProvider.GetHttpClient(httpClient),
-            endpoint: endpoint,
-            apiKey: apiKey,
-            logger: loggerFactory?.CreateLogger(this.GetType()));
+        this._client = AssemblyAIClientFactory.Create(apiKey, endpoint, httpClient, loggerFactory);
     }
 
     /// <summary>
@@ -49,7 +44,7 @@ public sealed class AssemblyAIFileService
     public async Task<AudioContent> UploadAsync(Stream stream, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(stream);
-        var file = await this._client.UploadFileAsync(stream, cancellationToken).ConfigureAwait(false);
-        return new AudioContent(new Uri(file, UriKind.Absolute));
+        var response = await this._client.Files.UploadAsync(stream, null, cancellationToken).ConfigureAwait(false);
+        return new AudioContent(new Uri(response.UploadUrl, UriKind.Absolute));
     }
 }

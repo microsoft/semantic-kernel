@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
 using Microsoft.SemanticKernel.Http;
+// ReSharper disable UnusedMethodReturnValue.Global
 
 namespace Microsoft.SemanticKernel;
 

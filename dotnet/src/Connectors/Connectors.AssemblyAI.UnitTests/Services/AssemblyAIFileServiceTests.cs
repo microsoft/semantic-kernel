@@ -4,7 +4,7 @@ using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
+using AssemblyAI;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
 using Xunit;
 
@@ -53,9 +53,9 @@ public sealed class AssemblyAIFileServiceTests : IDisposable
         using var transcribeResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
         this._messageHandlerStub.ResponsesToReturn =
         [
-            uploadFileResponse,
+            uploadFileResponse
         ];
-        using var stream = new BinaryData("data").ToStream();
+        await using var stream = new BinaryData("data").ToStream();
 
         // Act
         var result = await service.UploadAsync(stream).ConfigureAwait(true);
@@ -76,9 +76,9 @@ public sealed class AssemblyAIFileServiceTests : IDisposable
         [
             uploadFileResponse
         ];
-        using var stream = new BinaryData("data").ToStream();
+        await using var stream = new BinaryData("data").ToStream();
         // Act & Assert
-        await Assert.ThrowsAsync<HttpOperationException>(
+        await Assert.ThrowsAsync<ApiException>(
             async () => await service.UploadAsync(stream).ConfigureAwait(true)
         ).ConfigureAwait(true);
     }
@@ -103,10 +103,10 @@ public sealed class AssemblyAIFileServiceTests : IDisposable
         [
             uploadFileResponse
         ];
-        using var stream = new BinaryData("data").ToStream();
+        await using var stream = new BinaryData("data").ToStream();
 
         // Act & Assert
-        await Assert.ThrowsAsync<HttpOperationException>(
+        await Assert.ThrowsAsync<ApiException>(
             async () => await service.UploadAsync(stream).ConfigureAwait(true)
         ).ConfigureAwait(true);
     }
