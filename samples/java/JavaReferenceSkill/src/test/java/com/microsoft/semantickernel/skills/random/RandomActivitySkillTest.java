@@ -43,7 +43,7 @@ public class RandomActivitySkillTest {
     @Test
     public void testGetRandomActivity() throws Exception {
         HttpClient httpClient = mock(HttpClient.class);
-        HttpResponse<String> httpResponse = mock(HttpResponse.class, Mockito.<String>withSettings().defaultAnswer(Mockito.RETURNS_DEEP_STUBS));
+        HttpResponse<String> httpResponse = mock(HttpResponse.class, Mockito.withSettings().defaultAnswer(Mockito.RETURNS_DEEP_STUBS));
         CompletableFuture<HttpResponse<String>> responseFuture = CompletableFuture.completedFuture(httpResponse);
 
         extracted(httpClient, responseFuture);
@@ -88,11 +88,12 @@ public class RandomActivitySkillTest {
 
     private void extracted(HttpClient httpClient, CompletableFuture<HttpResponse<String>> responseFuture) {
         HttpClient mockHttpClient = mock(HttpClient.class);
-        CompletableFuture<HttpResponse<String>> mockResponseFuture = CompletableFuture.<HttpResponse<String>>completedFuture(mock(HttpResponse.class));
+        CompletableFuture<HttpResponse<String>> mockResponseFuture = CompletableFuture.completedFuture(mock(HttpResponse.<String>class));
     
         // Use type parameters explicitly
-        when(mockHttpClient.sendAsync(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
-                .thenReturn((CompletableFuture<HttpResponse<String>>) mockResponseFuture);
+        @SuppressWarnings("unchecked")
+        when(mockHttpClient.<HttpResponse<String>>sendAsync(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(mockResponseFuture);
     
         // Your test logic here
     }
