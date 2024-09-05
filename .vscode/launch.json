@@ -30,8 +30,7 @@
       "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
       "args": [],
       "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
-      "console": "internalConsole",
-      "stopAtEntry": false
+      "console": "internalConsole"
     },
     {
       "name": ".NET Core Attach",
