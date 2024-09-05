@@ -103,6 +103,7 @@ internal static partial class AgentChatLogMessages
             logLevel: LogLevel.Debug,
             eventId: 0,
             "[{MethodName}] Agent message {AgentType}/{AgentId}: {Message}.");
+    
     public static void LogAgentChatInvokedStreamingAgentMessages(
         this ILogger logger,
         string methodName,
