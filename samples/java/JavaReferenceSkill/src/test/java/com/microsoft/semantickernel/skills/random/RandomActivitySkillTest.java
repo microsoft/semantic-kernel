@@ -17,12 +17,12 @@ import org.mockito.Mockito;
 
 import io.grpc.stub.StreamObserver;
 import io.grpc.testing.GrpcServerRule;
-import com.google.protobuf.MessageOrBuilder;
+
 import reference_skill.ActivityOuterClass.GetRandomActivityRequest;
 
 
 import reference_skill.ActivityOuterClass.GetRandomActivityResponse;
-import reference_skill.RandomActivitySkillGrpc;
+
 // import reference_skill.RandomActivitySkillGrpc.RandomActivitySkillBlockingStub; // Remove the unused import statement
 
 public class RandomActivitySkillTest {
@@ -51,7 +51,7 @@ public class RandomActivitySkillTest {
         
         GetRandomActivityRequest request = GetRandomActivityRequest.newBuilder().build();
         GetRandomActivityRequest getRandomActivityRequest = GetRandomActivityRequest.newBuilder().build();
-        StreamObserver<GetRandomActivityResponse> responseObserver = mock(StreamObserver.class, (Class<StreamObserver<GetRandomActivityResponse>>)(Class<?>)StreamObserver.class);
+        StreamObserver<GetRandomActivityResponse> responseObserver = mock(StreamObserver.class);
         randomActivitySkill.getRandomActivity(request, responseObserver);
 
         verify(responseObserver).onNext(any(GetRandomActivityResponse.class));
@@ -64,7 +64,7 @@ public class RandomActivitySkillTest {
     
         // Use type parameters explicitly
         when(mockHttpClient.sendAsync(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
-                .thenReturn(mockResponseFuture);
+                .thenReturn((CompletableFuture<HttpResponse<String>>) mockResponseFuture);
     
         // Your test logic here
     }
