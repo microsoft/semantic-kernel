@@ -8,7 +8,7 @@ namespace SemanticKernel.UnitTests.Contents;
 #pragma warning disable SKEXP0110
 
 /// <summary>
-/// Unit testing of <see cref="AnnotationContent"/>.
+/// Unit testing of <see cref="StreamingAnnotationContent"/>.
 /// </summary>
 public class StreamingAnnotationContentTests
 {
