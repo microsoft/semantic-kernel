@@ -33,10 +33,10 @@ git clone https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx
 ```
 
 > [!IMPORTANT]
-> Both `BG2` and `Phi-3` models are too large to be downloaded by the `git clone` command alone, for this you may need to download the models manually and overwrite the files in the cloned directories.
+> Both `BG2` and `Phi-3` models are too large to be downloaded by the `git clone` command alone if you don't have [git-lfs extension](https://git-lfs.com/) installed, for this you may need to download the models manually and overwrite the files in the cloned directories.
 
-- Manually download [BGE-V2](https://huggingface.co/TaylorAI/bge-micro-v2/resolve/main/onnx/model.onnx?download=true) (69 MB)
-- Manually download [Phi-3 CPU](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32/phi3-mini-4k-instruct-cpu-int4-rtn-block-32.onnx.data?download=true) (≈2.7 GB)
+- Manual download [BGE-V2](https://huggingface.co/TaylorAI/bge-micro-v2/resolve/main/onnx/model.onnx?download=true) (69 MB)
+- Manual download [Phi-3 CPU](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32/phi3-mini-4k-instruct-cpu-int4-rtn-block-32.onnx.data?download=true) (≈2.7 GB)
 
 ## 2. Configuring the sample
 

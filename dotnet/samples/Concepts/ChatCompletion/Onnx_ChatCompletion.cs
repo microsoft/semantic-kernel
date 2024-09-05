@@ -7,16 +7,32 @@ using Microsoft.SemanticKernel.Connectors.Onnx;
 
 namespace ChatCompletion;
 
-// The following example shows how to use Semantic Kernel with Ollama Chat Completion API
-public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
+// The following example shows how to use Semantic Kernel with Onnx Gen AI Chat Completion API
+public class Onnx_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
+    /// <summary>
+    /// Example using the service directly to get chat message content
+    /// </summary>
+    /// <remarks>
+    /// Configuration example:
+    /// <list type="table">
+    /// <item>
+    /// <term>ModelId:</term>
+    /// <description>phi-3</description>
+    /// </item>
+    /// <item>
+    /// <term>ModelPath:</term>
+    /// <description>D:\huggingface\Phi-3-mini-4k-instruct-onnx\cpu_and_mobile\cpu-int4-rtn-block-32</description>
+    /// </item>
+    /// </list>
+    /// </remarks>
     [Fact]
     public async Task ServicePromptAsync()
     {
         Assert.NotNull(TestConfiguration.Onnx.ModelId);   // dotnet user-secrets set "Onnx:ModelId" "<model-id>"
-        Assert.NotNull(TestConfiguration.Onnx.ModelPath); // dotnet user-secrets set "Onnx:ModelPath" "<model-path>"
+        Assert.NotNull(TestConfiguration.Onnx.ModelPath); // dotnet user-secrets set "Onnx:ModelPath" "<model-folder-path>"
 
-        Console.WriteLine("======== Ollama - Chat Completion ========");
+        Console.WriteLine("======== Onnx - Chat Completion ========");
 
         var chatService = new OnnxRuntimeGenAIChatCompletionService(
             modelId: TestConfiguration.Onnx.ModelId,
@@ -74,11 +90,29 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         */
     }
 
+    /// <summary>
+    /// Example using the kernel to send a chat history and get a chat message content
+    /// </summary>
+    /// <remarks>
+    /// Configuration example:
+    /// <list type="table">
+    /// <item>
+    /// <term>ModelId:</term>
+    /// <description>phi-3</description>
+    /// </item>
+    /// <item>
+    /// <term>ModelPath:</term>
+    /// <description>D:\huggingface\Phi-3-mini-4k-instruct-onnx\cpu_and_mobile\cpu-int4-rtn-block-32</description>
+    /// </item>
+    /// </list>
+    /// </remarks>
     [Fact]
     public async Task ChatPromptAsync()
     {
-        Assert.NotNull(TestConfiguration.Onnx.ModelId);
-        Assert.NotNull(TestConfiguration.Onnx.ModelPath);
+        Assert.NotNull(TestConfiguration.Onnx.ModelId);   // dotnet user-secrets set "Onnx:ModelId" "<model-id>"
+        Assert.NotNull(TestConfiguration.Onnx.ModelPath); // dotnet user-secrets set "Onnx:ModelPath" "<model-folder-path>"
+
+        Console.WriteLine("======== Onnx - Chat Prompt Completion ========");
 
         StringBuilder chatPrompt = new("""
                                        <message role="system">You are a librarian, expert about books</message>
