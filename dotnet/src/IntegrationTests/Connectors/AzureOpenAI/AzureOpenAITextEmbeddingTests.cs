@@ -27,7 +27,7 @@ public sealed class AzureOpenAITextEmbeddingTests
         var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
             deploymentName: this._azureOpenAIConfiguration.DeploymentName,
             endpoint: this._azureOpenAIConfiguration.Endpoint,
-            credential: new DefaultAzureCredential());
+            credential: new AzureCliCredential());
 
         // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
@@ -49,7 +49,7 @@ public sealed class AzureOpenAITextEmbeddingTests
         var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
             deploymentName: "text-embedding-3-large",
             endpoint: this._azureOpenAIConfiguration.Endpoint,
-            credential: new DefaultAzureCredential(),
+            credential: new AzureCliCredential(),
             dimensions: dimensions);
 
         // Act

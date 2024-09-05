@@ -36,7 +36,7 @@ public sealed class AzureOpenAIAudioToTextTests()
             .AddAzureOpenAIAudioToText(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
-                credentials: new DefaultAzureCredential())
+                credentials: new AzureCliCredential())
             .Build();
 
         var service = kernel.GetRequiredService<IAudioToTextService>();

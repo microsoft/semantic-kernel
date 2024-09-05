@@ -874,7 +874,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            credentials: new DefaultAzureCredential());
+            credentials: new AzureCliCredential());
 
         var kernel = kernelBuilder.Build();
 

@@ -83,7 +83,7 @@ public sealed class PromptTests : IDisposable
         kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            credentials: new DefaultAzureCredential(),
+            credentials: new AzureCliCredential(),
             serviceId: azureOpenAIConfiguration.ServiceId);
     }
     #endregion

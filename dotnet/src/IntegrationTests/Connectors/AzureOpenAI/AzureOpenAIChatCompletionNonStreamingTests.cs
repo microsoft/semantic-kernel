@@ -156,7 +156,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            credentials: new DefaultAzureCredential());
+            credentials: new AzureCliCredential());
 
         return kernelBuilder.Build();
     }

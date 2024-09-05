@@ -118,7 +118,7 @@ public sealed class HandlebarsPlannerTests
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            credentials: new DefaultAzureCredential());
+            credentials: new AzureCliCredential());
 
         if (useEmbeddings)
         {
@@ -126,7 +126,7 @@ public sealed class HandlebarsPlannerTests
                 deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                 modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId,
                 endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                credential: new DefaultAzureCredential());
+                credential: new AzureCliCredential());
         }
 
         return builder.Build();

@@ -56,7 +56,7 @@ public sealed class MixedAgentTests
         // Arrange, Act & Assert
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(azureOpenAISettings),
-            OpenAIClientProvider.ForAzureOpenAI(new DefaultAzureCredential(), new Uri(azureOpenAISettings.Endpoint)),
+            OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAISettings.Endpoint)),
             azureOpenAISettings.ChatDeploymentName!);
     }
 
@@ -123,7 +123,7 @@ public sealed class MixedAgentTests
         kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: configuration.ChatDeploymentName!,
             endpoint: configuration.Endpoint,
-            credentials: new DefaultAzureCredential());
+            credentials: new AzureCliCredential());
 
         return kernelBuilder.Build();
     }

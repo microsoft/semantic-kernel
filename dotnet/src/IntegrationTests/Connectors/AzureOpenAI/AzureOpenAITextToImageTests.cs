@@ -30,7 +30,7 @@ public sealed class AzureOpenAITextToImageTests
             .AddAzureOpenAITextToImage(
                 deploymentName: configuration.DeploymentName,
                 endpoint: configuration.Endpoint,
-                credentials: new DefaultAzureCredential())
+                credentials: new AzureCliCredential())
             .Build();
 
         var service = kernel.GetRequiredService<ITextToImageService>();

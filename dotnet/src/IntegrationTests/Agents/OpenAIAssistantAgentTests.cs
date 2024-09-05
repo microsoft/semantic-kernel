@@ -55,7 +55,7 @@ public sealed class OpenAIAssistantAgentTests
         Assert.NotNull(azureOpenAIConfiguration);
 
         await this.ExecuteAgentAsync(
-            OpenAIClientProvider.ForAzureOpenAI(new DefaultAzureCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
+            OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
             azureOpenAIConfiguration.ChatDeploymentName!,
             input,
             expectedAnswerContains);
