@@ -1,7 +1,7 @@
 package com.microsoft.semantickernel.skills.random;
 
 import io.grpc.stub.StreamObserver;
-import reference_skill.ActivityOuterClass;
+import reference_skill.ActivityOrBuilder;
 import reference_skill.RandomActivitySkillGrpc;
 
 import java.net.URI;
@@ -24,7 +24,7 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
      * @param responseObserver
      */
     @Override
-    public void getRandomActivity(ActivityOuterClass.GetRandomActivityRequest request, StreamObserver<ActivityOuterClass.GetRandomActivityResponse> responseObserver) {
+    public void getRandomActivity(ActivityOrBuilder.GetRandomActivityRequest request, StreamObserver<ActivityOrBuilder.GetRandomActivityResponse> responseObserver) {
         Logger logger =  java.util.logging.Logger.getLogger(this.getClass().getName());
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -33,7 +33,7 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
         try {
             CompletableFuture<HttpResponse<String>> response = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
             logger.info("Response: " + response.get().body());
-            responseObserver.onNext(ActivityOuterClass.GetRandomActivityResponse.newBuilder().setActivity(response.get().body()).build());
+            responseObserver.onNext(ActivityOrBuilder.GetRandomActivityResponse.newBuilder().setActivity(response.get().body()).build());
             responseObserver.onCompleted();
         } catch (Exception e) {
             logger.severe("Error with request: " + e.getMessage());

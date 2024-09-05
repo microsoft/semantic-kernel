@@ -172,5 +172,6 @@
   "CodeGPT.Autocomplete.suggestionDelay": 7200,
   "CodeGPT.Autocomplete.provider": "CodeGPT Enterprise - Plus",
   "clojure.trace.server": "verbose",
-  "iis.configDir": ""
+  "iis.configDir": "",
+  "java.configuration.updateBuildConfiguration": "automatic"
 }
