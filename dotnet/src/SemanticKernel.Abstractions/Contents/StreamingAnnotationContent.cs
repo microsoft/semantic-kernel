@@ -41,7 +41,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AnnotationContent"/> class.
+    /// Initializes a new instance of the <see cref="StreamingAnnotationContent"/> class.
     /// </summary>
     /// <param name="quote">The source text being referenced.</param>
     /// <param name="modelId">The model ID used to generate the content.</param>
