@@ -12,17 +12,19 @@ from semantic_kernel.connectors.search.bing.bing_web_page import BingWebPage
 from semantic_kernel.connectors.search.bing.const import (
     DEFAULT_CUSTOM_URL,
     DEFAULT_URL,
-    QUERY_ADVANCED_SEARCH_KEYWORDS,
     QUERY_PARAMETERS,
 )
 from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
+from semantic_kernel.data.filters.any_tags_equal_to_filter_clause import AnyTagsEqualTo
+from semantic_kernel.data.filters.equal_to_filter_clause import EqualTo
+from semantic_kernel.data.filters.not_equal_to_filter_clause import NotEqualTo
+from semantic_kernel.data.filters.search_filter_base import SearchFilter
+from semantic_kernel.data.kernel_search_result import KernelSearchResult
+from semantic_kernel.data.text_search import TextSearch
+from semantic_kernel.data.text_search_options import TextSearchOptions
+from semantic_kernel.data.text_search_result import TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.search.const import FilterClauseType
-from semantic_kernel.search.kernel_search_result import KernelSearchResult
-from semantic_kernel.search.text_search import TextSearch
-from semantic_kernel.search.text_search_options import TextSearchOptions
-from semantic_kernel.search.text_search_result import TextSearchResult
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -186,15 +188,26 @@ class BingSearch(KernelBaseModel, TextSearch):
         return f"{DEFAULT_CUSTOM_URL}&customConfig={self.settings.custom_config}"
 
     def _build_request_parameters(self, options: TextSearchOptions) -> dict[str, str | int]:
-        params = {"count": options.count, "offset": options.offset}
+        params: dict[str, str | int] = {"count": options.count, "offset": options.offset}
+        if not options.filter:
+            params["q"] = options.query or ""
+            return params
         extra_query_params = []
-
-        for filter in options.search_filters:
-            if filter.field_name in QUERY_PARAMETERS and filter.clause_type == FilterClauseType.EQUALITY:
-                params[filter.field_name] = escape(filter.value)
-            if filter.field_name in QUERY_ADVANCED_SEARCH_KEYWORDS and filter.clause_type == FilterClauseType.EQUALITY:
-                extra_query_params.append(f"{filter.field_name}:{filter.value}")
-            if filter.clause_type == FilterClauseType.TAG_LIST_CONTAINS:
-                logger.debug("Tag list contains filter is not supported by Bing Search API.")
-        params["q"] = f"{options.query}+{' '.join(extra_query_params)}".strip()
+        for filter in options.filter.filters:
+            if isinstance(filter, SearchFilter):
+                logger.warning("Groups are not supported by Bing search, ignored.")
+                continue
+            if isinstance(filter, EqualTo):
+                if filter.field_name in QUERY_PARAMETERS:
+                    params[filter.field_name] = escape(filter.value)
+                else:
+                    extra_query_params.append(f"{filter.field_name}:{filter.value}")
+            if isinstance(filter, NotEqualTo):
+                if filter.field_name in QUERY_PARAMETERS:
+                    params[filter.field_name] = f"-{escape(filter.value)}"
+                else:
+                    extra_query_params.append(f"-{filter.field_name}:{filter.value}")
+            if isinstance(filter, AnyTagsEqualTo):
+                logger.debug("Any tag equals to filter is not supported by Bing Search API.")
+        params["q"] = f"{options.query}+{f' {options.filter.group_type} '.join(extra_query_params)}".strip()
         return params

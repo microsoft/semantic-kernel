@@ -6,9 +6,12 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
+from semantic_kernel.data.filters.any_tags_equal_to_filter_clause import AnyTagsEqualTo
+from semantic_kernel.data.filters.equal_to_filter_clause import EqualTo
+from semantic_kernel.data.filters.not_equal_to_filter_clause import NotEqualTo
+from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search_options import VectorSearchOptions
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.search.filter_clause import FilterClause
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -31,7 +34,6 @@ from semantic_kernel.data.vector_search import VectorSearch
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
-from semantic_kernel.search.const import FilterClauseType
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -229,8 +231,8 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
             "top": options.count,
             "skip": options.offset,
         }
-        if options.search_filters:
-            search_args["filter"] = self._build_filter_string(options.search_filters)
+        if options.filter:
+            search_args["filter"] = self._build_filter_string(options.filter)
         if options.query_type == VectorSearchQueryTypes.VECTORIZED_SEARCH_QUERY and options.vector:
             search_args["search_text"] = "*"
             search_args["vector_queries"] = [
@@ -242,32 +244,35 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
             ]
         if options.query_type == VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY and options.query:
             search_args["search_text"] = options.query
-        if options.include_vectors:
-            search_args["select"] = ["*"]
+        if options.select_fields:
+            search_args["select"] = options.select_fields
         else:
-            search_args["select"] = [
-                name
-                for name, field in self.data_model_definition.fields.items()
-                if not isinstance(field, VectorStoreRecordVectorField)
-            ]
+            if options.include_vectors:
+                search_args["select"] = ["*"]
+            else:
+                search_args["select"] = [
+                    name
+                    for name, field in self.data_model_definition.fields.items()
+                    if not isinstance(field, VectorStoreRecordVectorField)
+                ]
 
         return [res async for res in await self.search_client.search(**search_args)]
 
-    def _build_filter_string(self, filters: list[FilterClause]) -> str:
+    def _build_filter_string(self, search_filter: VectorSearchFilter) -> str:
         filter_string = ""
-        for filter in filters:
-            if not filter.value:
-                continue
-            if filter.clause_type == FilterClauseType.DIRECT:
-                filter_string += f"{filter.value} and "
-            if filter.clause_type == FilterClauseType.EQUALITY:
-                filter_string += f"{filter.field_name} eq '{filter.value}' and "
-            elif filter.clause_type == FilterClauseType.TAG_LIST_CONTAINS:
-                filter_string += f"{filter.field_name}/any(t: t eq '{filter.value}') and "
+        for filter in search_filter.filters:
+            if isinstance(filter, EqualTo):
+                filter_string += f"{filter.field_name} eq '{filter.value}' {search_filter.group_type.lower()} "
+            elif isinstance(filter, NotEqualTo):
+                filter_string += f"{filter.field_name} ne '{filter.value}' {search_filter.group_type.lower()} "
+            elif isinstance(filter, AnyTagsEqualTo):
+                filter_string += (
+                    f"{filter.field_name}/any(t: t eq '{filter.value}') {search_filter.group_type.lower()} "
+                )
         return filter_string[:-5]
 
     @staticmethod
-    def default_parameter_metadata() -> list[KernelParameterMetadata]:
+    def _default_parameter_metadata() -> list[KernelParameterMetadata]:
         """Default parameter metadata for text search functions.
 
         This function should be overridden when necessary.

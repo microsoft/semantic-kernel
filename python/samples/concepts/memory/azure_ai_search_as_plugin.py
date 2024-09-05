@@ -2,7 +2,7 @@
 
 
 import asyncio
-from collections.abc import Coroutine
+from collections.abc import Callable, Coroutine, Sequence
 from typing import Annotated, Any, TypeVar
 
 from pydantic import BaseModel
@@ -24,12 +24,18 @@ from semantic_kernel.data import (
     VectorStoreRecordVectorField,
     vectorstoremodel,
 )
+from semantic_kernel.data.const import DEFAULT_DESCRIPTION
+from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
+from semantic_kernel.data.search_options_base import SearchOptions
+from semantic_kernel.data.text_search import TextSearch
 from semantic_kernel.data.vector_search_options import VectorSearchOptions
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.search.filter_clause import FilterClause
 
 
 @vectorstoremodel
@@ -79,30 +85,83 @@ kernel.add_service(OpenAIChatCompletion(service_id=service_id))
 embeddings = OpenAITextEmbedding(service_id="embedding", ai_model_id="text-embedding-3-small")
 kernel.add_service(embeddings)
 vectorizer = VectorStoreRecordUtils(kernel)
-store = AzureAISearchCollection[HotelSampleClassType](
+store: AzureAISearchCollection[HotelSampleClassType] = AzureAISearchCollection(
     collection_name="hotels-sample-index", data_model_type=HotelSampleClass
 )
-plugin = kernel.add_plugin_from_search(
-    search_service=store,
+
+
+def create_kernel_function(
+    service: TextSearch,
+    search_function: str,
+    options: SearchOptions | None,
+    parameters: list[KernelParameterMetadata] | None = None,
+    return_parameter: KernelParameterMetadata | None = None,
+    function_name: str = "search",
+    description: str = DEFAULT_DESCRIPTION,
+    map_function: Callable[[Any], str] | None = None,
+) -> KernelFunction:
+    """Create a function from a search service.
+
+    Args:
+        search_function: The search function.
+        options: The search options.
+        parameters: The parameters for the function.
+        return_parameter: The return parameter for the function.
+        function_name: The name of the function.
+        description: The description of the function.
+        map_function: The function to map the search results to strings.
+
+    """
+    search_func = service._search_function_map.get(search_function)
+    if not search_func:
+        raise ValueError(f"Search function '{search_function}' not found.")
+
+    @kernel_function(name=function_name, description=description)
+    async def search_wrapper(**kwargs: Any) -> Sequence[str]:
+        results = await search_func(options=service._create_options(options, **kwargs))
+        return service._map_result_to_strings(results, map_function)
+
+    return KernelFunctionFromMethod(
+        method=search_wrapper,
+        parameters=parameters or service._default_parameter_metadata(),
+        return_parameter=return_parameter or service._default_return_parameter_metadata(),
+    )
+
+
+def update_options_search(options: SearchOptions, func_args: dict[str, Any]) -> SearchOptions:
+    for key, value in func_args.items():
+        if key == "city":
+            if options.filter:
+                options.filter.equal_to("address/city", value)
+            else:
+                options.filter = VectorSearchFilter.equal_to("address/city", value)
+    return options
+
+
+def update_options_details(options: SearchOptions, func_args: dict[str, Any]) -> SearchOptions:
+    for key, value in func_args.items():
+        if key == "hotel_id":
+            if options.filter:
+                options.filter.equal_to("hotel_id", value)
+            else:
+                options.filter = VectorSearchFilter.equal_to("hotel_id", value)
+    return options
+
+
+plugin = kernel.add_functions(
     plugin_name="azure_ai_search",
-    functions={
-        "search": {
-            "search_function": "search",
-            "description": "A hotel search engine, allows searching for hotels in specific cities, "
+    functions=[
+        store.create_kernel_function(
+            search_function="get_search_result",
+            description="A hotel search engine, allows searching for hotels in specific cities, "
             "you do not have to specify that you are searching for hotels, for all, use `*`.",
-            "options": VectorSearchOptions(
-                search_filters=[
-                    FilterClause(field_name="address/city", value=None, clause_type="equality"),
-                    FilterClause(field_name=None, value="address/country eq '{{$country}}'", clause_type="prompt"),
-                ],
+            options=VectorSearchOptions(
+                filter=VectorSearchFilter.equal_to("address/country", "USA"),
+                select_fields=["hotel_id", "description", "address", "tags", "rating", "category"],
             ),
-            "parameters": [
+            parameters=[
                 KernelParameterMetadata(
-                    name="query",
-                    description="What to search for.",
-                    type="str",
-                    is_required=True,
-                    type_object=str,
+                    name="query", description="What to search for.", type="str", is_required=True, type_object=str
                 ),
                 KernelParameterMetadata(
                     name="city",
@@ -119,31 +178,18 @@ plugin = kernel.add_plugin_from_search(
                     default_value=2,
                     type_object=int,
                 ),
-                KernelParameterMetadata(
-                    name="country",
-                    description="The country to search in, three letter country code in all caps.",
-                    type="str",
-                    is_required=False,
-                    type_object=str,
-                    default_value="USA",
-                    function_schema_include=False,
-                ),
             ],
-            "map_function": lambda x: f"hotel_id: {x.hotel_id}. description: '{x.description}', "
-            f"address: {x.address}, tags: {x.tags}, rating: {x.rating}, category: {x.category}",
-            "parameter_to_filter_value_map": {"city": "address/city"},
-        },
-        "get_details": {
-            "search_function": "get_search_result",
-            "description": "Get details about a hotel, by ID, use the overview function to get the ID.",
-            "options": VectorSearchOptions(
+            update_options_function=update_options_search,
+        ),
+        store.create_kernel_function(
+            search_function="get_search_result",
+            function_name="get_details",
+            description="Get details about a hotel, by ID, use the overview function to get the ID.",
+            options=VectorSearchOptions(
                 query="*",
-                search_filters=[
-                    FilterClause(field_name="hotel_id", value=None, clause_type="equality"),
-                ],
                 count=1,
             ),
-            "parameters": [
+            parameters=[
                 KernelParameterMetadata(
                     name="hotel_id",
                     description="The hotel ID to get details for.",
@@ -152,9 +198,22 @@ plugin = kernel.add_plugin_from_search(
                     type_object=str,
                 )
             ],
-        },
-    },
+            update_options_function=update_options_details,
+        ),
+    ],
 )
+
+#             # "dynamic_filters": [
+#             #     DynamicFilterClause(field_name="address/city", parameter_name="city", clause_type="equality"),
+#             #     DynamicFilterClause(
+#             #         field_name="address/country",
+#             #         parameter_name="country",
+#             #         clause_type="direct",
+#             #         function=lambda x: f"address/country eq '{x}'",
+#             #     ),
+#             # ],
+
+
 chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
     plugin_name="ChatBot",
@@ -165,7 +224,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}),
+    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]}),
 )
 
 history = ChatHistory()
@@ -212,7 +271,7 @@ async def chat() -> bool:
         return False
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
-    arguments["country"] = "usa"
+    arguments["country"] = "USA"
     result = await kernel.invoke(chat_function, arguments=arguments)
     print(f"Mosscap:> {result}")
     history.add_user_message(user_input)

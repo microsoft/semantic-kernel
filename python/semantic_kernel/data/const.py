@@ -2,6 +2,7 @@
 
 
 from enum import Enum
+from typing import Final
 
 
 class IndexKind(str, Enum):
@@ -37,3 +38,9 @@ class VectorSearchQueryTypes(str, Enum):
     VECTORIZABLE_TEXT_SEARCH_QUERY = "vectorizable_text_search_query"
     HYBRID_TEXT_VECTORIZED_SEARCH_QUERY = "hybrid_text_vectorized_search_query"
     HYBRID_VECTORIZABLE_TEXT_SEARCH_QUERY = "hybrid_vectorizable_text_search_query"
+
+
+DEFAULT_DESCRIPTION: Final[str] = (
+    "Perform a search for content related to the specified query and return string results"
+)
+DEFAULT_COUNT: Final[int] = 5

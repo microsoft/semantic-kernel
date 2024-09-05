@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from semantic_kernel.search.text_search import TextSearch
-from semantic_kernel.search.text_search_options import TextSearchOptions
+from semantic_kernel.data.text_search import TextSearch
+from semantic_kernel.data.text_search_options import TextSearchOptions
 
 
 class KernelSearchExtension:

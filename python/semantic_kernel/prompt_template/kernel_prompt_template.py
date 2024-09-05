@@ -142,8 +142,10 @@ class KernelPromptTemplate(PromptTemplateBase):
 
         """
         from semantic_kernel import Kernel
+        from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
 
         blocks = TemplateTokenizer.tokenize(template)
-        if any(isinstance(block, CodeBlock) for block in blocks):
+        if any(isinstance(block, CodeRenderer) for block in blocks):
             raise ValueError("Quick render does not support code blocks.")
-        return "".join([block.render(Kernel(), arguments) for block in blocks])
+        kernel = Kernel()
+        return "".join([block.render(kernel, arguments) for block in blocks])

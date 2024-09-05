@@ -12,25 +12,31 @@ from semantic_kernel.connectors.ai.open_ai import (
 )
 from semantic_kernel.connectors.search.bing.bing_search import BingSearch
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.data.filters.text_search_filter import TextSearchFilter
+from semantic_kernel.data.text_search_options import TextSearchOptions
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.search.filter_clause import FilterClause
-from semantic_kernel.search.text_search_options import TextSearchOptions
 
 kernel = Kernel()
 service_id = "chat"
 kernel.add_service(OpenAIChatCompletion(service_id=service_id))
-connector = BingSearch()
 
-plugin = connector.create_plugin(
+kernel.add_functions(
     plugin_name="bing",
-    options=TextSearchOptions(
-        search_filters=[FilterClause(field_name="site", value="devblogs.microsoft.com", clause_type="equality")],
-        count=4,
-    ),
+    functions=[
+        BingSearch().create_kernel_function(
+            search_function="get_text_search_results",
+            description="Get details about Semantic Kernel concepts.",
+            options=TextSearchOptions(
+                filter=TextSearchFilter.equal_to(
+                    "site", "https://github.com/microsoft/semantic-kernel/tree/main/python"
+                ),
+                count=6,
+            ),
+        )
+    ],
 )
-kernel.add_plugin(plugin)
 chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
     plugin_name="ChatBot",
@@ -46,12 +52,8 @@ execution_settings = OpenAIChatPromptExecutionSettings(
 
 history = ChatHistory()
 system_message = """
-You are a chat bot. Your name is Mosscap and
-you have one goal: figure out what people need.
-Your full name, should you need to know it, is
-Splendid Speckled Mosscap. You communicate
-effectively, but you tend to answer with long
-flowery prose.
+You are a chat bot, specialized in Semantic Kernel, Microsoft LLM orchestration SDK.
+Assume questions are related to that, and use the Bing search plugin to find answers.
 """
 history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
@@ -72,8 +74,8 @@ async def log_bing_filter(context: FunctionInvocationContext, next: Coroutine[Fu
             print(f'  Skip: "{context.arguments["skip"]}"')
         await next(context)
         print("Bing search completed.")
-        print("  raw results:")
-        print(f"    {context.result}")
+        # print("  raw results:")
+        # print(f"    {context.result}")
     else:
         await next(context)
 
