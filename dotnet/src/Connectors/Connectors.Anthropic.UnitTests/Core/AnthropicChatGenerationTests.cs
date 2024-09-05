@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Anthropic;
 using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
+using Microsoft.SemanticKernel.Connectors.Anthropic.Core.Models;
 using Microsoft.SemanticKernel.Http;
 using Xunit;
 
