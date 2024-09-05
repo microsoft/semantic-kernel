@@ -599,7 +599,6 @@ internal static class AssistantThreadActions
 
                 FunctionCallContent content = new(nameParts.Name, nameParts.PluginName, toolCall.ToolCallId, functionArguments);
 
-                //functionSteps.Add(toolCall.ToolCallId, content);
 
                 yield return content;
             }
