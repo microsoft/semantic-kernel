@@ -18,7 +18,7 @@ namespace SemanticKernel.IntegrationTests.Agents;
 public sealed class OpenAIAssistantAgentTests
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .AddUserSecrets<OpenAIAssistantAgentTests>()
@@ -37,7 +37,7 @@ public sealed class OpenAIAssistantAgentTests
 
         await this.ExecuteAgentAsync(
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
-            openAISettings.ModelId,
+            openAISettings.ChatModelId!,
             input,
             expectedAnswerContains);
     }
@@ -46,7 +46,7 @@ public sealed class OpenAIAssistantAgentTests
     /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Theory/*(Skip = "No supported endpoint configured.")*/]
+    [Theory]
     [InlineData("What is the special soup?", "Clam Chowder")]
     public async Task AzureOpenAIAssistantAgentAsync(string input, string expectedAnswerContains)
     {
@@ -81,18 +81,25 @@ public sealed class OpenAIAssistantAgentTests
                     Instructions = "Answer questions about the menu.",
                 });
 
-        AgentGroupChat chat = new();
-        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
-
-        // Act
-        StringBuilder builder = new();
-        await foreach (var message in chat.InvokeAsync(agent))
+        try
         {
-            builder.Append(message.Content);
-        }
+            AgentGroupChat chat = new();
+            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
 
-        // Assert
-        Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
+            // Act
+            StringBuilder builder = new();
+            await foreach (var message in chat.InvokeAsync(agent))
+            {
+                builder.Append(message.Content);
+            }
+
+            // Assert
+            Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            await agent.DeleteAsync();
+        }
     }
 
     public sealed class MenuPlugin
