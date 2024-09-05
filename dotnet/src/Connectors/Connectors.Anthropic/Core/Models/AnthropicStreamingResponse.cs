@@ -16,31 +16,33 @@ internal sealed class AnthropicStreamingResponse
     /// SSE data type.
     /// </summary>
     [JsonRequired]
-    internal string Type { get; init; } = null!;
+    [JsonPropertyName("type")]
+    public string Type { get; init; } = null!;
 
     /// <summary>
     /// Response message, only if the type is "message_start", otherwise null.
     /// </summary>
     [JsonPropertyName("message")]
-    internal AnthropicResponse? Response { get; init; }
+    public AnthropicResponse? Response { get; init; }
 
     /// <summary>
     /// Index of a message.
     /// </summary>
-    internal int Index { get; init; }
+    [JsonPropertyName("index")]
+    public int Index { get; init; }
 
-#pragma warning disable CS0649 // Field is assigned via JsonSerializer
     [JsonPropertyName("content_block")]
-    private readonly AnthropicContent? _contentBlock;
+    [JsonInclude]
+    private AnthropicContent? _contentBlock;
 
     [JsonPropertyName("delta")]
-    private readonly JsonNode? _delta;
-#pragma warning restore CS0649
+    [JsonInclude]
+    private JsonNode? _delta;
 
     /// <summary>
     /// Delta of anthropic content, only if the type is "content_block_start" or "content_block_delta", otherwise null.
     /// </summary>
-    internal AnthropicContent? ContentDelta =>
+    public AnthropicContent? ContentDelta =>
         this.Type switch
         {
             "content_block_start" => this._contentBlock,
@@ -51,17 +53,17 @@ internal sealed class AnthropicStreamingResponse
     /// <summary>
     /// Usage metadata, only if the type is "message_delta", otherwise null.
     /// </summary>
-    internal AnthropicUsage? Usage { get; init; }
+    public AnthropicUsage? Usage { get; init; }
 
     /// <summary>
     /// Stop reason metadata, only if the type is "message_delta", otherwise null.
     /// </summary>
-    internal StopDelta? StopMetadata { get; init; }
+    public StopDelta? StopMetadata { get; init; }
 
     /// <summary>
     /// Represents the reason that message streaming stopped.
     /// </summary>
-    internal sealed class StopDelta
+    public sealed class StopDelta
     {
         /// <summary>
         /// The reason that we stopped.
