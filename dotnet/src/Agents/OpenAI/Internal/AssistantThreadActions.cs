@@ -409,7 +409,6 @@ internal static class AssistantThreadActions
             {
                 IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run).ConfigureAwait(false);
 
-
                 // Execute functions in parallel and post results at once.
                 FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
                 if (functionCalls.Length > 0)
@@ -598,7 +597,6 @@ internal static class AssistantThreadActions
                 (FunctionName nameParts, KernelArguments functionArguments) = ParseFunctionCall(toolCall.FunctionName, toolCall.FunctionArguments);
 
                 FunctionCallContent content = new(nameParts.Name, nameParts.PluginName, toolCall.ToolCallId, functionArguments);
-
 
                 yield return content;
             }
