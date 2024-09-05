@@ -113,41 +113,6 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
     }
 
-    // Local function to invoke agent and display the conversation messages.
-    private async Task InvokeAgentAsync(ChatCompletionAgent agent, ChatHistory chat, string input)
-    {
-        ChatMessageContent message = new(AuthorRole.User, input);
-        chat.Add(message);
-        this.WriteAgentChatMessage(message);
-
-        int historyCount = chat.Count;
-
-        bool isFirst = false;
-        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(chat))
-        {
-            if (string.IsNullOrEmpty(response.Content))
-            {
-                continue;
-            }
-
-            if (!isFirst)
-            {
-                Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");
-                isFirst = true;
-            }
-
-            Console.WriteLine($"\t > streamed: '{response.Content}'");
-        }
-
-        if (historyCount <= chat.Count)
-        {
-            for (int index = historyCount; index < chat.Count; index++)
-            {
-                this.WriteAgentChatMessage(chat[index]);
-            }
-        }
-    }
-
     private sealed class ApprovalTerminationStrategy : TerminationStrategy
     {
         // Terminate when the final message contains the term "approve"
