@@ -61,6 +61,19 @@ public class VolatileVectorStoreTests
         Assert.Equal(new[] { "collection1", "collection2" }, collectionNamesList);
     }
 
+    [Fact]
+    public async Task GetCollectionDoesNotAllowADifferentDataTypeThanPreviouslyUsedAsync()
+    {
+        // Arrange.
+        var sut = new VolatileVectorStore();
+        var stringKeyCollection = sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName);
+        await stringKeyCollection.CreateCollectionAsync();
+
+        // Act and assert.
+        var exception = Assert.Throws<InvalidOperationException>(() => sut.GetCollection<string, SecondModel>(TestCollectionName));
+        Assert.Equal($"Collection '{TestCollectionName}' already exists and with data type 'SinglePropsModel`1' so cannot be re-created with data type 'SecondModel'.", exception.Message);
+    }
+
     public sealed class SinglePropsModel<TKey>
     {
         [VectorStoreRecordKey]
@@ -73,5 +86,14 @@ public class VolatileVectorStoreTests
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }
+    }
+
+    public sealed class SecondModel
+    {
+        [VectorStoreRecordKey]
+        public required int Key { get; set; }
+
+        [VectorStoreRecordData]
+        public string Data { get; set; } = string.Empty;
     }
 }
