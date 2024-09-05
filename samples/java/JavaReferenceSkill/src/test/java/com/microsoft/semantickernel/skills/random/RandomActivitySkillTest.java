@@ -10,17 +10,17 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import io.grpc.stub.StreamObserver;
 import io.grpc.testing.GrpcServerRule;
-
 import reference_skill.ActivityOuterClass.GetRandomActivityRequest;
-
-
 import reference_skill.ActivityOuterClass.GetRandomActivityResponse;
 
 // import reference_skill.RandomActivitySkillGrpc.RandomActivitySkillBlockingStub; // Remove the unused import statement
@@ -37,10 +37,13 @@ public class RandomActivitySkillTest {
         grpcServerRule.getServiceRegistry().addService(new RandomActivitySkill());
     }
 
+    /**
+     * @throws Exception
+     */
     @Test
     public void testGetRandomActivity() throws Exception {
         HttpClient httpClient = mock(HttpClient.class);
-        HttpResponse<String> httpResponse = mock(HttpResponse.class, Mockito.withSettings().defaultAnswer(Mockito.RETURNS_DEEP_STUBS));
+        HttpResponse<String> httpResponse = mock(HttpResponse.class, Mockito.<String>withSettings().defaultAnswer(Mockito.RETURNS_DEEP_STUBS));
         CompletableFuture<HttpResponse<String>> responseFuture = CompletableFuture.completedFuture(httpResponse);
 
         extracted(httpClient, responseFuture);
@@ -56,6 +59,31 @@ public class RandomActivitySkillTest {
 
         verify(responseObserver).onNext(any(GetRandomActivityResponse.class));
         verify(responseObserver).onCompleted();
+    }
+
+    @Test
+    public void testName() {
+        
+    }
+
+    @BeforeClass
+    public static void beforeClass() {
+        
+    }
+
+    @Before
+    public void setUp2() {
+        
+    }
+
+    @After
+    public void tearDown() {
+        
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        
     }
 
     private void extracted(HttpClient httpClient, CompletableFuture<HttpResponse<String>> responseFuture) {
