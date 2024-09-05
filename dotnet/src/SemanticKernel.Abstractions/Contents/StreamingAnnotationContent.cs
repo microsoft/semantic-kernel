@@ -34,7 +34,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     public int EndIndex { get; init; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AnnotationContent"/> class.
+    /// Initializes a new instance of the <see cref="StreamingAnnotationContent"/> class.
     /// </summary>
     [JsonConstructor]
     public StreamingAnnotationContent()
