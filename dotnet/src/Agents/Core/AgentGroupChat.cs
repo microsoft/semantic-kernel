@@ -156,7 +156,7 @@ public sealed class AgentGroupChat : AgentChat
     /// <returns>Asynchronous enumeration of messages.</returns>
     /// <remark>
     /// Specified agent joins the chat.
-    /// </remark>>
+    /// </remark>
     public async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
