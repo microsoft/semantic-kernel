@@ -58,7 +58,7 @@ internal sealed class AnthropicStreamingResponse
     /// <summary>
     /// Stop reason metadata, only if the type is "message_delta", otherwise null.
     /// </summary>
-    public StopDelta? StopMetadata { get; init; }
+    public StopDelta? StopMetadata => this.Type == "message_delta" ? this._delta?.Deserialize<StopDelta>() : null;
 
     /// <summary>
     /// Represents the reason that message streaming stopped.
