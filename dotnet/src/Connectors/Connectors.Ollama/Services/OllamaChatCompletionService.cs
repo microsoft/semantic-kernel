@@ -61,7 +61,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         CancellationToken cancellationToken = default)
     {
         var settings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        var request = CreateRequest(chatHistory, settings, this._client.SelectedModel);
+        var request = CreateChatRequest(chatHistory, settings, this._client.SelectedModel);
         var chatMessageContent = new ChatMessageContent();
         var fullContent = new StringBuilder();
         string? modelId = null;
@@ -105,7 +105,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var settings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        var request = CreateRequest(chatHistory, settings, this._client.SelectedModel);
+        var request = CreateChatRequest(chatHistory, settings, this._client.SelectedModel);
 
         await foreach (var message in this._client.Chat(request, cancellationToken).ConfigureAwait(false))
         {
@@ -128,7 +128,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         _ => new AuthorRole(role.ToString())
     };
 
-    private static ChatRequest CreateRequest(ChatHistory chatHistory, OllamaPromptExecutionSettings settings, string selectedModel)
+    private static ChatRequest CreateChatRequest(ChatHistory chatHistory, OllamaPromptExecutionSettings settings, string selectedModel)
     {
         var messages = new List<Message>();
         foreach (var chatHistoryMessage in chatHistory)
@@ -148,7 +148,13 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
 
         var request = new ChatRequest
         {
-            Options = settings.RequestOptions,
+            Options = new()
+            {
+                Temperature = settings.Temperature,
+                TopP = settings.TopP,
+                TopK = settings.TopK,
+                Stop = settings.Stop?.ToArray()
+            },
             Messages = messages,
             Model = selectedModel,
             Stream = true

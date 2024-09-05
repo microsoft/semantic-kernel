@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using Microsoft.SemanticKernel.TextGeneration;
 using OllamaSharp;
 using OllamaSharp.Models;
-using OllamaSharp.Models.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
@@ -110,7 +109,13 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
     {
         var request = new GenerateRequest
         {
-            Options = settings.RequestOptions,
+            Options = new()
+            {
+                Temperature = settings.Temperature,
+                TopP = settings.TopP,
+                TopK = settings.TopK,
+                Stop = settings.Stop?.ToArray()
+            },
             Model = selectedModel,
             Stream = true
         };
