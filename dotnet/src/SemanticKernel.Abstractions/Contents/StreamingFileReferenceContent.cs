@@ -25,7 +25,7 @@ public class StreamingFileReferenceContent : StreamingKernelContent
     { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FileReferenceContent"/> class.
+    /// Initializes a new instance of the <see cref="StreamingFileReferenceContent"/> class.
     /// </summary>
     /// <param name="fileId">The identifier of the referenced file.</param>
     /// <param name="modelId">The model ID used to generate the content.</param>
