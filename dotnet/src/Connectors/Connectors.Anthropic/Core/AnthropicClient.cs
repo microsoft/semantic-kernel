@@ -236,51 +236,46 @@ internal sealed class AnthropicClient
             AnthropicResponse? lastAnthropicResponse = null;
             await foreach (var streamingResponse in SseJsonParser.ParseAsync<AnthropicStreamingResponse>(responseStream, cancellationToken).ConfigureAwait(false))
             {
-                if (streamingResponse.Type == "message_start")
+                string? content = null;
+                AnthropicMetadata? metadata = null;
+                switch (streamingResponse.Type)
                 {
-                    Verify.NotNull(streamingResponse.Response);
-                    lastAnthropicResponse = streamingResponse.Response;
-                    var streamingChatMessageContent = new AnthropicStreamingChatMessageContent(
-                        role: lastAnthropicResponse.Role,
-                        content: string.Empty,
-                        innerContent: lastAnthropicResponse,
-                        modelId: lastAnthropicResponse.ModelId ?? this._modelId,
-                        choiceIndex: streamingResponse.Index,
-                        metadata: GetResponseMetadata(lastAnthropicResponse));
-                    chatResponses.Add(streamingChatMessageContent);
-                    yield return streamingChatMessageContent;
+                    case "message_start":
+                        Verify.NotNull(streamingResponse.Response);
+                        lastAnthropicResponse = streamingResponse.Response;
+                        metadata = GetResponseMetadata(lastAnthropicResponse);
+                        content = string.Empty;
+                        break;
+                    case "content_block_start" or "content_block_delta":
+                        content = streamingResponse.ContentDelta?.Text ?? string.Empty;
+                        break;
+                    case "message_delta":
+                        Verify.NotNull(lastAnthropicResponse);
+                        metadata = GetResponseMetadata(streamingResponse, lastAnthropicResponse);
+                        content = string.Empty;
+                        break;
+                    case "message_stop":
+                        lastAnthropicResponse = null;
+                        break;
                 }
-                else if (streamingResponse.Type is "content_block_start" or "content_block_delta")
+
+                if (lastAnthropicResponse is null || content is null)
                 {
-                    Verify.NotNull(lastAnthropicResponse);
-                    var streamingChatMessageContent = new AnthropicStreamingChatMessageContent(
-                        role: lastAnthropicResponse.Role,
-                        content: streamingResponse.ContentDelta?.Text ?? string.Empty,
-                        innerContent: lastAnthropicResponse,
-                        modelId: lastAnthropicResponse.ModelId ?? this._modelId,
-                        choiceIndex: streamingResponse.Index,
-                        metadata: null);
-                    chatResponses.Add(streamingChatMessageContent);
-                    yield return streamingChatMessageContent;
+                    continue;
                 }
-                else if (streamingResponse.Type is "message_delta")
-                {
-                    Verify.NotNull(lastAnthropicResponse);
-                    var streamingChatMessageContent = new AnthropicStreamingChatMessageContent(
-                        role: lastAnthropicResponse.Role,
-                        content: string.Empty,
-                        innerContent: lastAnthropicResponse,
-                        modelId: lastAnthropicResponse.ModelId ?? this._modelId,
-                        choiceIndex: streamingResponse.Index,
-                        metadata: GetResponseMetadata(streamingResponse, lastAnthropicResponse));
-                    chatResponses.Add(streamingChatMessageContent);
-                    yield return streamingChatMessageContent;
-                }
-                else if (streamingResponse.Type is "message_stop")
-                {
-                    lastAnthropicResponse = null;
-                }
+
+                var streamingChatMessageContent = new AnthropicStreamingChatMessageContent(
+                    role: lastAnthropicResponse.Role,
+                    content: content,
+                    innerContent: lastAnthropicResponse,
+                    modelId: lastAnthropicResponse.ModelId ?? this._modelId,
+                    choiceIndex: streamingResponse.Index,
+                    metadata: metadata);
+                chatResponses.Add(streamingChatMessageContent);
+                yield return streamingChatMessageContent;
             }
+
+            activity?.EndStreaming(chatResponses);
         }
         finally
         {
@@ -288,8 +283,6 @@ internal sealed class AnthropicClient
             httpResponseMessage?.Dispose();
             responseStream?.Dispose();
         }
-
-        activity?.EndStreaming(chatResponses);
     }
 
     private List<AnthropicChatMessageContent> GetChatResponseFrom(AnthropicResponse response)
