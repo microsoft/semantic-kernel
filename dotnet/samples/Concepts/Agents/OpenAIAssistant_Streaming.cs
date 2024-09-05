@@ -8,8 +8,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Agents;
 
 /// <summary>
-/// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
-/// eliciting its response to three explicit user messages.
+/// Demonstrate consuming "streaming" message for <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
 public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTest(output)
 {
