@@ -409,7 +409,6 @@ internal static class AssistantThreadActions
             {
                 IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run).ConfigureAwait(false);
 
-                //logger.LogOpenAIAssistantProcessingRunSteps(nameof(InvokeAsync), run.Id, threadId);
 
                 // Execute functions in parallel and post results at once.
                 FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
