@@ -83,7 +83,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
 
         // Act
         var result = await service.GetTextContentsAsync(
-            new AudioContent(new BinaryData("data"))
+            new AudioContent(new BinaryData("data").ToMemory(), null)
         ).ConfigureAwait(true);
 
         // Assert
@@ -128,7 +128,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         // Act & Assert
         await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.GetTextContentsAsync(
-                new AudioContent(new BinaryData("data"))
+                new AudioContent(new BinaryData("data").ToMemory(), null)
             ).ConfigureAwait(true)
         ).ConfigureAwait(true);
     }
@@ -157,7 +157,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         // Act & Assert
         await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.GetTextContentsAsync(
-                new AudioContent(new BinaryData("data"))
+                new AudioContent(new BinaryData("data").ToMemory(), null)
             ).ConfigureAwait(true)
         ).ConfigureAwait(true);
     }
