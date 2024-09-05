@@ -96,7 +96,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         ]);
 
         // Create execution settings with manual function calling
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) };
 
         // Create chat history with initial user question
         ChatHistory chatHistory = new();
