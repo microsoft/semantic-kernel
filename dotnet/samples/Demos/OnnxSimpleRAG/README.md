@@ -25,7 +25,7 @@ In this example we setup two ONNX AI Services:
 
 ### Downloading the Models
 
-For this example we chose Hugging Face as our repository for download of the local models, go to a diretory of your choice where the models should be downloaded and run the following commands:
+For this example we chose Hugging Face as our repository for download of the local models, go to a directory of your choice where the models should be downloaded and run the following commands:
 
 ```powershell
 git clone https://huggingface.co/TaylorAI/bge-micro-v2
