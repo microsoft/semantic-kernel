@@ -18,7 +18,7 @@ public class StreamingFileReferenceContent : StreamingKernelContent
     public string FileId { get; init; } = string.Empty;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FileReferenceContent"/> class.
+    /// Initializes a new instance of the <see cref="StreamingFileReferenceContent"/> class.
     /// </summary>
     [JsonConstructor]
     public StreamingFileReferenceContent()
