@@ -37,6 +37,23 @@ public sealed class AnthropicChatStreamingTests : IDisposable
     }
 
     [Fact]
+    public async Task ShouldSetStreamTrueInRequestContentAsync()
+    {
+        // Arrange
+        string modelId = "fake-model234";
+        var client = this.CreateChatCompletionClient(modelId: modelId);
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
+
+        // Assert
+        AnthropicRequest? request = JsonSerializer.Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(request);
+        Assert.True(request.Stream);
+    }
+
+    [Fact]
     public async Task ShouldPassModelIdToRequestContentAsync()
     {
         // Arrange
