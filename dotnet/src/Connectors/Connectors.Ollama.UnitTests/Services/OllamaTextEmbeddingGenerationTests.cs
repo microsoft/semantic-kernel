@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -20,7 +21,7 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
     public OllamaTextEmbeddingGenerationTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(OllamaTestHelper.GetTestResponse("embeddings_test_response.json"));
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(File.ReadAllText("TestData/embeddings_test_response.json"));
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
 

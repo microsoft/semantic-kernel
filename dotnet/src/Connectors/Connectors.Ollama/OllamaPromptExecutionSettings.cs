@@ -111,7 +111,7 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
-    #region private ================================================================================
+    #region private
 
     private List<string>? _stop;
     private float? _temperature;

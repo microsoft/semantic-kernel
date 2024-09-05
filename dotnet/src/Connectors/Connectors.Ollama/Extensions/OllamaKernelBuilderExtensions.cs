@@ -17,6 +17,8 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class OllamaKernelBuilderExtensions
 {
+    #region Text Generation
+
     /// <summary>
     /// Add Ollama Text Generation service to the kernel builder.
     /// </summary>
@@ -67,6 +69,10 @@ public static class OllamaKernelBuilderExtensions
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return builder;
     }
+
+    #endregion
+
+    #region Chat Completion
 
     /// <summary>
     /// Add Ollama Chat Completion service to the kernel builder.
@@ -122,6 +128,10 @@ public static class OllamaKernelBuilderExtensions
         return builder;
     }
 
+    #endregion
+
+    #region Text Embeddings
+
     /// <summary>
     /// Add Ollama Text Embeddings Generation service to the kernel builder.
     /// </summary>
@@ -165,4 +175,6 @@ public static class OllamaKernelBuilderExtensions
 
         return builder;
     }
+
+    #endregion
 }

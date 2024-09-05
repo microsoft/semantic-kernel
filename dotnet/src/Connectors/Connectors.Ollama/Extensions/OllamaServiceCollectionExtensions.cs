@@ -18,6 +18,8 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class OllamaServiceCollectionExtensions
 {
+    #region Text Generation
+
     /// <summary>
     /// Add Ollama Text Generation service to the specified service collection.
     /// </summary>
@@ -64,6 +66,10 @@ public static class OllamaServiceCollectionExtensions
                 ollamaClient: ollamaClient,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
+
+    #endregion
+
+    #region Chat Completion
 
     /// <summary>
     /// Add Ollama Chat Completion and Text Generation services to the specified service collection.
@@ -114,6 +120,10 @@ public static class OllamaServiceCollectionExtensions
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 
+    #endregion
+
+    #region Text Embeddings
+
     /// <summary>
     /// Add Ollama Text Embedding Generation services to the kernel builder.
     /// </summary>
@@ -162,4 +172,6 @@ public static class OllamaServiceCollectionExtensions
                 ollamaClient: ollamaClient,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
+
+    #endregion
 }
