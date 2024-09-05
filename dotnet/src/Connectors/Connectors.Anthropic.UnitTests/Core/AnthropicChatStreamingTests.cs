@@ -264,8 +264,10 @@ public sealed class AnthropicChatStreamingTests : IDisposable
     public async Task ShouldPassVersionToRequestBodyIfCustomHandlerUsedAsync()
     {
         // Arrange
-        var options = new AnthropicClientOptions();
-        var client = new AnthropicClient("fake-model", "api-key", options: new(), httpClient: this._httpClient);
+        var options = new AmazonBedrockAnthropicClientOptions();
+        var client = new AnthropicClient("fake-model", new Uri("https://fake-uri.com"),
+            bearerTokenProvider: () => ValueTask.FromResult("fake-token"),
+            options: options, httpClient: this._httpClient);
 
         var chatHistory = CreateSampleChatHistory();
 
