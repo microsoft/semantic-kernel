@@ -1,9 +1,42 @@
 {
   "version": "0.2.0",
   "configurations": [
-  
-    
+  {
+    "name": ".NET Core Attach",
+    "type": "coreclr",
+    "request": "attach"
+  },
+    {
+      "name": "Python Debugger: Flask",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+        "FLASK_APP": "app.py",
+        "FLASK_DEBUG": "1"
+      },
+      "args": [
+        "run",
+        "--no-debugger",
+        "--no-reload"
+      ],
 
+
+    },
+    {
+      "name": "Python Debugger: Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "com.microsoft.semantickernel.skills.random.Main",
+      "projectName": "JavaReferenceSkill"
+    },
     {
       "name": "Python Debugger: Current File",
       "type": "debugpy",

@@ -21,7 +21,8 @@
 				"GitHub.copilot",
 				"franneck94.c-cpp-runner",
 				"ms-python.debugpy",
-				"atariq11700.debugpy-old"
+				"atariq11700.debugpy-old",
+				"ms-vscode.powershell"
 			]
 		}
 	},

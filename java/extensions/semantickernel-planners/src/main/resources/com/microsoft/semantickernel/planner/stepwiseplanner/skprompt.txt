@@ -7,7 +7,7 @@ The function definitions below are in the following format:
  - <parameterName>: <parameterDescription>
  - ...
 
-{{$functionDescriptions}}
+{{$functionDescriptions}} = "This variable contains the descriptions of available functions.";
 [END AVAILABLE FUNCTIONS]
 
 [USAGE INSTRUCTIONS]
