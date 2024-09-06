@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace ChatCompletion;
 
-public sealed class Anthropic_ChatCompletionStream(ITestOutputHelper output) : BaseTest(output)
+public sealed class Anthropic_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task SampleAsync()
@@ -16,11 +16,8 @@ public sealed class Anthropic_ChatCompletionStream(ITestOutputHelper output) : B
         string apiKey = TestConfiguration.AnthropicAI.ApiKey;
         string modelId = TestConfiguration.AnthropicAI.ModelId;
 
-        if (apiKey is null || modelId is null)
-        {
-            Console.WriteLine("Anthropic credentials not found. Skipping example.");
-            return;
-        }
+        Assert.NotNull(apiKey);
+        Assert.NotNull(modelId);
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddAnthropicChatCompletion(

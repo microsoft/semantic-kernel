@@ -15,11 +15,8 @@ public sealed class Anthropic_ChatCompletion(ITestOutputHelper output) : BaseTes
         string apiKey = TestConfiguration.AnthropicAI.ApiKey;
         string modelId = TestConfiguration.AnthropicAI.ModelId;
 
-        if (apiKey is null || modelId is null)
-        {
-            Console.WriteLine("Anthropic credentials not found. Skipping example.");
-            return;
-        }
+        Assert.NotNull(apiKey);
+        Assert.NotNull(modelId);
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddAnthropicChatCompletion(
