@@ -24,6 +24,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class QdrantMemoryStore(MemoryStoreBase):
+    """QdrantMemoryStore."""
+
     _qdrantclient: QdrantClient
 
     def __init__(

@@ -48,6 +48,11 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     public KernelFunction Function { get; } = function;
 
     /// <summary>
+    /// When set, will use <see cref="SelectionStrategy.InitialAgent"/> in the event of a failure to select an agent.
+    /// </summary>
+    public bool UseInitialAgentAsFallback { get; init; }
+
+    /// <summary>
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
     /// </summary>
     public Kernel Kernel => kernel;
@@ -59,7 +64,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     public Func<FunctionResult, string> ResultParser { get; init; } = (result) => result.GetValue<string>() ?? string.Empty;
 
     /// <inheritdoc/>
-    public sealed override async Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+    protected sealed override async Task<Agent> SelectAgentAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =
@@ -76,13 +81,17 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
         this.Logger.LogKernelFunctionSelectionStrategyInvokedFunction(nameof(NextAsync), this.Function.PluginName, this.Function.Name, result.ValueType);
 
         string? agentName = this.ResultParser.Invoke(result);
-        if (string.IsNullOrEmpty(agentName))
+        if (string.IsNullOrEmpty(agentName) && (!this.UseInitialAgentAsFallback || this.InitialAgent == null))
         {
             throw new KernelException("Agent Failure - Strategy unable to determine next agent.");
         }
 
-        return
-            agents.FirstOrDefault(a => (a.Name ?? a.Id) == agentName) ??
-            throw new KernelException($"Agent Failure - Strategy unable to select next agent: {agentName}");
+        Agent? agent = agents.FirstOrDefault(a => (a.Name ?? a.Id) == agentName);
+        if (agent == null && this.UseInitialAgentAsFallback)
+        {
+            agent = this.InitialAgent;
+        }
+
+        return agent ?? throw new KernelException($"Agent Failure - Strategy unable to select next agent: {agentName}");
     }
 }
