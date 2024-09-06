@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Http;
 using MongoDB.Driver;
 using Moq;
 using Xunit;
@@ -21,7 +23,14 @@ public sealed class AzureCosmosDBMongoDBKernelBuilderExtensionsTests
     public void AddVectorStoreRegistersClass()
     {
         // Arrange
-        this._kernelBuilder.Services.AddSingleton<IMongoDatabase>(Mock.Of<IMongoDatabase>());
+        var mongoClientSettings = new MongoClientSettings();
+        var mongoClient = new Mock<IMongoClient>();
+        var databaseMock = new Mock<IMongoDatabase>();
+
+        mongoClient.SetupGet(c => c.Settings).Returns(mongoClientSettings);
+        databaseMock.SetupGet(d => d.Client).Returns(mongoClient.Object);
+
+        this._kernelBuilder.Services.AddSingleton<IMongoDatabase>(databaseMock.Object);
 
         // Act
         this._kernelBuilder.AddAzureCosmosDBMongoDBVectorStore();
@@ -32,5 +41,23 @@ public sealed class AzureCosmosDBMongoDBKernelBuilderExtensionsTests
         // Assert
         Assert.NotNull(vectorStore);
         Assert.IsType<AzureCosmosDBMongoDBVectorStore>(vectorStore);
+        Assert.Equal(HttpHeaderConstant.Values.UserAgent, mongoClientSettings.ApplicationName);
+    }
+
+    [Fact]
+    public void AddVectorStoreWithConnectionStringRegistersClass()
+    {
+        // Act
+        this._kernelBuilder.AddAzureCosmosDBMongoDBVectorStore("mongodb://localhost:27017", "mydb");
+
+        var kernel = this._kernelBuilder.Build();
+        var vectorStore = kernel.Services.GetRequiredService<IVectorStore>();
+
+        // Assert
+        Assert.NotNull(vectorStore);
+        Assert.IsType<AzureCosmosDBMongoDBVectorStore>(vectorStore);
+
+        var database = (IMongoDatabase)vectorStore.GetType().GetField("_mongoDatabase", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(vectorStore)!;
+        Assert.Equal(HttpHeaderConstant.Values.UserAgent, database.Client.Settings.ApplicationName);
     }
 }

@@ -3,6 +3,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Http;
 using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel;
@@ -34,6 +35,12 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
                 var database = sp.GetRequiredService<IMongoDatabase>();
                 var selectedOptions = options ?? sp.GetService<AzureCosmosDBMongoDBVectorStoreOptions>();
 
+                // Set the user agent string on the client (if not already set)
+                if (database.Client.Settings.ApplicationName == null)
+                {
+                    database.Client.Settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
+                }
+
                 return new AzureCosmosDBMongoDBVectorStore(database, options);
             });
 
@@ -64,6 +71,8 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
             (sp, obj) =>
             {
                 var settings = MongoClientSettings.FromConnectionString(connectionString);
+                settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
+
                 var mongoClient = new MongoClient(settings);
                 var database = mongoClient.GetDatabase(databaseName);
 
