@@ -140,7 +140,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         "ASSISTANT" => AuthorRole.Assistant,
         "SYSTEM" => AuthorRole.System,
         null => null,
-        _ => new AuthorRole(role.ToString())
+        _ => new AuthorRole(role.ToString()!)
     };
 
     private static ChatRequest CreateChatRequest(ChatHistory chatHistory, OllamaPromptExecutionSettings settings, string selectedModel)

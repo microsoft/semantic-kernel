@@ -21,7 +21,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
     public OllamaChatCompletionTests()
     {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
+        this._messageHandlerStub = new();
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
             Content = new StreamContent(File.OpenRead("TestData/chat_completion_test_response_stream.txt"))
@@ -71,7 +71,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task GetChatMessageContentsShouldHaveModelAndMetadataAsync()
+    public async Task GetChatMessageContentsShouldHaveModelAndInnerContentAsync()
     {
         //Arrange
         var sut = new OllamaChatCompletionService(

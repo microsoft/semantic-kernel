@@ -22,7 +22,7 @@ public sealed class OllamaTextGenerationTests : IDisposable
 
     public OllamaTextGenerationTests()
     {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
+        this._messageHandlerStub = new();
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
             Content = new StreamContent(File.OpenRead("TestData/text_generation_test_response_stream.txt"))

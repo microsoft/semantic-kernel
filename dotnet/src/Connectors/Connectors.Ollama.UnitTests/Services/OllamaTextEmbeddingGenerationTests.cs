@@ -18,7 +18,7 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
 
     public OllamaTextEmbeddingGenerationTests()
     {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
+        this._messageHandlerStub = new();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(File.ReadAllText("TestData/embeddings_test_response.json"));
         this._httpClient = new HttpClient(this._messageHandlerStub, false) { BaseAddress = new Uri("http://localhost:11434") };
     }
