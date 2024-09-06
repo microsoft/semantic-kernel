@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Connectors.Ollama;
 using OllamaSharp.Models;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Ollama.UnitTests;
+namespace SemanticKernel.Connectors.Ollama.UnitTests.Services;
 
 public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
 {

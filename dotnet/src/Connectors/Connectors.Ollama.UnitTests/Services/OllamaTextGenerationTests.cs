@@ -10,9 +10,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.TextGeneration;
 using OllamaSharp.Models;
+using OllamaSharp.Models.Chat;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Ollama.UnitTests;
+namespace SemanticKernel.Connectors.Ollama.UnitTests.Services;
 
 public sealed class OllamaTextGenerationTests : IDisposable
 {
@@ -79,6 +80,14 @@ public sealed class OllamaTextGenerationTests : IDisposable
         var textContent = await sut.GetTextContentAsync("Any prompt");
 
         // Assert
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.NotNull(requestPayload.Options);
+        Assert.Null(requestPayload.Options.Stop);
+        Assert.Null(requestPayload.Options.Temperature);
+        Assert.Null(requestPayload.Options.TopK);
+        Assert.Null(requestPayload.Options.TopP);
+
         Assert.NotNull(textContent.ModelId);
         Assert.Equal(expectedModel, textContent.ModelId);
     }
@@ -100,8 +109,81 @@ public sealed class OllamaTextGenerationTests : IDisposable
         }
 
         // Assert
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.NotNull(requestPayload.Options);
+        Assert.Null(requestPayload.Options.Stop);
+        Assert.Null(requestPayload.Options.Temperature);
+        Assert.Null(requestPayload.Options.TopK);
+        Assert.Null(requestPayload.Options.TopP);
+
         Assert.NotNull(lastTextContent!.ModelId);
         Assert.Equal(expectedModel, lastTextContent.ModelId);
+    }
+
+    [Fact]
+    public async Task GetStreamingTextContentsExecutionSettingsMustBeSentAsync()
+    {
+        //Arrange
+        var sut = new OllamaTextGenerationService(
+            "fake-model",
+            httpClient: this._httpClient);
+
+        string jsonSettings = """
+                                {
+                                    "stop": ["stop me"],
+                                    "temperature": 0.5,
+                                    "top_p": 0.9,
+                                    "top_k": 100
+                                }
+                                """;
+
+        var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(jsonSettings);
+        var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
+
+        // Act
+        await sut.GetStreamingTextContentsAsync("Any prompt", ollamaExecutionSettings).GetAsyncEnumerator().MoveNextAsync();
+
+        // Assert
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.NotNull(requestPayload.Options);
+        Assert.Equal(ollamaExecutionSettings.Stop, requestPayload.Options.Stop);
+        Assert.Equal(ollamaExecutionSettings.Temperature, requestPayload.Options.Temperature);
+        Assert.Equal(ollamaExecutionSettings.TopP, requestPayload.Options.TopP);
+        Assert.Equal(ollamaExecutionSettings.TopK, requestPayload.Options.TopK);
+    }
+
+    [Fact]
+    public async Task GetTextContentsExecutionSettingsMustBeSentAsync()
+    {
+        //Arrange
+        var sut = new OllamaTextGenerationService(
+            "fake-model",
+            httpClient: this._httpClient);
+        string jsonSettings = """
+                                {
+                                    "stop": ["stop me"],
+                                    "temperature": 0.5,
+                                    "top_p": 0.9,
+                                    "top_k": 100
+                                }
+                                """;
+
+        var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(jsonSettings);
+        var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
+
+        // Act
+        await sut.GetTextContentsAsync("Any prompt", ollamaExecutionSettings);
+
+        // Assert
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.NotNull(requestPayload.Options);
+        Assert.Equal(ollamaExecutionSettings.Stop, requestPayload.Options.Stop);
+        Assert.Equal(ollamaExecutionSettings.Temperature, requestPayload.Options.Temperature);
+        Assert.Equal(ollamaExecutionSettings.TopP, requestPayload.Options.TopP);
+        Assert.Equal(ollamaExecutionSettings.TopK, requestPayload.Options.TopK);
     }
 
     /// <summary>

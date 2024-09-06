@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Ollama.UnitTests;
+namespace SemanticKernel.Connectors.Ollama.UnitTests.Settings;
 
 /// <summary>
 /// Unit tests of <see cref="OllamaPromptExecutionSettings"/>.
@@ -14,7 +14,7 @@ namespace SemanticKernel.Connectors.Ollama.UnitTests;
 public class OllamaPromptExecutionSettingsTests
 {
     [Fact]
-    public void FromExecutionSettingsWhenAlreadyOllamaShouldReturnSameAsync()
+    public void FromExecutionSettingsWhenAlreadyOllamaShouldReturnSame()
     {
         // Arrange
         var executionSettings = new OllamaPromptExecutionSettings();
@@ -27,7 +27,7 @@ public class OllamaPromptExecutionSettingsTests
     }
 
     [Fact]
-    public void FromExecutionSettingsWhenNullShouldReturnDefaultAsync()
+    public void FromExecutionSettingsWhenNullShouldReturnDefault()
     {
         // Arrange
         OllamaPromptExecutionSettings? executionSettings = null;
