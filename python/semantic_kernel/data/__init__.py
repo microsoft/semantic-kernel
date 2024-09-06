@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.filters.filter_clause_base import FilterClauseBase
+from semantic_kernel.data.filters.text_search_filter import TextSearchFilter
+from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search_options import VectorSearchOptions
 from semantic_kernel.data.vector_store import VectorStore
 from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
@@ -18,8 +19,9 @@ from semantic_kernel.data.vector_store_record_utils import VectorStoreRecordUtil
 
 __all__ = [
     "DistanceFunction",
-    "FilterClauseBase",
     "IndexKind",
+    "TextSearchFilter",
+    "VectorSearchFilter",
     "VectorSearchOptions",
     "VectorStore",
     "VectorStoreRecordCollection",

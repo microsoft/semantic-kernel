@@ -9,7 +9,7 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings, OpenAITextEmbedding
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
 from semantic_kernel.data import (
-    FilterClause,
+    VectorSearchFilter,
     VectorSearchOptions,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -138,10 +138,10 @@ async def main(first_run: bool = False):
         vector=query_vector,
         search_options=VectorSearchOptions(
             vector_field_name="description_vector",
-            search_filters=[
-                FilterClause(field_name="tags", value="free wifi", clause_type="tag_list_contains"),
-                FilterClause(field_name="category", value="Luxury", clause_type="equality"),
-            ],
+            filter=VectorSearchFilter.any_tag_equal_to(
+                field_name="tags",
+                value="free wifi",
+            ).equal_to(field_name="category", value="Luxury"),
         ),
     )
     for result in results:
