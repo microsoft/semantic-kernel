@@ -1,8 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
-// Copyright (c) Microsoft. All rights reserved.
-
 using System;
 using System.IO;
 using System.Text.Json.Nodes;

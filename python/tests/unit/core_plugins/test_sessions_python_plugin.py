@@ -224,6 +224,9 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
                 "$values": [
                     {
                         "$id": "2",
+                "$values": [
+                    {
+                        "$id": "2",
                         "filename": "test.txt",
                         "size": 123,
                         "last_modified_time": "2024-06-03T17:48:46.2672398Z",
@@ -277,6 +280,9 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
                             "lastModifiedTime": "2024-07-02T19:29:23.4369699Z",
                         },
                     },
+                "$values": [
+                    {
+                        "$id": "2",
                 "$values": [
                     {
                         "$id": "2",
@@ -373,6 +379,9 @@ async def test_upload_file_with_buffer(
                             "lastModifiedTime": "2024-07-02T19:29:23.4369699Z",
                         },
                     },
+                "$values": [
+                    {
+                        "$id": "2",
                 "$values": [
                     {
                         "$id": "2",

@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft. All rights reserved.
-// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Net.Http;

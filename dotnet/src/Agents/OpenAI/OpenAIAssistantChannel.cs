@@ -521,6 +521,58 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
             object resultValue = functionResult.Result ?? string.Empty;
 
+
+    private static ChatMessageContent GenerateFunctionCallContent(string agentName, FunctionCallContent[] functionSteps)
+    {
+        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
+        {
+            AuthorName = agentName
+        };
+
+        functionCallContent.Items.AddRange(functionSteps);
+
+        return functionCallContent;
+    }
+
+    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionCallContent functionStep, string result)
+    {
+        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
+        {
+            AuthorName = agentName
+        };
+
+        functionCallContent.Items.Add(
+            new FunctionResultContent(
+                functionStep.FunctionName,
+                functionStep.PluginName,
+                functionStep.Id,
+                result));
+
+        return functionCallContent;
+    }
+
+    private static Task<FunctionResultContent>[] ExecuteFunctionSteps(OpenAIAssistantAgent agent, FunctionCallContent[] functionSteps, CancellationToken cancellationToken)
+    {
+        Task<FunctionResultContent>[] functionTasks = new Task<FunctionResultContent>[functionSteps.Length];
+
+        for (int index = 0; index < functionSteps.Length; ++index)
+        {
+            functionTasks[index] = functionSteps[index].InvokeAsync(agent.Kernel, cancellationToken);
+        }
+
+        return functionTasks;
+    }
+
+    private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
+    {
+        ToolOutput[] toolOutputs = new ToolOutput[functionResults.Length];
+
+        for (int index = 0; index < functionResults.Length; ++index)
+        {
+            FunctionResultContent functionResult = functionResults[index];
+
+            object resultValue = functionResult.Result ?? string.Empty;
+
             if (resultValue is not string textResult)
             {
                 textResult = JsonSerializer.Serialize(resultValue);
