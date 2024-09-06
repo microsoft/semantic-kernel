@@ -92,11 +92,11 @@ async def test_trace_chat_completion(
     # Setup
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
 
-    with patch.object(MockChatCompletion, "_inner_get_chat_message_content", return_value=mock_response):
+    with patch.object(MockChatCompletion, "_inner_get_chat_message_contents", return_value=mock_response):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
-        MockChatCompletion._inner_get_chat_message_content = trace_chat_completion(
+        MockChatCompletion._inner_get_chat_message_contents = trace_chat_completion(
             MockChatCompletion.MODEL_PROVIDER_NAME
-        )(chat_completion._inner_get_chat_message_content)
+        )(chat_completion._inner_get_chat_message_contents)
 
         results: list[ChatMessageContent] = await chat_completion.get_chat_message_contents(
             chat_history, execution_settings
@@ -156,11 +156,11 @@ async def test_trace_chat_completion_exception(
     # Setup
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
 
-    with patch.object(MockChatCompletion, "_inner_get_chat_message_content", side_effect=ServiceResponseException()):
+    with patch.object(MockChatCompletion, "_inner_get_chat_message_contents", side_effect=ServiceResponseException()):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
-        MockChatCompletion._inner_get_chat_message_content = trace_chat_completion(
+        MockChatCompletion._inner_get_chat_message_contents = trace_chat_completion(
             MockChatCompletion.MODEL_PROVIDER_NAME
-        )(chat_completion._inner_get_chat_message_content)
+        )(chat_completion._inner_get_chat_message_contents)
 
         with pytest.raises(ServiceResponseException):
             await chat_completion.get_chat_message_contents(chat_history, execution_settings)

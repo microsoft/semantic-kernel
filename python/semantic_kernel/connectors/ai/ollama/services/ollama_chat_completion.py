@@ -84,7 +84,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 
     @override
     @trace_chat_completion(OllamaBase.MODEL_PROVIDER_NAME)
-    async def _inner_get_chat_message_content(
+    async def _inner_get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -118,7 +118,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
         ]
 
     @override
-    async def _inner_get_streaming_chat_message_content(
+    async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",

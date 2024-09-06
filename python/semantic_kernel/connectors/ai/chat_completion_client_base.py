@@ -35,7 +35,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
     # region Internal methods to be implemented by the derived classes
 
-    async def _inner_get_chat_message_content(
+    async def _inner_get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -49,9 +49,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             chat_message_contents (list[ChatMessageContent]): The chat message contents representing the response(s).
         """
-        raise NotImplementedError
+        raise NotImplementedError("The _inner_get_chat_message_contents method is not implemented.")
 
-    async def _inner_get_streaming_chat_message_content(
+    async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -65,7 +65,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Yields:
             streaming_chat_message_contents (list[StreamingChatMessageContent]): The streaming chat message contents.
         """
-        raise NotImplementedError
+        raise NotImplementedError("The _inner_get_streaming_chat_message_contents method is not implemented.")
         # Below is needed for mypy: https://mypy.readthedocs.io/en/stable/more_types.html#asynchronous-iterators
         if False:
             yield
@@ -95,7 +95,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         settings = copy.deepcopy(settings)
 
         if not self.SUPPORTS_FUNCTION_CALLING:
-            return await self._inner_get_chat_message_content(chat_history, settings)
+            return await self._inner_get_chat_message_contents(chat_history, settings)
 
         # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
         # if this method is called with a `FunctionCallBehavior` object as part of the settings
@@ -125,11 +125,11 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             settings.function_choice_behavior is None
             or not settings.function_choice_behavior.auto_invoke_kernel_functions
         ):
-            return await self._inner_get_chat_message_content(chat_history, settings)
+            return await self._inner_get_chat_message_contents(chat_history, settings)
 
         # Auto invoke loop
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
-            completions = await self._inner_get_chat_message_content(chat_history, settings)
+            completions = await self._inner_get_chat_message_contents(chat_history, settings)
             # Get the function call contents from the chat message. There is only one chat message,
             # which should be checked in the `_verify_function_choice_settings` method.
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
@@ -163,7 +163,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         else:
             # Do a final call, without function calling when the max has been reached.
             self._reset_function_choice_settings(settings)
-            return await self._inner_get_chat_message_content(chat_history, settings)
+            return await self._inner_get_chat_message_contents(chat_history, settings)
 
     async def get_chat_message_content(
         self, chat_history: "ChatHistory", settings: "PromptExecutionSettings", **kwargs: Any
@@ -206,7 +206,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         settings = copy.deepcopy(settings)
 
         if not self.SUPPORTS_FUNCTION_CALLING:
-            async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_content(
+            async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_contents(
                 chat_history, settings
             ):
                 yield streaming_chat_message_contents
@@ -240,7 +240,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             settings.function_choice_behavior is None
             or not settings.function_choice_behavior.auto_invoke_kernel_functions
         ):
-            async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_content(
+            async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_contents(
                 chat_history, settings
             ):
                 yield streaming_chat_message_contents
@@ -251,7 +251,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             # Hold the messages, if there are more than one response, it will not be used, so we flatten
             all_messages: list["StreamingChatMessageContent"] = []
             function_call_returned = False
-            async for messages in self._inner_get_streaming_chat_message_content(chat_history, settings):
+            async for messages in self._inner_get_streaming_chat_message_contents(chat_history, settings):
                 for msg in messages:
                     if msg is not None:
                         all_messages.append(msg)

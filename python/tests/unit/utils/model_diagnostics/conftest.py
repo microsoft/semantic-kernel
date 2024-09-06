@@ -53,7 +53,7 @@ class MockChatCompletion(ChatCompletionClientBase):
     MODEL_PROVIDER_NAME: ClassVar[str] = "mock"
 
     @override
-    async def _inner_get_chat_message_content(
+    async def _inner_get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -61,7 +61,7 @@ class MockChatCompletion(ChatCompletionClientBase):
         return []
 
     @override
-    async def _inner_get_streaming_chat_message_content(
+    async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",

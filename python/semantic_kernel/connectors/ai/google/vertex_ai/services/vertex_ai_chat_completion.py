@@ -108,7 +108,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
 
     @override
     @trace_chat_completion(VertexAIBase.MODEL_PROVIDER_NAME)
-    async def _inner_get_chat_message_content(
+    async def _inner_get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -133,7 +133,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
 
     @override
-    async def _inner_get_streaming_chat_message_content(
+    async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",

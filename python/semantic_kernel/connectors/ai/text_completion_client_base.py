@@ -31,7 +31,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             list[TextContent]: A string or list of strings representing the response(s) from the LLM.
         """
-        raise NotImplementedError
+        raise NotImplementedError("The _inner_get_text_contents method is not implemented.")
 
     async def _inner_get_streaming_text_contents(
         self,
@@ -48,7 +48,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             list[StreamingTextContent]: A stream representing the response(s) from the LLM.
         """
         # Below is needed for mypy: https://mypy.readthedocs.io/en/stable/more_types.html#asynchronous-iterators
-        raise NotImplementedError
+        raise NotImplementedError("The _inner_get_streaming_text_contents method is not implemented.")
         if False:
             yield
 

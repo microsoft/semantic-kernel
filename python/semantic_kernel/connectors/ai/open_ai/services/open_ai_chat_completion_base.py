@@ -64,7 +64,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
     @override
     @trace_chat_completion(MODEL_PROVIDER_NAME)
-    async def _inner_get_chat_message_content(
+    async def _inner_get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -83,7 +83,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
 
     @override
-    async def _inner_get_streaming_chat_message_content(
+    async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
