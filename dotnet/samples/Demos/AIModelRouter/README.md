@@ -23,6 +23,9 @@ The sample can be configured by using the command line with .NET [Secret Manager
 ```powershell
 # OpenAI (Not required if using Azure OpenAI)
 dotnet user-secrets set "OpenAI:ApiKey" "... your api key ... "
+
+# Anthropic
+dotnet user-secrets set "Anthropic:ApiKey" "... your api key ... "
 ```
 
 ## Running the sample

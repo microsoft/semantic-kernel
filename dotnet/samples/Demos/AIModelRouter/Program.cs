@@ -25,6 +25,7 @@ internal sealed partial class Program
             .AddOpenAIChatCompletion(serviceId: "lmstudio", modelId: "N/A", endpoint: new Uri("http://localhost:1234"), apiKey: null)
             .AddOpenAIChatCompletion(serviceId: "ollama", modelId: "phi3", endpoint: new Uri("http://localhost:11434"), apiKey: null)
             .AddOpenAIChatCompletion(serviceId: "openai", modelId: "gpt-4o", apiKey: config["OpenAI:ApiKey"]!)
+            .AddAnthropicChatCompletion(serviceId: "claude", modelId: "claude-3-5-sonnet-20240620", apiKey: config["Anthropic:ApiKey"]!)
 
             // Adding a custom filter to capture router selected service id
             .Services.AddSingleton<IPromptRenderFilter>(new SelectedServiceFilter());
@@ -43,7 +44,7 @@ internal sealed partial class Program
             // Find the best service to use based on the user's input
             KernelArguments arguments = new(new PromptExecutionSettings()
             {
-                ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai"])
+                ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai", "claude"])
             });
 
             // Invoke the prompt and print the response
