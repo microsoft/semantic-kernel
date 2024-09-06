@@ -293,4 +293,16 @@
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "java.configuration.updateBuildConfiguration": "interactive",
   "maven.view": "hierarchical"
+  "iis.configDir": "",
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "sqltools.connections": [
+    {
+      "connectionMethod": "VS Code Extension (beta)",
+      "catalog": "hive_metastore",
+      "previewLimit": 50,
+      "driver": "Databricks",
+      "path": "/sql/1.0/endpoints/1234abcd",
+      "name": "1234abcd"
+    }
+  ]
 }
