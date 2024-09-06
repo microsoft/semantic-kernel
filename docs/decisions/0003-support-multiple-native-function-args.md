@@ -33,7 +33,7 @@ Move native functions closer to a normal C# experience.
 
 ## More Information
 
-**Example**
+## Example
 
 _Before_:
 

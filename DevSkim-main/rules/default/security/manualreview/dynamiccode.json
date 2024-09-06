@@ -1,0 +1,98 @@
+[
+    {
+        "name": "Review eval for untrusted data",
+        "id": "DS189424",
+        "description": "If untrusted data (data from HTTP requests, user submitted files, etc.) is included in an eval statement it can allow an attacker to inject their own code.",
+        "recommendation": "Edit the eval so that no untrusted data is included. If untrusted data is absolutely necessary a great deal of care should be taken to ensure it is properly escaped so that it cannot be executed. This is not as simple as just escaping quotes.",
+        "applies_to": [
+            "python",
+            "javascript",
+            "typescript",
+            "php"
+        ],
+        "tags": [
+            "Python.DangerousFunctionCall",
+            "JavaScript.DangerousFunctionCall",
+            "TypeScript.DangerousFunctionCall",
+            "PHP.DangerousFunctionCall"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS189424.md",
+        "patterns": [
+            {
+                "pattern": "\\beval\\(([^,]+)\\)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "c = eval(a+b)"
+        ],
+        "must-not-match": [
+        ]
+    },
+    {
+        "name": "Review setTimeout for untrusted data",
+        "id": "DS172411",
+        "description": "If untrusted data (data from HTTP requests, user submitted files, etc.) is included in an setTimeout statement it can allow an attacker to inject their own code.",
+        "recommendation": "Edit the setTimeout so that no untrusted data is included. If untrusted data is absolutely necessary a great deal of care should be taken to ensure it is properly escaped so that it cannot be executed. This is not as simple as just escaping quotes.",
+        "applies_to": [
+            "javascript",
+            "typescript"
+        ],
+        "tags": [
+            "JavaScript.DangerousFunctionCall",
+            "TypeScript.DangerousFunctionCall"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS172411.md",
+        "patterns": [
+            {
+                "pattern": "\\bsetTimeout\\(([^,]+)\\)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "setTimeout(500);"
+        ],
+        "must-not-match": [
+        ]
+    },
+    {
+        "name": "Review unsafe code",
+        "id": "DS172412",
+        "description": "The unsafe keyword denotes an unsafe context, which is required for any operation involving pointers. Unsafe code in is not necessarily dangerous; it is just code whose safety cannot be verified by the CLR.",
+        "recommendation": "",
+        "applies_to": [
+            "csharp",
+            "vb"
+        ],
+        "tags": [
+            "Dotnet.Unsafecode"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS172412.md",
+        "patterns": [
+            {
+                "pattern": "unsafe",
+                "type": "RegexWord",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "    unsafe static void Main()\n"
+        ],
+        "must-not-match": [
+        ]
+    }
+]

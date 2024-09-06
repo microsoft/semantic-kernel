@@ -1,0 +1,8 @@
+.vscode
+**/node_modules
+**/tsconfig.json
+**/*.ts
+.eslintignore
+.gitignore
+**/tsconfig.tsbuildinfo
+scripts/*

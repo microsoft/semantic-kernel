@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json.schemastore.org/vsix-publish",
+    "categories": [ "coding", "programming languages", "security" ],
+    "identity": {
+        "internalName": "MicrosoftDevSkim"
+    },
+    "overview": "readme-gallery.md",
+    "priceCategory": "free",
+    "publisher": "MS-CST-E",
+    "private": false,
+    "qna": true,
+    "repo": "https://github.com/Microsoft/DevSkim"
+}

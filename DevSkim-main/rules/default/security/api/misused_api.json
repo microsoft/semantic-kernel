@@ -1,0 +1,67 @@
+[
+    {
+        "name": "Do not copy a FILE object (CERT FIO38-C)",
+        "id": "DS179924",
+        "description": "The CERT Secure Coding Standard recommends that FILE objects not be copied.",
+        "recommendation": "Copy a pointer to the FILE object instead.",
+        "applies_to": [
+            "cpp",
+            "c"
+        ],
+        "tags": [
+            "CERT.FIO38-C",
+            "C.DangerousFunctionCall"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS179924.md",
+        "patterns": [
+            {
+                "pattern": "FILE [a-z0-9_][^=]*=\\s*\\*",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "FILE tdout = *stdout;"
+        ],
+        "must-not-match": [
+            "FILE *my_stdout = stdout;"
+        ]
+    },
+    {
+        "name": "Don't pass user input to this function",
+        "id": "DS181731",
+        "description": "Don't pass user input to this function.",
+        "recommendation": "Validate this data before passing it to the function.",
+        "applies_to": [
+            "php"
+        ],
+        "tags": [
+            "PHP.Injection"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS181731.md",
+        "patterns": [
+            {
+                "pattern": "(include|require|include_once|require_once|passthru)\\s*\\(.*\\$_(GET|POST|REQUEST|COOKIES|FILES)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "include($_GET['t']);",
+            "include($_POST['t']);",
+            "require_once($_POST['t']);"
+        ],
+        "must-not-match": [
+            "include(\"lib/file.php\");",
+            "require_once(\"lib/file.php\");"
+        ]
+    }
+]

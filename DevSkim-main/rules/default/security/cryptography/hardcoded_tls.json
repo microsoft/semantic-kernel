@@ -1,0 +1,341 @@
+[
+    {
+        "name": "Generic: Do not hardcode SSL/TLS versions within an application.",
+        "id": "DS440000",
+        "description": "SSL/TLS version usage should be based on an OS or external configuration.",
+        "recommendation": "",
+        "does_not_apply_to": [
+            "json",
+            "yaml"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hardcoded"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS440000.md",
+        "must-match": [
+            "SecurityProtocolType.Tls11"
+        ],
+        "must-not-match": [
+            "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg==", 
+            "curl --tlsv1.3",
+            "axolotls"
+        ],
+        "patterns": [
+            {
+                "pattern": "(?<=\\W)(SSL|D?TLS)[_v]*[123]([123_\\.])*",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "modifiers" : ["i"],
+                "_comment": "Generic reference to a SSL/TLS version"
+            }
+        ],
+        "conditions" : [
+        {
+            "pattern" :
+            {
+                "pattern": "--tlsv1.3",
+                "type": "substring",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "The --tlsv1.3 argument for Curl sets a minimum version, not a specific version"
+            },
+            "negate_finding": true,
+            "search_in": "same-line"
+        },
+        {
+            "pattern" :
+            {
+                "pattern": "LS0tLS",
+                "type": "substring",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "A base 64 encoded cert will start with `LS0tLS`"
+            },
+            "negate_finding": true,
+            "search_in": "same-line"
+        }
+        ]
+    },    
+    {
+        "name": "OpenSSL: Do not hardcode SSL/TLS versions within an application.",
+        "id": "DS440010",
+        "description": "SSL/TLS version usage should be based on an OS or external configuration.",
+        "recommendation": "",
+        "does_not_apply_to": [
+            "json",
+            "yaml"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hardcoded"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "_comment": "Applies to all languages since many just wrap OpenSSL constructs.",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "SSLv2?3_method|D?TLSv1_([123]_)?(client_|server_)?method",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL functions that implement specific protocol versions"
+            },
+            {
+                "pattern": "DTLSv1_listen|SSL_stateless",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL functions that implicitly call specific protocol versions"
+            },
+            {
+                "pattern": "SSL_(CTX_)?set_(min|max)_proto_version",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SSL_EXT_TLS_ONLY|SSL_EXT_DTLS_ONLY|SSL_EXT_TLS_IMPLEMENTATION_ONLY|SSL_EXT_SSL3_ALLOWED|SSL_EXT_TLS1_2_AND_BELOW_ONLY|SSL_EXT|TLS1_3_ONLY|SSL_EXT_TLS1_2_SERVER_HELLO|SSL_EXT_TLS1_3_SERVER_HELLO",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL extension / options"
+            },
+            {
+                "pattern": "SSL_OP_(NO_(SSLv3|TLSv1|TLSv1_1|TLSv1_2|TLSv1_3|DTLSv1|DTLSv1_2))",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL extension / options"
+            },
+            {
+                "pattern": "SSL_OP_[A-Z0-9_]+",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL extension / options"
+            },
+            {
+                "pattern": "(AES|DH|DHE|ADH|CAMELLIA|EDH|EXP|DES|IDEA|RC4|NULL|GOST|EXP|ECDH|ECDHE|AECDH|PSK|SSL|RSA|TLS)_?([A-Z0-9]+_)+((SHA[0-9]*)|(MD5)|(GOST)[[A-Z0-9\\-]*)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL constants"
+            }
+        ]
+    },
+    {
+        "name": "OpenSSL: Do not hardcode SSL/TLS versions within an application.",
+        "id": "DS440011",
+        "description": "SSL/TLS version usage should be based on an OS or external configuration.",
+        "recommendation": "",
+        "does_not_apply_to": [
+            "json",
+            "yaml"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hardcoded"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "_comment": "Applies to all languages since many just wrap OpenSSL constructs.",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "(AES|DH|DHE|ADH|CAMELLIA|EDH|EXP|DES|IDEA|RC4|NULL|GOST|EXP|ECDH|ECDHE|AECDH|PSK)[A-Z0-9\\-]+-?(SHA|MD|GOST)[A-Z0-9\\-]*",
+                "type": "regex",
+                "modifiers":[ "i" ],
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL external call"
+            }
+        ],
+        "conditions" : [
+            {
+                "pattern" : 
+                {
+                    "pattern": "openssl",
+                    "type": "regex",
+                    "modifiers":[ "i" ],
+                    "scopes": [
+                        "code"
+                    ]
+                },
+                "negate_finding": false,
+                "search_in": "finding-region(-5, 5)"
+            }
+        ]
+    },
+    {
+        "name": ".NET - Do not hardcode SSL/TLS versions within an application.",
+        "id": "DS440020",
+        "description": ".NET- Do not hardcode SSL/TLS versions within an application.",
+        "recommendation": "",
+        "applies_to": [
+            "csharp",
+            "powershell",
+            "vb",
+            "fsharp"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hardcoded"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "SecurityProtocolType|SecurityProtocolTypeExtensions|SslProtocols|SslProtocolsExtensions|DontEnableSchUseStrongCrypto|DisableUsingServicePointManagerSecurityProtocols|DontEnableSystemDefaultTlsVersions",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ]
+    },
+    {
+        "name": ".RUST - Failure to specify a minimum version of TLS defaults to allowing TLS 1.0.",
+        "id": "DS440030",
+        "description": ".RUST - Failure to specify a minimum version of TLS defaults to allowing TLS 1.0",
+        "recommendation": "Recommend specifying a minimum version with .min_protocol_version API.",
+        "applies_to": [
+            "rust"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hardcoded"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "native_tls::TlsAcceptor::builder(.*)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "conditions" : [
+            {
+                "pattern" :
+                {
+                    "pattern": ".min_protocol_version\\s*\\(\\s*Some\\(\\s*Protocol::Tlsv1[2-9]\\s*\\)\\s*\\)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": "Supplying Tlsv12 or later will disable using earlier versions of TLS"
+                },
+                "negate_finding": true,
+                "search_in": "finding-region(0, 1)"
+            }
+        ],
+        "must-match" : [
+            "let acceptor = native_tls::TlsAcceptor::builder(identity);",
+            "let acceptor = native_tls::TlsAcceptor::builder(identity)\n\t.min_protocol_version(Some(Protocol::Tlsv10))\n\t.build()?;",
+            "let acceptor = native_tls::TlsAcceptor::builder(identity)\n\t.min_protocol_version(Some(Protocol::Tlsv11))\n\t.build()?;"
+        ],
+        "must-not-match" : [
+            "let acceptor = native_tls::TlsAcceptor::builder(identity)\n\t.min_protocol_version(Some(Protocol::Tlsv12))\n\t.build()?;",
+            "let acceptor = native_tls::TlsAcceptor::builder(identity)\n\t.min_protocol_version(Some(Protocol::Tlsv13))\n\t.build()?;"
+        ]
+    },
+    {
+        "name": "Node- Do not hardcode TLS protocol versions.",
+        "id": "DS440060",
+        "description": "Node- Do not hardcode TLS protocol versions.",
+        "recommendation": "",
+        "applies_to": [
+            "javascript",
+            "typescript"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hardcoded"
+        ],
+        "severity": "critical",
+        "_comment": "These rules are all encompassed by DS440000 and DS440010.",
+        "rule_info": "DS440000.md",
+        "patterns": [
+        ],
+        "fix_its": [
+        ]
+    },
+    {
+        "name": "Python- Do not hardcode TLS protocol versions.",
+        "id": "DS440070",
+        "description": "Python- Do not hardcode TLS protocol versions.",
+        "recommendation": "",
+        "applies_to": [
+            "python"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hardcoded"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "PROTOCOL_(SSL|TLS)v[123_]+(_CLIENT|SERVER)?",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "ssl_version",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+        ]
+    },
+    {
+        "name": "Win32- Do not hardcode TLS protocol versions.",
+        "id": "DS440071",
+        "description": "Win32- Do not hardcode TLS protocol versions.",
+        "recommendation": "",
+        "overrides": ["DS440000"],
+        "applies_to": [
+            "c",
+            "cpp",
+            "csharp",
+            "fsharp"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hardcoded"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "SP_PROT_[A-Z0-9_]+_(SERVER|CLIENT)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+        ]
+    }    
+]
+    

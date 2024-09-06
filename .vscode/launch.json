@@ -13,24 +13,36 @@
     },
     {
       "name": "C#: Concept Samples",
+      "name": ".NET Core Launch (dotnet-kernel-syntax-examples)",
       "type": "coreclr",
+      "type": "java",
+      "name": "Main",
       "request": "launch",
       "preLaunchTask": "build (Concepts)",
       "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
       "args": [],
       "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
+      "preLaunchTask": "build (KernelSyntaxExamples)",
+      "program": "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/bin/Debug/net6.0/KernelSyntaxExamples.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples",
       "console": "internalConsole",
       "stopAtEntry": false
+      "mainClass": "com.microsoft.semantickernel.skills.random.Main",
+      "projectName": "JavaReferenceSkill"
     },
     {
-      "name": ".NET Core Attach",
+      "name": "Attach to .NET Functions",
       "type": "coreclr",
-      "request": "attach"
+      "request": "attach",
+      "processId": "${command:azureFunctions.pickProcess}"
     },
     {
       "cwd": "${workspaceFolder}/python",
       "name": "Python: Test Module",
       "type": "debugpy",
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
       "request": "launch",
       "module": "pytest",
       "args": [
@@ -56,6 +68,42 @@
       "type": "coreclr",
       "request": "attach",
       "processId": "${command:azureFunctions.pickProcess}"
+    }
+  ]
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "cwd": "/workspaces/semantic-kernel",
+      "program": "/workspaces/semantic-kernel/build/Release/outRelease",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "cwd": "/workspaces/semantic-kernel",
+      "program": "/workspaces/semantic-kernel/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,165 @@
+[
+    {
+        "name": ".NET - Hard-coded SSL/TLS Protocol",
+        "id": "DS112836",
+        "description": ".NET - Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "overrides": [
+            "DS440000"
+        ],
+        "applies_to": [
+            "csharp",
+            "powershell",
+            "vb",
+            "fsharp"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS112835.md",
+        "patterns": [
+            {
+                "pattern": "SslProtocolsExtensions.Tls11",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SslProtocolsExtensions.Tls12",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SslProtocols.Default",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SslProtocols)240",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SslProtocols.None",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SslProtocols)0",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SslProtocols.Ssl2",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SslProtocols)12",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SslProtocols.Ssl3",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SslProtocols)48",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SslProtocols.Tls",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SslProtocols)192",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SslProtocols.Tls11",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SslProtocols)768",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SslProtocols.Tls12",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SslProtocols)3072",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SslProtocols.Tls13",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SslProtocols)12288",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "b.Security.Transport.SslProtocols = SslProtocolsExtensions.Tls11;",
+            "b.Security.Transport.SslProtocols = SslProtocolsExtensions.Tls12;",
+            "b.Security.Transport.SslProtocols = SslProtocols.Default ;",
+            "b.Security.Transport.SslProtocols = SslProtocols.None;",
+            "b.Security.Transport.SslProtocols = SslProtocols.Ssl2 ;",
+            "b.Security.Transport.SslProtocols = SslProtocols.Ssl3;",
+            "b.Security.Transport.SslProtocols = SslProtocols.Tls;",
+            "b.Security.Transport.SslProtocols = SslProtocols.Tls11;",
+            "b.Security.Transport.SslProtocols = SslProtocols.Tls12;",
+            "b.Security.Transport.SslProtocols = SslProtocols.Tls13;"
+        ],
+        "must-not-match": [
+        ]
+    }
+]

@@ -1,0 +1,94 @@
+# Azure Pipelines
+# https://aka.ms/yaml
+
+name: DevSkim_CLI_PR_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+trigger: none
+pr:
+  branches:
+    include:
+    - main
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: SecurityEngineering/OSS-Tools-Pipeline-Templates
+      ref: refs/tags/v2.0.0
+    - repository: 1esPipelines
+      type: git
+      name: 1ESPipelineTemplates/1ESPipelineTemplates
+      ref: refs/tags/release
+
+variables:
+  BuildConfiguration: 'Release'
+  DotnetVersion: '8.0.x'
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  parameters:
+    pool:
+      name: MSSecurity-1ES-Build-Agents-Pool
+      image: MSSecurity-1ES-Windows-2022
+      os: windows
+    stages:
+    - stage: Test
+      jobs:
+      - template: dotnet-test-job.yml@templates
+        parameters:
+          jobName: 'dotnet_test_windows'
+          dotnetVersions: ['6.0.x','7.0.x','8.0.x']
+          projectPath: 'DevSkim-DotNet/Microsoft.DevSkim.Tests/Microsoft.DevSkim.Tests.csproj'
+          poolName: MSSecurity-1ES-Build-Agents-Pool
+          poolImage: MSSecurity-1ES-Windows-2022
+          poolOs: windows
+      - template: dotnet-test-job.yml@templates
+        parameters:
+          jobName: 'dotnet_test_ubuntu'
+          dotnetVersions: ['6.0.x','7.0.x','8.0.x']
+          poolName: MSSecurity-1ES-Build-Agents-Pool
+          poolImage: MSSecurity-1ES-Ubuntu-2204
+          poolOs: linux
+          projectPath: 'DevSkim-DotNet/Microsoft.DevSkim.Tests/Microsoft.DevSkim.Tests.csproj'          
+    - stage: Build
+      dependsOn:
+      - Test
+      jobs:
+      - template: dotnet-publish-linux-mac-job.yml@templates
+        parameters:
+          buildConfiguration: 'Release'
+          dotnetVersion: ${{ variables.DotnetVersion }}
+          projectPath: 'DevSkim-DotNet/Microsoft.DevSkim.CLI/Microsoft.DevSkim.CLI.csproj'
+          projectName: 'DevSkim_CLI'
+          exePath: 'devskim'
+          artifactName: 'linux-mac-archive'
+          preBuild:
+          - template: nbgv-set-version-steps.yml@templates
+      - template: dotnet-publish-win-netcore-job.yml@templates
+        parameters:
+          buildConfiguration: 'Release'
+          dotnetVersion: ${{ variables.DotnetVersion }}
+          projectPath: 'DevSkim-DotNet/Microsoft.DevSkim.CLI/Microsoft.DevSkim.CLI.csproj'
+          projectName: 'DevSkim_CLI'
+          artifactName: 'win-netcore-archive'
+          preBuild:
+          - template: nbgv-set-version-steps.yml@templates
+      - template: nuget-build-job.yml@templates
+        parameters:
+          jobName: 'pack_lib'
+          buildConfiguration: 'Release'
+          dotnetVersion: ${{ variables.DotnetVersion }}
+          projectPath: 'DevSkim-DotNet/Microsoft.DevSkim/Microsoft.DevSkim.csproj'
+          projectName: 'DevSkim_Lib'
+          artifactName: 'nuget-lib-archive'
+          preBuild:
+          - template: nbgv-set-version-steps.yml@templates
+      - template: nuget-build-job.yml@templates
+        parameters:
+          jobName: 'pack_cli'
+          buildConfiguration: 'Release'
+          dotnetVersion: ${{ variables.DotnetVersion }}
+          projectPath: 'DevSkim-DotNet/Microsoft.DevSkim.CLI/Microsoft.DevSkim.CLI.csproj'
+          projectName: 'DevSkim_CLI'
+          artifactName: 'nuget-cli-archive'
+          preBuild:
+          - template: nbgv-set-version-steps.yml@templates

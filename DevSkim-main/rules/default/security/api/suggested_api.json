@@ -1,0 +1,146 @@
+[
+    {
+        "name": "Problematic C function detected (malloc)",
+        "id": "DS161085",
+        "description": "If the value provided to malloc is the result of unsafe integer math, it can result in an exploitable condition. ",
+        "recommendation": "calloc handles the most common integer math in memory allocation (# of elements * their size) with error handling to prevent overflows in most implementations, and zeros out memory",
+        "applies_to": [
+            "c",
+            "cpp",
+            "objective-c"
+        ],
+        "tags": [
+            "API.DangerousAPI.ProblematicFunction"
+        ],
+        "confidence": "high",
+        "severity": "BestPractice",
+        "rule_info": "DS161085.md",
+        "patterns": [
+            {
+                "pattern": "\\bmalloc\\s*\\(([^,\\)]+)\\)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to calloc ",
+                "type": "RegexReplace",
+                "replacement": "calloc(<number of elements>, <size of each element>)",
+                "pattern": {
+                    "pattern": "\\bmalloc\\s*\\(([^,\\)]+)\\)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            }
+        ],
+        "must-match": [
+            "int main () {\n   char *str;\n\n   /* Following line should be hit */\n   str = (char *) malloc(15);\n}"
+        ]
+    },
+    {
+        "name": "Problematic C function detected (memcpy)",
+        "id": "DS121708",
+        "description": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer",
+        "recommendation": "Use memcpy_s if possible.",
+        "applies_to": [
+            "c",
+            "cpp",
+            "objective-c"
+        ],
+        "tags": [
+            "API.DangerousAPI.ProblematicFunction"
+        ],
+        "confidence": "high",
+        "severity": "BestPractice",
+        "rule_info": "DS121708.md",
+        "patterns": [
+            {
+                "pattern": "\\bmemcpy\\s*\\(([^,]+),([^,]+),([^,\\)]+)\\)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to memcpy_s (Recommended for VC++)",
+                "type": "RegexReplace",
+                "replacement": "memcpy_s($1, <size of $1>, $2, $3)",
+                "pattern": {
+                    "pattern": "\\bmemcpy\\s*\\(([^,]+),([^,]+),([^,\\)]+)\\)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            }
+        ],
+        "must-match": [
+            "int main () {\\n   const char src[50] = \"www.tutorialspoint.com\";\\n   char dest[50];\\n\\n   memcpy(dest, src, 20);\\n}"
+        ]
+    },
+    {
+        "name": "Problematic C function detected (strlen)",
+        "id": "DS140021",
+        "description": "If a string is missing a null terminator, strlen will read past the end of the buffer",
+        "recommendation": "In instances where you know the maximum size of a string's buffer, use strlen_s or strnlen to prevent over-reading",
+        "overrides": [
+            "DS154189"
+        ],
+        "applies_to": [
+            "c",
+            "cpp",
+            "objective-c"
+        ],
+        "tags": [
+            "API.DangerousAPI.ProblematicFunction"
+        ],
+        "confidence": "high",
+        "severity": "BestPractice",
+        "rule_info": "DS140021.md",
+        "patterns": [
+            {
+                "pattern": "\\bstrlen\\s*\\(([^,\\)]+)\\)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to strlen_s (Recommended for VC++)",
+                "type": "RegexReplace",
+                "replacement": "strlen_s($1, <size of $1>)",
+                "pattern": {
+                    "pattern": "\\bstrlen\\s*\\(([^,\\)]+)\\)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            },
+            {
+                "name": "Change to strnlen",
+                "type": "RegexReplace",
+                "replacement": "strnlen($1, <size of $1>)",
+                "pattern": {
+                    "pattern": "\\bstrlen\\s*\\(([^,\\)]+)\\)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            }
+        ],
+        "must-match": [
+            "int main () {\\n   const char src[50] = \"www.tutorialspoint.com\";\\n   int a = strlen(src)+1;\\n}"
+        ]
+    }
+]

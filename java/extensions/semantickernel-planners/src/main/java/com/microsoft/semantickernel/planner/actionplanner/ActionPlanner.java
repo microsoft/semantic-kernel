@@ -49,7 +49,10 @@ public class ActionPlanner {
     private SKContext context;
     private Kernel kernel;
 
-    // TODO: allow to inject skill store
+    // // The code is a comment in Java indicating a TODO task to allow injecting a skill store. This
+    // means that the code needs to be modified to enable the injection of a skill store, likely for
+    // dependency injection or other design considerations.
+    TODO: allow to inject skill store
 
     /**
      * Initialize a new instance of the ActionPlanner class

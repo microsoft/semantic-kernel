@@ -1,0 +1,75 @@
+[
+    {
+        "name": "Missing initialization vector",
+        "id": "DS188250",
+        "description": "The mcrypt_encrypt function was used without an initialization vector.",
+        "recommendation": "Add an initialization vector or consider a different cipher mode",
+        "overrides" : [ "DS175862" ],
+        "applies_to": [
+            "php"
+        ],
+        "tags": [
+            "Cryptography.Symmetric.InitializationVector.Missing"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS188250.md",
+        "patterns": [
+            {
+                "pattern": "mcrypt_encrypt\\s*\\([^,]+,[^,]+,[^,]+,[^,]+\\);",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Add initialization vector",
+                "type": "RegexReplace",
+                "replacement": "$1, <$iv>$2",
+                "pattern": {
+                    "pattern": "(mcrypt_encrypt\\s*\\([^,]+,[^,]+,[^,]+,[^,]+)(\\);)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "$ciphertext = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key,\n $plaintext, MCRYPT_MODE_CBC);"
+        ],
+        "must-not-match": [
+        ]
+    },
+    {
+        "name": "Hardcoded initialization vector size",
+        "id": "DS128921",
+        "description": "An initialization vector was created to a static size, rather than determining it based on the encryption algorithm used.",
+        "recommendation": "Use mcrypt_get_iv_size to get the correct IV size based on the cipher and mode.",
+        "overrides" : [ "DS175862" ],
+        "applies_to": [
+            "php"
+        ],
+        "tags": [
+            "Cryptography.Symmetric.InitializationVector.HardcodedSize"
+        ],
+        "confidence": "high",
+        "severity": "moderate",
+        "rule_info": "DS128921.md",
+        "patterns": [
+            {
+                "pattern": "mcrypt_create_iv\\s*\\(\\s*\\d.*",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "$iv = mcrypt_create_iv(5000, MCRYPT_RAND);"
+        ]
+    }
+]

@@ -1,0 +1,301 @@
+[
+    {
+        "name": "Do not use the mcrypt module, use OpenSSL instead.",
+        "id": "DS175862",
+        "description": "The PHP mcrypt module is based on libmcrypt, which has been abanonded since 2007.",
+        "recommendation": "OpenSSL",
+        "applies_to": [
+            "php"
+        ],
+        "tags": [
+            "Cryptography.Library.Abandoned"
+        ],
+        "confidence": "medium",
+        "severity": "moderate",
+        "rule_info": "DS175862.md",
+        "patterns": [
+            {
+                "pattern": "mcrypt",
+                "type": "substring",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "$size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);\n"
+        ],
+        "must-not-match": [
+        ]
+    },
+    {
+        "name": "Do not use the 3DES symmetric block cipher.",
+        "id": "DS109501",
+        "description": "The 3DES cipher was found, which is only secure if three independent keys are used.",
+        "recommendation": "Use AES instead.",
+        "overrides": [
+            "DS106864"
+        ],
+        "applies_to": [
+            "csharp",
+            "fsharp"
+        ],
+        "tags": [
+            "Cryptography.Symmetric.PotentiallyWeakAlgorithm"
+        ],
+        "confidence": "high",
+        "severity": "moderate",
+        "rule_info": "DS109501.md",
+        "patterns": [
+            {
+                "pattern": "TripleDESCryptoServiceProvider",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to AESCryptoServiceProvider",
+                "type": "RegexReplace",
+                "replacement": "AESCryptoServiceProvider",
+                "pattern": {
+                    "pattern": "TripleDESCryptoServiceProvider",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "var tDESalg = new TripleDESCryptoServiceProvider();"
+
+        ],
+        "must-not-match": [
+            "var aesalg = new AESCryptoServiceProvider();"
+        ]
+    },
+    {
+        "name": "Do not use the DES symmetric block cipher.",
+        "id": "DS106863",
+        "description": "The DES cipher was found, which is widely considered to be broken.",
+        "recommendation": "Use AES instead.",
+        "applies_to": [
+        ],
+        "tags": [
+            "Cryptography.Symmetric.WeakOrBrokenAlgorithm"
+        ],
+        "confidence": "medium",
+        "severity": "critical",
+        "rule_info": "DS106864.md",
+        "patterns": [
+            {
+                "pattern": "DES",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to AES",
+                "type": "RegexReplace",
+                "replacement": "AES",
+                "pattern": {
+                    "pattern": "DES",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "DES();"
+        ],
+        "must-not-match": [
+            "AES();"
+        ]
+    },
+    {
+        "name": "Do not use the DES symmetric block cipher.",
+        "id": "DS106864",
+        "description": "The DES cipher was found, which is widely considered to be broken.",
+        "recommendation": "Use AES instead.",
+        "applies_to": [
+            "csharp",
+            "fsharp"
+        ],
+        "tags": [
+            "Cryptography.Symmetric.WeakOrBrokenAlgorithm"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS106864.md",
+        "patterns": [
+            {
+                "pattern": "DESCryptoServiceProvider",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to AESCryptoServiceProvider",
+                "type": "RegexReplace",
+                "replacement": "AESCryptoServiceProvider",
+                "pattern": {
+                    "pattern": "DESCryptoServiceProvider",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "using (var myDES = new DESCryptoServiceProvider())\n"
+        ],
+        "must-not-match": [
+            "using (var myAES = new AESCryptoServiceProvider())\n"
+        ]
+    },
+    {
+        "name": "Do not use the DES symmetric block cipher.",
+        "id": "DS106865",
+        "description": "The DES cipher was found, which is widely considered to be broken.",
+        "recommendation": "Use AES instead.",
+        "applies_to": [
+            "javascript"
+        ],
+        "tags": [
+            "Cryptography.Symmetric.WeakOrBrokenAlgorithm.DES"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS106864.md",
+        "patterns": [
+            {
+                "pattern": "['\"](?:DES(?:-(?:C(?:BC|FB[18]?)|E(?:CB|DE(?:-(?:C(?:BC|FB)|OFB))?)|OFB))?)['\"]",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to AES-128-CBC",
+                "type": "RegexReplace",
+                "replacement": "AES-128-CBC",
+                "pattern": {
+                    "pattern": "(?:DES(?:-(?:C(?:BC|FB[18]?)|E(?:CB|DE(?:-(?:C(?:BC|FB)|OFB))?)|OFB))?)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ]
+    },
+    {
+        "name": "Do not use the DES symmetric block cipher.",
+        "id": "DS106866",
+        "description": "The DES cipher was found, which is widely considered to be broken.",
+        "recommendation": "Use AES instead.",
+        "applies_to": [
+            "java"
+        ],
+        "tags": [
+            "Cryptography.Symmetric.WeakOrBrokenAlgorithm.DES"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS106864.md",
+        "patterns": [
+            {
+                "pattern": "DESEngine|DESedeEngine",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to AESEngine",
+                "type": "RegexReplace",
+                "replacement": "AESEngine",
+                "pattern": {
+                    "pattern": "DESEngine|DESedeEngine",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "cipher = new DESEngine();"
+        ],
+        "must-not-match": [
+            "cipher = new AESEngine();"
+        ]
+    },    
+    {
+        "name": "Do not use the RC2 symmetric block cipher.",
+        "id": "DS156431",
+        "description": "The RC2 cipher was found, which is considered to be broken.",
+        "recommendation": "Use AES instead.",
+        "applies_to": [
+            "csharp",
+            "fsharp"
+        ],
+        "tags": [
+            "Cryptography.Symmetric.WeakOrBrokenAlgorithm.RC2"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS156431.md",
+        "patterns": [
+            {
+                "pattern": "RC2CryptoServiceProvider",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to AESCryptoServiceProvider",
+                "type": "RegexReplace",
+                "replacement": "AESCryptoServiceProvider",
+                "pattern": {
+                    "pattern": "RC2CryptoServiceProvider",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "using (var myRC2 = new RC2CryptoServiceProvider())\n"
+        ],
+        "must-not-match": [
+            "using (var myaes = new AESCryptoServiceProvider())\n"
+        ]
+    }
+]

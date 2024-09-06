@@ -1,0 +1,35 @@
+{
+	// This file is a configuration file for javascript projects. We will set some
+	// defaults, but you should read the following instructions 
+	// (https://code.visualstudio.com/docs/languages/jsconfig) and edit this file as
+	// you prefer.
+
+	"compilerOptions": {
+		// If you want a strict type check for your javascript files, enable this option.
+		// VSCode will analyse your code and try to give you hints about possible errors
+		// and misusage of variables and functions
+		// "checkJs": true,
+
+		// This option helps you to prevent missing typical mistakes like assignment to
+		// not defined variables. For more information see 
+		// https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Strict_mode
+		// Note: This option just activates the strict linting for vscode. You still have
+		//       to extend your scripts with "use strict;" to activate strict mode in the
+		//       Javascript engine
+		// "alwaysStrict": true,
+
+		// This option should be enabled if you want to get code completion for ES6 features
+		// like 'for ... of' and Maps. Be aware that not all ES6 features are supported from
+		// the DOCUMENTS-server
+		"target": "es2016",
+
+		// This option removes the default lib.dom.d.ts. It should be enabled to avoid conflicts
+		// with the 'Dom' and 'File' classes.
+		"lib": ["es2016", "scripthost"]
+	},
+	"include": [
+		"node_modules/@types/**/*.d.ts",
+		"src/**/*.js",
+		"typings/**/*.d.ts"
+	]
+}

@@ -1,6 +1,16 @@
-<!-- BEGIN MICROSOFT SECURITY.MD V0.0.8 BLOCK -->
+---
+runme:
+  id: 01J0HG23MK8EA26SRB61JJZTCW
+  version: v3
+---
 
-## Security
+# Security
+
+```sh {"id":"01J0HG3K604AMB4ENKGM0P421C"}
+
+```
+
+<!-- BEGIN MICROSOFT SECURITY.MD V0.0.8 BLOCK -->
 
 Microsoft takes the security of our software products and services seriously, which includes all source code repositories managed through our GitHub organizations, which include [Microsoft](https://github.com/microsoft), [Azure](https://github.com/Azure), [DotNet](https://github.com/dotnet), [AspNet](https://github.com/aspnet), [Xamarin](https://github.com/xamarin), and [our GitHub organizations](https://opensource.microsoft.com/).
 
@@ -14,17 +24,27 @@ Instead, please report them to the Microsoft Security Response Center (MSRC) at 
 
 If you prefer to submit without logging in, send email to [secure@microsoft.com](mailto:secure@microsoft.com).  If possible, encrypt your message with our PGP key; please download it from the [Microsoft Security Response Center PGP Key page](https://www.microsoft.com/en-us/msrc/pgp-key-msrc?rtc=2).
 
-You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Additional information can be found at [microsoft.com/msrc](https://www.microsoft.com/en-us/msrc?rtc=2). 
+You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Additional information can be found at [microsoft.com/msrc](https://www.microsoft.com/en-us/msrc?rtc=2).
 
 Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
 
-  * Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
-  * Full paths of source file(s) related to the manifestation of the issue
-  * The location of the affected source code (tag/branch/commit or direct URL)
-  * Any special configuration required to reproduce the issue
-  * Step-by-step instructions to reproduce the issue
-  * Proof-of-concept or exploit code (if possible)
-  * Impact of the issue, including how an attacker might exploit the issue
+* Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
+   <<<<<<< HEAD
+* Full paths of source file(s) related to the manifestation of the issue
+* The location of the affected source code (tag/branch/commit or direct URL)
+* Any special configuration required to reproduce the issue
+* Step-by-step instructions to reproduce the issue
+* Proof-of-concept or exploit code (if possible)
+* Impact of the issue, including how an attacker might exploit the issue
+   =======
+   * Full paths of source file(s) related to the manifestation of the issue
+   * The location of the affected source code (tag/branch/commit or direct URL)
+   * Any special configuration required to reproduce the issue
+   * Step-by-step instructions to reproduce the issue
+   * Proof-of-concept or exploit code (if possible)
+   * Impact of the issue, including how an attacker might exploit the issue
+
+> > > > > > > dependabot/github_actions/actions/setup-dotnet-4
 
 This information will help us triage your report more quickly.
 

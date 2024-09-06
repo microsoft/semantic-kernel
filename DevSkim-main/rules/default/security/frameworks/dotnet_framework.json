@@ -1,0 +1,176 @@
+[
+    {
+        "name": "Do not target .NET Framework versions less than 4.7.2.",
+        "id": "DS450000",
+        "description": "Do not target .NET Framework versions less than 4.7.2.",
+        "recommendation": "",
+        "applies_to": [
+            "CSharp Project"
+        ],
+        "tags": [
+            "Framework.NET.Outdated"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS450000.md",
+        "patterns": [
+            {
+                "xpaths": ["//TargetFramework"],
+                "pattern": "(net11|net20|net35|net40|net403|net45|net451|net452|net46|net461|net462|net47|net471)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "modifiers" : ["i"]
+            }
+        ],
+        "must-match": [
+            "<TargetFramework>net11</TargetFramework>"
+        ],
+        "must-not-match": [
+            "<TargetFramework>net999</TargetFramework>"
+        ]
+    },
+    {
+        "name": "Cookie Secure flag is disabled (.NET)",
+        "id": "DS450001",
+        "description": "Disabling the Secure flag could result in the disclosure of sensitive cookie information over HTTP.",
+        "recommendation": "Enable the Secure cookie on cookies.",
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS450001.md",
+        "applies_to_file_regex": [
+            ".*\\.config"
+        ],
+        "tags": [
+            "Framework.NET"
+        ],
+        "patterns": [
+            {
+                "xpaths": ["//httpCookies/@requireSSL", "//forms/@requireSSL", "//roleManager/@cookieRequireSSL"],
+                "pattern": "false",
+                "scopes": [
+                    "code"
+                ],
+                "type": "regex"
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Set to true",
+                "replacement": "true",
+                "type": "RegexReplace",
+                "pattern": {
+                    "pattern": "false",
+                    "type": "substring",
+                    "scopes": [
+                        "code"
+                    ],
+                    "modifiers": ["i"]
+                }
+                
+            }
+        ],
+        "must-match": [
+            "<httpCookies requireSSL='false' />",
+            "<forms requireSSL='false' />",
+			"<roleManager cookieRequireSSL='false' />"
+        ],
+        "must-not-match": [
+            "<httpCookies requireSSL='true' />",
+            "<forms requireSSL='true' />",
+			"<roleManager cookieRequireSSL='true' />"
+        ]
+    },
+	{
+        "name": "Trace is enabled in system.web",
+        "id": "DS450002",
+        "description": "Having traces enabled could leak sensitive application information in production.",
+        "recommendation": "Disable tracing before deploying to production.",
+        "applies_to_file_regex": [
+            ".*\\.config"
+        ],
+        "tags": [
+            "Framework.NET"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS450002.md",
+        "patterns": [
+            {
+                "xpaths": ["//system.web/trace/@enabled"],
+                "pattern": "true",
+                "scopes": [
+                    "code"
+                ],
+                "type": "regex"
+            }
+        ],
+		"conditions" : [
+            {
+                "pattern" : {
+                    "xpaths": ["//system.web/trace/@localOnly"],
+                    "pattern": "true",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                },
+                "search_in": "same-file",
+                "negate_finding": true
+            }
+        ],
+        "must-match": [
+            "<system.web>\n<trace enabled='true' pageOutput='false' requestLimit='40' localOnly='false' />\n</system.web>"
+        ],
+        "must-not-match": [
+            "<system.web>\n<trace enabled='true' pageOutput='false' requestLimit='40' localOnly='true' />\n</system.web>"
+        ]
+    },
+    {
+        "name": "Web.config debug is enabled",
+        "id": "DS450003",
+        "description": "Having debug mode enabled is inefficient and could leak sensitive application information in production.",
+        "recommendation": "Disable debug mode.",
+        "applies_to_file_regex": [
+            ".*\\.config"
+        ],
+        "tags": [
+            "Framework.NET"
+        ],
+        "confidence": "high",
+        "severity": "manualreview",
+        "rule_info": "DS450003.md",
+        "patterns": [
+            {
+                "xpaths": ["//system.web/compilation/@debug"],
+                "pattern": "true",
+                "scopes": [
+                    "code"
+                ],
+                "type": "regex"
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Set debug to false",
+                "replacement": "false",
+                "type": "RegexReplace",
+                "pattern": {
+                    "pattern": "true",
+                    "type": "substring",
+                    "scopes": [
+                        "code"
+                    ],
+                    "modifiers": ["i"]
+                }
+            }
+        ],
+        "must-match": [
+            "<system.web>\n<compilation debug='true' targetFramework='1.0' />\n</system.web>"
+        ],
+        "must-not-match": [
+            "<system.web>\n<compilation debug='false' targetFramework='1.0' />\n</system.web>"
+        ]
+    }   
+]

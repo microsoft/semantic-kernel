@@ -1,0 +1,43 @@
+[
+    {
+        "name": "Source implementation of a weak/broken cryptography hash function",
+        "id": "DS109733",
+        "description": "An implementation of a weak/broken hash function was found in source code.",
+        "recommendation": "Do not use MD5, and always prefer OS- or library-provided cryptography implementations.",
+        "tags": [
+            "Cryptography.HashAlgorithm.WeakOrBrokenImplementation"
+        ],
+        "confidence": "medium",
+        "severity": "critical",
+        "rule_info": "DS109733.md",
+        "patterns": [
+            {
+                "pattern": "242070db|02441453|db702024|53144402|3572445317",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "MD5"
+            },
+            {
+                "pattern": "98BADCFE|FEDCBC98|C3D2E1F0|F0E1D2C3",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "SHA-1"
+            }
+        ],
+        "must-match": [
+            "242070db",
+            "02441453",
+            "db702024",
+            "53144402",
+            "3572445317",
+            "98BADCFE",
+            "FEDCBC98",
+            "C3D2E1F0",
+            "F0E1D2C3"
+        ]
+    }
+]

@@ -1,0 +1,144 @@
+[
+    {
+        "name": "Notice: Outbound HTTP Connection",
+        "id": "DS137038",
+        "description": "Inbound HTTP",
+        "recommendation": "",
+        "applies_to": [
+            "ruby"
+        ],
+        "tags": [
+            "ThreatModel.Integration.HTTP"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS137138.md",
+        "patterns": [
+            {
+                "pattern": "Net::HTTP",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "res = Net::HTTP.get_response(uri)"
+        ]
+    },
+    {
+        "name": "Insecure URL",
+        "id": "DS137138",
+        "description": "An HTTP-based URL without TLS was detected.",
+        "recommendation": "Update to an HTTPS-based URL if possible.",
+        "tags": [
+            "ThreatModel.Integration.HTTP"
+        ],
+        "confidence": "high",
+        "severity": "moderate",
+        "rule_info": "DS137138.md",
+        "patterns": [
+            {
+                "pattern": "http://[^/^\\s^\"]+",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "conditions" : [
+            {
+                "pattern" : 
+                {
+                    "pattern": "xmlns=",
+                    "type": "substring",
+                    "scopes": [
+                        "code"
+                    ]
+                },
+                "negate_finding": true,
+                "search_in": "finding-region(-1, 0)"
+            },
+            {
+                "pattern" : 
+                {
+                    "pattern": "xmlns:xsi=",
+                    "type": "substring",
+                    "scopes": [
+                        "code"
+                    ]
+                },
+                "negate_finding": true,
+                "search_in": "finding-region(-1, 0)"
+            },
+            {
+                "pattern" :
+                {
+                    "pattern": "<!DOCTYPE",
+                    "type": "string",
+                    "scopes": [
+                        "code"
+                    ]
+                },
+                "negate_finding": true,
+                "search_in": "finding-region(-1, 0)"
+            },
+            {
+                "pattern" :
+                {
+                    "pattern": "http://localhost",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                },
+                "negate_finding": true,
+                "search_in": "finding-only"
+            },
+            {
+                "pattern" :
+                {
+                    "pattern": "http://127.0.0.1",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                },
+                "negate_finding": true,
+                "search_in": "finding-only"
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to HTTPS ",
+                "type": "RegexReplace",
+                "replacement": "https://",
+                "pattern": {
+                    "pattern": "http://",
+                    "type": "substring",
+                    "scopes": [
+                        "code"
+                    ],
+                    "modifiers": ["i"]
+                }
+            }
+        ],
+        "must-match": [
+            "http://contoso.com",
+            "http://foo.com",
+            "this is \"http://foo.com\"",
+            "blah 'http://blah'"
+        ],
+        "must-not-match": [
+            "let resp = client\n.get(\"http://127.0.0.1:8080/infra/ready\")",
+            "http://localhost",
+            "http://127.0.0.1",
+            "<html xmlns=\"http://www.w3.org/1999/xhtml\">",
+            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">",
+            "https://",
+            "this is \"https://foo.com\"",
+            "<SCRIPT SRC=\"//BLAH\"></SCRIPT>",
+            "xmlns:xsi=\"http://www.w3.org/someschema/\""
+        ]
+    }
+]

@@ -1,0 +1,8 @@
+###############
+#  temp file  #
+###############
+*.yml
+.manifest
+
+# Generated
+Microsoft.DevSkim.*.yml

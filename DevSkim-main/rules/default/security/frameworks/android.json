@@ -1,0 +1,139 @@
+[
+    {
+        "name": "Android debug is enabled.",
+        "id": "DS180000",
+        "description": "The android:debuggable element is set to true, which should be disabled for release builds.",
+        "recommendation": "Set android:debuggable to false for release builds.",
+        "applies_to_file_regex": [
+            "AndroidManifest.xml"
+        ],
+        "tags": [
+            "Framework.Android"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS180000.md",
+        "patterns": [
+            {
+                "xpaths": ["//default:application/@android:debuggable"],
+	    	    "xpathnamespaces": {
+                    "default": "http://maven.apache.org/POM/4.0.0",
+                    "android": "http://schemas.android.com/apk/res/android"
+                },
+                "pattern": "true",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "modifiers" : ["i"]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to false",
+                "type": "RegexReplace",
+                "replacement": "false",
+                "pattern": {
+                    "pattern": "true",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?><manifest xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:android=\"http://schemas.android.com/apk/res/android\"><application android:debuggable='true' /></manifest>"
+        ],
+        "must-not-match": [
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?><manifest xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:android=\"http://schemas.android.com/apk/res/android\"><application android:debuggable='false' /></manifest>"
+        ]
+    },
+	{
+        "name": "Android debug is enabled.",
+        "id": "DS180001",
+        "description": "The setWebContentsDebuggingEnabled element is set to true, which should be disabled for release builds.",
+        "recommendation": "Set setWebContentsDebuggingEnabled to false for release builds.",
+        "applies_to": [
+            "java"
+        ],
+        "tags": [
+            "Framework.Android"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS180000.md",
+        "patterns": [
+            {
+                "pattern": "setWebContentsDebuggingEnabled\\(true\\)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "modifiers" : ["i"]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to false",
+                "type": "RegexReplace",
+                "replacement": "false",
+                "pattern": {
+                    "pattern": "true",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "setWebContentsDebuggingEnabled(true)"
+        ],
+        "must-not-match": [
+            "setWebContentsDebuggingEnabled(false)"
+        ]
+    },
+	{
+        "name": "Android StrictMode is enabled.",
+        "id": "DS180002",
+        "description": "StrictMode is detected, which is useful for developers but should be disabled for release builds.",
+        "recommendation": "Disable StrictMode for release builds.",
+        "applies_to": [
+            "java"
+        ],
+        "tags": [
+            "Framework.Android"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS180001.md",
+        "patterns": [
+            {
+                "pattern": "StrictMode.setThreadPolicy(",
+                "type": "substring",
+                "scopes": [
+                    "code"
+                ],
+                "modifiers" : ["i"]
+            },
+			{
+                "pattern": "StrictMode.setVmPolicy(",
+                "type": "substring",
+                "scopes": [
+                    "code"
+                ],
+                "modifiers" : ["i"]
+            }
+        ],
+        "must-match": [
+            "StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()",
+			"StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()"
+        ],
+        "must-not-match": [
+            "application(StrictMode)"
+        ]
+    }
+]

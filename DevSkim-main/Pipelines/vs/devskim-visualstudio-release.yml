@@ -1,0 +1,190 @@
+# Azure Pipelines
+# https://aka.ms/yaml
+
+name: DevSkim_VisualStudio_Release_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - "*.md"
+pr: none
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: SecurityEngineering/OSS-Tools-Pipeline-Templates
+      ref: refs/tags/v1.1.1
+
+stages:
+- stage: SDL
+  dependsOn: []
+  jobs:
+  - template: sdl-job.yml@templates
+    parameters:
+      serviceTreeID: '9792b8d3-bc2c-432c-8fc9-bdb143552208'
+
+- stage: Build
+  dependsOn: []
+  jobs:
+  - template: dotnet-build-job.yml@templates
+    parameters:
+      buildTool: 'msbuild'
+      buildConfiguration: 'Release'
+      dotnetVersion: '8.0.x'
+      targetFramework: 'net47'
+      projectPath: 'DevSkim-DotNet/Microsoft.DevSkim.VisualStudio/Microsoft.DevSkim.VisualStudio.csproj'
+      projectName: 'DevSkim_VS'
+      preBuild:
+      - template: nbgv-set-version-steps.yml@templates
+      # Workaround: Using the .NET 8 SDK doesn't install the right version of MSBuild for .NET 8
+      #   Using the .NET 7 SDK doesn't include the .NET 8 SDK so it can't build the project
+      #   Install both for now until the right version of MSBuild is included with .NET 8 
+      - task: UseDotNet@2
+        displayName: Install Dotnet 7 SDK
+        inputs:
+          packageType: 'sdk'
+          version: '7.0.x'
+      onEnd:
+      - task: PowerShell@2
+        displayName: Mkdir for Extension
+        inputs:
+          targetType: 'inline'
+          script: mkdir extension
+          workingDirectory: '$(Build.StagingDirectory)'
+      - task: PowerShell@2
+        displayName: Move Extension File
+        inputs:
+          targetType: 'inline'
+          script: 'mv $env:BUILD_STAGINGDIRECTORY/bin/dotnetapp/DevSkim_VS_dotnetapp_$(ReleaseVersion)/*.vsix $env:BUILD_STAGINGDIRECTORY/extension'
+      - task: PublishBuildArtifacts@1
+        displayName: Pipeline Publish Extension
+        inputs:
+          PathtoPublish: '$(Build.StagingDirectory)/extension'
+          ArtifactName: 'Unsigned_Extension'
+          publishLocation: 'Container'
+
+- stage: Release
+  dependsOn:
+  - SDL
+  - Build
+  condition: succeeded()
+  jobs:
+  - job: sign_hash_release
+    displayName: Code Sign, Generate Hashes, Publish Public Release
+    pool:
+      name: 'CSPA'
+      vmImage: 'win2022-image-base'
+    steps:
+    - template: nbgv-set-version-steps.yml@templates
+    - task: DownloadBuildArtifacts@0
+      displayName: Retrieve Unsigned Artifact 
+      inputs:
+        buildType: 'current'
+        downloadType: 'specific'
+        itemPattern: 'Unsigned_Extension\*.vsix'
+        downloadPath: '$(Build.BinariesDirectory)'
+    - task: AntiMalware@3
+      displayName: Anti-Malware Scan
+      inputs:
+        InputType: 'Basic'
+        ScanType: 'CustomScan'
+        FileDirPath: '$(Build.BinariesDirectory)\Unsigned_Extension'
+        EnableServices: true
+        SupportLogOnError: false
+        TreatSignatureUpdateFailureAs: 'Warning'
+        SignatureFreshness: 'UpToDate'
+        TreatStaleSignatureAs: 'Warning'
+    - task: EsrpCodeSigning@5
+      displayName: Code Sign VS Extension
+      inputs:
+        ConnectedServiceName: 'CodeSignConnection'
+        AppRegistrationClientId: '20c4d859-e6d2-4527-a52d-ca6756291e99'
+        AppRegistrationTenantId: '72f988bf-86f1-41af-91ab-2d7cd011db47'
+        AuthAKVName: 'prss-scanx'
+        AuthCertName: 'buildtask-1fdauth1'
+        AuthSignCertName: 'buildtask-1fdsign'
+        FolderPath: '$(Build.BinariesDirectory)\Unsigned_Extension'
+        Pattern: '*.vsix'
+        signConfigType: 'inlineSignParams'
+        inlineOperation: |
+          [
+                  {
+                      "KeyCode" : "CP-233016",
+                      "OperationCode" : "OpcSign",
+                      "Parameters" : {
+                          "FileDigest" : "/fd SHA256"
+                      },
+                      "ToolName" : "sign",
+                      "ToolVersion" : "1.0"
+                  },
+                  {
+                      "KeyCode" : "CP-233016",
+                      "OperationCode" : "OpcVerify",
+                      "Parameters" : {},
+                      "ToolName" : "sign",
+                      "ToolVersion" : "1.0"
+                  }
+              ]
+        SessionTimeout: '60'
+        MaxConcurrency: '50'
+        MaxRetryAttempts: '5'
+    - powershell: 'Get-ChildItem -Path ''$(Build.BinariesDirectory)'' -Recurse CodeSign* | foreach { Remove-Item -Path $_.FullName }'
+      displayName: 'Delete Code Sign Summaries'
+    - task: PowerShell@2
+      displayName: Move Extension File
+      inputs:
+        targetType: 'inline'
+        script: 'mv $env:BUILD_BINARIESDIRECTORY/Unsigned_Extension/*.vsix $env:BUILD_STAGINGDIRECTORY/'
+    - task: PowerShell@2
+      displayName: Generate Hashes
+      inputs:
+        targetType: 'inline'
+        script: |
+          Get-ChildItem $(Build.StagingDirectory) | Foreach-Object {
+            $name = $_.Name
+            $tmp = (Get-FileHash "$(Build.StagingDirectory)\$name").Hash
+            Add-Content $(Build.StagingDirectory)\HASHES.txt "$tmp`t$name"
+          }
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Signed Artifact to Pipeline
+      inputs:
+        targetPath: '$(Build.StagingDirectory)'
+        artifact: 'Signed_Extension_$(System.JobId)_$(System.JobAttempt)'
+    - task: PowerShell@2
+      displayName: Move VS Marketplace Manifest
+      inputs:
+        targetType: 'inline'
+        script: 'mv $env:BUILD_SOURCESDIRECTORY/DevSkim-DotNet/Microsoft.DevSkim.VisualStudio/publish.manifest.json $env:BUILD_STAGINGDIRECTORY/'
+    - task: PowerShell@2
+      displayName: Move Readme-gallery.md
+      inputs:
+        targetType: 'inline'
+        script: 'mv $env:BUILD_SOURCESDIRECTORY/DevSkim-DotNet/Microsoft.DevSkim.VisualStudio/Content/readme-gallery.md $env:BUILD_STAGINGDIRECTORY/'
+    - task: PowerShell@2
+      displayName: Deploy to VS Marketplace
+      inputs:
+        targetType: 'inline'
+        script: |
+          Install-Module VSSetup -Force
+          $vsixPublisher = Join-Path -Path (Get-VSSetupInstance -All | Select-VSSetupInstance -Latest).installationPath -ChildPath "VSSDK\VisualStudioIntegration\Tools\Bin\VsixPublisher.exe" -Resolve
+          $vsixPath = Resolve-Path $env:BUILD_STAGINGDIRECTORY\*.vsix -Relative
+          & $vsixPublisher publish -payload $vsixPath -publishManifest $(Build.StagingDirectory)/publish.manifest.json -personalAccessToken $(VS_Token) -ignoreWarnings "VSIXValidatorWarning01,VSIXValidatorWarning02,VSIXValidatorWarning08"
+        workingDirectory: '$(Build.StagingDirectory)'
+    - task: GitHubRelease@1
+      displayName: Release to GitHub
+      inputs:
+        gitHubConnection: 'github.com_gfs'
+        repositoryName: 'microsoft/DevSkim'
+        action: 'create'
+        target: '$(Build.SourceVersion)'
+        tagSource: 'userSpecifiedTag'
+        tag: 'VS_v$(ReleaseVersion)'
+        title: 'DevSkim VS Extension v$(ReleaseVersion)'
+        assets: |
+          $(Build.StagingDirectory)/*.vsix
+        changeLogCompareToRelease: 'lastNonDraftRelease'
+        changeLogType: 'commitBased'

@@ -1,0 +1,41 @@
+[
+    {
+        "name": "Do not include user-input directly in format strings",
+        "id": "DS113286",
+        "description": "Do not create NSString objects using a user-provided format string, as this could lead to a security vulnerability. https://www.securecoding.cert.org/confluence/display/c/FIO30-C.+Exclude+user+input+from+format+strings",
+        "recommendation": "",
+        "applies_to": [
+            "objective-c"
+        ],
+        "tags": [
+            "ControlFlow.Injection.FormatString",
+            "cert:FIO30-C"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS113286.md",
+        "patterns": [
+            {
+                "pattern": "\\[NSString stringWithFormat:\\s*([^@\\\"\\]]+\\])",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }        
+        ],
+        "fix_its": [
+            {
+                "name": "Use a predefined format string",
+                "type": "RegexReplace",
+                "replacement": "[NSString stringWithFormat:@\"%@\", $1",
+                "pattern": {
+                    "pattern": "\\[NSString stringWithFormat:\\s*([^@\\\"\\]]+\\])",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            }
+        ]
+    }
+]
