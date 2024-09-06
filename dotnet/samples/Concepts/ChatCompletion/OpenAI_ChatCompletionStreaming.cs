@@ -162,15 +162,4 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         Console.WriteLine("\n------------------------");
         chatHistory.AddMessage(authorRole, fullMessage);
     }
-
-    /// <summary>
-    /// Outputs the last message of the chat history
-    /// </summary>
-    private void OutputLastMessage(ChatHistory chatHistory)
-    {
-        var message = chatHistory.Last();
-
-        Console.WriteLine($"{message.Role}: {message.Content}");
-        Console.WriteLine("------------------------");
-    }
 }
