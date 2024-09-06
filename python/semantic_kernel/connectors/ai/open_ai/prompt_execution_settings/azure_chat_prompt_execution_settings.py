@@ -39,27 +39,31 @@ class ApiKeyAuthentication(AzureChatRequestBase):
     """API key authentication."""
 
     type: Annotated[Literal["APIKey", "api_key"], AfterValidator(to_snake)] = "api_key"
-    key: str | None = None
+    key: str | None
 
 
 class SystemAssignedManagedIdentityAuthentication(AzureChatRequestBase):
     """System assigned managed identity authentication."""
 
-    type: Annotated[Literal["SystemAssignedManagedIdentity", "system_assigned_managed_identity"], AfterValidator(to_snake)] = "system_assigned_managed_identity"
+    type: Annotated[
+        Literal["SystemAssignedManagedIdentity", "system_assigned_managed_identity"], AfterValidator(to_snake)
+    ] = "system_assigned_managed_identity"
 
 
 class UserAssignedManagedIdentityAuthentication(AzureChatRequestBase):
     """User assigned managed identity authentication."""
 
-    type: Annotated[Literal["UserAssignedManagedIdentity", "user_assigned_managed_identity"], AfterValidator(to_snake)] = "user_assigned_managed_identity"
-    managed_identity_resource_id: str | None = None
+    type: Annotated[
+        Literal["UserAssignedManagedIdentity", "user_assigned_managed_identity"], AfterValidator(to_snake)
+    ] = "user_assigned_managed_identity"
+    managed_identity_resource_id: str | None
 
 
 class AccessTokenAuthentication(AzureChatRequestBase):
     """Access token authentication."""
 
     type: Annotated[Literal["AccessToken", "access_token"], AfterValidator(to_snake)] = "access_token"
-    access_token: str | None = None
+    access_token: str | None
 
 
 class AzureEmbeddingDependency(AzureChatRequestBase):
@@ -118,7 +122,13 @@ class AzureAISearchDataSourceParameters(AzureDataSourceParameters):
     query_type: Annotated[
         Literal["simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"], AfterValidator(to_snake)
     ] = "simple"
-    authentication: ApiKeyAuthentication | SystemAssignedManagedIdentityAuthentication | UserAssignedManagedIdentityAuthentication | AccessTokenAuthentication | None = None
+    authentication: (
+        ApiKeyAuthentication
+        | SystemAssignedManagedIdentityAuthentication
+        | UserAssignedManagedIdentityAuthentication
+        | AccessTokenAuthentication
+        | None
+    ) = None
 
 
 class AzureAISearchDataSource(AzureChatRequestBase):
