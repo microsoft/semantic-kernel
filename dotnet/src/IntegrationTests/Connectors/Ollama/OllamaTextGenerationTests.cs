@@ -11,11 +11,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using OllamaSharp.Models;
-using OllamaSharp.Models.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Ollama;
 
@@ -32,7 +30,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         .AddUserSecrets<OllamaCompletionTests>()
         .Build();
 
-    [Theory]//(Skip = "For manual verification only")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
     public async Task ItInvokeStreamingWorksAsync(string prompt, string expectedAnswerContains)
     {
@@ -58,7 +56,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         Assert.Contains(expectedAnswerContains, fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItShouldReturnInnerContentAsync()
     {
         // Arrange
@@ -88,7 +86,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         Assert.True(innerContent.Done);
     }
 
-    [Theory]//(Skip = "For manual verification only")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("\n")]
     [InlineData("\r\n")]
     public async Task ItCompletesWithDifferentLineEndingsAsync(string lineEnding)
@@ -115,7 +113,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         Assert.Contains(ExpectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItInvokePromptTestAsync()
     {
         // Arrange
@@ -133,7 +131,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory]//(Skip = "For manual verification only")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
     public async Task ItInvokeTestAsync(string prompt, string expectedAnswerContains)
     {
