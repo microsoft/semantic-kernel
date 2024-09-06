@@ -559,15 +559,10 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private static void ValidateGeminiResponse(GeminiResponse geminiResponse)
     {
-        if (geminiResponse.Candidates is null || geminiResponse.Candidates.Count == 0)
+        if (geminiResponse.PromptFeedback?.BlockReason is not null)
         {
-            if (geminiResponse.PromptFeedback?.BlockReason is not null)
-            {
-                // TODO: Currently SK doesn't support prompt feedback/finish status, so we just throw an exception. I told SK team that we need to support it: https://github.com/microsoft/semantic-kernel/issues/4621
-                throw new KernelException("Prompt was blocked due to Gemini API safety reasons.");
-            }
-
-            throw new KernelException("Gemini API doesn't return any data.");
+            // TODO: Currently SK doesn't support prompt feedback/finish status, so we just throw an exception. I told SK team that we need to support it: https://github.com/microsoft/semantic-kernel/issues/4621
+            throw new KernelException("Prompt was blocked due to Gemini API safety reasons.");
         }
     }
 
