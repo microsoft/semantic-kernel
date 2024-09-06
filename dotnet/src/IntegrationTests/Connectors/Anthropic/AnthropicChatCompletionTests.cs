@@ -229,7 +229,7 @@ public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : Tes
         var metadata = responses
             .Where(c => c.Metadata is not null)
             .Select(c => c.Metadata)
-            .Cast<AnthropicMetadata>();
+            .Cast<AnthropicMetadata>().ToList();
         Assert.NotEmpty(metadata);
         this.Output.WriteLine($"TotalTokenCount: {metadata.Sum(m => m.TotalTokenCount)}");
         this.Output.WriteLine($"InputTokenCount: {metadata.Sum(m => m.InputTokenCount)}");

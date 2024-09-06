@@ -33,11 +33,11 @@ internal sealed class AnthropicStreamingResponse
 
     [JsonPropertyName("content_block")]
     [JsonInclude]
-    private AnthropicContent? _contentBlock;
+    private readonly AnthropicContent? _contentBlock;
 
     [JsonPropertyName("delta")]
     [JsonInclude]
-    private JsonNode? _delta;
+    private readonly JsonNode? _delta;
 
     /// <summary>
     /// Delta of anthropic content, only if the type is "content_block_start" or "content_block_delta", otherwise null.
