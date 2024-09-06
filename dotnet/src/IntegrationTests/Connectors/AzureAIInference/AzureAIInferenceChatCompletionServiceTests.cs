@@ -8,9 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Azure.AI.Inference;
-using Azure.Core.Pipeline;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -124,7 +122,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact(Skip = "Skipping as Azure AI Studio Phi3 Deployments presents with a bug when passing 0 float parameters")]
+    [Fact]
     public async Task ItStreamingFromKernelTestAsync()
     {
         // Arrange
@@ -188,23 +186,12 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)exception).StatusCode);
     }
 
-    [Fact(Skip = "Skipping as Azure AI Studio Phi3 Deployments presents with a bug when passing 0 float parameters")]
+    [Fact]
     public async Task ItShouldReturnInnerContentAsync()
     {
         // Arrange
-        var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
-        using var myHandler = new MyHttpClientHandler();
-        using var myClient = new HttpClient(myHandler);
-        var myInferenceClient = new ChatCompletionsClient(new Uri("https://Phi-3-medium-4k-instruct-maas.swedencentral.models.ai.azure.com"), new AzureKeyCredential(config!.ApiKey!), new ChatCompletionsClientOptions { Transport = new HttpClientTransport(myClient) });
+        var kernel = this.CreateAndInitializeKernel();
 
-        var options = new ChatCompletionsOptions();
-        options.Messages.Add(new ChatRequestUserMessage("Hey"));
-        options.Temperature = 0;
-        options.NucleusSamplingFactor = 0;
-
-        await myInferenceClient.CompleteAsync(options);
-
-        var kernel = this.CreateAndInitializeKernel(myClient);
         var plugins = TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
         // Act
@@ -221,17 +208,6 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         Assert.NotEqual(0, usage.PromptTokens);
         Assert.NotEqual(0, usage.CompletionTokens);
     }
-
-    public class MyHttpClientHandler : HttpClientHandler
-    {
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            var requestBody = await request.Content!.ReadAsStringAsync(cancellationToken);
-            var response = await base.SendAsync(request, cancellationToken);
-            return response;
-        }
-    }
-
 
     [Theory(Skip = "This test is for manual verification.")]
     [InlineData("\n")]
