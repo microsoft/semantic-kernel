@@ -173,15 +173,4 @@ public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) 
         Console.WriteLine("\n------------------------");
         return fullMessage;
     }
-
-    /// <summary>
-    /// Outputs the last message of the chat history
-    /// </summary>
-    private void OutputLastMessage(ChatHistory chatHistory)
-    {
-        var message = chatHistory.Last();
-
-        Console.WriteLine($"{message.Role}: {message.Content}");
-        Console.WriteLine("------------------------");
-    }
 }
