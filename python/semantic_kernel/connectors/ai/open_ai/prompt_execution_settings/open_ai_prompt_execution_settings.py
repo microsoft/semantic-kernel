@@ -9,7 +9,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self  # pragma: no cover
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -61,7 +61,7 @@ class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
 class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the Chat Completion endpoint."""
 
-    response_format: dict[Literal["type"], Literal["text", "json_object"]] | None = None
+    response_format: dict[Literal["type"], Literal["text", "json_object"]] | type[BaseModel] | None = None
     function_call: str | None = None
     functions: list[dict[str, Any]] | None = None
     messages: list[dict[str, Any]] | None = None
@@ -85,6 +85,16 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
                 "The function_call and functions parameters are deprecated. Please use the tool_choice and tools parameters instead."  # noqa: E501
             )
         return v
+
+    @field_validator("response_format", mode="before")
+    @classmethod
+    def validate_response_format(cls, value):
+        """Validate the response_format parameter."""
+        if not isinstance(value, dict) and not (isinstance(value, type) and issubclass(value, BaseModel)):
+            raise ServiceInvalidExecutionSettingsError(
+                "response_format must be a dictionary or a single Pydantic model class"
+            )
+        return value
 
     @model_validator(mode="before")
     @classmethod

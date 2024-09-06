@@ -7,6 +7,7 @@ from typing import Any
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
 from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
+from pydantic import BaseModel
 
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -36,7 +37,15 @@ class OpenAIHandler(KernelBaseModel, ABC):
         """Execute the appropriate call to OpenAI models."""
         try:
             if self.ai_model_type == OpenAIModelTypes.CHAT:
-                response = await self.client.chat.completions.create(**request_settings.prepare_settings_dict())
+                if hasattr(request_settings, "response_format") and issubclass(
+                    request_settings.response_format, BaseModel
+                ):
+                    settings = request_settings.prepare_settings_dict()
+                    # if not hasattr(settings, "stream"):
+                    settings.pop("stream", None)
+                    response = await self.client.beta.chat.completions.parse(**settings)
+                else:
+                    response = await self.client.chat.completions.create(**request_settings.prepare_settings_dict())
             else:
                 response = await self.client.completions.create(**request_settings.prepare_settings_dict())
             self.store_usage(response)

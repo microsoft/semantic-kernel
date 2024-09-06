@@ -1,0 +1,132 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import asyncio
+import datetime
+
+from azure.core.credentials import AccessToken
+from azure.core.exceptions import ClientAuthenticationError
+from azure.identity import DefaultAzureCredential
+
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+###################################################################
+# The following sample demonstrates how to create a chatbot       #
+# that assists users in solving math problems. The bot guides     #
+# the user step-by-step through the solution process using a      #
+# structured output format based on a Pydantic model.             #
+###################################################################
+
+###################################################################
+# NOTE: If using Azure OpenAI the the following is required:
+# - access to gpt-4o-2024-08-06
+# - the 2024-08-01-preview API version
+# - if using a token instead of an API KEY, you must have the
+#    `Cognitive Services OpenAI Contributor` role assigned to your
+#    Azure AD user.
+# - flip the `use_azure_openai` flag to `True`
+###################################################################
+use_azure_openai = False
+
+system_message = """
+You are a helpful math tutor. Guide the user through the solution step by step.
+"""
+
+
+class Step(KernelBaseModel):
+    explanation: str
+    output: str
+
+
+class Reasoning(KernelBaseModel):
+    steps: list[Step]
+    final_answer: str
+
+
+auth_token: AccessToken | None = None
+
+AOAI_TOKEN_ENDPOINT: str = "https://cognitiveservices.azure.com"  # nosec
+
+
+async def auth_callback() -> str:
+    """A sample auth callback that shows how to use Azure's DefaultAzureCredential."""
+    global auth_token
+    current_utc_timestamp = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+
+    if not auth_token or auth_token.expires_on < current_utc_timestamp:
+        credential = DefaultAzureCredential()
+
+        try:
+            auth_token = credential.get_token(AOAI_TOKEN_ENDPOINT)
+        except ClientAuthenticationError as cae:
+            err_messages = getattr(cae, "messages", [])
+            raise FunctionExecutionException(
+                f"Failed to retrieve the client auth token with messages: {' '.join(err_messages)}"
+            ) from cae
+
+    return auth_token.token
+
+
+kernel = Kernel()
+
+service_id = "chat-gpt"
+if use_azure_openai:
+    chat_service = AzureChatCompletion(
+        service_id=service_id,
+        ad_token_provider=auth_callback,
+    )
+else:
+    chat_service = OpenAIChatCompletion(
+        service_id=service_id,
+    )
+kernel.add_service(chat_service)
+
+req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+req_settings.max_tokens = 2000
+req_settings.temperature = 0.7
+req_settings.top_p = 0.8
+req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["chat"]})
+
+# This is the key setting in this example that tells the OpenAI service to return structured output based on the
+# Pydantic model Reasoning.
+req_settings.response_format = Reasoning
+
+
+chat_function = kernel.add_function(
+    prompt=system_message + """{{$chat_history}}""",
+    function_name="chat",
+    plugin_name="chat",
+    prompt_execution_settings=req_settings,
+)
+
+history = ChatHistory()
+history.add_user_message("how can I solve 8x + 7 = -23")
+
+
+async def main():
+    stream = True
+    if stream:
+        answer = kernel.invoke_stream(
+            chat_function,
+            chat_history=history,
+        )
+        print("Mosscap:> ", end="")
+        async for message in answer:
+            print(str(message[0]), end="")
+        print("\n")
+        return True
+    answer = await kernel.invoke(
+        chat_function,
+        chat_history=history,
+    )
+    print(f"Mosscap:> {answer}")
+    return True
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
