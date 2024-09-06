@@ -200,7 +200,7 @@ def test_create_options_azure_data():
         parameters={
             "indexName": "test-index",
             "endpoint": "test-endpoint",
-            "authentication": {"type": "api_key", "api_key": "test-key"},
+            "authentication": {"type": "api_key", "key": "test-key"},
         }
     )
     extra = ExtraBody(data_sources=[az_source])
