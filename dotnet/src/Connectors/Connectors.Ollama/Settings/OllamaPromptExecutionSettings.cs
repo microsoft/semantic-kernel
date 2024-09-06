@@ -43,7 +43,7 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Sets the stop sequences to use. When this pattern is encountered the
     /// LLM will stop generating text and return. Multiple stop patterns may
-    /// be set by specifying multiple separate stop parameters in a modelfile.
+    /// be set by specifying multiple separate stop parameters in a model file.
     /// </summary>
     [JsonPropertyName("stop")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -111,7 +111,7 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
-    #region private ================================================================================
+    #region private
 
     private List<string>? _stop;
     private float? _temperature;

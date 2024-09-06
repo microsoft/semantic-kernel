@@ -18,11 +18,11 @@ public abstract class ServiceBase
     /// <summary>
     /// Attributes of the service.
     /// </summary>
-    internal Dictionary<string, object?> AttributesInternal { get; } = new();
+    internal Dictionary<string, object?> AttributesInternal { get; } = [];
     internal readonly OllamaApiClient _client;
 
     internal ServiceBase(string model,
-        Uri endpoint,
+        Uri? endpoint,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -31,20 +31,6 @@ public abstract class ServiceBase
 
         if (httpClient is not null)
         {
-            httpClient.BaseAddress ??= endpoint;
-
-            // Try to add User-Agent header.
-            if (!httpClient.DefaultRequestHeaders.TryGetValues("User-Agent", out _))
-            {
-                httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-            }
-
-            // Try to add Semantic Kernel Version header 
-            if (!httpClient.DefaultRequestHeaders.TryGetValues(HttpHeaderConstant.Names.SemanticKernelVersion, out _))
-            {
-                httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(Kernel)));
-            }
-
             this._client = new(httpClient, model);
         }
         else

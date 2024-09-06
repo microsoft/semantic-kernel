@@ -10,9 +10,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.TextGeneration;
 using OllamaSharp.Models;
+using OllamaSharp.Models.Chat;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Ollama.UnitTests;
+namespace SemanticKernel.Connectors.Ollama.UnitTests.Services;
 
 public sealed class OllamaTextGenerationTests : IDisposable
 {
@@ -21,59 +22,30 @@ public sealed class OllamaTextGenerationTests : IDisposable
 
     public OllamaTextGenerationTests()
     {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(OllamaTestHelper.GetTestResponse("text_generation_test_response.txt"));
-        this._httpClient = new HttpClient(this._messageHandlerStub, false);
-    }
-
-    [Fact]
-    public async Task UserAgentHeaderShouldBeUsedAsync()
-    {
-        //Arrange
-        var sut = new OllamaTextGenerationService(
-            "fake-model",
-            new Uri("http://localhost:11434"),
-            httpClient: this._httpClient);
-
-        //Act
-        await sut.GetTextContentsAsync("fake-text");
-
-        //Assert
-        Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
-
-        var values = this._messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
-        var value = values.SingleOrDefault();
-        Assert.Equal("Semantic-Kernel", value);
-    }
-
-    [Fact]
-    public async Task WhenHttpClientDoesNotHaveBaseAddressProvidedEndpointShouldBeUsedAsync()
-    {
-        //Arrange
-        this._httpClient.BaseAddress = null;
-        var sut = new OllamaTextGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path/"), httpClient: this._httpClient);
-
-        //Act
-        await sut.GetTextContentsAsync("fake-text");
-
-        //Assert
-        Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        this._messageHandlerStub = new()
+        {
+            ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StreamContent(File.OpenRead("TestData/text_generation_test_response_stream.txt"))
+            }
+        };
+        this._httpClient = new HttpClient(this._messageHandlerStub, false) { BaseAddress = new Uri("http://localhost:11434") };
     }
 
     [Fact]
     public async Task ShouldSendPromptToServiceAsync()
     {
         //Arrange
+        var expectedModel = "phi3";
         var sut = new OllamaTextGenerationService(
-            "fake-model",
-            new Uri("http://localhost:11434"),
+            expectedModel,
             httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
 
         //Assert
-        var requestPayload = JsonSerializer.Deserialize<GenerateCompletionRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<GenerateRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(requestPayload);
         Assert.Equal("fake-text", requestPayload.Prompt);
     }
@@ -84,7 +56,6 @@ public sealed class OllamaTextGenerationTests : IDisposable
         //Arrange
         var sut = new OllamaTextGenerationService(
             "fake-model",
-            new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
 
         //Act
@@ -102,17 +73,25 @@ public sealed class OllamaTextGenerationTests : IDisposable
     public async Task GetTextContentsShouldHaveModelIdDefinedAsync()
     {
         //Arrange
+        var expectedModel = "phi3";
         var sut = new OllamaTextGenerationService(
-            "fake-model",
-            new Uri("http://localhost:11434"),
+            expectedModel,
             httpClient: this._httpClient);
 
         // Act
         var textContent = await sut.GetTextContentAsync("Any prompt");
 
         // Assert
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.NotNull(requestPayload.Options);
+        Assert.Null(requestPayload.Options.Stop);
+        Assert.Null(requestPayload.Options.Temperature);
+        Assert.Null(requestPayload.Options.TopK);
+        Assert.Null(requestPayload.Options.TopP);
+
         Assert.NotNull(textContent.ModelId);
-        Assert.Equal("fake-model", textContent.ModelId);
+        Assert.Equal(expectedModel, textContent.ModelId);
     }
 
     [Fact]
@@ -122,13 +101,7 @@ public sealed class OllamaTextGenerationTests : IDisposable
         var expectedModel = "phi3";
         var sut = new OllamaTextGenerationService(
             expectedModel,
-            new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
-
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StreamContent(File.OpenRead("TestData/text_generation_test_response_stream.txt"))
-        };
 
         // Act
         StreamingTextContent? lastTextContent = null;
@@ -138,8 +111,81 @@ public sealed class OllamaTextGenerationTests : IDisposable
         }
 
         // Assert
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.NotNull(requestPayload.Options);
+        Assert.Null(requestPayload.Options.Stop);
+        Assert.Null(requestPayload.Options.Temperature);
+        Assert.Null(requestPayload.Options.TopK);
+        Assert.Null(requestPayload.Options.TopP);
+
         Assert.NotNull(lastTextContent!.ModelId);
         Assert.Equal(expectedModel, lastTextContent.ModelId);
+    }
+
+    [Fact]
+    public async Task GetStreamingTextContentsExecutionSettingsMustBeSentAsync()
+    {
+        //Arrange
+        var sut = new OllamaTextGenerationService(
+            "fake-model",
+            httpClient: this._httpClient);
+
+        string jsonSettings = """
+                                {
+                                    "stop": ["stop me"],
+                                    "temperature": 0.5,
+                                    "top_p": 0.9,
+                                    "top_k": 100
+                                }
+                                """;
+
+        var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(jsonSettings);
+        var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
+
+        // Act
+        await sut.GetStreamingTextContentsAsync("Any prompt", ollamaExecutionSettings).GetAsyncEnumerator().MoveNextAsync();
+
+        // Assert
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.NotNull(requestPayload.Options);
+        Assert.Equal(ollamaExecutionSettings.Stop, requestPayload.Options.Stop);
+        Assert.Equal(ollamaExecutionSettings.Temperature, requestPayload.Options.Temperature);
+        Assert.Equal(ollamaExecutionSettings.TopP, requestPayload.Options.TopP);
+        Assert.Equal(ollamaExecutionSettings.TopK, requestPayload.Options.TopK);
+    }
+
+    [Fact]
+    public async Task GetTextContentsExecutionSettingsMustBeSentAsync()
+    {
+        //Arrange
+        var sut = new OllamaTextGenerationService(
+            "fake-model",
+            httpClient: this._httpClient);
+        string jsonSettings = """
+                                {
+                                    "stop": ["stop me"],
+                                    "temperature": 0.5,
+                                    "top_p": 0.9,
+                                    "top_k": 100
+                                }
+                                """;
+
+        var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(jsonSettings);
+        var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
+
+        // Act
+        await sut.GetTextContentsAsync("Any prompt", ollamaExecutionSettings);
+
+        // Assert
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.NotNull(requestPayload.Options);
+        Assert.Equal(ollamaExecutionSettings.Stop, requestPayload.Options.Stop);
+        Assert.Equal(ollamaExecutionSettings.Temperature, requestPayload.Options.Temperature);
+        Assert.Equal(ollamaExecutionSettings.TopP, requestPayload.Options.TopP);
+        Assert.Equal(ollamaExecutionSettings.TopK, requestPayload.Options.TopK);
     }
 
     /// <summary>

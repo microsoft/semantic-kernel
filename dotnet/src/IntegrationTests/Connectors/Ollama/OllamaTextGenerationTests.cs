@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Ollama;
+using OllamaSharp.Models;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -48,7 +47,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         await foreach (var content in target.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
         {
             fullResult.Append(content);
-            Assert.NotNull(content.Metadata);
+            Assert.NotNull(content.InnerContent);
         }
 
         // Assert
@@ -56,7 +55,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
     }
 
     [Fact(Skip = "For manual verification only")]
-    public async Task ItShouldReturnMetadataAsync()
+    public async Task ItShouldReturnInnerContentAsync()
     {
         // Arrange
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
@@ -76,15 +75,13 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
 
         // Assert
         Assert.NotNull(lastUpdate);
-        Assert.NotNull(lastUpdate.Metadata);
+        Assert.NotNull(lastUpdate.InnerContent);
 
-        // CreatedAt
-        Assert.True(lastUpdate.Metadata.TryGetValue("CreatedAt", out object? createdAt));
-        Assert.IsType<OllamaMetadata>(lastUpdate.Metadata);
-        OllamaMetadata ollamaMetadata = (OllamaMetadata)lastUpdate.Metadata;
-        Assert.NotNull(ollamaMetadata.CreatedAt);
-        Assert.NotEqual(0, ollamaMetadata.TotalDuration);
-        Assert.NotEqual(0, ollamaMetadata.EvalDuration);
+        Assert.IsType<GenerateDoneResponseStream>(lastUpdate.InnerContent);
+        var innerContent = lastUpdate.InnerContent as GenerateDoneResponseStream;
+        Assert.NotNull(innerContent);
+        Assert.NotNull(innerContent.CreatedAt);
+        Assert.True(innerContent.Done);
     }
 
     [Theory(Skip = "For manual verification only")]
@@ -151,35 +148,9 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
-        Assert.NotNull(actual.Metadata);
-    }
-
-    [Fact(Skip = "For manual verification only")]
-    public async Task ItShouldHaveSemanticKernelVersionHeaderAsync()
-    {
-        // Arrange
-        var config = this._configuration.GetSection("Ollama").Get<OllamaConfiguration>();
-        Assert.NotNull(config);
-        Assert.NotNull(config.ModelId);
-        Assert.NotNull(config.Endpoint);
-
-        using var defaultHandler = new HttpClientHandler();
-        using var httpHeaderHandler = new HttpHeaderHandler(defaultHandler);
-        using var httpClient = new HttpClient(httpHeaderHandler);
-        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
-        var builder = this._kernelBuilder;
-        builder.AddOllamaTextGeneration(
-            endpoint: config.Endpoint,
-            modelId: config.ModelId,
-            httpClient: httpClient);
-        Kernel target = builder.Build();
-
-        // Act
-        var result = await target.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?");
-
-        // Assert
-        Assert.NotNull(httpHeaderHandler.RequestHeaders);
-        Assert.True(httpHeaderHandler.RequestHeaders.TryGetValues("Semantic-Kernel-Version", out var values));
+        var content = actual.GetValue<TextContent>();
+        Assert.NotNull(content);
+        Assert.NotNull(content.InnerContent);
     }
 
     #region internals
@@ -203,18 +174,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
 
         kernelBuilder.AddOllamaTextGeneration(
             modelId: config.ModelId,
-            endpoint: config.Endpoint);
-    }
-
-    private sealed class HttpHeaderHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
-    {
-        public System.Net.Http.Headers.HttpRequestHeaders? RequestHeaders { get; private set; }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            this.RequestHeaders = request.Headers;
-            return await base.SendAsync(request, cancellationToken);
-        }
+            endpoint: new Uri(config.Endpoint));
     }
 
     #endregion

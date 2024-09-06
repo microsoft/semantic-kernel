@@ -94,18 +94,18 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         Console.WriteLine("------------------------");
 
         var chatHistory = new ChatHistory("You are a librarian, expert about books");
-        OutputLastMessage(chatHistory);
+        this.OutputLastMessage(chatHistory);
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
-        OutputLastMessage(chatHistory);
+        this.OutputLastMessage(chatHistory);
 
         // First assistant message
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
 
         // Second user message
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
-        OutputLastMessage(chatHistory);
+        this.OutputLastMessage(chatHistory);
 
         // Second assistant message
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
@@ -157,16 +157,5 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         Console.WriteLine("\n------------------------");
         return fullMessage;
-    }
-
-    /// <summary>
-    /// Outputs the last message of the chat history
-    /// </summary>
-    private void OutputLastMessage(ChatHistory chatHistory)
-    {
-        var message = chatHistory.Last();
-
-        Console.WriteLine($"{message.Role}: {message.Content}");
-        Console.WriteLine("------------------------");
     }
 }

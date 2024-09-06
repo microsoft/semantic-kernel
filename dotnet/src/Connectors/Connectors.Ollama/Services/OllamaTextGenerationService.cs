@@ -4,12 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using Microsoft.SemanticKernel.TextGeneration;
 using OllamaSharp;
+using OllamaSharp.Models;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
@@ -23,15 +25,30 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
     /// </summary>
     /// <param name="modelId">The Ollama model for the text generation service.</param>
     /// <param name="endpoint">The endpoint including the port where Ollama server is hosted</param>
-    /// <param name="httpClient">Optional HTTP client to be used for communication with the Ollama API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OllamaTextGenerationService(
         string modelId,
         Uri endpoint,
-        HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, endpoint, httpClient, loggerFactory)
+        : base(modelId, endpoint, null, loggerFactory)
     {
+        Verify.NotNull(endpoint);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OllamaTextGenerationService"/> class.
+    /// </summary>
+    /// <param name="modelId">The Ollama model for the text generation service.</param>
+    /// <param name="httpClient">HTTP client to be used for communication with the Ollama API.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public OllamaTextGenerationService(
+        string modelId,
+        HttpClient httpClient,
+        ILoggerFactory? loggerFactory = null)
+        : base(modelId, null, httpClient, loggerFactory)
+    {
+        Verify.NotNull(httpClient);
+        Verify.NotNull(httpClient.BaseAddress);
     }
 
     /// <summary>
@@ -58,13 +75,31 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var content = await this._client.GetCompletion(prompt, null, cancellationToken).ConfigureAwait(false);
+        var fullContent = new StringBuilder();
+        List<GenerateResponseStream> innerContent = [];
+        string? modelId = null;
 
-        return [new(content.Response, modelId: this._client.SelectedModel, innerContent: content, metadata:
-            new Dictionary<string, object?>()
+        var settings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var request = CreateRequest(settings, this._client.SelectedModel);
+        request.Prompt = prompt;
+
+        await foreach (var responseStreamChunk in this._client.Generate(request, cancellationToken).ConfigureAwait(false))
+        {
+            if (responseStreamChunk is null)
             {
-                ["Context"] = content.Context
-            })];
+                continue;
+            }
+
+            innerContent.Add(responseStreamChunk);
+            fullContent.Append(responseStreamChunk.Response);
+
+            modelId ??= responseStreamChunk.Model;
+        }
+
+        return [new TextContent(
+                text: fullContent.ToString(),
+                modelId: modelId,
+                innerContent: innerContent)];
     }
 
     /// <inheritdoc />
@@ -74,9 +109,34 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var content in this._client.StreamCompletion(prompt, null, cancellationToken).ConfigureAwait(false))
+        var settings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var request = CreateRequest(settings, this._client.SelectedModel);
+        request.Prompt = prompt;
+
+        await foreach (var content in this._client.Generate(request, cancellationToken).ConfigureAwait(false))
         {
-            yield return new StreamingTextContent(content?.Response, modelId: content?.Model, innerContent: content, metadata: new OllamaMetadata(content));
+            yield return new StreamingTextContent(
+                text: content?.Response,
+                modelId: content?.Model,
+                innerContent: content);
         }
+    }
+
+    private static GenerateRequest CreateRequest(OllamaPromptExecutionSettings settings, string selectedModel)
+    {
+        var request = new GenerateRequest
+        {
+            Options = new()
+            {
+                Temperature = settings.Temperature,
+                TopP = settings.TopP,
+                TopK = settings.TopK,
+                Stop = settings.Stop?.ToArray()
+            },
+            Model = selectedModel,
+            Stream = true
+        };
+
+        return request;
     }
 }

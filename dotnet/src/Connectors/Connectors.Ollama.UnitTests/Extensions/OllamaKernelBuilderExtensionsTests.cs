@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Ollama.UnitTests;
+namespace SemanticKernel.Connectors.Ollama.UnitTests.Extensions;
 
 /// <summary>
 /// Unit tests of <see cref="OllamaKernelBuilderExtensions"/>.

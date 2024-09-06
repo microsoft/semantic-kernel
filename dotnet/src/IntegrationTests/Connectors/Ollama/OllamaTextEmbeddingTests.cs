@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.Ollama;
@@ -33,7 +34,7 @@ public sealed class OllamaTextEmbeddingTests
 
         var embeddingGenerator = new OllamaTextEmbeddingGenerationService(
             modelId,
-            config.Endpoint);
+            new Uri(config.Endpoint));
 
         // Act
         var result = await embeddingGenerator.GenerateEmbeddingAsync(TestInputString);
@@ -57,7 +58,7 @@ public sealed class OllamaTextEmbeddingTests
 
         var embeddingGenerator = new OllamaTextEmbeddingGenerationService(
             modelId,
-            config.Endpoint);
+            new Uri(config.Endpoint));
 
         // Act
         var result = await embeddingGenerator.GenerateEmbeddingsAsync(testInputStrings);

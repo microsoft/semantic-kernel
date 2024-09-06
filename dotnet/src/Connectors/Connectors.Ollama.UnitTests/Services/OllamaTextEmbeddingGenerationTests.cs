@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -10,7 +9,7 @@ using Microsoft.SemanticKernel.Connectors.Ollama;
 using OllamaSharp.Models;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Ollama.UnitTests;
+namespace SemanticKernel.Connectors.Ollama.UnitTests.Services;
 
 public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
 {
@@ -19,43 +18,9 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
 
     public OllamaTextEmbeddingGenerationTests()
     {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(OllamaTestHelper.GetTestResponse("embeddings_test_response.json"));
-        this._httpClient = new HttpClient(this._messageHandlerStub, false);
-    }
-
-    [Fact]
-    public async Task UserAgentHeaderShouldBeUsedAsync()
-    {
-        //Arrange
-        var sut = new OllamaTextEmbeddingGenerationService(
-            "fake-model",
-            new Uri("http://localhost:11434"),
-            httpClient: this._httpClient);
-
-        //Act
-        await sut.GenerateEmbeddingsAsync(new List<string> { "fake-text" });
-
-        //Assert
-        Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
-
-        var values = this._messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
-        var value = values.SingleOrDefault();
-        Assert.Equal("Semantic-Kernel", value);
-    }
-
-    [Fact]
-    public async Task WhenHttpClientDoesNotHaveBaseAddressProvidedEndpointShouldBeUsedAsync()
-    {
-        //Arrange
-        this._httpClient.BaseAddress = null;
-        var sut = new OllamaTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path/"), httpClient: this._httpClient);
-
-        //Act
-        await sut.GenerateEmbeddingsAsync(new List<string> { "fake-text" });
-
-        //Assert
-        Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        this._messageHandlerStub = new();
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(File.ReadAllText("TestData/embeddings_test_response.json"));
+        this._httpClient = new HttpClient(this._messageHandlerStub, false) { BaseAddress = new Uri("http://localhost:11434") };
     }
 
     [Fact]
@@ -64,14 +29,13 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
         //Arrange
         var sut = new OllamaTextEmbeddingGenerationService(
             "fake-model",
-            new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
 
         //Act
         await sut.GenerateEmbeddingsAsync(["fake-text"]);
 
         //Assert
-        var requestPayload = JsonSerializer.Deserialize<GenerateEmbeddingRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<EmbedRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(requestPayload);
         Assert.Equal("fake-text", requestPayload.Input[0]);
     }
@@ -82,11 +46,10 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
         //Arrange
         var sut = new OllamaTextEmbeddingGenerationService(
             "fake-model",
-            new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
 
         //Act
-        var contents = await sut.GenerateEmbeddingsAsync(new List<string> { "fake-text" });
+        var contents = await sut.GenerateEmbeddingsAsync(["fake-text"]);
 
         //Assert
         Assert.NotNull(contents);
