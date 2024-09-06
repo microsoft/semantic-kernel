@@ -30,32 +30,62 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         this._chatCompletionService = this._kernel.GetRequiredService<IChatCompletionService>();
     }
 
+    //[Fact]
+    //This test should be uncommented when the solution to dynamically control list of functions to advertise to the model is implemented.
+    //public async Task SpecifiedInCodeInstructsConnectorToInvokeRequiredFunctionAutomaticallyForStreamingAsync()
+    //{
+    //    // Arrange
+    //    this._kernel.ImportPluginFromType<DateTimeUtils>();
+
+    //    var invokedFunctions = new List<string?>();
+
+    //    IReadOnlyList<KernelFunction>? SelectFunctions(FunctionChoiceBehaviorFunctionsSelectorContext context)
+    //    {
+    //        // Get all function names that have been invoked
+    //        var invokedFunctionNames = context.ChatHistory
+    //            .SelectMany(m => m.Items.OfType<FunctionResultContent>())
+    //            .Select(i => i.FunctionName);
+
+    //        invokedFunctions.AddRange(invokedFunctionNames);
+
+    //        if (invokedFunctionNames.Contains("GetCurrentDate"))
+    //        {
+    //            return []; // Don't advertise any more functions because the expected function has been invoked.
+    //        }
+
+    //        return context.Functions;
+    //    }
+
+    //    var settings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true, functionsSelector: SelectFunctions) };
+
+    //    var chatHistory = new ChatHistory();
+    //    chatHistory.AddUserMessage("How many days until Christmas?");
+
+    //    // Act
+    //    var result = await this._chatCompletionService.GetChatMessageContentAsync(chatHistory, settings, this._kernel);
+
+    //    // Assert
+    //    Assert.NotNull(result);
+
+    //    Assert.Single(invokedFunctions);
+    //    Assert.Contains("GetCurrentDate", invokedFunctions);
+    //}
+
     [Fact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeRequiredFunctionAutomaticallyForStreamingAsync()
     {
         // Arrange
         this._kernel.ImportPluginFromType<DateTimeUtils>();
 
-        var invokedFunctions = new List<string?>();
+        var invokedFunctions = new List<string>();
 
-        IReadOnlyList<KernelFunction>? SelectFunctions(FunctionChoiceBehaviorFunctionsSelectorContext context)
+        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
         {
-            // Get all function names that have been invoked
-            var invokedFunctionNames = context.ChatHistory
-                .SelectMany(m => m.Items.OfType<FunctionResultContent>())
-                .Select(i => i.FunctionName);
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
 
-            invokedFunctions.AddRange(invokedFunctionNames);
-
-            if (invokedFunctionNames.Contains("GetCurrentDate"))
-            {
-                return []; // Don't advertise any more functions because the expected function has been invoked.
-            }
-
-            return context.Functions;
-        }
-
-        var settings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true, functionsSelector: SelectFunctions) };
+        var settings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true) };
 
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("How many days until Christmas?");
@@ -70,41 +100,41 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    //[Fact]
-    //public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
-    //{
-    //    // Arrange
-    //    this._kernel.ImportPluginFromType<DateTimeUtils>();
+    [Fact]
+    public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
+    {
+        // Arrange
+        this._kernel.ImportPluginFromType<DateTimeUtils>();
 
-    //    var invokedFunctions = new List<string>();
+        var invokedFunctions = new List<string>();
 
-    //    this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
-    //    {
-    //        invokedFunctions.Add(context.Function.Name);
-    //        await next(context);
-    //    });
+        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
 
-    //    var promptTemplate = """"
-    //        template_format: semantic-kernel
-    //        template: How many days until Christmas?
-    //        execution_settings:
-    //          default:
-    //            temperature: 0.1
-    //            function_choice_behavior:
-    //              type: required
-    //        """";
+        var promptTemplate = """"
+            template_format: semantic-kernel
+            template: How many days until Christmas?
+            execution_settings:
+              default:
+                temperature: 0.1
+                function_choice_behavior:
+                  type: required
+            """";
 
-    //    var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
+        var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
 
-    //    // Act
-    //    var result = await this._kernel.InvokeAsync(promptFunction);
+        // Act
+        var result = await this._kernel.InvokeAsync(promptFunction);
 
-    //    // Assert
-    //    Assert.NotNull(result);
+        // Assert
+        Assert.NotNull(result);
 
-    //    Assert.Single(invokedFunctions);
-    //    Assert.Contains("GetCurrentDate", invokedFunctions);
-    //}
+        Assert.Single(invokedFunctions);
+        Assert.Contains("GetCurrentDate", invokedFunctions);
+    }
 
     [Fact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyAsync()
@@ -142,6 +172,47 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         Assert.Equal("GetCurrentDate", functionCall.FunctionName);
     }
 
+    //[Fact]
+    //This test should be uncommented when the solution to dynamically control list of functions to advertise to the model is implemented.
+    //public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
+    //{
+    //    // Arrange
+    //    this._kernel.ImportPluginFromType<DateTimeUtils>();
+
+    //    var invokedFunctions = new List<string?>();
+
+    //    IReadOnlyList<KernelFunction>? SelectFunctions(FunctionChoiceBehaviorFunctionsSelectorContext context)
+    //    {
+    //        // Get all function names that have been invoked
+    //        var invokedFunctionNames = context.ChatHistory
+    //            .SelectMany(m => m.Items.OfType<FunctionResultContent>())
+    //            .Select(i => i.FunctionName);
+
+    //        invokedFunctions.AddRange(invokedFunctionNames);
+
+    //        if (invokedFunctionNames.Contains("GetCurrentDate"))
+    //        {
+    //            return []; // Don't advertise any more functions because the expected function has been invoked.
+    //        }
+
+    //        return context.Functions;
+    //    }
+
+    //    var settings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true, functionsSelector: SelectFunctions) };
+
+    //    var chatHistory = new ChatHistory();
+    //    chatHistory.AddUserMessage("How many days until Christmas?");
+
+    //    // Act
+    //    await foreach (var content in this._chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, settings, this._kernel))
+    //    {
+    //    }
+
+    //    // Assert
+    //    Assert.Single(invokedFunctions);
+    //    Assert.Contains("GetCurrentDate", invokedFunctions);
+    //}
+
     [Fact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
     {
@@ -150,24 +221,13 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
         var invokedFunctions = new List<string?>();
 
-        IReadOnlyList<KernelFunction>? SelectFunctions(FunctionChoiceBehaviorFunctionsSelectorContext context)
-        {
-            // Get all function names that have been invoked
-            var invokedFunctionNames = context.ChatHistory
-                .SelectMany(m => m.Items.OfType<FunctionResultContent>())
-                .Select(i => i.FunctionName);
-
-            invokedFunctions.AddRange(invokedFunctionNames);
-
-            if (invokedFunctionNames.Contains("GetCurrentDate"))
+        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
             {
-                return []; // Don't advertise any more functions because the expected function has been invoked.
-            }
+                invokedFunctions.Add(context.Function.Name);
+                await next(context);
+            });
 
-            return context.Functions;
-        }
-
-        var settings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true, functionsSelector: SelectFunctions) };
+        var settings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true) };
 
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("How many days until Christmas?");
@@ -182,46 +242,46 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    //[Fact]
-    //public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
-    //{
-    //    // Arrange
-    //    this._kernel.ImportPluginFromType<DateTimeUtils>();
+    [Fact]
+    public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
+    {
+        // Arrange
+        this._kernel.ImportPluginFromType<DateTimeUtils>();
 
-    //    var invokedFunctions = new List<string>();
+        var invokedFunctions = new List<string>();
 
-    //    this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
-    //    {
-    //        invokedFunctions.Add(context.Function.Name);
-    //        await next(context);
-    //    });
+        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
 
-    //    var promptTemplate = """"
-    //        template_format: semantic-kernel
-    //        template: How many days until Christmas?
-    //        execution_settings:
-    //          default:
-    //            temperature: 0.1
-    //            function_choice_behavior:
-    //              type: required
-    //        """";
+        var promptTemplate = """"
+            template_format: semantic-kernel
+            template: How many days until Christmas?
+            execution_settings:
+              default:
+                temperature: 0.1
+                function_choice_behavior:
+                  type: required
+            """";
 
-    //    var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
+        var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
 
-    //    string result = "";
+        string result = "";
 
-    //    // Act
-    //    await foreach (string c in promptFunction.InvokeStreamingAsync<string>(this._kernel))
-    //    {
-    //        result += c;
-    //    }
+        // Act
+        await foreach (string c in promptFunction.InvokeStreamingAsync<string>(this._kernel))
+        {
+            result += c;
+        }
 
-    //    // Assert
-    //    Assert.NotNull(result);
+        // Assert
+        Assert.NotNull(result);
 
-    //    Assert.Single(invokedFunctions);
-    //    Assert.Contains("GetCurrentDate", invokedFunctions);
-    //}
+        Assert.Single(invokedFunctions);
+        Assert.Contains("GetCurrentDate", invokedFunctions);
+    }
 
     [Fact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyForStreamingAsync()

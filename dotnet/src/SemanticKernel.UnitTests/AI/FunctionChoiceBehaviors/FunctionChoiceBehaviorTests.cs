@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel;
 using Xunit;
@@ -186,50 +185,52 @@ public sealed class FunctionChoiceBehaviorTests
         Assert.True(config.AutoInvoke);
     }
 
-    [Fact]
-    public void RequiredFunctionChoiceShouldReturnNoFunctionAsSpecifiedByFunctionsSelector()
-    {
-        // Arrange
-        var plugin = GetTestPlugin();
-        this._kernel.Plugins.Add(plugin);
+    //[Fact]
+    //This test should be uncommented when the solution to dynamically control list of functions to advertise to the model is implemented.
+    //public void RequiredFunctionChoiceShouldReturnNoFunctionAsSpecifiedByFunctionsSelector()
+    //{
+    //    // Arrange
+    //    var plugin = GetTestPlugin();
+    //    this._kernel.Plugins.Add(plugin);
 
-        static IReadOnlyList<KernelFunction>? FunctionsSelector(FunctionChoiceBehaviorFunctionsSelectorContext context)
-        {
-            return [];
-        }
+    //    static IReadOnlyList<KernelFunction>? FunctionsSelector(FunctionChoiceBehaviorFunctionsSelectorContext context)
+    //    {
+    //        return [];
+    //    }
 
-        // Act
-        var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true, functionsSelector: FunctionsSelector);
+    //    // Act
+    //    var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true, functionsSelector: FunctionsSelector);
 
-        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+    //    var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
-        // Assert
-        Assert.NotNull(config.Functions);
-        Assert.Empty(config.Functions);
-    }
+    //    // Assert
+    //    Assert.NotNull(config.Functions);
+    //    Assert.Empty(config.Functions);
+    //}
 
-    [Fact]
-    public void RequiredFunctionChoiceShouldReturnFunctionsAsSpecifiedByFunctionsSelector()
-    {
-        // Arrange
-        var plugin = GetTestPlugin();
-        this._kernel.Plugins.Add(plugin);
+    //[Fact]
+    //This test should be uncommented when the solution to dynamically control the list of functions to advertise to the model is implemented.
+    //public void RequiredFunctionChoiceShouldReturnFunctionsAsSpecifiedByFunctionsSelector()
+    //{
+    //    // Arrange
+    //    var plugin = GetTestPlugin();
+    //    this._kernel.Plugins.Add(plugin);
 
-        static IReadOnlyList<KernelFunction>? FunctionsSelector(FunctionChoiceBehaviorFunctionsSelectorContext context)
-        {
-            return context.Functions!.Where(f => f.Name == "Function1").ToList();
-        }
+    //    static IReadOnlyList<KernelFunction>? FunctionsSelector(FunctionChoiceBehaviorFunctionsSelectorContext context)
+    //    {
+    //        return context.Functions!.Where(f => f.Name == "Function1").ToList();
+    //    }
 
-        // Act
-        var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true, functionsSelector: FunctionsSelector);
+    //    // Act
+    //    var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true, functionsSelector: FunctionsSelector);
 
-        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+    //    var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
 
-        // Assert
-        Assert.NotNull(config?.Functions);
-        Assert.Single(config.Functions);
-        Assert.Equal("Function1", config.Functions[0].Name);
-    }
+    //    // Assert
+    //    Assert.NotNull(config?.Functions);
+    //    Assert.Single(config.Functions);
+    //    Assert.Equal("Function1", config.Functions[0].Name);
+    //}
 
     [Fact]
     public void RequiredFunctionChoiceShouldAllowManualInvocation()

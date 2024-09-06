@@ -128,6 +128,38 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         Assert.Contains(config.Functions, f => f.Name == "Function3");
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(100)]
+    public void ItShouldAdvertiseFunctionsForTheFirstRequestOnly(int requestSequenceIndex)
+    {
+        // Arrange
+        var plugin = GetTestPlugin();
+        this._kernel.Plugins.Add(plugin);
+
+        // Act
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
+
+        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel, RequestSequenceIndex = requestSequenceIndex });
+
+        // Assert
+        Assert.NotNull(config);
+
+        if (requestSequenceIndex == 0)
+        {
+            Assert.NotNull(config.Functions);
+            Assert.Equal(2, config.Functions.Count);
+            Assert.Contains(config.Functions, f => f.Name == "Function1");
+            Assert.Contains(config.Functions, f => f.Name == "Function2");
+        }
+        else
+        {
+            Assert.Null(config.Functions);
+        }
+    }
+
     [Fact]
     public void ItShouldAllowAutoInvocationByDefault()
     {

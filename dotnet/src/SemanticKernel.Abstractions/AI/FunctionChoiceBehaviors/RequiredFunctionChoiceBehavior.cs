@@ -79,6 +79,18 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
+        // Stop advertising functions after the first request to prevent the AI model from repeatedly calling the same function.
+        // This is a temporary solution which will be removed after we have a way to dynamically control list of functions to advertise to the model.
+        if (context.RequestSequenceIndex >= 1)
+        {
+            return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
+            {
+                Choice = FunctionChoice.Required,
+                Functions = null,
+                AutoInvoke = this._autoInvoke,
+            };
+        }
+
         var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
 
         IReadOnlyList<KernelFunction>? selectedFunctions = null;
