@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Ollama;
+using OllamaSharp.Models;
+using OllamaSharp.Models.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -47,6 +49,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         // Act
         await foreach (var content in target.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
         {
+            Assert.NotNull(content.InnerContent);
             if (content is StreamingChatMessageContent messageContent)
             {
                 Assert.NotNull(messageContent.Role);
@@ -60,7 +63,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
     }
 
     [Fact(Skip = "For manual verification only")]
-    public async Task ItShouldReturnMetadataAsync()
+    public async Task ItShouldReturnInnerContentAsync()
     {
         // Arrange
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
@@ -80,10 +83,12 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
 
         // Assert
         Assert.NotNull(lastUpdate);
-        Assert.NotNull(lastUpdate.Metadata);
-
-        // CreatedAt
-        Assert.True(lastUpdate.Metadata.TryGetValue("CreatedAt", out object? createdAt));
+        Assert.NotNull(lastUpdate.InnerContent);
+        Assert.IsType<ChatResponseStream>(lastUpdate.InnerContent);
+        var innerContent = lastUpdate.InnerContent as ChatDoneResponseStream;
+        Assert.NotNull(innerContent);
+        Assert.NotNull(innerContent.CreatedAt);
+        Assert.True(innerContent.Done);
     }
 
     [Theory(Skip = "For manual verification only")]
@@ -167,7 +172,6 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         var builder = this._kernelBuilder;
         builder.AddOllamaChatCompletion(
-            endpoint: config.Endpoint,
             modelId: config.ModelId,
             httpClient: httpClient);
         Kernel target = builder.Build();

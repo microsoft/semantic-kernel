@@ -10,9 +10,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Ollama;
+using OllamaSharp.Models;
+using OllamaSharp.Models.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Ollama;
 
@@ -48,7 +51,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         await foreach (var content in target.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
         {
             fullResult.Append(content);
-            Assert.NotNull(content.Metadata);
+            Assert.NotNull(content.InnerContent);
         }
 
         // Assert
@@ -56,7 +59,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
     }
 
     [Fact(Skip = "For manual verification only")]
-    public async Task ItShouldReturnMetadataAsync()
+    public async Task ItShouldReturnInnerContentAsync()
     {
         // Arrange
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
@@ -76,15 +79,13 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
 
         // Assert
         Assert.NotNull(lastUpdate);
-        Assert.NotNull(lastUpdate.Metadata);
+        Assert.NotNull(lastUpdate.InnerContent);
 
-        // CreatedAt
-        Assert.True(lastUpdate.Metadata.TryGetValue("CreatedAt", out object? createdAt));
-        Assert.IsType<OllamaMetadata>(lastUpdate.Metadata);
-        OllamaMetadata ollamaMetadata = (OllamaMetadata)lastUpdate.Metadata;
-        Assert.NotNull(ollamaMetadata.CreatedAt);
-        Assert.NotEqual(0, ollamaMetadata.TotalDuration);
-        Assert.NotEqual(0, ollamaMetadata.EvalDuration);
+        Assert.IsType<GenerateResponseStream>(lastUpdate.InnerContent);
+        var innerContent = lastUpdate.InnerContent as GenerateDoneResponseStream;
+        Assert.NotNull(innerContent);
+        Assert.NotNull(innerContent.CreatedAt);
+        Assert.True(innerContent.Done);
     }
 
     [Theory(Skip = "For manual verification only")]
