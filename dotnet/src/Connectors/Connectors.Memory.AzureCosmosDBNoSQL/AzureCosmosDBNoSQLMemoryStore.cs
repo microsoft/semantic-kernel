@@ -100,7 +100,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                 new CosmosClientOptions
                 {
                     ApplicationName = applicationName ?? HttpHeaderConstant.Values.UserAgent,
-                    Serializer = new CosmosSystemTextJsonSerializer(JsonSerializerOptions.Default),
+                    UseSystemTextJsonSerializerWithOptions = JsonSerializerOptions.Default,
                 }),
             databaseName,
             vectorEmbeddingPolicy,
