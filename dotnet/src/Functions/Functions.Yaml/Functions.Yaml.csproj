@@ -13,6 +13,10 @@
     <VersionSuffix>rc</VersionSuffix>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
+    <VersionSuffix>rc</VersionSuffix>
+  </PropertyGroup>
+
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   
   <PropertyGroup>
