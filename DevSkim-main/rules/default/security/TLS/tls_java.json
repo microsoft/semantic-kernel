@@ -1,0 +1,73 @@
+[
+    {
+        "name": "Java - Hard-coded SSL/TLS Protocol",
+        "id": "DS112853",
+        "description": "Java - Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "applies_to": [
+            "java"
+        ],
+        "overrides": [
+            "DS440000"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "setSslSecurityProtocol|SSLSecurityProtocol|Alg\\.Alias\\.SSLContext\\.TLS|jdk\\.tls\\.client\\.protocols|https\\.protocols",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "https://stackoverflow.com/questions/39157422/how-to-enable-tls-1-2-in-java-7"
+            },
+            {
+                "pattern": "SSLContext\\.getInstance\\(\\\"([^\\\"]+)\\\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "https://docs.oracle.com/javase/8/docs/api/javax/net/ssl/SSLContext.html#getInstance-java.lang.String-"
+            },
+            {
+                "pattern": ".ssl.context.protocol=",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ]
+    },
+    {
+        "name": "OkHttp - Hard-coded SSL/TLS Protocol",
+        "id": "DS112854",
+        "description": "OkHttp - Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "applies_to": [
+            "java"
+        ],
+        "overrides": [
+            "DS440000"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "TlsVersion\\.(SSL_3_0|TLS_1_[0123])",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "https://square.github.io/okhttp/4.x/okhttp/okhttp3/-tls-version/"
+            }
+        ]
+    }    
+]

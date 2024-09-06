@@ -5,7 +5,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import javax.annotation.Nullable;
 
 /** OpenAI Chat content */
-public class OpenAIChatHistory extends ChatHistory {
+public final class OpenAIChatHistory extends ChatHistory {
 
     /**
      * Create a new and empty chat history
