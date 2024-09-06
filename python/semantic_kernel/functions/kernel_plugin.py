@@ -28,6 +28,7 @@ from semantic_kernel.functions.kernel_function_from_method import KernelFunction
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.types import KERNEL_FUNCTION_TYPE
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_types import OptionalOneOrMany
 from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
 
 if TYPE_CHECKING:
@@ -95,22 +96,14 @@ class KernelPlugin(KernelBaseModel):
         self,
         name: str,
         description: str | None = None,
-        functions: (
-            KERNEL_FUNCTION_TYPE
-            | "KernelPlugin"
-            | list[KERNEL_FUNCTION_TYPE | "KernelPlugin"]
-            | dict[str, KERNEL_FUNCTION_TYPE]
-            | None
-        ) = None,
+        functions: (OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE]) = None,
     ):
         """Create a KernelPlugin.
 
         Args:
-            name: The name of the plugin. The name can be upper/lower
-                case letters and underscores.
+            name: The name of the plugin. The name can be upper/lower case letters and underscores.
             description: The description of the plugin.
-            functions:
-                The functions in the plugin, will be rewritten to a dictionary of functions.
+            functions: The functions in the plugin, will be rewritten to a dictionary of functions.
 
         Raises:
             ValueError: If the functions are not of the correct type.
@@ -487,13 +480,7 @@ class KernelPlugin(KernelBaseModel):
 
     @staticmethod
     def _validate_functions(
-        functions: (
-            KERNEL_FUNCTION_TYPE
-            | list[KERNEL_FUNCTION_TYPE | "KernelPlugin"]
-            | dict[str, KERNEL_FUNCTION_TYPE]
-            | "KernelPlugin"
-            | None
-        ),
+        functions: OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE],
         plugin_name: str,
     ) -> dict[str, "KernelFunction"]:
         """Validates the functions and returns a dictionary of functions."""
@@ -521,12 +508,10 @@ class KernelPlugin(KernelBaseModel):
                     function = KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
                     functions_dict[function.name] = function
                 elif isinstance(function, KernelPlugin):  # type: ignore
-                    functions_dict.update(
-                        {
-                            name: KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
-                            for name, function in function.functions.items()
-                        }
-                    )
+                    functions_dict.update({
+                        name: KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
+                        for name, function in function.functions.items()
+                    })
                 else:
                     raise ValueError(f"Invalid type for functions in list: {function} (type: {type(function)})")
             return functions_dict
