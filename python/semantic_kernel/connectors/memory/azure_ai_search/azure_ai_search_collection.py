@@ -6,6 +6,12 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
+from semantic_kernel.data.filters.any_tags_equal_to_filter_clause import AnyTagsEqualTo
+from semantic_kernel.data.filters.equal_to_filter_clause import EqualTo
+from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
+from semantic_kernel.data.vector_search_options import VectorSearchOptions
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -22,6 +28,7 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_client,
     get_search_index_client,
 )
+from semantic_kernel.data.const import VectorSearchQueryTypes
 from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
 from semantic_kernel.data.vector_search import (
@@ -30,8 +37,9 @@ from semantic_kernel.data.vector_search import (
     VectorSearchOptions,
     VectorSearchQueryTypes,
 )
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
-from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -113,18 +121,18 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
 
         try:
             azure_ai_search_settings = AzureAISearchSettings.create(
-                env_file_path=kwargs.get("env_file_path", None),
-                endpoint=kwargs.get("search_endpoint", None),
-                api_key=kwargs.get("api_key", None),
-                env_file_encoding=kwargs.get("env_file_encoding", None),
+                env_file_path=kwargs.get("env_file_path"),
+                endpoint=kwargs.get("search_endpoint"),
+                api_key=kwargs.get("api_key"),
+                env_file_encoding=kwargs.get("env_file_encoding"),
                 index_name=collection_name,
             )
         except ValidationError as exc:
             raise MemoryConnectorInitializationError("Failed to create Azure Cognitive Search settings.") from exc
         search_index_client = get_search_index_client(
             azure_ai_search_settings=azure_ai_search_settings,
-            azure_credential=kwargs.get("azure_credentials", None),
-            token_credential=kwargs.get("token_credentials", None),
+            azure_credential=kwargs.get("azure_credentials"),
+            token_credential=kwargs.get("token_credentials"),
         )
         if not azure_ai_search_settings.index_name:
             raise MemoryConnectorInitializationError("Collection name is required.")

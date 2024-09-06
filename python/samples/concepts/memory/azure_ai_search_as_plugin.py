@@ -17,22 +17,28 @@ from semantic_kernel.connectors.ai.open_ai import (
 )
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.data import (
-    SearchOptions,
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
+from semantic_kernel.data.search_options_base import SearchOptions
+from semantic_kernel.data.vector_search import (
     VectorSearchFilter,
     VectorSearchOptions,
+from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
     vectorstoremodel,
 )
+from semantic_kernel.data.vector_search_options import VectorSearchOptions
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions import (
     KernelArguments,
     KernelParameterMetadata,
 )
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
 
 @vectorstoremodel

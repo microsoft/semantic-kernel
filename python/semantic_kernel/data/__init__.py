@@ -5,6 +5,14 @@ from semantic_kernel.data.const import (
     DEFAULT_DESCRIPTION,
     DistanceFunction,
     IndexKind,
+from semantic_kernel.data.const import DistanceFunction, IndexKind
+from semantic_kernel.data.filters.text_search_filter import TextSearchFilter
+from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
+from semantic_kernel.data.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_store import VectorStore
+from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
 )
 from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
 from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
@@ -50,6 +58,9 @@ __all__ = [
     "VectorSearchOptions",
     "VectorSearchQueryTypes",
     "VectorSearchResult",
+    "TextSearchFilter",
+    "VectorSearchFilter",
+    "VectorSearchOptions",
     "VectorStore",
     "VectorStoreRecordCollection",
     "VectorStoreRecordDataField",
