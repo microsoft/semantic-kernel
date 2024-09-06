@@ -74,6 +74,7 @@ public class VolatileVectorStoreTests
         Assert.Equal($"Collection '{TestCollectionName}' already exists and with data type 'SinglePropsModel`1' so cannot be re-created with data type 'SecondModel'.", exception.Message);
     }
 
+#pragma warning disable CA1812 // Classes are used as generic arguments
     private sealed class SinglePropsModel<TKey>
     {
         [VectorStoreRecordKey]
@@ -96,4 +97,5 @@ public class VolatileVectorStoreTests
         [VectorStoreRecordData]
         public string Data { get; set; } = string.Empty;
     }
+#pragma warning restore CA1812
 }
