@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel;
 
 namespace AIModelRouter;
 
-internal sealed partial class Program
+internal sealed class Program
 {
     private static async Task Main(string[] args)
     {
@@ -24,7 +24,7 @@ internal sealed partial class Program
         // Adding multiple connectors targeting different providers / models.
         services.AddKernel()                /* LMStudio model is selected in server side. */
             .AddOpenAIChatCompletion(serviceId: "lmstudio", modelId: "N/A", endpoint: new Uri("http://localhost:1234"), apiKey: null)
-            .AddOpenAIChatCompletion(serviceId: "ollama", modelId: "phi3", endpoint: new Uri("http://localhost:11434"), apiKey: null)
+            .AddOllamaChatCompletion(serviceId: "ollama", modelId: "phi3", endpoint: new Uri("http://localhost:11434"))
             .AddOpenAIChatCompletion(serviceId: "openai", modelId: "gpt-4o", apiKey: config["OpenAI:ApiKey"]!)
             .AddAzureAIInferenceChatCompletion(serviceId: "azureai", endpoint: new Uri(config["AzureAIInference:Endpoint"]!), apiKey: config["AzureAIInference:ApiKey"]!)
 
