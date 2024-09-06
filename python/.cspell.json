@@ -63,6 +63,14 @@
         "vectorizer",
         "vectorstoremodel",
         "vertexai",
-        "Weaviate"
+        "Weaviate",
+        "qdrant",
+        "huggingface",
+        "pytestmark",
+        "contoso",
+        "opentelemetry",
+        "SEMANTICKERNEL",
+        "OTEL",
+        "vectorizable"
     ]
 }

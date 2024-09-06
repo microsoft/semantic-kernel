@@ -115,6 +115,7 @@ pandas = [
 aws = [
     "boto3>=1.28.57",
 ]
+bing = []
 
 [tool.uv]
 prerelease = "if-necessary-or-explicit"
