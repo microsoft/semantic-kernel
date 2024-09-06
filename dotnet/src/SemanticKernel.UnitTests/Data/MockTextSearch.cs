@@ -3,9 +3,9 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Search;
+using Microsoft.SemanticKernel.Data;
 
-namespace SemanticKernel.UnitTests.Search;
+namespace SemanticKernel.UnitTests.Data;
 
 /// <summary>
 /// Mock implementation of <see cref="ITextSearch"/>
@@ -27,7 +27,7 @@ internal sealed class MockTextSearch(int count = 3, long totalCount = 30) : ITex
         int count = searchOptions?.Count ?? this._count;
         var results = Enumerable.Range(1, count).Select(i => new TextSearchResult($"Name {i}", $"Result {i}", $"http://example.com/page{i}")).ToList();
         long? totalCount = searchOptions?.IncludeTotalCount ?? false ? this._totalCount : null;
-        return Task.FromResult(new KernelSearchResults<TextSearchResult>(results.ToAsyncEnumerable<TextSearchResult>(), totalCount));
+        return Task.FromResult(new KernelSearchResults<TextSearchResult>(results.ToAsyncEnumerable(), totalCount));
     }
 
     /// <inheritdoc/>
@@ -36,7 +36,7 @@ internal sealed class MockTextSearch(int count = 3, long totalCount = 30) : ITex
         int count = searchOptions?.Count ?? this._count;
         var results = Enumerable.Range(1, count).Select(i => $"Result {i}").ToList();
         long? totalCount = searchOptions?.IncludeTotalCount ?? false ? this._totalCount : null;
-        return Task.FromResult(new KernelSearchResults<string>(results.ToAsyncEnumerable<string>(), totalCount));
+        return Task.FromResult(new KernelSearchResults<string>(results.ToAsyncEnumerable(), totalCount));
     }
 
     #region private

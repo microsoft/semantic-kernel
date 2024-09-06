@@ -2,7 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Search;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Interface for mapping between a <see cref="ITextSearch" /> implementation result value, and a <see cref="TextSearchResult" /> instance.

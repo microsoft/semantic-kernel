@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Search;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Provides extension methods for interacting with <see cref="ITextSearch"/>.
@@ -95,7 +95,7 @@ public static class TextSearchExtensions
             {
                 Count = GetArgumentValue(arguments, parameters, "count", 2),
                 Offset = GetArgumentValue(arguments, parameters, "skip", 0),
-                BasicFilter = CreateBasicFilter(options, arguments)
+                Filter = CreateBasicFilter(options, arguments)
             };
 
             var result = await textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
@@ -132,7 +132,7 @@ public static class TextSearchExtensions
             {
                 Count = GetArgumentValue(arguments, parameters, "count", 2),
                 Offset = GetArgumentValue(arguments, parameters, "skip", 0),
-                BasicFilter = CreateBasicFilter(options, arguments)
+                Filter = CreateBasicFilter(options, arguments)
             };
 
             var result = await textSearch.GetTextSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
@@ -168,7 +168,7 @@ public static class TextSearchExtensions
             {
                 Count = GetArgumentValue(arguments, parameters, "count", 2),
                 Offset = GetArgumentValue(arguments, parameters, "skip", 0),
-                BasicFilter = CreateBasicFilter(options, arguments)
+                Filter = CreateBasicFilter(options, arguments)
             };
 
             var result = await textSearch.GetSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
@@ -259,18 +259,18 @@ public static class TextSearchExtensions
         };
 
     /// <summary>
-    /// Create a <see cref="BasicFilterOptions" /> for the search based on any additional parameters included in the <see cref="KernelFunctionFromMethodOptions"/>
+    /// Create a <see cref="TextSearchFilter" /> for the search based on any additional parameters included in the <see cref="KernelFunctionFromMethodOptions"/>
     /// </summary>
     /// <param name="options">Kernel function method options.</param>
     /// <param name="arguments">Kernel arguments.</param>
-    private static BasicFilterOptions? CreateBasicFilter(KernelFunctionFromMethodOptions? options, KernelArguments arguments)
+    private static TextSearchFilter? CreateBasicFilter(KernelFunctionFromMethodOptions? options, KernelArguments arguments)
     {
         if (options?.Parameters is null)
         {
             return null;
         }
 
-        BasicFilterOptions? filter = null;
+        TextSearchFilter? filter = null;
         foreach (var parameter in options.Parameters)
         {
             // treat non standard parameters as equality filter clauses
@@ -280,7 +280,7 @@ public static class TextSearchExtensions
             {
                 if (arguments.TryGetValue(parameter.Name, out var value) && value is not null)
                 {
-                    filter ??= new BasicFilterOptions();
+                    filter ??= new TextSearchFilter();
                     filter.Equality(parameter.Name, value);
                 }
             }

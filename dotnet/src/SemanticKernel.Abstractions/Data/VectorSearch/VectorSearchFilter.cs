@@ -6,9 +6,14 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
+/// Used to provide filtering when doing vector searches.
 /// Contains configuration for doing basic vector search filtering.
-/// All options are combined with and.
 /// </summary>
+/// <remarks>
+/// A filter has a collection of <see cref="FilterClause"/>s that can be used
+/// to request that the underlying service filter the search results.
+/// All clauses are combined with and.
+/// </remarks>
 [Experimental("SKEXP0001")]
 public sealed class VectorSearchFilter
 {
@@ -24,26 +29,32 @@ public sealed class VectorSearchFilter
     public IEnumerable<FilterClause> FilterClauses => this._filterClauses;
 
     /// <summary>
-    /// Add an equals clause to the filter options.
+    /// Add an equal to clause to the filter options.
     /// </summary>
     /// <param name="field">Name of the field.</param>
     /// <param name="value">Value of the field</param>
     /// <returns><see cref="VectorSearchFilter"/> instance to allow fluent configuration.</returns>
-    public VectorSearchFilter Equality(string field, object value)
+    /// <remarks>
+    /// This clause will check if a field is equal to a specific value.
+    /// </remarks>
+    public VectorSearchFilter EqualTo(string field, object value)
     {
-        this._filterClauses.Add(new EqualityFilterClause(field, value));
+        this._filterClauses.Add(new EqualToFilterClause(field, value));
         return this;
     }
 
     /// <summary>
-    /// Add a contains clause to the filter options.
+    /// Add an any tag equal to clause to the filter options.
     /// </summary>
     /// <param name="field">Name of the field consisting of a list of values.</param>
     /// <param name="value">Value that the list should contain.</param>
     /// <returns><see cref="VectorSearchFilter"/> instance to allow fluent configuration.</returns>
-    public VectorSearchFilter TagListContains(string field, string value)
+    /// <remarks>
+    /// This clause will check if a field consisting of a list of values contains a specific value.
+    /// </remarks>
+    public VectorSearchFilter AnyTagEqualTo(string field, string value)
     {
-        this._filterClauses.Add(new TagListContainsFilterClause(field, value));
+        this._filterClauses.Add(new AnyTagEqualToFilterClause(field, value));
         return this;
     }
 }

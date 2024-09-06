@@ -9,7 +9,7 @@ using Google.Apis.CustomSearchAPI.v1;
 using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Search;
+using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 
@@ -166,13 +166,13 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
     /// <param name="searchOptions">Text search options</param>
     private void AddFilters(CseResource.ListRequest search, TextSearchOptions searchOptions)
     {
-        if (searchOptions.BasicFilter is not null)
+        if (searchOptions.Filter is not null)
         {
-            var filterClauses = searchOptions.BasicFilter.FilterClauses;
+            var filterClauses = searchOptions.Filter.FilterClauses;
 
             foreach (var filterClause in filterClauses)
             {
-                if (filterClause is EqualityFilterClause equalityFilterClause)
+                if (filterClause is EqualToFilterClause equalityFilterClause)
                 {
                     if (equalityFilterClause.Value is not string value)
                     {
