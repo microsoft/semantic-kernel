@@ -61,8 +61,8 @@ public static class AzureAIInferenceServiceCollectionExtensions
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureAIInferenceChatCompletion(
         this IServiceCollection services,
-        string? modelId = null,
-        TokenCredential? credential = null,
+        string? modelId,
+        TokenCredential credential,
         Uri? endpoint = null,
         HttpClient? httpClient = null,
         string? serviceId = null)

@@ -52,8 +52,8 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureAIInferenceChatCompletionService(
-            string? modelId = null,
-            TokenCredential? credential = null,
+            string? modelId,
+            TokenCredential credential,
             Uri? endpoint = null,
             HttpClient? httpClient = null,
             ILoggerFactory? loggerFactory = null)

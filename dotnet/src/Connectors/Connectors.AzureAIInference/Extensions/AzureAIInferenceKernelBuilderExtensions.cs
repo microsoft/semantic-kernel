@@ -50,8 +50,8 @@ public static class AzureAIInferenceKernelBuilderExtensions
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddAzureAIInferenceChatCompletion(
         this IKernelBuilder builder,
-        string? modelId = null,
-        TokenCredential? credential = null,
+        string? modelId,
+        TokenCredential credential,
         Uri? endpoint = null,
         HttpClient? httpClient = null,
         string? serviceId = null)

@@ -255,67 +255,65 @@ internal sealed class ChatClientCore
         ChatRole? streamedRole = default;
         CompletionsFinishReason finishReason = default;
 
-        using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.ModelId ?? string.Empty, ModelProvider, chatHistory, chatExecutionSettings))
+        using var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.ModelId ?? string.Empty, ModelProvider, chatHistory, chatExecutionSettings);
+        StreamingResponse<StreamingChatCompletionsUpdate> response;
+        try
         {
-            StreamingResponse<StreamingChatCompletionsUpdate> response;
-            try
-            {
-                response = await RunRequestAsync(() => this.Client.CompleteStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (activity is not null)
-            {
-                activity.SetError(ex);
-                throw;
-            }
+            response = await RunRequestAsync(() => this.Client.CompleteStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (activity is not null)
+        {
+            activity.SetError(ex);
+            throw;
+        }
 
-            var responseEnumerator = response.ConfigureAwait(false).GetAsyncEnumerator();
-            List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
-            try
+        var responseEnumerator = response.ConfigureAwait(false).GetAsyncEnumerator();
+        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+        try
+        {
+            while (true)
             {
-                while (true)
+                try
                 {
-                    try
+                    if (!await responseEnumerator.MoveNextAsync())
                     {
-                        if (!await responseEnumerator.MoveNextAsync())
-                        {
-                            break;
-                        }
+                        break;
                     }
-                    catch (Exception ex) when (activity is not null)
-                    {
-                        activity.SetError(ex);
-                        throw;
-                    }
-
-                    StreamingChatCompletionsUpdate update = responseEnumerator.Current;
-                    metadata = GetResponseMetadata(update);
-                    streamedRole ??= update.Role;
-                    streamedName ??= update.AuthorName;
-                    finishReason = update.FinishReason ?? default;
-
-                    AuthorRole? role = null;
-                    if (streamedRole.HasValue)
-                    {
-                        role = new AuthorRole(streamedRole.Value.ToString());
-                    }
-
-                    StreamingChatMessageContent streamingChatMessageContent =
-                        new(role: update.Role.HasValue ? new AuthorRole(update.Role.ToString()!) : null, content: update.ContentUpdate, innerContent: update, modelId: update.Model, metadata: metadata)
-                        {
-                            AuthorName = streamedName,
-                            Role = role,
-                            Metadata = metadata,
-                        };
-
-                    streamedContents?.Add(streamingChatMessageContent);
-                    yield return streamingChatMessageContent;
                 }
+                catch (Exception ex) when (activity is not null)
+                {
+                    activity.SetError(ex);
+                    throw;
+                }
+
+                StreamingChatCompletionsUpdate update = responseEnumerator.Current;
+                metadata = GetResponseMetadata(update);
+                streamedRole ??= update.Role;
+                streamedName ??= update.AuthorName;
+                finishReason = update.FinishReason ?? default;
+
+                AuthorRole? role = null;
+                if (streamedRole.HasValue)
+                {
+                    role = new AuthorRole(streamedRole.Value.ToString());
+                }
+
+                StreamingChatMessageContent streamingChatMessageContent =
+                    new(role: update.Role.HasValue ? new AuthorRole(update.Role.ToString()!) : null, content: update.ContentUpdate, innerContent: update, modelId: update.Model, metadata: metadata)
+                    {
+                        AuthorName = streamedName,
+                        Role = role,
+                        Metadata = metadata,
+                    };
+
+                streamedContents?.Add(streamingChatMessageContent);
+                yield return streamingChatMessageContent;
             }
-            finally
-            {
-                activity?.EndStreaming(streamedContents, null);
-                await responseEnumerator.DisposeAsync();
-            }
+        }
+        finally
+        {
+            activity?.EndStreaming(streamedContents, null);
+            await responseEnumerator.DisposeAsync();
         }
     }
 
@@ -394,24 +392,6 @@ internal sealed class ChatClientCore
         try
         {
             return await request.Invoke().ConfigureAwait(false);
-        }
-        catch (RequestFailedException e)
-        {
-            throw e.ToHttpOperationException();
-        }
-    }
-
-    /// <summary>
-    /// Invokes the specified request and handles exceptions.
-    /// </summary>
-    /// <typeparam name="T">Type of the response.</typeparam>
-    /// <param name="request">Request to invoke.</param>
-    /// <returns>Returns the response.</returns>
-    private static T RunRequest<T>(Func<T> request)
-    {
-        try
-        {
-            return request.Invoke();
         }
         catch (RequestFailedException e)
         {

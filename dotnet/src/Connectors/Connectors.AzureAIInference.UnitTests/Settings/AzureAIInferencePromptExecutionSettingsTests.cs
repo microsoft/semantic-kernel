@@ -37,10 +37,10 @@ public sealed class AzureAIInferencePromptExecutionSettingsTests
         // Arrange
         AzureAIInferencePromptExecutionSettings actualSettings = new()
         {
-            Temperature = 0.7,
-            NucleusSamplingFactor = 0.7,
-            FrequencyPenalty = 0.7,
-            PresencePenalty = 0.7,
+            Temperature = 0.7f,
+            NucleusSamplingFactor = 0.7f,
+            FrequencyPenalty = 0.7f,
+            PresencePenalty = 0.7f,
             StopSequences = ["foo", "bar"],
             MaxTokens = 128
         };
@@ -229,10 +229,10 @@ public sealed class AzureAIInferencePromptExecutionSettingsTests
     private static void AssertExecutionSettings(AzureAIInferencePromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);
-        Assert.Equal(0.7, executionSettings.Temperature);
-        Assert.Equal(0.7, executionSettings.NucleusSamplingFactor);
-        Assert.Equal(0.7, executionSettings.FrequencyPenalty);
-        Assert.Equal(0.7, executionSettings.PresencePenalty);
+        Assert.Equal(0.7f, executionSettings.Temperature);
+        Assert.Equal(0.7f, executionSettings.NucleusSamplingFactor);
+        Assert.Equal(0.7f, executionSettings.FrequencyPenalty);
+        Assert.Equal(0.7f, executionSettings.PresencePenalty);
         Assert.Equal(["foo", "bar"], executionSettings.StopSequences);
         Assert.Equal(128, executionSettings.MaxTokens);
         Assert.Equal(123456, executionSettings.Seed);

@@ -49,6 +49,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
                     apiKey: config.ApiKey,
                     loggerFactory: this._loggerFactory)
                 : new AzureAIInferenceChatCompletionService(
+                    modelId: null,
                     endpoint: config.Endpoint,
                     credential: new AzureCliCredential(),
                     loggerFactory: this._loggerFactory);
@@ -79,6 +80,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
                     apiKey: config.ApiKey,
                     loggerFactory: this._loggerFactory)
                 : new AzureAIInferenceChatCompletionService(
+                    modelId: null,
                     endpoint: config.Endpoint,
                     credential: new AzureCliCredential(),
                     loggerFactory: this._loggerFactory);
@@ -93,7 +95,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         await foreach (var update in sut.GetStreamingChatMessageContentsAsync(chatHistory))
         {
             fullContent.Append(update.Content);
-        };
+        }
 
         // Assert
         Assert.Contains(expectedAnswerContains, fullContent.ToString(), StringComparison.OrdinalIgnoreCase);
