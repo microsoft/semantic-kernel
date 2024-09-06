@@ -78,7 +78,7 @@ class HybridVectorizableTextSearchQuery(
 public class VectorSearchOptions
 {
     public static VectorSearchOptions Default { get; } = new VectorSearchOptions();
-    public BasicVectorSearchFilter? BasicVectorSearchFilter { get; init; } = new BasicVectorSearchFilter();
+    public .VectorSearchFilter? Filter { get; init; } = new VectorSearchFilter();
     public string? VectorFieldName { get; init; }
     public int Limit { get; init; } = 3;
     public int Offset { get; init; } = 0;
@@ -89,7 +89,7 @@ public class VectorSearchOptions
 public sealed class HybridVectorSearchOptions
 {
     public static HybridVectorSearchOptions Default { get; } = new HybridVectorSearchOptions();
-    public BasicVectorSearchFilter? BasicVectorSearchFilter { get; init; } = new BasicVectorSearchFilter();
+    public VectorSearchFilter? Filter { get; init; } = new VectorSearchFilter();
     public string? VectorFieldName { get; init; }
     public int Limit { get; init; } = 3;
     public int Offset { get; init; } = 0;
@@ -179,13 +179,13 @@ public async Task VectorSearchAsync(IVectorSearch<Glossary> vectorSearch)
     searchResults = imageVectorSearch.SearchAsync(VectorSearchQuery.CreateBase64EncodedImageQuery(base64EncodedImageString, new() { VectorFieldName = nameof(Images.ImageEmbedding) }));
 
     // Vector search with filtering.
-    var filter = new BasicVectorSearchFilter().Equality(nameof(Glossary.Category), "Core Definitions");
+    var filter = new BasicVectorSearchFilter().EqualTo(nameof(Glossary.Category), "Core Definitions");
     searchResults = vectorSearch.SearchAsync(
         VectorSearchQuery.CreateQuery(
             searchEmbedding,
             new()
             {
-                BasicVectorSearchFilter = filter,
+                Filter = filter,
                 VectorFieldName = nameof(Glossary.DefinitionEmbedding)
             }));
 }
