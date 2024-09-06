@@ -592,7 +592,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private List<GeminiChatMessageContent> GetChatMessageContentsFromResponse(GeminiResponse geminiResponse)
         => geminiResponse.Candidates == null ?
-            [] : geminiResponse.Candidates.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
+            [new GeminiChatMessageContent(role: AuthorRole.Assistant, content: string.Empty, modelId: this._modelId)]
+            : geminiResponse.Candidates.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
     {
@@ -626,7 +627,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 modelId: this._modelId,
                 calledToolResult: message.CalledToolResult,
                 metadata: message.Metadata,
-                choiceIndex: message.Metadata!.Index);
+                choiceIndex: message.Metadata?.Index ?? 0);
         }
 
         if (message.ToolCalls is not null)
@@ -637,14 +638,14 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 modelId: this._modelId,
                 toolCalls: message.ToolCalls,
                 metadata: message.Metadata,
-                choiceIndex: message.Metadata!.Index);
+                choiceIndex: message.Metadata?.Index ?? 0);
         }
 
         return new GeminiStreamingChatMessageContent(
             role: message.Role,
             content: message.Content,
             modelId: this._modelId,
-            choiceIndex: message.Metadata!.Index,
+            choiceIndex: message.Metadata?.Index ?? 0,
             metadata: message.Metadata);
     }
 
