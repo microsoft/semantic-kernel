@@ -27,51 +27,11 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task UserAgentHeaderShouldBeUsedAsync()
-    {
-        //Arrange
-        var sut = new OllamaChatCompletionService(
-            "fake-model",
-            new Uri("http://localhost:11434"),
-            httpClient: this._httpClient);
-
-        var chat = new ChatHistory();
-        chat.AddMessage(AuthorRole.User, "fake-text");
-
-        //Act
-        await sut.GetChatMessageContentsAsync(chat);
-
-        //Assert
-        Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
-
-        var values = this._messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
-        var value = values.SingleOrDefault();
-        Assert.Equal("Semantic-Kernel", value);
-    }
-
-    [Fact]
-    public async Task WhenHttpClientDoesNotHaveBaseAddressProvidedEndpointShouldBeUsedAsync()
-    {
-        //Arrange
-        this._httpClient.BaseAddress = null;
-        var sut = new OllamaChatCompletionService("fake-model", new Uri("https://fake-random-test-host/fake-path/"), httpClient: this._httpClient);
-        var chat = new ChatHistory();
-        chat.AddMessage(AuthorRole.User, "fake-text");
-
-        //Act
-        await sut.GetChatMessageContentsAsync(chat);
-
-        //Assert
-        Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
     public async Task ShouldSendPromptToServiceAsync()
     {
         //Arrange
         var sut = new OllamaChatCompletionService(
             "fake-model",
-            new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
         var chat = new ChatHistory();
         chat.AddMessage(AuthorRole.User, "fake-text");
@@ -91,7 +51,6 @@ public sealed class OllamaChatCompletionTests : IDisposable
         //Arrange
         var sut = new OllamaChatCompletionService(
             "fake-model",
-            new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
 
         var chat = new ChatHistory();
@@ -114,7 +73,6 @@ public sealed class OllamaChatCompletionTests : IDisposable
         //Arrange
         var sut = new OllamaChatCompletionService(
             "phi3",
-            new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -139,13 +97,12 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task GetStreamingChatMessageContentsShouldHaveModelAndMetadataAsync()
+    public async Task GetStreamingChatMessageContentsShouldHaveModelAndInnerContentAsync()
     {
         //Arrange
         var expectedModel = "phi3";
         var sut = new OllamaChatCompletionService(
             expectedModel,
-            new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -161,18 +118,17 @@ public sealed class OllamaChatCompletionTests : IDisposable
         await foreach (var message in sut.GetStreamingChatMessageContentsAsync(chat))
         {
             lastMessage = message;
-            Assert.NotNull(message.Metadata);
+            Assert.NotNull(message.InnerContent);
         }
 
         // Assert
         Assert.NotNull(lastMessage!.ModelId);
         Assert.Equal(expectedModel, lastMessage.ModelId);
 
-        Assert.IsType<OllamaMetadata>(lastMessage.Metadata);
-        var metadata = lastMessage.Metadata as OllamaMetadata;
-        Assert.NotNull(metadata);
-        Assert.NotEmpty(metadata);
-        Assert.True(metadata.Done);
+        Assert.IsType<ChatDoneResponseStream>(lastMessage.InnerContent);
+        var innerContent = lastMessage.InnerContent as ChatDoneResponseStream;
+        Assert.NotNull(innerContent);
+        Assert.True(innerContent.Done);
     }
 
     public void Dispose()

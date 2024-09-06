@@ -25,15 +25,30 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
     /// </summary>
     /// <param name="modelId">The hosted model.</param>
     /// <param name="endpoint">The endpoint including the port where Ollama server is hosted</param>
-    /// <param name="httpClient">Optional HTTP client to be used for communication with the Ollama API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OllamaTextEmbeddingGenerationService(
         string modelId,
         Uri endpoint,
-        HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, endpoint, httpClient, loggerFactory)
+        : base(modelId, endpoint, null, loggerFactory)
     {
+        Verify.NotNull(endpoint);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OllamaTextEmbeddingGenerationService"/> class.
+    /// </summary>
+    /// <param name="modelId">The hosted model.</param>
+    /// <param name="httpClient">HTTP client to be used for communication with the Ollama API.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public OllamaTextEmbeddingGenerationService(
+        string modelId,
+        HttpClient httpClient,
+        ILoggerFactory? loggerFactory = null)
+        : base(modelId, null, httpClient, loggerFactory)
+    {
+        Verify.NotNull(httpClient);
+        Verify.NotNull(httpClient.BaseAddress);
     }
 
     /// <summary>
@@ -62,7 +77,7 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
         var request = new EmbedRequest
         {
             Model = this.GetModelId()!,
-            Input = data.ToList(),
+            Input = (List<string>)data,
         };
 
         var response = await this._client.Embed(request, cancellationToken: cancellationToken).ConfigureAwait(false);

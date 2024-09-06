@@ -25,15 +25,30 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
     /// </summary>
     /// <param name="modelId">The Ollama model for the text generation service.</param>
     /// <param name="endpoint">The endpoint including the port where Ollama server is hosted</param>
-    /// <param name="httpClient">Optional HTTP client to be used for communication with the Ollama API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OllamaTextGenerationService(
         string modelId,
         Uri endpoint,
-        HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, endpoint, httpClient, loggerFactory)
+        : base(modelId, endpoint, null, loggerFactory)
     {
+        Verify.NotNull(endpoint);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OllamaTextGenerationService"/> class.
+    /// </summary>
+    /// <param name="modelId">The Ollama model for the text generation service.</param>
+    /// <param name="httpClient">HTTP client to be used for communication with the Ollama API.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public OllamaTextGenerationService(
+        string modelId,
+        HttpClient httpClient,
+        ILoggerFactory? loggerFactory = null)
+        : base(modelId, null, httpClient, loggerFactory)
+    {
+        Verify.NotNull(httpClient);
+        Verify.NotNull(httpClient.BaseAddress);
     }
 
     /// <summary>
@@ -66,6 +81,7 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
 
         var settings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
         var request = CreateRequest(settings, this._client.SelectedModel);
+        request.Prompt = prompt;
 
         await foreach (var responseStreamChunk in this._client.Generate(request, cancellationToken).ConfigureAwait(false))
         {
@@ -95,6 +111,7 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
     {
         var settings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
         var request = CreateRequest(settings, this._client.SelectedModel);
+        request.Prompt = prompt;
 
         await foreach (var content in this._client.Generate(request, cancellationToken).ConfigureAwait(false))
         {

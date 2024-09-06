@@ -22,58 +22,27 @@ public sealed class OllamaTextGenerationTests : IDisposable
     public OllamaTextGenerationTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(File.ReadAllText("TestData/text_generation_test_response.txt"));
-        this._httpClient = new HttpClient(this._messageHandlerStub, false);
-    }
-
-    [Fact]
-    public async Task UserAgentHeaderShouldBeUsedAsync()
-    {
-        //Arrange
-        var sut = new OllamaTextGenerationService(
-            "fake-model",
-            new Uri("http://localhost:11434"),
-            httpClient: this._httpClient);
-
-        //Act
-        await sut.GetTextContentsAsync("fake-text");
-
-        //Assert
-        Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
-
-        var values = this._messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
-        var value = values.SingleOrDefault();
-        Assert.Equal("Semantic-Kernel", value);
-    }
-
-    [Fact]
-    public async Task WhenHttpClientDoesNotHaveBaseAddressProvidedEndpointShouldBeUsedAsync()
-    {
-        //Arrange
-        this._httpClient.BaseAddress = null;
-        var sut = new OllamaTextGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path/"), httpClient: this._httpClient);
-
-        //Act
-        await sut.GetTextContentsAsync("fake-text");
-
-        //Assert
-        Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StreamContent(File.OpenRead("TestData/text_generation_test_response_stream.txt"))
+        };
+        this._httpClient = new HttpClient(this._messageHandlerStub, false) { BaseAddress = new Uri("http://localhost:11434") };
     }
 
     [Fact]
     public async Task ShouldSendPromptToServiceAsync()
     {
         //Arrange
+        var expectedModel = "phi3";
         var sut = new OllamaTextGenerationService(
-            "fake-model",
-            new Uri("http://localhost:11434"),
+            expectedModel,
             httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
 
         //Assert
-        var requestPayload = JsonSerializer.Deserialize<GenerateCompletionRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<GenerateRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(requestPayload);
         Assert.Equal("fake-text", requestPayload.Prompt);
     }
@@ -84,7 +53,6 @@ public sealed class OllamaTextGenerationTests : IDisposable
         //Arrange
         var sut = new OllamaTextGenerationService(
             "fake-model",
-            new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
 
         //Act
@@ -102,9 +70,9 @@ public sealed class OllamaTextGenerationTests : IDisposable
     public async Task GetTextContentsShouldHaveModelIdDefinedAsync()
     {
         //Arrange
+        var expectedModel = "phi3";
         var sut = new OllamaTextGenerationService(
-            "fake-model",
-            new Uri("http://localhost:11434"),
+            expectedModel,
             httpClient: this._httpClient);
 
         // Act
@@ -112,7 +80,7 @@ public sealed class OllamaTextGenerationTests : IDisposable
 
         // Assert
         Assert.NotNull(textContent.ModelId);
-        Assert.Equal("fake-model", textContent.ModelId);
+        Assert.Equal(expectedModel, textContent.ModelId);
     }
 
     [Fact]
@@ -122,13 +90,7 @@ public sealed class OllamaTextGenerationTests : IDisposable
         var expectedModel = "phi3";
         var sut = new OllamaTextGenerationService(
             expectedModel,
-            new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
-
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StreamContent(File.OpenRead("TestData/text_generation_test_response_stream.txt"))
-        };
 
         // Act
         StreamingTextContent? lastTextContent = null;
