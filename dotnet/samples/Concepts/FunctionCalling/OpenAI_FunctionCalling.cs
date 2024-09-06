@@ -37,7 +37,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 
         Kernel kernel = CreateKernel();
 
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         Console.WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
     }
@@ -52,7 +52,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 
         Kernel kernel = CreateKernel();
 
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         await foreach (StreamingKernelContent update in kernel.InvokePromptStreamingAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)))
         {
@@ -74,7 +74,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
 
         // Configure the chat service to enable manual function calling
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) };
 
         // Create chat history with the initial user message
         ChatHistory chatHistory = new();
@@ -137,7 +137,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
 
         // Configure the chat service to enable manual function calling
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) };
 
         // Create chat history with the initial user message
         ChatHistory chatHistory = new();
@@ -204,7 +204,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
 
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) };
 
         ChatHistory chatHistory = new();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
@@ -254,7 +254,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 
         Kernel kernel = CreateKernel();
 
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
         ChatHistory chatHistory = new();
         int iteration = 0;

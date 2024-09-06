@@ -28,7 +28,7 @@ public sealed class OpenAI_RepeatedFunctionCalling(ITestOutputHelper output) : B
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Boston?")
         };
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result1 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result1);
         Console.WriteLine(result1);

@@ -577,13 +577,13 @@ internal partial class ClientCore
 
         foreach (var message in chatHistory)
         {
-            messages.AddRange(CreateRequestMessages(message, executionSettings.ToolCallBehavior));
+            messages.AddRange(CreateRequestMessages(message));
         }
 
         return messages;
     }
 
-    private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
+    private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message)
     {
         if (message.Role == AuthorRole.System)
         {
