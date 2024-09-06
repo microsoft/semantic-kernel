@@ -42,7 +42,10 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
 )
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_chat_completion,
+    trace_streaming_chat_completion,
+)
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -133,6 +136,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
 
     @override
+    @trace_streaming_chat_completion(VertexAIBase.MODEL_PROVIDER_NAME)
     async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",

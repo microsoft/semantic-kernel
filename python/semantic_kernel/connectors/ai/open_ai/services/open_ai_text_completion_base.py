@@ -26,7 +26,10 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_streaming_text_completion,
+    trace_text_completion,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -71,6 +74,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         return [self._create_text_content(response, choice, metadata) for choice in response.choices]
 
     @override
+    @trace_streaming_text_completion(MODEL_PROVIDER_NAME)
     async def _inner_get_streaming_text_contents(
         self,
         prompt: str,

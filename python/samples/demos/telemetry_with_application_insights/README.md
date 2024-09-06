@@ -23,7 +23,7 @@ The Semantic Kernel Python SDK is designed to efficiently generate comprehensive
 ### Dependencies
 You will also need to install the following dependencies to your virtual environment to run this sample:
 ```
-pip install azure-monitor-opentelemetry-exporter==1.0.0b24
+uv pip install azure-monitor-opentelemetry-exporter==1.0.0b24
 ```
 
 ## Running the sample
