@@ -19,6 +19,10 @@ public abstract class ServiceBase
     /// Attributes of the service.
     /// </summary>
     internal Dictionary<string, object?> AttributesInternal { get; } = [];
+
+    /// <summary>
+    /// Internal Ollama Sharp client.
+    /// </summary>
     internal readonly OllamaApiClient _client;
 
     internal ServiceBase(string model,
