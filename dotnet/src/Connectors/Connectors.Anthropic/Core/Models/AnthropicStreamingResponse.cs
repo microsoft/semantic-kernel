@@ -31,6 +31,7 @@ internal sealed class AnthropicStreamingResponse
     [JsonPropertyName("index")]
     public int Index { get; init; }
 
+#pragma warning disable CS0649 // Field is assigned via reflection
     [JsonPropertyName("content_block")]
     [JsonInclude]
     private readonly AnthropicContent? _contentBlock;
@@ -38,6 +39,7 @@ internal sealed class AnthropicStreamingResponse
     [JsonPropertyName("delta")]
     [JsonInclude]
     private readonly JsonNode? _delta;
+#pragma warning restore CS0649
 
     /// <summary>
     /// Delta of anthropic content, only if the type is "content_block_start" or "content_block_delta", otherwise null.
