@@ -74,7 +74,7 @@ public class VolatileVectorStoreTests
         Assert.Equal($"Collection '{TestCollectionName}' already exists and with data type 'SinglePropsModel`1' so cannot be re-created with data type 'SecondModel'.", exception.Message);
     }
 
-    public sealed class SinglePropsModel<TKey>
+    private sealed class SinglePropsModel<TKey>
     {
         [VectorStoreRecordKey]
         public required TKey Key { get; set; }
@@ -88,7 +88,7 @@ public class VolatileVectorStoreTests
         public string? NotAnnotated { get; set; }
     }
 
-    public sealed class SecondModel
+    private sealed class SecondModel
     {
         [VectorStoreRecordKey]
         public required int Key { get; set; }
