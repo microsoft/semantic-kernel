@@ -22,10 +22,12 @@ public sealed class OllamaTextGenerationTests : IDisposable
 
     public OllamaTextGenerationTests()
     {
-        this._messageHandlerStub = new();
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        this._messageHandlerStub = new()
         {
-            Content = new StreamContent(File.OpenRead("TestData/text_generation_test_response_stream.txt"))
+            ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StreamContent(File.OpenRead("TestData/text_generation_test_response_stream.txt"))
+            }
         };
         this._httpClient = new HttpClient(this._messageHandlerStub, false) { BaseAddress = new Uri("http://localhost:11434") };
     }

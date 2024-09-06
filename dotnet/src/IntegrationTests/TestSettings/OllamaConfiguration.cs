@@ -10,5 +10,5 @@ namespace SemanticKernel.IntegrationTests.TestSettings;
 internal sealed class OllamaConfiguration
 {
     public string? ModelId { get; set; }
-    public Uri? Endpoint { get; set; }
+    public string? Endpoint { get; set; }
 }

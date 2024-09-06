@@ -21,10 +21,12 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
     public OllamaChatCompletionTests()
     {
-        this._messageHandlerStub = new();
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        this._messageHandlerStub = new()
         {
-            Content = new StreamContent(File.OpenRead("TestData/chat_completion_test_response_stream.txt"))
+            ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StreamContent(File.OpenRead("TestData/chat_completion_test_response_stream.txt"))
+            }
         };
         this._httpClient = new HttpClient(this._messageHandlerStub, false) { BaseAddress = new Uri("http://localhost:11434") };
     }

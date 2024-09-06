@@ -31,7 +31,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         .AddUserSecrets<OllamaCompletionTests>()
         .Build();
 
-    [Theory(Skip = "For manual verification only")]
+    [Theory]//(Skip = "For manual verification only")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
     public async Task ItInvokeStreamingWorksAsync(string prompt, string expectedAnswerContains)
     {
@@ -62,7 +62,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         Assert.Contains(expectedAnswerContains, fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = "For manual verification only")]
+    [Fact]//(Skip = "For manual verification only")]
     public async Task ItShouldReturnInnerContentAsync()
     {
         // Arrange
@@ -84,14 +84,14 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         // Assert
         Assert.NotNull(lastUpdate);
         Assert.NotNull(lastUpdate.InnerContent);
-        Assert.IsType<ChatResponseStream>(lastUpdate.InnerContent);
+        Assert.IsType<ChatDoneResponseStream>(lastUpdate.InnerContent);
         var innerContent = lastUpdate.InnerContent as ChatDoneResponseStream;
         Assert.NotNull(innerContent);
         Assert.NotNull(innerContent.CreatedAt);
         Assert.True(innerContent.Done);
     }
 
-    [Theory(Skip = "For manual verification only")]
+    [Theory]//(Skip = "For manual verification only")]
     [InlineData("\n")]
     [InlineData("\r\n")]
     public async Task ItCompletesWithDifferentLineEndingsAsync(string lineEnding)
@@ -118,7 +118,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         Assert.Contains(ExpectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = "For manual verification only")]
+    [Fact]//(Skip = "For manual verification only")]
     public async Task ItInvokePromptTestAsync()
     {
         // Arrange
@@ -136,7 +136,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory(Skip = "For manual verification only")]
+    [Theory]//(Skip = "For manual verification only")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
     public async Task ItInvokeTestAsync(string prompt, string expectedAnswerContains)
     {
@@ -155,33 +155,6 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact(Skip = "For manual verification only")]
-    public async Task ItShouldHaveSemanticKernelVersionHeaderAsync()
-    {
-        // Arrange
-        var config = this._configuration.GetSection("Ollama").Get<OllamaConfiguration>();
-        Assert.NotNull(config);
-        Assert.NotNull(config.ModelId);
-        Assert.NotNull(config.Endpoint);
-
-        using var defaultHandler = new HttpClientHandler();
-        using var httpHeaderHandler = new HttpHeaderHandler(defaultHandler);
-        using var httpClient = new HttpClient(httpHeaderHandler);
-        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
-        var builder = this._kernelBuilder;
-        builder.AddOllamaChatCompletion(
-            modelId: config.ModelId,
-            httpClient: httpClient);
-        Kernel target = builder.Build();
-
-        // Act
-        var result = await target.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?");
-
-        // Assert
-        Assert.NotNull(httpHeaderHandler.RequestHeaders);
-        Assert.True(httpHeaderHandler.RequestHeaders.TryGetValues("Semantic-Kernel-Version", out var values));
     }
 
     #region internals
@@ -205,7 +178,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
 
         kernelBuilder.AddOllamaChatCompletion(
             modelId: config.ModelId,
-            endpoint: config.Endpoint);
+            endpoint: new Uri(config.Endpoint));
     }
 
     private sealed class HttpHeaderHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)

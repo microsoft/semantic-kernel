@@ -77,7 +77,7 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
         var request = new EmbedRequest
         {
             Model = this.GetModelId()!,
-            Input = (List<string>)data,
+            Input = data.ToList(),
         };
 
         var response = await this._client.Embed(request, cancellationToken: cancellationToken).ConfigureAwait(false);
