@@ -25,6 +25,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class RestApiOperation:
+    """RestApiOperation."""
+
     MEDIA_TYPE_TEXT_PLAIN = "text/plain"
     PAYLOAD_ARGUMENT_NAME = "payload"
     CONTENT_TYPE_ARGUMENT_NAME = "content-type"
