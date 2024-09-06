@@ -63,7 +63,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         await sut.CreateCollectionAsync();
         var upsertResult = await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync("Upsert-10", new GetRecordOptions { IncludeVectors = true });
-        var searchResult = await sut.SearchAsync(VectorSearchQuery.CreateQuery(new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }), new VectorSearchOptions { VectorSearchFilter = new VectorSearchFilter().Equality("HotelCode", 10) })).ToListAsync();
+        var searchResult = await sut.SearchAsync(VectorSearchQuery.CreateQuery(new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }), new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 10) })).ToListAsync();
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -329,7 +329,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Null(await sut.GetAsync("RemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData("equality")]
     [InlineData("tagContains")]
     public async Task ItCanSearchWithVectorAndFilterAsync(string filterType)
@@ -338,13 +338,13 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var options = new RedisJsonVectorStoreRecordCollectionOptions<Hotel> { PrefixCollectionNameToKeyNames = true };
         var sut = new RedisJsonVectorStoreRecordCollection<Hotel>(fixture.Database, TestCollectionName, options);
         var vector = new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f });
-        var filter = filterType == "equality" ? new VectorSearchFilter().Equality("HotelCode", 1) : new VectorSearchFilter().TagListContains("Tags", "pool");
+        var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelCode", 1) : new VectorSearchFilter().AnyTagEqualTo("Tags", "pool");
 
         // Act
         var actual = await sut.SearchAsync(
             VectorSearchQuery.CreateQuery(
                 vector,
-                new VectorSearchOptions { IncludeVectors = true, VectorSearchFilter = filter }))
+                new VectorSearchOptions { IncludeVectors = true, Filter = filter }))
             .ToListAsync();
 
         // Assert

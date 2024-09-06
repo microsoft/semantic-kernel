@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using Google.Apis.CustomSearchAPI.v1.Data;
 using Google.Apis.Http;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
-using Microsoft.SemanticKernel.Search;
 using Xunit;
 
 namespace SemanticKernel.Plugins.UnitTests.Web.Google;
@@ -193,7 +193,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             searchEngineId: "SearchEngineId");
 
         // Act
-        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, BasicFilter = new BasicFilterOptions().Equality(paramName, paramValue) };
+        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
         KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
 
         // Assert
@@ -209,7 +209,7 @@ public sealed class GoogleTextSearchTests : IDisposable
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
-        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, BasicFilter = new BasicFilterOptions().Equality("fooBar", "Baz") };
+        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, Filter = new TextSearchFilter().Equality("fooBar", "Baz") };
 
         using var textSearch = new GoogleTextSearch(
             initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },

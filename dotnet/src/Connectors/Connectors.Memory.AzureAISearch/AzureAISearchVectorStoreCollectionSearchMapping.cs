@@ -25,7 +25,7 @@ internal static class AzureAISearchVectorStoreCollectionSearchMapping
         if (basicVectorSearchFilter?.FilterClauses is not null)
         {
             // Map Equality clauses.
-            var filterStrings = basicVectorSearchFilter?.FilterClauses.OfType<EqualityFilterClause>().Select(x =>
+            var filterStrings = basicVectorSearchFilter?.FilterClauses.OfType<EqualToFilterClause>().Select(x =>
             {
                 string storageFieldName = GetStoragePropertyName(storagePropertyNames, x.FieldName);
 
@@ -47,7 +47,7 @@ internal static class AzureAISearchVectorStoreCollectionSearchMapping
 
             // Map tag contains clauses.
             var tagListContainsStrings = basicVectorSearchFilter?.FilterClauses
-                .OfType<TagListContainsFilterClause>()
+                .OfType<AnyTagEqualToFilterClause>()
                 .Select(x =>
                 {
                     string storageFieldName = GetStoragePropertyName(storagePropertyNames, x.FieldName);

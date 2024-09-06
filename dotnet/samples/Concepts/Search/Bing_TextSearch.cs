@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using Microsoft.SemanticKernel.Search;
 
 namespace Search;
 
@@ -109,7 +109,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search with TextSearchResult textResult type
-        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, BasicFilter = new BasicFilterOptions().Equality("site", "devblogs.microsoft.com") };
+        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, Filter = new TextSearchFilter().Equality("site", "devblogs.microsoft.com") };
         KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, searchOptions);
         Console.WriteLine("--- Microsoft Developer Blogs Results ---");
         await foreach (TextSearchResult result in textResults.Results)

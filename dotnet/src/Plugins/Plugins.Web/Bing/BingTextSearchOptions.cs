@@ -3,7 +3,7 @@
 using System;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Search;
+using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 

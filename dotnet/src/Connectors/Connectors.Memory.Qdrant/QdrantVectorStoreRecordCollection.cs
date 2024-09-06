@@ -452,7 +452,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
             var internalOptions = floatVectorQuery.SearchOptions ?? Data.VectorSearchOptions.Default;
 
             // Build filter object.
-            var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.VectorSearchFilter, this._storagePropertyNames);
+            var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._storagePropertyNames);
 
             // Specify the vector name if named vectors are used.
             string? vectorName = null;

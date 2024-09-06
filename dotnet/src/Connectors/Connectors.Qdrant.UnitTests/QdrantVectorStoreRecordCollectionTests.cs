@@ -558,11 +558,11 @@ public class QdrantVectorStoreRecordCollectionTests
         // Arrange.
         var scoredPoint = CreateScoredPoint(hasNamedVectors, testRecordKey);
         this.SetupQueryMock([scoredPoint]);
-        var filter = new VectorSearchFilter().Equality(nameof(SinglePropsModel<TKey>.Data), "data 1");
+        var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel<TKey>.Data), "data 1");
 
         // Act.
         var actual = await sut!.SearchAsync(
-            VectorSearchQuery.CreateQuery(new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }), new() { IncludeVectors = true, VectorSearchFilter = filter, Limit = 5, Offset = 2 }),
+            VectorSearchQuery.CreateQuery(new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }), new() { IncludeVectors = true, Filter = filter, Limit = 5, Offset = 2 }),
             this._testCancellationToken).ToListAsync();
 
         // Assert.

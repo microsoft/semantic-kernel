@@ -2,8 +2,8 @@
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using Microsoft.SemanticKernel.Search;
 
 namespace Search;
 
@@ -85,8 +85,8 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search and add to the kernel
-        var basicFilter = new BasicFilterOptions().Equality("site", "devblogs.microsoft.com");
-        var searchOptions = new TextSearchOptions() { BasicFilter = basicFilter };
+        var filter = new TextSearchFilter().Equality("site", "devblogs.microsoft.com");
+        var searchOptions = new TextSearchOptions() { Filter = filter };
         var searchPlugin = KernelPluginFactory.CreateFromFunctions(
             "SearchPlugin", "Search Microsoft Developer Blogs site only",
             [textSearch.CreateGetTextSearchResults(searchOptions: searchOptions)]);
@@ -125,7 +125,7 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Only include results from techcommunity.microsoft.com. Include citations to the relevant information where it is referenced in the response.", arguments));
     }
 
-    private static KernelFunction CreateSearchBySite(BingTextSearch textSearch, BasicFilterOptions? basicFilter = null)
+    private static KernelFunction CreateSearchBySite(BingTextSearch textSearch, TextSearchFilter? filter = null)
     {
         var options = new KernelFunctionFromMethodOptions()
         {

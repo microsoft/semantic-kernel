@@ -5,17 +5,17 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// FilterClause which filters by checking if a field consisting of a list of values contains a specific value.
+/// <see cref="FilterClause"/> which filters by checking if a field consisting of a list of values contains a specific value.
 /// </summary>
 [Experimental("SKEXP0001")]
-public sealed class TagListContainsFilterClause : FilterClause
+public sealed class AnyTagEqualToFilterClause : FilterClause
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="TagListContainsFilterClause"/> class.
+    /// Initializes a new instance of the <see cref="AnyTagEqualToFilterClause"/> class.
     /// </summary>
     /// <param name="fieldName">The name of the field with the list of values.</param>
     /// <param name="value">The value that the list should contain.</param>
-    internal TagListContainsFilterClause(string fieldName, string value) : base(FilterClauseType.TagListContains)
+    internal AnyTagEqualToFilterClause(string fieldName, string value)
     {
         this.FieldName = fieldName;
         this.Value = value;

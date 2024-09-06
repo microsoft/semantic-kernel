@@ -29,7 +29,7 @@ internal static class RedisVectorStoreCollectionSearchMapping
         var vectorPropertyName = ResolveVectorFieldName(internalOptions.VectorFieldName, storagePropertyNames, firstVectorPropertyName);
 
         // Build search query.
-        var filter = RedisVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.VectorSearchFilter, storagePropertyNames);
+        var filter = RedisVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, storagePropertyNames);
         var vectorBytes = MemoryMarshal.AsBytes(floatVectorQuery.Vector.Span).ToArray();
         var query = new Query($"{filter}=>[KNN {internalOptions.Limit} @{vectorPropertyName} $embedding AS vector_score]")
             .AddParam("embedding", vectorBytes)
@@ -62,7 +62,7 @@ internal static class RedisVectorStoreCollectionSearchMapping
 
         var filterClauses = basicVectorSearchFilter.FilterClauses.Select(clause =>
         {
-            if (clause is EqualityFilterClause equalityFilterClause)
+            if (clause is EqualToFilterClause equalityFilterClause)
             {
                 var storagePropertyName = GetStoragePropertyName(storagePropertyNames, equalityFilterClause.FieldName);
 
@@ -76,7 +76,7 @@ internal static class RedisVectorStoreCollectionSearchMapping
                     _ => throw new InvalidOperationException($"Unsupported filter value type '{equalityFilterClause.Value.GetType().Name}'.")
                 };
             }
-            else if (clause is TagListContainsFilterClause tagListContainsClause)
+            else if (clause is AnyTagEqualToFilterClause tagListContainsClause)
             {
                 var storagePropertyName = GetStoragePropertyName(storagePropertyNames, tagListContainsClause.FieldName);
                 return $"@{storagePropertyName}:{{{tagListContainsClause.Value}}}";

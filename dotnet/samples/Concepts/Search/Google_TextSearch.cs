@@ -2,8 +2,8 @@
 
 using System.Text.Json;
 using Google.Apis.Http;
+using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
-using Microsoft.SemanticKernel.Search;
 
 namespace Search;
 
@@ -97,7 +97,7 @@ public class Google_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search with TextSearchResult textResult type
-        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, BasicFilter = new BasicFilterOptions().Equality("siteSearch", "devblogs.microsoft.com") };
+        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, Filter = new TextSearchFilter().Equality("siteSearch", "devblogs.microsoft.com") };
         KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, searchOptions);
         Console.WriteLine("--- Microsoft Developer Blogs Results ---");
         await foreach (TextSearchResult result in textResults.Results)

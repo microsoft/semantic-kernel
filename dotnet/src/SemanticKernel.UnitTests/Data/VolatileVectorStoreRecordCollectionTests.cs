@@ -332,11 +332,11 @@ public class VolatileVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
-        var filter = filterType == "Equality" ? new VectorSearchFilter().Equality("Data", $"data {testKey2}") : new VectorSearchFilter().TagListContains("Tags", $"tag {testKey2}");
+        var filter = filterType == "Equality" ? new VectorSearchFilter().EqualTo("Data", $"data {testKey2}") : new VectorSearchFilter().AnyTagEqualTo("Tags", $"tag {testKey2}");
         var actual = await sut.SearchAsync(
             VectorSearchQuery.CreateQuery(
                 new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
-                new VectorSearchOptions { IncludeVectors = true, VectorSearchFilter = filter }),
+                new VectorSearchOptions { IncludeVectors = true, Filter = filter }),
             this._testCancellationToken).ToListAsync();
 
         // Assert

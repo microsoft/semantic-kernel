@@ -67,7 +67,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
             .SearchAsync(
                 VectorSearchQuery.CreateQuery(
                     new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
-                    new VectorSearchOptions { VectorSearchFilter = new VectorSearchFilter().Equality("HotelCode", 1), IncludeVectors = true }))
+                    new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 1), IncludeVectors = true }))
             .ToListAsync();
 
         // Assert
@@ -312,7 +312,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel> { PrefixCollectionNameToKeyNames = true };
         var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, TestCollectionName, options);
         var vector = new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f });
-        var filter = filterType == "equality" ? new VectorSearchFilter().Equality("HotelCode", 1) : new VectorSearchFilter().Equality("HotelName", "My Hotel 1");
+        var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelCode", 1) : new VectorSearchFilter().EqualTo("HotelName", "My Hotel 1");
 
         // Act
         var actual = await sut.SearchAsync(VectorSearchQuery.CreateQuery(
@@ -320,7 +320,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
             new VectorSearchOptions
             {
                 IncludeVectors = includeVectors,
-                VectorSearchFilter = filter
+                Filter = filter
             })).ToListAsync();
 
         // Assert

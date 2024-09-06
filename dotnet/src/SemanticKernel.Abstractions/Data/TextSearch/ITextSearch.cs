@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Search;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Interface for text based search queries for use with Semantic Kernel prompts and automatic function calling.

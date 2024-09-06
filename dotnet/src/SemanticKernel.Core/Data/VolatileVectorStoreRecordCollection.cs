@@ -243,7 +243,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
             var vectorProperty = this._vectorProperties[vectorPropertyInfo.Name];
 
             // Filter records using the provided filter before doing the vector comparison.
-            var filteredRecords = VolatileVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.VectorSearchFilter, this.GetCollectionDictionary().Values);
+            var filteredRecords = VolatileVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.Filter, this.GetCollectionDictionary().Values);
 
             // Compare each vector in the filtered results with the provided vector.
             var results = filteredRecords.Select<object, (object record, float score)?>((record) =>

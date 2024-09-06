@@ -7,8 +7,8 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using Microsoft.SemanticKernel.Search;
 using Xunit;
 
 namespace SemanticKernel.Plugins.UnitTests.Web.Bing;
@@ -191,7 +191,7 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, BasicFilter = new BasicFilterOptions().Equality(paramName, paramValue) };
+        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
         KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
 
         // Assert
@@ -206,7 +206,7 @@ public sealed class BingTextSearchTests : IDisposable
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
-        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, BasicFilter = new BasicFilterOptions().Equality("fooBar", "Baz") };
+        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, Filter = new TextSearchFilter().Equality("fooBar", "Baz") };
 
         // Create an ITextSearch instance using Bing search
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });

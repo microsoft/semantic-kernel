@@ -110,18 +110,18 @@ internal static class VolatileVectorStoreCollectionSearchMapping
             // to check any further clauses.
             foreach (var clause in filter.FilterClauses)
             {
-                if (clause is EqualityFilterClause equalityFilter)
+                if (clause is EqualToFilterClause equalToFilter)
                 {
-                    result = result && CheckEqualTo(record, equalityFilter);
+                    result = result && CheckEqualTo(record, equalToFilter);
 
                     if (result == false)
                     {
                         break;
                     }
                 }
-                else if (clause is TagListContainsFilterClause tagListContainsFilter)
+                else if (clause is AnyTagEqualToFilterClause anyTagEqualToFilter)
                 {
-                    result = result && CheckAnyTagEqualTo(record, tagListContainsFilter);
+                    result = result && CheckAnyTagEqualTo(record, anyTagEqualToFilter);
 
                     if (result == false)
                     {
@@ -142,35 +142,35 @@ internal static class VolatileVectorStoreCollectionSearchMapping
     /// Check if the required property on the record is equal to the required value form the filter.
     /// </summary>
     /// <param name="record">The record to check against the filter.</param>
-    /// <param name="equalityFilter">The filter containing the property and value to check.</param>
+    /// <param name="equalToFilter">The filter containing the property and value to check.</param>
     /// <returns><see langword="true"/> if the property equals the required value, <see langword="false"/> otherwise.</returns>
-    private static bool CheckEqualTo(object record, EqualityFilterClause equalityFilter)
+    private static bool CheckEqualTo(object record, EqualToFilterClause equalToFilter)
     {
-        var propertyInfo = GetPropertyInfo(record, equalityFilter.FieldName);
+        var propertyInfo = GetPropertyInfo(record, equalToFilter.FieldName);
         var propertyValue = propertyInfo.GetValue(record);
         if (propertyValue == null)
         {
-            return propertyValue == equalityFilter.Value;
+            return propertyValue == equalToFilter.Value;
         }
 
-        return propertyValue.Equals(equalityFilter.Value);
+        return propertyValue.Equals(equalToFilter.Value);
     }
 
     /// <summary>
     /// Check if the required tag list on the record is equal to the required value form the filter.
     /// </summary>
     /// <param name="record">The record to check against the filter.</param>
-    /// <param name="tagListContainsFilter">The filter containing the property and value to check.</param>
+    /// <param name="anyTagEqualToFilter">The filter containing the property and value to check.</param>
     /// <returns><see langword="true"/> if the tag list contains the required value, <see langword="false"/> otherwise.</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private static bool CheckAnyTagEqualTo(object record, TagListContainsFilterClause tagListContainsFilter)
+    private static bool CheckAnyTagEqualTo(object record, AnyTagEqualToFilterClause anyTagEqualToFilter)
     {
-        var propertyInfo = GetPropertyInfo(record, tagListContainsFilter.FieldName);
+        var propertyInfo = GetPropertyInfo(record, anyTagEqualToFilter.FieldName);
 
         // Check that the property is actually a list of values.
         if (!typeof(IEnumerable).IsAssignableFrom(propertyInfo.PropertyType))
         {
-            throw new InvalidOperationException($"Property {tagListContainsFilter.FieldName} is not a list property on record type {record.GetType().Name}");
+            throw new InvalidOperationException($"Property {anyTagEqualToFilter.FieldName} is not a list property on record type {record.GetType().Name}");
         }
 
         // Check that the tag list contains any values. If not, return false, since the required value cannot be in an empty list.
@@ -183,12 +183,12 @@ internal static class VolatileVectorStoreCollectionSearchMapping
         // Check each value in the tag list against the required value.
         foreach (var value in propertyValue)
         {
-            if (value == null && tagListContainsFilter.Value == null)
+            if (value == null && anyTagEqualToFilter.Value == null)
             {
                 return true;
             }
 
-            if (value != null && value.Equals(tagListContainsFilter.Value))
+            if (value != null && value.Equals(anyTagEqualToFilter.Value))
             {
                 return true;
             }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Search;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Represents the search results returned from a <see cref="ITextSearch" /> service.
