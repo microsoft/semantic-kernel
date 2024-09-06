@@ -23,14 +23,7 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
     public void AddVectorStoreRegistersClass()
     {
         // Arrange
-        var cosmosClientOptions = new CosmosClientOptions();
-        var cosmosClientMock = new Mock<CosmosClient>();
-        var databaseMock = new Mock<Database>();
-
-        cosmosClientMock.SetupGet(c => c.ClientOptions).Returns(cosmosClientOptions);
-        databaseMock.SetupGet(d => d.Client).Returns(cosmosClientMock.Object);
-
-        this._serviceCollection.AddSingleton<Database>(databaseMock.Object);
+        this._serviceCollection.AddSingleton<Database>(Mock.Of<Database>());
 
         // Act
         this._serviceCollection.AddAzureCosmosDBNoSQLVectorStore();
@@ -41,7 +34,6 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
         // Assert
         Assert.NotNull(vectorStore);
         Assert.IsType<AzureCosmosDBNoSQLVectorStore>(vectorStore);
-        Assert.Equal(HttpHeaderConstant.Values.UserAgent, cosmosClientOptions.ApplicationName);
     }
 
     [Fact]

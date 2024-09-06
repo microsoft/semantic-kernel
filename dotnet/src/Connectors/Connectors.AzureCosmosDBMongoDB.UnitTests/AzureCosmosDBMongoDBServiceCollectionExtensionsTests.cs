@@ -23,14 +23,7 @@ public sealed class AzureCosmosDBMongoDBServiceCollectionExtensionsTests
     public void AddVectorStoreRegistersClass()
     {
         // Arrange
-        var mongoClientSettings = new MongoClientSettings();
-        var mongoClient = new Mock<IMongoClient>();
-        var databaseMock = new Mock<IMongoDatabase>();
-
-        mongoClient.SetupGet(c => c.Settings).Returns(mongoClientSettings);
-        databaseMock.SetupGet(d => d.Client).Returns(mongoClient.Object);
-
-        this._serviceCollection.AddSingleton<IMongoDatabase>(databaseMock.Object);
+        this._serviceCollection.AddSingleton<IMongoDatabase>(Mock.Of<IMongoDatabase>());
 
         // Act
         this._serviceCollection.AddAzureCosmosDBMongoDBVectorStore();
@@ -41,7 +34,6 @@ public sealed class AzureCosmosDBMongoDBServiceCollectionExtensionsTests
         // Assert
         Assert.NotNull(vectorStore);
         Assert.IsType<AzureCosmosDBMongoDBVectorStore>(vectorStore);
-        Assert.Equal(HttpHeaderConstant.Values.UserAgent, mongoClientSettings.ApplicationName);
     }
 
     [Fact]

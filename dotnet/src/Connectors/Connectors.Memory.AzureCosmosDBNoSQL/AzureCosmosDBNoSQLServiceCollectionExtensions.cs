@@ -36,12 +36,6 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
                 var database = sp.GetRequiredService<Database>();
                 var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreOptions>();
 
-                // Set the user agent string on the client (if not already set)
-                if (database.Client.ClientOptions.ApplicationName == null)
-                {
-                    database.Client.ClientOptions.ApplicationName = HttpHeaderConstant.Values.UserAgent;
-                }
-
                 return new AzureCosmosDBNoSQLVectorStore(database, options);
             });
 
