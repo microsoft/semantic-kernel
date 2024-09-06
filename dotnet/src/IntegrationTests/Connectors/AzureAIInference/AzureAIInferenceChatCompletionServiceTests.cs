@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -42,10 +43,15 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
         Assert.NotNull(config);
 
-        var sut = new AzureAIInferenceChatCompletionService(
-            endpoint: config.Endpoint,
-            apiKey: config.ApiKey,
-            loggerFactory: this._loggerFactory);
+        var sut = (config.ApiKey is not null)
+                ? new AzureAIInferenceChatCompletionService(
+                    endpoint: config.Endpoint,
+                    apiKey: config.ApiKey,
+                    loggerFactory: this._loggerFactory)
+                : new AzureAIInferenceChatCompletionService(
+                    endpoint: config.Endpoint,
+                    credential: new AzureCliCredential(),
+                    loggerFactory: this._loggerFactory);
 
         ChatHistory chatHistory = [
             new ChatMessageContent(AuthorRole.User, prompt)
@@ -67,10 +73,15 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
         Assert.NotNull(config);
 
-        var sut = new AzureAIInferenceChatCompletionService(
-            endpoint: config.Endpoint,
-            apiKey: config.ApiKey,
-            loggerFactory: this._loggerFactory);
+        var sut = (config.ApiKey is not null)
+                ? new AzureAIInferenceChatCompletionService(
+                    endpoint: config.Endpoint,
+                    apiKey: config.ApiKey,
+                    loggerFactory: this._loggerFactory)
+                : new AzureAIInferenceChatCompletionService(
+                    endpoint: config.Endpoint,
+                    credential: new AzureCliCredential(),
+                    loggerFactory: this._loggerFactory);
 
         ChatHistory chatHistory = [
             new ChatMessageContent(AuthorRole.User, prompt)
@@ -142,7 +153,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
 
         var kernelBuilder = Kernel.CreateBuilder();
 
-        kernelBuilder.AddAzureAIInferenceChatCompletion(endpoint: config.Endpoint);
+        kernelBuilder.AddAzureAIInferenceChatCompletion(endpoint: config.Endpoint, apiKey: null);
 
         kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
         {

@@ -27,9 +27,14 @@ public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) 
         return this.StartStreamingChatAsync(chatService);
     }
 
+    /// <summary>
+    /// This example demonstrates chat completion streaming using OpenAI via the kernel.
+    /// </summary>
     [Fact]
     public async Task StreamChatPromptAsync()
     {
+        Console.WriteLine("======== Azure AI Inference - Chat Prompt Completion Streaming ========");
+
         StringBuilder chatPrompt = new("""
                                        <message role="system">You are a librarian, expert about books</message>
                                        <message role="user">Hi, I'm looking for book suggestions</message>
@@ -82,6 +87,10 @@ public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) 
         }
     }
 
+    /// <summary>
+    /// Starts streaming chat with the chat completion service.
+    /// </summary>
+    /// <param name="chatCompletionService">The chat completion service instance.</param>
     private async Task StartStreamingChatAsync(IChatCompletionService chatCompletionService)
     {
         Console.WriteLine("Chat content:");
@@ -105,6 +114,12 @@ public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) 
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
     }
 
+    /// <summary>
+    /// Streams the message output from the chat completion service.
+    /// </summary>
+    /// <param name="chatCompletionService">The chat completion service instance.</param>
+    /// <param name="chatHistory">The chat history instance.</param>
+    /// <param name="authorRole">The author role.</param>
     private async Task StreamMessageOutputAsync(IChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
     {
         bool roleWritten = false;
@@ -129,6 +144,12 @@ public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) 
         chatHistory.AddMessage(authorRole, fullMessage);
     }
 
+    /// <summary>
+    /// Outputs the chat history by streaming the message output from the kernel.
+    /// </summary>
+    /// <param name="kernel">The kernel instance.</param>
+    /// <param name="prompt">The prompt message.</param>
+    /// <returns>The full message output from the kernel.</returns>
     private async Task<string> StreamMessageOutputFromKernelAsync(Kernel kernel, string prompt)
     {
         bool roleWritten = false;

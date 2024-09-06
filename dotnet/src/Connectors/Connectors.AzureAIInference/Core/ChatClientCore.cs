@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.Inference;
+using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -29,44 +30,6 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAIInference.Core;
 /// </summary>
 internal sealed class ChatClientCore
 {
-    private const string ModelProvider = "azure-ai-inference";
-    /// <summary>
-    /// Instance of <see cref="Meter"/> for metrics.
-    /// </summary>
-    private static readonly Meter s_meter = new("Microsoft.SemanticKernel.Connectors.AzureAIInference");
-
-    /// <summary>
-    /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
-    /// </summary>
-    private static readonly Counter<int> s_promptTokensCounter =
-        s_meter.CreateCounter<int>(
-            name: "semantic_kernel.connectors.azure-ai-inference.tokens.prompt",
-            unit: "{token}",
-            description: "Number of prompt tokens used");
-
-    /// <summary>
-    /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
-    /// </summary>
-    private static readonly Counter<int> s_completionTokensCounter =
-        s_meter.CreateCounter<int>(
-            name: "semantic_kernel.connectors.azure-ai-inference.tokens.completion",
-            unit: "{token}",
-            description: "Number of completion tokens used");
-
-    /// <summary>
-    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
-    /// </summary>
-    private static readonly Counter<int> s_totalTokensCounter =
-        s_meter.CreateCounter<int>(
-            name: "semantic_kernel.connectors.azure-ai-inference.tokens.total",
-            unit: "{token}",
-            description: "Number of tokens used");
-
-    /// <summary>
-    /// Single space constant.
-    /// </summary>
-    private const string SingleSpace = " ";
-
     /// <summary>
     /// Non-default endpoint for Azure AI Inference API.
     /// </summary>
@@ -99,7 +62,7 @@ internal sealed class ChatClientCore
     /// <param name="apiKey">Azure AI Inference API Key.</param>
     /// <param name="endpoint">Azure AI Inference compatible API endpoint.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
     internal ChatClientCore(
         string? modelId = null,
         string? apiKey = null,
@@ -126,9 +89,39 @@ internal sealed class ChatClientCore
             this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         }
 
-        var options = GetClientOptions(httpClient);
+        this.Client = new ChatCompletionsClient(this.Endpoint, new AzureKeyCredential(apiKey!), GetClientOptions(httpClient));
+    }
 
-        this.Client = new ChatCompletionsClient(this.Endpoint, new AzureKeyCredential(apiKey!), options);
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatClientCore"/> class.
+    /// </summary>
+    /// <param name="modelId">Optional target Model Id for endpoints that support multiple models</param>
+    /// <param name="credential">Token credential, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="endpoint">Azure AI Inference compatible API endpoint.</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
+    internal ChatClientCore(
+        string? modelId = null,
+        TokenCredential? credential = null,
+        Uri? endpoint = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
+    {
+        Verify.NotNull(endpoint);
+        Verify.NotNull(credential);
+        this.Logger = logger ?? NullLogger.Instance;
+
+        this.Endpoint = endpoint ?? httpClient?.BaseAddress;
+        Verify.NotNull(this.Endpoint, "endpoint or base-address");
+        this.AddAttribute(AIServiceExtensions.EndpointKey, this.Endpoint.ToString());
+
+        if (!string.IsNullOrEmpty(modelId))
+        {
+            this.ModelId = modelId;
+            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        }
+
+        this.Client = new ChatCompletionsClient(this.Endpoint, credential, GetClientOptions(httpClient));
     }
 
     /// <summary>
@@ -168,66 +161,17 @@ internal sealed class ChatClientCore
         }
     }
 
-    /// <summary>Gets options to use for an Azure AI InferenceClient</summary>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="serviceVersion">Optional API version.</param>
-    /// <returns>An instance of <see cref="ChatCompletionsClientOptions"/>.</returns>
-    private static ChatCompletionsClientOptions GetClientOptions(HttpClient? httpClient, ChatCompletionsClientOptions.ServiceVersion? serviceVersion = null)
-    {
-        ChatCompletionsClientOptions options = serviceVersion is not null ?
-            new(serviceVersion.Value) :
-            new();
-
-        options.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
-
-        options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ChatClientCore))), Azure.Core.HttpPipelinePosition.PerCall);
-
-        if (httpClient is not null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable retry policy if and only if a custom HttpClient is provided.
-            options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable default timeout
-        }
-
-        return options;
-    }
-
     /// <summary>
-    /// Invokes the specified request and handles exceptions.
+    /// Get chat multiple chat content choices for the prompt and settings.
     /// </summary>
-    /// <typeparam name="T">Type of the response.</typeparam>
-    /// <param name="request">Request to invoke.</param>
-    /// <returns>Returns the response.</returns>
-    private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
-    {
-        try
-        {
-            return await request.Invoke().ConfigureAwait(false);
-        }
-        catch (RequestFailedException e)
-        {
-            throw e.ToHttpOperationException();
-        }
-    }
-
-    /// <summary>
-    /// Invokes the specified request and handles exceptions.
-    /// </summary>
-    /// <typeparam name="T">Type of the response.</typeparam>
-    /// <param name="request">Request to invoke.</param>
-    /// <returns>Returns the response.</returns>
-    private static T RunRequest<T>(Func<T> request)
-    {
-        try
-        {
-            return request.Invoke();
-        }
-        catch (RequestFailedException e)
-        {
-            throw e.ToHttpOperationException();
-        }
-    }
-
+    /// <remarks>
+    /// This should be used when the settings request for more than one choice.
+    /// </remarks>
+    /// <param name="chatHistory">The chat history context.</param>
+    /// <param name="executionSettings">The AI execution settings (optional).</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>List of different chat results generated by the remote model</returns>
     internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chatHistory);
@@ -278,6 +222,15 @@ internal sealed class ChatClientCore
         return responseContent;
     }
 
+    /// <summary>
+    /// Get streaming chat contents for the chat history provided using the specified settings.
+    /// </summary>
+    /// <exception cref="NotSupportedException">Throws if the specified type is not the same or fail to cast</exception>
+    /// <param name="chatHistory">The chat history to complete.</param>
+    /// <param name="executionSettings">The AI execution settings (optional).</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Streaming list of different completion streaming string updates generated by the remote model</returns>
     internal async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
@@ -366,6 +319,111 @@ internal sealed class ChatClientCore
         }
     }
 
+    #region Private
+
+    private const string ModelProvider = "azure-ai-inference";
+    /// <summary>
+    /// Instance of <see cref="Meter"/> for metrics.
+    /// </summary>
+    private static readonly Meter s_meter = new("Microsoft.SemanticKernel.Connectors.AzureAIInference");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_promptTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "semantic_kernel.connectors.azure-ai-inference.tokens.prompt",
+            unit: "{token}",
+            description: "Number of prompt tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_completionTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "semantic_kernel.connectors.azure-ai-inference.tokens.completion",
+            unit: "{token}",
+            description: "Number of completion tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_totalTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "semantic_kernel.connectors.azure-ai-inference.tokens.total",
+            unit: "{token}",
+            description: "Number of tokens used");
+
+    /// <summary>
+    /// Single space constant.
+    /// </summary>
+    private const string SingleSpace = " ";
+
+    /// <summary>Gets options to use for an Azure AI InferenceClient</summary>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="serviceVersion">Optional API version.</param>
+    /// <returns>An instance of <see cref="ChatCompletionsClientOptions"/>.</returns>
+    private static ChatCompletionsClientOptions GetClientOptions(HttpClient? httpClient, ChatCompletionsClientOptions.ServiceVersion? serviceVersion = null)
+    {
+        ChatCompletionsClientOptions options = serviceVersion is not null ?
+            new(serviceVersion.Value) :
+            new();
+
+        options.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
+
+        options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ChatClientCore))), Azure.Core.HttpPipelinePosition.PerCall);
+
+        if (httpClient is not null)
+        {
+            options.Transport = new HttpClientTransport(httpClient);
+            options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable retry policy if and only if a custom HttpClient is provided.
+            options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable default timeout
+        }
+
+        return options;
+    }
+
+    /// <summary>
+    /// Invokes the specified request and handles exceptions.
+    /// </summary>
+    /// <typeparam name="T">Type of the response.</typeparam>
+    /// <param name="request">Request to invoke.</param>
+    /// <returns>Returns the response.</returns>
+    private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
+    {
+        try
+        {
+            return await request.Invoke().ConfigureAwait(false);
+        }
+        catch (RequestFailedException e)
+        {
+            throw e.ToHttpOperationException();
+        }
+    }
+
+    /// <summary>
+    /// Invokes the specified request and handles exceptions.
+    /// </summary>
+    /// <typeparam name="T">Type of the response.</typeparam>
+    /// <param name="request">Request to invoke.</param>
+    /// <returns>Returns the response.</returns>
+    private static T RunRequest<T>(Func<T> request)
+    {
+        try
+        {
+            return request.Invoke();
+        }
+        catch (RequestFailedException e)
+        {
+            throw e.ToHttpOperationException();
+        }
+    }
+
+    /// <summary>
+    /// Checks if the maximum tokens value is valid.
+    /// </summary>
+    /// <param name="maxTokens">Maximum tokens value.</param>
+    /// <exception cref="ArgumentException">Throws if the maximum tokens value is invalid.</exception>
     private static void ValidateMaxTokens(int? maxTokens)
     {
         if (maxTokens.HasValue && maxTokens < 1)
@@ -374,6 +432,14 @@ internal sealed class ChatClientCore
         }
     }
 
+    /// <summary>
+    /// Creates a new instance of <see cref="ChatCompletionsOptions"/> based on the provided settings.
+    /// </summary>
+    /// <param name="executionSettings">The execution settings.</param>
+    /// <param name="chatHistory">The chat history.</param>
+    /// <param name="kernel">Kernel instance.</param>
+    /// <param name="modelId">Model ID.</param>
+    /// <returns>Create a new instance of <see cref="ChatCompletionsOptions"/>.</returns>
     private ChatCompletionsOptions CreateChatCompletionsOptions(
         AzureAIInferencePromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
@@ -390,10 +456,10 @@ internal sealed class ChatClientCore
         var options = new ChatCompletionsOptions
         {
             MaxTokens = executionSettings.MaxTokens,
-            Temperature = (float?)executionSettings.Temperature,
-            NucleusSamplingFactor = (float?)executionSettings.NucleusSamplingFactor,
-            FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
-            PresencePenalty = (float?)executionSettings.PresencePenalty,
+            Temperature = executionSettings.Temperature,
+            NucleusSamplingFactor = executionSettings.NucleusSamplingFactor,
+            FrequencyPenalty = executionSettings.FrequencyPenalty,
+            PresencePenalty = executionSettings.PresencePenalty,
             Model = modelId,
             Seed = executionSettings.Seed,
         };
@@ -455,6 +521,12 @@ internal sealed class ChatClientCore
         return options;
     }
 
+    /// <summary>
+    /// Create request messages based on the chat message content.
+    /// </summary>
+    /// <param name="message">Chat message content.</param>
+    /// <returns>A list of <see cref="ChatRequestMessage"/>.</returns>
+    /// <exception cref="NotSupportedException">When the message role is not supported.</exception>
     private static List<ChatRequestMessage> GetRequestMessages(ChatMessageContent message)
     {
         if (message.Role == AuthorRole.System)
@@ -493,6 +565,12 @@ internal sealed class ChatClientCore
         throw new NotSupportedException($"Role {message.Role} is not supported.");
     }
 
+    /// <summary>
+    /// Create a new instance of <see cref="ChatMessageImageContentItem"/> based on the provided <see cref="ImageContent"/>
+    /// </summary>
+    /// <param name="imageContent">Target <see cref="ImageContent"/>.</param>
+    /// <returns> new instance of <see cref="ChatMessageImageContentItem"/></returns>
+    /// <exception cref="ArgumentException">When the <see cref="ImageContent"/> does not have Data or Uri.</exception>
     private static ChatMessageImageContentItem GetImageContentItem(ImageContent imageContent)
     {
         if (imageContent.Data is { IsEmpty: false } data)
@@ -532,12 +610,30 @@ internal sealed class ChatClientCore
         s_totalTokensCounter.Add(usage.TotalTokens);
     }
 
+    /// <summary>
+    /// Create a new <see cref="ChatMessageContent"/> based on the provided <see cref="ChatChoice"/> and <see cref="ChatCompletions"/>.
+    /// </summary>
+    /// <param name="chatChoice">The <see cref="ChatChoice"/> object representing the selected choice.</param>
+    /// <param name="responseData">The <see cref="ChatCompletions"/> object containing the response data.</param>
+    /// <returns>A new <see cref="ChatMessageContent"/> object.</returns>
     private ChatMessageContent GetChatMessage(ChatChoice chatChoice, ChatCompletions responseData)
     {
-        var message = new ChatMessageContent(new AuthorRole(chatChoice.Message.Role.ToString()), chatChoice.Message.Content, responseData.Model, innerContent: responseData, metadata: GetChatChoiceMetadata(responseData, chatChoice));
+        var message = new ChatMessageContent(
+            new AuthorRole(chatChoice.Message.Role.ToString()),
+            chatChoice.Message.Content,
+            responseData.Model,
+            innerContent: responseData,
+            metadata: GetChatChoiceMetadata(responseData, chatChoice)
+        );
         return message;
     }
 
+    /// <summary>
+    /// Create the metadata dictionary based on the provided <see cref="ChatChoice"/> and <see cref="ChatCompletions"/>.
+    /// </summary>
+    /// <param name="completions">The <see cref="ChatCompletions"/> object containing the response data.</param>
+    /// <param name="chatChoice">The <see cref="ChatChoice"/> object representing the selected choice.</param>
+    /// <returns>A new dictionary with metadata.</returns>
     private static Dictionary<string, object?> GetChatChoiceMetadata(ChatCompletions completions, ChatChoice chatChoice)
     {
         return new Dictionary<string, object?>(5)
@@ -552,6 +648,11 @@ internal sealed class ChatClientCore
         };
     }
 
+    /// <summary>
+    /// Create the metadata dictionary based on the provided <see cref="StreamingChatCompletionsUpdate"/>.
+    /// </summary>
+    /// <param name="completions">The <see cref="StreamingChatCompletionsUpdate"/> object containing the response data.</param>
+    /// <returns>A new dictionary with metadata.</returns>
     private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
     {
         return new Dictionary<string, object?>(3)
@@ -563,4 +664,6 @@ internal sealed class ChatClientCore
             { nameof(completions.FinishReason), completions.FinishReason?.ToString() },
         };
     }
+
+    #endregion
 }

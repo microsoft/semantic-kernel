@@ -3,6 +3,7 @@
 using System;
 using System.Net.Http;
 using Azure.AI.Inference;
+using Azure.Core;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 
 namespace Microsoft.SemanticKernel;
@@ -33,6 +34,31 @@ public static class AzureAIInferenceKernelBuilderExtensions
         Verify.NotNull(builder);
 
         builder.Services.AddAzureAIInferenceChatCompletion(modelId, apiKey, endpoint, httpClient, serviceId);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the <see cref="AzureAIInferenceChatCompletionService"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="modelId">Target Model Id for endpoints supporting more than one model</param>
+    /// <param name="credential">Token credential, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="endpoint">Endpoint / Target URI</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddAzureAIInferenceChatCompletion(
+        this IKernelBuilder builder,
+        string? modelId = null,
+        TokenCredential? credential = null,
+        Uri? endpoint = null,
+        HttpClient? httpClient = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddAzureAIInferenceChatCompletion(modelId, credential, endpoint, httpClient, serviceId);
 
         return builder;
     }

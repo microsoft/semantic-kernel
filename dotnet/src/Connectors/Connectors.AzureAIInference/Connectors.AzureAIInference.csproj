@@ -7,6 +7,7 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);NU5104;SKEXP0001,SKEXP0070</NoWarn>
     <EnablePackageValidation>false</EnablePackageValidation>
+    <VersionSuffix>beta.1</VersionSuffix>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
