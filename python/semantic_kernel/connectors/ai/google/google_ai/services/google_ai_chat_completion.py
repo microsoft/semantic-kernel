@@ -13,6 +13,7 @@ from google.generativeai.types import AsyncGenerateContentResponse, GenerateCont
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
@@ -330,7 +331,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         """
         return {
             "prompt_feedback": response.prompt_feedback,
-            "usage": response.usage_metadata,
+            "usage": CompletionUsage(
+                prompt_tokens=response.usage_metadata.prompt_token_count,
+                completion_tokens=response.usage_metadata.candidates_token_count,
+            ),
         }
 
     def _get_metadata_from_candidate(self, candidate: Candidate) -> dict[str, Any]:

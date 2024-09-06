@@ -22,6 +22,7 @@ from mistralai.models.chat_completion import (
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
@@ -220,7 +221,12 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         }
         # Check if usage exists and has a value, then add it to the metadata
         if hasattr(response, "usage") and response.usage is not None:
-            metadata["usage"] = response.usage
+            metadata["usage"] = (
+                CompletionUsage(
+                    prompt_tokens=response.usage.prompt_tokens,
+                    completion_tokens=response.usage.completion_tokens,
+                ),
+            )
 
         return metadata
 

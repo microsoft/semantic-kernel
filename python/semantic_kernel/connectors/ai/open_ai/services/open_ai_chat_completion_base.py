@@ -18,6 +18,7 @@ from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMe
 from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
@@ -189,7 +190,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             "id": response.id,
             "created": response.created,
             "system_fingerprint": response.system_fingerprint,
-            "usage": response.usage if hasattr(response, "usage") else None,
+            "usage": CompletionUsage.from_openai(response.usage) if response.usage is not None else None,
         }
 
     def _get_metadata_from_streaming_chat_response(self, response: ChatCompletionChunk) -> dict[str, Any]:

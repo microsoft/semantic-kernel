@@ -10,6 +10,7 @@ from google.generativeai.protos import Candidate
 from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAITextPromptExecutionSettings,
 )
@@ -193,7 +194,10 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         """
         return {
             "prompt_feedback": response.prompt_feedback,
-            "usage": response.usage_metadata,
+            "usage": CompletionUsage(
+                prompt_tokens=response.usage_metadata.prompt_token_count,
+                completion_tokens=response.usage_metadata.candidates_token_count,
+            ),
         }
 
     def _get_metadata_from_candidate(self, candidate: Candidate) -> dict[str, Any]:

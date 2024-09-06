@@ -9,6 +9,7 @@ from typing import Any
 from opentelemetry.trace import Span, StatusCode, get_tracer, use_span
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -355,14 +356,11 @@ def _set_completion_response(
 
     # Set usage attributes
     usage = first_completion.metadata.get("usage", None)
-
-    prompt_tokens = getattr(usage, "prompt_tokens", None)
-    if prompt_tokens:
-        current_span.set_attribute(gen_ai_attributes.PROMPT_TOKENS, prompt_tokens)
-
-    completion_tokens = getattr(usage, "completion_tokens", None)
-    if completion_tokens:
-        current_span.set_attribute(gen_ai_attributes.COMPLETION_TOKENS, completion_tokens)
+    if isinstance(usage, CompletionUsage):
+        if usage.prompt_tokens:
+            current_span.set_attribute(gen_ai_attributes.PROMPT_TOKENS, usage.prompt_tokens)
+        if usage.completion_tokens:
+            current_span.set_attribute(gen_ai_attributes.COMPLETION_TOKENS, usage.completion_tokens)
 
     # Set the completion event
     if are_sensitive_events_enabled():

@@ -18,6 +18,7 @@ from openai.types.chat.chat_completion import Choice as ChatCompletionChoice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChatCompletionChunkChoice
 
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
     OpenAITextPromptExecutionSettings,
@@ -151,8 +152,8 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             "created": response.created,
             "system_fingerprint": response.system_fingerprint,
         }
-        if hasattr(response, "usage"):
-            ret["usage"] = response.usage
+        if response.usage is not None:
+            ret["usage"] = CompletionUsage.from_openai(response.usage)
         return ret
 
     def _get_metadata_from_text_choice(
