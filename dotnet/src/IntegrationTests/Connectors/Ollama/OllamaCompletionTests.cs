@@ -180,16 +180,5 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
             endpoint: new Uri(config.Endpoint));
     }
 
-    private sealed class HttpHeaderHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
-    {
-        public System.Net.Http.Headers.HttpRequestHeaders? RequestHeaders { get; private set; }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            this.RequestHeaders = request.Headers;
-            return await base.SendAsync(request, cancellationToken);
-        }
-    }
-
     #endregion
 }
