@@ -5,6 +5,9 @@ from typing import Any
 from pydantic import PrivateAttr
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
+from typing import List, Optional
+
+from semantic_kernel.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
@@ -21,6 +24,11 @@ class SemanticTextMemory(SemanticTextMemoryBase):
     _storage: MemoryStoreBase = PrivateAttr()
     _embeddings_generator: EmbeddingGeneratorBase = PrivateAttr()
 
+
+class SemanticTextMemory(SemanticTextMemoryBase):
+    _storage: MemoryStoreBase
+    _embeddings_generator: EmbeddingGeneratorBase
+
     def __init__(
         self, storage: MemoryStoreBase, embeddings_generator: EmbeddingGeneratorBase
     ) -> None:
@@ -36,6 +44,10 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         self._embeddings_generator = embeddings_generator
 
     async def save_information(
+        self._storage = storage
+        self._embeddings_generator = embeddings_generator
+
+    async def save_information_async(
         self,
         collection: str,
         text: str,
@@ -73,6 +85,14 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         await self._storage.upsert(collection_name=collection, record=data)
 
     async def save_reference(
+        description: Optional[str] = None,
+    ) -> None:
+        embedding = await self._embeddings_generator.generate_embeddings_async([text])
+        data = MemoryRecord.local_record(id, text, description, embedding)
+
+        await self._storage.put_value_async(collection, id, data)
+
+    async def save_reference_async(
         self,
         collection: str,
         text: str,
@@ -129,6 +149,21 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         return MemoryQueryResult.from_memory_record(record, 1.0) if record else None
 
     async def search(
+        description: Optional[str] = None,
+    ) -> None:
+        embedding = await self._embeddings_generator.generate_embeddings_async([text])
+        MemoryRecord.reference_record(
+            external_id, external_source_name, description, embedding
+        )
+
+    async def get_async(
+        self,
+        collection: str,
+        query: str,
+    ) -> Optional[MemoryQueryResult]:
+        raise NotImplementedError()
+
+    async def search_async(
         self,
         collection: str,
         query: str,
@@ -161,6 +196,13 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             limit=limit,
             min_relevance_score=min_relevance_score,
             with_embeddings=with_embeddings,
+        min_relevance_score: float = 0.7,
+    ) -> List[MemoryQueryResult]:
+        query_embedding = await self._embeddings_generator.generate_embeddings_async(
+            [query]
+        )
+        results = await self._storage.get_nearest_matches_async(
+            collection, query_embedding, limit, min_relevance_score
         )
 
         return [MemoryQueryResult.from_memory_record(r[0], r[1]) for r in results]
@@ -172,3 +214,5 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             List[str]: The list of all the memory collection names.
         """
         return await self._storage.get_collections()
+    async def get_collections_async(self) -> List[str]:
+        raise NotImplementedError()
