@@ -52,7 +52,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         AudioContent content,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken
     )
     {
         Verify.NotNull(content);
