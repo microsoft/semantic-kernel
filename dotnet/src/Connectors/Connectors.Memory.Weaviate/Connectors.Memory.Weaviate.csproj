@@ -26,4 +26,8 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.Weaviate.UnitTests" />
+  </ItemGroup>
+
 </Project>

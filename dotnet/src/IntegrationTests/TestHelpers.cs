@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.SemanticKernel;
+using Xunit;
 
 namespace SemanticKernel.IntegrationTests;
 
@@ -51,5 +52,14 @@ internal static class TestHelpers
         return new KernelPluginCollection(
             from pluginName in pluginNames
             select kernel.ImportPluginFromPromptDirectory(Path.Combine(parentDirectory, pluginName)));
+    }
+
+    internal static void AssertChatErrorExcuseMessage(string content)
+    {
+        string[] errors = ["error", "difficult", "unable"];
+
+        var matchesAny = errors.Any(e => content.Contains(e, StringComparison.InvariantCultureIgnoreCase));
+
+        Assert.True(matchesAny);
     }
 }
