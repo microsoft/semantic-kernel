@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Planning.PowerShell;
 
-internal sealed class EmbeddedResource
+internal static class EmbeddedResource
 {
     private static readonly string? s_namespace = typeof(EmbeddedResource).Namespace;
 
