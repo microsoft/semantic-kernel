@@ -13,6 +13,7 @@ from google.generativeai.protos import Candidate, Content
 from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.function_calling_utils import merge_function_results
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
 )
@@ -37,7 +38,9 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -107,6 +110,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 
     # region Non-streaming
     @override
+    @trace_chat_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
     async def get_chat_message_contents(
         self,
         chat_history: ChatHistory,
@@ -116,29 +120,31 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
+        kernel = kwargs.get("kernel")
+        if settings.function_choice_behavior is not None and (not kernel or not isinstance(kernel, Kernel)):
+            raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
+
+        if kernel and settings.function_choice_behavior:
+            configure_function_choice_behavior(settings, kernel, update_settings_from_function_choice_configuration)
+
         if (
             settings.function_choice_behavior is None
             or not settings.function_choice_behavior.auto_invoke_kernel_functions
         ):
             return await self._send_chat_request(chat_history, settings)
 
-        kernel = kwargs.get("kernel")
-        if not isinstance(kernel, Kernel):
-            raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
-
-        configure_function_choice_behavior(settings, kernel, update_settings_from_function_choice_configuration)
-
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
-            chat_history.add_message(message=completions[0])
-            function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
+            function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
             if (fc_count := len(function_calls)) == 0:
                 return completions
+
+            chat_history.add_message(message=completions[0])
 
             results = await invoke_function_calls(
                 function_calls=function_calls,
                 chat_history=chat_history,
-                kernel=kernel,
+                kernel=kernel,  # type: ignore
                 arguments=kwargs.get("arguments", None),
                 function_call_count=fc_count,
                 request_index=request_index,
@@ -146,7 +152,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             )
 
             if any(result.terminate for result in results if result is not None):
-                return completions
+                return merge_function_results(chat_history.messages[-len(results) :])
         else:
             # do a final call without auto function calling
             return await self._send_chat_request(chat_history, settings)
@@ -224,6 +230,13 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
+        kernel = kwargs.get("kernel")
+        if settings.function_choice_behavior is not None and (not kernel or not isinstance(kernel, Kernel)):
+            raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
+
+        if kernel and settings.function_choice_behavior:
+            configure_function_choice_behavior(settings, kernel, update_settings_from_function_choice_configuration)
+
         if (
             settings.function_choice_behavior is None
             or not settings.function_choice_behavior.auto_invoke_kernel_functions
@@ -232,27 +245,28 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             async_generator = self._send_chat_streaming_request(chat_history, settings)
         else:
             # Auto invoke is required.
-            async_generator = self._get_streaming_chat_message_contents_auto_invoke(chat_history, settings, **kwargs)
+            async_generator = self._get_streaming_chat_message_contents_auto_invoke(
+                kernel,  # type: ignore
+                kwargs.get("arguments"),
+                chat_history,
+                settings,
+            )
 
         async for messages in async_generator:
             yield messages
 
     async def _get_streaming_chat_message_contents_auto_invoke(
         self,
+        kernel: Kernel,
+        arguments: KernelArguments | None,
         chat_history: ChatHistory,
         settings: GoogleAIChatPromptExecutionSettings,
-        **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Get streaming chat message contents from the Google AI service with auto invoking functions."""
-        kernel = kwargs.get("kernel")
-        if not isinstance(kernel, Kernel):
-            raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
         if not settings.function_choice_behavior:
             raise ServiceInvalidExecutionSettingsError(
                 "Function choice behavior is required for auto invoking functions."
             )
-
-        configure_function_choice_behavior(settings, kernel, update_settings_from_function_choice_configuration)
 
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             all_messages: list[StreamingChatMessageContent] = []
@@ -277,14 +291,15 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 function_calls=function_calls,
                 chat_history=chat_history,
                 kernel=kernel,
-                arguments=kwargs.get("arguments", None),
+                arguments=arguments,
                 function_call_count=len(function_calls),
                 request_index=request_index,
                 function_behavior=settings.function_choice_behavior,
             )
 
             if any(result.terminate for result in results if result is not None):
-                return
+                yield merge_function_results(chat_history.messages[-len(results) :])  # type: ignore
+                break
 
     async def _send_chat_streaming_request(
         self,

@@ -5,7 +5,10 @@
       "label": "setup (contributing-R#)",
       "detail": "",
       "group": "build",
-      "dependsOn": ["new tool-manifest", "# Setup"],
+      "dependsOn": [
+        "new tool-manifest",
+        "# Setup"
+      ],
       "dependsOrder": "sequence"
     },
     {
@@ -13,7 +16,10 @@
       "detail": "Install ReSharper Global Tools",
       "command": "dotnet",
       "type": "process",
-      "args": ["new", "tool-manifest"],
+      "args": [
+        "new",
+        "tool-manifest"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/dotnet"
       }
@@ -122,6 +128,10 @@
         "cwd": "${workspaceFolder}/python"
       }
     },
+    // ***************
+    // Kernel (dotnet)
+    // ***************
+    // Build
     {
       "label": "build (Semantic-Kernel)",
       "command": "dotnet",
@@ -144,7 +154,10 @@
       "label": "test (Semantic-Kernel)",
       "command": "dotnet",
       "type": "process",
-      "args": ["test", "SemanticKernel.UnitTests.csproj"],
+      "args": [
+        "test",
+        "SemanticKernel.UnitTests.csproj"
+      ],
       "problemMatcher": "$msCompile",
       "group": "test",
       "presentation": {
@@ -299,6 +312,10 @@
         "cwd": "${workspaceFolder}/python"
       }
     },
+    // ****************
+    // Samples (dotnet)
+    // ****************
+    // Kernel Syntax Examples
     {
       "label": "build (Concepts)",
       "command": "dotnet",
