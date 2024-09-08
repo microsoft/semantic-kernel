@@ -4,3 +4,7 @@
 # Bash scripts
 *.sh  text eol=lf
 *.cmd text eol=crlf
+* text=auto eol=lf
+
+# Bash scripts
+*.sh text eol=lf
