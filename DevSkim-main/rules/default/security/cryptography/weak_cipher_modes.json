@@ -1,0 +1,72 @@
+[
+    {
+        "name": "A weak cipher mode of operation was used",
+        "id": "DS187371",
+        "description": "A potentially weak cipher mode of operation was used.",
+        "recommendation": "Consider using CBC, CTR, or GCM.",
+        "tags": [
+            "Cryptography.Symmetric.CipherMode.Weak"
+        ],
+        "confidence": "medium",
+        "severity": "important",
+        "rule_info": "DS182720.md",
+        "patterns": [
+            {
+                "pattern": "(ECB|OFB|CFB|CTS|PCBC|GMAC|XCBC|IACBC|IAPM|EAX|OCB|CWC|AEAD|LRW|XEX|XTS|CMC|EME|CBCMAC|OMAC|PMAC)",
+                "type": "RegexWord",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "tdes.Mode = CipherMode.ECB;"
+        ],
+        "must-not-match": [
+        ]
+    },
+    {
+        "name": "A weak cipher mode of operation was used",
+        "id": "DS182720",
+        "description": "A potentially weak cipher mode of operation was used.",
+        "recommendation": "Consider using CBC, CTR, or GCM.",
+        "applies_to": [
+            "php"
+        ],
+        "tags": [
+            "Cryptography.Symmetric.CipherMode.Weak"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS182720.md",
+        "patterns": [
+            {
+                "pattern": "MCRYPT_MODE_(ECB|CFB|OFB|NOFB|STREAM)",
+                "type": "RegexWord",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change cipher mode to CBC",
+                "type": "RegexReplace",
+                "replacement": "MCRYPT_MODE_CBC",
+                "pattern": {
+                    "pattern": "MCRYPT_MODE_(ECB|CFB|OFB|NOFB|STREAM)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "$output = mcrypt_encrypt(MCRYPT_BLOWFISH, $key, $data, MCRYPT_MODE_ECB, $iv);\n"
+        ],
+        "must-not-match": [
+        ]
+    }
+]

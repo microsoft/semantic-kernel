@@ -1,0 +1,39 @@
+[
+    {
+        "name": "Node - Hard-coded SSL/TLS Protocol",
+        "id": "DS112844",
+        "description": "Node - Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "applies_to": [
+            "javascript",
+            "typescript"
+        ],
+        "overrides": [
+            "DS440000"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "secureProtocol",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "https://nodejs.org/api/tls.html#tls_tlssocket_getprotocol"
+            },
+            {
+                "pattern": "tls-min-v[\\d\\.]+",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "https://nodejs.org/api/tls.html#tls_tls_createserver_options_secureconnectionlistener"
+            }
+        ]
+    }
+]

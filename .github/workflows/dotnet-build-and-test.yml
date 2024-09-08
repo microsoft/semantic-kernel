@@ -96,6 +96,7 @@ jobs:
           AzureOpenAI__Label: azure-text-davinci-003
           AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
           AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+          AzureOpenAI__ChatDeploymentName: ${{ vars.AZUREOPENAI__CHATDEPLOYMENTNAME }}
           AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
           AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
@@ -110,14 +111,20 @@ jobs:
           OpenAITextToAudio__ModelId: ${{ vars.OPENAITEXTTOAUDIO__MODELID }}
           OpenAIAudioToText__ApiKey: ${{ secrets.OPENAIAUDIOTOTEXT__APIKEY }}
           OpenAIAudioToText__ModelId: ${{ vars.OPENAIAUDIOTOTEXT__MODELID }}
+          OpenAITextToImage__ApiKey: ${{ secrets.OPENAITEXTTOIMAGE__APIKEY }}
+          OpenAITextToImage__ModelId: ${{ vars.OPENAITEXTTOIMAGE__MODELID }}
           AzureOpenAITextToAudio__ApiKey: ${{ secrets.AZUREOPENAITEXTTOAUDIO__APIKEY }}
           AzureOpenAITextToAudio__Endpoint: ${{ secrets.AZUREOPENAITEXTTOAUDIO__ENDPOINT }}
           AzureOpenAITextToAudio__DeploymentName: ${{ vars.AZUREOPENAITEXTTOAUDIO__DEPLOYMENTNAME }}
           AzureOpenAIAudioToText__ApiKey: ${{ secrets.AZUREOPENAIAUDIOTOTEXT__APIKEY }}
           AzureOpenAIAudioToText__Endpoint: ${{ secrets.AZUREOPENAIAUDIOTOTEXT__ENDPOINT }}
           AzureOpenAIAudioToText__DeploymentName: ${{ vars.AZUREOPENAIAUDIOTOTEXT__DEPLOYMENTNAME }}
+          AzureOpenAITextToImage__ApiKey: ${{ secrets.AZUREOPENAITEXTTOIMAGE__APIKEY }}
+          AzureOpenAITextToImage__Endpoint: ${{ secrets.AZUREOPENAITEXTTOIMAGE__ENDPOINT }}
+          AzureOpenAITextToImage__DeploymentName: ${{ vars.AZUREOPENAITEXTTOIMAGE__DEPLOYMENTNAME }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+          OpenAI__ChatModelId: ${{ vars.OPENAI__CHATMODELID }}
 
       # Generate test reports and check coverage
       - name: Generate test reports
@@ -126,7 +133,7 @@ jobs:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"
           reporttypes: "JsonSummary"
-          assemblyfilters: "+Microsoft.SemanticKernel.Abstractions;+Microsoft.SemanticKernel.Core;+Microsoft.SemanticKernel.PromptTemplates.Handlebars;+Microsoft.SemanticKernel.Connectors.OpenAI;+Microsoft.SemanticKernel.Yaml;+Microsoft.SemanticKernel.Agents.Abstractions;+Microsoft.SemanticKernel.Agents.Core;+Microsoft.SemanticKernel.Agents.OpenAI"
+          assemblyfilters: "+Microsoft.SemanticKernel.Abstractions;+Microsoft.SemanticKernel.Core;+Microsoft.SemanticKernel.PromptTemplates.Handlebars;+Microsoft.SemanticKernel.Connectors.OpenAI;+Microsoft.SemanticKernel.Connectors.AzureOpenAI;+Microsoft.SemanticKernel.Yaml;+Microsoft.SemanticKernel.Agents.Abstractions;+Microsoft.SemanticKernel.Agents.Core;+Microsoft.SemanticKernel.Agents.OpenAI"
 
       - name: Check coverage
         shell: pwsh

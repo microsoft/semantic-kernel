@@ -1,0 +1,32 @@
+[
+    {
+        "name": "Dangerous T-SQL Command",
+        "id": "DS224000",
+        "description": "These stored procedures provide access to system resources and should only be used with trusted data.",
+        "recommendation": "Ideally, do not use these functions as they are quite unsafe.  If necessary, audit to ensure no untrusted data can reach this stored procedure",
+        "applies_to": [
+            "sql"
+        ],
+        "tags": [
+            "API.T-SQL.Dangerous"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS224000.md",
+        "patterns": [
+            {
+                "pattern": "(xp_cmdshell|xp_regread|xp_instance_regread|xp_regwrite|sp_makewebtask|xp_sendmail|sp_configure|sp_executesql|dbcc writepage)",
+                "type": "RegexWord",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "exec master.dbo.xp_cmdshell 'dir c:\\temp\\*.sql'"
+        ],
+        "must-not-match": [
+            "select * from t where a = 'b';"
+        ]
+    }
+]

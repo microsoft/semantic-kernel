@@ -133,7 +133,11 @@ def configure_function_choice_behavior(
         raise ServiceInvalidExecutionSettingsError(
             "Function choice behavior is required for tool calls."
         )
+<<<<<<< Updated upstream
         return
+=======
+        return
+>>>>>>> Stashed changes
 
     settings.function_choice_behavior.configure(
         kernel=kernel, update_settings_callback=callback, settings=settings

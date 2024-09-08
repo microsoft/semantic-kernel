@@ -1,4 +1,7 @@
 {
+    "python.analysis.extraPaths": [
+        "./src"
+    ],
     "explorer.compactFolders": false,
     "prettier.enable": true,
     "editor.formatOnType": true,
@@ -31,4 +34,16 @@
         "source.fixAll": true,
         "source.organizeImports": true
     }
+}
+    "python.formatting.provider": "autopep8",
+    "python.formatting.autopep8Args": [
+        "--max-line-length=160"
+    ],
+    "notebook.output.textLineLimit": 500,
+    "cSpell.words": [
+        "aeiou",
+        "nopep",
+        "OPENAI",
+        "skfunction"
+    ],
 }

@@ -1,6 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.chatcompletion;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
 <<<<<<< HEAD
 import com.azure.ai.openai.models.ChatChoice;
@@ -21,6 +30,7 @@ import com.microsoft.semantickernel.exceptions.NotSupportedException.ErrorCodes;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 <<<<<<< HEAD
 import com.microsoft.semantickernel.textcompletion.CompletionType;
+<<<<<<< main
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +43,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+=======
+
+>>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

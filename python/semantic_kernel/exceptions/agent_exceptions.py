@@ -22,6 +22,8 @@ class AgentExecutionException(AgentException):
 
 class AgentInvokeException(AgentException):
     """An error occurred while invoking the agent."""
+<<<<<<< main
+=======
 
     pass
 
@@ -30,3 +32,4 @@ class AgentChatException(AgentException):
     """An error occurred while invoking the agent chat."""
 
     pass
+>>>>>>> Stashed changes

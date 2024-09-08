@@ -8,5 +8,9 @@
     "ms-azuretools.vscode-azureresourcegroups",
     "quarto.quarto",
     "stateful.runme"
+    "sourcery.sourcery",
+    "ms-toolsai.jupyter",
+    "geequlim.godot-tools",
+    "ms-vscode.powershell"
   ]
 }
