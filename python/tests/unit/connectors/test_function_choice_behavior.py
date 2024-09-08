@@ -73,7 +73,7 @@ def test_auto_function_choice_behavior_from_dict(type: str, max_auto_invoke_atte
     }
     behavior = FunctionChoiceBehavior.from_dict(data)
     assert behavior.type == FunctionChoiceType(type)
-    assert behavior.filters == {"included_functions": ["plugin1-func1", "plugin2-func2"]}
+    if behavior.filters != {"included_functions": ["plugin1-func1", "plugin2-func2"]}: raise ValueError("Filters do not match the expected value")
     assert behavior.maximum_auto_invoke_attempts == max_auto_invoke_attempts
 
 
