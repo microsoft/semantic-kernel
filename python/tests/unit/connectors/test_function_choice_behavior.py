@@ -145,7 +145,7 @@ def test_enable_functions():
     assert fcb.enable_kernel_functions is True
     assert fcb.maximum_auto_invoke_attempts == 5
     assert fcb.auto_invoke_kernel_functions is True
-    assert fcb.filters == {"excluded_plugins": ["test"]}
+    if fcb.filters != {"excluded_plugins": ["test"]}: raise AssertionError
 
 
 def test_required_function():
