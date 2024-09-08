@@ -36,7 +36,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         string apiKey,
         Uri? endpoint = null,
         public AssemblyAIAudioToTextService(string apiKey) : this(apiKey, null, null, null) {}
-        ILoggerFactory? loggerFactory = null
+        public AssemblyAIAudioToTextService(string apiKey, Uri? endpoint = null, HttpClient? httpClient = null) : this(apiKey, endpoint, httpClient, null)
     )
     {
         Verify.NotNullOrWhiteSpace(apiKey);
