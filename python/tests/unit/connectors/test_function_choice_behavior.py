@@ -128,7 +128,7 @@ def test_auto_invoke_kernel_functions():
     assert fcb is not None
     assert fcb.enable_kernel_functions is True
     assert fcb.maximum_auto_invoke_attempts == 5
-    assert fcb.auto_invoke_kernel_functions is True
+    if fcb.auto_invoke_kernel_functions is not True: raise AssertionError
 
 
 def test_none_invoke_kernel_functions():
