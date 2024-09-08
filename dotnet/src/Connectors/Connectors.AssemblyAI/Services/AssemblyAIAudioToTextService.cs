@@ -60,7 +60,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         string uploadUrl;
         if (content.Data is { IsEmpty: false })
         {
-            uploadUrl = await this._client.UploadFileAsync(content.Data.Value, cancellationToken).ConfigureAwait(false);
+            await this._client.UploadFileAsync(content.Data.Value, cancellationToken).ConfigureAwait(false);
         }
         else if (content.Uri is not null)
         {
