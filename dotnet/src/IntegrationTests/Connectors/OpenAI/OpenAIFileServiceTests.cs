@@ -10,19 +10,19 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class OpenAIFileServiceTests(ITestOutputHelper output) : IDisposable
+[Obsolete("This class is deprecated and will be removed in a future version.")]
+public sealed class OpenAIFileServiceTests
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
-        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<OpenAICompletionTests>()
+        .AddUserSecrets<OpenAIFileServiceTests>()
         .Build();
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
@@ -120,15 +120,6 @@ public sealed class OpenAIFileServiceTests(ITestOutputHelper output) : IDisposab
 
     #region internals
 
-    private readonly XunitLogger<OpenAIFileService> _logger = new(output);
-    private readonly RedirectOutput _testOutputHelper = new(output);
-
-    public void Dispose()
-    {
-        this._logger.Dispose();
-        this._testOutputHelper.Dispose();
-    }
-
     private OpenAIFileService CreateOpenAIFileService()
     {
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
@@ -137,7 +128,7 @@ public sealed class OpenAIFileServiceTests(ITestOutputHelper output) : IDisposab
         Assert.NotNull(openAIConfiguration.ApiKey);
         Assert.NotNull(openAIConfiguration.ServiceId);
 
-        return new(openAIConfiguration.ApiKey, openAIConfiguration.ServiceId, loggerFactory: this._logger);
+        return new(openAIConfiguration.ApiKey, openAIConfiguration.ServiceId);
     }
 
     private OpenAIFileService CreateAzureOpenAIFileService()
@@ -149,7 +140,7 @@ public sealed class OpenAIFileServiceTests(ITestOutputHelper output) : IDisposab
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        return new(new Uri(azureOpenAIConfiguration.Endpoint), azureOpenAIConfiguration.ApiKey, azureOpenAIConfiguration.ServiceId, loggerFactory: this._logger);
+        return new(new Uri(azureOpenAIConfiguration.Endpoint), azureOpenAIConfiguration.ApiKey, azureOpenAIConfiguration.ServiceId);
     }
 
     #endregion

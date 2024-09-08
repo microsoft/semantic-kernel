@@ -61,7 +61,7 @@ internal static partial class AgentChatLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "[{MethodName}] Adding Messages: {MessageCount}.")]
+        Message = "[{MethodName}] Added Messages: {MessageCount}.")]
     public static partial void LogAgentChatAddedMessages(
         this ILogger logger,
         string methodName,

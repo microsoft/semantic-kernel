@@ -19,6 +19,7 @@ public sealed class TestConfiguration
         s_instance = new TestConfiguration(configRoot);
     }
 
+    public static OllamaConfig Ollama => LoadSection<OllamaConfig>();
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
     public static AzureOpenAIConfig AzureOpenAI => LoadSection<AzureOpenAIConfig>();
     public static AzureOpenAIConfig AzureOpenAIImages => LoadSection<AzureOpenAIConfig>();
@@ -218,6 +219,14 @@ public sealed class TestConfiguration
         {
             public string ModelId { get; set; }
         }
+    }
+
+    public class OllamaConfig
+    {
+        public string? ModelId { get; set; }
+        public string? EmbeddingModelId { get; set; }
+
+        public string Endpoint { get; set; } = "http://localhost:11434";
     }
 
     public class AzureCosmosDbMongoDbConfig

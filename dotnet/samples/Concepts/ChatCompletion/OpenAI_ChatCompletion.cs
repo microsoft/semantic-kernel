@@ -2,6 +2,7 @@
 
 using Azure.Identity;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace ChatCompletion;
@@ -88,33 +89,20 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
-        await MessageOutputAsync(chatHistory);
+        OutputLastMessage(chatHistory);
 
         // First bot assistant message
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        await MessageOutputAsync(chatHistory);
+        OutputLastMessage(chatHistory);
 
         // Second user message
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
-        await MessageOutputAsync(chatHistory);
+        OutputLastMessage(chatHistory);
 
         // Second bot assistant message
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        await MessageOutputAsync(chatHistory);
-    }
-
-    /// <summary>
-    /// Outputs the last message of the chat history
-    /// </summary>
-    private Task MessageOutputAsync(ChatHistory chatHistory)
-    {
-        var message = chatHistory.Last();
-
-        Console.WriteLine($"{message.Role}: {message.Content}");
-        Console.WriteLine("------------------------");
-
-        return Task.CompletedTask;
+        OutputLastMessage(chatHistory);
     }
 }

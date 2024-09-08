@@ -12,7 +12,7 @@ namespace Agents;
 /// Demonstrate usage of <see cref="IAutoFunctionInvocationFilter"/> for both direction invocation
 /// of <see cref="ChatCompletionAgent"/> and via <see cref="AgentChat"/>.
 /// </summary>
-public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : BaseTest(output)
+public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
     public async Task UseAutoFunctionInvocationFilterWithAgentInvocationAsync()
@@ -44,25 +44,25 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         Console.WriteLine("================================");
         foreach (ChatMessageContent message in chat)
         {
-            this.WriteContent(message);
+            this.WriteAgentChatMessage(message);
         }
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            ChatMessageContent userContent = new(AuthorRole.User, input);
-            chat.Add(userContent);
-            this.WriteContent(userContent);
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.Add(message);
+            this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent content in agent.InvokeAsync(chat))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(chat))
             {
                 // Do not add a message implicitly added to the history.
-                if (!content.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
+                if (!response.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
                 {
-                    chat.Add(content);
+                    chat.Add(response);
                 }
 
-                this.WriteContent(content);
+                this.WriteAgentChatMessage(response);
             }
         }
     }
@@ -98,26 +98,21 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
         for (int index = history.Length; index > 0; --index)
         {
-            this.WriteContent(history[index - 1]);
+            this.WriteAgentChatMessage(history[index - 1]);
         }
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            ChatMessageContent userContent = new(AuthorRole.User, input);
-            chat.AddChatMessage(userContent);
-            this.WriteContent(userContent);
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.AddChatMessage(message);
+            this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent content in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
-                this.WriteContent(content);
+                this.WriteAgentChatMessage(response);
             }
         }
-    }
-
-    private void WriteContent(ChatMessageContent content)
-    {
-        Console.WriteLine($"[{content.Items.LastOrDefault()?.GetType().Name ?? "(empty)"}] {content.Role} : '{content.Content}'");
     }
 
     private Kernel CreateKernelWithFilter()

@@ -6,11 +6,12 @@ using Microsoft.SemanticKernel;
 
 #pragma warning disable SKEXP0001
 #pragma warning disable SKEXP0010
+#pragma warning disable SKEXP0070
 #pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
 
 namespace AIModelRouter;
 
-internal sealed partial class Program
+internal sealed class Program
 {
     private static async Task Main(string[] args)
     {
@@ -23,7 +24,7 @@ internal sealed partial class Program
         // Adding multiple connectors targeting different providers / models.
         services.AddKernel()                /* LMStudio model is selected in server side. */
             .AddOpenAIChatCompletion(serviceId: "lmstudio", modelId: "N/A", endpoint: new Uri("http://localhost:1234"), apiKey: null)
-            .AddOpenAIChatCompletion(serviceId: "ollama", modelId: "phi3", endpoint: new Uri("http://localhost:11434"), apiKey: null)
+            .AddOllamaChatCompletion(serviceId: "ollama", modelId: "phi3", endpoint: new Uri("http://localhost:11434"))
             .AddOpenAIChatCompletion(serviceId: "openai", modelId: "gpt-4o", apiKey: config["OpenAI:ApiKey"]!)
 
             // Adding a custom filter to capture router selected service id

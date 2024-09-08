@@ -55,6 +55,19 @@ public static class DistanceFunction
     public const string EuclideanDistance = nameof(EuclideanDistance);
 
     /// <summary>
+    /// Measures the Euclidean squared distance between two vectors.
+    /// </summary>
+    /// <remarks>
+    /// Also known as l2-squared.
+    /// </remarks>
+    public const string EuclideanSquaredDistance = nameof(EuclideanSquaredDistance);
+
+    /// <summary>
+    /// Number of differences between vectors at each dimensions.
+    /// </summary>
+    public const string Hamming = nameof(Hamming);
+
+    /// <summary>
     /// Measures the Manhattan distance between two vectors.
     /// </summary>
     public const string ManhattanDistance = nameof(ManhattanDistance);

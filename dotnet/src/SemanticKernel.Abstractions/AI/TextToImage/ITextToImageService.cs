@@ -16,7 +16,7 @@ public interface ITextToImageService : IAIService
     /// <summary>
     /// Generate an image matching the given description
     /// </summary>
-    /// <param name="description">Image description</param>
+    /// <param name="description">Image generation prompt</param>
     /// <param name="width">Image width in pixels</param>
     /// <param name="height">Image height in pixels</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>

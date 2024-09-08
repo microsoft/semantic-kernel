@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 public abstract class BaseTest
 {
@@ -101,6 +102,17 @@ public abstract class BaseTest
     public void Write(object? target = null)
         => this.Output.WriteLine(target ?? string.Empty);
 
+    /// <summary>
+    /// Outputs the last message in the chat history.
+    /// </summary>
+    /// <param name="chatHistory">Chat history</param>
+    protected void OutputLastMessage(ChatHistory chatHistory)
+    {
+        var message = chatHistory.Last();
+
+        Console.WriteLine($"{message.Role}: {message.Content}");
+        Console.WriteLine("------------------------");
+    }
     protected sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
     {
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };

@@ -22,8 +22,10 @@ public class BroadcastQueueTests
     [Fact]
     public void VerifyBroadcastQueueDefaultConfiguration()
     {
+        // Arrange
         BroadcastQueue queue = new();
 
+        // Assert
         Assert.True(queue.BlockDuration.TotalSeconds > 0);
     }
 
@@ -33,7 +35,7 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueReceiveAsync()
     {
-        // Create queue and channel.
+        // Arrange: Create queue and channel.
         BroadcastQueue queue =
             new()
             {
@@ -42,23 +44,31 @@ public class BroadcastQueueTests
         TestChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
-        // Verify initial state
+        // Act: Verify initial state
         await VerifyReceivingStateAsync(receiveCount: 0, queue, channel, "test");
+
+        // Assert
         Assert.Empty(channel.ReceivedMessages);
 
-        // Verify empty invocation with no channels.
+        // Act: Verify empty invocation with no channels.
         queue.Enqueue([], []);
         await VerifyReceivingStateAsync(receiveCount: 0, queue, channel, "test");
+
+        // Assert
         Assert.Empty(channel.ReceivedMessages);
 
-        // Verify empty invocation of channel.
+        // Act: Verify empty invocation of channel.
         queue.Enqueue([reference], []);
         await VerifyReceivingStateAsync(receiveCount: 1, queue, channel, "test");
+
+        // Assert
         Assert.Empty(channel.ReceivedMessages);
 
-        // Verify expected invocation of channel.
+        // Act: Verify expected invocation of channel.
         queue.Enqueue([reference], [new ChatMessageContent(AuthorRole.User, "hi")]);
         await VerifyReceivingStateAsync(receiveCount: 2, queue, channel, "test");
+
+        // Assert
         Assert.NotEmpty(channel.ReceivedMessages);
     }
 
@@ -68,7 +78,7 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueFailureAsync()
     {
-        // Create queue and channel.
+        // Arrange: Create queue and channel.
         BroadcastQueue queue =
             new()
             {
@@ -77,9 +87,10 @@ public class BroadcastQueueTests
         BadChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
-        // Verify expected invocation of channel.
+        // Act: Verify expected invocation of channel.
         queue.Enqueue([reference], [new ChatMessageContent(AuthorRole.User, "hi")]);
 
+        // Assert
         await Assert.ThrowsAsync<KernelException>(() => queue.EnsureSynchronizedAsync(reference));
         await Assert.ThrowsAsync<KernelException>(() => queue.EnsureSynchronizedAsync(reference));
         await Assert.ThrowsAsync<KernelException>(() => queue.EnsureSynchronizedAsync(reference));
@@ -91,7 +102,7 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueConcurrencyAsync()
     {
-        // Create queue and channel.
+        // Arrange: Create queue and channel.
         BroadcastQueue queue =
             new()
             {
@@ -100,7 +111,7 @@ public class BroadcastQueueTests
         TestChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
-        // Enqueue multiple channels
+        // Act: Enqueue multiple channels
         for (int count = 0; count < 10; ++count)
         {
             queue.Enqueue([new(channel, $"test{count}")], [new ChatMessageContent(AuthorRole.User, "hi")]);
@@ -112,7 +123,7 @@ public class BroadcastQueueTests
             await queue.EnsureSynchronizedAsync(new ChannelReference(channel, $"test{count}"));
         }
 
-        // Verify result
+        // Assert
         Assert.NotEmpty(channel.ReceivedMessages);
         Assert.Equal(10, channel.ReceivedMessages.Count);
     }
