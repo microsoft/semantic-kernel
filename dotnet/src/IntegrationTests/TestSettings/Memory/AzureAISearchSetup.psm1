@@ -69,6 +69,6 @@ function Set-AzureAISearchIntegrationInfraUserSecrets($overrideResourceGroup = $
 .Parameter OverrideAISearchResourceName
     Optional override ai search resource name if the default doesn't work.
 #>
-function Remove-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGroup, $overrideAISearchResourceName = $aiSearchResourceName) {
+[CmdletBinding(SupportsShouldProcess)] function Remove-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGroup, $overrideAISearchResourceName = $aiSearchResourceName) {
     Remove-AzSearchService -ResourceGroupName $overrideResourceGroup -Name $overrideAISearchResourceName
 }
