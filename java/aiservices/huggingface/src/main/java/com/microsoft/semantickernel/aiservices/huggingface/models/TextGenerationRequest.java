@@ -156,7 +156,7 @@ public class TextGenerationRequest {
         @JsonProperty("details")
         private final Boolean details;
 
-        public HuggingFaceTextParameters(
+        public static class Builder {
             @JsonProperty("top_k") @Nullable Integer topK,
             @JsonProperty("top_p") @Nullable Double topP,
             @JsonProperty("temperature") @Nullable Double temperature,
