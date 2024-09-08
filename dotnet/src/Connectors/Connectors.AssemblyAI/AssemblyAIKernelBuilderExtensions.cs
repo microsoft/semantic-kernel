@@ -26,7 +26,7 @@ public static class AssemblyAIKernelBuilderExtensions
         this IKernelBuilder builder,
         string apiKey,
         Uri? endpoint = null,
-        string? serviceId = null,
+        string serviceId,
         HttpClient httpClient
     )
     {
