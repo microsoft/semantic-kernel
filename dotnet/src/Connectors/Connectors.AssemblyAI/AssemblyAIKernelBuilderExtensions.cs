@@ -27,7 +27,7 @@ public static class AssemblyAIKernelBuilderExtensions
         string apiKey,
         Uri? endpoint = null,
         string? serviceId = null,
-        HttpClient? httpClient = null
+        HttpClient httpClient
     )
     {
         Verify.NotNull(builder);
