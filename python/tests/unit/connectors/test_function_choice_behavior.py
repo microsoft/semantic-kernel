@@ -125,7 +125,7 @@ def test_function_choice_behavior_get_set(function_choice_behavior: FunctionChoi
 
 def test_auto_invoke_kernel_functions():
     fcb = FunctionChoiceBehavior.Auto(auto_invoke=True)
-    assert fcb is not None
+    if fcb is None: raise ValueError("fcb should not be None")
     assert fcb.enable_kernel_functions is True
     assert fcb.maximum_auto_invoke_attempts == 5
     if fcb.auto_invoke_kernel_functions is not True: raise AssertionError
