@@ -69,7 +69,7 @@ public class AudioContent : BinaryContent
     public AudioContent(
         Uri uri,
         public AudioContent(Uri uri, string modelId, object? innerContent, IReadOnlyDictionary<string, object?>? metadata)
-        object? innerContent = null,
+        object innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
