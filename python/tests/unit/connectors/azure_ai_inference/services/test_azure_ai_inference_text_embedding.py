@@ -18,7 +18,7 @@ def test_azure_ai_inference_text_embedding_init(azure_ai_inference_unit_test_env
 
     assert azure_ai_inference.ai_model_id == model_id
     assert azure_ai_inference.service_id == model_id
-    assert isinstance(azure_ai_inference.client, EmbeddingsClient)
+    if not isinstance(azure_ai_inference.client, EmbeddingsClient): raise TypeError("Expected azure_ai_inference.client to be an instance of EmbeddingsClient")
 
 
 def test_azure_ai_inference_text_embedding_init_with_service_id(
