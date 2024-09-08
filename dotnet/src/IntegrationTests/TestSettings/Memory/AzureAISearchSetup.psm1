@@ -27,7 +27,7 @@ function New-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGro
     # Create the resource group if it doesn't exist.
     Get-AzResourceGroup -Name $overrideResourceGroup -ErrorVariable notPresent -ErrorAction SilentlyContinue
     if ($notPresent) {
-        Write-Host "Resource Group does not exist, creating '$overrideResourceGroup' ..."
+        Write-Information "Resource Group does not exist, creating '$overrideResourceGroup' ..."
         New-AzResourceGroup -Name $overrideResourceGroup -Location "North Europe"
     }
 
