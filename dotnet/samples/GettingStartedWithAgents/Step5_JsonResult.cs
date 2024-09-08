@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 // Copyright (c) Microsoft. All rights reserved.
+=======
+﻿// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
