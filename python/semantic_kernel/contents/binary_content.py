@@ -77,11 +77,15 @@ class BinaryContent(KernelContent):
         elif data:
             if isinstance(data, str):
                 _data_uri = DataUri(
-                    data_str=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
+                    data_str=data,
+                    data_format=data_format,
+                    mime_type=mime_type or self.default_mime_type,
                 )
             else:
                 _data_uri = DataUri(
-                    data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
+                    data_bytes=data,
+                    data_format=data_format,
+                    mime_type=mime_type or self.default_mime_type,
                 )
         super().__init__(uri=uri, **kwargs)
         self._data_uri = _data_uri
@@ -150,7 +154,9 @@ class BinaryContent(KernelContent):
     def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
         if element.tag != cls.tag:
-            raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
+            raise ContentInitializationError(
+                f"Element tag is not {cls.tag}"
+            )  # pragma: no cover
 
         if element.text:
             return cls(data_uri=element.text, uri=element.get("uri", None))

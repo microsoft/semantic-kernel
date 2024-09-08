@@ -1,10 +1,9 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: proposed
-date: 2023-11-13
+consulted: null
+date: 2023-11-13T00:00:00Z
 deciders: rogerbarreto,markwallace-microsoft,SergeyMenshykh,dmytrostruk
-consulted:
-informed:
+informed: null
+status: proposed
 ---
 
 # Streaming Capability for Kernel and Functions usage - Phase 1
@@ -20,9 +19,7 @@ Needs to be clear for the sk developer when he is attempting to get streaming da
 ## Decision Drivers
 
 1. The sk developer should be able to get streaming data from the Kernel and Functions using Kernel.RunAsync or ISKFunctions.InvokeAsync methods
-
 2. The sk developer should be able to get the data in a generic way, so the Kernel and Functions can be able to stream data of any type, not limited to text.
-
 3. The sk developer when using streaming from a model that does not support streaming should still be able to use it with only one streaming update representing the whole data.
 
 ## Out of Scope
@@ -50,7 +47,7 @@ If the type specified is `StreamingContent` or another any type supported by the
 
 ## User Experience Goal
 
-```csharp
+```csharp {"id":"01J6KQ5N5HF37VJP35J1Q3F1Z8"}
 //(providing the type at as generic parameter)
 
 // Getting a Raw Streaming data from Kernel
@@ -70,7 +67,7 @@ await foreach(StreamingContent update in kernel.RunStreamingAsync(function, vari
 
 Abstraction class for any stream content, connectors will be responsible to provide the specialized type of `StreamingContent` which will contain the data as well as any metadata related to the streaming result.
 
-```csharp
+```csharp {"id":"01J6KQ5N5HF37VJP35J4260AH8"}
 
 public abstract class StreamingContent
 {
@@ -104,7 +101,7 @@ public abstract class StreamingContent
 
 Specialization example of a StreamingChatContent
 
-```csharp
+```csharp {"id":"01J6KQ5N5HF37VJP35J7MYXKZ1"}
 //
 public class StreamingChatContent : StreamingContent
 {
@@ -130,7 +127,7 @@ public class StreamingChatContent : StreamingContent
 
 `IChatCompletion` and `ITextCompletion` interfaces will have new APIs to get a generic streaming content data.
 
-```csharp
+```csharp {"id":"01J6KQ5N5HF37VJP35JAX6XJPV"}
 interface ITextCompletion + IChatCompletion
 {
     IAsyncEnumerable<T> GetStreamingContentAsync<T>(...);
@@ -160,7 +157,7 @@ The connector will be responsible to provide the specialized type of `StreamingC
 
 Method Functions will support `StreamingContent` automatically with as a `StreamingMethodContent` wrapping the object returned in the iterator.
 
-```csharp
+```csharp {"id":"01J6KQ5N5HF37VJP35JE7X64VN"}
 public sealed class StreamingMethodContent : StreamingContent
 {
     public override int ChoiceIndex => 0;
@@ -227,7 +224,7 @@ The `StreamingConnectorContent` class is needed for connectors as one way to pas
 
 Option 2 Biggest benefit:
 
-```csharp
+```csharp {"id":"01J6KQ5N5HF37VJP35JG09W1KG"}
 // When the caller needs to know more about the streaming he can get the result reference before starting the streaming.
 var streamingResult = await kernel.RunStreamingAsync(function);
 // Do something with streamingResult properties
@@ -238,7 +235,7 @@ await foreach(StreamingContent chunk content in await streamingResult)
 
 Using the other operations will be quite similar (only needing an extra `await` to get the iterator)
 
-```csharp
+```csharp {"id":"01J6KQ5N5HF37VJP35JHW0N608"}
 // Getting a Raw Streaming data from Kernel
 await foreach(string update in await kernel.RunStreamingAsync<byte[]>(function, variables))
 
@@ -257,7 +254,7 @@ await foreach(StreamingContent update in await kernel.RunStreamingAsync(function
 
 StreamingConnectorResult is a class that can store information regarding the result before the stream is consumed as well as any underlying object (breaking glass) that the stream consumes at the connector level.
 
-```csharp
+```csharp {"id":"01J6KQ5N5HF37VJP35JJY298VF"}
 
 public sealed class StreamingConnectorResult<T> : IAsyncEnumerable<T>
 {
@@ -282,7 +279,7 @@ interface ITextCompletion + IChatCompletion
 
 StreamingFunctionResult is a class that can store information regarding the result before the stream is consumed as well as any underlying object (breaking glass) that the stream consumes from Kernel and SKFunctions.
 
-```csharp
+```csharp {"id":"01J6KQ5N5HF37VJP35JNB01H9S"}
 public sealed class StreamingFunctionResult<T> : IAsyncEnumerable<T>
 {
     internal Dictionary<string, object>? _metadata;
@@ -330,9 +327,11 @@ static class KernelExtensions
 
 1. All benefits from Option 1 +
 2. Having StreamingFunctionResults allow sk developer to know more details about the result before consuming the stream, like:
+
    - Any metadata provided by the underlying API,
    - SKContext
    - Function Name and Details
+
 3. Experience using the Streaming is quite similar (need an extra await to get the result) to option 1
 4. APIs behave similarly to the non-streaming API (returning a result representation to get the value)
 

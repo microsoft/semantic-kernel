@@ -21,9 +21,17 @@ from mistralai.models.chat_completion import (
 )
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import (
+    MistralAISettings,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_base import MistralAIBase
 from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
@@ -31,7 +39,9 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -81,6 +91,9 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
+            raise ServiceInitializationError(
+                "Failed to create MistralAI settings.", ex
+            ) from ex
             raise ServiceInitializationError("Failed to create MistralAI settings.", ex) from ex
 
         if not mistralai_settings.chat_model_id:
@@ -134,6 +147,10 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 
         self.store_usage(response)
         response_metadata = self._get_metadata_from_response(response)
+        return [
+            self._create_chat_message_content(response, choice, response_metadata)
+            for choice in response.choices
+        ]
         return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
 
     async def get_streaming_chat_message_contents(
@@ -174,13 +191,19 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
                 continue
             chunk_metadata = self._get_metadata_from_response(chunk)
             yield [
-                self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
+                self._create_streaming_chat_message_content(
+                    chunk, choice, chunk_metadata
+                )
+                for choice in chunk.choices
             ]
 
     # region content conversion to SK
 
     def _create_chat_message_content(
-        self, response: ChatCompletionResponse, choice: ChatCompletionResponseChoice, response_metadata: dict[str, Any]
+        self,
+        response: ChatCompletionResponse,
+        choice: ChatCompletionResponseChoice,
+        response_metadata: dict[str, Any],
     ) -> "ChatMessageContent":
         """Create a chat message content object from a choice."""
         metadata = self._get_metadata_from_chat_choice(choice)
@@ -197,7 +220,9 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
             metadata=metadata,
             role=AuthorRole(choice.message.role),
             items=items,
-            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
+            finish_reason=(
+                FinishReason(choice.finish_reason) if choice.finish_reason else None
+            ),
         )
 
     def _create_streaming_chat_message_content(
@@ -213,15 +238,25 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         items: list[Any] = self._get_tool_calls_from_chat_choice(choice)
 
         if choice.delta.content is not None:
-            items.append(StreamingTextContent(choice_index=choice.index, text=choice.delta.content))
+            items.append(
+                StreamingTextContent(
+                    choice_index=choice.index, text=choice.delta.content
+                )
+            )
 
         return StreamingChatMessageContent(
             choice_index=choice.index,
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=AuthorRole(choice.delta.role) if choice.delta.role else AuthorRole.ASSISTANT,
-            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
+            role=(
+                AuthorRole(choice.delta.role)
+                if choice.delta.role
+                else AuthorRole.ASSISTANT
+            ),
+            finish_reason=(
+                FinishReason(choice.finish_reason) if choice.finish_reason else None
+            ),
             items=items,
         )
 
@@ -252,6 +287,11 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
     ) -> list[FunctionCallContent]:
         """Get tool calls from a chat choice."""
         content: ChatMessage | DeltaMessage
+        content = (
+            choice.message
+            if isinstance(choice, ChatCompletionResponseChoice)
+            else choice.delta
+        )
         content = choice.message if isinstance(choice, ChatCompletionResponseChoice) else choice.delta
         if content.tool_calls is None:
             return []
@@ -268,7 +308,9 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 
     # endregion
 
-    def get_prompt_execution_settings_class(self) -> "type[MistralAIChatPromptExecutionSettings]":
+    def get_prompt_execution_settings_class(
+        self,
+    ) -> "type[MistralAIChatPromptExecutionSettings]":
         """Create a request settings object."""
         return MistralAIChatPromptExecutionSettings
 

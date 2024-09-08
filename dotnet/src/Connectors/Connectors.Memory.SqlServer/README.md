@@ -9,26 +9,26 @@ This connector uses the SQL Server database engine to implement Semantic Memory.
 
 Create a new .NET console application:
 
-```bash
+```bash {"id":"01J6KPRBHYWTEEVJ1Q4YNYT197"}
 dotnet new console --framework net8.0 -n MySemanticMemoryApp
 ```
 
 Add the Semantic Kernel packages needed to create a Chatbot:
 
-```bash
+```bash {"id":"01J6KPRBHYWTEEVJ1Q4ZVP8AMF"}
 dotnet add package Microsoft.SemanticKernel
 dotnet add package Microsoft.SemanticKernel.Connectors.OpenAI
 ```
 
 Add `Microsoft.SemanticKernel.Connectors.SqlServer` to give your Chatbot memories:
 
-```bash
+```bash {"id":"01J6KPRBHYWTEEVJ1Q503BCJ7Z"}
 dotnet add package Microsoft.SemanticKernel.Connectors.SqlServer --prerelease
 ```
 
 Then you can use the following code to create a Chatbot with a memory that uses SQL Server:
 
-```csharp
+```csharp {"id":"01J6KPRBHYWTEEVJ1Q52PMJRDK"}
 using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;

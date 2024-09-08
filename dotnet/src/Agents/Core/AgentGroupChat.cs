@@ -110,11 +110,21 @@ public sealed class AgentGroupChat : AgentChat
 
         this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id);
 
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
         if (isJoining)
         {
             this.Add(agent);
         }
+<<<<<<< main
         this.AddAgent(agent);
+=======
+=======
+        this.AddAgent(agent);
+>>>>>>> upstream/main
+>>>>>>> origin/main
 
         await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
         {

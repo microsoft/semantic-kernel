@@ -2,7 +2,6 @@
 
 This example demonstrates a few dependency injection patterns that can be used with Semantic Kernel.
 
-
 ## Configuring Secrets
 
 The example require credentials to access OpenAI or Azure OpenAI.
@@ -11,7 +10,7 @@ If you have set up those credentials as secrets within Secret Manager or through
 
 ### To set your secrets with Secret Manager:
 
-```
+```sh {"id":"01J6KPY6PYRKN7M505VKWNCT7J"}
 cd dotnet/samples/Demos/HouseAutomation
 
 dotnet user-secrets init
@@ -28,7 +27,7 @@ dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
 
 Use these names:
 
-```
+```sh {"id":"01J6KPY6PYRKN7M505VNADFCAM"}
 # OpenAI
 OpenAI__ChatModelId
 OpenAI__ApiKey

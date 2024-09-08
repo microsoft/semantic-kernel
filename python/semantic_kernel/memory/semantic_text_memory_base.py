@@ -37,7 +37,6 @@ class SemanticTextMemoryBase(KernelBaseModel):
             embeddings_kwargs (Optional[Dict[str, Any]]): The embeddings kwargs of the information.
 
         """
-        pass
 
     @abstractmethod
     async def save_reference(
@@ -60,7 +59,6 @@ class SemanticTextMemoryBase(KernelBaseModel):
             additional_metadata (Optional[str]): Additional metadata of the reference.
 
         """
-        pass
 
     @abstractmethod
     async def get(
@@ -77,7 +75,6 @@ class SemanticTextMemoryBase(KernelBaseModel):
         Returns:
             Optional[MemoryQueryResult]: The MemoryQueryResult if found, None otherwise.
         """
-        pass
 
     @abstractmethod
     async def search(
@@ -99,7 +96,6 @@ class SemanticTextMemoryBase(KernelBaseModel):
         Returns:
             List[MemoryQueryResult]: The list of MemoryQueryResult found.
         """
-        pass
 
     @abstractmethod
     async def get_collections(self) -> list[str]:
@@ -108,4 +104,3 @@ class SemanticTextMemoryBase(KernelBaseModel):
         Returns:
             List[str]: The list of all the memory collection names.
         """
-        pass

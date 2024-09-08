@@ -6,7 +6,9 @@ from functools import reduce
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 
 prompt = """
@@ -52,10 +54,14 @@ prompt_template_config = PromptTemplateConfig(
 
 chat_history = ChatHistory()
 chat_history.add_user_message("Hi there, who are you?")
-chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need")
+chat_history.add_assistant_message(
+    "I am Mosscap, a chat bot. I'm trying to figure out what people need"
+)
 
 chat_function = kernel.add_function(
-    plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
+    plugin_name="ChatBot",
+    function_name="Chat",
+    prompt_template_config=prompt_template_config,
 )
 
 
@@ -75,14 +81,18 @@ async def chat(chat_history: ChatHistory) -> bool:
 
     print("ChatBot:> ", end="")
     streamed_chunks: list[StreamingChatMessageContent] = []
-    responses = kernel.invoke_stream(chat_function, user_input=user_input, chat_history=chat_history)
+    responses = kernel.invoke_stream(
+        chat_function, user_input=user_input, chat_history=chat_history
+    )
     async for message in responses:
         streamed_chunks.append(message[0])
         print(str(message[0]), end="")
     print("")
     chat_history.add_user_message(user_input)
     if streamed_chunks:
-        streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
+        streaming_chat_message = reduce(
+            lambda first, second: first + second, streamed_chunks
+        )
         chat_history.add_message(streaming_chat_message)
     return True
 

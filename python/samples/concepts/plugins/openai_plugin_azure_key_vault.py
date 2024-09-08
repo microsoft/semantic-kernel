@@ -10,13 +10,23 @@ from aiohttp import ClientSession
 
 from samples.concepts.plugins.azure_key_vault_settings import AzureKeyVaultSettings
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
-from semantic_kernel.connectors.openai_plugin import OpenAIAuthenticationType, OpenAIFunctionExecutionParameters
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAIChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.openai_plugin import (
+    OpenAIAuthenticationType,
+    OpenAIFunctionExecutionParameters,
+)
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
 from semantic_kernel.functions import KernelArguments, KernelFunction, KernelPlugin
 
 # region Helper functions
@@ -33,7 +43,10 @@ def get_file_url(relative_path):
 def load_and_update_openai_spec():
     # Construct the path to the OpenAI spec file
     openai_spec_file = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "open_ai_plugins", "akv-openai.json"
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        "resources",
+        "open_ai_plugins",
+        "akv-openai.json",
     )
 
     # Read the OpenAI spec file
@@ -42,7 +55,10 @@ def load_and_update_openai_spec():
 
     # Adjust the OpenAI spec file to use the correct file URL based on platform
     openapi_yaml_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "open_ai_plugins", "akv-openapi.yaml"
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        "resources",
+        "open_ai_plugins",
+        "akv-openapi.yaml",
     )
     openai_spec["api"]["url"] = get_file_url(openapi_yaml_path)
 
@@ -77,7 +93,9 @@ class OpenAIAuthenticationProvider:
     """A Sample Authentication Provider for an OpenAI/OpenAPI plugin"""
 
     def __init__(
-        self, oauth_values: dict[str, dict[str, str]] | None = None, credentials: dict[str, str] | None = None
+        self,
+        oauth_values: dict[str, dict[str, str]] | None = None,
+        credentials: dict[str, str] | None = None,
     ):
         """Initializes the OpenAIAuthenticationProvider."""
         self.oauth_values = oauth_values or {}
@@ -104,11 +122,16 @@ class OpenAIAuthenticationProvider:
             domain_oauth_values = self.oauth_values.get(domain)
 
             if not domain_oauth_values:
-                raise ValueError("No OAuth values found for the provided authorization URL.")
+                raise ValueError(
+                    "No OAuth values found for the provided authorization URL."
+                )
 
             values = domain_oauth_values | {"scope": openai_auth_config.scope or ""}
 
-            content_type = openai_auth_config.authorization_content_type or "application/x-www-form-urlencoded"
+            content_type = (
+                openai_auth_config.authorization_content_type
+                or "application/x-www-form-urlencoded"
+            )
             async with ClientSession() as session:
                 authorization_url = str(openai_auth_config.authorization_url)
 
@@ -117,7 +140,9 @@ class OpenAIAuthenticationProvider:
                 elif content_type == "application/json":
                     response = await session.post(authorization_url, json=values)
                 else:
-                    raise ValueError(f"Unsupported authorization content type: {content_type}")
+                    raise ValueError(
+                        f"Unsupported authorization content type: {content_type}"
+                    )
 
                 response.raise_for_status()
 
@@ -185,7 +210,9 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"included_plugins": ["AzureKeyVaultPlugin"]}),
+    function_choice_behavior=FunctionChoiceBehavior.Auto(
+        filters={"included_plugins": ["AzureKeyVaultPlugin"]}
+    ),
 )
 
 history = ChatHistory()
@@ -209,15 +236,18 @@ async def handle_streaming(
     print("Security Agent:> ", end="")
     streamed_chunks: list[StreamingChatMessageContent] = []
     async for message in response:
-        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and isinstance(
-            message[0], StreamingChatMessageContent
+        if (
+            not execution_settings.function_choice_behavior.auto_invoke_kernel_functions
+            and isinstance(message[0], StreamingChatMessageContent)
         ):
             streamed_chunks.append(message[0])
         else:
             print(str(message[0]), end="")
 
     if streamed_chunks:
-        streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
+        streaming_chat_message = reduce(
+            lambda first, second: first + second, streamed_chunks
+        )
         print("Auto tool calls is disabled, printing returned tool calls...")
         print_tool_calls(streaming_chat_message)
 

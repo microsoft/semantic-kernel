@@ -8,8 +8,13 @@ from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings impor
     OllamaChatPromptExecutionSettings,
     OllamaTextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
+from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import (
+    OllamaChatCompletion,
+)
+from semantic_kernel.exceptions.service_exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidResponseError,
+)
 
 
 def test_settings(model_id):
@@ -58,12 +63,16 @@ async def test_custom_host(
 
     chat_responses = await ollama.get_chat_message_contents(
         chat_history,
-        OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+        OllamaChatPromptExecutionSettings(
+            service_id=service_id, options=default_options
+        ),
     )
 
     text_responses = await ollama.get_text_contents(
         prompt,
-        OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+        OllamaTextPromptExecutionSettings(
+            service_id=service_id, options=default_options
+        ),
     )
 
     # Check that the client was initialized once with the correct host
@@ -98,7 +107,9 @@ async def test_custom_host_streaming(
 
     async for messages in ollama.get_streaming_chat_message_contents(
         chat_history,
-        OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+        OllamaChatPromptExecutionSettings(
+            service_id=service_id, options=default_options
+        ),
     ):
         assert len(messages) == 1
         assert messages[0].role == "assistant"
@@ -106,7 +117,9 @@ async def test_custom_host_streaming(
 
     async for messages in ollama.get_streaming_text_contents(
         prompt,
-        OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+        OllamaTextPromptExecutionSettings(
+            service_id=service_id, options=default_options
+        ),
     ):
         assert len(messages) == 1
         assert messages[0].text == "test_response"
@@ -120,14 +133,18 @@ async def test_custom_host_streaming(
 
 @pytest.mark.asyncio
 @patch("ollama.AsyncClient.chat")
-async def test_chat_completion(mock_chat_client, model_id, service_id, chat_history, default_options):
+async def test_chat_completion(
+    mock_chat_client, model_id, service_id, chat_history, default_options
+):
     """Test that the chat completion service completes correctly."""
     mock_chat_client.return_value = {"message": {"content": "test_response"}}
 
     ollama = OllamaChatCompletion(ai_model_id=model_id)
     response = await ollama.get_chat_message_contents(
         chat_history=chat_history,
-        settings=OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+        settings=OllamaChatPromptExecutionSettings(
+            service_id=service_id, options=default_options
+        ),
     )
 
     assert len(response) == 1
@@ -151,25 +168,33 @@ async def test_chat_completion_wrong_return_type(
     default_options,
 ):
     """Test that the chat completion service fails when the return type is incorrect."""
-    mock_chat_client.return_value = mock_streaming_chat_response  # should not be a streaming response
+    mock_chat_client.return_value = (
+        mock_streaming_chat_response  # should not be a streaming response
+    )
 
     ollama = OllamaChatCompletion(ai_model_id=model_id)
     with pytest.raises(ServiceInvalidResponseError):
         await ollama.get_chat_message_contents(
             chat_history,
-            OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+            OllamaChatPromptExecutionSettings(
+                service_id=service_id, options=default_options
+            ),
         )
 
 
 @pytest.mark.asyncio
 @patch("ollama.AsyncClient.chat")
-async def test_text_completion(mock_chat_client, model_id, service_id, prompt, default_options):
+async def test_text_completion(
+    mock_chat_client, model_id, service_id, prompt, default_options
+):
     """Test that the text completion service completes correctly."""
     mock_chat_client.return_value = {"message": {"content": "test_response"}}
     ollama = OllamaChatCompletion(ai_model_id=model_id)
     response = await ollama.get_text_contents(
         prompt=prompt,
-        settings=OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+        settings=OllamaTextPromptExecutionSettings(
+            service_id=service_id, options=default_options
+        ),
     )
 
     assert len(response) == 1
@@ -193,13 +218,17 @@ async def test_text_completion_wrong_return_type(
     default_options,
 ):
     """Test that the text completion service fails when the return type is incorrect."""
-    mock_chat_client.return_value = mock_streaming_chat_response  # should not be a streaming response
+    mock_chat_client.return_value = (
+        mock_streaming_chat_response  # should not be a streaming response
+    )
 
     ollama = OllamaChatCompletion(ai_model_id=model_id)
     with pytest.raises(ServiceInvalidResponseError):
         await ollama.get_text_contents(
             chat_history,
-            OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+            OllamaTextPromptExecutionSettings(
+                service_id=service_id, options=default_options
+            ),
         )
 
 
@@ -219,7 +248,9 @@ async def test_streaming_chat_completion(
     ollama = OllamaChatCompletion(ai_model_id=model_id)
     response = ollama.get_streaming_chat_message_contents(
         chat_history,
-        OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+        OllamaChatPromptExecutionSettings(
+            service_id=service_id, options=default_options
+        ),
     )
 
     responses = []
@@ -247,13 +278,17 @@ async def test_streaming_chat_completion_wrong_return_type(
     default_options,
 ):
     """Test that the chat completion streaming service fails when the return type is incorrect."""
-    mock_chat_client.return_value = {"message": {"content": "test_response"}}  # should not be a non-streaming response
+    mock_chat_client.return_value = {
+        "message": {"content": "test_response"}
+    }  # should not be a non-streaming response
 
     ollama = OllamaChatCompletion(ai_model_id=model_id)
     with pytest.raises(ServiceInvalidResponseError):
         async for _ in ollama.get_streaming_chat_message_contents(
             chat_history,
-            OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+            OllamaChatPromptExecutionSettings(
+                service_id=service_id, options=default_options
+            ),
         ):
             pass
 
@@ -274,7 +309,9 @@ async def test_streaming_text_completion(
     ollama = OllamaChatCompletion(ai_model_id=model_id)
     response = ollama.get_streaming_text_contents(
         prompt,
-        OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+        OllamaTextPromptExecutionSettings(
+            service_id=service_id, options=default_options
+        ),
     )
 
     responses = []
@@ -302,12 +339,16 @@ async def test_streaming_text_completion_wrong_return_type(
     default_options,
 ):
     """Test that the text completion streaming service fails when the return type is incorrect."""
-    mock_chat_client.return_value = {"message": {"content": "test_response"}}  # should not be a non-streaming response
+    mock_chat_client.return_value = {
+        "message": {"content": "test_response"}
+    }  # should not be a non-streaming response
 
     ollama = OllamaChatCompletion(ai_model_id=model_id)
     with pytest.raises(ServiceInvalidResponseError):
         async for _ in ollama.get_streaming_text_contents(
             chat_history,
-            OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+            OllamaTextPromptExecutionSettings(
+                service_id=service_id, options=default_options
+            ),
         ):
             pass

@@ -1,0 +1,58 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# This workflow locates REST API file contracts (Swagger or OpenAPI format, v2 and v3, JSON and YAML)
+# and runs 300+ security checks on them using 42Crunch Security Audit technology to uncover
+# potential vulnerabilities related to authentication, authorization as well as data validation.
+#
+# Documentation is located here: https://docs.42crunch.com/latest/content/tasks/integrate_github_actions.htm
+#
+# To use this workflow, you need a 42Crunch platform account. If you do not have one, you can contact us
+# from this page: https://42crunch.com/request-demo.
+#
+# 1. Follow steps at https://docs.42crunch.com/latest/content/tasks/integrate_github_actions.htm
+#    to create an API Token on the 42Crunch platform
+#
+# 2. Create an secret in GitHub as explained in https://docs.42crunch.com/latest/content/tasks/integrate_github_actions.htm
+#    and store the 42Crunch API Token in that secret. Expected default is API_TOKEN (see the api-token property in the task).
+#
+# If you have any questions or need help, open an issue at: https://support.42crunch.com.
+
+name: "42Crunch REST API Static Security Testing"
+
+# follow standard Code Scanning triggers
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "main" ]
+  schedule:
+    - cron: '35 14 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  rest-api-static-security-testing:
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for 42Crunch/api-security-audit-action to upload results to Github Code Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 42Crunch REST API Static Security Testing
+        uses: 42Crunch/api-security-audit-action@fc01ea7a89e6268875868f9d89598af7a9899ae0
+        with:
+          # Please create free account at https://platform.42crunch.com/register
+          # Follow these steps to configure API_TOKEN https://docs.42crunch.com/latest/content/tasks/integrate_github_actions.htm
+          api-token: ${{ secrets.API_TOKEN }}
+          # Fail if any OpenAPI file scores lower than 75
+          min-score: 75
+          # Upload results to Github code scanning
+          upload-to-code-scanning: true
+          # Github token for uploading the results
+          github-token: ${{ github.token }}

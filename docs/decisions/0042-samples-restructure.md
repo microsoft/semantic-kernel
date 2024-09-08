@@ -1,12 +1,10 @@
 ---
-# Reestructure of How Sample Code will be Structured In the Repository
-
-status: accepted
-contact: rogerbarreto
-date: 2024-04-18
-deciders: rogerbarreto, markwallace-microsoft, sophialagerkranspandey, matthewbolanos
 consulted: dmytrostruk, sergeymenshik, westey-m, eavanvalkenburg
-informed:
+contact: rogerbarreto
+date: 2024-04-18T00:00:00Z
+deciders: rogerbarreto, markwallace-microsoft, sophialagerkranspandey, matthewbolanos
+informed: null
+status: accepted
 ---
 
 ## Context and Problem Statement
@@ -56,7 +54,7 @@ This option squeezes as much as possible the root of `samples` folder in differe
 
 Proposed root structure
 
-```
+```ini {"id":"01J6KQ5GC78MCZ140WPZYZSJV4"}
 samples/
 ├── Tutorials/
 │   └── Getting Started/
@@ -83,7 +81,7 @@ This option brings `Getting Started` to the root `samples` folder compared the s
 
 Proposed root structure
 
-```
+```ini {"id":"01J6KQ5GC78MCZ140WQ2WMBTH5"}
 samples/
 ├── Getting Started/
 ├── Tutorials/
@@ -109,7 +107,7 @@ This option is more conservative and keeps Syntax Examples projects as root opti
 
 Proposed root structure
 
-```
+```ini {"id":"01J6KQ5GC78MCZ140WQ63C25MV"}
 samples/
 |── QuickStart/
 |── Tutorials/
@@ -142,131 +140,159 @@ Identified Component Oriented Concepts:
 
 - Kernel
 
-  - Builder
-  - Functions
-    - Arguments
-    - MethodFunctions
-    - PromptFunctions
-    - Types
-    - Results
-      - Serialization
-      - Metadata
-      - Strongly typed
-    - InlineFunctions
-  - Plugins
-    - Describe Plugins
-    - OpenAI Plugins
-    - OpenAPI Plugins
-      - API Manifest
-    - gRPC Plugins
-    - Mutable Plugins
-  - AI Services (Examples using Services thru Kernel Invocation)
-    - Chat Completion
-    - Text Generation
-    - Service Selector
-  - Hooks
-  - Filters
-    - Function Filtering
-    - Template Rendering Filtering
-    - Function Call Filtering (When available)
-  - Templates
+   - Builder
+   - Functions
+
+      - Arguments
+      - MethodFunctions
+      - PromptFunctions
+      - Types
+      - Results
+
+         - Serialization
+         - Metadata
+         - Strongly typed
+
+      - InlineFunctions
+
+   - Plugins
+
+      - Describe Plugins
+      - OpenAI Plugins
+      - OpenAPI Plugins
+
+         - API Manifest
+
+      - gRPC Plugins
+      - Mutable Plugins
+
+   - AI Services (Examples using Services thru Kernel Invocation)
+
+      - Chat Completion
+      - Text Generation
+      - Service Selector
+
+   - Hooks
+   - Filters
+
+      - Function Filtering
+      - Template Rendering Filtering
+      - Function Call Filtering (When available)
+
+   - Templates
 
 - AI Services (Examples using Services directly with Single/Multiple + Streaming and Non-Streaming results)
 
-  - ExecutionSettings
-  - Chat Completion
-    - Local Models
-      - Ollama
+   - ExecutionSettings
+   - Chat Completion
+
+      - Local Models
+
+         - Ollama
+         - HuggingFace
+         - LMStudio
+         - LocalAI
+
+      - Gemini
+      - OpenAI
+      - AzureOpenAI
       - HuggingFace
-      - LMStudio
-      - LocalAI
-    - Gemini
-    - OpenAI
-    - AzureOpenAI
-    - HuggingFace
-  - Text Generation
-    - Local Models
-      - Ollama
+
+   - Text Generation
+
+      - Local Models
+
+         - Ollama
+         - HuggingFace
+
+      - OpenAI
+      - AzureOpenAI
       - HuggingFace
-    - OpenAI
-    - AzureOpenAI
-    - HuggingFace
-  - Text to Image
-    - OpenAI
-    - AzureOpenAI
-  - Image to Text
-    - HuggingFace
-  - Text to Audio
-    - OpenAI
-  - Audio to Text
-    - OpenAI
-  - Custom
-    - DYI
-    - OpenAI
-      - OpenAI File
+
+   - Text to Image
+
+      - OpenAI
+      - AzureOpenAI
+
+   - Image to Text
+
+      - HuggingFace
+
+   - Text to Audio
+
+      - OpenAI
+
+   - Audio to Text
+
+      - OpenAI
+
+   - Custom
+
+      - DYI
+      - OpenAI
+         - OpenAI File
 
 - Memory Services
 
-  - Search
+   - Search
 
-    - Semantic Memory
-    - Text Memory
-    - Azure AI Search
+      - Semantic Memory
+      - Text Memory
+      - Azure AI Search
 
-  - Text Embeddings
-    - OpenAI
-    - HuggingFace
+   - Text Embeddings
+
+      - OpenAI
+      - HuggingFace
 
 - Telemetry
 - Logging
 - Dependency Injection
-
 - HttpClient
 
-  - Resiliency
-  - Usage
+   - Resiliency
+   - Usage
 
 - Planners
 
-  - Handlerbars
+   - Handlerbars
 
 - Authentication
 
-  - Azure AD
+   - Azure AD
 
 - Function Calling
 
-  - Auto Function Calling
-  - Manual Function Calling
+   - Auto Function Calling
+   - Manual Function Calling
 
 - Filtering
 
-  - Kernel Hooks
-  - Service Selector
+   - Kernel Hooks
+   - Service Selector
 
 - Templates
 - Resilience
-
 - Memory
 
-  - Semantic Memory
-  - Text Memory Plugin
-  - Search
+   - Semantic Memory
+   - Text Memory Plugin
+   - Search
 
 - RAG
 
-  - Inline
-  - Function Calling
+   - Inline
+   - Function Calling
 
 - Agents
 
-  - Delegation
-  - Charts
-  - Collaboration
-  - Authoring
-  - Tools
-  - Chat Completion Agent
-    (Agent Syntax Examples Goes here without numbering)
+   - Delegation
+   - Charts
+   - Collaboration
+   - Authoring
+   - Tools
+   - Chat Completion Agent
+      (Agent Syntax Examples Goes here without numbering)
 
 - Flow Orchestrator
 
@@ -278,7 +304,7 @@ At first is seems logical and easy to understand how the concepts are related an
 
 Large (Less files per folder):
 
-```
+```ini {"id":"01J6KQ5GC8RWYAQYS3BVYWCV0N"}
 Concepts/
 ├── Kernel/
 │   ├── Builder/
@@ -389,7 +415,7 @@ Concepts/
 
 Compact (More files per folder):
 
-```
+```ini {"id":"01J6KQ5GC8RWYAQYS3BWXM8TSS"}
 Concepts/
 ├── Kernel/
 │   ├── Builder/
@@ -453,7 +479,7 @@ Similar approach to Option 1, but with a flattened structure using a single leve
 
 Large (Less files per folder):
 
-```
+```ini {"id":"01J6KQ5GC8RWYAQYS3BYBJH206"}
 Concepts/
 ├── KernelBuilder
 ├── Kernel.Functions.Arguments
@@ -523,7 +549,7 @@ Concepts/
 
 Compact (More files per folder):
 
-```
+```ini {"id":"01J6KQ5GC8RWYAQYS3BZ9Q4M27"}
 Concepts/
 ├── KernelBuilder
 ├── Kernel.Functions
@@ -571,7 +597,7 @@ Cons:
 
 This option decomposes the Kernel Syntax Examples by grouping big and related features together.
 
-```
+```ini {"id":"01J6KQ5GC8RWYAQYS3C1HS4H7D"}
 Concepts/
 ├── Functions/
 ├── Chat Completion/
@@ -611,7 +637,7 @@ Cons:
 
 Breaks the examples per difficulty level, from basic to expert. The overall structure would be similar to option 3 although only subitems would be different if they have that complexity level.
 
-```
+```ini {"id":"01J6KQ5GC8RWYAQYS3C2GC0DZ5"}
 Concepts/
 ├── 200-Basic
 |  ├── Functions

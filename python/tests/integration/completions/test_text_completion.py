@@ -8,14 +8,50 @@ from typing import Any
 import pytest
 from openai import AsyncAzureOpenAI
 
+<<<<<<< main
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
+=======
+>>>>>>> upstream/main
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_completion import GoogleAITextCompletion
-from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_text_completion import VertexAITextCompletion
+from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_completion import (
+    GoogleAITextCompletion,
+)
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_text_completion import (
+    VertexAITextCompletion,
+)
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAITextPromptExecutionSettings,
 )
+<<<<<<< main
+from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import (
+    HuggingFacePromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import (
+    HuggingFaceTextCompletion,
+)
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAITextPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
+    AzureTextCompletion,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
+    OpenAITextCompletion,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
+from semantic_kernel.contents import TextContent
+from tests.integration.completions.test_utils import retry
+=======
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
 from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import HuggingFaceTextCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
@@ -29,12 +65,65 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
+>>>>>>> upstream/main
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
+<<<<<<< main
+def setup(
+    kernel: Kernel,
+    service: str,
+    execution_settings_kwargs: dict[str, Any],
+    services: dict[str, tuple[TextCompletionClientBase, type[PromptExecutionSettings]]],
+):
+    kernel.add_service(services[service][0])
+    kernel.add_function(
+        function_name="text",
+        plugin_name="text",
+        prompt="If someone asks how you are, always include the word 'well', "
+        "if you get a direct question, answer the question. {{$input}}",
+        prompt_execution_settings=services[service][1](**execution_settings_kwargs),
+    )
+
+
+@pytest.fixture(scope="module")
+def services() -> (
+    dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]]
+):
+    return {
+        "openai": (OpenAITextCompletion(), OpenAITextPromptExecutionSettings),
+        "azure": (AzureTextCompletion(), OpenAITextPromptExecutionSettings),
+        "hf_t2t": (
+            HuggingFaceTextCompletion(
+                service_id="patrickvonplaten/t5-tiny-random",
+                ai_model_id="patrickvonplaten/t5-tiny-random",
+                task="text2text-generation",
+            ),
+            HuggingFacePromptExecutionSettings,
+        ),
+        "hf_summ": (
+            HuggingFaceTextCompletion(
+                service_id="jotamunz/billsum_tiny_summarization",
+                ai_model_id="jotamunz/billsum_tiny_summarization",
+                task="summarization",
+            ),
+            HuggingFacePromptExecutionSettings,
+        ),
+        "hf_gen": (
+            HuggingFaceTextCompletion(
+                service_id="HuggingFaceM4/tiny-random-LlamaForCausalLM",
+                ai_model_id="HuggingFaceM4/tiny-random-LlamaForCausalLM",
+                task="text-generation",
+            ),
+            HuggingFacePromptExecutionSettings,
+        ),
+        "google_ai": (GoogleAITextCompletion(), GoogleAITextPromptExecutionSettings),
+        "vertex_ai": (VertexAITextCompletion(), VertexAITextPromptExecutionSettings),
+    }
+=======
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
@@ -46,6 +135,7 @@ try:
         ollama_setup = True
 except KeyError:
     ollama_setup = False
+>>>>>>> upstream/main
 
 
 pytestmark = pytest.mark.parametrize(
@@ -122,8 +212,31 @@ pytestmark = pytest.mark.parametrize(
 
 
 @pytest.mark.asyncio(scope="module")
+<<<<<<< main
+async def test_text_completion(
+    kernel: Kernel,
+    service: str,
+    execution_settings_kwargs: dict[str, Any],
+    inputs: list[str],
+    outputs: list[str],
+    services: dict[str, tuple[TextCompletionClientBase, type[PromptExecutionSettings]]],
+):
+    setup(kernel, service, execution_settings_kwargs, services)
+    for message, output in zip(inputs, outputs):
+        await retry(
+            partial(
+                execute_invoke,
+                kernel=kernel,
+                input=message,
+                output=output,
+                stream=False,
+            ),
+            retries=5,
+        )
+=======
 class TestTextCompletion(CompletionTestBase):
     """Test class for text completion"""
+>>>>>>> upstream/main
 
     @override
     @pytest.fixture(scope="class")
@@ -143,6 +256,51 @@ class TestTextCompletion(CompletionTestBase):
             ),
         )
 
+<<<<<<< main
+@pytest.mark.asyncio(scope="module")
+async def test_streaming_text_completion(
+    kernel: Kernel,
+    service: str,
+    execution_settings_kwargs: dict[str, Any],
+    inputs: list[str],
+    outputs: list[str],
+    services: dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]],
+):
+    setup(kernel, service, execution_settings_kwargs, services)
+    for message, output in zip(inputs, outputs):
+        await retry(
+            partial(
+                execute_invoke, kernel=kernel, input=message, output=output, stream=True
+            ),
+            retries=5,
+        )
+
+
+async def execute_invoke(kernel: Kernel, input: str, output: str, stream: bool) -> None:
+    if stream:
+        invocation = kernel.invoke_stream(
+            function_name="text", plugin_name="text", input=input
+        )
+        parts = [part[0] async for part in invocation]
+        if parts:
+            response = reduce(lambda p, r: p + r, parts)
+        else:
+            raise AssertionError("No response")
+    else:
+        invocation = await kernel.invoke(
+            function_name="text", plugin_name="text", input=input
+        )
+        assert invocation is not None
+        response = invocation.value[0]
+    print(response)
+    if isinstance(response, TextContent):
+        assert response.text is not None
+        assert output in response.text
+        return
+    raise AssertionError(
+        f"Unexpected output: response: {invocation}, type: {type(invocation)}"
+    )
+=======
         return {
             "openai": (OpenAITextCompletion(), OpenAITextPromptExecutionSettings),
             "azure": (AzureTextCompletion(), OpenAITextPromptExecutionSettings),
@@ -265,3 +423,4 @@ class TestTextCompletion(CompletionTestBase):
                 retries=5,
             )
             self.evaluate(response)
+>>>>>>> upstream/main

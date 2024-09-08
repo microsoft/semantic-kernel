@@ -2,7 +2,9 @@
 
 from typing import Any, Literal
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 
 
 class OllamaPromptExecutionSettings(PromptExecutionSettings):

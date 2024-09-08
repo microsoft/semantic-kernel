@@ -1,10 +1,9 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: approved
-contact: rogerbarreto
-date: 2024-06-24
-deciders: rogerbarreto, matthewbolanos, markwallace-microsoft, sergeymenshykh
 consulted: stephentoub, dmytrostruk
+contact: rogerbarreto
+date: 2024-06-24T00:00:00Z
+deciders: rogerbarreto, matthewbolanos, markwallace-microsoft, sergeymenshykh
+status: approved
 ---
 
 # OpenAI and Azure Connectors Naming and Structuring
@@ -41,19 +40,19 @@ The new OpenAI SDK introduce some limitations that need to be considered and pon
 
 - #### ⚠️ No support for multiple results (Choices) per request.
 
-  **Remediation**: Internally make the multiple requests and combine them.
-  **No remediation**: Breaking change removing `ResultsPerPrompt` from `OpenAIPromptExecutionSettings`.
+   **Remediation**: Internally make the multiple requests and combine them.
+   **No remediation**: Breaking change removing `ResultsPerPrompt` from `OpenAIPromptExecutionSettings`.
 
 - #### ⚠️ Text Generation modality is not supported.
 
-  **Remediation**: Internally provide a HttpClient to be used against `gpt-3.5-turbo-instruct` for text generation modality. Same way was done for `TextToImage`, `AudioToText` service modalities.
-  **No remediation**: Breaking change removing any specific `TextGeneration` service implementations, this change don't impact `ChatCompletion` services that may still being used as `ITextGenerationService` implementations.
+   **Remediation**: Internally provide a HttpClient to be used against `gpt-3.5-turbo-instruct` for text generation modality. Same way was done for `TextToImage`, `AudioToText` service modalities.
+   **No remediation**: Breaking change removing any specific `TextGeneration` service implementations, this change don't impact `ChatCompletion` services that may still being used as `ITextGenerationService` implementations.
 
 ## Improvements
 
 This also represents an opportunity to improve the current OpenAI connector by introducing the `Configuration` pattern to allow more flexibility and control over the services and their configurations.
 
-```csharp
+```csharp {"id":"01J6KQ24KZBMYG7YHN09DC61C0"}
 // Before
 builder.AddAzureOpenAIChatCompletion(deploymentName, endpoint, apiKey, httpClient);
 // After
@@ -65,7 +64,7 @@ builder.AddAzureOpenAIChatCompletion(new
 });
 ```
 
-```csharp
+```csharp {"id":"01J6KQ24KZBMYG7YHN0CQQERMT"}
 // Before
 builder.AddAzureOpenAIChatCompletion(deploymentName, openAIClient, serviceId, modelId)
 // After
@@ -84,9 +83,7 @@ Since `SemanticKernel.Connectors.AzureOpenAI` and `SemanticKernel.Connectors.Ope
 If this happens:
 
 1. Before updating our OpenAI connector package we will get in touch with `Azure.AI.OpenAI` team to align on the ETAs for their update.
-
 2. Investigate if the most recent `OpenAI` package when used with a `Azure.AI.OpenAI` that initially was targeting an older version of `OpenAI` SDK will not cause any breaking changes or conflicts.
-
 3. If There are conflicts and their ETA is small we may keep the `OpenAI` dependency on our `SemanticKernel.Connectors.OpenAI` similar to Azure's for a short period of time, otherwise we will evaluate moving forward with the `OpenAI` dependency version upgrade.
 
 ## Considered Options
@@ -103,7 +100,7 @@ This approach also implies that a new connector will be created on a second mome
 
 In a later stage we will deprecate all the OpenAI and Azure legacy APIs in the `SemanticKernel.Connectors.OpenAI` namespace and remove Azure SDK `Azure.AI.OpenAI 1.0.0-beta.17` and those APIs in a future release, making the OpenAI Connector fully dedicated for OpenAI services only depending on with the `OpenAI 2.0.0-beta.*` dependency.
 
-```mermaid
+```mermaid {"id":"01J6KQ24KZBMYG7YHN0G8Z6SFV"}
 graph TD
     A[SemanticKernel.Connectors.OpenAI] --> B[OpenAI 2.0.0-beta.*]
     A --> C[Azure.OpenAI 1.0.0-beta.17]
@@ -118,10 +115,11 @@ Following this change the `SemanticKernel.Connectors.OpenAI` and a new `Semantic
 
 - **Phase 1**: Add new OpenAI SDK APIs to the current OpenAI connector and keep the Azure OpenAI APIs using the last Azure SDK.
 - **Phase 2**:
-  - Create a new connector for Azure OpenAI services using the new Azure SDK
-  - Deprecate all Azure OpenAI APIs in the `OpenAI` connector pointing to new `AzureOpenAI` connector
-  - Remove Azure SDK dependency from the OpenAI connector.
-  - Add `AzureOpenAI` connector to the `Microsoft.SemanticKernel` meta package.
+   - Create a new connector for Azure OpenAI services using the new Azure SDK
+   - Deprecate all Azure OpenAI APIs in the `OpenAI` connector pointing to new `AzureOpenAI` connector
+   - Remove Azure SDK dependency from the OpenAI connector.
+   - Add `AzureOpenAI` connector to the `Microsoft.SemanticKernel` meta package.
+
 - **Phase 3**: Deprecate all legacy `OpenAI APIs` in the `OpenAI` connector pointing to new `Options` APIs.
 - **Phase 4**: Remove all legacy APIs from the OpenAI connector.
 
@@ -147,7 +145,7 @@ Cons:
 
 This option is focused on creating fully independent connectors for OpenAI and Azure OpenAI services since the start with all breaking changes needed to achieve that.
 
-```mermaid
+```mermaid {"id":"01J6KQ24KZBMYG7YHN0KEKSHRK"}
 graph TD
     D[SemanticKernel.Connectors.AzureOpenAI] --> E[Azure.AI.OpenAI 2.0.0-beta.*]
     E --> B[OpenAI 2.0.0-beta.*]

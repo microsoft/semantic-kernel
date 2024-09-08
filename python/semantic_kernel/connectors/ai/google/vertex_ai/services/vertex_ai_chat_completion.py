@@ -24,17 +24,27 @@ from semantic_kernel.connectors.ai.google.vertex_ai.services.utils import (
     format_user_message,
     update_settings_from_function_choice_configuration,
 )
-from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_base import VertexAIBase
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_base import (
+    VertexAIBase,
+)
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import VertexAISettings
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import (
+    VertexAISettings,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import (
+    ITEM_TYPES as STREAMING_ITEM_TYPES,
+)
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -52,7 +62,9 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
 
 
 class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
@@ -92,9 +104,13 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise ServiceInitializationError(f"Failed to validate Vertex AI settings: {e}") from e
+            raise ServiceInitializationError(
+                f"Failed to validate Vertex AI settings: {e}"
+            ) from e
         if not vertex_ai_settings.gemini_model_id:
-            raise ServiceInitializationError("The Vertex AI Gemini model ID is required.")
+            raise ServiceInitializationError(
+                "The Vertex AI Gemini model ID is required."
+            )
 
         super().__init__(
             ai_model_id=vertex_ai_settings.gemini_model_id,
@@ -127,6 +143,26 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         ):
             return await self._send_chat_request(chat_history, settings)
 
+        kernel = kwargs.get("kernel")
+        if not isinstance(kernel, Kernel):
+            raise ServiceInvalidExecutionSettingsError(
+                "Kernel is required for auto invoking functions."
+            )
+
+        configure_function_choice_behavior(
+            settings, kernel, update_settings_from_function_choice_configuration
+        )
+
+        for request_index in range(
+            settings.function_choice_behavior.maximum_auto_invoke_attempts
+        ):
+            completions = await self._send_chat_request(chat_history, settings)
+            chat_history.add_message(message=completions[0])
+            function_calls = [
+                item
+                for item in chat_history.messages[-1].items
+                if isinstance(item, FunctionCallContent)
+            ]
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
@@ -155,7 +191,10 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         self, chat_history: ChatHistory, settings: VertexAIChatPromptExecutionSettings
     ) -> list[ChatMessageContent]:
         """Send a chat request to the Vertex AI service."""
-        vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        vertexai.init(
+            project=self.service_settings.project_id,
+            location=self.service_settings.region,
+        )
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
@@ -168,9 +207,14 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             tool_config=settings.tool_config,
         )
 
-        return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
+        return [
+            self._create_chat_message_content(response, candidate)
+            for candidate in response.candidates
+        ]
 
-    def _create_chat_message_content(self, response: GenerationResponse, candidate: Candidate) -> ChatMessageContent:
+    def _create_chat_message_content(
+        self, response: GenerationResponse, candidate: Candidate
+    ) -> ChatMessageContent:
         """Create a chat message content object.
 
         Args:
@@ -181,7 +225,9 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             A chat message content object.
         """
         # Best effort conversion of finish reason. The raw value will be available in metadata.
-        finish_reason: FinishReason | None = finish_reason_from_vertex_ai_to_semantic_kernel(candidate.finish_reason)
+        finish_reason: FinishReason | None = (
+            finish_reason_from_vertex_ai_to_semantic_kernel(candidate.finish_reason)
+        )
         response_metadata = self._get_metadata_from_response(response)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
@@ -189,7 +235,13 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         for idx, part in enumerate(candidate.content.parts):
             part_dict = part.to_dict()
             if "text" in part_dict:
-                items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
+                items.append(
+                    TextContent(
+                        text=part.text,
+                        inner_content=response,
+                        metadata=response_metadata,
+                    )
+                )
             elif "function_call" in part_dict:
                 items.append(
                     FunctionCallContent(
@@ -239,6 +291,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         else:
             # Auto invoke is required.
             async_generator = self._get_streaming_chat_message_contents_auto_invoke(
+                chat_history, settings, **kwargs
                 kernel,  # type: ignore
                 kwargs.get("arguments"),
                 chat_history,
@@ -256,19 +309,36 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         settings: VertexAIChatPromptExecutionSettings,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Get streaming chat message contents from the Google AI service with auto invoking functions."""
+        kernel = kwargs.get("kernel")
+        if not isinstance(kernel, Kernel):
+            raise ServiceInvalidExecutionSettingsError(
+                "Kernel is required for auto invoking functions."
+            )
         if not settings.function_choice_behavior:
             raise ServiceInvalidExecutionSettingsError(
                 "Function choice behavior is required for auto invoking functions."
             )
 
+        configure_function_choice_behavior(
+            settings, kernel, update_settings_from_function_choice_configuration
+        )
+
+        for request_index in range(
+            settings.function_choice_behavior.maximum_auto_invoke_attempts
+        ):
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             all_messages: list[StreamingChatMessageContent] = []
             function_call_returned = False
-            async for messages in self._send_chat_streaming_request(chat_history, settings):
+            async for messages in self._send_chat_streaming_request(
+                chat_history, settings
+            ):
                 for message in messages:
                     if message:
                         all_messages.append(message)
-                        if any(isinstance(item, FunctionCallContent) for item in message.items):
+                        if any(
+                            isinstance(item, FunctionCallContent)
+                            for item in message.items
+                        ):
                             function_call_returned = True
                 yield messages
 
@@ -276,8 +346,14 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
                 # Response doesn't contain any function calls. No need to proceed to the next request.
                 return
 
-            full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
-            function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
+            full_completion: StreamingChatMessageContent = reduce(
+                lambda x, y: x + y, all_messages
+            )
+            function_calls = [
+                item
+                for item in full_completion.items
+                if isinstance(item, FunctionCallContent)
+            ]
             chat_history.add_message(message=full_completion)
 
             results = await invoke_function_calls(
@@ -300,22 +376,30 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         settings: VertexAIChatPromptExecutionSettings,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Send a streaming chat request to the Vertex AI service."""
-        vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        vertexai.init(
+            project=self.service_settings.project_id,
+            location=self.service_settings.region,
+        )
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
         )
 
-        response: AsyncIterable[GenerationResponse] = await model.generate_content_async(
-            contents=self._prepare_chat_history_for_request(chat_history),
-            generation_config=settings.prepare_settings_dict(),
-            tools=settings.tools,
-            tool_config=settings.tool_config,
-            stream=True,
+        response: AsyncIterable[GenerationResponse] = (
+            await model.generate_content_async(
+                contents=self._prepare_chat_history_for_request(chat_history),
+                generation_config=settings.prepare_settings_dict(),
+                tools=settings.tools,
+                tool_config=settings.tool_config,
+                stream=True,
+            )
         )
 
         async for chunk in response:
-            yield [self._create_streaming_chat_message_content(chunk, candidate) for candidate in chunk.candidates]
+            yield [
+                self._create_streaming_chat_message_content(chunk, candidate)
+                for candidate in chunk.candidates
+            ]
 
     def _create_streaming_chat_message_content(
         self,
@@ -332,7 +416,9 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             A streaming chat message content object.
         """
         # Best effort conversion of finish reason. The raw value will be available in metadata.
-        finish_reason: FinishReason | None = finish_reason_from_vertex_ai_to_semantic_kernel(candidate.finish_reason)
+        finish_reason: FinishReason | None = (
+            finish_reason_from_vertex_ai_to_semantic_kernel(candidate.finish_reason)
+        )
         response_metadata = self._get_metadata_from_response(chunk)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
@@ -386,15 +472,23 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
                 # System message will be provided as system_instruction in the model.
                 continue
             if message.role == AuthorRole.USER:
-                chat_request_messages.append(Content(role="user", parts=format_user_message(message)))
+                chat_request_messages.append(
+                    Content(role="user", parts=format_user_message(message))
+                )
             elif message.role == AuthorRole.ASSISTANT:
-                chat_request_messages.append(Content(role="model", parts=format_assistant_message(message)))
+                chat_request_messages.append(
+                    Content(role="model", parts=format_assistant_message(message))
+                )
             elif message.role == AuthorRole.TOOL:
-                chat_request_messages.append(Content(role="function", parts=format_tool_message(message)))
+                chat_request_messages.append(
+                    Content(role="function", parts=format_tool_message(message))
+                )
 
         return chat_request_messages
 
-    def _get_metadata_from_response(self, response: GenerationResponse) -> dict[str, Any]:
+    def _get_metadata_from_response(
+        self, response: GenerationResponse
+    ) -> dict[str, Any]:
         """Get metadata from the response.
 
         Args:

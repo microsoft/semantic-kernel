@@ -100,7 +100,15 @@
     <PackageVersion Include="Grpc.Net.Client" Version="2.64.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
+<<<<<<< main
     <PackageVersion Include="YamlDotNet" Version="16.0.0" />
+=======
+<<<<<<< main
+    <PackageVersion Include="YamlDotNet" Version="16.0.0" />
+=======
+    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
+>>>>>>> upstream/main
+>>>>>>> origin/main
     <PackageVersion Include="Fluid.Core" Version="2.11.1" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.42.0" />
@@ -113,7 +121,15 @@
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
+<<<<<<< main
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
+=======
+<<<<<<< main
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24318.1" />
+=======
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
+>>>>>>> upstream/main
+>>>>>>> origin/main
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -10,8 +10,12 @@ from pydantic import BaseModel, Field
 from pytest import fixture
 
 from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
+from semantic_kernel.data.vector_store_record_collection import (
+    VectorStoreRecordCollection,
+)
 from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -28,10 +32,16 @@ def DictVectorStoreRecordCollection():
             for key in keys:
                 self.inner_storage.pop(key, None)
 
-        async def _inner_get(self, keys: Sequence[str], **kwargs: Any) -> Any | Sequence[Any] | None:
-            return [self.inner_storage[key] for key in keys if key in self.inner_storage]
+        async def _inner_get(
+            self, keys: Sequence[str], **kwargs: Any
+        ) -> Any | Sequence[Any] | None:
+            return [
+                self.inner_storage[key] for key in keys if key in self.inner_storage
+            ]
 
-        async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[str]:
+        async def _inner_upsert(
+            self, records: Sequence[Any], **kwargs: Any
+        ) -> Sequence[str]:
             updated_keys = []
             for record in records:
                 key = (
@@ -43,10 +53,14 @@ def DictVectorStoreRecordCollection():
                 updated_keys.append(key)
             return updated_keys
 
-        def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
+        def _deserialize_store_models_to_dicts(
+            self, records: Sequence[Any], **kwargs: Any
+        ) -> Sequence[dict[str, Any]]:
             return records
 
-        def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
+        def _serialize_dicts_to_store_models(
+            self, records: Sequence[dict[str, Any]], **kwargs: Any
+        ) -> Sequence[Any]:
             return records
 
         async def create_collection(self, **kwargs: Any) -> None:
@@ -66,7 +80,9 @@ def data_model_definition() -> object:
     return VectorStoreRecordDefinition(
         fields={
             "id": VectorStoreRecordKeyField(),
-            "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector"),
+            "content": VectorStoreRecordDataField(
+                has_embedding=True, embedding_property_name="vector"
+            ),
             "vector": VectorStoreRecordVectorField(),
         }
     )
@@ -139,7 +155,9 @@ def data_model_container_serialize_definition() -> object:
     def serialize(record: dict[str, dict[str, Any]], **kwargs) -> list[dict[str, Any]]:
         return [{"id": key} | value for key, value in record.items()]
 
-    def deserialize(records: list[dict[str, Any]], **kwargs) -> dict[str, dict[str, Any]]:
+    def deserialize(
+        records: list[dict[str, Any]], **kwargs
+    ) -> dict[str, dict[str, Any]]:
         ret = {}
         for record in records:
             id = record.pop("id")
@@ -200,7 +218,11 @@ def data_model_type_vanilla():
             self.id = id
 
         def __eq__(self, other) -> bool:
-            return self.content == other.content and self.id == other.id and self.vector == other.vector
+            return (
+                self.content == other.content
+                and self.id == other.id
+                and self.vector == other.vector
+            )
 
     return DataModelClass
 
@@ -226,7 +248,11 @@ def data_model_type_vector_array():
             self.id = id
 
         def __eq__(self, other) -> bool:
-            return self.content == other.content and self.id == other.id and self.vector == other.vector
+            return (
+                self.content == other.content
+                and self.id == other.id
+                and self.vector == other.vector
+            )
 
     return DataModelClass
 
@@ -255,7 +281,11 @@ def data_model_type_vanilla_serialize():
             return cls(**obj)
 
         def __eq__(self, other) -> bool:
-            return self.content == other.content and self.id == other.id and self.vector == other.vector
+            return (
+                self.content == other.content
+                and self.id == other.id
+                and self.vector == other.vector
+            )
 
     return DataModelClass
 
@@ -284,7 +314,11 @@ def data_model_type_vanilla_to_from_dict():
             return cls(**args[0])
 
         def __eq__(self, other) -> bool:
-            return self.content == other.content and self.id == other.id and self.vector == other.vector
+            return (
+                self.content == other.content
+                and self.id == other.id
+                and self.vector == other.vector
+            )
 
     return DataModelClass
 

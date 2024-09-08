@@ -3,6 +3,7 @@
     <!-- Central version prefix - applies to all nuget packages. -->
 <<<<<<< main
 <<<<<<< main
+<<<<<<< main
 
     <VersionPrefix>1.14.1</VersionPrefix>
     <VersionPrefix>1.16.2</VersionPrefix>
@@ -13,6 +14,9 @@
 =======
     <VersionPrefix>1.17.2</VersionPrefix>
 >>>>>>> upstream/main
+=======
+    <VersionPrefix>1.17.2</VersionPrefix>
+>>>>>>> origin/main
 
     <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>

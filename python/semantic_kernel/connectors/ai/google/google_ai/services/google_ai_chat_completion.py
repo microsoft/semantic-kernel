@@ -10,14 +10,20 @@ from typing import TYPE_CHECKING, Any
 import google.generativeai as genai
 from google.generativeai import GenerativeModel
 from google.generativeai.protos import Candidate, Content
-from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
+from google.generativeai.types import (
+    AsyncGenerateContentResponse,
+    GenerateContentResponse,
+    GenerationConfig,
+)
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.function_calling_utils import merge_function_results
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import GoogleAIBase
+from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import (
+    GoogleAIBase,
+)
 from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
     finish_reason_from_google_ai_to_semantic_kernel,
     format_assistant_message,
@@ -32,8 +38,12 @@ from semantic_kernel.connectors.ai.google.shared_utils import (
     invoke_function_calls,
 )
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import (
+    ITEM_TYPES as STREAMING_ITEM_TYPES,
+)
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -47,8 +57,12 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
+from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import (
+    GoogleAISettings,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.exceptions.service_exceptions import (
@@ -57,7 +71,9 @@ from semantic_kernel.exceptions.service_exceptions import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -98,9 +114,13 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise ServiceInitializationError(f"Failed to validate Google AI settings: {e}") from e
+            raise ServiceInitializationError(
+                f"Failed to validate Google AI settings: {e}"
+            ) from e
         if not google_ai_settings.gemini_model_id:
-            raise ServiceInitializationError("The Google AI Gemini model ID is required.")
+            raise ServiceInitializationError(
+                "The Google AI Gemini model ID is required."
+            )
 
         super().__init__(
             ai_model_id=google_ai_settings.gemini_model_id,
@@ -133,6 +153,26 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         ):
             return await self._send_chat_request(chat_history, settings)
 
+        kernel = kwargs.get("kernel")
+        if not isinstance(kernel, Kernel):
+            raise ServiceInvalidExecutionSettingsError(
+                "Kernel is required for auto invoking functions."
+            )
+
+        configure_function_choice_behavior(
+            settings, kernel, update_settings_from_function_choice_configuration
+        )
+
+        for request_index in range(
+            settings.function_choice_behavior.maximum_auto_invoke_attempts
+        ):
+            completions = await self._send_chat_request(chat_history, settings)
+            chat_history.add_message(message=completions[0])
+            function_calls = [
+                item
+                for item in chat_history.messages[-1].items
+                if isinstance(item, FunctionCallContent)
+            ]
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
@@ -174,7 +214,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             tool_config=settings.tool_config,
         )
 
-        return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
+        return [
+            self._create_chat_message_content(response, candidate)
+            for candidate in response.candidates
+        ]
 
     def _create_chat_message_content(
         self, response: AsyncGenerateContentResponse, candidate: Candidate
@@ -189,14 +232,22 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             A chat message content object.
         """
         # Best effort conversion of finish reason. The raw value will be available in metadata.
-        finish_reason: FinishReason | None = finish_reason_from_google_ai_to_semantic_kernel(candidate.finish_reason)
+        finish_reason: FinishReason | None = (
+            finish_reason_from_google_ai_to_semantic_kernel(candidate.finish_reason)
+        )
         response_metadata = self._get_metadata_from_response(response)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
         items: list[ITEM_TYPES] = []
         for idx, part in enumerate(candidate.content.parts):
             if part.text:
-                items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
+                items.append(
+                    TextContent(
+                        text=part.text,
+                        inner_content=response,
+                        metadata=response_metadata,
+                    )
+                )
             elif part.function_call:
                 items.append(
                     FunctionCallContent(
@@ -246,6 +297,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         else:
             # Auto invoke is required.
             async_generator = self._get_streaming_chat_message_contents_auto_invoke(
+                chat_history, settings, **kwargs
                 kernel,  # type: ignore
                 kwargs.get("arguments"),
                 chat_history,
@@ -263,19 +315,36 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         settings: GoogleAIChatPromptExecutionSettings,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Get streaming chat message contents from the Google AI service with auto invoking functions."""
+        kernel = kwargs.get("kernel")
+        if not isinstance(kernel, Kernel):
+            raise ServiceInvalidExecutionSettingsError(
+                "Kernel is required for auto invoking functions."
+            )
         if not settings.function_choice_behavior:
             raise ServiceInvalidExecutionSettingsError(
                 "Function choice behavior is required for auto invoking functions."
             )
 
+        configure_function_choice_behavior(
+            settings, kernel, update_settings_from_function_choice_configuration
+        )
+
+        for request_index in range(
+            settings.function_choice_behavior.maximum_auto_invoke_attempts
+        ):
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             all_messages: list[StreamingChatMessageContent] = []
             function_call_returned = False
-            async for messages in self._send_chat_streaming_request(chat_history, settings):
+            async for messages in self._send_chat_streaming_request(
+                chat_history, settings
+            ):
                 for message in messages:
                     if message:
                         all_messages.append(message)
-                        if any(isinstance(item, FunctionCallContent) for item in message.items):
+                        if any(
+                            isinstance(item, FunctionCallContent)
+                            for item in message.items
+                        ):
                             function_call_returned = True
                 yield messages
 
@@ -283,8 +352,14 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 # Response doesn't contain any function calls. No need to proceed to the next request.
                 return
 
-            full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
-            function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
+            full_completion: StreamingChatMessageContent = reduce(
+                lambda x, y: x + y, all_messages
+            )
+            function_calls = [
+                item
+                for item in full_completion.items
+                if isinstance(item, FunctionCallContent)
+            ]
             chat_history.add_message(message=full_completion)
 
             results = await invoke_function_calls(
@@ -322,7 +397,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         )
 
         async for chunk in response:
-            yield [self._create_streaming_chat_message_content(chunk, candidate) for candidate in chunk.candidates]
+            yield [
+                self._create_streaming_chat_message_content(chunk, candidate)
+                for candidate in chunk.candidates
+            ]
 
     def _create_streaming_chat_message_content(
         self,
@@ -339,7 +417,9 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             A streaming chat message content object.
         """
         # Best effort conversion of finish reason. The raw value will be available in metadata.
-        finish_reason: FinishReason | None = finish_reason_from_google_ai_to_semantic_kernel(candidate.finish_reason)
+        finish_reason: FinishReason | None = (
+            finish_reason_from_google_ai_to_semantic_kernel(candidate.finish_reason)
+        )
         response_metadata = self._get_metadata_from_response(chunk)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
@@ -392,11 +472,17 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 # System message will be provided as system_instruction in the model.
                 continue
             if message.role == AuthorRole.USER:
-                chat_request_messages.append(Content(role="user", parts=format_user_message(message)))
+                chat_request_messages.append(
+                    Content(role="user", parts=format_user_message(message))
+                )
             elif message.role == AuthorRole.ASSISTANT:
-                chat_request_messages.append(Content(role="model", parts=format_assistant_message(message)))
+                chat_request_messages.append(
+                    Content(role="model", parts=format_assistant_message(message))
+                )
             elif message.role == AuthorRole.TOOL:
-                chat_request_messages.append(Content(role="function", parts=format_tool_message(message)))
+                chat_request_messages.append(
+                    Content(role="function", parts=format_tool_message(message))
+                )
 
         return chat_request_messages
 

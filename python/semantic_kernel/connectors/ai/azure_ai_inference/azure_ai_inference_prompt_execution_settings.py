@@ -4,7 +4,9 @@ from typing import Any, Literal
 
 from pydantic import Field
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
@@ -27,7 +29,9 @@ class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
 
 
 @experimental_class
-class AzureAIInferenceChatPromptExecutionSettings(AzureAIInferencePromptExecutionSettings):
+class AzureAIInferenceChatPromptExecutionSettings(
+    AzureAIInferencePromptExecutionSettings
+):
     """Azure AI Inference Chat Prompt Execution Settings."""
 
     tools: list[dict[str, Any]] | None = Field(
@@ -50,6 +54,8 @@ class AzureAIInferenceEmbeddingPromptExecutionSettings(PromptExecutionSettings):
     """
 
     dimensions: int | None = Field(None, gt=0)
-    encoding_format: Literal["base64", "binary", "float", "int8", "ubinary", "uint8"] | None = None
+    encoding_format: (
+        Literal["base64", "binary", "float", "int8", "ubinary", "uint8"] | None
+    ) = None
     input_type: Literal["text", "query", "document"] | None = None
     extra_parameters: dict[str, str] | None = None

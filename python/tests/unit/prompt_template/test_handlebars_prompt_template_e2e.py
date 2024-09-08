@@ -7,14 +7,19 @@ from semantic_kernel import Kernel
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.prompt_template.handlebars_prompt_template import HandlebarsPromptTemplate
+from semantic_kernel.prompt_template.handlebars_prompt_template import (
+    HandlebarsPromptTemplate,
+)
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 def create_handlebars_prompt_template(template: str) -> HandlebarsPromptTemplate:
     return HandlebarsPromptTemplate(
         prompt_template_config=PromptTemplateConfig(
-            name="test", description="test", template=template, template_format="handlebars"
+            name="test",
+            description="test",
+            template=template,
+            template_format="handlebars",
         ),
         allow_dangerously_set_content=True,
     )
@@ -40,7 +45,9 @@ class TestHandlebarsPromptTemplateEngine:
 
         arguments = KernelArguments(input=input, winner=winner)
         # Act
-        result = await create_handlebars_prompt_template(template).render(kernel, arguments)
+        result = await create_handlebars_prompt_template(template).render(
+            kernel, arguments
+        )
         # Assert
         expected = template.replace("{{input}}", input).replace("{{  winner }}", winner)
         assert expected == result
@@ -53,7 +60,9 @@ class TestHandlebarsPromptTemplateEngine:
 
         arguments = KernelArguments(call="123")
         # Act
-        result = await create_handlebars_prompt_template(template).render(kernel, arguments)
+        result = await create_handlebars_prompt_template(template).render(
+            kernel, arguments
+        )
 
         # Assert
         assert result == "== 123 ok =="
@@ -101,7 +110,9 @@ class TestHandlebarsPromptTemplateEngine:
         chat_history = ChatHistory()
         chat_history.add_user_message("User message")
         chat_history.add_assistant_message("Assistant message")
-        rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+        rendered = await target.render(
+            kernel, KernelArguments(chat_history=chat_history)
+        )
         assert (
             rendered.strip()
             == """<message role="user">User message</message> <message role="assistant">Assistant message</message>"""

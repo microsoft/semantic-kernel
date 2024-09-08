@@ -5,11 +5,34 @@ if you're working on new features or a bug fix for Semantic Kernel, or simply
 want to run the tests included.
 
 ## System setup
+## LLM setup
+
+Make sure you have an
+[OpenAI API Key](https://platform.openai.com) or
+[Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
+
+There are two methods to manage keys, secrets, and endpoints:
+
+1. Store them in environment variables. SK Python leverages pydantic settings to load keys, secrets, and endpoints. This means that there is a first attempt to load them from environment variables. The `.env` file naming applies to how the names should be stored as environment variables.
+2. If you'd like to use the `.env` file, you will need to configure the `.env` file with the following keys into a `.env` file (see the `.env.example` file):
+
+```sh {"id":"01J6KNPX0HTGAZ4YDQ34296TT7"}
+OPENAI_API_KEY=""
+OPENAI_ORG_ID=""
+AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=""
+AZURE_OPENAI_TEXT_DEPLOYMENT_NAME=""
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=""
+AZURE_OPENAI_ENDPOINT=""
+AZURE_OPENAI_API_KEY=""
+```
 
 ## If you're on WSL
 
 Check that you've cloned the repository to `~/workspace` or a similar folder.
 Avoid `/mnt/c/` and prefer using your WSL user's home directory.
+```python {"id":"01J6KNPX0HTGAZ4YDQ353PQS4G"}
+chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
+```
 
 Ensure you have the WSL extension for VSCode installed.
 
@@ -27,6 +50,8 @@ Check the [uv documentation](https://docs.astral.sh/uv/getting-started/installat
 
 ```powershell
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```python {"id":"01J6KNPX0HTGAZ4YDQ3625T9E4"}
+    python3 --version ; pip3 --version ; code -v
 ```
 
 You can then run the following commands manually:
@@ -58,6 +83,23 @@ This will install uv, python, Semantic Kernel and all dependencies and the pre-c
 ```bash
 make install PYTHON_VERSION=3.12
 ```
+```bash {"id":"01J6KNPX0HTGAZ4YDQ366SG3QM"}
+sudo apt-get update && sudo apt-get install python3 python3-pip
+```
+
+ℹ️ __Note__: if you don't have your PATH setup to find executables installed by `pip3`,
+you may need to run `~/.local/bin/poetry install` and `~/.local/bin/poetry shell`
+instead. You can fix this by adding `export PATH="$HOME/.local/bin:$PATH"` to
+your `~/.bashrc` and closing/re-opening the terminal.\_
+
+## Using Poetry
+
+Poetry allows to use SK from the local files, without worrying about paths, as
+if you had SK pip package installed.
+
+To install Poetry in your system, first, navigate to the directory containing
+this README using your chosen shell. You will need to have Python 3.10, 3.11, or 3.12
+installed.
 
 If you want to change python version (without installing uv, python and pre-commit), you can use the same parameter, but do:
 
@@ -68,6 +110,12 @@ make install-sk PYTHON_VERSION=3.12
 ℹ️ **Note**: Running the install or install-sk command will wipe away your existing virtual environment and create a new one.
 
 Alternatively you can run the VSCode task `Python: Install` to run the same command.
+It is best to install Poetry using their
+[official installer](https://python-poetry.org/docs/#installing-with-the-official-installer).
+
+On MacOS, you might find that `python` commands are not recognized by default,
+and you can only use `python3`. To make it easier to run `python ...` commands
+(which Poetry requires), you can create an alias in your shell configuration file.
 
 ## VSCode Setup
 
@@ -84,12 +132,37 @@ You also need to install the `ruff` extension in VSCode so that auto-formatting 
 Read more about the extension [here](https://github.com/astral-sh/ruff-vscode).
 
 ## LLM setup
+1. **Open your shell configuration file**:
+
+   - For __Bash__: `nano ~/.bash_profile` or `nano ~/.bashrc`
+   - For **Zsh** (default on macOS Catalina and later): `nano ~/.zshrc`
+
+2. **Add the alias**:
+
+```sh {"id":"01J6KNPX0HTGAZ4YDQ37NQ12T9"}
+alias python='python3'
+```
+
+3. **Save the file and exit**:
+
+   - In `nano`, press `CTRL + X`, then `Y`, and hit `Enter`.
+
+4. **Apply the changes**:
+
+   - For __Bash__: `source ~/.bash_profile` or `source ~/.bashrc`
+   - For **Zsh**: `source ~/.zshrc`
+
+After these steps, you should be able to use `python` in your terminal to run
+Python 3 commands.
 
 Make sure you have an
 [OpenAI API Key](https://platform.openai.com) or
 [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
 There are two methods to manage keys, secrets, and endpoints:
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3BB96MAY"}
+# Install poetry package if not choosing to install via their official installer
+pip3 install poetry
 
 1. Store them in environment variables. SK Python leverages pydantic settings to load keys, secrets, and endpoints from the environment. 
     > When you are using VSCode and have the python extension setup, it automatically loads environment variables from a `.env` file, so you don't have to manually set them in the terminal.
@@ -110,6 +183,11 @@ OPENAI_CHAT_MODEL_ID="gpt-4o-mini"
 ```
 
 You will then configure the ChatCompletion class with the keyword argument `env_file_path`:
+## VSCode Setup
+
+Open the [workspace](https://code.visualstudio.com/docs/editor/workspaces) in VSCode.
+
+> The Python workspace is the `./python` folder if you are at the root of the repository.
 
 ```python
 chat_completion = OpenAIChatCompletion(service_id="test", env_file_path="openai.env")
@@ -121,6 +199,9 @@ You can run the unit tests under the [tests/unit](tests/unit/) folder.
 
 ```bash
     uv run pytest tests/unit
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3CVYSJC6"}
+    poetry install --with unit-tests
+    poetry run pytest tests/unit
 ```
 
 Alternatively, you can run them using VSCode Tasks. Open the command palette
@@ -130,12 +211,18 @@ You can run the integration tests under the [tests/integration](tests/integratio
 
 ```bash
     uv run pytest tests/integration
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3ETP16N9"}
+    poetry install --with tests
+    poetry run pytest tests/integration
 ```
 
 You can also run all the tests together under the [tests](tests/) folder.
 
 ```bash
     uv run pytest tests
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3GYN6VJR"}
+    poetry install
+    poetry run pytest tests
 ```
 
 Alternatively, you can run them using VSCode Tasks. Open the command palette
@@ -158,6 +245,7 @@ We follow the [Google Docstring](https://github.com/google/styleguide/blob/gh-pa
 They are currently not checked for private functions (functions starting with '_').
 
 They should contain:
+
 - Single line explaining what the function does, ending with a period.
 - If necessary to further explain the logic a newline follows the first line and then the explanation is given.
 - The following three sections are optional, and if used should be separated by a single empty line.
@@ -165,21 +253,26 @@ They should contain:
     - `arg_name`: Explanation of the argument.
     - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
     - Type and default values do not have to be specified, they will be pulled from the definition.
+   - `arg_name` (`arg_type`): Explanation of the argument, arg_type is optional, as long as you are consistent.
+   - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
+   - Default values do not have to be specified, they will be pulled from the definition.
+
 - Returns are specified after a header called `Returns:` or `Yields:`, with the return type and explanation of the return value.
 - Finally, a header for exceptions can be added, called `Raises:`, with each exception being specified in the following format:
-    - `ExceptionType`: Explanation of the exception.
-    - if a longer explanation is needed for a exception, it should be placed on the next line, indented by 4 spaces.
+   - `ExceptionType`: Explanation of the exception.
+   - if a longer explanation is needed for a exception, it should be placed on the next line, indented by 4 spaces.
 
 Putting them all together, gives you at minimum this:
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ3GZ160F4"}
 def equal(arg1: str, arg2: str) -> bool:
     """Compares two strings and returns True if they are the same."""
     ...
 ```
+
 Or a complete version of this:
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ3JGT3D67"}
 def equal(arg1: str, arg2: str) -> bool:
     """Compares two strings and returns True if they are the same.
 
@@ -210,7 +303,7 @@ For more info you can refer to the [Pydantic Documentation](https://docs.pydanti
 
 Let's take the following example:
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ3JKQTX8W"}
 class A:
     def __init__(self, a: int, b: float, c: List[float], d: dict[str, tuple[float, str]] = {}):
         self.a = a
@@ -221,7 +314,7 @@ class A:
 
 You would convert this to a Pydantic class by sub-classing from the `KernelBaseModel` class.
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ3JZ43C10"}
 from pydantic import Field
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -238,7 +331,7 @@ class A(KernelBaseModel):
 
 Let's take the following example:
 
-```python
+```python {"id":"01J6KNPX0HTGAZ4YDQ3PC4NBD0"}
 from typing import TypeVar
 
 T1 = TypeVar("T1")
@@ -255,6 +348,8 @@ You can use the `KernelBaseModel` to convert these to pydantic serializable clas
 
 ```python
 from typing import Generic, TypeVar
+```python {"id":"01J6KNPX0HTGAZ4YDQ3R7VE7KV"}
+from typing import Generic
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -275,9 +370,12 @@ To run the same checks that run during a commit and the GitHub Action `Python Co
 
 ```bash
     uv run pre-commit run -a
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3RB8FHQJ"}
+    poetry run pre-commit run -a
 ```
 
 or use the following task (using `Ctrl+Shift+P`):
+
 - `Python - Run Checks` to run the checks on the whole project.
 - `Python - Run Checks - Staged` to run the checks on the currently staged files only.
 
@@ -289,23 +387,29 @@ We try to maintain a high code coverage for the project. To run the code coverag
 
 ```bash
     uv run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3V7S5W7V"}
+    poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
 ```
+
 or use the following task (using `Ctrl+Shift+P`):
+
 - `Python: Tests - Code Coverage` to run the code coverage on the whole project.
 
 This will show you which files are not covered by the tests, including the specific lines not covered. Make sure to consider the untested lines from the code you are working on, but feel free to add other tests as well, that is always welcome!
 
 ## Catching up with the latest changes
+
 There are many people committing to Semantic Kernel, so it is important to keep your local repository up to date. To do this, you can run the following commands:
 
-```bash
+```bash {"id":"01J6KNPX0J3RHKXXPZZ2645V13"}
     git fetch upstream main
     git rebase upstream/main
     git push --force-with-lease
 ```
+
 or:
 
-```bash
+```bash {"id":"01J6KNPX0J3RHKXXPZZ3T5EN1R"}
     git fetch upstream main
     git merge upstream/main
     git push

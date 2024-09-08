@@ -1,15 +1,11 @@
 ---
-# These are optional elements. Feel free to remove any of them
-
-status: superseded by [ADR-0042](0042-samples-restructure.md)
-contact: markwallace-microsoft
-date: 2023-09-29
-deciders: SergeyMenshykh, dmytrostruk, RogerBarreto
 consulted: shawncal, stephentoub, lemillermicrosoft
+contact: markwallace-microsoft
+date: 2023-09-29T00:00:00Z
+deciders: SergeyMenshykh, dmytrostruk, RogerBarreto
 informed:
-  {
-    list everyone who is kept up-to-date on progress; and with whom there is a one-way communication,
-  }
+  list everyone who is kept up-to-date on progress; and with whom there is a one-way communication: null
+status: superseded by [ADR-0042](0042-samples-restructure.md)
 ---
 
 # DotNet Project Structure for 1.0 Release
@@ -17,20 +13,27 @@ informed:
 ## Context and Problem Statement
 
 - Provide a cohesive, well-defined set of assemblies that developers can easily combine based on their needs.
-  - Semantic Kernel core should only contain functionality related to AI orchestration
-    - Remove prompt template engine and semantic functions
-  - Semantic Kernel abstractions should only interfaces, abstract classes and minimal classes to support these
+
+   - Semantic Kernel core should only contain functionality related to AI orchestration
+
+      - Remove prompt template engine and semantic functions
+
+   - Semantic Kernel abstractions should only interfaces, abstract classes and minimal classes to support these
+
 - Remove `Skills` naming from NuGet packages and replace with `Plugins`
-  - Clearly distinguish between plugin implementations (`Skills.MsGraph`) and plugin integration (`Skills.OpenAPI`)
+
+   - Clearly distinguish between plugin implementations (`Skills.MsGraph`) and plugin integration (`Skills.OpenAPI`)
+
 - Have consistent naming for assemblies and their root namespaces
-  - See [Naming Patterns](#naming-patterns) section for examples of current patterns
+
+   - See [Naming Patterns](#naming-patterns) section for examples of current patterns
 
 ## Decision Drivers
 
 - Avoid having too many assemblies because of impact of signing these and to reduce complexity
 - Follow .Net naming guidelines
-  - [Names of Assemblies and DLLs](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/names-of-assemblies-and-dlls)
-  - [Names of Namespaces](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/names-of-namespaces)
+   - [Names of Assemblies and DLLs](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/names-of-assemblies-and-dlls)
+   - [Names of Namespaces](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/names-of-namespaces)
 
 ## Considered Options
 
@@ -47,21 +50,23 @@ In all cases the following changes will be made:
 Chosen option: Option #2: Folder naming matches assembly name, because:
 
 1. It provides a way for developers to easily discover where code for a particular assembly is located
-1. It is consistent with other e.g., [azure-sdk-for-net](https://github.com/Azure/azure-sdk-for-net)
+2. It is consistent with other e.g., [azure-sdk-for-net](https://github.com/Azure/azure-sdk-for-net)
 
 Main categories for the projects will be:
 
-1. `Connectors`: **_A connector project allows the Semantic Kernel to connect to AI and Memory services_**. Some of the existing connector projects may move to other repositories.
-1. `Planners`: **_A planner project provides one or more planner implementations which take an ask and convert it into an executable plan to achieve that ask_**. This category will include the current action, sequential and stepwise planners (these could be merged into a single project). Additional planning implementations e.g., planners that generate Powershell or Python code can be added as separate projects.
-1. `Functions`: **_A function project that enables the Semantic Kernel to access the functions it will orchestrate_**. This category will include:
+1. `Connectors`: ___A connector project allows the Semantic Kernel to connect to AI and Memory services___. Some of the existing connector projects may move to other repositories.
+2. `Planners`: ___A planner project provides one or more planner implementations which take an ask and convert it into an executable plan to achieve that ask___. This category will include the current action, sequential and stepwise planners (these could be merged into a single project). Additional planning implementations e.g., planners that generate Powershell or Python code can be added as separate projects.
+3. `Functions`: ___A function project that enables the Semantic Kernel to access the functions it will orchestrate___. This category will include:
+
    1. Semantic functions i.e., prompts executed against an LLM
-   1. GRPC remote procedures i.e., procedures executed remotely using the GRPC framework
-   1. Open API endpoints i.e., REST endpoints that have Open API definitions executed remotely using the HTTP protocol
-1. `Plugins`: **_A plugin project contains the implementation(s) of a Semantic Kernel plugin_**. A Semantic Kernel plugin is contains a concrete implementation of a function e.g., a plugin may include code for basic text operations.
+   2. GRPC remote procedures i.e., procedures executed remotely using the GRPC framework
+   3. Open API endpoints i.e., REST endpoints that have Open API definitions executed remotely using the HTTP protocol
+
+4. `Plugins`: ___A plugin project contains the implementation(s) of a Semantic Kernel plugin___. A Semantic Kernel plugin is contains a concrete implementation of a function e.g., a plugin may include code for basic text operations.
 
 ### Option #1: New `planning`, `functions` and `plugins` project areas
 
-```text
+```text {"id":"01J6KNYCHVVJH07RWWNZZGKTXS"}
 SK-dotnet
 ├── samples/
 └── src/
@@ -119,7 +124,7 @@ This diagram how functions and plugins would be integrated with the Semantic Ker
 
 ### Option #2: Folder naming matches assembly name
 
-```text
+```text {"id":"01J6KNYCHVVJH07RWWP13QBZWV"}
 SK-dotnet
 ├── samples/
 └── libraries/
@@ -158,7 +163,7 @@ SK-dotnet
     └── Microsoft.SemanticKernel.MetaPackage
 ```
 
-**_Notes:_**
+___Notes:___
 
 - There will only be a single solution file (initially).
 - Projects will be grouped in the solution i.e., connectors, planners, plugins, functions, extensions, ...
@@ -169,7 +174,7 @@ SK-dotnet
 
 ### Current Project Structure
 
-```text
+```text {"id":"01J6KNYCHVVJH07RWWP40V7CN6"}
 SK-dotnet
 ├── samples/
 └── src/
@@ -231,7 +236,7 @@ SK-dotnet
 
 Below are some different examples of Assembly and root namespace naming that are used in the projects.
 
-```xml
+```xml {"id":"01J6KNYCHVVJH07RWWP5PBQCF6"}
     <AssemblyName>Microsoft.SemanticKernel.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
 
@@ -247,7 +252,7 @@ Below are some different examples of Assembly and root namespace naming that are
 
 ### Current Folder Structure
 
-```text
+```text {"id":"01J6KNYCHVVJH07RWWP97718NW"}
 dotnet/
 ├── samples/
 │   ├── ApplicationInsightsExample/
@@ -285,7 +290,7 @@ dotnet/
 
 This diagram show current skills are integrated with the Semantic Kernel core.
 
-**_Note:_**
+___Note:___
 
 - This is not a true class hierarchy diagram. It show some class relationships and dependencies.
 - Namespaces are abbreviated to remove Microsoft.SemanticKernel prefix. Namespaces use `_` rather than `.`.

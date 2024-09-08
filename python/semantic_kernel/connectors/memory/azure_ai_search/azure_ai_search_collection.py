@@ -21,10 +21,23 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_client,
     get_search_index_client,
 )
+<<<<<<< main
+from semantic_kernel.data.vector_store_model_definition import (
+    VectorStoreRecordDefinition,
+)
+from semantic_kernel.data.vector_store_record_collection import (
+    VectorStoreRecordCollection,
+)
+from semantic_kernel.exceptions import (
+    MemoryConnectorException,
+    MemoryConnectorInitializationError,
+)
+=======
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
+>>>>>>> upstream/main
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -33,7 +46,9 @@ TModel = TypeVar("TModel")
 
 
 @experimental_class
-class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[TModel]):
+class AzureAISearchCollection(
+    VectorStoreRecordCollection[str, TModel], Generic[TModel]
+):
     """Azure AI Search collection implementation."""
 
     search_client: SearchClient
@@ -94,7 +109,8 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
                 data_model_definition=data_model_definition,
                 collection_name=collection_name,
                 search_client=get_search_client(
-                    search_index_client=search_index_client, collection_name=collection_name
+                    search_index_client=search_index_client,
+                    collection_name=collection_name,
                 ),
                 search_index_client=search_index_client,
             )
@@ -113,7 +129,9 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
                 index_name=collection_name,
             )
         except ValidationError as exc:
-            raise MemoryConnectorInitializationError("Failed to create Azure Cognitive Search settings.") from exc
+            raise MemoryConnectorInitializationError(
+                "Failed to create Azure Cognitive Search settings."
+            ) from exc
         search_index_client = get_search_index_client(
             azure_ai_search_settings=azure_ai_search_settings,
             azure_credential=kwargs.get("azure_credentials", None),
@@ -127,7 +145,8 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
             data_model_definition=data_model_definition,
             collection_name=azure_ai_search_settings.index_name,
             search_client=get_search_client(
-                search_index_client=search_index_client, collection_name=azure_ai_search_settings.index_name
+                search_index_client=search_index_client,
+                collection_name=azure_ai_search_settings.index_name,
             ),
             search_index_client=search_index_client,
         )
@@ -140,11 +159,15 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
     ) -> Sequence[str]:
         if not isinstance(records, list):
             records = list(records)
-        results = await self.search_client.merge_or_upload_documents(documents=records, **kwargs)
+        results = await self.search_client.merge_or_upload_documents(
+            documents=records, **kwargs
+        )
         return [result.key for result in results]  # type: ignore
 
     @override
-    async def _inner_get(self, keys: Sequence[str], **kwargs: Any) -> Sequence[dict[str, Any]]:
+    async def _inner_get(
+        self, keys: Sequence[str], **kwargs: Any
+    ) -> Sequence[dict[str, Any]]:
         client = self.search_client
         if "selected_fields" in kwargs:
             selected_fields = kwargs["selected_fields"]
@@ -158,21 +181,36 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
             selected_fields = ["*"]
 
         result = await asyncio.gather(
+<<<<<<< main
+            *[
+                client.get_document(
+                    key=key, selected_fields=kwargs.get("selected_fields", ["*"])
+                )
+                for key in keys
+            ],
+=======
             *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],
+>>>>>>> upstream/main
             return_exceptions=True,
         )
         return [res for res in result if not isinstance(res, BaseException)]
 
     @override
     async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
-        await self.search_client.delete_documents(documents=[{self._key_field_name: key} for key in keys])
+        await self.search_client.delete_documents(
+            documents=[{self._key_field_name: key} for key in keys]
+        )
 
     @override
-    def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
+    def _serialize_dicts_to_store_models(
+        self, records: Sequence[dict[str, Any]], **kwargs: Any
+    ) -> Sequence[Any]:
         return records
 
     @override
-    def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
+    def _deserialize_store_models_to_dicts(
+        self, records: Sequence[Any], **kwargs: Any
+    ) -> Sequence[dict[str, Any]]:
         return records
 
     @override
@@ -206,7 +244,8 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
         if "params" not in kwargs:
             kwargs["params"] = {"select": ["name"]}
         return self.collection_name in [
-            index_name async for index_name in self.search_index_client.list_index_names(**kwargs)
+            index_name
+            async for index_name in self.search_index_client.list_index_names(**kwargs)
         ]
 
     @override

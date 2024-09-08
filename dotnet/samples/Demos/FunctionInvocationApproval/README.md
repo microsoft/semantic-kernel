@@ -15,7 +15,7 @@ If you have set up those credentials as secrets within Secret Manager or through
 
 ### To set your secrets with Secret Manager:
 
-```
+```sh {"id":"01J6KPS0HPMPG43QDVTATB8YGM"}
 cd dotnet/samples/Demos/FunctionInvocationApproval
 
 dotnet user-secrets init
@@ -32,7 +32,7 @@ dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
 
 Use these names:
 
-```
+```sh {"id":"01J6KPS0HPMPG43QDVTE6CNSZZ"}
 # OpenAI
 OpenAI__ChatModelId
 OpenAI__ApiKey

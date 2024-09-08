@@ -5,7 +5,9 @@ from numpy import array
 from pytest import fixture, mark
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
+    EmbeddingGeneratorBase,
+)
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.volatile_memory_store import VolatileMemoryStore
@@ -20,7 +22,9 @@ class MockEmbeddings(EmbeddingGeneratorBase):
 @fixture
 def memory() -> SemanticTextMemory:
     store = VolatileMemoryStore()
-    return SemanticTextMemory(store, MockEmbeddings(service_id="embed", ai_model_id="mock"))
+    return SemanticTextMemory(
+        store, MockEmbeddings(service_id="embed", ai_model_id="mock")
+    )
 
 
 @fixture
@@ -36,7 +40,9 @@ def test_can_be_instantiated(memory: SemanticTextMemory):
 
 def test_can_be_imported(kernel: Kernel, memory: SemanticTextMemory):
     kernel.add_plugin(TextMemoryPlugin(memory), "memory_plugin")
-    assert not kernel.get_function(plugin_name="memory_plugin", function_name="recall").is_prompt
+    assert not kernel.get_function(
+        plugin_name="memory_plugin", function_name="recall"
+    ).is_prompt
 
 
 @mark.asyncio
@@ -57,15 +63,21 @@ async def test_can_recall(memory_with_records: SemanticTextMemory):
 async def test_can_save_through_function(kernel: Kernel, memory: SemanticTextMemory):
     text_plugin = TextMemoryPlugin(memory)
     kernel.add_plugin(text_plugin, "memory_plugin")
-    await kernel.invoke(function_name="save", plugin_name="memory_plugin", text="hello world", key="1")
+    await kernel.invoke(
+        function_name="save", plugin_name="memory_plugin", text="hello world", key="1"
+    )
     assert text_plugin.memory._storage._store["generic"]["1"].text == "hello world"
 
 
 @mark.asyncio
-async def test_can_recall_through_function(kernel: Kernel, memory_with_records: SemanticTextMemory):
+async def test_can_recall_through_function(
+    kernel: Kernel, memory_with_records: SemanticTextMemory
+):
     text_plugin = TextMemoryPlugin(await memory_with_records)
     kernel.add_plugin(text_plugin, "memory_plugin")
-    result = await kernel.invoke(function_name="recall", plugin_name="memory_plugin", ask="hello world")
+    result = await kernel.invoke(
+        function_name="recall", plugin_name="memory_plugin", ask="hello world"
+    )
     assert str(result) == "hello world"
 
 

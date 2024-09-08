@@ -84,11 +84,18 @@
       ],
       "dependsOrder": "sequence"
     },
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
     {
       "label": "setup (contributing-python)",
       "detail": "",
       "group": "build",
-      "dependsOn": ["install poetry", "install python packages"],
+      "dependsOn": [
+        "install poetry",
+        "install python packages"
+      ],
       "dependsOrder": "sequence"
     },
     {
@@ -96,17 +103,26 @@
       "detail": "Install poetry",
       "command": "pip3",
       "type": "shell",
-      "args": ["install", "poetry"],
+      "args": [
+        "install",
+        "poetry"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/python"
-      }
+      },
+      "problemMatcher": [
+        "$func-dotnet-watch"
+      ],
+      "isBackground": true
     },
     {
       "label": "install python packages",
       "detail": "Install python packages",
       "command": "poetry",
       "type": "shell",
-      "args": ["install"],
+      "args": [
+        "install"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/python"
       }
@@ -128,10 +144,18 @@
         "cwd": "${workspaceFolder}/python"
       }
     },
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
     // ***************
     // Kernel (dotnet)
     // ***************
     // Build
+<<<<<<< main
+=======
+>>>>>>> upstream/main
+>>>>>>> origin/main
     {
       "label": "build (Semantic-Kernel)",
       "command": "dotnet",
@@ -264,11 +288,19 @@
         "cwd": "${workspaceFolder}/dotnet/src/IntegrationTests/"
       }
     },
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
     {
       "label": "test (Semantic-Kernel-Python)",
       "command": "poetry",
       "type": "shell",
-      "args": ["run", "pytest", "tests/unit"],
+      "args": [
+        "run",
+        "pytest",
+        "tests/unit"
+      ],
       "problemMatcher": "$msCompile",
       "group": "test",
       "presentation": {
@@ -284,7 +316,13 @@
       "label": "test (Semantic-Kernel-Python Integration)",
       "command": "poetry",
       "type": "shell",
-      "args": ["run", "pytest", "tests/integration", "-k", "${input:filter}"],
+      "args": [
+        "run",
+        "pytest",
+        "tests/integration",
+        "-k",
+        "${input:filter}"
+      ],
       "problemMatcher": "$msCompile",
       "group": "test",
       "presentation": {
@@ -300,7 +338,13 @@
       "label": "test (Semantic-Kernel-Python ALL)",
       "command": "poetry",
       "type": "shell",
-      "args": ["run", "pytest", "tests", "-k", "${input:filter}"],
+      "args": [
+        "run",
+        "pytest",
+        "tests",
+        "-k",
+        "${input:filter}"
+      ],
       "problemMatcher": "$msCompile",
       "group": "test",
       "presentation": {
@@ -312,10 +356,18 @@
         "cwd": "${workspaceFolder}/python"
       }
     },
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
     // ****************
     // Samples (dotnet)
     // ****************
     // Kernel Syntax Examples
+<<<<<<< main
+=======
+>>>>>>> upstream/main
+>>>>>>> origin/main
     {
       "label": "build (Concepts)",
       "command": "dotnet",

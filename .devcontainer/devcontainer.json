@@ -2,6 +2,9 @@
 	"image": "mcr.microsoft.com/devcontainers/universal:2",
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/jayree/devcontainer-features/npm-registry:1": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
+		"ghcr.io/devcontainers/features/node:1": {},
 		"ghcr.io/devcontainers/features/dotnet:1": {
 			"version": "8"
 		},

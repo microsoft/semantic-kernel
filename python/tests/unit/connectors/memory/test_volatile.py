@@ -2,7 +2,9 @@
 
 from pytest import fixture, mark
 
-from semantic_kernel.connectors.memory.volatile.volatile_collection import VolatileCollection
+from semantic_kernel.connectors.memory.volatile.volatile_collection import (
+    VolatileCollection,
+)
 from semantic_kernel.connectors.memory.volatile.volatile_store import VolatileStore
 
 
@@ -29,7 +31,11 @@ async def test_store_get_collection(data_model_definition):
 
 @mark.asyncio
 async def test_upsert(collection):
-    record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
+    record = {
+        "id": "testid",
+        "content": "test content",
+        "vector": [0.1, 0.2, 0.3, 0.4, 0.5],
+    }
     key = await collection.upsert(record)
     assert key == "testid"
     assert collection.inner_storage == {"testid": record}
@@ -37,7 +43,11 @@ async def test_upsert(collection):
 
 @mark.asyncio
 async def test_get(collection):
-    record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
+    record = {
+        "id": "testid",
+        "content": "test content",
+        "vector": [0.1, 0.2, 0.3, 0.4, 0.5],
+    }
     await collection.upsert(record)
     result = await collection.get("testid")
     assert result == record
@@ -51,7 +61,11 @@ async def test_get_missing(collection):
 
 @mark.asyncio
 async def test_delete(collection):
-    record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
+    record = {
+        "id": "testid",
+        "content": "test content",
+        "vector": [0.1, 0.2, 0.3, 0.4, 0.5],
+    }
     await collection.upsert(record)
     await collection.delete("testid")
     assert collection.inner_storage == {}
@@ -64,7 +78,11 @@ async def test_does_collection_exist(collection):
 
 @mark.asyncio
 async def test_delete_collection(collection):
-    record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
+    record = {
+        "id": "testid",
+        "content": "test content",
+        "vector": [0.1, 0.2, 0.3, 0.4, 0.5],
+    }
     await collection.upsert(record)
     assert collection.inner_storage == {"testid": record}
     await collection.delete_collection()

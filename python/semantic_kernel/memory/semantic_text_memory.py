@@ -4,7 +4,9 @@ from typing import Any
 
 from pydantic import PrivateAttr
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
+    EmbeddingGeneratorBase,
+)
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -19,7 +21,9 @@ class SemanticTextMemory(SemanticTextMemoryBase):
     _storage: MemoryStoreBase = PrivateAttr()
     _embeddings_generator: EmbeddingGeneratorBase = PrivateAttr()
 
-    def __init__(self, storage: MemoryStoreBase, embeddings_generator: EmbeddingGeneratorBase) -> None:
+    def __init__(
+        self, storage: MemoryStoreBase, embeddings_generator: EmbeddingGeneratorBase
+    ) -> None:
         """Initialize a new instance of SemanticTextMemory.
 
         Args:
@@ -53,7 +57,11 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         if not await self._storage.does_collection_exist(collection_name=collection):
             await self._storage.create_collection(collection_name=collection)
 
-        embedding = (await self._embeddings_generator.generate_embeddings([text], **embeddings_kwargs))[0]
+        embedding = (
+            await self._embeddings_generator.generate_embeddings(
+                [text], **embeddings_kwargs
+            )
+        )[0]
         data = MemoryRecord.local_record(
             id=id,
             text=text,
@@ -88,7 +96,11 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         if not await self._storage.does_collection_exist(collection_name=collection):
             await self._storage.create_collection(collection_name=collection)
 
-        embedding = (await self._embeddings_generator.generate_embeddings([text], **embeddings_kwargs))[0]
+        embedding = (
+            await self._embeddings_generator.generate_embeddings(
+                [text], **embeddings_kwargs
+            )
+        )[0]
         data = MemoryRecord.reference_record(
             external_id=external_id,
             source_name=external_source_name,
@@ -138,7 +150,11 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         Returns:
             List[MemoryQueryResult]: The list of MemoryQueryResult found.
         """
-        query_embedding = (await self._embeddings_generator.generate_embeddings([query], **embeddings_kwargs))[0]
+        query_embedding = (
+            await self._embeddings_generator.generate_embeddings(
+                [query], **embeddings_kwargs
+            )
+        )[0]
         results = await self._storage.get_nearest_matches(
             collection_name=collection,
             embedding=query_embedding,

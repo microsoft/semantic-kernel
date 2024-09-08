@@ -19,7 +19,9 @@ from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     memory_record_to_mongo_document,
 )
 from semantic_kernel.exceptions import ServiceResourceNotFoundError
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    MemoryConnectorInitializationError,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -51,7 +53,9 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             env_file_encoding (str): The encoding of the .env file.
 
         """
-        from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import MongoDBAtlasSettings
+        from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import (
+            MongoDBAtlasSettings,
+        )
 
         try:
             mongodb_settings = MongoDBAtlasSettings.create(
@@ -62,12 +66,18 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise MemoryConnectorInitializationError("Failed to create MongoDB Atlas settings.") from ex
+            raise MemoryConnectorInitializationError(
+                "Failed to create MongoDB Atlas settings."
+            ) from ex
 
-        self.mongo_client: motor_asyncio.AsyncIOMotorClient = motor_asyncio.AsyncIOMotorClient(
-            mongodb_settings.connection_string.get_secret_value(),
-            read_preference=read_preference,
-            driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
+        self.mongo_client: motor_asyncio.AsyncIOMotorClient = (
+            motor_asyncio.AsyncIOMotorClient(
+                mongodb_settings.connection_string.get_secret_value(),
+                read_preference=read_preference,
+                driver=DriverInfo(
+                    "Microsoft Semantic Kernel", metadata.version("semantic-kernel")
+                ),
+            )
         )
         self.database_name: str = mongodb_settings.database_name
         self.index_name: str = mongodb_settings.index_name
@@ -148,15 +158,17 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         """
         document: Mapping[str, Any] = memory_record_to_mongo_document(record)
 
-        update_result: results.UpdateResult = await self.database[collection_name].update_one(
-            document, {"$set": document}, upsert=True
-        )
+        update_result: results.UpdateResult = await self.database[
+            collection_name
+        ].update_one(document, {"$set": document}, upsert=True)
 
         if not update_result.acknowledged:
             raise ValueError("Upsert failed")
         return record._id
 
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord]
+    ) -> list[str]:
         """Upserts a group of memory records into the data store.
 
         Does not guarantee that the collection exists.
@@ -174,9 +186,9 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         for record in records:
             document = memory_record_to_mongo_document(record)
             upserts.append(UpdateOne(document, {"$set": document}, upsert=True))
-        bulk_update_result: results.BulkWriteResult = await self.database[collection_name].bulk_write(
-            upserts, ordered=False
-        )
+        bulk_update_result: results.BulkWriteResult = await self.database[
+            collection_name
+        ].bulk_write(upserts, ordered=False)
 
         # Assert the number matched and the number upserted equal the total batch updated
         logger.debug(
@@ -184,11 +196,15 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             bulk_update_result.matched_count,
             bulk_update_result.upserted_count,
         )
-        if bulk_update_result.matched_count + bulk_update_result.upserted_count != len(records):
+        if bulk_update_result.matched_count + bulk_update_result.upserted_count != len(
+            records
+        ):
             raise ValueError("Batch upsert failed")
         return [record._id for record in records]
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool
+    ) -> MemoryRecord:
         """Gets a memory record from the data store. Does not guarantee that the collection exists.
 
         Args:
@@ -199,11 +215,15 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         Returns:
             MemoryRecord: The memory record if found
         """
-        document = await self.database[collection_name].find_one({MONGODB_FIELD_ID: key})
+        document = await self.database[collection_name].find_one(
+            {MONGODB_FIELD_ID: key}
+        )
 
         return document_to_memory_record(document, with_embedding) if document else None
 
-    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
+    async def get_batch(
+        self, collection_name: str, keys: list[str], with_embeddings: bool
+    ) -> list[MemoryRecord]:
         """Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Args:
@@ -217,7 +237,8 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         results = self.database[collection_name].find({MONGODB_FIELD_ID: {"$in": keys}})
 
         return [
-            document_to_memory_record(result, with_embeddings) for result in await results.to_list(length=len(keys))
+            document_to_memory_record(result, with_embeddings)
+            for result in await results.to_list(length=len(keys))
         ]
 
     async def remove(self, collection_name: str, key: str) -> None:
@@ -231,7 +252,9 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             None
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f"collection {collection_name} not found")
+            raise ServiceResourceNotFoundError(
+                f"collection {collection_name} not found"
+            )
         await self.database[collection_name].delete_one({MONGODB_FIELD_ID: key})
 
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
@@ -245,9 +268,13 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             None
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f"collection {collection_name} not found")
+            raise ServiceResourceNotFoundError(
+                f"collection {collection_name} not found"
+            )
         deletes: list[DeleteOne] = [DeleteOne({MONGODB_FIELD_ID: key}) for key in keys]
-        bulk_write_result = await self.database[collection_name].bulk_write(deletes, ordered=False)
+        bulk_write_result = await self.database[collection_name].bulk_write(
+            deletes, ordered=False
+        )
         logger.debug("%s entries deleted", bulk_write_result.deleted_count)
 
     async def get_nearest_matches(

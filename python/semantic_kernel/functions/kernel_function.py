@@ -12,8 +12,12 @@ from opentelemetry import metrics, trace
 from opentelemetry.semconv.attributes.error_attributes import ERROR_TYPE
 
 from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
-from semantic_kernel.filters.kernel_filters_extension import _rebuild_function_invocation_context
+from semantic_kernel.filters.functions.function_invocation_context import (
+    FunctionInvocationContext,
+)
+from semantic_kernel.filters.kernel_filters_extension import (
+    _rebuild_function_invocation_context,
+)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_log_messages import KernelFunctionLogMessages
@@ -26,18 +30,28 @@ from semantic_kernel.prompt_template.const import (
     KERNEL_TEMPLATE_FORMAT_NAME,
     TEMPLATE_FORMAT_TYPES,
 )
-from semantic_kernel.prompt_template.handlebars_prompt_template import HandlebarsPromptTemplate
+from semantic_kernel.prompt_template.handlebars_prompt_template import (
+    HandlebarsPromptTemplate,
+)
 from semantic_kernel.prompt_template.jinja2_prompt_template import Jinja2PromptTemplate
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
     from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
-    from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
-    from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+    from semantic_kernel.functions.kernel_function_from_method import (
+        KernelFunctionFromMethod,
+    )
+    from semantic_kernel.functions.kernel_function_from_prompt import (
+        KernelFunctionFromPrompt,
+    )
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
-    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+    from semantic_kernel.prompt_template.prompt_template_config import (
+        PromptTemplateConfig,
+    )
 
 # Logger, tracer and meter for observability
 logger: logging.Logger = logging.getLogger(__name__)
@@ -96,12 +110,12 @@ class KernelFunction(KernelBaseModel):
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         prompt_template: "PromptTemplateBase | None " = None,
         prompt_template_config: "PromptTemplateConfig | None" = None,
-        prompt_execution_settings: (
-            "PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None"
-        ) = None,
+        prompt_execution_settings: "PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None" = None,
     ) -> "KernelFunctionFromPrompt":
         """Create a new instance of the KernelFunctionFromPrompt class."""
-        from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+        from semantic_kernel.functions.kernel_function_from_prompt import (
+            KernelFunctionFromPrompt,
+        )
 
         return KernelFunctionFromPrompt(
             function_name=function_name,
@@ -122,7 +136,9 @@ class KernelFunction(KernelBaseModel):
         stream_method: Callable[..., Any] | None = None,
     ) -> "KernelFunctionFromMethod":
         """Create a new instance of the KernelFunctionFromMethod class."""
-        from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+        from semantic_kernel.functions.kernel_function_from_method import (
+            KernelFunctionFromMethod,
+        )
 
         return KernelFunctionFromMethod(
             plugin_name=plugin_name,
@@ -197,7 +213,6 @@ class KernelFunction(KernelBaseModel):
             context (FunctionInvocationContext): The invocation context.
 
         """
-        pass
 
     async def invoke(
         self,
@@ -221,7 +236,9 @@ class KernelFunction(KernelBaseModel):
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         _rebuild_function_invocation_context()
-        function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
+        function_context = FunctionInvocationContext(
+            function=self, kernel=kernel, arguments=arguments
+        )
 
         with tracer.start_as_current_span(self.fully_qualified_name) as current_span:
             KernelFunctionLogMessages.log_function_invoking(logger, self.fully_qualified_name)
@@ -281,7 +298,9 @@ class KernelFunction(KernelBaseModel):
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         _rebuild_function_invocation_context()
-        function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
+        function_context = FunctionInvocationContext(
+            function=self, kernel=kernel, arguments=arguments
+        )
 
         with tracer.start_as_current_span(self.fully_qualified_name) as current_span:
             KernelFunctionLogMessages.log_function_streaming_invoking(logger, self.fully_qualified_name)
