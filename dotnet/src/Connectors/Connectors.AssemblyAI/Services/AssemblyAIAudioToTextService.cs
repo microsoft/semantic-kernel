@@ -35,7 +35,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     public AssemblyAIAudioToTextService(
         string apiKey,
         Uri? endpoint = null,
-        HttpClient? httpClient = null,
+        public AssemblyAIAudioToTextService(string apiKey) : this(apiKey, null, null, null) {}
         ILoggerFactory? loggerFactory = null
     )
     {
