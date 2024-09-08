@@ -2,12 +2,13 @@
   "OpenAI": {
     "ServiceId": "gpt-3.5-turbo-instruct",
     "ModelId": "gpt-3.5-turbo-instruct",
+    "ChatModelId": "gpt-4o",
     "ApiKey": ""
   },
   "AzureOpenAI": {
     "ServiceId": "azure-gpt-35-turbo-instruct",
     "DeploymentName": "gpt-35-turbo-instruct",
-    "ChatDeploymentName": "gpt-4",
+    "ChatDeploymentName": "gpt-4o",
     "Endpoint": "",
     "ApiKey": ""
   },
@@ -41,6 +42,17 @@
   "AzureOpenAIAudioToText": {
     "ServiceId": "azure-whisper",
     "DeploymentName": "whisper",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
+  "OpenAITextToImage": {
+    "ServiceId": "dall-e-2",
+    "ModelId": "dall-e-2",
+    "ApiKey": ""
+  },
+  "AzureOpenAITextToImage": {
+    "ServiceId": "azure-dalle3",
+    "DeploymentName": "dall-e-3",
     "Endpoint": "",
     "ApiKey": ""
   },

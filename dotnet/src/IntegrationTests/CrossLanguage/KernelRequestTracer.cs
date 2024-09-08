@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -39,6 +40,7 @@ internal sealed class KernelRequestTracer : IDisposable
     ]
    }";
 
+    private MemoryStream? _memoryDummyResponse;
     private HttpClient? _httpClient;
     private HttpMessageHandlerStub? _httpMessageHandlerStub;
 
@@ -134,17 +136,17 @@ internal sealed class KernelRequestTracer : IDisposable
     {
         this._httpClient?.Dispose();
         this._httpMessageHandlerStub?.Dispose();
+        this._memoryDummyResponse?.Dispose();
     }
 
     private void ResetHttpComponents()
     {
         this.DisposeHttpResources();
-
+        this._memoryDummyResponse = new MemoryStream(Encoding.UTF8.GetBytes(DummyResponse));
         this._httpMessageHandlerStub = new HttpMessageHandlerStub();
         this._httpMessageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(DummyResponse,
-                                        Encoding.UTF8, "application/json")
+            Content = new StreamContent(this._memoryDummyResponse)
         };
         this._httpClient = new HttpClient(this._httpMessageHandlerStub);
     }

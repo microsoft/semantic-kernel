@@ -3,7 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Files;
 
 namespace Agents;
 
@@ -11,13 +11,8 @@ namespace Agents;
 /// Demonstrate <see cref="ChatCompletionAgent"/> agent interacts with
 /// <see cref="OpenAIAssistantAgent"/> when it produces image output.
 /// </summary>
-public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
+public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    /// <summary>
-    /// Target OpenAI services.
-    /// </summary>
-    protected override bool ForceOpenAI => true;
-
     private const string AnalystName = "Analyst";
     private const string AnalystInstructions = "Create charts as requested without explanation.";
 
@@ -27,19 +22,21 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task AnalyzeDataAndGenerateChartAsync()
     {
-        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
+        OpenAIClientProvider provider = this.GetClientProvider();
+
+        FileClient fileClient = provider.Client.GetFileClient();
 
         // Define the agents
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
-                new()
+                provider,
+                new(this.Model)
                 {
                     Instructions = AnalystInstructions,
                     Name = AnalystName,
                     EnableCodeInterpreter = true,
-                    ModelId = this.Model,
+                    Metadata = AssistantSampleMetadata,
                 });
 
         ChatCompletionAgent summaryAgent =
@@ -86,26 +83,15 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
         {
             if (!string.IsNullOrWhiteSpace(input))
             {
-                chat.AddChatMessage(new(AuthorRole.User, input));
-                Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+                ChatMessageContent message = new(AuthorRole.User, input);
+                chat.AddChatMessage(message);
+                this.WriteAgentChatMessage(message);
             }
 
-            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
-                if (!string.IsNullOrWhiteSpace(message.Content))
-                {
-                    Console.WriteLine($"\n# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
-                }
-
-                foreach (FileReferenceContent fileReference in message.Items.OfType<FileReferenceContent>())
-                {
-                    Console.WriteLine($"\t* Generated image - @{fileReference.FileId}");
-                    BinaryContent fileContent = await fileService.GetFileContentAsync(fileReference.FileId!);
-                    byte[] byteContent = fileContent.Data?.ToArray() ?? [];
-                    string filePath = Path.ChangeExtension(Path.GetTempFileName(), ".png");
-                    await File.WriteAllBytesAsync($"{filePath}.png", byteContent);
-                    Console.WriteLine($"\t* Local path - {filePath}");
-                }
+                this.WriteAgentChatMessage(response);
+                await this.DownloadResponseImageAsync(fileClient, response);
             }
         }
     }

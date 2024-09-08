@@ -40,6 +40,10 @@ public abstract class AgentChannel
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// In the enumeration returned by this method, a message is considered visible if it is intended to be displayed to the user.
+    /// Example of a non-visible message is function-content for functions that are automatically executed.
+    /// </remarks>
     protected internal abstract IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         Agent agent,
         CancellationToken cancellationToken = default);
@@ -68,6 +72,10 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// In the enumeration returned by this method, a message is considered visible if it is intended to be displayed to the user.
+    /// Example of a non-visible message is function-content for functions that are automatically executed.
+    /// </remarks>
     protected internal abstract IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         TAgent agent,
         CancellationToken cancellationToken = default);
