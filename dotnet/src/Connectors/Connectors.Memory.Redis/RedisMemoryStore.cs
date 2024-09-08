@@ -138,13 +138,10 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
+        CancellationToken cancellationToken = default)
     {
-        await foreach (var result in this.InternalGetBatchAsync(collectionName, keys.ToArray(), withEmbeddings, cancellationToken).ConfigureAwait(false))
-        {
-            yield return result;
-        }
+        return this.InternalGetBatchAsync(collectionName, keys.ToArray(), withEmbeddings, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -362,7 +359,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            HashEntry[] hashEntries = await this._database.HashGetAllAsync(GetRedisKey(collectionName, key), CommandFlags.None).ConfigureAwait(false);
+            HashEntry[] hashEntries = await batch.HashGetAllAsync(GetRedisKey(collectionName, key)).ConfigureAwait(false);
 
             if (hashEntries.Length == 0)
             {
@@ -391,10 +388,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
 
         foreach (var result in results)
         {
-            if (result is not null)
-            {
-                yield return result;
-            }
+            yield return result;
         }
     }
 
