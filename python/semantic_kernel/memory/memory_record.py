@@ -19,6 +19,17 @@ class MemoryRecord:
     _description: str | None
     _text: str | None
     _additional_metadata: str | None
+from typing import Optional
+
+from numpy import ndarray
+
+
+class MemoryRecord:
+    is_reference: bool
+    external_source_name: Optional[str]
+    id: str
+    description: Optional[str]
+    text: Optional[str]
     _embedding: ndarray
 
     def __init__(
@@ -56,6 +67,23 @@ class MemoryRecord:
         self._additional_metadata = additional_metadata
         self._embedding = embedding
 
+        external_source_name: Optional[str],
+        id: str,
+        description: Optional[str],
+        text: Optional[str],
+        embedding: ndarray,
+    ) -> None:
+        self.is_reference = is_reference
+        self.external_source_name = external_source_name
+        self.id = id
+        self.description = description
+        self.text = text
+        self._embedding = embedding
+
+    @property
+    def embedding(self) -> ndarray:
+        return self._embedding
+
     @staticmethod
     def reference_record(
         external_id: str,
@@ -76,6 +104,9 @@ class MemoryRecord:
         Returns:
             MemoryRecord: The reference record.
         """
+        description: Optional[str],
+        embedding: ndarray,
+    ) -> "MemoryRecord":
         return MemoryRecord(
             is_reference=True,
             external_source_name=source_name,
@@ -108,6 +139,8 @@ class MemoryRecord:
         Returns:
             MemoryRecord: The local record.
         """
+        id: str, text: str, description: Optional[str], embedding: ndarray
+    ) -> "MemoryRecord":
         return MemoryRecord(
             is_reference=False,
             external_source_name=None,
@@ -148,3 +181,5 @@ class MemoryRecord:
     def timestamp(self):
         """Get the timestamp of the memory record."""
         return self._timestamp
+            embedding=embedding,
+        )
