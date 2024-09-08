@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 
-.PHONY: help install clean
+.PHONY: help install clean build
 .SILENT:
 all: install
 
@@ -22,6 +22,7 @@ help:
 	echo "  install-sk           - install Semantic Kernel and all dependencies"
 	echo "  install-pre-commit   - install pre-commit hooks"
 	echo "  clean                - remove the virtualenvs"
+	echo "  build                - build the project"
 	echo ""
 	echo -e "\033[1mVARIABLES:\033[0m"
 	echo "  PYTHON_VERSION       - Python version to use. Default is 3.10"
@@ -68,3 +69,6 @@ install-sk:
 clean:
 	# Remove the virtualenv
 	rm -rf .venv
+
+build:
+	uvx --from build pyproject-build --installer uv

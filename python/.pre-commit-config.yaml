@@ -43,12 +43,13 @@ repos:
     hooks:
       # Update the uv lockfile
       - id: uv-lock
+        files: ^\./python/(uv\.lock|pyproject\.toml)$
   - repo: local
     hooks:
     - id: mypy
       files: ^python/semantic_kernel/
       name: mypy
-      entry: cd python && uv run mypy -p semantic_kernel --config-file mypy.ini
+      entry: uv run mypy -p semantic_kernel --config-file python/mypy.ini
       language: system
       types: [python]
       pass_filenames: false

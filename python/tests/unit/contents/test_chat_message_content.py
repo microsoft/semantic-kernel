@@ -284,8 +284,98 @@ def test_cmc_to_dict_keys():
                 "content": [{"type": "text", "text": "Hello, "}, {"type": "text", "text": "world!"}],
             },
         ),
+        (
+            {
+                "role": "user",
+                "items": [
+                    {"content_type": "text", "text": "Hello, "},
+                    {"content_type": "text", "text": "world!"},
+                ],
+            },
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": "Hello, "}, {"type": "text", "text": "world!"}],
+            },
+        ),
+        (
+            {
+                "role": "user",
+                "items": [
+                    {"content_type": "annotation", "file_id": "test"},
+                ],
+            },
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": "test None (Start Index=None->End Index=None)"}],
+            },
+        ),
+        (
+            {
+                "role": "user",
+                "items": [
+                    {"content_type": "file_reference", "file_id": "test"},
+                ],
+            },
+            {
+                "role": "user",
+                "content": [{"file_id": "test"}],
+            },
+        ),
+        (
+            {
+                "role": "user",
+                "items": [
+                    {"content_type": "function_call", "name": "test-test"},
+                ],
+            },
+            {
+                "role": "user",
+                "content": [{"id": None, "type": "function", "function": {"name": "test-test", "arguments": None}}],
+            },
+        ),
+        (
+            {
+                "role": "user",
+                "items": [
+                    {"content_type": "function_call", "name": "test-test"},
+                    {"content_type": "function_result", "name": "test-test", "result": "test", "id": "test"},
+                ],
+            },
+            {
+                "role": "user",
+                "content": [
+                    {"id": None, "type": "function", "function": {"name": "test-test", "arguments": None}},
+                    {"tool_call_id": "test", "content": "test"},
+                ],
+            },
+        ),
+        (
+            {
+                "role": "user",
+                "items": [
+                    {"content_type": "image", "uri": "http://test"},
+                ],
+            },
+            {
+                "role": "user",
+                "content": [{"image_url": {"url": "http://test/"}, "type": "image_url"}],
+            },
+        ),
     ],
-    ids=["user_content", "user_with_name", "user_item", "function_call", "function_result", "multiple_items"],
+    ids=[
+        "user_content",
+        "user_with_name",
+        "user_item",
+        "function_call",
+        "function_result",
+        "multiple_items",
+        "multiple_items_serialize",
+        "annotations_serialize",
+        "file_reference_serialize",
+        "function_call_serialize",
+        "function_result_serialize",
+        "image_serialize",
+    ],
 )
 def test_cmc_to_dict_items(input_args, expected_dict):
     message = ChatMessageContent(**input_args)
