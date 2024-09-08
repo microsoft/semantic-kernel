@@ -60,7 +60,11 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<<+main
+>>>>>>> Stashed changes
 =======
 <<<<<<<+main
 >>>>>>> Stashed changes
@@ -81,7 +85,11 @@
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
+=======
+>>>>>>>+upstream/main
+>>>>>>> Stashed changes
 =======
 >>>>>>>+upstream/main
 >>>>>>> Stashed changes
@@ -91,7 +99,11 @@
     <PackageVersion Include="System.Threading.Channels" Version="8.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.0" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<<+main
+>>>>>>> Stashed changes
 =======
 <<<<<<<+main
 >>>>>>> Stashed changes
