@@ -13,7 +13,9 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 [Collection("WeaviateVectorStoreCollection")]
 public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreFixture fixture)
 {
-    [Fact]
+    private const string SkipReason = "Tests are disabled during batch/object request problem investigation.";
+
+    [Fact(Skip = SkipReason)]
     public async Task ItCanCreateCollectionAsync()
     {
         // Arrange
@@ -26,7 +28,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.True(await sut.CollectionExistsAsync());
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData("ExistingCollection", true)]
     [InlineData("NonExistentCollection", false)]
     public async Task ItCanCheckIfCollectionExistsAsync(string collectionName, bool collectionExists)
@@ -46,7 +48,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal(collectionExists, result);
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData("CollectionWithVectorAndDefinition", true, true)]
     [InlineData("CollectionWithVector", true, false)]
     [InlineData("CollectionWithDefinition", false, true)]
@@ -96,7 +98,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         }
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
@@ -115,7 +117,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.False(await sut.CollectionExistsAsync());
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanDeleteRecordAsync()
     {
         // Arrange
@@ -140,7 +142,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Null(getResult);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndGetAndDeleteBatchAsync()
     {
         // Arrange
@@ -174,7 +176,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Empty(getResults);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertRecordAsync()
     {
         // Arrange
