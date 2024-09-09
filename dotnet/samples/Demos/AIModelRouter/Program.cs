@@ -44,7 +44,7 @@ internal sealed partial class Program
             // Find the best service to use based on the user's input
             KernelArguments arguments = new(new PromptExecutionSettings()
             {
-                ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai", "claude"])
+                ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai", "anthropic"])
             });
 
             // Invoke the prompt and print the response
