@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import argparse
 import asyncio
 import logging
+from typing import Literal
 
 from azure.monitor.opentelemetry.exporter import (
     AzureMonitorLogExporter,
@@ -21,14 +23,14 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
 from opentelemetry.trace import set_tracer_provider
+from opentelemetry.trace.span import format_trace_id
 
-from samples.demos.telemetry_with_application_insights.repo_utils import get_sample_plugin_path
+from samples.demos.telemetry_with_application_insights.scenarios import (
+    run_ai_service,
+    run_auto_function_invocation,
+    run_kernel_function,
+)
 from samples.demos.telemetry_with_application_insights.telemetry_sample_settings import TelemetrySampleSettings
-from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import GoogleAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.kernel import Kernel
 
 # Load settings
 settings = TelemetrySampleSettings.create()
@@ -36,8 +38,23 @@ settings = TelemetrySampleSettings.create()
 # Create a resource to represent the service/sample
 resource = Resource.create({ResourceAttributes.SERVICE_NAME: "TelemetryExample"})
 
+# Define the scenarios that can be run
+SCENARIOS = ["ai_service", "kernel_function", "auto_function_invocation", "all"]
+
 
 def set_up_logging():
+    class KernelFilter(logging.Filter):
+        """A filter to not process records from semantic_kernel."""
+
+        # These are the namespaces that we want to exclude from logging for the purposes of this demo.
+        namespaces_to_exclude: list[str] = [
+            "semantic_kernel.functions.kernel_plugin",
+            "semantic_kernel.prompt_template.kernel_prompt_template",
+        ]
+
+        def filter(self, record):
+            return not any([record.name.startswith(namespace) for namespace in self.namespaces_to_exclude])
+
     log_exporter = AzureMonitorLogExporter(connection_string=settings.connection_string)
 
     # Create and set a global logger provider for the application.
@@ -50,8 +67,9 @@ def set_up_logging():
 
     # Create a logging handler to write logging records, in OTLP format, to the exporter.
     handler = LoggingHandler()
-    # Add a filter to the handler to only process records from semantic_kernel.
+    # Add filters to the handler to only process records from semantic_kernel.
     handler.addFilter(logging.Filter("semantic_kernel"))
+    handler.addFilter(KernelFilter())
     # Attach the handler to the root logger. `getLogger()` with no arguments returns the root logger.
     # Events from all child loggers will be processed by this handler.
     logger = logging.getLogger()
@@ -90,79 +108,39 @@ def set_up_metrics():
     set_meter_provider(meter_provider)
 
 
-set_up_logging()
-set_up_tracing()
-set_up_metrics()
-
-
-async def run_plugin(kernel: Kernel, plugin_name: str, service_id: str):
-    """Run a plugin with the given service ID."""
-    plugin = kernel.get_plugin(plugin_name)
-
-    poem = await kernel.invoke(
-        function=plugin["ShortPoem"],
-        arguments=KernelArguments(
-            input="Write a poem about John Doe.",
-            settings={
-                service_id: PromptExecutionSettings(service_id=service_id),
-            },
-        ),
-    )
-    print(f"Poem:\n{poem}")
-
-    print("\nTranslated poem:")
-    async for update in kernel.invoke_stream(
-        function=plugin["Translate"],
-        arguments=KernelArguments(
-            input=poem,
-            language="Italian",
-            settings={
-                service_id: PromptExecutionSettings(service_id=service_id),
-            },
-        ),
-    ):
-        print(update[0].content, end="")
-    print()
-
-
-async def run_service(kernel: Kernel, plugin_name: str, service_id: str):
-    """Run a service with the given service ID."""
-    print(f"================ Running service {service_id} ================")
-
-    tracer = trace.get_tracer(__name__)
-    with tracer.start_as_current_span(service_id) as current_span:
-        try:
-            await run_plugin(kernel, plugin_name=plugin_name, service_id=service_id)
-        except Exception as e:
-            current_span.record_exception(e)
-            print(f"Error running service {service_id}: {e}")
-
-
-async def main():
-    # Initialize the kernel
-    kernel = Kernel()
-    kernel.add_service(OpenAIChatCompletion(service_id="open_ai"))
-    kernel.add_service(GoogleAIChatCompletion(service_id="google_ai"))
-
-    # Add the sample plugin
-    if (sample_plugin_path := get_sample_plugin_path()) is None:
-        raise FileNotFoundError("Sample plugin path not found.")
-    print(f"Sample plugin path: {sample_plugin_path}")
-    plugin = kernel.add_plugin(
-        plugin_name="WriterPlugin",
-        parent_directory=sample_plugin_path,
-    )
+async def main(sceanrio: Literal["ai_service", "kernel_function", "auto_function_invocation", "all"] = "all"):
+    # Set up the providers
+    # This must be done before any other telemetry calls
+    set_up_logging()
+    set_up_tracing()
+    set_up_metrics()
 
     tracer = trace.get_tracer(__name__)
     with tracer.start_as_current_span("main") as current_span:
-        print(f"Trace ID: {current_span.get_span_context().trace_id}")
+        print(f"Trace ID: {format_trace_id(current_span.get_span_context().trace_id)}")
 
-        # Run the OpenAI service
-        await run_service(kernel, plugin_name=plugin.name, service_id="open_ai")
+        stream = False
 
-        # Run the GoogleAI service
-        await run_service(kernel, plugin_name=plugin.name, service_id="google_ai")
+        # Scenarios where telemetry is collected in the SDK, from the most basic to the most complex.
+        if sceanrio == "ai_service" or sceanrio == "all":
+            await run_ai_service(stream)
+        if sceanrio == "kernel_function" or sceanrio == "all":
+            await run_kernel_function(stream)
+        if sceanrio == "auto_function_invocation" or sceanrio == "all":
+            await run_auto_function_invocation(stream)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    arg_parser = argparse.ArgumentParser()
+
+    arg_parser.add_argument(
+        "--scenario",
+        type=str,
+        choices=SCENARIOS,
+        default="all",
+        help="The scenario to run. Default is all.",
+    )
+
+    args = arg_parser.parse_args()
+
+    asyncio.run(main(args.scenario))

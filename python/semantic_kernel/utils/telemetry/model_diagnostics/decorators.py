@@ -4,14 +4,11 @@ import functools
 import json
 from collections.abc import AsyncGenerator, Callable
 from functools import reduce
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from opentelemetry.trace import Span, StatusCode, get_tracer, use_span
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -20,6 +17,11 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.utils.experimental_decorator import experimental_function
 from semantic_kernel.utils.telemetry.model_diagnostics import gen_ai_attributes
 from semantic_kernel.utils.telemetry.model_diagnostics.model_diagnostics_settings import ModelDiagnosticSettings
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 
 # Module to instrument GenAI models using OpenTelemetry and OpenTelemetry Semantic Conventions.
 # These are experimental features and may change in the future.
@@ -78,11 +80,11 @@ def trace_chat_completion(model_provider: str) -> Callable:
                 # If model diagnostics are not enabled, just return the completion
                 return await completion_func(*args, **kwargs)
 
-            completion_service: ChatCompletionClientBase = args[0]
+            completion_service: "ChatCompletionClientBase" = args[0]
             chat_history: ChatHistory = (
                 kwargs.get("chat_history") if kwargs.get("chat_history") is not None else args[1]
             )
-            settings: PromptExecutionSettings = (
+            settings: "PromptExecutionSettings" = (
                 kwargs.get("settings") if kwargs.get("settings") is not None else args[2]
             )
 
@@ -136,11 +138,11 @@ def trace_streaming_chat_completion(model_provider: str) -> Callable:
                     yield streaming_chat_message_contents
                 return
 
-            completion_service: ChatCompletionClientBase = args[0]
+            completion_service: "ChatCompletionClientBase" = args[0]
             chat_history: ChatHistory = (
                 kwargs.get("chat_history") if kwargs.get("chat_history") is not None else args[1]
             )
-            settings: PromptExecutionSettings = (
+            settings: "PromptExecutionSettings" = (
                 kwargs.get("settings") if kwargs.get("settings") is not None else args[2]
             )
 
@@ -200,9 +202,9 @@ def trace_text_completion(model_provider: str) -> Callable:
                 # If model diagnostics are not enabled, just return the completion
                 return await completion_func(*args, **kwargs)
 
-            completion_service: TextCompletionClientBase = args[0]
+            completion_service: "TextCompletionClientBase" = args[0]
             prompt: str = kwargs.get("prompt") if kwargs.get("prompt") is not None else args[1]
-            settings: PromptExecutionSettings = kwargs["settings"] if kwargs.get("settings") is not None else args[2]
+            settings: "PromptExecutionSettings" = kwargs["settings"] if kwargs.get("settings") is not None else args[2]
 
             with use_span(
                 _start_completion_activity(
@@ -252,9 +254,9 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
                     yield streaming_text_contents
                 return
 
-            completion_service: TextCompletionClientBase = args[0]
+            completion_service: "TextCompletionClientBase" = args[0]
             prompt: str = kwargs.get("prompt") if kwargs.get("prompt") is not None else args[1]
-            settings: PromptExecutionSettings = kwargs["settings"] if kwargs.get("settings") is not None else args[2]
+            settings: "PromptExecutionSettings" = kwargs["settings"] if kwargs.get("settings") is not None else args[2]
 
             all_text_contents: dict[int, list["StreamingTextContent"]] = {}
 
@@ -297,7 +299,7 @@ def _start_completion_activity(
     model_name: str,
     model_provider: str,
     prompt: str | ChatHistory,
-    execution_settings: PromptExecutionSettings | None,
+    execution_settings: "PromptExecutionSettings | None",
 ) -> Span:
     """Start a text or chat completion activity for a given model."""
     span = tracer.start_span(f"{operation_name} {model_name}")
