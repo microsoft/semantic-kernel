@@ -28,12 +28,8 @@ from opentelemetry.semconv.resource import ResourceAttributes
 from opentelemetry.trace import set_tracer_provider
 from opentelemetry.trace.span import format_trace_id
 
-from samples.demos.telemetry_with_application_insights.scenarios import (
-    run_ai_service,
-    run_auto_function_invocation,
-    run_kernel_function,
-)
-from samples.demos.telemetry_with_application_insights.telemetry_sample_settings import TelemetrySampleSettings
+from samples.demos.telemetry.scenarios import run_ai_service, run_auto_function_invocation, run_kernel_function
+from samples.demos.telemetry.telemetry_sample_settings import TelemetrySampleSettings
 
 # Load settings
 settings = TelemetrySampleSettings.create()

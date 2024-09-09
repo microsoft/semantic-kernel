@@ -2,8 +2,8 @@
 
 from opentelemetry import trace
 
-from samples.demos.telemetry_with_application_insights.demo_plugins import LocationPlugin, WeatherPlugin
-from samples.demos.telemetry_with_application_insights.repo_utils import get_sample_plugin_path
+from samples.demos.telemetry.demo_plugins import LocationPlugin, WeatherPlugin
+from samples.demos.telemetry.repo_utils import get_sample_plugin_path
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
@@ -63,7 +63,7 @@ async def run_ai_service(stream: bool = False) -> None:
         try:
             if isinstance(ai_service, ChatCompletionClientBase):
                 chat_history = ChatHistory()
-                chat_history.add_user_message("Why is the sky blue?")
+                chat_history.add_user_message("Why is the sky blue in one sentence?")
 
                 if not stream:
                     responses = await ai_service.get_chat_message_contents(chat_history, PromptExecutionSettings())
@@ -75,7 +75,9 @@ async def run_ai_service(stream: bool = False) -> None:
                         print(update[0].content, end="")
             elif isinstance(ai_service, TextCompletionClientBase):
                 if not stream:
-                    completion = await ai_service.get_text_contents("Why is the sky blue?", PromptExecutionSettings())
+                    completion = await ai_service.get_text_contents(
+                        "Why is the sky blue in one sentence?", PromptExecutionSettings()
+                    )
                     print(completion)
                 else:
                     async for update in ai_service.get_streaming_text_contents(
