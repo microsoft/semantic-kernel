@@ -17,9 +17,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
-    OpenAIChatCompletion,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import StreamingChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -176,7 +174,7 @@ async def test_cmc_function_call_behavior(
         service_id="test_service_id", function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions()
     )
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._process_function_call",
+        "semantic_kernel.kernel.Kernel.invoke_function_call",
         new_callable=AsyncMock,
     ) as mock_process_function_call:
         openai_chat_completion = OpenAIChatCompletion()
@@ -227,7 +225,7 @@ async def test_cmc_function_choice_behavior(
         service_id="test_service_id", function_choice_behavior=FunctionChoiceBehavior.Auto()
     )
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._process_function_call",
+        "semantic_kernel.kernel.Kernel.invoke_function_call",
         new_callable=AsyncMock,
     ) as mock_process_function_call:
         openai_chat_completion = OpenAIChatCompletion()
