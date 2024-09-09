@@ -2,6 +2,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Resources;
 
 namespace GettingStarted;
 
@@ -49,6 +50,45 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
                 chat.Add(response);
 
                 this.WriteAgentChatMessage(response);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UseTemplateForChatCompletionAgentAsync()
+    {
+        // Define the agent
+        string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
+        PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
+        Kernel kernel = this.CreateKernelWithChatCompletion();
+        ChatCompletionAgent agent = ChatCompletionAgent.FromTemplate(templateConfig, new KernelPromptTemplateFactory(), kernel);
+
+        /// Create the chat history to capture the agent interaction.
+        ChatHistory chat = [];
+
+        // Respond to user input
+        await InvokeAgentAsync(
+            new()
+            {
+                { "topic", "Dog" },
+                { "length", "3" },
+            });
+
+        await InvokeAgentAsync(
+            new()
+            {
+                { "topic", "Cat" },
+                { "length", "3" },
+            });
+
+        // Local function to invoke agent and display the conversation messages.
+        async Task InvokeAgentAsync(KernelArguments arguments)
+        {
+            await foreach (ChatMessageContent content in agent.InvokeAsync(chat, arguments))
+            {
+                chat.Add(content);
+
+                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
     }

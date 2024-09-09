@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 
@@ -18,6 +21,39 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </remarks>
 public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 {
+    /// <summary>
+    /// %%%
+    /// </summary>
+    /// <param name="templateConfig"></param>
+    /// <param name="templateFactory"></param>
+    /// <param name="kernel"></param>
+    /// <param name="defaultArguments"></param>
+    /// <param name="loggerFactory"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public static ChatCompletionAgent FromTemplate(
+        PromptTemplateConfig templateConfig,
+        IPromptTemplateFactory templateFactory,
+        Kernel kernel,
+        KernelArguments? defaultArguments = null,
+        ILoggerFactory? loggerFactory = null,
+        string? id = null)
+    {
+        IPromptTemplate template = templateFactory.Create(templateConfig);
+        return new ChatCompletionAgent()
+        {
+            Id = id ?? Guid.NewGuid().ToString(),
+            Name = templateConfig.Name,
+            Description = templateConfig.Description,
+            LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance,
+            Arguments = defaultArguments,
+            Instructions = templateConfig.Template,
+            Kernel = kernel,
+            Template = template, // %%%
+            //Prompt = function, // %%% << THIS ONE
+        };
+    }
+
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
