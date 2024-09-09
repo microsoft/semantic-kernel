@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Agents;
 public abstract class KernelAgent : Agent
 {
     /// <summary>
-    /// Arguments for the agent instruction paramters (optional).
+    /// Arguments for the agent instruction parameters (optional).
     /// </summary>
     /// <remarks>
     /// Also includes <see cref="PromptExecutionSettings"/>.
