@@ -9,7 +9,7 @@ namespace GettingStarted;
 /// <summary>
 /// %%%
 /// </summary>
-public class Step1b_Agent(ITestOutputHelper output) : BaseTest(output)
+public class Step01b_Agent(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task UseSingleChatCompletionAgentAsync()
