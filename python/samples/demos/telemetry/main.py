@@ -129,7 +129,7 @@ def set_up_metrics():
     set_meter_provider(meter_provider)
 
 
-async def main(sceanrio: Literal["ai_service", "kernel_function", "auto_function_invocation", "all"] = "all"):
+async def main(scenario: Literal["ai_service", "kernel_function", "auto_function_invocation", "all"] = "all"):
     # Set up the providers
     # This must be done before any other telemetry calls
     set_up_logging()
@@ -143,11 +143,11 @@ async def main(sceanrio: Literal["ai_service", "kernel_function", "auto_function
         stream = False
 
         # Scenarios where telemetry is collected in the SDK, from the most basic to the most complex.
-        if sceanrio == "ai_service" or sceanrio == "all":
+        if scenario == "ai_service" or scenario == "all":
             await run_ai_service(stream)
-        if sceanrio == "kernel_function" or sceanrio == "all":
+        if scenario == "kernel_function" or scenario == "all":
             await run_kernel_function(stream)
-        if sceanrio == "auto_function_invocation" or sceanrio == "all":
+        if scenario == "auto_function_invocation" or scenario == "all":
             await run_auto_function_invocation(stream)
 
 
