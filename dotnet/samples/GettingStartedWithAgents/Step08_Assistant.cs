@@ -68,7 +68,7 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
     }
 
     [Fact]
-    public async Task UseTemplateForChatCompletionAgentAsync()
+    public async Task UseTemplateForAssistantAgentAsync()
     {
         // Define the agent
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
