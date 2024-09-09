@@ -205,7 +205,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     /// This example demonstrates the usage of the non-streaming chat completion API with <see cref="FunctionChoiceBehavior.Auto"/> that advertises all kernel functions to the AI model and invokes them manually.
     /// </summary>
     [Fact]
-    public async Task RunNonStreamingChatAPIWithManualFunctionInvocationAsync()
+    public async Task RunNonStreamingChatCompletionApiWithManualFunctionInvocationAsync()
     {
         Kernel kernel = CreateKernel();
 
@@ -266,7 +266,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     /// This example demonstrates the usage of the streaming chat completion API with <see cref="FunctionChoiceBehavior.Auto"/> that advertises all kernel functions to the AI model and invokes them manually.
     /// </summary>
     [Fact]
-    public async Task RunStreamingChatAPIWithManualFunctionCallingAsync()
+    public async Task RunStreamingChatCompletionApiWithManualFunctionCallingAsync()
     {
         Kernel kernel = CreateKernel();
 
