@@ -10,7 +10,7 @@ deciders: sergeymenshykh, markwallace, rbarreto, westey-m, dmytrostruk, ben.thom
 
 ## Context and Problem Statement
 
-[Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs) is a feature in OpenAI API that ensures the model will always generate responses based on provided JSON Schema. This gives more control over model responses, allows to avoid model hallucinations and write simpler promps without a need to be specific about response format. This ADR describes an options how to enable this functionality in .NET version of Semantic Kernel.
+[Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs) is a feature in OpenAI API that ensures the model will always generate responses based on provided JSON Schema. This gives more control over model responses, allows to avoid model hallucinations and write simpler prompts without a need to be specific about response format. This ADR describes several options how to enable this functionality in .NET version of Semantic Kernel.
 
 A couple of examples how it's implemented in .NET and Python OpenAI SDKs:
 
