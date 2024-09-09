@@ -3,6 +3,7 @@
 NVidia Inference Microservice is fully optimized and has wide variety.  Perfect tools to enpower Copilot's semantic kernel.  
 
 This sample show how to encorperate NIM into semantic kernel.
+This sample is based on llama-3.1-8b-instruct:latest which is version 1.1.2 at this time.  Please check the the documentation of the NIM you plan to sue to see whethere there is any additional change you need to make.
 
 ## Deploy NIM to Azure
 
@@ -26,7 +27,7 @@ NIM can deploy to anyplace include but not limited to Azure ML. AKS and Azure VM
 
 We use llama-3.1-8b-instruct as example.  We assume there is an expert called nllama3.  We create a plugin called nllama3 and a magic word called nllama3.  Any question asked nllama3 will redirect to this plugin and other questions will use default llm
 
- - Replace hard coded endpoint with the endpoint created in previous step.
+ - Update the nim_url with the endpoint created in previous step.
  - run nvidia_nim_plugin.py and see how it work.
 
 ## Additional Resources:

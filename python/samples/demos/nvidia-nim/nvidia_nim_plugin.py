@@ -16,6 +16,10 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 from openai import OpenAI
 
+# 
+# Please Replace the url with the real NIM endpoint.
+#
+nim_url = "http://0.0.0.0:8000/v1"
 
 class NLlama3Plugin:
     """A sample plugin that provides response from NIM."""
@@ -24,8 +28,8 @@ class NLlama3Plugin:
     def get_nllama3_opinion(self, question: Annotated[str, "The input question"]) -> Annotated[str, "The output is a string"]:
         
         prompt = question.replace("nllama3", "you")
-
-        client = OpenAI(base_url="http://40.124.80.215:8000/v1", api_key="not-used")
+        # Make sure model name match the model of NIM you deploy
+        client = OpenAI(base_url=nim_url, api_key="not-used")
         response = client.completions.create(
             model="meta/llama-3.1-8b-instruct",
             prompt=prompt,
