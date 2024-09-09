@@ -1,3 +1,9 @@
+---
+runme:
+  id: 01J0BYQX0015D3BH4FX0NPA9QQ
+  version: v3
+---
+
 # Semantic Kernel
 
 ## Status
@@ -31,6 +37,7 @@ can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards
 Semantic Kernel will execute the plan for the user.
 
 It provides:
+#### Please star the repo to show your support for this project
 
 - abstractions for AI services (such as chat, text to images, audio to text, etc.) and memory stores
 - implementations of those abstractions for services from [OpenAI](https://platform.openai.com/docs/introduction), [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service), [Hugging Face](https://huggingface.co/), local models, and more, and for a multitude of vector databases, such as those from [Chroma](https://docs.trychroma.com/getting-started), [Qdrant](https://qdrant.tech/), [Milvus](https://milvus.io/), and [Azure](https://learn.microsoft.com/en-us/azure/search/search-what-is-azure-search)
@@ -79,19 +86,19 @@ feature parity between our currently supported languages.
 The quickest way to get started with the basics is to get an API key
 from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java console applications/scripts below.
 
-### For C#:
+### For C
 
 1. Go to the Quick start page [here](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-csharp) and follow the steps to dive in.
 2. After Installing the SDK, we advise you follow the steps and code detailed to write your first console app.
    ![dotnetmap](https://learn.microsoft.com/en-us/semantic-kernel/media/dotnetmap.png)
 
-### For Python:
+### For Python
 
 1. Go to the Quick start page [here](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-python) and follow the steps to dive in.
 2. You'll need to ensure that you toggle to Python in the the Choose a programming language table at the top of the page.
    ![pythonmap](https://learn.microsoft.com/en-us/semantic-kernel/media/pythonmap.png)
 
-### For Java:
+### For Java
 
 The Java code is in the [semantic-kernel-java](https://github.com/microsoft/semantic-kernel-java) repository. See
 [semantic-kernel-java build](https://github.com/microsoft/semantic-kernel-java/blob/main/BUILD.md) for instructions on
@@ -99,6 +106,10 @@ how to build and run the Java code.
 
 Please file Java Semantic Kernel specific issues in
 the [semantic-kernel-java](https://github.com/microsoft/semantic-kernel-java) repository.
+1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel.git`
+   1. To access the latest Java code, clone and checkout the Java development branch: `git clone -b java-development https://github.com/microsoft/semantic-kernel.git`
+
+2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/main/java/samples/sample-code/README.md)
 
 ## Learning how to use Semantic Kernel
 
@@ -114,6 +125,13 @@ on our Learn site. Each sample comes with a completed C# and Python project that
 1. 📖 [Getting Started](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide)
 1. 🔌 [Detailed Samples](https://learn.microsoft.com/en-us/semantic-kernel/get-started/detailed-samples)
 1. 💡 [Concepts](https://learn.microsoft.com/en-us/semantic-kernel/concepts/agents)
+1. 📖 [Overview of the kernel](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/)
+2. 🔌 [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
+3. 👄 [Creating semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions)
+4. 💽 [Creating native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions)
+5. ⛓️ [Chaining functions together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
+6. 🤖 [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
+7. 💡 [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins)
 
 Finally, refer to our API references for more details on the C# and Python APIs:
 
@@ -124,8 +142,137 @@ Finally, refer to our API references for more details on the C# and Python APIs:
 ## Visual Studio Code extension: design semantic functions with ease
 
 The Semantic Kernel extension for Visual Studio Code makes it easy to design and test semantic functions. The extension provides an interface for designing semantic functions and allows you to test them with the push of a button with your existing models and data.
+The [Semantic Kernel extension for Visual Studio Code](https://learn.microsoft.com/en-us/semantic-kernel/vs-code-tools/)
+makes it easy to design and test semantic functions. The extension provides an interface for
+designing semantic functions and allows you to test them with a push of a button with your
+existing models and data.
+
+![Semantic Kernel extension for Visual Studio Code](https://learn.microsoft.com/en-us/semantic-kernel/media/vs-code-extension.png)
+
+In the above screenshot, you can see the extension in action:
+
+- Syntax highlighting for semantic functions
+- Code completion for semantic functions
+- LLM model picker
+- Run button to test the semantic function with your input data
+
+## Check out our other repos
+
+If you like Semantic Kernel, you may also be interested in other repos the Semantic Kernel team supports:
+
+| Repo                                                                              | Description                                                                                   |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| [Chat Copilot](https://github.com/microsoft/chat-copilot)                         | A reference application that demonstrates how to build a chatbot with Semantic Kernel.        |
+| [Semantic Kernel Docs](https://github.com/MicrosoftDocs/semantic-kernel-docs)     | The home for Semantic Kernel documentation that appears on the Microsoft learn site.          |
+| [Semantic Kernel Starters](https://github.com/microsoft/semantic-kernel-starters) | Starter projects for Semantic Kernel to make it easier to get started.                        |
+| [Kernel Memory](https://github.com/microsoft/kernel-memory)                       | A scalable Memory service to store information and ask questions using the RAG pattern.       |
 
 ## Join the community
+# Semantic Kernel
+
+[![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
+
+> ℹ️ **NOTE**: The Python SDK for Semantic Kernel is currently in preview. While most
+> of the features available in the C# SDK have been ported, there may be bugs and
+> we're working on some features still - these will come into the repo soon. We are
+> also actively working on improving the code quality and developer experience,
+> and we appreciate your support, input and PRs!
+
+> ℹ️ **NOTE**: This project is in early alpha and, just like AI, will evolve quickly.
+> We invite you to join us in developing the Semantic Kernel together!
+> Please contribute by
+> using GitHub [Discussions](https://github.com/microsoft/semantic-kernel/discussions),
+> opening GitHub [Issues](https://github.com/microsoft/semantic-kernel/issues/new/choose),
+> sending us [PRs](https://github.com/microsoft/semantic-kernel/pulls).
+
+**Semantic Kernel (SK)** is a lightweight SDK enabling integration of AI Large
+Language Models (LLMs) with conventional programming languages. The SK extensible
+programming model combines natural language **semantic functions**, traditional
+code **native functions**, and **embeddings-based memory** unlocking new potential
+and adding value to applications with AI.
+
+SK supports
+[prompt templating](docs/PROMPT_TEMPLATE_LANGUAGE.md), function
+chaining,
+[vectorized memory](docs/EMBEDDINGS.md), and
+[intelligent planning](docs/PLANNER.md)
+capabilities out of the box.
+
+![image](https://user-images.githubusercontent.com/371009/221739773-cf43522f-c1e4-42f2-b73d-5ba84e21febb.png)
+
+Semantic Kernel is designed to support and encapsulate several design patterns from the
+latest in AI research, such that developers can infuse their applications with complex
+[skills](docs/SKILLS.md) like [prompt](docs/PROMPT_TEMPLATE_LANGUAGE.md) chaining,
+recursive reasoning, summarization, zero/few-shot learning, contextual memory,
+long-term memory, [embeddings](docs/EMBEDDINGS.md), semantic indexing, [planning](docs/PLANNER.md),
+and accessing external knowledge stores as well as your own data.
+
+By joining the SK community, you can build AI-first apps faster and have a front-row
+peek at how the SDK is being built. SK has been released as open-source so that more
+pioneering developers can join us in crafting the future of this landmark moment
+in the history of computing.
+
+## Get Started with Semantic Kernel ⚡
+
+Here is a quick example of how to use Semantic Kernel from a Python script.
+
+1. Clone the repo and install SK dependencies, e.g. using `pip install -r python/requirements.txt`
+2. Create a new Python file and add the code below.
+3. Copy and paste your OpenAI **API key** in the script
+   (support for Azure OpenAI is work in progress).
+4. Using Python 3.8 or later, run the code. Enjoy!
+
+```python
+import sys
+sys.path.append("./python")  # nopep8
+import semantic_kernel as sk
+import asyncio
+
+
+kernel = sk.create_kernel()
+
+kernel.config.add_openai_completion_backend(
+    "davinci",
+    "text-davinci-003",
+    "...OpenAI Key...")
+
+sk_prompt = """
+{{$input}}
+
+Give me the TLDR in 5 words.
+"""
+
+tldr_function = sk.extensions.create_semantic_function(
+    kernel,
+    sk_prompt,
+    max_tokens=200,
+    temperature=0,
+    top_p=0.5)
+
+text_to_summarize = """
+    1) A robot may not injure a human being or, through inaction,
+    allow a human being to come to harm.
+
+    2) A robot must obey orders given it by human beings except where
+    such orders would conflict with the First Law.
+
+    3) A robot must protect its own existence as long as such protection
+    does not conflict with the First or Second Law.
+"""
+
+summary = asyncio.run(kernel.run_on_str_async(text_to_summarize, tldr_function))
+
+print(f"Output: {summary}")
+
+# Output: Robots must not harm humans.
+```
+
+## How does this compare to the main C# branch?
+
+Refer to the [FEATURE_PARITY.md](python/FEATURE_PARITY.md) doc to see where
+things stand in matching the features and functionality of the main SK branch.
+
+## Contributing and Community
 
 We welcome your contributions and suggestions to SK community! One of the easiest
 ways to participate is to engage in discussions in the GitHub repository.
@@ -148,6 +295,10 @@ To learn more and get started:
 ## Contributor Wall of Fame
 
 [![semantic-kernel contributors](https://contrib.rocks/image?repo=microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/graphs/contributors)
+-   Read the [documentation](https://aka.ms/sk/learn)
+-   Learn how to [contribute](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md) to the project
+-   Join the [Discord community](https://aka.ms/SKDiscord)
+-   Hear from the team on our [blog](https://aka.ms/sk/blog)
 
 ## Code of Conduct
 

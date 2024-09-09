@@ -1,0 +1,417 @@
+[
+    {
+        "name": "Weak/Broken Hash Algorithm",
+        "id": "DS126858",
+        "description": "A weak or broken hash algorithm was detected.",
+        "recommendation": "Consider switching to use SHA-256 or SHA-512 instead.",
+        "tags": [
+            "Cryptography.BannedHashAlgorithm"
+        ],
+        "does_not_apply_to": ["json"],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS126858.md",
+        "patterns": [
+            {
+                "pattern": "(MD2|MD4|MD5|RIPEMD|RIPEMD(128|256|160|320)|(SHA0|SHA-0|SHA1|SHA-1))",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "modifiers":["i"]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to \"SHA256\"",
+                "type": "RegexReplace",
+                "replacement": "SHA256",
+                "pattern": {
+                    "pattern": "(MD2|MD4|MD5|RIPEMD|RIPEMD(128|256|160|320)|(SHA0|SHA-0|SHA1|SHA-1))",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            },
+            {
+                "name": "Change to \"SHA512\"",
+                "type": "RegexReplace",
+                "replacement": "SHA512",
+                "pattern": {
+                    "pattern": "(MD2|MD4|MD5|RIPEMD|RIPEMD(128|256|160|320)|(SHA0|SHA-0|SHA1|SHA-1))",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            },
+            {
+                "name": "Change to \"sha512\"",
+                "type": "RegexReplace",
+                "replacement": "sha512",
+                "pattern": {
+                    "pattern": "(md2|md4|md5|ripemd|ripemd(128|256|160|320)|(sha0|sha-0|sha1|sha-1))",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": "Matches lower case variants of the above"
+                }
+            },
+            {
+                "name": "Change to \"sha256\"",
+                "type": "RegexReplace",
+                "replacement": "sha256",
+                "pattern": {
+                    "pattern": "(md2|md4|md5|ripemd|ripemd(128|256|160|320)|(sha0|sha-0|sha1|sha-1))",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": "Matches lower case variants of the above"
+                }
+            }
+        ],
+        "must-match": [
+            "MD5 hash = new Hash();",
+            "echo -n Welcome | md5sum"
+        ],
+        "must-not-match": [
+            "SHA512"
+        ]
+    },
+    {
+        "name": "Weak/Broken Hash Algorithm",
+        "id": "DS197800",
+        "description": "A weak or broken hash algorithm was detected.",
+        "recommendation": "Use CC_SHA256 or CC_SHA512 instead.",
+        "overrides": [
+            "DS126858"
+        ],
+        "applies_to": [
+            "objective-c"
+        ],
+        "tags": [
+            "Cryptography.HashAlgorithm.BrokenOrWeak"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS126858.md",
+        "patterns": [
+            {
+                "pattern": "CC_(MD2|MD4|MD5|SHA1)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to SHA-256",
+                "type": "RegexReplace",
+                "replacement": "CC_SHA256",
+                "pattern": {
+                    "pattern": "CC_(MD2|MD4|MD5|SHA1)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            },
+            {
+                "name": "Change to SHA-512",
+                "type": "RegexReplace",
+                "replacement": "CC_SHA512",
+                "pattern": {
+                    "pattern": "CC_(MD2|MD4|MD5|SHA1)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "unsigned char result[CC_MD5_DIGEST_LENGTH];"
+        ],
+        "must-not-match": [
+        ]
+    },
+    {
+        "name": "Weak/Broken Hash Algorithm",
+        "id": "DS128420",
+        "description": "A weak or broken hash algorithm was detected.",
+        "recommendation": "When using hash(), use sha256 or sha512 as the algorithms instead",
+        "overrides": [
+            "DS126858"
+        ],
+        "applies_to": [
+            "php"
+        ],
+        "tags": [
+            "Cryptography.HashAlgorithm.BrokenOrWeak"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS126858.md",
+        "patterns": [
+            {
+                "pattern": "hash\\s*\\(\\s*[\\'\\\"](md2|md4|md5|sha1|sha224|ripemd128|ripemd160|ripemd256|ripemd320)[\\'\\\"](.*)\\)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to SHA-256",
+                "type": "RegexReplace",
+                "replacement": "hash('sha256'$2);",
+                "pattern": {
+                    "pattern": "hash\\s*\\(\\s*[\\'\\\"](md2|md4|md5|sha1|sha224|ripemd128|ripemd160|ripemd256|ripemd320)[\\'\\\"](.*)\\)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            },
+            {
+                "name": "Change to SHA-512",
+                "type": "RegexReplace",
+                "replacement": "hash('sha512'$2);",
+                "pattern": {
+                    "pattern": "hash\\s*\\(\\s*[\\'\\\"](md2|md4|md5|sha1|sha224|ripemd128|ripemd160|ripemd256|ripemd320)[\\'\\\"](.*)\\)\\s*;",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "echo hash('ripemd160', 'The quick brown fox jumped over the lazy dog.');"
+        ]
+    },
+    {
+        "name": "Do not use broken/weak cryptographic hash algorithms",
+        "id": "DS108647",
+        "description": "Avoid using broken or weak hash algorithms.",
+        "recommendation": "Use Digest::SHA256 or Digest::SHA512",
+        "applies_to": [
+            "ruby"
+        ],
+        "overrides": [
+            "DS126858"
+        ],
+        "tags": [
+            "Cryptography.HashAlgorithm.BrokenOrWeak"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS126858.md",
+        "patterns": [
+            {
+                "pattern": "Digest::(MD5|RMD160|SHA1)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to SHA-256",
+                "type": "RegexReplace",
+                "replacement": "Digest::SHA256",
+                "pattern": {
+                    "pattern": "Digest::(MD5|RMD160|SHA1)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            },
+            {
+                "name": "Change to SHA-512",
+                "type": "RegexReplace",
+                "replacement": "Digest::SHA512",
+                "pattern": {
+                    "pattern": "Digest::(MD5|RMD160|SHA1)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "Digest::MD5.hexdigest('foobar')",
+            "Digest::RMD160.hexdigest('foobar')",
+            "Digest::SHA1.hexdigest('foobar')"
+
+        ],
+        "must-not-match": [
+            "Digest::SHA512.hexdigest('foobar')"
+        ]
+    },
+    {
+        "name": "Do not use broken/weak cryptographic hash algorithms",
+        "id": "DS196098",
+        "description": "Avoid using broken or weak hash algorithms.",
+        "recommendation": "Use hashlib.sha256 instead.",
+        "overrides": [
+            "DS126858"
+        ],
+        "applies_to": [
+            "python"
+        ],
+        "tags": [
+            "Cryptography.HashAlgorithm.BrokenOrWeak"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS126858.md",
+        "patterns": [
+            {
+                "pattern": "(md5|sha)\\.new\\(",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to hashlib.sha256",
+                "type": "RegexReplace",
+                "replacement": "hashlib.sha256(",
+                "pattern": {
+                    "pattern": "(md5|sha)\\.new\\(",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            },
+            {
+                "name": "Change to hashlib.sha512",
+                "type": "RegexReplace",
+                "replacement": "hashlib.sha512(",
+                "pattern": {
+                    "pattern": "(md5|sha)\\.new\\(",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "hash = md5.new()"
+        ],
+        "must-not-match": [
+        ]
+    },
+    {
+        "name": "Do not use broken/weak cryptographic hash algorithms",
+        "id": "DS168931",
+        "description": "A potentially weak hashing algorithm was used.",
+        "recommendation": "Use SHA-256 instead.",
+        "overrides": [
+            "DS126858"
+        ],
+        "applies_to": [
+            "csharp",
+            "fsharp"
+        ],
+        "tags": [
+            "Cryptography.HashAlgorithm.BrokenOrWeak"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS126858.md",
+        "patterns": [
+            {
+                "pattern": "MD5CryptoServiceProvider",
+                "type": "substring",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to SHA-256",
+                "type": "RegexReplace",
+                "replacement": "SHA256CryptoServiceProvider",
+                "pattern": {
+                    "pattern": "MD5CryptoServiceProvider",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            },
+            {
+                "name": "Change to SHA-512",
+                "type": "RegexReplace",
+                "replacement": "SHA512CryptoServiceProvider",
+                "pattern": {
+                    "pattern": "MD5CryptoServiceProvider",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "var hash = new MD5CryptoServiceProvider();"
+        ],
+        "must-not-match": [
+            "var hash = new SHA512CryptoServiceProvider();"
+        ]
+    },
+    {
+        "name": "Do not take the hash of low-entropy content.",
+        "id": "DS197836",
+        "description": "Taking a hash of a time value is suspicious, as there is insufficient entropy to protect against brute-force attacks.",
+        "recommendation": "",
+        "tags": [
+            "Cryptography.HashAlgorithm.InsufficientEntropy"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS197836.md",
+        "patterns": [
+            {
+                "pattern": "(MD4|MD5|(SHA(1|224|256|384|512))).*Time",
+                "modifiers" : ["i"],
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "md5time = hash(time);"
+        ],
+        "must-not-match": [
+        ]
+    }
+]

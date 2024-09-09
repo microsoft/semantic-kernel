@@ -1,0 +1,32 @@
+[
+    {
+        "name": "Rust - Hard-coded SSL/TLS Protocol",
+        "id": "DS440073",
+        "description": "Rust - Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "overrides": [
+            "DS440000"
+        ],
+        "applies_to": [
+            "rust"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "ProtocolVersion::(SSLv2|SSLv3|TLSv1_[0123])",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "RustTLS Enumeration: https://github.com/ctz/rustls/blob/1d70e45af6c7f0d6940f4c7b641daacc70ac9ce8/rustls/src/msgs/enums.rs"
+            }
+        ],
+        "fix_its": [
+        ]
+    }
+]

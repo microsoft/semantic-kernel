@@ -18,6 +18,7 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
     [Fact]
     public async Task UploadAndRetrieveFilesAsync()
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
 
         BinaryContent[] files = [
@@ -27,7 +28,7 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
             new BinaryContent(data: await EmbeddedResource.ReadAllAsync("travelinfo.txt"), mimeType: "text/plain") { InnerContent = "travelinfo.txt" }
         ];
 
-        var fileContents = new Dictionary<string, BinaryContent>();
+        Dictionary<string, BinaryContent> fileContents = new();
         foreach (BinaryContent file in files)
         {
             OpenAIFileReference result = await fileService.UploadContentAsync(file, new(file.InnerContent!.ToString()!, OpenAIFilePurpose.FineTune));
@@ -48,7 +49,7 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
             string? fileName = fileContents[fileReference.Id].InnerContent!.ToString();
             ReadOnlyMemory<byte> data = content.Data ?? new();
 
-            var typedContent = mimeType switch
+            BinaryContent typedContent = mimeType switch
             {
                 "image/jpeg" => new ImageContent(data, mimeType) { Uri = content.Uri, InnerContent = fileName, Metadata = content.Metadata },
                 "audio/wav" => new AudioContent(data, mimeType) { Uri = content.Uri, InnerContent = fileName, Metadata = content.Metadata },
@@ -62,5 +63,7 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
             // Delete the test file remotely
             await fileService.DeleteFileAsync(fileReference.Id);
         }
+
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

@@ -1,0 +1,164 @@
+[
+    {
+        "name": "Do not deserialize untrusted data.",
+        "id": "DS425000",
+        "description": "Deserializing attacker-supplied data using `pickle` or `cPickle` can result in code execution.",
+        "recommendation": "Either add integrity protection or use a data format like JSON.",
+        "applies_to": [
+            "python"
+        ],
+        "tags": [
+            "Deserialization"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS425000.md",
+        "patterns": [
+            {
+                "pattern": "pickle.load",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "favorite_color = pickle.load( open( \"save.p\", \"rb\" ) )"
+        ]
+    },
+    {
+        "name": "Do not deserialize untrusted data.",
+        "id": "DS425010",
+        "description": "Deserializing attacker-supplied data using `readObject` can result in code execution.",
+        "recommendation": "Either add integrity protection or use a data format like JSON.",
+        "applies_to": [
+            "java"
+        ],
+        "tags": [
+            "Deserialization"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS425000.md",
+        "patterns": [
+            {
+                "pattern": "\\.readObject\\(",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "this.author = (String)in.readObject();"
+        ]
+    },
+    {
+        "name": "Do not deserialize untrusted data.",
+        "id": "DS425020",
+        "description": "Deserializing attacker-supplied data using `unserialize` can result in code execution.",
+        "recommendation": "Either add integrity protection or use a data format like JSON.",
+        "applies_to": [
+            "php"
+        ],
+        "tags": [
+            "Deserialization"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS425000.md",
+        "patterns": [
+            {
+                "pattern": "unserialize\\(",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "$session_data = unserialize($tmp[0]);"
+        ]
+    },
+    {
+        "name": "Do not deserialize untrusted data.",
+        "id": "DS425030",
+        "description": "Deserializing attacker-supplied data using YAML, Syck, or Marshall can result in code execution.",
+        "recommendation": "Either add integrity protection or use a data format like JSON.",
+        "applies_to": [
+            "ruby"
+        ],
+        "tags": [
+            "Deserialization"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS425000.md",
+        "patterns": [
+            {
+                "pattern": "(YAML|Syck|Marshal)\\.load",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(YAML|Syck|Marshal)::load",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }            
+        ],
+        "must-match": [
+            "thing = YAML.load_file('some.yml')",
+            "thing = YAML.load_file('some.yml')\nobj = Marshal.load(data)",
+            "ruby_obj = YAML::load( yaml_obj )"
+        ]
+    },
+    {
+        "name": "Do not deserialize untrusted data.",
+        "id": "DS425040",
+        "description": "Deserializing attacker-supplied data using Newtonsoft.JSON with TypeNameHandling can result in code execution.",
+        "recommendation": "Use TypeNameHandling.None",
+        "applies_to": [
+            "csharp",
+            "fsharp"
+        ],
+        "tags": [
+            "Deserialization"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS425000.md",
+        "patterns": [
+            {
+                "pattern": "TypeNameHandling\\.(Objects|Arrays|Auto|All)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to TypeNameHandling.None",
+                "type": "RegexReplace",
+                "replacement": "TypeNameHandling.None",
+                "pattern": {
+                    "pattern": "TypeNameHandling\\.(Objects|Arrays|Auto|All)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            }
+        ],
+        "must-match": [
+            "TypeNameHandling = TypeNameHandling.Auto",
+            "TypeNameHandling = TypeNameHandling.Objects",
+            "TypeNameHandling = TypeNameHandling.Arrays",
+            "TypeNameHandling = TypeNameHandling.All"
+        ]
+    }
+]

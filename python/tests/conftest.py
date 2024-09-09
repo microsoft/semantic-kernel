@@ -310,11 +310,9 @@ def mistralai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 
 
 @fixture()
-<<<<<<< main
 def aca_python_sessions_unit_test_env(
     monkeypatch, exclude_list, override_env_param_dict
 ):
-=======
 def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     """Fixture to set environment variables for AnthropicSettings."""
     if exclude_list is None:
@@ -323,7 +321,13 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     if override_env_param_dict is None:
         override_env_param_dict = {}
 
+<<<<<<< Updated upstream
     env_vars = {"ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id", "ANTHROPIC_API_KEY": "test_api_key"}
+=======
+    env_vars = {
+        "ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id",
+        "ANTHROPIC_API_KEY": "test_api_key"
+    }
 
     env_vars.update(override_env_param_dict)
 

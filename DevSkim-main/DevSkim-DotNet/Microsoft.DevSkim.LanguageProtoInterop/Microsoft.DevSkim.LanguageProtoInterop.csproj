@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <LangVersion>9</LangVersion>
+  </PropertyGroup>
+
+<ItemGroup>
+	<PackageReference Include="OmniSharp.Extensions.LanguageServer" Version="0.19.9" />
+</ItemGroup>
+
+</Project>

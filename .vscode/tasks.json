@@ -2,6 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
+<<<<<<< main
       "label": "setup (contributing-R#)",
       "detail": "",
       "group": "build",
@@ -38,18 +39,16 @@
     },
     {
       "label": "format-check (contributing-R#)",
+=======
+      "label": "clean (functions)",
+>>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
       "command": "dotnet",
-      "type": "process",
-      "group": "build",
       "args": [
-        "jb",
-        "inspectcode",
-        "--output=inspectcode.log",
-        "--no-build",
-        "--settings=SK-dotnet.sln.DotSettings",
-        "--format=Text",
-        "SK-dotnet.sln"
+        "clean",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
       ],
+<<<<<<< main
       "options": {
         "cwd": "${workspaceFolder}/dotnet"
       }
@@ -137,26 +136,32 @@
         ".conf/.pre-commit-config.yaml",
         "-a"
       ],
+=======
+      "type": "process",
+      "problemMatcher": "$msCompile",
+>>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
       "options": {
-        "cwd": "${workspaceFolder}/python"
+        "cwd": "${workspaceFolder}/dotnet/samples/CreateChatGptPlugin/MathPlugin/azure-function"
       }
     },
+<<<<<<< main
 =======
     // ***************
     // Kernel (dotnet)
     // ***************
     // Build
 >>>>>>> upstream/main
+=======
+>>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
     {
-      "label": "build (Semantic-Kernel)",
+      "label": "build (functions)",
       "command": "dotnet",
-      "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/dotnet/SK-dotnet.sln",
-        "--configuration",
-        "Release"
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
       ],
+<<<<<<< main
       "problemMatcher": "$msCompile",
       "group": "build",
       "presentation": {
@@ -179,97 +184,49 @@
         "reveal": "always",
         "panel": "shared",
         "group": "PR-Validate"
+=======
+      "type": "process",
+      "dependsOn": "clean (functions)",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+>>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
       },
+      "problemMatcher": "$msCompile",
       "options": {
-        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.UnitTests/"
+        "cwd": "${workspaceFolder}/dotnet/samples/CreateChatGptPlugin/MathPlugin/azure-function"
       }
     },
     {
-      "label": "test (Semantic-Kernel (Code Coverage))",
+      "label": "clean release (functions)",
       "command": "dotnet",
-      "type": "process",
       "args": [
-        "test",
-        "--results-directory",
-        "${workspaceFolder}/dotnet/TestResults/",
-        "--collect",
-        "XPlat Code Coverage;Format=lcov",
-        "--filter",
-        "${input:filter}",
-        "SemanticKernel.UnitTests.csproj"
+        "clean",
+        "--configuration",
+        "Release",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
       ],
+      "type": "process",
       "problemMatcher": "$msCompile",
-      "group": "test",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      },
       "options": {
-        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.UnitTests/"
+        "cwd": "${workspaceFolder}/dotnet/samples/CreateChatGptPlugin/MathPlugin/azure-function"
       }
     },
     {
-      "label": "test (Extensions (Code Coverage))",
+      "label": "publish (functions)",
       "command": "dotnet",
-      "type": "process",
       "args": [
-        "test",
-        "--results-directory",
-        "${workspaceFolder}/dotnet/TestResults/",
-        "--collect",
-        "XPlat Code Coverage;Format=lcov",
-        "--filter",
-        "${input:filter}",
-        "Extensions.UnitTests.csproj"
+        "publish",
+        "--configuration",
+        "Release",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
       ],
-      "problemMatcher": "$msCompile",
-      "group": "test",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      },
-      "options": {
-        "cwd": "${workspaceFolder}/dotnet/src/Extensions/Extensions.UnitTests/"
-      }
-    },
-    {
-      "label": "test (ALL (Code Coverage))",
-      "command": "dotnet",
       "type": "process",
-      "args": [
-        "test",
-        "--results-directory",
-        "${workspaceFolder}/dotnet/TestResults/",
-        "--collect",
-        "XPlat Code Coverage;Format=lcov",
-        "--filter",
-        "${input:filter}"
-      ],
+      "dependsOn": "clean release (functions)",
       "problemMatcher": "$msCompile",
-      "group": "test",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      },
-      "options": {
-        "cwd": "${workspaceFolder}/dotnet/"
-      }
-    },
-    {
-      "label": "test (Semantic-Kernel Integration (Code Coverage))",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "test",
-        "--results-directory",
-        "${workspaceFolder}/dotnet/TestResults/",
-        "--collect",
-        "XPlat Code Coverage;Format=lcov",
-        "--filter",
-        "${input:filter}",
-        "IntegrationTests.csproj"
-      ],
-      "problemMatcher": "$msCompile",
+<<<<<<< main
       "group": "test",
       "presentation": {
         "reveal": "always",
@@ -340,10 +297,13 @@
         "panel": "shared",
         "group": "PR-Validate"
       },
+=======
+>>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
       "options": {
-        "cwd": "${workspaceFolder}/python"
+        "cwd": "${workspaceFolder}/dotnet/samples/CreateChatGptPlugin/MathPlugin/azure-function"
       }
     },
+<<<<<<< main
 =======
     // ****************
     // Samples (dotnet)
@@ -386,15 +346,22 @@
         "--project",
         "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj",
         "${input:filter}"
+=======
+    {
+      "type": "go",
+      "label": "go: build package",
+      "command": "build",
+      "args": [
+        "${fileDirname}"
       ],
-      "problemMatcher": "$msCompile",
-      "group": "test",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "group": "PR-Validate"
-      }
+      "problemMatcher": [
+        "$go"
+>>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
+      ],
+      "group": "build",
+      "detail": "cd /workspaces/semantic-kernel; go build ${fileDirname}"
     },
+<<<<<<< main
     {
       "label": "clean (functions)",
       "command": "dotnet",
@@ -473,11 +440,17 @@
     }
   ],
   "inputs": [
+=======
+>>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
     {
-      "id": "filter",
-      "type": "promptString",
-      "default": "",
-      "description": "Enter a filter to pass as argument or filter"
+      "type": "func",
+      "dependsOn": "build (functions)",
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/samples/CreateChatGptPlugin/MathPlugin/azure-function/bin/Debug/net6.0"
+      },
+      "command": "host start",
+      "isBackground": true,
+      "problemMatcher": "$func-dotnet-watch"
     }
   ]
 }

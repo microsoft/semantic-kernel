@@ -1,0 +1,71 @@
+[
+    {
+        "name": "ProtectedData used without additional entropy",
+        "id": "DS112266",
+        "description": "The ProtectedData class should be used with additional entropy to reduce the risk of other application calling DPAPI to access the data.",
+        "recommendation": "Add additional entropy (per-application secret).",
+        "applies_to": [
+            "csharp",
+            "fsharp"
+        ],
+        "tags": [
+            "Storage.Windows.DPAPI"
+        ],
+        "confidence": "high",
+        "severity": "moderate",
+        "rule_info": "DS112266.md",
+        "patterns": [
+            {
+                "pattern": "ProtectedData\\.Protect.*,\\s*null.*",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Add entropy placeholder",
+                "type": "RegexReplace",
+                "replacement": "$1<entropy>$2",
+                "pattern": {
+                    "pattern": "(ProtectedData\\.Protect[^,]+,\\s*)null(.*)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "ProtectedData.Protect(data ,null, DataProtectionScope.CurrentUser)"
+        ],
+        "must-not-match": [
+        ]
+    },
+    {
+        "name": "Do not store sensitive data in NSUserDefaults.",
+        "id": "DS191340",
+        "description": "Do not store sensitive data in NSUserDefaults.",
+        "recommendation": "Consider another mechanism instead.",
+        "applies_to": [
+            "objective-c"
+        ],
+        "tags": [
+            "Storage.Apple.iOS.UserDefaults.SensitiveData"
+        ],
+        "confidence": "high",
+        "severity": "moderate",
+        "rule_info": "DS191340.md",
+        "patterns": [
+            {
+                "pattern": "NSUserDefaults \\*(.*) = \\[NSUserDefaults standardUserDefaults\\];(\\n.*){1,5}$1 .*setString:(password|key)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ]
+    }
+]

@@ -173,9 +173,15 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 for item in chat_history.messages[-1].items
                 if isinstance(item, FunctionCallContent)
             ]
+<<<<<<< Updated upstream
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
+=======
+        for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
+            completions = await self._send_chat_request(chat_history, settings)
+            function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
+>>>>>>> Stashed changes
             if (fc_count := len(function_calls)) == 0:
                 return completions
 
@@ -298,10 +304,13 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             # Auto invoke is required.
             async_generator = self._get_streaming_chat_message_contents_auto_invoke(
                 chat_history, settings, **kwargs
+<<<<<<< Updated upstream
+=======
                 kernel,  # type: ignore
                 kwargs.get("arguments"),
                 chat_history,
                 settings,
+>>>>>>> Stashed changes
             )
 
         async for messages in async_generator:
@@ -332,7 +341,11 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         for request_index in range(
             settings.function_choice_behavior.maximum_auto_invoke_attempts
         ):
+<<<<<<< Updated upstream
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
+=======
+        for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
+>>>>>>> Stashed changes
             all_messages: list[StreamingChatMessageContent] = []
             function_call_returned = False
             async for messages in self._send_chat_streaming_request(

@@ -6,3 +6,6 @@
 [submodule "semantic-kernel2"]
 	path = semantic-kernel2
 	url = git@github.com:Bryan-Roe/semantic-kernel
+[submodule "SK"]
+	path = SK
+	url = git@github.com:Bryan-Roe/semantic-kernel.git

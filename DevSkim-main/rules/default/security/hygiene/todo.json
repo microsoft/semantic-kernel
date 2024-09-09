@@ -1,0 +1,28 @@
+[
+    {
+        "name": "Suspicious comment",
+        "id": "DS176209",
+        "description": "A \"TODO\" or similar was left in source code, possibly indicating incomplete functionality",
+        "recommendation": "",
+        "tags": [
+            "Hygiene.Comment.Suspicious"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS176209.md",
+        "patterns": [
+            {
+                "pattern": "(TODO|FIXME|REMOVEME|HACK|BLACK MAGIC)",
+                "type": "RegexWord",
+                "scopes": [
+                    "code", "comment"
+                ]
+            }
+        ],
+        "must-match": [
+            "//TODO: fix it later"
+        ],
+        "must-not-match": [
+        ]
+    }
+]
