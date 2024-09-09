@@ -30,24 +30,24 @@ Auto function invocation can cause a side effect where a single call to get_chat
 
 ### Two new abstract methods
 
+> Revision: In order to not break existing customers who have implemented their own AI connectors, these two methods are not decorated with the `@abstractmethod` decorator, but instead throw an exception if they are not implemented in the built-in AI connectors.
+
 ```python
-@abstractmethod
-async def _send_chat_request(
+async def _inner_get_chat_message_content(
     self,
     chat_history: ChatHistory,
     settings: PromptExecutionSettings
 ) -> list[ChatMessageContent]:
-    pass
+    raise NotImplementedError
 ```
 
 ```python
-@abstractmethod
-async def _send_streaming_chat_request(
+async def _inner_get_streaming_chat_message_content(
     self,
     chat_history: ChatHistory,
     settings: PromptExecutionSettings
 ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
-    pass
+    raise NotImplementedError
 ```
 
 ### A new `ClassVar[bool]` variable in `ChatCompletionClientBase` to indicate whether a connector supports function calling
