@@ -3,7 +3,11 @@
 ## Requirements
 
 1. **Azure OpenAI**: go to the [Azure OpenAI Quickstart](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart)
+<<<<<<< HEAD
+   and deploy an instance of Azure OpenAI, deploy a model like "text-davinci-003" find your Endpoint and API key.
+=======
    and deploy an instance of Azure OpenAI, deploy a model like "gpt-35-turbo-instruct" find your Endpoint and API key.
+>>>>>>> origin/111
 2. **OpenAI**: go to [OpenAI](https://platform.openai.com) to register and procure your API key.
 3. **Azure Bing Web Search API**: go to [Bing Web Search API](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
    and select `Try Now` to get started.
