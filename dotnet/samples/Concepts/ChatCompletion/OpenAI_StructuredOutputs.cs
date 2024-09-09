@@ -69,23 +69,25 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 
         this.OutputResult(mathReasoning);
 
-        //  Step #1
-        //  Explanation: Start with the given equation.
-        //  Output: 8x + 7 = -23
+        // Output:
 
-        //  Step #2
-        //  Explanation: To isolate the term containing x, subtract 7 from both sides of the equation.
-        //  Output: 8x + 7 - 7 = -23 - 7
+        // Step #1
+        // Explanation: Start with the given equation.
+        // Output: 8x + 7 = -23
 
-        //  Step #3
-        //  Explanation: To solve for x, divide both sides of the equation by 8, which is the coefficient of x.
-        //  Output: (8x)/8 = (-30)/8
+        // Step #2
+        // Explanation: To isolate the term containing x, subtract 7 from both sides of the equation.
+        // Output: 8x + 7 - 7 = -23 - 7
 
-        //  Step #4
-        //  Explanation: This simplifies to x = -3.75, as dividing -30 by 8 gives -3.75.
-        //  Output: x = -3.75
+        // Step #3
+        // Explanation: To solve for x, divide both sides of the equation by 8, which is the coefficient of x.
+        // Output: (8x)/8 = (-30)/8
 
-        //  Final answer: x = -3.75
+        // Step #4
+        // Explanation: This simplifies to x = -3.75, as dividing -30 by 8 gives -3.75.
+        // Output: x = -3.75
+
+        // Final answer: x = -3.75
     }
 
     [Fact]
@@ -108,23 +110,25 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 
         this.OutputResult(mathReasoning);
 
-        //  Step #1
-        //  Explanation: Start with the given equation.
-        //  Output: 8x + 7 = -23
+        // Output:
 
-        //  Step #2
-        //  Explanation: To isolate the term containing x, subtract 7 from both sides of the equation.
-        //  Output: 8x + 7 - 7 = -23 - 7
+        // Step #1
+        // Explanation: Start with the given equation.
+        // Output: 8x + 7 = -23
 
-        //  Step #3
-        //  Explanation: To solve for x, divide both sides of the equation by 8, which is the coefficient of x.
-        //  Output: (8x)/8 = (-30)/8
+        // Step #2
+        // Explanation: To isolate the term containing x, subtract 7 from both sides of the equation.
+        // Output: 8x + 7 - 7 = -23 - 7
 
-        //  Step #4
-        //  Explanation: This simplifies to x = -3.75, as dividing -30 by 8 gives -3.75.
-        //  Output: x = -3.75
+        // Step #3
+        // Explanation: To solve for x, divide both sides of the equation by 8, which is the coefficient of x.
+        // Output: (8x)/8 = (-30)/8
 
-        //  Final answer: x = -3.75
+        // Step #4
+        // Explanation: This simplifies to x = -3.75, as dividing -30 by 8 gives -3.75.
+        // Output: x = -3.75
+
+        // Final answer: x = -3.75
     }
 
     #region private
