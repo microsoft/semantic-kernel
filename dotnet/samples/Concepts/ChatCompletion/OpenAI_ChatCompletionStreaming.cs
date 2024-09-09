@@ -77,7 +77,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
     /// <summary>
     /// This example demonstrates how the chat completion service streams raw function call content.
-    /// See <see cref="FunctionCalling.FunctionCalling.RunStreamingChatAPIWithManualFunctionCallingAsync"/> for a sample demonstrating how to simplify
+    /// See <see cref="FunctionCalling.FunctionCalling.RunStreamingChatCompletionApiWithManualFunctionCallingAsync"/> for a sample demonstrating how to simplify
     /// function call content building out of streamed function call updates using the <see cref="FunctionCallContentBuilder"/>.
     /// </summary>
     [Fact]
