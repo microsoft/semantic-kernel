@@ -2,7 +2,19 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 // Copyright (c) Microsoft. All rights reserved.
+=======
+﻿// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
+=======
+﻿// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
+=======
+﻿// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 =======
 ﻿// Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
