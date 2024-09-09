@@ -161,6 +161,11 @@ def chat_history() -> "ChatHistory":
     return ChatHistory()
 
 
+@fixture(scope="function")
+def prompt() -> str:
+    return "test prompt"
+
+
 # @fixture(autouse=True)
 # def enable_debug_mode():
 #     """Set `autouse=True` to enable easy debugging for tests.
@@ -306,10 +311,7 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     if override_env_param_dict is None:
         override_env_param_dict = {}
 
-    env_vars = {
-        "ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id",
-        "ANTHROPIC_API_KEY": "test_api_key"
-    }
+    env_vars = {"ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id", "ANTHROPIC_API_KEY": "test_api_key"}
 
     env_vars.update(override_env_param_dict)
 

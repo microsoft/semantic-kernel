@@ -27,7 +27,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         kernel ??= this.Kernel;
         arguments ??= this.Arguments;
 
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
         ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
 
@@ -54,7 +54,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             history.Add(message);
         }
 
-        foreach (ChatMessageContent message in messages ?? [])
+        foreach (ChatMessageContent message in messages)
         {
             message.AuthorName = this.Name;
 
@@ -72,7 +72,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         kernel ??= this.Kernel;
         arguments ??= this.Arguments;
 
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
         ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
 
@@ -107,7 +107,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         }
     }
 
-    private (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
+    internal static (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
     {
         // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
         KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("placeholder", arguments?.ExecutionSettings?.Values);
@@ -130,7 +130,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         string? instructions =
             this.Template == null ?
-                null : // %%% this.Instructions :
+                this.Instructions : // %%% INSTRUCTIONS / TEMPLATE ???
                 await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         if (!string.IsNullOrWhiteSpace(instructions))

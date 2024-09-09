@@ -128,8 +128,6 @@ public static class ApiManifestKernelExtensions
             var predicate = OpenApiFilterService.CreatePredicate(null, null, requestUrls, openApiDocument);
             var filteredOpenApiDocument = OpenApiFilterService.CreateFilteredDocument(openApiDocument, predicate);
 
-            var serverUrl = filteredOpenApiDocument.Servers.FirstOrDefault()?.Url;
-
             var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.ContainsKey(apiName) == true
                 ? pluginParameters.FunctionExecutionParameters[apiName]
                 : null;
@@ -145,17 +143,18 @@ public static class ApiManifestKernelExtensions
                 openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
 
-            if (serverUrl is not null)
+            var server = filteredOpenApiDocument.Servers.FirstOrDefault();
+            if (server?.Url is not null)
             {
                 foreach (var path in filteredOpenApiDocument.Paths)
                 {
-                    var operations = OpenApiDocumentParser.CreateRestApiOperations(serverUrl, path.Key, path.Value, null, logger);
+                    var operations = OpenApiDocumentParser.CreateRestApiOperations(server, path.Key, path.Value, null, logger);
                     foreach (RestApiOperation operation in operations)
                     {
                         try
                         {
                             logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                            functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(serverUrl), loggerFactory));
+                            functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
                         }
                         catch (Exception ex) when (!ex.IsCriticalException())
                         {
