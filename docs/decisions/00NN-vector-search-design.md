@@ -78,7 +78,7 @@ class HybridVectorizableTextSearchQuery(
 public class VectorSearchOptions
 {
     public static VectorSearchOptions Default { get; } = new VectorSearchOptions();
-    public .VectorSearchFilter? Filter { get; init; } = new VectorSearchFilter();
+    public VectorSearchFilter? Filter { get; init; } = new VectorSearchFilter();
     public string? VectorFieldName { get; init; }
     public int Limit { get; init; } = 3;
     public int Offset { get; init; } = 0;
