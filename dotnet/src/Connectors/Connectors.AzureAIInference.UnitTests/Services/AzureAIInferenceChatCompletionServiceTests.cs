@@ -55,11 +55,11 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
 
         // Act & Assert
         // Endpoint constructor
-        new AzureAIInferenceChatCompletionService(endpoint: this._endpoint); // Only the endpoint
-        new AzureAIInferenceChatCompletionService(httpClient: httpClient); // Only the HttpClient with a BaseClass defined
-        new AzureAIInferenceChatCompletionService(modelId: "model", endpoint: this._endpoint); // ModelId and endpoint
+        new AzureAIInferenceChatCompletionService(endpoint: this._endpoint, apiKey: null); // Only the endpoint
+        new AzureAIInferenceChatCompletionService(httpClient: httpClient, apiKey: null); // Only the HttpClient with a BaseClass defined
+        new AzureAIInferenceChatCompletionService(modelId: "model", endpoint: this._endpoint, apiKey: null); // ModelId and endpoint
         new AzureAIInferenceChatCompletionService(modelId: "model", apiKey: "api-key", endpoint: this._endpoint); // ModelId, apiKey, and endpoint
-        new AzureAIInferenceChatCompletionService(endpoint: this._endpoint, loggerFactory: loggerFactoryMock.Object); // Endpoint and loggerFactory
+        new AzureAIInferenceChatCompletionService(endpoint: this._endpoint, apiKey: null, loggerFactory: loggerFactoryMock.Object); // Endpoint and loggerFactory
 
         // Breaking Glass constructor
         new AzureAIInferenceChatCompletionService(modelId: null, chatClient: client); // Client without model 
@@ -117,7 +117,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     {
         // Arrange
         this._httpClient.BaseAddress = this._endpoint;
-        var chatCompletion = new AzureAIInferenceChatCompletionService(modelId: "any", apiKey: null, httpClient: this._httpClient, endpoint: null!);
+        var chatCompletion = new AzureAIInferenceChatCompletionService(modelId: "any", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         { Content = this.CreateDefaultStringContent() };
 
@@ -159,7 +159,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var service = new AzureAIInferenceChatCompletionService(httpClient: this._httpClientWithBaseAddress);
-        using var stream = File.OpenRead("TestData/chat_completion_streaming_response.txt");
+        await using var stream = File.OpenRead("TestData/chat_completion_streaming_response.txt");
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {

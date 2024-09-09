@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAIInference;
 /// Chat completion prompt execution settings.
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
+public sealed class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAIInferencePromptExecutionSettings"/> class.
@@ -48,7 +48,7 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("frequency_penalty")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public double? FrequencyPenalty
+    public float? FrequencyPenalty
     {
         get => this._frequencyPenalty;
         set
@@ -67,7 +67,7 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("presence_penalty")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public double? PresencePenalty
+    public float? PresencePenalty
     {
         get => this._presencePenalty;
         set
@@ -87,7 +87,7 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("temperature")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public double? Temperature
+    public float? Temperature
     {
         get => this._temperature;
         set
@@ -108,7 +108,7 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("top_p")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public double? NucleusSamplingFactor
+    public float? NucleusSamplingFactor
     {
         get => this._nucleusSamplingFactor;
         set
@@ -267,10 +267,10 @@ public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
     #region private ================================================================================
 
     private string? _extraParameters;
-    private double? _frequencyPenalty;
-    private double? _presencePenalty;
-    private double? _temperature;
-    private double? _nucleusSamplingFactor;
+    private float? _frequencyPenalty;
+    private float? _presencePenalty;
+    private float? _temperature;
+    private float? _nucleusSamplingFactor;
     private int? _maxTokens;
     private object? _responseFormat;
     private IList<string> _stopSequences = [];

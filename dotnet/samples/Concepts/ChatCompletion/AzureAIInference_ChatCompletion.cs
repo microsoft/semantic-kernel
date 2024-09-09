@@ -26,21 +26,21 @@ public class AzureAIInference_ChatCompletion(ITestOutputHelper output) : BaseTes
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
-        await MessageOutputAsync(chatHistory);
+        OutputLastMessage(chatHistory);
 
         // First assistant message
         var reply = await chatService.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        await MessageOutputAsync(chatHistory);
+        OutputLastMessage(chatHistory);
 
         // Second user message
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
-        await MessageOutputAsync(chatHistory);
+        OutputLastMessage(chatHistory);
 
         // Second assistant message
         reply = await chatService.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        await MessageOutputAsync(chatHistory);
+        OutputLastMessage(chatHistory);
 
         /* Output:
 
@@ -93,18 +93,5 @@ public class AzureAIInference_ChatCompletion(ITestOutputHelper output) : BaseTes
         reply = await kernel.InvokePromptAsync(chatPrompt.ToString());
 
         Console.WriteLine(reply);
-    }
-
-    /// <summary>
-    /// Outputs the last message of the chat history
-    /// </summary>
-    private Task MessageOutputAsync(ChatHistory chatHistory)
-    {
-        var message = chatHistory.Last();
-
-        Console.WriteLine($"{message.Role}: {message.Content}");
-        Console.WriteLine("------------------------");
-
-        return Task.CompletedTask;
     }
 }

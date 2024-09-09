@@ -111,7 +111,7 @@ public sealed class ChatClientCoreTests
     }
 
     [Fact]
-    public async Task ItDoNotAddSemanticKernelHeadersWhenBreakingGlassClientIsProvidedAsync()
+    public async Task ItDoesNotAddSemanticKernelHeadersWhenBreakingGlassClientIsProvidedAsync()
     {
         // Arrange
         using HttpMessageHandlerStub handler = new();
@@ -145,7 +145,7 @@ public sealed class ChatClientCoreTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("value")]
-    public void ItAddAttributesButDoesNothingIfNullOrEmpty(string? value)
+    public void ItAddsAttributesButDoesNothingIfNullOrEmpty(string? value)
     {
         // Arrange
         var clientCore = new ChatClientCore("model", "api-key", this._endpoint);
@@ -166,7 +166,7 @@ public sealed class ChatClientCoreTests
     }
 
     [Fact]
-    public void ItAddModelIdAttributeAsExpected()
+    public void ItAddsModelIdAttributeAsExpected()
     {
         // Arrange
         var expectedModelId = "modelId";

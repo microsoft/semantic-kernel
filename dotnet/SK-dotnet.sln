@@ -322,10 +322,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIModelRouter", "samples\De
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Ollama.UnitTests", "src\Connectors\Connectors.Ollama.UnitTests\Connectors.Ollama.UnitTests.csproj", "{924DB138-1223-4C99-B6E6-0938A3FA14EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureAIInference", "src\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj", "{E34695C3-B652-478C-BA7B-466249F5C7E1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureAIInference.UnitTests", "src\Connectors\Connectors.AzureAIInference.UnitTests\Connectors.AzureAIInference.UnitTests.csproj", "{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureCosmosDBNoSQL.UnitTests", "src\Connectors\Connectors.AzureCosmosDBNoSQL.UnitTests\Connectors.AzureCosmosDBNoSQL.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
@@ -337,6 +333,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI", "src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj", "{7AAD7388-307D-41FB-B80A-EF9E3A4E31F0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI.UnitTests", "src\Connectors\Connectors.AzureOpenAI.UnitTests\Connectors.AzureOpenAI.UnitTests.csproj", "{8CF06B22-50F3-4F71-A002-622DB49DF0F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureAIInference", "src\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj", "{063044B2-A901-43C5-BFDF-5E4E71C7BC33}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureAIInference.UnitTests", "src\Connectors\Connectors.AzureAIInference.UnitTests\Connectors.AzureAIInference.UnitTests.csproj", "{E0D45DDB-6D32-40FC-AC79-E1F342C4F513}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -825,18 +825,6 @@ Global
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E34695C3-B652-478C-BA7B-466249F5C7E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E34695C3-B652-478C-BA7B-466249F5C7E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E34695C3-B652-478C-BA7B-466249F5C7E1}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
-		{E34695C3-B652-478C-BA7B-466249F5C7E1}.Publish|Any CPU.Build.0 = Publish|Any CPU
-		{E34695C3-B652-478C-BA7B-466249F5C7E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E34695C3-B652-478C-BA7B-466249F5C7E1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
-		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}.Publish|Any CPU.Build.0 = Debug|Any CPU
-		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -867,6 +855,18 @@ Global
 		{8CF06B22-50F3-4F71-A002-622DB49DF0F5}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{8CF06B22-50F3-4F71-A002-622DB49DF0F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CF06B22-50F3-4F71-A002-622DB49DF0F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{063044B2-A901-43C5-BFDF-5E4E71C7BC33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{063044B2-A901-43C5-BFDF-5E4E71C7BC33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{063044B2-A901-43C5-BFDF-5E4E71C7BC33}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{063044B2-A901-43C5-BFDF-5E4E71C7BC33}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{063044B2-A901-43C5-BFDF-5E4E71C7BC33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{063044B2-A901-43C5-BFDF-5E4E71C7BC33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0D45DDB-6D32-40FC-AC79-E1F342C4F513}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0D45DDB-6D32-40FC-AC79-E1F342C4F513}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0D45DDB-6D32-40FC-AC79-E1F342C4F513}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0D45DDB-6D32-40FC-AC79-E1F342C4F513}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{E0D45DDB-6D32-40FC-AC79-E1F342C4F513}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0D45DDB-6D32-40FC-AC79-E1F342C4F513}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -978,13 +978,13 @@ Global
 		{38374C62-0263-4FE8-A18C-70FC8132912B} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{2918478E-BC86-4D53-9D01-9C318F80C14F} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
-		{E34695C3-B652-478C-BA7B-466249F5C7E1} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
-		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{385A8FE5-87E2-4458-AE09-35E10BD2E67F} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{AD9ECE32-088A-49D8-8ACB-890E79F1E7B8} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{36DDC119-C030-407E-AC51-A877E9E0F660} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{7AAD7388-307D-41FB-B80A-EF9E3A4E31F0} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{8CF06B22-50F3-4F71-A002-622DB49DF0F5} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
+		{063044B2-A901-43C5-BFDF-5E4E71C7BC33} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
+		{E0D45DDB-6D32-40FC-AC79-E1F342C4F513} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

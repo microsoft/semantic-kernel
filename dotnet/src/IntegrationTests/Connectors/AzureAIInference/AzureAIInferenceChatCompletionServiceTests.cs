@@ -8,6 +8,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.Inference;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -42,10 +44,16 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
         Assert.NotNull(config);
 
-        var sut = new AzureAIInferenceChatCompletionService(
-            endpoint: config.Endpoint,
-            apiKey: config.ApiKey,
-            loggerFactory: this._loggerFactory);
+        var sut = (config.ApiKey is not null)
+                ? new AzureAIInferenceChatCompletionService(
+                    endpoint: config.Endpoint,
+                    apiKey: config.ApiKey,
+                    loggerFactory: this._loggerFactory)
+                : new AzureAIInferenceChatCompletionService(
+                    modelId: null,
+                    endpoint: config.Endpoint,
+                    credential: new AzureCliCredential(),
+                    loggerFactory: this._loggerFactory);
 
         ChatHistory chatHistory = [
             new ChatMessageContent(AuthorRole.User, prompt)
@@ -67,10 +75,16 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
         Assert.NotNull(config);
 
-        var sut = new AzureAIInferenceChatCompletionService(
-            endpoint: config.Endpoint,
-            apiKey: config.ApiKey,
-            loggerFactory: this._loggerFactory);
+        var sut = (config.ApiKey is not null)
+                ? new AzureAIInferenceChatCompletionService(
+                    endpoint: config.Endpoint,
+                    apiKey: config.ApiKey,
+                    loggerFactory: this._loggerFactory)
+                : new AzureAIInferenceChatCompletionService(
+                    modelId: null,
+                    endpoint: config.Endpoint,
+                    credential: new AzureCliCredential(),
+                    loggerFactory: this._loggerFactory);
 
         ChatHistory chatHistory = [
             new ChatMessageContent(AuthorRole.User, prompt)
@@ -82,7 +96,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         await foreach (var update in sut.GetStreamingChatMessageContentsAsync(chatHistory))
         {
             fullContent.Append(update.Content);
-        };
+        }
 
         // Assert
         Assert.Contains(expectedAnswerContains, fullContent.ToString(), StringComparison.OrdinalIgnoreCase);
@@ -92,7 +106,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
     //[Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
     public async Task ItCanUseChatForTextGenerationAsync()
     {
-        // 
+        // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
         var func = kernel.CreateFunctionFromPrompt(
@@ -111,7 +125,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
     [Fact]
     public async Task ItStreamingFromKernelTestAsync()
     {
-        // 
+        // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
         var plugins = TestHelpers.ImportSamplePlugins(kernel, "ChatPlugin");
@@ -133,7 +147,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
     [Fact]
     public async Task ItHttpRetryPolicyTestAsync()
     {
-        // 
+        // Arrange
         List<HttpStatusCode?> statusCodes = [];
 
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
@@ -142,7 +156,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
 
         var kernelBuilder = Kernel.CreateBuilder();
 
-        kernelBuilder.AddAzureAIInferenceChatCompletion(endpoint: config.Endpoint);
+        kernelBuilder.AddAzureAIInferenceChatCompletion(endpoint: config.Endpoint, apiKey: null);
 
         kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
         {
@@ -173,31 +187,26 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
     }
 
     [Fact]
-    public async Task ItShouldReturnMetadataAsync()
+    public async Task ItShouldReturnInnerContentAsync()
     {
-        // 
+        // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
         var plugins = TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
         // Act
         var result = await kernel.InvokeAsync(plugins["FunPlugin"]["Limerick"]);
-
+        var content = result.GetValue<ChatMessageContent>();
         // Assert
-        Assert.NotNull(result.Metadata);
+        Assert.NotNull(content);
+        Assert.NotNull(content.InnerContent);
+
+        Assert.IsType<CompletionsUsage>(content.InnerContent);
+        var usage = (CompletionsUsage)content.InnerContent;
 
         // Usage
-        Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
-        Assert.NotNull(usageObject);
-
-        var jsonObject = JsonSerializer.SerializeToElement(usageObject);
-        Assert.True(jsonObject.TryGetProperty("PromptTokens", out JsonElement promptTokensJson));
-        Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
-        Assert.NotEqual(0, promptTokens);
-
-        Assert.True(jsonObject.TryGetProperty("CompletionTokens", out JsonElement completionTokensJson));
-        Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
-        Assert.NotEqual(0, completionTokens);
+        Assert.NotEqual(0, usage.PromptTokens);
+        Assert.NotEqual(0, usage.CompletionTokens);
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -205,7 +214,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
     [InlineData("\r\n")]
     public async Task CompletionWithDifferentLineEndingsAsync(string lineEnding)
     {
-        // 
+        // Arrange
         var prompt =
             "Given a json input and a request. Apply the request on the json input and return the result. " +
             $"Put the result in between <result></result> tags{lineEnding}" +
@@ -225,7 +234,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
     [Fact]
     public async Task ItHasSemanticKernelVersionHeaderAsync()
     {
-        // 
+        // Arrange
         using var defaultHandler = new HttpClientHandler();
         using var httpHeaderHandler = new HttpHeaderHandler(defaultHandler);
         using var httpClient = new HttpClient(httpHeaderHandler);
