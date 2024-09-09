@@ -3,8 +3,7 @@
 status: proposed
 contact: dmytrostruk
 date: 2024-09-10
-deciders: 
-consulted: 
+deciders: sergeymenshykh, markwallace, rbarreto, westey-m, dmytrostruk, ben.thomas, evan.mattson, crickman
 ---
 
 # Structured Outputs implementation in .NET version of Semantic Kernel
