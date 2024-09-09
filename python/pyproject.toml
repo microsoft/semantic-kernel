@@ -68,7 +68,7 @@ google = [
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers ~= 2.2",
-    "torch == 2.2.2"
+    "torch == 2.4.1"
 ]
 mongo = [
     "motor ~= 3.3.2"
