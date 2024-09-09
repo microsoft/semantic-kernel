@@ -16,8 +16,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
     public void BuildQueryBuildsRedisQueryWithDefaults()
     {
         // Arrange.
-        var floatVectorQuery = VectorSearchQuery.CreateQuery(
-            new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f }));
+        var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
         var storagePropertyNames = new Dictionary<string, string>()
         {
             { "Vector", "storage_Vector" },
@@ -25,7 +24,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var firstVectorPropertyName = "storage_Vector";
 
         // Act.
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVectorQuery, storagePropertyNames, firstVectorPropertyName, null);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVector, VectorSearchOptions.Default, storagePropertyNames, firstVectorPropertyName, null);
 
         // Assert.
         Assert.NotNull(query);
@@ -39,9 +38,8 @@ public class RedisVectorStoreCollectionSearchMappingTests
     public void BuildQueryBuildsRedisQueryWithCustomVectorName()
     {
         // Arrange.
-        var floatVectorQuery = VectorSearchQuery.CreateQuery(
-            new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f }),
-            new VectorSearchOptions { Limit = 5, Offset = 3, VectorFieldName = "Vector" });
+        var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
+        var vectorSearchOptions = new VectorSearchOptions { Limit = 5, Offset = 3, VectorFieldName = "Vector" };
         var storagePropertyNames = new Dictionary<string, string>()
         {
             { "Vector", "storage_Vector" },
@@ -50,7 +48,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var selectFields = new string[] { "storage_Field1", "storage_Field2" };
 
         // Act.
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVectorQuery, storagePropertyNames, firstVectorPropertyName, selectFields);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVector, vectorSearchOptions, storagePropertyNames, firstVectorPropertyName, selectFields);
 
         // Assert.
         Assert.NotNull(query);
@@ -61,9 +59,8 @@ public class RedisVectorStoreCollectionSearchMappingTests
     public void BuildQueryFailsForInvalidVectorName()
     {
         // Arrange.
-        var floatVectorQuery = VectorSearchQuery.CreateQuery(
-            new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f }),
-            new VectorSearchOptions { VectorFieldName = "UnknownVector" });
+        var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
+        var vectorSearchOptions = new VectorSearchOptions { VectorFieldName = "UnknownVector" };
         var storagePropertyNames = new Dictionary<string, string>()
         {
             { "Vector", "storage_Vector" },
@@ -73,7 +70,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         // Act & Assert.
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVectorQuery, storagePropertyNames, firstVectorPropertyName, null);
+            var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVector, vectorSearchOptions, storagePropertyNames, firstVectorPropertyName, null);
         });
     }
 

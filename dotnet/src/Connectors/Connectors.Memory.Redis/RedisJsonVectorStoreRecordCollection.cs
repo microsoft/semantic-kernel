@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IVectorSearch<TRecord>
+public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TRecord : class
 {
@@ -369,50 +369,48 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync(VectorSearchQuery vectorQuery, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(vectorQuery);
+        Verify.NotNull(vector);
 
         if (this._firstVectorPropertyName is null)
         {
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
 
-        if (vectorQuery is VectorizedSearchQuery<ReadOnlyMemory<float>> floatVectorQuery)
+        if (vector is not ReadOnlyMemory<float> floatVector)
         {
-            var internalOptions = floatVectorQuery.SearchOptions ?? Data.VectorSearchOptions.Default;
-
-            // Build query & search.
-            var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVectorQuery, this._storagePropertyNames, this._firstVectorPropertyName, null);
-            var results = await this.RunOperationAsync(
-                "FT.SEARCH",
-                () => this._database
-                    .FT()
-                    .SearchAsync(this._collectionName, query)).ConfigureAwait(false);
-
-            // Loop through result and convert to the caller's data model.
-            foreach (var result in results.Documents)
-            {
-                var redisResultString = result["json"].ToString();
-                var mappedRecord = VectorStoreErrorHandler.RunModelConversion(
-                    DatabaseName,
-                    this._collectionName,
-                    "FT.SEARCH",
-                    () =>
-                    {
-                        var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
-                        return this._mapper.MapFromStorageToDataModel(
-                            (this.RemoveKeyPrefixIfNeeded(result.Id), node),
-                            new() { IncludeVectors = internalOptions.IncludeVectors });
-                    });
-
-                yield return new VectorSearchResult<TRecord>(mappedRecord, result.Score);
-            }
-
-            yield break;
+            throw new NotSupportedException($"The provided vector type {vector.GetType().Name} is not supported by the Redis JSON connector.");
         }
 
-        throw new NotSupportedException($"A {nameof(VectorSearchQuery)} of type {vectorQuery.QueryType} is not supported by the Redis JSON connector.");
+        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+
+        // Build query & search.
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVector, internalOptions, this._storagePropertyNames, this._firstVectorPropertyName, null);
+        var results = await this.RunOperationAsync(
+            "FT.SEARCH",
+            () => this._database
+                .FT()
+                .SearchAsync(this._collectionName, query)).ConfigureAwait(false);
+
+        // Loop through result and convert to the caller's data model.
+        foreach (var result in results.Documents)
+        {
+            var redisResultString = result["json"].ToString();
+            var mappedRecord = VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this._collectionName,
+                "FT.SEARCH",
+                () =>
+                {
+                    var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
+                    return this._mapper.MapFromStorageToDataModel(
+                        (this.RemoveKeyPrefixIfNeeded(result.Id), node),
+                        new() { IncludeVectors = internalOptions.IncludeVectors });
+                });
+
+            yield return new VectorSearchResult<TRecord>(mappedRecord, result.Score);
+        }
     }
 
     /// <summary>

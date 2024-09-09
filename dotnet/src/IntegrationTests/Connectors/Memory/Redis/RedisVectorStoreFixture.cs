@@ -230,6 +230,8 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             container.ID,
             new ContainerStartParameters());
 
+        await Task.Delay(1000);
+
         return container.ID;
     }
 

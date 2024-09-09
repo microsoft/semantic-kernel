@@ -64,11 +64,9 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var upsertResult = await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync("HUpsert-1", new GetRecordOptions { IncludeVectors = true });
         var searchResult = await sut
-            .SearchAsync(
-                VectorSearchQuery.CreateQuery(
-                    new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
-                    new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 1), IncludeVectors = true }))
-            .ToListAsync();
+            .VectorizedSearchAsync(
+                new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
+                new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 1), IncludeVectors = true }).ToListAsync();
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -315,13 +313,13 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelCode", 1) : new VectorSearchFilter().EqualTo("HotelName", "My Hotel 1");
 
         // Act
-        var actual = await sut.SearchAsync(VectorSearchQuery.CreateQuery(
+        var actual = await sut.VectorizedSearchAsync(
             vector,
             new VectorSearchOptions
             {
                 IncludeVectors = includeVectors,
                 Filter = filter
-            })).ToListAsync();
+            }).ToListAsync();
 
         // Assert
         Assert.Single(actual);

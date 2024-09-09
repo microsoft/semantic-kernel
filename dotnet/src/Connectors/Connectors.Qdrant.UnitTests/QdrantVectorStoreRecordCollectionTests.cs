@@ -553,7 +553,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanSearchWithVectorAndFilterAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
         where TKey : notnull
     {
-        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors) as IVectorSearch<SinglePropsModel<TKey>>;
+        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
 
         // Arrange.
         var scoredPoint = CreateScoredPoint(hasNamedVectors, testRecordKey);
@@ -561,8 +561,9 @@ public class QdrantVectorStoreRecordCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel<TKey>.Data), "data 1");
 
         // Act.
-        var actual = await sut!.SearchAsync(
-            VectorSearchQuery.CreateQuery(new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }), new() { IncludeVectors = true, Filter = filter, Limit = 5, Offset = 2 }),
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
+            new() { IncludeVectors = true, Filter = filter, Limit = 5, Offset = 2 },
             this._testCancellationToken).ToListAsync();
 
         // Assert.

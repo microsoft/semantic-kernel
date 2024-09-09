@@ -567,16 +567,15 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
 
         // Act.
-        var searchResults = await sut.SearchAsync(
-            VectorSearchQuery.CreateQuery(
-                new ReadOnlyMemory<float>(new float[4]),
-                new()
-                {
-                    Limit = 5,
-                    Offset = 3,
-                    Filter = filter,
-                    VectorFieldName = nameof(MultiPropsModel.Vector1)
-                }),
+        var searchResults = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[4]),
+            new()
+            {
+                Limit = 5,
+                Offset = 3,
+                Filter = filter,
+                VectorFieldName = nameof(MultiPropsModel.Vector1)
+            },
             this._testCancellationToken).ToListAsync();
 
         // Assert.
@@ -608,16 +607,15 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
 
         // Act.
-        var searchResults = await sut.SearchAsync(
-            VectorSearchQuery.CreateQuery(
-                "search string",
-                new()
-                {
-                    Limit = 5,
-                    Offset = 3,
-                    Filter = filter,
-                    VectorFieldName = nameof(MultiPropsModel.Vector1)
-                }),
+        var searchResults = await sut.VectorizableTextSearchAsync(
+            "search string",
+            new()
+            {
+                Limit = 5,
+                Offset = 3,
+                Filter = filter,
+                VectorFieldName = nameof(MultiPropsModel.Vector1)
+            },
             this._testCancellationToken).ToListAsync();
 
         // Assert.

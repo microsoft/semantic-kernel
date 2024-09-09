@@ -458,7 +458,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "data 1");
 
         // Act.
-        var actual = await sut!.SearchAsync(VectorSearchQuery.CreateQuery(
+        var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
             new()
             {
@@ -466,7 +466,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
                 Filter = filter,
                 Limit = 5,
                 Offset = 2
-            })).ToListAsync();
+            }).ToListAsync();
 
         // Assert.
         var expectedArgs = new object[]

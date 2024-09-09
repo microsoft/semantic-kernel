@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IVectorSearch<TRecord>
+public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IVectorizableTextSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TRecord : class
 {
@@ -317,72 +317,84 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync(VectorSearchQuery vectorQuery, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, Data.VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(vectorQuery);
+        Verify.NotNull(vector);
 
         if (this._firstVectorPropertyName is null)
         {
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
 
-        string? queryText = null;
-        string? filterString = null;
-        var searchFields = new List<string>();
+        if (vector is not ReadOnlyMemory<float> floatVector)
+        {
+            throw new NotSupportedException($"The provided vector type {vector.GetType().Name} is not supported by the Azure AI Search connector.");
+        }
+
+        // Resolve options.
+        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+        string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
+
+        // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
-        int limit = 3;
-        int offset = 0;
-        bool includeVectors = false;
-
-        if (vectorQuery is VectorizedSearchQuery<ReadOnlyMemory<float>> floatVectorQuery)
-        {
-            // Resolve options.
-            var internalOptions = floatVectorQuery.SearchOptions ?? Data.VectorSearchOptions.Default;
-            string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
-
-            // Configure search settings.
-            filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._storagePropertyNames);
-            vectorQueries.Add(new VectorizedQuery(floatVectorQuery.Vector) { KNearestNeighborsCount = internalOptions.Limit, Fields = { vectorFieldName } });
-            limit = internalOptions.Limit;
-            offset = internalOptions.Offset;
-            includeVectors = internalOptions.IncludeVectors;
-        }
-        else if (vectorQuery is VectorizableTextSearchQuery vectorizableTextQuery)
-        {
-            // Resolve options.
-            var internalOptions = vectorizableTextQuery.SearchOptions ?? Data.VectorSearchOptions.Default;
-            string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
-
-            // Configure search settings.
-            filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._storagePropertyNames);
-            vectorQueries.Add(new VectorizableTextQuery(vectorizableTextQuery.QueryText) { KNearestNeighborsCount = internalOptions.Limit, Fields = { vectorFieldName } });
-            limit = internalOptions.Limit;
-            offset = internalOptions.Offset;
-            includeVectors = internalOptions.IncludeVectors;
-        }
-        else
-        {
-            throw new NotSupportedException($"A {nameof(VectorSearchQuery)} of type {vectorQuery.QueryType} is not supported by the Azure AI Search connector.");
-        }
+        vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Limit, Fields = { vectorFieldName } });
+        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._storagePropertyNames);
 
         // Build search options.
         var searchOptions = new SearchOptions
         {
             VectorSearch = new(),
-            Size = limit,
-            Skip = offset,
+            Size = internalOptions.Limit,
+            Skip = internalOptions.Offset,
             Filter = filterString,
         };
-        searchOptions.SearchFields.AddRange(searchFields);
         searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
 
         // Filter out vector fields if requested.
-        if (!includeVectors)
+        if (!internalOptions.IncludeVectors)
         {
             searchOptions.Select.AddRange(this._nonVectorStoragePropertyNames);
         }
 
-        return this.SearchAndMapToDataModelAsync(queryText, searchOptions, includeVectors, cancellationToken);
+        return this.SearchAndMapToDataModelAsync(null, searchOptions, internalOptions.IncludeVectors, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, Data.VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(searchText);
+
+        if (this._firstVectorPropertyName is null)
+        {
+            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
+        }
+
+        // Resolve options.
+        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+        string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
+
+        // Configure search settings.
+        var vectorQueries = new List<VectorQuery>();
+        vectorQueries.Add(new VectorizableTextQuery(searchText) { KNearestNeighborsCount = internalOptions.Limit, Fields = { vectorFieldName } });
+        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._storagePropertyNames);
+
+        // Build search options.
+        var searchOptions = new SearchOptions
+        {
+            VectorSearch = new(),
+            Size = internalOptions.Limit,
+            Skip = internalOptions.Offset,
+            Filter = filterString,
+        };
+        searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
+
+        // Filter out vector fields if requested.
+        if (!internalOptions.IncludeVectors)
+        {
+            searchOptions.Select.AddRange(this._nonVectorStoragePropertyNames);
+        }
+
+        return this.SearchAndMapToDataModelAsync(null, searchOptions, internalOptions.IncludeVectors, cancellationToken);
     }
 
     /// <summary>

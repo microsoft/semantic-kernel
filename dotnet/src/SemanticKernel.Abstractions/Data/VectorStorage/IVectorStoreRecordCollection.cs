@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// <typeparam name="TRecord">The record data model to use for adding, updating and retrieving data from the store.</typeparam>
 [Experimental("SKEXP0001")]
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public interface IVectorStoreRecordCollection<TKey, TRecord>
+public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : class

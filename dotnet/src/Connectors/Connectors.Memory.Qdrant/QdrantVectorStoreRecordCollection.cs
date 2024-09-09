@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<ulong, TRecord>, IVectorStoreRecordCollection<Guid, TRecord>, IVectorSearch<TRecord>
+public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<ulong, TRecord>, IVectorStoreRecordCollection<Guid, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TRecord : class
 {
@@ -440,65 +440,65 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync(VectorSearchQuery vectorQuery, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(vector);
+
         if (this._firstVectorPropertyName is null)
         {
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
 
-        if (vectorQuery is VectorizedSearchQuery<ReadOnlyMemory<float>> floatVectorQuery)
+        if (vector is not ReadOnlyMemory<float> floatVector)
         {
-            var internalOptions = floatVectorQuery.SearchOptions ?? Data.VectorSearchOptions.Default;
-
-            // Build filter object.
-            var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._storagePropertyNames);
-
-            // Specify the vector name if named vectors are used.
-            string? vectorName = null;
-            if (this._options.HasNamedVectors)
-            {
-                vectorName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
-            }
-
-            // Specify whether to include vectors in the search results.
-            var vectorsSelector = new WithVectorsSelector();
-            vectorsSelector.Enable = internalOptions.IncludeVectors;
-
-            var query = new Query
-            {
-                Nearest = new VectorInput(floatVectorQuery.Vector.ToArray()),
-            };
-
-            // Execute Search.
-            var points = await this.RunOperationAsync(
-                "Query",
-                () => this._qdrantClient.QueryAsync(
-                    this.CollectionName,
-                    query: query,
-                    usingVector: vectorName,
-                    filter: filter,
-                    limit: (ulong)internalOptions.Limit,
-                    offset: (ulong)internalOptions.Offset,
-                    vectorsSelector: vectorsSelector,
-                    cancellationToken: cancellationToken)).ConfigureAwait(false);
-
-            // Map to data model and return results.
-            foreach (var point in points)
-            {
-                yield return QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult(
-                    point,
-                    this._mapper,
-                    internalOptions.IncludeVectors,
-                    DatabaseName,
-                    this._collectionName,
-                    "Query");
-            }
-
-            yield break;
+            throw new NotSupportedException($"The provided vector type {vector.GetType().Name} is not supported by the Qdrant connector.");
         }
 
-        throw new NotSupportedException($"A {nameof(VectorSearchQuery)} of type {vectorQuery.QueryType} is not supported by the Qdrant connector.");
+        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+
+        // Build filter object.
+        var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._storagePropertyNames);
+
+        // Specify the vector name if named vectors are used.
+        string? vectorName = null;
+        if (this._options.HasNamedVectors)
+        {
+            vectorName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
+        }
+
+        // Specify whether to include vectors in the search results.
+        var vectorsSelector = new WithVectorsSelector();
+        vectorsSelector.Enable = internalOptions.IncludeVectors;
+
+        var query = new Query
+        {
+            Nearest = new VectorInput(floatVector.ToArray()),
+        };
+
+        // Execute Search.
+        var points = await this.RunOperationAsync(
+            "Query",
+            () => this._qdrantClient.QueryAsync(
+                this.CollectionName,
+                query: query,
+                usingVector: vectorName,
+                filter: filter,
+                limit: (ulong)internalOptions.Limit,
+                offset: (ulong)internalOptions.Offset,
+                vectorsSelector: vectorsSelector,
+                cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        // Map to data model and return results.
+        foreach (var point in points)
+        {
+            yield return QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult(
+                point,
+                this._mapper,
+                internalOptions.IncludeVectors,
+                DatabaseName,
+                this._collectionName,
+                "Query");
+        }
     }
 
     /// <summary>

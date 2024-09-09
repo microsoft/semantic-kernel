@@ -290,10 +290,9 @@ public class VolatileVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
-        var actual = await sut.SearchAsync(
-            VectorSearchQuery.CreateQuery(
-                new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
-                new VectorSearchOptions { IncludeVectors = true }),
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
+            new VectorSearchOptions { IncludeVectors = true },
             this._testCancellationToken).ToListAsync();
 
         // Assert
@@ -333,10 +332,9 @@ public class VolatileVectorStoreRecordCollectionTests
 
         // Act
         var filter = filterType == "Equality" ? new VectorSearchFilter().EqualTo("Data", $"data {testKey2}") : new VectorSearchFilter().AnyTagEqualTo("Tags", $"tag {testKey2}");
-        var actual = await sut.SearchAsync(
-            VectorSearchQuery.CreateQuery(
-                new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
-                new VectorSearchOptions { IncludeVectors = true, Filter = filter }),
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
+            new VectorSearchOptions { IncludeVectors = true, Filter = filter },
             this._testCancellationToken).ToListAsync();
 
         // Assert
@@ -384,8 +382,9 @@ public class VolatileVectorStoreRecordCollectionTests
             });
 
         // Act
-        var actual = await sut.SearchAsync(
-            VectorSearchQuery.CreateQuery(new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }), new VectorSearchOptions { IncludeVectors = true }),
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
+            new VectorSearchOptions { IncludeVectors = true },
             this._testCancellationToken).ToListAsync();
 
         // Assert
@@ -423,10 +422,9 @@ public class VolatileVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection<int>(useDefinition);
 
         // Act
-        var actual = await sut.SearchAsync(
-            VectorSearchQuery.CreateQuery(
-                new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
-                new VectorSearchOptions { IncludeVectors = true, Limit = 10, Offset = 10 }),
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
+            new VectorSearchOptions { IncludeVectors = true, Limit = 10, Offset = 10 },
             this._testCancellationToken).ToListAsync();
 
         // Assert
