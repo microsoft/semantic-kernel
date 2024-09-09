@@ -31,7 +31,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// <param name="loggerFactory"></param>
     /// <param name="id"></param>
     /// <returns></returns>
-    public static ChatCompletionAgent FromTemplateConfig(
+    public static ChatCompletionAgent FromTemplate(
         PromptTemplateConfig templateConfig,
         IPromptTemplateFactory templateFactory,
         Kernel kernel,
@@ -50,6 +50,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             Instructions = templateConfig.Template,
             Kernel = kernel,
             Template = template,
+            TemplateFactory = templateFactory,
         };
     }
 

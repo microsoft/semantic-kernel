@@ -74,15 +74,15 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
         OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                templateConfig,
-                new KernelPromptTemplateFactory(),
+            await OpenAIAssistantAgent.CreateFromTemplateAsync(
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 new(this.Model)
                 {
                     Metadata = AssistantSampleMetadata,
-                });
+                },
+                new KernelPromptTemplateFactory(),
+                templateConfig);
 
         // Create a thread for the agent conversation.
         string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });

@@ -57,19 +57,19 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
-    /// <param name="templateConfig">// %%% COMMENT</param>
-    /// <param name="templateFactory">// %%% COMMENT</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="clientProvider">OpenAI client provider for accessing the API service.</param>
     /// <param name="definition">The assistant definition.</param>
+    /// <param name="templateFactory">// %%% COMMENT</param>
+    /// <param name="templateConfig">// %%% COMMENT</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
-    public static Task<OpenAIAssistantAgent> CreateAsync(
-        PromptTemplateConfig templateConfig,
-        IPromptTemplateFactory templateFactory,
+    public static Task<OpenAIAssistantAgent> CreateFromTemplateAsync(
         Kernel kernel,
         OpenAIClientProvider clientProvider,
         OpenAIAssistantDefinition definition,
+        IPromptTemplateFactory templateFactory,
+        PromptTemplateConfig templateConfig,
         CancellationToken cancellationToken = default)
     {
         IPromptTemplate template = templateFactory.Create(templateConfig);
@@ -90,7 +90,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             ExecutionOptions = definition.ExecutionOptions,
         };
 
-        return CreateAsync(kernel, clientProvider, templateDefinition, cancellationToken);
+        return CreateAsync(kernel, clientProvider, templateDefinition, templateFactory, cancellationToken);
     }
 
     /// <summary>
@@ -99,12 +99,14 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="clientProvider">OpenAI client provider for accessing the API service.</param>
     /// <param name="definition">The assistant definition.</param>
+    /// <param name="templateFactory">// %%% COMMENT</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
     public static async Task<OpenAIAssistantAgent> CreateAsync(
         Kernel kernel,
         OpenAIClientProvider clientProvider,
         OpenAIAssistantDefinition definition,
+        IPromptTemplateFactory? templateFactory = null,
         CancellationToken cancellationToken = default)
     {
         // Validate input
@@ -124,6 +126,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             new OpenAIAssistantAgent(model, clientProvider, client)
             {
                 Kernel = kernel,
+                TemplateFactory = templateFactory,
             };
     }
 

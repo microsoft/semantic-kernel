@@ -31,6 +31,11 @@ public abstract class KernelAgent : Agent
     public Kernel Kernel { get; init; } = new();
 
     /// <summary>
+    /// %%% COMMENT
+    /// </summary>
+    public IPromptTemplateFactory? TemplateFactory { get; init; }
+
+    /// <summary>
     /// A prompt-template based on the agent instructions.
     /// </summary>
     protected IPromptTemplate? Template { get; set; }
@@ -46,7 +51,7 @@ public abstract class KernelAgent : Agent
     {
         if (this.Template == null && !string.IsNullOrWhiteSpace(this.Instructions))
         {
-            KernelPromptTemplateFactory templateFactory = new(this.LoggerFactory); // %%% DEFAULT FACTORY ???
+            IPromptTemplateFactory templateFactory = this.TemplateFactory ?? new KernelPromptTemplateFactory(this.LoggerFactory);
             if (templateFactory.TryCreate(new PromptTemplateConfig(this.Instructions!), out IPromptTemplate? template))
             {
                 this.Template = template;
