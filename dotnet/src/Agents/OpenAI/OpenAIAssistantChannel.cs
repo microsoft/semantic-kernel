@@ -30,8 +30,6 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
         OpenAIAssistantAgent agent,
         CancellationToken cancellationToken)
     {
-        agent.ThrowIfDeleted();
-
         return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
     }
 

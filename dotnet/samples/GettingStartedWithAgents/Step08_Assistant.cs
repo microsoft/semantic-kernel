@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
+using System.Threading;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Resources;
 
 namespace GettingStarted;
 
@@ -62,6 +64,59 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
             await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
             {
                 this.WriteAgentChatMessage(response);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UseTemplateForChatCompletionAgentAsync()
+    {
+        // Define the agent
+        string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
+        PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                templateConfig,
+                new KernelPromptTemplateFactory(),
+                kernel: new(),
+                clientProvider: this.GetClientProvider(),
+                new(this.Model)
+                {
+                    Metadata = AssistantSampleMetadata,
+                });
+
+        // Create a thread for the agent conversation.
+        string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
+
+        try
+        {
+            // Respond to user input
+            await InvokeAgentAsync(
+                new()
+                {
+                    { "topic", "Dog" },
+                    { "length", "3" },
+                });
+
+            await InvokeAgentAsync(
+                new()
+                {
+                { "topic", "Cat" },
+                { "length", "3" },
+                });
+        }
+        finally
+        {
+            await agent.DeleteThreadAsync(threadId);
+            await agent.DeleteAsync();
+        }
+
+        // Local function to invoke agent and display the conversation messages.
+        async Task InvokeAgentAsync(KernelArguments arguments)
+        {
+            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId, arguments))
+            {
+                WriteAgentChatMessage(response);
             }
         }
     }

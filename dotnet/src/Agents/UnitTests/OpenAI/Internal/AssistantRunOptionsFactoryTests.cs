@@ -26,10 +26,11 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, null);
 
         // Assert
         Assert.NotNull(options);
+        Assert.Null(options.InstructionsOverride);
         Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
         Assert.Empty(options.Metadata);
@@ -55,10 +56,11 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, "test", invocationOptions);
 
         // Assert
         Assert.NotNull(options);
+        Assert.Equal("test", options.InstructionsOverride);
         Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
     }
@@ -90,7 +92,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
 
         // Assert
         Assert.NotNull(options);
@@ -129,7 +131,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
 
         // Assert
         Assert.Equal(2, options.Metadata.Count);

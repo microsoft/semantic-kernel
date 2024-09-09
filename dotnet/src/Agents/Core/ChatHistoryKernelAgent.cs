@@ -14,22 +14,12 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 /// <remarks>
 /// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
-/// (<see cref="ChatHistoryKernelAgent.Arguments"/>)
+/// (<see cref="KernelAgent.Arguments"/>)
 /// </remarks>
 public abstract class ChatHistoryKernelAgent : KernelAgent
 {
-    /// <summary>
-    /// Optional arguments for the agent.
-    /// </summary>
-    public KernelArguments? Arguments { get; init; } // %%% KernelAgent ???
-
     /// <inheritdoc/>
     public IChatHistoryReducer? HistoryReducer { get; init; }
-
-    /// <summary>
-    /// %%%
-    /// </summary>
-    internal IPromptTemplate? Template { get; init; } // %%% KernelAgent ???
 
     /// <inheritdoc/>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(

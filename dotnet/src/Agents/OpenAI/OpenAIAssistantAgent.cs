@@ -34,14 +34,6 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     private readonly string[] _channelKeys;
 
     /// <summary>
-    /// Optional arguments for the agent.
-    /// </summary>
-    /// <remarks>
-    /// This property is not currently used by the agent, but is provided for future extensibility.
-    /// </remarks>
-    public KernelArguments? Arguments { get; init; } // %%% KernelAgent ???
-
-    /// <summary>
     /// The assistant definition.
     /// </summary>
     public OpenAIAssistantDefinition Definition { get; private init; }
@@ -61,6 +53,45 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// Expose predefined tools for run-processing.
     /// </summary>
     internal IReadOnlyList<ToolDefinition> Tools => this._assistant.Tools;
+
+    /// <summary>
+    /// Define a new <see cref="OpenAIAssistantAgent"/>.
+    /// </summary>
+    /// <param name="templateConfig">// %%% COMMENT</param>
+    /// <param name="templateFactory">// %%% COMMENT</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="clientProvider">OpenAI client provider for accessing the API service.</param>
+    /// <param name="definition">The assistant definition.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
+    public static Task<OpenAIAssistantAgent> CreateAsync(
+        PromptTemplateConfig templateConfig,
+        IPromptTemplateFactory templateFactory,
+        Kernel kernel,
+        OpenAIClientProvider clientProvider,
+        OpenAIAssistantDefinition definition,
+        CancellationToken cancellationToken = default)
+    {
+        IPromptTemplate template = templateFactory.Create(templateConfig);
+
+        OpenAIAssistantDefinition templateDefinition = new(definition.ModelId)
+        {
+            Name = templateConfig.Name ?? definition.Name,
+            Description = templateConfig.Description ?? definition.Description,
+            Instructions = templateConfig.Template,
+            CodeInterpreterFileIds = definition.CodeInterpreterFileIds,
+            EnableCodeInterpreter = definition.EnableCodeInterpreter,
+            EnableFileSearch = definition.EnableFileSearch,
+            EnableJsonResponse = definition.EnableJsonResponse,
+            Metadata = definition.Metadata,
+            TopP = definition.TopP,
+            Temperature = definition.Temperature,
+            VectorStoreId = definition.VectorStoreId,
+            ExecutionOptions = definition.ExecutionOptions,
+        };
+
+        return CreateAsync(kernel, clientProvider, templateDefinition, cancellationToken);
+    }
 
     /// <summary>
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
@@ -383,6 +414,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         }
     }
 
+    internal Task<string?> GetInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken) =>
+        this.FormatInstructionsAsync(kernel, arguments, cancellationToken);
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgent"/> class.
     /// </summary>
@@ -401,7 +435,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.Description = this._assistant.Description;
         this.Id = this._assistant.Id;
         this.Name = this._assistant.Name;
-        this.Instructions = this._assistant.Instructions; // %%% TEMPLATE ???
+        this.Instructions = this._assistant.Instructions;
     }
 
     private static OpenAIAssistantDefinition CreateAssistantDefinition(Assistant model)

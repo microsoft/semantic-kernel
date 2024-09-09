@@ -26,7 +26,6 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
             {
                 Name = ParrotName,
                 Instructions = ParrotInstructions,
-                //Template = kernel.CreateFunctionFromPrompt(ParrotInstructions),  // %%% TEMPLATE ???
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
 
@@ -61,7 +60,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
         Kernel kernel = this.CreateKernelWithChatCompletion();
-        ChatCompletionAgent agent = ChatCompletionAgent.FromTemplate(templateConfig, new KernelPromptTemplateFactory(), kernel);
+        ChatCompletionAgent agent = ChatCompletionAgent.FromTemplateConfig(templateConfig, new KernelPromptTemplateFactory(), kernel);
 
         /// Create the chat history to capture the agent interaction.
         ChatHistory chat = [];
@@ -88,7 +87,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
             {
                 chat.Add(content);
 
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                WriteAgentChatMessage(content);
             }
         }
     }

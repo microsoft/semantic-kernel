@@ -17,12 +17,12 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 /// <remarks>
 /// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
-/// (<see cref="ChatHistoryKernelAgent.Arguments"/>)
+/// (<see cref="KernelAgent.Arguments"/>)
 /// </remarks>
 public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 {
     /// <summary>
-    /// %%%
+    /// %%% COMMENT
     /// </summary>
     /// <param name="templateConfig"></param>
     /// <param name="templateFactory"></param>
@@ -31,7 +31,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// <param name="loggerFactory"></param>
     /// <param name="id"></param>
     /// <returns></returns>
-    public static ChatCompletionAgent FromTemplate(
+    public static ChatCompletionAgent FromTemplateConfig(
         PromptTemplateConfig templateConfig,
         IPromptTemplateFactory templateFactory,
         Kernel kernel,
@@ -49,8 +49,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             Arguments = defaultArguments,
             Instructions = templateConfig.Template,
             Kernel = kernel,
-            Template = template, // %%%
-            //Prompt = function, // %%% << THIS ONE
+            Template = template,
         };
     }
 
@@ -173,10 +172,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         ChatHistory chat = [];
 
-        string? instructions =
-            this.Template == null ?
-                this.Instructions : // %%% INSTRUCTIONS / TEMPLATE ???
-                await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        string? instructions = await this.FormatInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         if (!string.IsNullOrWhiteSpace(instructions))
         {
