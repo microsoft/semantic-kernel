@@ -21,7 +21,6 @@ The sample can be configured by using the command line with .NET [Secret Manager
 ### Using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
 
 ```powershell
-# OpenAI (Not required if using Azure OpenAI)
 dotnet user-secrets set "OpenAI:ApiKey" "... your api key ... "
 dotnet user-secrets set "OpenAI:ModelId" ".. Openai model .. " (default: gpt-4o)
 dotnet user-secrets set "Ollama:ModelId" ".. Ollama model id .. "

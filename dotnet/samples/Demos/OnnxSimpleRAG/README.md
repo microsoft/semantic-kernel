@@ -33,12 +33,10 @@ git clone https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx
 ```
 
 > [!IMPORTANT]
-> Both `BG2` and `Phi-3` models are too large to be downloaded by the `git clone` command alone if you don't have [git-lfs extension](https://git-lfs.com/) installed, for this you may need to download the models manually and overwrite the files in the cloned directories.
+> Both `BGE-Micro-V2` and `Phi-3` models are too large to be downloaded by the `git clone` command alone if you don't have [git-lfs extension](https://git-lfs.com/) installed, for this you may need to download the models manually and overwrite the files in the cloned directories.
 
-- Manual download [BGE-V2](https://huggingface.co/TaylorAI/bge-micro-v2/resolve/main/onnx/model.onnx?download=true) (69 MB)
-- Manual download [Phi-3 CPU](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32/phi3-mini-4k-instruct-cpu-int4-rtn-block-32.onnx.data?download=true) (≈2.7 GB)
-
-## 2. Configuring the sample
+- Manual download [BGE-Micro-V2](https://huggingface.co/TaylorAI/bge-micro-v2/resolve/main/onnx/model.onnx?download=true) (69 MB)
+- Manual download [Phi-3-Mini-4k CPU](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32/phi3-mini-4k-instruct-cpu-int4-rtn-block-32.onnx.data?download=true) (≈2.7 GB)
 
 Update the `Program.cs` file lines below with the paths to the models you downloaded in the previous step.
 
@@ -60,6 +58,19 @@ foreach (var fact in new[] {
     "My fact 1.",
     "My fact 2." })
 {
+```
+
+## Configuring the sample
+
+The sample can be configured by using the command line with .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) to avoid the risk of leaking secrets into the repository, branches and pull requests.
+
+### Using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
+
+```powershell
+dotnet user-secrets set "Onnx:ModelId" ".. Onnx model id" (default: phi-3)
+dotnet user-secrets set "Onnx:ModelPath" ".. your Onnx model folder path .." 
+dotnet user-secrets set "Onnx:EmbeddingModelPath" ".. your Onnx model file path .."
+dotnet user-secrets set "Onnx:EmbeddingVocabPath" ".. your Onnx model vocab file path .."
 ```
 
 ## 3. Running the sample

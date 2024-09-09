@@ -5,6 +5,8 @@
 #pragma warning disable SKEXP0001
 
 using System;
+using System.IO;
+using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Embeddings;
@@ -12,19 +14,21 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 
 // Ensure you follow the preparation steps provided in the README.md
+var config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
 
 // Path to the folder of your downloaded ONNX PHI-3 model
-var chatModelPath = @"C:\path\to\huggingface\Phi-3-mini-4k-instruct-onnx\cpu_and_mobile\cpu-int4-rtn-block-32";
+var chatModelPath = config["Onnx:ModelPath"]!;
+var chatModelId = config["Onnx:ModelId"] ?? "phi-3";
 
 // Path to the file of your downloaded ONNX BGE-MICRO-V2 model
-var embeddingModelPath = @"C:\path\to\huggingface\bge-micro-v2\onnx\model.onnx";
+var embeddingModelPath = config["Onnx:EmbeddingModelPath"]!;
 
 // Path to the vocab file your ONNX BGE-MICRO-V2 model
-var embeddingVocabPath = @"C:\path\to\huggingface\bge-micro-v2\vocab.txt";
+var embeddingVocabPath = config["Onnx:EmbeddingVocabPath"]!;
 
 // Load the services
 var builder = Kernel.CreateBuilder()
-    .AddOnnxRuntimeGenAIChatCompletion("phi-3", chatModelPath)
+    .AddOnnxRuntimeGenAIChatCompletion(chatModelId, chatModelPath)
     .AddBertOnnxTextEmbeddingGeneration(embeddingModelPath, embeddingVocabPath);
 
 // Build Kernel
@@ -43,13 +47,12 @@ kernel.ImportPluginFromObject(new TextMemoryPlugin(semanticTextMemory));
 
 // Save some information to the memory
 var collectionName = "ExampleCollection";
-foreach (var fact in new[] {
-    "Semantic Kernel is a lightweight, open-source development kit that lets you easily build AI agents and integrate the latest AI models into your C#, Python, or Java codebase. It serves as an efficient middleware that enables rapid delivery of enterprise-grade solutions.",
-    "Kernel Memory (KM) is a multi-modal AI Service specialized in the efficient indexing of datasets through custom continuous data hybrid pipelines, with support for Retrieval Augmented Generation (RAG), synthetic memory, prompt engineering, and custom semantic memory processing." })
+foreach (var factTextFile in Directory.GetFiles("Facts", "*.txt"))
 {
+    var factContent = File.ReadAllText(factTextFile);
     await semanticTextMemory.SaveInformationAsync(
         collection: collectionName,
-        text: fact,
+        text: factContent,
         id: Guid.NewGuid().ToString());
 }
 
