@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AssemblyAI;
 using Microsoft.SemanticKernel;
@@ -16,176 +18,23 @@ namespace SemanticKernel.Connectors.AssemblyAI.UnitTests;
 /// </summary>
 public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
 {
-    private const string TranscriptGuid = "0D0446CE-5C41-476F-9642-61F425FEA477";
-
-    private const string UploadFileResponseContent =
-        """
-        {
-            "upload_url": "http://localhost/path/to/file.mp3"
-        }
-        """;
-
-    private const string CreateTranscriptResponseContent =
-        $$"""
-          {
-            "id": "{{TranscriptGuid}}",
-            "language_model": "assemblyai_default",
-            "acoustic_model": "assemblyai_default",
-            "language_code": "en_us",
-            "status": "queued",
-            "audio_url": "http://localhost/path/to/file.mp3",
-            "text": null,
-            "words": null,
-            "utterances": null,
-            "confidence": null,
-            "audio_duration": null,
-            "punctuate": true,
-            "format_text": true,
-            "dual_channel": null,
-            "webhook_url": null,
-            "webhook_status_code": null,
-            "webhook_auth": false,
-            "webhook_auth_header_name": null,
-            "speed_boost": false,
-            "auto_highlights_result": null,
-            "auto_highlights": false,
-            "audio_start_from": null,
-            "audio_end_at": null,
-            "word_boost": [],
-            "boost_param": null,
-            "filter_profanity": false,
-            "redact_pii": false,
-            "redact_pii_audio": false,
-            "redact_pii_audio_quality": null,
-            "redact_pii_policies": null,
-            "redact_pii_sub": null,
-            "speaker_labels": false,
-            "content_safety": false,
-            "iab_categories": false,
-            "content_safety_labels": {},
-            "iab_categories_result": {},
-            "language_detection": false,
-            "language_confidence_threshold": null,
-            "language_confidence": null,
-            "custom_spelling": null,
-            "throttled": false,
-            "auto_chapters": false,
-            "summarization": false,
-            "summary_type": null,
-            "summary_model": null,
-            "custom_topics": false,
-            "topics": [],
-            "speech_threshold": null,
-            "speech_model": null,
-            "chapters": null,
-            "disfluencies": false,
-            "entity_detection": false,
-            "sentiment_analysis": false,
-            "sentiment_analysis_results": null,
-            "entities": null,
-            "speakers_expected": null,
-            "summary": null,
-            "custom_topics_results": null,
-            "is_deleted": null,
-            "multichannel": false,
-            "audio_channels": null
-          }
-          """;
-
-    private const string TranscriptCompletedResponseContent =
-        $$"""
-          {
-            "id": "{{TranscriptGuid}}",
-            "language_model": "assemblyai_default",
-            "acoustic_model": "assemblyai_default",
-            "language_code": "en_us",
-            "status": "completed",
-            "audio_url": "http://localhost/path/to/file.mp3",
-            "text": "Test audio-to-text response",
-            "words": [
-            {
-              "start": 120,
-              "end": 232,
-              "text": "The",
-              "confidence": 0.99,
-              "speaker": null
-            },
-            {
-              "start": 232,
-              "end": 416,
-              "text": "sun",
-              "confidence": 0.99973,
-              "speaker": null
-            }
-            ],
-            "utterances": null,
-            "confidence": 0.993280869565217,
-            "audio_duration": 6,
-            "punctuate": true,
-            "format_text": true,
-            "dual_channel": null,
-            "webhook_url": null,
-            "webhook_status_code": null,
-            "webhook_auth": false,
-            "webhook_auth_header_name": null,
-            "speed_boost": false,
-            "auto_highlights_result": null,
-            "auto_highlights": false,
-            "audio_start_from": null,
-            "audio_end_at": null,
-            "word_boost": [],
-            "boost_param": null,
-            "filter_profanity": false,
-            "redact_pii": false,
-            "redact_pii_audio": false,
-            "redact_pii_audio_quality": null,
-            "redact_pii_policies": null,
-            "redact_pii_sub": null,
-            "speaker_labels": false,
-            "content_safety": false,
-            "iab_categories": false,
-            "content_safety_labels": {
-            "status": "unavailable",
-            "results": [],
-            "summary": {}
-            },
-            "iab_categories_result": {
-            "status": "unavailable",
-            "results": [],
-            "summary": {}
-            },
-            "language_detection": false,
-            "language_confidence_threshold": null,
-            "language_confidence": null,
-            "custom_spelling": null,
-            "throttled": false,
-            "auto_chapters": false,
-            "summarization": false,
-            "summary_type": null,
-            "summary_model": null,
-            "custom_topics": false,
-            "topics": [],
-            "speech_threshold": null,
-            "speech_model": null,
-            "chapters": null,
-            "disfluencies": false,
-            "entity_detection": false,
-            "sentiment_analysis": false,
-            "sentiment_analysis_results": null,
-            "entities": null,
-            "speakers_expected": null,
-            "summary": null,
-            "custom_topics_results": null,
-            "is_deleted": null,
-            "multichannel": false,
-            "audio_channels": 1
-          }
-          """;
-
     private const string ExpectedTranscriptText = "Test audio-to-text response";
+    private static string UploadFileResponseContent { get; set; }
+    private static string TranscriptGuid { get; set; }
+    private static string CreateTranscriptResponseContent { get; set; }
+    private static string TranscriptCompletedResponseContent { get; set; }
 
     private readonly MultipleHttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
+
+    static AssemblyAIAudioToTextServiceTests()
+    {
+        UploadFileResponseContent = File.ReadAllText("./TestData/upload_file_response.json");
+        CreateTranscriptResponseContent = File.ReadAllText("./TestData/create_transcript_response.json");
+        TranscriptCompletedResponseContent = File.ReadAllText("./TestData/transcript_completed_response.json");
+        var json = JsonSerializer.Deserialize<JsonElement>(CreateTranscriptResponseContent);
+        TranscriptGuid = json.GetProperty("id").GetString()!;
+    }
 
     public AssemblyAIAudioToTextServiceTests()
     {
@@ -266,7 +115,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         ];
 
         // Act & Assert
-        await Assert.ThrowsAsync<ApiException>(
+        await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.GetTextContentsAsync(
                 new AudioContent(new BinaryData("data").ToMemory(), null)
             ).ConfigureAwait(true)
@@ -295,7 +144,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         ];
 
         // Act & Assert
-        await Assert.ThrowsAsync<ApiException>(
+        await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.GetTextContentsAsync(
                 new AudioContent(new BinaryData("data").ToMemory(), null)
             ).ConfigureAwait(true)

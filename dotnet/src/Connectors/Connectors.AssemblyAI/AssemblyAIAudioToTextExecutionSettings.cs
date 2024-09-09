@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using AssemblyAI.Transcripts;
-// ReSharper disable PropertyCanBeMadeInitOnly.Global
-// ReSharper disable UnusedMember.Global
 
 namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 
@@ -63,7 +61,10 @@ public sealed class AssemblyAIAudioToTextExecutionSettings : PromptExecutionSett
         {
             ModelId = this.ModelId,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
-            PollingInterval = this.PollingInterval
+            PollingInterval = this.PollingInterval,
+            PollingTimeout = this.PollingTimeout,
+            ServiceId = this.ServiceId,
+            TranscriptParams = this.TranscriptParams
         };
     }
 

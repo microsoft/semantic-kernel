@@ -4,7 +4,7 @@ using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using AssemblyAI;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
 using Xunit;
 
@@ -78,7 +78,7 @@ public sealed class AssemblyAIFileServiceTests : IDisposable
         ];
         await using var stream = new BinaryData("data").ToStream();
         // Act & Assert
-        await Assert.ThrowsAsync<ApiException>(
+        await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.UploadAsync(stream).ConfigureAwait(true)
         ).ConfigureAwait(true);
     }
@@ -106,7 +106,7 @@ public sealed class AssemblyAIFileServiceTests : IDisposable
         await using var stream = new BinaryData("data").ToStream();
 
         // Act & Assert
-        await Assert.ThrowsAsync<ApiException>(
+        await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.UploadAsync(stream).ConfigureAwait(true)
         ).ConfigureAwait(true);
     }

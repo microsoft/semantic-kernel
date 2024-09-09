@@ -6,7 +6,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using AssemblyAI;
+using AssemblyAI.Files;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 
@@ -32,7 +34,19 @@ public sealed class AssemblyAIFileService
     )
     {
         Verify.NotNullOrWhiteSpace(apiKey);
-        this._client = AssemblyAIClientFactory.Create(apiKey, endpoint, httpClient, loggerFactory);
+        this._client = new AssemblyAIClient(new ClientOptions
+        {
+            ApiKey = apiKey,
+            BaseUrl = endpoint?.ToString() ?? AssemblyAIClientEnvironment.Default,
+            HttpClient = HttpClientProvider.GetHttpClient(httpClient),
+            UserAgent = new UserAgent
+            {
+                ["integration"] = new(
+                    HttpHeaderConstant.Values.UserAgent,
+                    HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AssemblyAIFileService))
+                )
+            }
+        });
     }
 
     /// <summary>
@@ -44,7 +58,25 @@ public sealed class AssemblyAIFileService
     public async Task<AudioContent> UploadAsync(Stream stream, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(stream);
-        var response = await this._client.Files.UploadAsync(stream, null, cancellationToken).ConfigureAwait(false);
+        UploadedFile response;
+        try
+        {
+            response = await this._client.Files.UploadAsync(stream, null, cancellationToken).ConfigureAwait(false);
+        }
+        catch (ApiException apiException)
+        {
+            throw new HttpOperationException(
+                apiException.StatusCode,
+                apiException.ResponseContent,
+                "An API exception occurred while uploading the audio file.",
+                apiException
+            );
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpOperationException(message: ex.Message, innerException: ex);
+        }
+
         return new AudioContent(new Uri(response.UploadUrl, UriKind.Absolute));
     }
 }

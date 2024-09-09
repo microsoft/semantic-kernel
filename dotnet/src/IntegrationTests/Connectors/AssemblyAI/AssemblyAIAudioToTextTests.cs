@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -201,7 +200,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var sttService = new AssemblyAIAudioToTextService(apiKey, new Uri("https://localhost:9999"));
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(
             async () => await sttService.GetTextContentsAsync(new AudioContent(new Uri("http://localhost")))
         );
         Assert.Equal(

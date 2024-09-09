@@ -79,7 +79,7 @@ public sealed class AssemblyAIFilesTests : IDisposable
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.UploadAsync(audio)
         );
         Assert.Equal(

@@ -10,6 +10,7 @@ using AssemblyAI;
 using AssemblyAI.Transcripts;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AudioToText;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 
@@ -40,7 +41,19 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     )
     {
         Verify.NotNullOrWhiteSpace(apiKey);
-        this._client = AssemblyAIClientFactory.Create(apiKey, endpoint, httpClient, loggerFactory);
+        this._client = new AssemblyAIClient(new ClientOptions
+        {
+            ApiKey = apiKey,
+            BaseUrl = endpoint?.ToString() ?? AssemblyAIClientEnvironment.Default,
+            HttpClient = HttpClientProvider.GetHttpClient(httpClient),
+            UserAgent = new UserAgent
+            {
+                ["integration"] = new(
+                    HttpHeaderConstant.Values.UserAgent,
+                    HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AssemblyAIAudioToTextService))
+                )
+            }
+        });
     }
 
     /// <inheritdoc />
@@ -51,74 +64,128 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         CancellationToken cancellationToken = default
     )
     {
-        Verify.NotNull(content);
+        try
+        {
+            Verify.NotNull(content);
 
-        if (executionSettings?.ExtensionData is not null && executionSettings.ExtensionData.Count > 0)
-        {
-            throw new ArgumentException("ExtensionData is not supported by AssemblyAI, use AssemblyAIAudioToTextExecutionSettings.TranscriptParams.", nameof(executionSettings));
-        }
-
-        string uploadUrl;
-        if (content.Data is { IsEmpty: false })
-        {
-            var response = await this._client.Files.UploadAsync(
-                content.Data.Value,
-                null,
-                cancellationToken
-            ).ConfigureAwait(false);
-            uploadUrl = response.UploadUrl;
-        }
-        else if (content.Uri is not null)
-        {
-            // to prevent unintentional file uploads by injection attack
-            if (content.Uri.IsFile)
+            if (executionSettings?.ExtensionData is not null && executionSettings.ExtensionData.Count > 0)
             {
-                throw new ArgumentException("File URI is not supported.");
+                throw new ArgumentException("ExtensionData is not supported by AssemblyAI, use AssemblyAIAudioToTextExecutionSettings.TranscriptParams.", nameof(executionSettings));
             }
 
-            uploadUrl = content.Uri.ToString();
+            string uploadUrl;
+            if (content.Data is { IsEmpty: false })
+            {
+                try
+                {
+                    var response = await this._client.Files.UploadAsync(
+                        content.Data.Value,
+                        null,
+                        cancellationToken
+                    ).ConfigureAwait(false);
+                    uploadUrl = response.UploadUrl;
+                }
+                catch (ApiException apiException)
+                {
+                    throw new HttpOperationException(
+                        apiException.StatusCode,
+                        apiException.ResponseContent,
+                        "An API exception occurred while uploading the audio file.",
+                        apiException
+                    );
+                }
+            }
+            else if (content.Uri is not null)
+            {
+                // to prevent unintentional file uploads by injection attack
+                if (content.Uri.IsFile)
+                {
+                    throw new ArgumentException("File URI is not supported.");
+                }
+
+                uploadUrl = content.Uri.ToString();
+            }
+            else
+            {
+                throw new ArgumentException("AudioContent doesn't have any content.", nameof(content));
+            }
+
+            TimeSpan? pollingInterval = null;
+            TimeSpan? pollingTimeout = null;
+            TranscriptOptionalParams? transcriptParams = null;
+            if (executionSettings is AssemblyAIAudioToTextExecutionSettings aaiExecSettings)
+            {
+                pollingInterval = aaiExecSettings.PollingInterval;
+                pollingTimeout = aaiExecSettings.PollingTimeout;
+                transcriptParams = aaiExecSettings.TranscriptParams;
+            }
+
+            Transcript transcript;
+            try
+            {
+                transcript = await this._client.Transcripts.SubmitAsync(
+                        new Uri(uploadUrl),
+                        transcriptParams ?? new TranscriptOptionalParams(),
+                        null,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+            }
+            catch (ApiException apiException)
+            {
+                throw new HttpOperationException(
+                    apiException.StatusCode,
+                    apiException.ResponseContent,
+                    "An API exception occurred while submitting transcript.",
+                    apiException
+                );
+            }
+
+            try
+            {
+                transcript = await this._client.Transcripts.WaitUntilReady(
+                    transcript.Id,
+                    pollingInterval: pollingInterval,
+                    pollingTimeout: pollingTimeout,
+                    cancellationToken: cancellationToken
+                ).ConfigureAwait(false);
+            }
+            catch (ApiException apiException)
+            {
+                throw new HttpOperationException(
+                    apiException.StatusCode,
+                    apiException.ResponseContent,
+                    "An API exception occurred while polling transcript until it is ready.",
+                    apiException
+                );
+            }
+
+            try
+            {
+                transcript.EnsureStatusCompleted();
+            }
+            catch (TranscriptNotCompletedStatusException exception)
+            {
+                throw new KernelException(
+                    "The transcript status is not completed. See inner exception for details.",
+                    exception
+                );
+            }
+
+            return
+            [
+                new TextContent(
+                    text: transcript.Text,
+                    modelId: null,
+                    innerContent: transcript,
+                    encoding: Encoding.UTF8,
+                    metadata: null
+                )
+            ];
         }
-        else
+        catch (HttpRequestException ex)
         {
-            throw new ArgumentException("AudioContent doesn't have any content.", nameof(content));
+            throw new HttpOperationException(message: ex.Message, innerException: ex);
         }
-
-        TimeSpan? pollingInterval = null;
-        TimeSpan? pollingTimeout = null;
-        TranscriptOptionalParams? transcriptParams = null;
-        if (executionSettings is AssemblyAIAudioToTextExecutionSettings aaiExecSettings)
-        {
-            pollingInterval = aaiExecSettings.PollingInterval;
-            pollingTimeout = aaiExecSettings.PollingTimeout;
-            transcriptParams = aaiExecSettings.TranscriptParams;
-        }
-
-        Transcript transcript = await this._client.Transcripts.SubmitAsync(
-                new Uri(uploadUrl),
-                transcriptParams ?? new TranscriptOptionalParams(),
-                null,
-                cancellationToken
-            )
-            .ConfigureAwait(false);
-
-        transcript = await this._client.Transcripts.WaitUntilReady(
-            transcript.Id,
-            pollingInterval: pollingInterval,
-            pollingTimeout: pollingTimeout,
-            cancellationToken: cancellationToken
-        ).ConfigureAwait(false);
-
-        transcript.EnsureStatusCompleted();
-
-        return
-        [
-            new TextContent(
-                text: transcript.Text,
-                modelId: null,
-                innerContent: transcript,
-                encoding: Encoding.UTF8,
-                metadata: null
-            )
-        ];
     }
 }
