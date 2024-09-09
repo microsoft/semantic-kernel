@@ -59,4 +59,14 @@ internal
     /// Defines a callback that is invoked for every schema that is generated within the type graph.
     /// </summary>
     public Func<JsonSchemaGenerationContext, JsonNode, JsonNode>? TransformSchemaNode { get; init; }
+
+    /// <summary>
+    /// Specifies globally whether additional properties are allowed.
+    /// </summary>
+    public bool? AdditionalProperties { get; init; } = null;
+
+    /// <summary>
+    /// Specifies globally whether all properties should be marked as required.
+    /// </summary>
+    public bool? AllPropertiesRequired { get; init; } = null;
 }

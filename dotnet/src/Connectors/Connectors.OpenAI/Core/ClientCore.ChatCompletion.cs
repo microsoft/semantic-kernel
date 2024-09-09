@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using JsonSchemaMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -26,6 +27,24 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
+    /// <summary>
+    /// <see cref="JsonSchemaMapperConfiguration"/> for JSON schema format for structured outputs.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="JsonSchemaMapperConfiguration.AdditionalProperties"/> should be always "false" for structured outputs.
+    /// More information here: <see href="https://platform.openai.com/docs/guides/structured-outputs/additionalproperties-false-must-always-be-set-in-objects"/>.
+    /// <see cref="JsonSchemaMapperConfiguration.AllPropertiesRequired"/> should be always "true" for structured outputs.
+    /// More information here: <see href="https://platform.openai.com/docs/guides/structured-outputs/all-fields-must-be-required"/>.
+    /// </remarks>
+    private static readonly JsonSchemaMapperConfiguration s_jsonSchemaMapperConfiguration = new()
+    {
+        IncludeSchemaVersion = false,
+        IncludeTypeInEnums = true,
+        TreatNullObliviousAsNonNullable = true,
+        AdditionalProperties = false,
+        AllPropertiesRequired = true
+    };
+
     protected const string ModelProvider = "openai";
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke);
 
@@ -724,9 +743,22 @@ internal partial class ClientCore
                     }
                 }
                 break;
+            case Type formatObjectType:
+                return GetJsonSchemaResponseFormat(formatObjectType);
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Gets instance of <see cref="ChatResponseFormat"/> object for JSON schema format for structured outputs.
+    /// </summary>
+    private static ChatResponseFormat GetJsonSchemaResponseFormat(Type formatObjectType)
+    {
+        var schema = KernelJsonSchemaBuilder.Build(options: null, formatObjectType, configuration: s_jsonSchemaMapperConfiguration);
+        var schemaBinaryData = BinaryData.FromString(schema.ToString());
+
+        return ChatResponseFormat.CreateJsonSchemaFormat(formatObjectType.Name, schemaBinaryData, strictSchemaEnabled: true);
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
