@@ -63,6 +63,7 @@ jobs:
           - { dotnet: "8.0", os: "windows-latest", configuration: Release }
 
     runs-on: ${{ matrix.os }}
+    environment: integration
     steps:
       - uses: actions/checkout@v4
       - name: Setup dotnet ${{ matrix.dotnet }}
