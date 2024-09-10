@@ -44,6 +44,7 @@ public sealed class TestConfiguration
     public static ChatGPTRetrievalPluginConfig ChatGPTRetrievalPlugin => LoadSection<ChatGPTRetrievalPluginConfig>();
     public static MsGraphConfiguration MSGraph => LoadSection<MsGraphConfiguration>();
     public static MistralAIConfig MistralAI => LoadSection<MistralAIConfig>();
+    public static AnthropicAIConfig AnthropicAI => LoadSection<AnthropicAIConfig>();
     public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
     public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
     public static AzureCosmosDbMongoDbConfig AzureCosmosDbMongoDb => LoadSection<AzureCosmosDbMongoDbConfig>();
@@ -211,6 +212,12 @@ public sealed class TestConfiguration
         public string ApiKey { get; set; }
         public string ChatModelId { get; set; }
         public string EmbeddingModelId { get; set; }
+    }
+
+    public class AnthropicAIConfig
+    {
+        public string ApiKey { get; set; }
+        public string ModelId { get; set; }
     }
 
     public class GoogleAIConfig
