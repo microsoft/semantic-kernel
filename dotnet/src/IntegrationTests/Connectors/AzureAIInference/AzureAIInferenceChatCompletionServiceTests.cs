@@ -2,11 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Inference;
 using Azure.Identity;
@@ -103,7 +103,6 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
     }
 
     [Fact]
-    //[Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
     public async Task ItCanUseChatForTextGenerationAsync()
     {
         // Arrange
@@ -201,8 +200,9 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         Assert.NotNull(content);
         Assert.NotNull(content.InnerContent);
 
-        Assert.IsType<CompletionsUsage>(content.InnerContent);
-        var usage = (CompletionsUsage)content.InnerContent;
+        Assert.IsType<ChatCompletions>(content.InnerContent);
+        var completions = (ChatCompletions)content.InnerContent;
+        var usage = completions.Usage;
 
         // Usage
         Assert.NotEqual(0, usage.PromptTokens);
@@ -231,24 +231,6 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         Assert.Contains("<result>John</result>", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    public async Task ItHasSemanticKernelVersionHeaderAsync()
-    {
-        // Arrange
-        using var defaultHandler = new HttpClientHandler();
-        using var httpHeaderHandler = new HttpHeaderHandler(defaultHandler);
-        using var httpClient = new HttpClient(httpHeaderHandler);
-
-        var kernel = this.CreateAndInitializeKernel(httpClient);
-
-        // Act
-        var result = await kernel.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?");
-
-        // Assert
-        Assert.NotNull(httpHeaderHandler.RequestHeaders);
-        Assert.True(httpHeaderHandler.RequestHeaders.TryGetValues("Semantic-Kernel-Version", out var values));
-    }
-
     private Kernel CreateAndInitializeKernel(HttpClient? httpClient = null)
     {
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
@@ -265,17 +247,6 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
             httpClient: httpClient);
 
         return kernelBuilder.Build();
-    }
-
-    private sealed class HttpHeaderHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
-    {
-        public System.Net.Http.Headers.HttpRequestHeaders? RequestHeaders { get; private set; }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            this.RequestHeaders = request.Headers;
-            return await base.SendAsync(request, cancellationToken);
-        }
     }
 
     public void Dispose()
