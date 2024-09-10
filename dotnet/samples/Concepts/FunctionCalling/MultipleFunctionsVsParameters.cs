@@ -115,7 +115,7 @@ public class MultipleFunctionsVsParameters(ITestOutputHelper output) : BaseTest(
     /// <summary>
     /// A plugin that provides methods to search for Invoices using different criteria.
     /// </summary>
-    private class InvoiceSearchBy
+    private sealed class InvoiceSearchBy
     {
         [KernelFunction]
         [Description("Search for invoices by customer name.")]
@@ -157,7 +157,7 @@ public class MultipleFunctionsVsParameters(ITestOutputHelper output) : BaseTest(
     /// <summary>
     /// A plugin that provides methods to search for Invoices using different criteria.
     /// </summary>
-    private class InvoiceSearch
+    private sealed class InvoiceSearch
     {
         [KernelFunction]
         [Description("Search for invoices by customer name or purchase order or vendor number.")]
@@ -184,7 +184,7 @@ public class MultipleFunctionsVsParameters(ITestOutputHelper output) : BaseTest(
     /// <summary>
     /// Represents an invoice.
     /// </summary>
-    private class Invoice
+    private sealed class Invoice
     {
         public string CustomerName { get; set; }
         public string PurchaseOrder { get; set; }
@@ -195,7 +195,7 @@ public class MultipleFunctionsVsParameters(ITestOutputHelper output) : BaseTest(
     /// Represents an invoice search request.
     /// </summary>
     [Description("The invoice search request.")]
-    private class InvoiceSearchRequest
+    private sealed class InvoiceSearchRequest
     {
         [Description("Optional, customer name.")]
         public string? CustomerName { get; set; }
