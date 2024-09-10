@@ -123,6 +123,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(fixture.HttpClient!, "TestDeleteRecord");
 
+        await sut.CreateCollectionAsync();
+
         var record = this.CreateTestHotel(hotelId);
 
         var upsertResult = await sut.UpsertAsync(record);
