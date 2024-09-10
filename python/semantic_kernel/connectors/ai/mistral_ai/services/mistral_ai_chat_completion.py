@@ -5,8 +5,6 @@ import sys
 from collections.abc import AsyncGenerator, Callable
 from typing import Any, ClassVar
 
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -24,6 +22,7 @@ from mistralai.models.chat_completion import (
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_function_call_format,
 )
@@ -278,7 +277,10 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
                 for f in function_choice_configuration.available_functions
             ]
             # Function Choice behavior required maps to MistralAI any
-            if settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED:
+            if (
+                settings.function_choice_behavior
+                and settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED
+            ):
                 settings.tool_choice = "any"
 
     @override
