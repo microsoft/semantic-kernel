@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
-from azure.core.credentials import AzureKeyCredential
+from azure.identity import DefaultAzureCredential
 from openai import AsyncAzureOpenAI
 
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
@@ -76,13 +76,13 @@ class ChatCompletionTestBase(CompletionTestBase):
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = azure_openai_settings.endpoint
         deployment_name = azure_openai_settings.chat_deployment_name
-        api_key = azure_openai_settings.api_key.get_secret_value()
+        ad_token = azure_openai_settings.get_azure_token()
         api_version = azure_openai_settings.api_version
         azure_custom_client = AzureChatCompletion(
             async_client=AsyncAzureOpenAI(
                 azure_endpoint=endpoint,
                 azure_deployment=deployment_name,
-                api_key=api_key,
+                azure_ad_token=ad_token,
                 api_version=api_version,
                 default_headers={"Test-User-X-ID": "test"},
             ),
@@ -91,8 +91,7 @@ class ChatCompletionTestBase(CompletionTestBase):
             ai_model_id=deployment_name,
             client=ChatCompletionsClient(
                 endpoint=f'{str(endpoint).strip("/")}/openai/deployments/{deployment_name}',
-                credential=AzureKeyCredential(""),
-                headers={"api-key": api_key},
+                credential=DefaultAzureCredential(),
             ),
         )
 
