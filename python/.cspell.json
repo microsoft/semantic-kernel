@@ -57,6 +57,7 @@
         "contoso",
         "opentelemetry",
         "SEMANTICKERNEL",
-        "OTEL"
+        "OTEL",
+        "mistralai"
     ]
 }
