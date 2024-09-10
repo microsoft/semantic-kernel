@@ -34,7 +34,7 @@ namespace FunctionCalling;
 ///      The results of these function invocations are added to the chat history and sent to the model automatically in the following request.
 ///      The model then reasons about the chat history and then calls functions again or generates the final response.
 ///      This approach is fully automated and requires no manual intervention from the caller. The automatic invocation mode is enabled by default.
-///    * Manual invocation mode returns all function calls requested by the AI model to the caller. The caller is fully responsible
+///    * Manual invocation mode returns all function calls requested by the AI model to the SK caller. The caller is fully responsible
 ///      for the invocation phase where they may decide which function to call, how to handle exceptions, call them in parallel or sequentially, etc.
 ///      The caller then adds the function results/exceptions to the chat history and returns it to the model, which reasons about it
 ///      and then calls functions again or generates the final response. This invocation mode provides more control over the function invocation phase to the caller.
