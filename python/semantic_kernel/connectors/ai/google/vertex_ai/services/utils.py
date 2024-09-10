@@ -18,6 +18,7 @@ from semantic_kernel.connectors.ai.google.shared_utils import (
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAIChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -151,10 +152,12 @@ def kernel_function_metadata_to_vertex_ai_function_call_format(metadata: KernelF
 
 def update_settings_from_function_choice_configuration(
     function_choice_configuration: FunctionCallChoiceConfiguration,
-    settings: VertexAIChatPromptExecutionSettings,
+    settings: PromptExecutionSettings,
     type: FunctionChoiceType,
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""
+    assert isinstance(settings, VertexAIChatPromptExecutionSettings)  # nosec
+
     if function_choice_configuration.available_functions:
         settings.tool_config = ToolConfig(
             function_calling_config=ToolConfig.FunctionCallingConfig(

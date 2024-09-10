@@ -70,23 +70,23 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             client=client or AsyncClient(host=ollama_settings.host),
         )
 
+    # region Overriding base class methods
+
+    # Override from AIServiceClientBase
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        return OllamaTextPromptExecutionSettings
+
     @override
     @trace_text_completion(OllamaBase.MODEL_PROVIDER_NAME)
-    async def get_text_contents(
+    async def _inner_get_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> list[TextContent]:
-        """This is the method that is called from the kernel to get a response from a text-optimized LLM.
-
-        Args:
-            prompt (str): The prompt to send to the LLM.
-            settings (OllamaTextPromptExecutionSettings): Settings for the request.
-
-        Returns:
-            List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
-        """
-        settings = self.get_prompt_execution_settings_from_settings(settings)
+        if not isinstance(settings, OllamaTextPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, OllamaTextPromptExecutionSettings)  # nosec
 
         response_object = await self.client.generate(
             model=self.ai_model_id,
@@ -105,24 +105,15 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
         text = inner_content["response"]
         return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
 
-    async def get_streaming_text_contents(
+    @override
+    async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
-        """Streams a text completion using an Ollama model.
-
-        Note that this method does not support multiple responses,
-        but the result will be a list anyway.
-
-        Args:
-            prompt (str): Prompt to complete.
-            settings (OllamaTextPromptExecutionSettings): Request settings.
-
-        Yields:
-            List[StreamingTextContent]: Completion result.
-        """
-        settings = self.get_prompt_execution_settings_from_settings(settings)
+        if not isinstance(settings, OllamaTextPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, OllamaTextPromptExecutionSettings)  # nosec
 
         response_object = await self.client.generate(
             model=self.ai_model_id,
@@ -144,7 +135,4 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
                 )
             ]
 
-    @override
-    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
-        """Get the request settings class."""
-        return OllamaTextPromptExecutionSettings
+    # endregion
