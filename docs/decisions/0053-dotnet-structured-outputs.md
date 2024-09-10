@@ -283,6 +283,7 @@ Cons:
 - Implementation complexity compared to Option #1 and Option #2:
     1. Chat completion service returns a string, so deserialization logic should be added somewhere to return a type instead of string. Potential place: `FunctionResult`, as it already contains `GetValue<T>` generic method, but it doesn't contain deserialization logic, so it should be added and tested. 
     2. `IChatCompletionService` and its methods are not generic, but information about the response type should still be passed to OpenAI connector. One way would be to add generic version of `IChatCompletionService`, which may introduce a lot of additional code changes. Another way is to pass type information through `PromptExecutionSettings` object. Taking into account that `IChatCompletionService` uses `PromptExecutionSettings` and not `OpenAIPromptExecutionSettings`, `ResponseFormat` property should be moved to the base execution settings class, so it's possible to pass the information about response format without coupling to specific connector. On the other hand, it's not clear if `ResponseFormat` parameter will be useful for other AI connectors.
+    3. Streaming scenario won't be supported, because for deserialization all the response content should be aggregated first. If Semantic Kernel will do the aggregation, then streaming capability will be lost.
 
 ## Out of scope
 
