@@ -80,7 +80,7 @@ public sealed class TestConfiguration
         public string Endpoint { get; set; }
         public string? ApiKey { get; set; }
     }
-  
+
     public class OnnxConfig
     {
         public string ModelId { get; set; }
