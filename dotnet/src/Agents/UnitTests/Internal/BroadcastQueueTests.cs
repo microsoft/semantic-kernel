@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
@@ -41,7 +38,7 @@ public class BroadcastQueueTests
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
-        TestChannel channel = new();
+        MockChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
         // Act: Verify initial state
@@ -84,7 +81,7 @@ public class BroadcastQueueTests
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
-        BadChannel channel = new();
+        MockChannel channel = new() { MockException = new InvalidOperationException("Test") };
         ChannelReference reference = new(channel, "test");
 
         // Act: Verify expected invocation of channel.
@@ -108,7 +105,7 @@ public class BroadcastQueueTests
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
-        TestChannel channel = new();
+        MockChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
         // Act: Enqueue multiple channels
@@ -128,68 +125,9 @@ public class BroadcastQueueTests
         Assert.Equal(10, channel.ReceivedMessages.Count);
     }
 
-    private static async Task VerifyReceivingStateAsync(int receiveCount, BroadcastQueue queue, TestChannel channel, string hash)
+    private static async Task VerifyReceivingStateAsync(int receiveCount, BroadcastQueue queue, MockChannel channel, string hash)
     {
         await queue.EnsureSynchronizedAsync(new ChannelReference(channel, hash));
         Assert.Equal(receiveCount, channel.ReceiveCount);
-    }
-
-    private sealed class TestChannel : AgentChannel
-    {
-        public TimeSpan ReceiveDuration { get; set; } = TimeSpan.FromSeconds(0.3);
-
-        public int ReceiveCount { get; private set; }
-
-        public List<ChatMessageContent> ReceivedMessages { get; } = [];
-
-        protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected internal override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
-        {
-            this.ReceivedMessages.AddRange(history);
-            this.ReceiveCount++;
-
-            await Task.Delay(this.ReceiveDuration, cancellationToken);
-        }
-
-        protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    private sealed class BadChannel : AgentChannel
-    {
-        public TimeSpan ReceiveDuration { get; set; } = TimeSpan.FromSeconds(0.1);
-
-        protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected internal override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
-        {
-            await Task.Delay(this.ReceiveDuration, cancellationToken);
-
-            throw new InvalidOperationException("Test");
-        }
-
-        protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
