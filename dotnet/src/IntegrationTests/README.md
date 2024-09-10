@@ -38,6 +38,10 @@ dotnet user-secrets set "OpenAITextToImage:ServiceId" "dall-e-3"
 dotnet user-secrets set "OpenAITextToImage:ModelId" "dall-e-3"
 dotnet user-secrets set "OpenAITextToImage:ApiKey" "..."
 
+dotnet user-secrets set "AzureAIInference:ServiceId" "azure-ai-inference"
+dotnet user-secrets set "AzureAIInference:ApiKey" "..."
+dotnet user-secrets set "AzureAIInference:Endpoint" "https://contoso.models.ai.azure.com/"
+
 dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-gpt-35-turbo-instruct"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "gpt-35-turbo-instruct"
 dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "gpt-4"

@@ -36,20 +36,42 @@ internal sealed class Program
 
         if (config["Ollama:ModelId"] is not null)
         {
-            services.AddOllamaChatCompletion(serviceId: "ollama", modelId: config["Ollama:ModelId"]!, endpoint: new Uri(config["Ollama:Endpoint"] ?? "http://localhost:11434"));
+            services.AddOllamaChatCompletion(
+                serviceId: "ollama",
+                modelId: config["Ollama:ModelId"]!,
+                endpoint: new Uri(config["Ollama:Endpoint"] ?? "http://localhost:11434"));
+
             Console.WriteLine("• Ollama - Use \"ollama\" in the prompt.");
         }
 
         if (config["OpenAI:ApiKey"] is not null)
         {
-            services.AddOpenAIChatCompletion(serviceId: "openai", modelId: config["OpenAI:ModelId"] ?? "gpt-4o", apiKey: config["OpenAI:ApiKey"]!);
+            services.AddOpenAIChatCompletion(
+                serviceId: "openai",
+                modelId: config["OpenAI:ModelId"] ?? "gpt-4o",
+                apiKey: config["OpenAI:ApiKey"]!);
+
             Console.WriteLine("• OpenAI Added - Use \"openai\" in the prompt.");
         }
 
         if (config["Onnx:ModelPath"] is not null)
         {
-            services.AddOnnxRuntimeGenAIChatCompletion(serviceId: "onnx", modelId: "phi-3", modelPath: config["Onnx:ModelPath"]!);
+            services.AddOnnxRuntimeGenAIChatCompletion(
+                serviceId: "onnx",
+                modelId: "phi-3",
+                modelPath: config["Onnx:ModelPath"]!);
+
             Console.WriteLine("• ONNX Added - Use \"onnx\" in the prompt.");
+        }
+
+        if (config["AzureAIInference:Endpoint"] is not null)
+        {
+            services.AddAzureAIInferenceChatCompletion(
+                serviceId: "azureai",
+                endpoint: new Uri(config["AzureAIInference:Endpoint"]!),
+                apiKey: config["AzureAIInference:ApiKey"]);
+
+            Console.WriteLine("• Azure AI Inference Added - Use \"azureai\" in the prompt.");
         }
 
         // Adding a custom filter to capture router selected service id
@@ -70,7 +92,7 @@ internal sealed class Program
             // Find the best service to use based on the user's input
             KernelArguments arguments = new(new PromptExecutionSettings()
             {
-                ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai", "onnx"])
+                ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai", "onnx", "azureai"])
             });
 
             // Invoke the prompt and print the response

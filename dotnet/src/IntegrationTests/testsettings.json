@@ -5,6 +5,11 @@
     "ChatModelId": "gpt-4o",
     "ApiKey": ""
   },
+  "AzureAIInference": {
+    "ServiceId": "azure-ai-inference",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
   "AzureOpenAI": {
     "ServiceId": "azure-gpt",
     "DeploymentName": "gpt-35-turbo-instruct",
