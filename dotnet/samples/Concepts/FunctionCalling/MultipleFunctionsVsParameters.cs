@@ -165,18 +165,24 @@ public class MultipleFunctionsVsParameters(ITestOutputHelper output) : BaseTest(
         {
             return
                 [
-                    new Invoice {
+                    new Invoice
+                    {
                         CustomerName = searchRequest.CustomerName ?? "Customer1",
                         PurchaseOrder = searchRequest.PurchaseOrder ?? "PO123",
-                        VendorNumber = searchRequest.VendorNumber ?? "VN123" },
-                    new Invoice {
+                        VendorNumber = searchRequest.VendorNumber ?? "VN123"
+                    },
+                    new Invoice
+                    {
                         CustomerName = searchRequest.CustomerName ?? "Customer2",
                         PurchaseOrder = searchRequest.PurchaseOrder ?? "PO124",
-                        VendorNumber = searchRequest.VendorNumber ?? "VN124" },
-                    new Invoice {
+                        VendorNumber = searchRequest.VendorNumber ?? "VN124"
+                    },
+                    new Invoice
+                    {
                         CustomerName = searchRequest.CustomerName ?? "Customer3",
                         PurchaseOrder = searchRequest.PurchaseOrder ?? "PO125",
-                        VendorNumber = searchRequest.VendorNumber ?? "VN125" },
+                        VendorNumber = searchRequest.VendorNumber ?? "VN125"
+                    },
                 ];
         }
     }
