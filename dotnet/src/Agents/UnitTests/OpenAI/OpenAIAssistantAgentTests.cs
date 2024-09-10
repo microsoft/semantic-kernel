@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -282,7 +280,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Arrange
         OpenAIAssistantDefinition definition = new("testmodel");
 
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentPayload(definition));
+        this.SetupResponse(HttpStatusCode.OK, definition);
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.RetrieveAsync(
@@ -306,7 +304,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.False(agent.IsDeleted);
 
         // Arrange
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.DeleteAgent);
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteAgent);
 
         // Act
         await agent.DeleteAsync();
@@ -330,7 +328,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateThread);
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
 
         // Act
         string threadId = await agent.CreateThreadAsync();
@@ -338,7 +336,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.NotNull(threadId);
 
         // Arrange
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateThread);
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
 
         // Act
         threadId = await agent.CreateThreadAsync(new());
@@ -357,11 +355,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         this.SetupResponses(
             HttpStatusCode.OK,
-            ResponseContent.CreateThread,
-            ResponseContent.CreateRun,
-            ResponseContent.CompletedRun,
-            ResponseContent.MessageSteps,
-            ResponseContent.GetTextMessage);
+            OpenAIAssistantResponseContent.CreateThread,
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage());
 
         AgentGroupChat chat = new();
 
@@ -385,11 +383,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         this.SetupResponses(
             HttpStatusCode.OK,
-            ResponseContent.CreateThread,
-            ResponseContent.CreateRun,
-            ResponseContent.CompletedRun,
-            ResponseContent.MessageSteps,
-            ResponseContent.GetTextMessageWithAnnotation);
+            OpenAIAssistantResponseContent.CreateThread,
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessageWithAnnotation);
 
         AgentGroupChat chat = new();
 
@@ -414,11 +412,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         this.SetupResponses(
             HttpStatusCode.OK,
-            ResponseContent.CreateThread,
-            ResponseContent.CreateRun,
-            ResponseContent.CompletedRun,
-            ResponseContent.MessageSteps,
-            ResponseContent.GetImageMessage);
+            OpenAIAssistantResponseContent.CreateThread,
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetImageMessage);
 
         AgentGroupChat chat = new();
 
@@ -443,11 +441,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Initialize agent channel
         this.SetupResponses(
             HttpStatusCode.OK,
-            ResponseContent.CreateThread,
-            ResponseContent.CreateRun,
-            ResponseContent.CompletedRun,
-            ResponseContent.MessageSteps,
-            ResponseContent.GetTextMessage);
+            OpenAIAssistantResponseContent.CreateThread,
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage());
 
         AgentGroupChat chat = new();
 
@@ -459,9 +457,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Arrange: Setup messages
         this.SetupResponses(
             HttpStatusCode.OK,
-            ResponseContent.ListMessagesPageMore,
-            ResponseContent.ListMessagesPageMore,
-            ResponseContent.ListMessagesPageFinal);
+            OpenAIAssistantResponseContent.ListMessagesPageMore,
+            OpenAIAssistantResponseContent.ListMessagesPageMore,
+            OpenAIAssistantResponseContent.ListMessagesPageFinal);
 
         // Act: Get messages
         messages = await chat.GetChatMessagesAsync(agent).ToArrayAsync();
@@ -481,11 +479,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Initialize agent channel
         this.SetupResponses(
             HttpStatusCode.OK,
-            ResponseContent.CreateThread,
-            ResponseContent.CreateRun,
-            ResponseContent.CompletedRun,
-            ResponseContent.MessageSteps,
-            ResponseContent.GetTextMessage);
+            OpenAIAssistantResponseContent.CreateThread,
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage());
         AgentGroupChat chat = new();
 
         // Act
@@ -513,9 +511,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         this.SetupResponses(
             HttpStatusCode.OK,
-            ResponseContent.ListAgentsPageMore,
-            ResponseContent.ListAgentsPageMore,
-            ResponseContent.ListAgentsPageFinal);
+            OpenAIAssistantResponseContent.ListAgentsPageMore,
+            OpenAIAssistantResponseContent.ListAgentsPageMore,
+            OpenAIAssistantResponseContent.ListAgentsPageFinal);
 
         // Act
         var messages =
@@ -527,8 +525,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Arrange
         this.SetupResponses(
             HttpStatusCode.OK,
-            ResponseContent.ListAgentsPageMore,
-            ResponseContent.ListAgentsPageFinal);
+            OpenAIAssistantResponseContent.ListAgentsPageMore,
+            OpenAIAssistantResponseContent.ListAgentsPageFinal);
 
         // Act
         messages =
@@ -552,14 +550,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         this.SetupResponses(
             HttpStatusCode.OK,
-            ResponseContent.CreateThread,
-            ResponseContent.CreateRun,
-            ResponseContent.PendingRun,
-            ResponseContent.ToolSteps,
-            ResponseContent.ToolResponse,
-            ResponseContent.CompletedRun,
-            ResponseContent.MessageSteps,
-            ResponseContent.GetTextMessage);
+            OpenAIAssistantResponseContent.CreateThread,
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.PendingRun,
+            OpenAIAssistantResponseContent.Run.ToolSteps,
+            OpenAIAssistantResponseContent.ToolResponse,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage());
 
         AgentGroupChat chat = new();
 
@@ -591,7 +589,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     private async Task VerifyAgentCreationAsync(OpenAIAssistantDefinition definition)
     {
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentPayload(definition));
+        this.SetupResponse(HttpStatusCode.OK, definition);
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
@@ -677,7 +675,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     {
         OpenAIAssistantDefinition definition = new("testmodel");
 
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentPayload(definition));
+        this.SetupResponse(HttpStatusCode.OK, definition);
 
         return
             OpenAIAssistantAgent.CreateAsync(
@@ -691,557 +689,19 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             OpenAIClientProvider.ForAzureOpenAI(apiKey: "fakekey", endpoint: new Uri("https://localhost"), this._httpClient) :
             OpenAIClientProvider.ForOpenAI(apiKey: "fakekey", endpoint: null, this._httpClient);
 
-    private void SetupResponse(HttpStatusCode statusCode, string content)
-    {
-        this._messageHandlerStub.ResponseToReturn =
-            new(statusCode)
-            {
-                Content = new StringContent(content)
-            };
-    }
+    private void SetupResponse(HttpStatusCode statusCode, string content) =>
+        this._messageHandlerStub.SetupResponse(statusCode, content);
 
-    private void SetupResponses(HttpStatusCode statusCode, params string[] content)
-    {
-        foreach (var item in content)
-        {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            this._messageHandlerStub.ResponseQueue.Enqueue(
-                new(statusCode)
-                {
-                    Content = new StringContent(item)
-                });
-#pragma warning restore CA2000 // Dispose objects before losing scope
-        }
-    }
+    private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantDefinition definition) =>
+        this._messageHandlerStub.SetupResponse(statusCode, OpenAIAssistantResponseContent.CreateAgentPayload(definition));
+
+    private void SetupResponses(HttpStatusCode statusCode, params string[] content) =>
+        this._messageHandlerStub.SetupResponses(statusCode, content);
 
     private sealed class MyPlugin
     {
         [KernelFunction]
         public void MyFunction(int index)
         { }
-    }
-
-    private static class ResponseContent
-    {
-        public static string CreateAgentPayload(OpenAIAssistantDefinition definition)
-        {
-            StringBuilder builder = new();
-            builder.AppendLine("{");
-            builder.AppendLine(@"  ""id"": ""asst_abc123"",");
-            builder.AppendLine(@"  ""object"": ""assistant"",");
-            builder.AppendLine(@"  ""created_at"": 1698984975,");
-            builder.AppendLine(@$"  ""name"": ""{definition.Name}"",");
-            builder.AppendLine(@$"  ""description"": ""{definition.Description}"",");
-            builder.AppendLine(@$"  ""instructions"": ""{definition.Instructions}"",");
-            builder.AppendLine(@$"  ""model"": ""{definition.ModelId}"",");
-
-            bool hasCodeInterpreter = definition.EnableCodeInterpreter;
-            bool hasCodeInterpreterFiles = (definition.CodeInterpreterFileIds?.Count ?? 0) > 0;
-            bool hasFileSearch = definition.EnableFileSearch;
-            if (!hasCodeInterpreter && !hasFileSearch)
-            {
-                builder.AppendLine(@"  ""tools"": [],");
-            }
-            else
-            {
-                builder.AppendLine(@"  ""tools"": [");
-
-                if (hasCodeInterpreter)
-                {
-                    builder.Append(@$"  {{ ""type"": ""code_interpreter"" }}{(hasFileSearch ? "," : string.Empty)}");
-                }
-
-                if (hasFileSearch)
-                {
-                    builder.AppendLine(@"  { ""type"": ""file_search"" }");
-                }
-
-                builder.AppendLine("    ],");
-            }
-
-            if (!hasCodeInterpreterFiles && !hasFileSearch)
-            {
-                builder.AppendLine(@"  ""tool_resources"": {},");
-            }
-            else
-            {
-                builder.AppendLine(@"  ""tool_resources"": {");
-
-                if (hasCodeInterpreterFiles)
-                {
-                    string fileIds = string.Join(",", definition.CodeInterpreterFileIds!.Select(fileId => "\"" + fileId + "\""));
-                    builder.AppendLine(@$"  ""code_interpreter"": {{ ""file_ids"": [{fileIds}] }}{(hasFileSearch ? "," : string.Empty)}");
-                }
-
-                if (hasFileSearch)
-                {
-                    builder.AppendLine(@$"  ""file_search"": {{ ""vector_store_ids"": [""{definition.VectorStoreId}""] }}");
-                }
-
-                builder.AppendLine("    },");
-            }
-
-            if (definition.Temperature.HasValue)
-            {
-                builder.AppendLine(@$"  ""temperature"": {definition.Temperature},");
-            }
-
-            if (definition.TopP.HasValue)
-            {
-                builder.AppendLine(@$"  ""top_p"": {definition.TopP},");
-            }
-
-            bool hasExecutionOptions = definition.ExecutionOptions != null;
-            int metadataCount = (definition.Metadata?.Count ?? 0);
-            if (metadataCount == 0 && !hasExecutionOptions)
-            {
-                builder.AppendLine(@"  ""metadata"": {}");
-            }
-            else
-            {
-                int index = 0;
-                builder.AppendLine(@"  ""metadata"": {");
-
-                if (hasExecutionOptions)
-                {
-                    string serializedExecutionOptions = JsonSerializer.Serialize(definition.ExecutionOptions);
-                    builder.AppendLine(@$"    ""{OpenAIAssistantAgent.OptionsMetadataKey}"": ""{JsonEncodedText.Encode(serializedExecutionOptions)}""{(metadataCount > 0 ? "," : string.Empty)}");
-                }
-
-                if (metadataCount > 0)
-                {
-                    foreach (var (key, value) in definition.Metadata!)
-                    {
-                        builder.AppendLine(@$"    ""{key}"": ""{value}""{(index < metadataCount - 1 ? "," : string.Empty)}");
-                        ++index;
-                    }
-                }
-
-                builder.AppendLine("  }");
-            }
-
-            builder.AppendLine("}");
-
-            return builder.ToString();
-        }
-
-        public const string CreateAgentWithEverything =
-            """
-            {
-              "tool_resources": {
-                "file_search": { "vector_store_ids": ["#vs"] }
-              },
-            }
-            """;
-
-        public const string DeleteAgent =
-          """
-            {
-              "id": "asst_abc123",
-              "object": "assistant.deleted",
-              "deleted": true
-            }
-            """;
-
-        public const string CreateThread =
-            """
-            {
-              "id": "thread_abc123",
-              "object": "thread",
-              "created_at": 1699012949,
-              "metadata": {}
-            }
-            """;
-
-        public const string CreateRun =
-            """
-            {
-              "id": "run_abc123",
-              "object": "thread.run",
-              "created_at": 1699063290,
-              "assistant_id": "asst_abc123",
-              "thread_id": "thread_abc123",
-              "status": "queued",
-              "started_at": 1699063290,
-              "expires_at": null,
-              "cancelled_at": null,
-              "failed_at": null,
-              "completed_at": 1699063291,
-              "last_error": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [],
-              "file_ids": [],
-              "metadata": {},
-              "usage": null,
-              "temperature": 1
-            }
-            """;
-
-        public const string PendingRun =
-            """
-            {
-              "id": "run_abc123",
-              "object": "thread.run",
-              "created_at": 1699063290,
-              "assistant_id": "asst_abc123",
-              "thread_id": "thread_abc123",
-              "status": "requires_action",
-              "started_at": 1699063290,
-              "expires_at": null,
-              "cancelled_at": null,
-              "failed_at": null,
-              "completed_at": 1699063291,
-              "last_error": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [],
-              "file_ids": [],
-              "metadata": {},
-              "usage": null,
-              "temperature": 1
-            }
-            """;
-
-        public const string CompletedRun =
-            """
-            {
-              "id": "run_abc123",
-              "object": "thread.run",
-              "created_at": 1699063290,
-              "assistant_id": "asst_abc123",
-              "thread_id": "thread_abc123",
-              "status": "completed",
-              "started_at": 1699063290,
-              "expires_at": null,
-              "cancelled_at": null,
-              "failed_at": null,
-              "completed_at": 1699063291,
-              "last_error": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [],
-              "file_ids": [],
-              "metadata": {},
-              "usage": null,
-              "temperature": 1
-            }
-            """;
-
-        public const string MessageSteps =
-            """
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "step_abc123",
-                  "object": "thread.run.step",
-                  "created_at": 1699063291,
-                  "run_id": "run_abc123",
-                  "assistant_id": "asst_abc123",
-                  "thread_id": "thread_abc123",
-                  "type": "message_creation",
-                  "status": "completed",
-                  "cancelled_at": null,
-                  "completed_at": 1699063291,
-                  "expired_at": null,
-                  "failed_at": null,
-                  "last_error": null,
-                  "step_details": {
-                    "type": "message_creation",
-                    "message_creation": {
-                      "message_id": "msg_abc123"
-                    }
-                  },
-                  "usage": {
-                    "prompt_tokens": 123,
-                    "completion_tokens": 456,
-                    "total_tokens": 579
-                  }
-                }
-              ],
-              "first_id": "step_abc123",
-              "last_id": "step_abc456",
-              "has_more": false
-            }
-            """;
-
-        public const string ToolSteps =
-            """
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "step_abc987",
-                  "object": "thread.run.step",
-                  "created_at": 1699063291,
-                  "run_id": "run_abc123",
-                  "assistant_id": "asst_abc123",
-                  "thread_id": "thread_abc123",
-                  "type": "tool_calls",
-                  "status": "in_progress",
-                  "cancelled_at": null,
-                  "completed_at": 1699063291,
-                  "expired_at": null,
-                  "failed_at": null,
-                  "last_error": null,
-                  "step_details": {
-                    "type": "tool_calls",
-                    "tool_calls": [
-                     {
-                        "id": "tool_1",
-                        "type": "function",
-                        "function": {
-                            "name": "MyPlugin-MyFunction",
-                            "arguments": "{ \"index\": 3 }",
-                            "output": "test"
-                        }
-                     }
-                    ]
-                  },
-                  "usage": {
-                    "prompt_tokens": 123,
-                    "completion_tokens": 456,
-                    "total_tokens": 579
-                  }
-                }
-              ],
-              "first_id": "step_abc123",
-              "last_id": "step_abc456",
-              "has_more": false
-            }
-            """;
-
-        public const string ToolResponse = "{ }";
-
-        public const string GetImageMessage =
-            """
-            {
-              "id": "msg_abc123",
-              "object": "thread.message",
-              "created_at": 1699017614,
-              "thread_id": "thread_abc123",
-              "role": "user",
-              "content": [
-                {
-                  "type": "image_file",
-                  "image_file": {
-                    "file_id": "file_123"
-                  }
-                }
-              ],
-              "assistant_id": "asst_abc123",
-              "run_id": "run_abc123"
-            }
-            """;
-
-        public const string GetTextMessage =
-            """
-            {
-              "id": "msg_abc123",
-              "object": "thread.message",
-              "created_at": 1699017614,
-              "thread_id": "thread_abc123",
-              "role": "user",
-              "content": [
-                {
-                  "type": "text",
-                  "text": {
-                    "value": "How does AI work? Explain it in simple terms.",
-                    "annotations": []
-                  }
-                }
-              ],
-              "assistant_id": "asst_abc123",
-              "run_id": "run_abc123"
-            }
-            """;
-
-        public const string GetTextMessageWithAnnotation =
-            """
-            {
-              "id": "msg_abc123",
-              "object": "thread.message",
-              "created_at": 1699017614,
-              "thread_id": "thread_abc123",
-              "role": "user",
-              "content": [
-                {
-                  "type": "text",
-                  "text": {
-                    "value": "How does AI work? Explain it in simple terms.**f1",
-                    "annotations": [
-                        {
-                            "type": "file_citation",
-                            "text": "**f1",
-                            "file_citation": {
-                                "file_id": "file_123",
-                                "quote": "does"
-                            },
-                            "start_index": 3,
-                            "end_index": 6
-                        }
-                    ]
-                  }
-                }
-              ],
-              "assistant_id": "asst_abc123",
-              "run_id": "run_abc123"
-            }
-            """;
-
-        public const string ListAgentsPageMore =
-            """
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "asst_abc123",
-                  "object": "assistant",
-                  "created_at": 1698982736,
-                  "name": "Coding Tutor",
-                  "description": null,
-                  "model": "gpt-4-turbo",
-                  "instructions": "You are a helpful assistant designed to make me better at coding!",
-                  "tools": [],
-                  "metadata": {}
-                },
-                {
-                  "id": "asst_abc456",
-                  "object": "assistant",
-                  "created_at": 1698982718,
-                  "name": "My Assistant",
-                  "description": null,
-                  "model": "gpt-4-turbo",
-                  "instructions": "You are a helpful assistant designed to make me better at coding!",
-                  "tools": [],
-                  "metadata": {}
-                },
-                {
-                  "id": "asst_abc789",
-                  "object": "assistant",
-                  "created_at": 1698982643,
-                  "name": null,
-                  "description": null,
-                  "model": "gpt-4-turbo",
-                  "instructions": null,
-                  "tools": [],
-                  "metadata": {}
-                }
-              ],
-              "first_id": "asst_abc123",
-              "last_id": "asst_abc789",
-              "has_more": true
-            }
-            """;
-
-        public const string ListAgentsPageFinal =
-            """
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "asst_abc789",
-                  "object": "assistant",
-                  "created_at": 1698982736,
-                  "name": "Coding Tutor",
-                  "description": null,
-                  "model": "gpt-4-turbo",
-                  "instructions": "You are a helpful assistant designed to make me better at coding!",
-                  "tools": [],
-                  "metadata": {}
-                }           
-              ],
-              "first_id": "asst_abc789",
-              "last_id": "asst_abc789",
-              "has_more": false
-            }
-            """;
-
-        public const string ListMessagesPageMore =
-            """
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "msg_abc123",
-                  "object": "thread.message",
-                  "created_at": 1699016383,
-                  "thread_id": "thread_abc123",
-                  "role": "user",
-                  "content": [
-                    {
-                      "type": "text",
-                      "text": {
-                        "value": "How does AI work? Explain it in simple terms.",
-                        "annotations": []
-                      }
-                    }
-                  ],
-                  "file_ids": [],
-                  "assistant_id": null,
-                  "run_id": null,
-                  "metadata": {}
-                },
-                {
-                  "id": "msg_abc456",
-                  "object": "thread.message",
-                  "created_at": 1699016383,
-                  "thread_id": "thread_abc123",
-                  "role": "user",
-                  "content": [
-                    {
-                      "type": "text",
-                      "text": {
-                        "value": "Hello, what is AI?",
-                        "annotations": []
-                      }
-                    }
-                  ],
-                  "file_ids": [
-                    "file-abc123"
-                  ],
-                  "assistant_id": null,
-                  "run_id": null,
-                  "metadata": {}
-                }
-              ],
-              "first_id": "msg_abc123",
-              "last_id": "msg_abc456",
-              "has_more": true
-            }
-            """;
-
-        public const string ListMessagesPageFinal =
-            """
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "msg_abc789",
-                  "object": "thread.message",
-                  "created_at": 1699016383,
-                  "thread_id": "thread_abc123",
-                  "role": "user",
-                  "content": [
-                    {
-                      "type": "text",
-                      "text": {
-                        "value": "How does AI work? Explain it in simple terms.",
-                        "annotations": []
-                      }
-                    }
-                  ],
-                  "file_ids": [],
-                  "assistant_id": null,
-                  "run_id": null,
-                  "metadata": {}
-                }
-              ],
-              "first_id": "msg_abc789",
-              "last_id": "msg_abc789",
-              "has_more": false
-            }
-            """;
     }
 }
