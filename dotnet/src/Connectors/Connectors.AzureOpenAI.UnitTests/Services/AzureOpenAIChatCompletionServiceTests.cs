@@ -545,6 +545,54 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetStreamingChatMessageContentsWithFunctionCallAsyncFilterAsync()
+    {
+        // Arrange
+        int functionCallCount = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function1 = KernelFunctionFactory.CreateFromMethod((string location) =>
+        {
+            functionCallCount++;
+            return "Some weather";
+        }, "GetCurrentWeather");
+
+        var function2 = KernelFunctionFactory.CreateFromMethod((string argument) =>
+        {
+            functionCallCount++;
+            throw new ArgumentException("Some exception");
+        }, "FunctionWithException");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]));
+
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("chat_completion_streaming_multiple_function_calls_test_async_filter_response.txt") };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("chat_completion_streaming_test_response.txt") };
+
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        // Act & Assert
+        var enumerator = service.GetStreamingChatMessageContentsAsync([], settings, kernel).GetAsyncEnumerator();
+
+        await enumerator.MoveNextAsync();
+        Assert.Equal("Test chat streaming response", enumerator.Current.Content);
+        Assert.Equal("ToolCalls", enumerator.Current.Metadata?["FinishReason"]);
+
+        await enumerator.MoveNextAsync();
+        Assert.Equal("ToolCalls", enumerator.Current.Metadata?["FinishReason"]);
+
+        // Keep looping until the end of stream
+        while (await enumerator.MoveNextAsync())
+        {
+        }
+
+        Assert.Equal(2, functionCallCount);
+    }
+
+
+    [Fact]
     public async Task GetStreamingChatMessageContentsWithFunctionCallMaximumAutoInvokeAttemptsAsync()
     {
         // Arrange
