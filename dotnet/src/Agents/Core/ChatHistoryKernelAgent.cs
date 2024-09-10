@@ -26,7 +26,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// <summary>
     /// Invoke the assistant to respond to the provided history.
     /// </summary>
-    /// <param name="history">The converstation history.</param>
+    /// <param name="history">The conversation history.</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -40,7 +40,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// <summary>
     /// Invoke the assistant to respond to the provided history with streaming response.
     /// </summary>
-    /// <param name="history">The converstation history.</param>
+    /// <param name="history">The conversation history.</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
