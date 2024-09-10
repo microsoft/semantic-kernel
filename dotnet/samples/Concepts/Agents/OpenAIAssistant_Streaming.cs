@@ -15,7 +15,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
 
     [Fact]
-    public async Task UseStreamingChatCompletionAgentAsync()
+    public async Task UseStreamingAssistantAgentAsync()
     {
         // Define the agent
         OpenAIAssistantAgent agent =
@@ -42,7 +42,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
     }
 
     [Fact]
-    public async Task UseStreamingChatCompletionAgentWithPluginAsync()
+    public async Task UseStreamingAssistantAgentWithPluginAsync()
     {
         const string MenuInstructions = "Answer questions about the menu.";
 
