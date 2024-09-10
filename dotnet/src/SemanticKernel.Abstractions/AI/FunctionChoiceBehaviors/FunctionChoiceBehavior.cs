@@ -49,7 +49,7 @@ public abstract class FunctionChoiceBehavior
     }
 
     /// <summary>
-    /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to the AI model to call or specific ones.
+    /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to the AI model to call or specified ones.
     /// This behavior allows the model to decide whether to call the functions and, if so, which ones to call.
     /// </summary>
     /// <param name="functions">
@@ -67,7 +67,7 @@ public abstract class FunctionChoiceBehavior
     }
 
     /// <summary>
-    /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to the AI model to call or specific ones.
+    /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to the AI model to call or specified ones.
     /// This behavior forces the model to call the provided functions. SK connectors will invoke a requested function or multiple requested functions if the model requests multiple ones in one request, while handling the first request, and stop advertising the functions for the following requests to prevent the model from repeatedly calling the same function(s).
     /// </summary>
     /// <param name="functions">
@@ -85,7 +85,7 @@ public abstract class FunctionChoiceBehavior
     }
 
     /// <summary>
-    /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specific ones but instructs it not to call any of them.
+    /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specified ones but instructs it not to call any of them.
     /// The model may use the provided function in the response it generates. E.g. the model may describe which functions it would call and with what parameter values.
     /// This response is useful if the user should first validate what functions the model will use.
     /// </summary>

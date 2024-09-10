@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Represents <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specific ones but instructs it not to call any of them.
+/// Represents <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specified ones but instructs it not to call any of them.
 /// The model may use the provided function in the response it generates. E.g. the model may describe which functions it would call and with what parameter values.
 /// This response is useful if the user should first validate what functions the model will use.
 /// </summary>

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -60,41 +61,41 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    //[Fact]
-    //public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
-    //{
-    //    // Arrange
-    //    this._kernel.ImportPluginFromType<DateTimeUtils>();
+    [Fact]
+    public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
+    {
+        // Arrange
+        this._kernel.ImportPluginFromType<DateTimeUtils>();
 
-    //    var invokedFunctions = new List<string>();
+        var invokedFunctions = new List<string>();
 
-    //    this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
-    //    {
-    //        invokedFunctions.Add(context.Function.Name);
-    //        await next(context);
-    //    });
+        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
 
-    //    var promptTemplate = """"
-    //        template_format: semantic-kernel
-    //        template: How many days until Christmas?
-    //        execution_settings:
-    //          default:
-    //            temperature: 0.1
-    //            function_choice_behavior:
-    //              type: auto
-    //        """";
+        var promptTemplate = """"
+            template_format: semantic-kernel
+            template: How many days until Christmas?
+            execution_settings:
+              default:
+                temperature: 0.1
+                function_choice_behavior:
+                  type: auto
+            """";
 
-    //    var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
+        var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
 
-    //    // Act
-    //    var result = await this._kernel.InvokeAsync(promptFunction);
+        // Act
+        var result = await this._kernel.InvokeAsync(promptFunction);
 
-    //    // Assert
-    //    Assert.NotNull(result);
+        // Assert
+        Assert.NotNull(result);
 
-    //    Assert.Single(invokedFunctions);
-    //    Assert.Contains("GetCurrentDate", invokedFunctions);
-    //}
+        Assert.Single(invokedFunctions);
+        Assert.Contains("GetCurrentDate", invokedFunctions);
+    }
 
     [Fact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyAsync()
@@ -166,46 +167,46 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    //[Fact]
-    //public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
-    //{
-    //    // Arrange
-    //    this._kernel.ImportPluginFromType<DateTimeUtils>();
+    [Fact]
+    public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
+    {
+        // Arrange
+        this._kernel.ImportPluginFromType<DateTimeUtils>();
 
-    //    var invokedFunctions = new List<string>();
+        var invokedFunctions = new List<string>();
 
-    //    this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
-    //    {
-    //        invokedFunctions.Add(context.Function.Name);
-    //        await next(context);
-    //    });
+        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
 
-    //    var promptTemplate = """"
-    //        template_format: semantic-kernel
-    //        template: How many days until Christmas?
-    //        execution_settings:
-    //          default:
-    //            temperature: 0.1
-    //            function_choice_behavior:
-    //              type: auto
-    //        """";
+        var promptTemplate = """"
+            template_format: semantic-kernel
+            template: How many days until Christmas?
+            execution_settings:
+              default:
+                temperature: 0.1
+                function_choice_behavior:
+                  type: auto
+            """";
 
-    //    var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
+        var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
 
-    //    string result = "";
+        StringBuilder result = new();
 
-    //    // Act
-    //    await foreach (string c in promptFunction.InvokeStreamingAsync<string>(this._kernel))
-    //    {
-    //        result += c;
-    //    }
+        // Act
+        await foreach (string update in promptFunction.InvokeStreamingAsync<string>(this._kernel))
+        {
+            result.Append(update);
+        }
 
-    //    // Assert
-    //    Assert.NotNull(result);
+        // Assert
+        Assert.NotNull(result);
 
-    //    Assert.Single(invokedFunctions);
-    //    Assert.Contains("GetCurrentDate", invokedFunctions);
-    //}
+        Assert.Single(invokedFunctions);
+        Assert.Contains("GetCurrentDate", invokedFunctions);
+    }
 
     [Fact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyForStreamingAsync()

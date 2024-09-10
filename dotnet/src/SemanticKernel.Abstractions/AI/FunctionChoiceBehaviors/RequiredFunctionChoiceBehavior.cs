@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Represents <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specific ones.
+/// Represents <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specified ones.
 /// This behavior forces the model to always call one or more functions.
 /// </summary>
 internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
