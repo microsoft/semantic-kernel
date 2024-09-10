@@ -20,6 +20,10 @@ public abstract class KernelAgent : Agent
     /// <summary>
     /// The instructions for the agent (optional)
     /// </summary>
+    /// <remarks>
+    /// Instructions may be formatted in "semantic-kernel" template format.
+    /// (<see cref="KernelPromptTemplateFactory"/>)
+    /// </remarks>
     public string? Instructions { get; init; }
 
     /// <summary>
@@ -31,36 +35,31 @@ public abstract class KernelAgent : Agent
     public Kernel Kernel { get; init; } = new();
 
     /// <summary>
-    /// %%% COMMENT
-    /// </summary>
-    public IPromptTemplateFactory? TemplateFactory { get; init; }
-
-    /// <summary>
     /// A prompt-template based on the agent instructions.
     /// </summary>
     protected IPromptTemplate? Template { get; set; }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Format the system instructions for the agent.
     /// </summary>
-    /// <param name="kernel"></param>
-    /// <param name="arguments"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
+    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The formatted system instructions for the agent</returns>
     protected async Task<string?> FormatInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
-        if (this.Template == null && !string.IsNullOrWhiteSpace(this.Instructions))
+        // If <see cref="Template"/> is not set, default instructions may be treated as "semantic-kernel" template.
+        if (this.Template == null)
         {
-            IPromptTemplateFactory templateFactory = this.TemplateFactory ?? new KernelPromptTemplateFactory(this.LoggerFactory);
-            if (templateFactory.TryCreate(new PromptTemplateConfig(this.Instructions!), out IPromptTemplate? template))
+            if (string.IsNullOrWhiteSpace(this.Instructions))
             {
-                this.Template = template;
+                return null;
             }
+
+            KernelPromptTemplateFactory templateFactory = new(this.LoggerFactory);
+            this.Template = templateFactory.Create(new PromptTemplateConfig(this.Instructions!));
         }
 
-        return
-            this.Template == null ?
-                this.Instructions :
-                await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        return await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
     }
 }

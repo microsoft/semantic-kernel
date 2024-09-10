@@ -59,8 +59,11 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agent
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
-        Kernel kernel = this.CreateKernelWithChatCompletion();
-        ChatCompletionAgent agent = ChatCompletionAgent.FromTemplate(templateConfig, new KernelPromptTemplateFactory(), kernel);
+        ChatCompletionAgent agent =
+            new(templateConfig, new KernelPromptTemplateFactory())
+            {
+                Kernel = this.CreateKernelWithChatCompletion()
+            };
 
         /// Create the chat history to capture the agent interaction.
         ChatHistory chat = [];

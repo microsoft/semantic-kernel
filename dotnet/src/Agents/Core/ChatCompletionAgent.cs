@@ -22,36 +22,26 @@ namespace Microsoft.SemanticKernel.Agents;
 public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 {
     /// <summary>
-    /// %%% COMMENT
+    /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
     /// </summary>
-    /// <param name="templateConfig"></param>
-    /// <param name="templateFactory"></param>
-    /// <param name="kernel"></param>
-    /// <param name="defaultArguments"></param>
-    /// <param name="loggerFactory"></param>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    public static ChatCompletionAgent FromTemplate(
+    public ChatCompletionAgent() { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
+    /// </summary>
+    /// <param name="templateConfig">Prompt template configuration</param>
+    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent</param>
+    /// <remarks>
+    /// When 'templateFactory' parameter is not provided, the default <see cref="KernelPromptTemplateFactory"/> is used.
+    /// </remarks>
+    public ChatCompletionAgent(
         PromptTemplateConfig templateConfig,
-        IPromptTemplateFactory templateFactory,
-        Kernel kernel,
-        KernelArguments? defaultArguments = null,
-        ILoggerFactory? loggerFactory = null,
-        string? id = null)
+        IPromptTemplateFactory? templateFactory = null)
     {
-        IPromptTemplate template = templateFactory.Create(templateConfig);
-        return new ChatCompletionAgent()
-        {
-            Id = id ?? Guid.NewGuid().ToString(),
-            Name = templateConfig.Name,
-            Description = templateConfig.Description,
-            LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance,
-            Arguments = defaultArguments,
-            Instructions = templateConfig.Template,
-            Kernel = kernel,
-            Template = template,
-            TemplateFactory = templateFactory,
-        };
+        this.Name = templateConfig.Name;
+        this.Description = templateConfig.Description;
+        this.Instructions = templateConfig.Template;
+        this.Template = templateFactory?.Create(templateConfig);
     }
 
     /// <inheritdoc/>

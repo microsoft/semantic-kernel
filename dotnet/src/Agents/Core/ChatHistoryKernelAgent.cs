@@ -18,17 +18,33 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </remarks>
 public abstract class ChatHistoryKernelAgent : KernelAgent
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// An optional reducer for limiting the size of the conversation history.
+    /// </summary>
     public IChatHistoryReducer? HistoryReducer { get; init; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Invoke the assistant to respond to the provided history.
+    /// </summary>
+    /// <param name="history">The converstation history.</param>
+    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of response messages.</returns>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Invoke the assistant to respond to the provided history with streaming response.
+    /// </summary>
+    /// <param name="history">The converstation history.</param>
+    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of response messages.</returns>
     public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
@@ -40,7 +56,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// </summary>
     /// <param name="history">The source history</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
+    /// <returns>True if reduction has occurred.</returns>
     public Task<bool> ReduceAsync(ChatHistory history, CancellationToken cancellationToken = default) =>
         history.ReduceAsync(this.HistoryReducer, cancellationToken);
 

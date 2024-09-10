@@ -81,8 +81,8 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
                 {
                     Metadata = AssistantSampleMetadata,
                 },
-                new KernelPromptTemplateFactory(),
-                templateConfig);
+                templateConfig,
+                new KernelPromptTemplateFactory());
 
         // Create a thread for the agent conversation.
         string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
