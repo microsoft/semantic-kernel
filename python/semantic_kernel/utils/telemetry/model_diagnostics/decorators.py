@@ -262,7 +262,7 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
 
             with use_span(
                 _start_completion_activity(
-                    CHAT_COMPLETION_OPERATION,
+                    TEXT_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
                     prompt,
