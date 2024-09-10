@@ -688,7 +688,6 @@ internal static class OpenAIAssistantResponseContent
             return "0";
         }
 
-
         private static string CreateEvent(string eventType, string data) =>
             $"""
             event: {eventType}
