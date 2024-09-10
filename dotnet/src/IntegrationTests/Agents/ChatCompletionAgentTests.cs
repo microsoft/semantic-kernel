@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -108,7 +107,7 @@ public sealed class ChatCompletionAgentTests()
         this._kernelBuilder.AddAzureOpenAIChatCompletion(
             configuration.ChatDeploymentName!,
             configuration.Endpoint,
-            configuration.ApiKey);
+            new AzureCliCredential());
 
         this._kernelBuilder.Plugins.Add(plugin);
 
