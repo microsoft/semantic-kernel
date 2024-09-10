@@ -77,10 +77,10 @@ internal sealed class Program
         if (config["Anthropic:ApiKey"] is not null)
         {
             services.AddAnthropicChatCompletion(
-                serviceId: "anthropic", 
-                modelId: config["Anthropic:ModelId"] ?? "claude-3-5-sonnet-20240620", 
+                serviceId: "anthropic",
+                modelId: config["Anthropic:ModelId"] ?? "claude-3-5-sonnet-20240620",
                 apiKey: config["Anthropic:ApiKey"]!);
-  
+
             Console.WriteLine("• Anthropic Added - Use \"anthropic\" in the prompt.");
         }
 
