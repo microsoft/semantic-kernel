@@ -107,6 +107,14 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         """Create a request settings object."""
         return MistralAIChatPromptExecutionSettings
 
+    # Override from AIServiceClientBase
+    @override
+    def service_url(self) -> str | None:
+        if hasattr(self.async_client, "_endpoint"):
+            # Best effort to get the endpoint
+            return self.async_client._endpoint
+        return None
+
     @override
     @trace_chat_completion(MistralAIBase.MODEL_PROVIDER_NAME)
     async def _inner_get_chat_message_contents(

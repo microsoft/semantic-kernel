@@ -10,6 +10,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+import httpx
 from ollama import AsyncClient
 from pydantic import ValidationError
 
@@ -84,6 +85,14 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         """Get the request settings class."""
         return OllamaChatPromptExecutionSettings
+
+    # Override from AIServiceClientBase
+    @override
+    def service_url(self) -> str | None:
+        if hasattr(self.client, "_client") and isinstance(self.client._client, httpx.AsyncClient):
+            # Best effort to get the endpoint
+            return str(self.client._client.base_url)
+        return None
 
     @override
     @trace_chat_completion(OllamaBase.MODEL_PROVIDER_NAME)

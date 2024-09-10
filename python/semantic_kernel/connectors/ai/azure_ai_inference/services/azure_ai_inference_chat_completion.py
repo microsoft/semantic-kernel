@@ -125,6 +125,14 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return AzureAIInferenceChatPromptExecutionSettings
 
+    # Override from AIServiceClientBase
+    @override
+    def service_url(self) -> str | None:
+        if hasattr(self.client, "_client") and hasattr(self.client._client, "_base_url"):
+            # Best effort to get the endpoint
+            return self.client._client._base_url
+        return None
+
     @override
     @trace_chat_completion(AzureAIInferenceBase.MODEL_PROVIDER_NAME)
     async def _inner_get_chat_message_contents(

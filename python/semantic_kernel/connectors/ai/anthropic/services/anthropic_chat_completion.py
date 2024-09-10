@@ -115,6 +115,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return AnthropicChatPromptExecutionSettings
 
+    # Override from AIServiceClientBase
+    @override
+    def service_url(self) -> str | None:
+        return str(self.async_client.base_url)
+
     @override
     @trace_chat_completion(MODEL_PROVIDER_NAME)
     async def _inner_get_chat_message_contents(

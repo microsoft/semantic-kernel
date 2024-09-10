@@ -93,6 +93,7 @@ def trace_chat_completion(model_provider: str) -> Callable:
                     CHAT_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
+                    completion_service.service_url(),
                     chat_history,
                     settings,
                 ),
@@ -153,6 +154,7 @@ def trace_streaming_chat_completion(model_provider: str) -> Callable:
                     CHAT_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
+                    completion_service.service_url(),
                     chat_history,
                     settings,
                 ),
@@ -211,6 +213,7 @@ def trace_text_completion(model_provider: str) -> Callable:
                     TEXT_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
+                    completion_service.service_url(),
                     prompt,
                     settings,
                 ),
@@ -265,6 +268,7 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
                     TEXT_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
+                    completion_service.service_url(),
                     prompt,
                     settings,
                 ),
@@ -298,6 +302,7 @@ def _start_completion_activity(
     operation_name: str,
     model_name: str,
     model_provider: str,
+    service_url: str | None,
     prompt: str | ChatHistory,
     execution_settings: "PromptExecutionSettings | None",
 ) -> Span:
@@ -310,6 +315,9 @@ def _start_completion_activity(
         gen_ai_attributes.SYSTEM: model_provider,
         gen_ai_attributes.MODEL: model_name,
     })
+
+    if service_url:
+        span.set_attribute(gen_ai_attributes.ADDRESS, service_url)
 
     # TODO(@glahaye): we'll need to have a way to get these attributes from model
     # providers other than OpenAI (for example if the attributes are named differently)

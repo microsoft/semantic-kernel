@@ -65,6 +65,11 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return OpenAIChatPromptExecutionSettings
 
+    # Override from AIServiceClientBase
+    @override
+    def service_url(self) -> str | None:
+        return str(self.client.base_url)
+
     @override
     @trace_chat_completion(MODEL_PROVIDER_NAME)
     async def _inner_get_chat_message_contents(
