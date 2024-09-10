@@ -58,12 +58,13 @@ jobs:
               os: "ubuntu-latest",
               configuration: Release,
               integration-tests: true,
+              environment: "integration",
             }
           - { dotnet: "8.0", os: "windows-latest", configuration: Debug }
           - { dotnet: "8.0", os: "windows-latest", configuration: Release }
 
     runs-on: ${{ matrix.os }}
-    environment: integration
+    environment: ${{ matrix.environment }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup dotnet ${{ matrix.dotnet }}
