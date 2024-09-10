@@ -30,19 +30,18 @@ namespace FunctionCalling;
 ///
 /// ** Function invocation **
 ///    The <see cref="FunctionChoiceBehavior.Auto"/> and <see cref="FunctionChoiceBehavior.Required"/> supports two modes of function invocation: manual and automatic:
-///    * Automatic function invocation mode enables invocation of all functions called by AI model automatically by SK.
+///    * Automatic function invocation mode causes all functions chosen by the AI model to be automatically invoked by SK.
 ///      The results of these function invocations are added to the chat history and sent to the model automatically in the following request.
 ///      The model then reasons about the chat history and then calls functions again or generates the final response.
 ///      This approach is fully automated and requires no manual intervention from the caller. The automatic invocation mode is enabled by default.
-///    * Manual invocation mode returns all function calls requested by the AI model to the AI API caller. The caller is fully responsible
+///    * Manual invocation mode returns all function calls requested by the AI model to the SK caller. The caller is fully responsible
 ///      for the invocation phase where they may decide which function to call, how to handle exceptions, call them in parallel or sequentially, etc.
 ///      The caller then adds the function results/exceptions to the chat history and returns it to the model, which reasons about it
 ///      and then calls functions again or generates the final response. This invocation mode provides more control over the function invocation phase to the caller.
 ///      To enable manual invocation, the caller needs to set the `autoInvoke` parameter to `false` when specifying either <see cref="FunctionChoiceBehavior.Auto"/>
 ///      or <see cref="FunctionChoiceBehavior.Required"/> in the <see cref="PromptExecutionSettings"/>.
 ///
-///    SK supports only sequential invocation of functions in the automatic invocation mode at the moment. The concurrent invocation mode is only possible
-///    in the manual invocation mode.
+///    SK supports only sequential invocation of functions in the automatic invocation mode at the moment. To invoke functions concurrently, a caller will need to do this manually.
 /// </summary>
 public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
