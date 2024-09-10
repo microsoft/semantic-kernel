@@ -51,6 +51,13 @@
         "serde",
         "datamodel",
         "vectorstoremodel",
-        "qdrant"
+        "qdrant",
+        "huggingface",
+        "pytestmark",
+        "contoso",
+        "opentelemetry",
+        "SEMANTICKERNEL",
+        "OTEL",
+        "mistralai"
     ]
 }

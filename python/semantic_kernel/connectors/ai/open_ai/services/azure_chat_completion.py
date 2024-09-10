@@ -180,7 +180,8 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     def _get_tool_message_from_chat_choice(self, choice: Choice | ChunkChoice) -> dict[str, Any] | None:
         """Get the tool message from a choice."""
         content = choice.message if isinstance(choice, Choice) else choice.delta
-        if content.model_extra is not None:
+        # When you enable asynchronous content filtering in Azure OpenAI, you may receive empty deltas
+        if content and content.model_extra is not None:
             return content.model_extra.get("context", None)
         # openai allows extra content, so model_extra will be a dict, but we need to check anyway, but no way to test.
         return None  # pragma: no cover

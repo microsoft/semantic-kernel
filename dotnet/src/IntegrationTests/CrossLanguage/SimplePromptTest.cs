@@ -30,7 +30,10 @@ public class SimplePromptTest
         JsonNode? obtainedObject = JsonNode.Parse(requestContent);
         Assert.NotNull(obtainedObject);
 
-        string expected = await File.ReadAllTextAsync("./CrossLanguage/Data/SimplePromptTest.json");
+        string expected = await File.ReadAllTextAsync(isStreaming
+            ? "./CrossLanguage/Data/SimplePromptStreamingTest.json"
+            : "./CrossLanguage/Data/SimplePromptTest.json");
+
         JsonNode? expectedObject = JsonNode.Parse(expected);
         Assert.NotNull(expectedObject);
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Configuration;
 
 namespace StepwisePlannerMigration.Extensions;
 

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.ML.Tokenizers;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Text;
 
 namespace Memory;
