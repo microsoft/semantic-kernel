@@ -21,6 +21,7 @@ public sealed class TestConfiguration
 
     public static OllamaConfig Ollama => LoadSection<OllamaConfig>();
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
+    public static OnnxConfig Onnx => LoadSection<OnnxConfig>();
     public static AzureOpenAIConfig AzureOpenAI => LoadSection<AzureOpenAIConfig>();
     public static AzureAIInferenceConfig AzureAIInference => LoadSection<AzureAIInferenceConfig>();
     public static AzureOpenAIConfig AzureOpenAIImages => LoadSection<AzureOpenAIConfig>();
@@ -78,6 +79,15 @@ public sealed class TestConfiguration
         public string ServiceId { get; set; }
         public string Endpoint { get; set; }
         public string? ApiKey { get; set; }
+    }
+  
+    public class OnnxConfig
+    {
+        public string ModelId { get; set; }
+        public string ModelPath { get; set; }
+        public string EmbeddingModelId { get; set; }
+        public string EmbeddingModelPath { get; set; }
+        public string EmbeddingVocabPath { get; set; }
     }
 
     public class AzureOpenAIConfig
