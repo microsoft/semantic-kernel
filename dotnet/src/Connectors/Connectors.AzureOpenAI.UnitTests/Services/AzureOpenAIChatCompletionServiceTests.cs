@@ -545,6 +545,98 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetStreamingChatMessageContentsWithFunctionCallAsyncFilterAsync()
+    {
+        // Arrange
+        int functionCallCount = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function1 = KernelFunctionFactory.CreateFromMethod((string location) =>
+        {
+            functionCallCount++;
+            return "Some weather";
+        }, "GetCurrentWeather");
+
+        var function2 = KernelFunctionFactory.CreateFromMethod((string argument) =>
+        {
+            functionCallCount++;
+            throw new ArgumentException("Some exception");
+        }, "FunctionWithException");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]));
+
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("chat_completion_streaming_multiple_function_calls_test_async_filter_response.txt") };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("chat_completion_streaming_test_response.txt") };
+
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        // Act & Assert
+        var enumerator = service.GetStreamingChatMessageContentsAsync([], settings, kernel).GetAsyncEnumerator();
+        await enumerator.MoveNextAsync();
+        var message = enumerator.Current;
+
+        Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
+        var update = (StreamingChatCompletionUpdate)message.InnerContent;
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var promptResults = update.GetContentFilterResultForPrompt();
+        Assert.Equal(ContentFilterSeverity.Safe, promptResults.Hate.Severity);
+        Assert.Equal(ContentFilterSeverity.Safe, promptResults.Sexual.Severity);
+        Assert.Equal(ContentFilterSeverity.Safe, promptResults.Violence.Severity);
+        Assert.Equal(ContentFilterSeverity.Safe, promptResults.SelfHarm.Severity);
+        Assert.False(promptResults.Jailbreak.Detected);
+
+        await enumerator.MoveNextAsync();
+        message = enumerator.Current;
+        Assert.Equal("Test chat streaming response", message.Content);
+        Assert.Equal("ToolCalls", message.Metadata?["FinishReason"]);
+
+        await enumerator.MoveNextAsync();
+        message = enumerator.Current;
+        Assert.Equal("ToolCalls", message.Metadata?["FinishReason"]);
+
+        await enumerator.MoveNextAsync();
+        message = enumerator.Current;
+        Assert.Equal("ToolCalls", message.Metadata?["FinishReason"]);
+
+        await enumerator.MoveNextAsync();
+        message = enumerator.Current;
+        Assert.Equal("ToolCalls", message.Metadata?["FinishReason"]);
+
+        // Async Filter Final Chunks
+        await enumerator.MoveNextAsync();
+        message = enumerator.Current;
+
+        Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
+        update = (StreamingChatCompletionUpdate)message.InnerContent;
+
+        var filterResults = update.GetContentFilterResultForResponse();
+        Assert.Equal(ContentFilterSeverity.Safe, filterResults.Hate.Severity);
+        Assert.Equal(ContentFilterSeverity.Safe, filterResults.Sexual.Severity);
+        Assert.Equal(ContentFilterSeverity.Safe, filterResults.SelfHarm.Severity);
+        Assert.Equal(ContentFilterSeverity.Safe, filterResults.Violence.Severity);
+
+        await enumerator.MoveNextAsync();
+        message = enumerator.Current;
+
+        Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
+        update = (StreamingChatCompletionUpdate)message.InnerContent;
+        filterResults = update.GetContentFilterResultForResponse();
+        Assert.False(filterResults.ProtectedMaterialCode.Detected);
+        Assert.False(filterResults.ProtectedMaterialText.Detected);
+
+        // Keep looping until the end of stream
+        while (await enumerator.MoveNextAsync())
+        {
+        }
+
+        Assert.Equal(2, functionCallCount);
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    }
+
+    [Fact]
     public async Task GetStreamingChatMessageContentsWithFunctionCallMaximumAutoInvokeAttemptsAsync()
     {
         // Arrange
