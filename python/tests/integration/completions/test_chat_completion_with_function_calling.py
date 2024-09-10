@@ -28,7 +28,6 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
-    
 
 class FunctionChoiceTestTypes(str, Enum):
     """Test function choice types."""
