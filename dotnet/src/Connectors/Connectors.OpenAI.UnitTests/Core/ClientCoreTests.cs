@@ -135,7 +135,7 @@ public partial class ClientCoreTests
     }
 
     [Fact]
-    public async Task ItDoNotAddSemanticKernelHeadersWhenOpenAIClientIsProvidedAsync()
+    public async Task ItDoesNotAddSemanticKernelHeadersWhenOpenAIClientIsProvidedAsync()
     {
         using HttpMessageHandlerStub handler = new();
         using HttpClient client = new(handler);
@@ -169,7 +169,7 @@ public partial class ClientCoreTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("value")]
-    public void ItAddAttributesButDoesNothingIfNullOrEmpty(string? value)
+    public void ItAddsAttributesButDoesNothingIfNullOrEmpty(string? value)
     {
         // Arrange
         var clientCore = new ClientCore("model", "apikey");
@@ -190,7 +190,7 @@ public partial class ClientCoreTests
     }
 
     [Fact]
-    public void ItAddModelIdAttributeAsExpected()
+    public void ItAddsModelIdAttributeAsExpected()
     {
         // Arrange
         var expectedModelId = "modelId";
