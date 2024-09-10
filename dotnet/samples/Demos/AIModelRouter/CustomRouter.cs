@@ -11,7 +11,7 @@ namespace AIModelRouter;
 /// In a real-world scenario, you would use a more sophisticated routing mechanism, such as another local model for
 /// deciding which service to use based on the user's input or any other criteria.
 /// </summary>
-public class CustomRouter()
+internal sealed class CustomRouter()
 {
     /// <summary>
     /// Returns the best service id to use based on the user's input.
@@ -21,7 +21,7 @@ public class CustomRouter()
     /// <param name="lookupPrompt">User's input prompt</param>
     /// <param name="serviceIds">List of service ids to choose from in order of importance, defaulting to the first</param>
     /// <returns>Service id.</returns>
-    public string FindService(string lookupPrompt, IReadOnlyList<string> serviceIds)
+    internal string FindService(string lookupPrompt, IReadOnlyList<string> serviceIds)
     {
         // The order matters, if the keyword is not found, the first one is used.
         foreach (var serviceId in serviceIds)

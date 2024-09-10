@@ -42,7 +42,8 @@ kernel = Kernel()
 # Note: the underlying Model must be Mistral Small, Mistral Large, Mixtral 8x22B, Mistral Nemo.
 # You can use MISTRALAI_API_KEY and MISTRALAI_CHAT_MODEL_ID environment variables to set the API key and model ID.
 # Or just set it here in the Constructor for testing
-kernel.add_service(MistralAIChatCompletion(
+kernel.add_service(
+    MistralAIChatCompletion(
         service_id="chat",
         # api_key=XXXXXXX,
         # ai_model_id="mistral-large",
@@ -90,7 +91,7 @@ execution_settings = MistralAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(auto_invoke=False),
+    function_choice_behavior=FunctionChoiceBehavior.Auto(auto_invoke=True),
 )
 
 history = ChatHistory()

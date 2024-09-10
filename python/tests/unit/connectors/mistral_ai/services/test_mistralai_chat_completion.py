@@ -79,74 +79,66 @@ async def test_complete_chat_contents(
         chat_history=chat_history, settings=mock_settings, kernel=kernel, arguments=arguments
     )
     assert content is not None
- 
 
-mock_message_text_content = ChatMessageContent(
-        role=AuthorRole.ASSISTANT, items=[TextContent(text="test")]
-)
+
+mock_message_text_content = ChatMessageContent(role=AuthorRole.ASSISTANT, items=[TextContent(text="test")])
 
 mock_message_function_call = ChatMessageContent(
-        role=AuthorRole.ASSISTANT, items=[
-            FunctionCallContent(
-                name="test",
-                arguments={"key": "test"},
-            )
-        ]
-)     
+    role=AuthorRole.ASSISTANT,
+    items=[
+        FunctionCallContent(
+            name="test",
+            arguments={"key": "test"},
+        )
+    ],
+)
 
 
-@pytest.mark.parametrize("function_choice_behavior,model_responses,expected_result", [
-    pytest.param(
-        FunctionChoiceBehavior.Auto(),
-        [[mock_message_function_call], [mock_message_text_content]],
-        TextContent,
-        id="auto"
-    ),
-    pytest.param(
-        FunctionChoiceBehavior.Auto(auto_invoke=False),
-        [[mock_message_function_call]],
-        FunctionCallContent,
-        id="auto_none_invoke"
-    ),
-    pytest.param(
-        FunctionChoiceBehavior.Required(auto_invoke=False),
-        [[mock_message_function_call]],
-        FunctionCallContent,
-        id="required_none_invoke"
-    ),
-    pytest.param(
-        FunctionChoiceBehavior.NoneInvoke(),
-        [[mock_message_text_content]],
-        TextContent,
-        id="none"
-    ),
-])
+@pytest.mark.parametrize(
+    "function_choice_behavior,model_responses,expected_result",
+    [
+        pytest.param(
+            FunctionChoiceBehavior.Auto(),
+            [[mock_message_function_call], [mock_message_text_content]],
+            TextContent,
+            id="auto",
+        ),
+        pytest.param(
+            FunctionChoiceBehavior.Auto(auto_invoke=False),
+            [[mock_message_function_call]],
+            FunctionCallContent,
+            id="auto_none_invoke",
+        ),
+        pytest.param(
+            FunctionChoiceBehavior.Required(auto_invoke=False),
+            [[mock_message_function_call]],
+            FunctionCallContent,
+            id="required_none_invoke",
+        ),
+        pytest.param(FunctionChoiceBehavior.NoneInvoke(), [[mock_message_text_content]], TextContent, id="none"),
+    ],
+)
 @pytest.mark.asyncio
 async def test_complete_chat_contents_function_call_behavior_tool_call(
     kernel: Kernel,
     mock_settings: MistralAIChatPromptExecutionSettings,
     function_choice_behavior: FunctionChoiceBehavior,
     model_responses,
-    expected_result
+    expected_result,
 ):
     kernel.add_function("test", kernel_function(lambda key: "test", name="test"))
     mock_settings.function_choice_behavior = function_choice_behavior
-    
+
     arguments = KernelArguments()
-    chat_completion_base = MistralAIChatCompletion(
-        ai_model_id="test_model_id", service_id="test", api_key=""
-    )
+    chat_completion_base = MistralAIChatCompletion(ai_model_id="test_model_id", service_id="test", api_key="")
 
     with (
-        patch.object(
-            chat_completion_base,
-            '_send_chat_request',
-              side_effect=model_responses),
+        patch.object(chat_completion_base, "_inner_get_chat_message_contents", side_effect=model_responses),
     ):
         response: list[ChatMessageContent] = await chat_completion_base.get_chat_message_contents(
             chat_history=ChatHistory(system_message="Test"), settings=mock_settings, kernel=kernel, arguments=arguments
         )
-        
+
         assert all(isinstance(content, expected_result) for content in response[0].items)
 
 
@@ -159,14 +151,12 @@ async def test_complete_chat_contents_function_call_behavior_without_kernel(
     chat_completion_base = MistralAIChatCompletion(
         ai_model_id="test_model_id", service_id="test", api_key="", async_client=mock_mistral_ai_client_completion
     )
-    
+
     mock_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
     with pytest.raises(ServiceInvalidExecutionSettingsError):
-        await chat_completion_base.get_chat_message_contents(
-            chat_history=chat_history, settings=mock_settings
-        )
-        
+        await chat_completion_base.get_chat_message_contents(chat_history=chat_history, settings=mock_settings)
+
 
 @pytest.mark.asyncio
 async def test_complete_chat_stream_contents(
@@ -191,75 +181,65 @@ async def test_complete_chat_stream_contents(
 
 
 mock_message_function_call = StreamingChatMessageContent(
-        role=AuthorRole.ASSISTANT, items=[FunctionCallContent(name="test")], choice_index='0'
+    role=AuthorRole.ASSISTANT, items=[FunctionCallContent(name="test")], choice_index="0"
 )
 
 mock_message_text_content = StreamingChatMessageContent(
-        role=AuthorRole.ASSISTANT, items=[TextContent(text="test")], choice_index='0'
+    role=AuthorRole.ASSISTANT, items=[TextContent(text="test")], choice_index="0"
 )
 
 
-@pytest.mark.parametrize("function_choice_behavior,model_responses,expected_result", [
-    pytest.param(
-        FunctionChoiceBehavior.Auto(),
-        [[mock_message_function_call], [mock_message_text_content]],
-        TextContent,
-        id="auto"
-    ),
-    pytest.param(
-        FunctionChoiceBehavior.Auto(auto_invoke=False),
-        [[mock_message_function_call]],
-        FunctionCallContent,
-        id="auto_none_invoke"
-    ),
-    pytest.param(
-        FunctionChoiceBehavior.Required(auto_invoke=False),
-        [[mock_message_function_call]],
-        FunctionCallContent,
-        id="required_none_invoke"
-    ),
-    pytest.param(
-        FunctionChoiceBehavior.NoneInvoke(),
-        [[mock_message_text_content]],
-        TextContent,
-        id="none"
-    ),
-])
+@pytest.mark.parametrize(
+    "function_choice_behavior,model_responses,expected_result",
+    [
+        pytest.param(
+            FunctionChoiceBehavior.Auto(),
+            [[mock_message_function_call], [mock_message_text_content]],
+            TextContent,
+            id="auto",
+        ),
+        pytest.param(
+            FunctionChoiceBehavior.Auto(auto_invoke=False),
+            [[mock_message_function_call]],
+            FunctionCallContent,
+            id="auto_none_invoke",
+        ),
+        pytest.param(
+            FunctionChoiceBehavior.Required(auto_invoke=False),
+            [[mock_message_function_call]],
+            FunctionCallContent,
+            id="required_none_invoke",
+        ),
+        pytest.param(FunctionChoiceBehavior.NoneInvoke(), [[mock_message_text_content]], TextContent, id="none"),
+    ],
+)
 @pytest.mark.asyncio
 async def test_complete_chat_contents_streaming_function_call_behavior_tool_call(
     kernel: Kernel,
     mock_settings: MistralAIChatPromptExecutionSettings,
     function_choice_behavior: FunctionChoiceBehavior,
     model_responses,
-    expected_result
+    expected_result,
 ):
     mock_settings.function_choice_behavior = function_choice_behavior
-    
+
     # Mock sequence of model responses
-    generator_mocks = []    
-    for mock_message in model_responses:   
+    generator_mocks = []
+    for mock_message in model_responses:
         generator_mock = MagicMock()
         generator_mock.__aiter__.return_value = [mock_message]
         generator_mocks.append(generator_mock)
 
     arguments = KernelArguments()
-    chat_completion_base = MistralAIChatCompletion(
-        ai_model_id="test_model_id", service_id="test", api_key=""
-    )
+    chat_completion_base = MistralAIChatCompletion(ai_model_id="test_model_id", service_id="test", api_key="")
 
-    with (
-        patch.object(
-            chat_completion_base,
-            '_send_chat_request_streaming',
-            side_effect=generator_mocks
-        )
-    ):
+    with patch.object(chat_completion_base, "_inner_get_streaming_chat_message_contents", side_effect=generator_mocks):
         messages = []
         async for chunk in chat_completion_base.get_streaming_chat_message_contents(
             chat_history=ChatHistory(system_message="Test"), settings=mock_settings, kernel=kernel, arguments=arguments
         ):
             messages.append(chunk)
-            
+
         response = messages[-1]
         assert all(isinstance(content, expected_result) for content in response[0].items)
 
@@ -279,7 +259,7 @@ async def test_mistral_ai_sdk_exception(kernel: Kernel, mock_settings: MistralAI
         await chat_completion_base.get_chat_message_contents(
             chat_history=chat_history, settings=mock_settings, kernel=kernel, arguments=arguments
         )
-        
+
 
 @pytest.mark.asyncio
 async def test_mistral_ai_sdk_exception_streaming(kernel: Kernel, mock_settings: MistralAIChatPromptExecutionSettings):
@@ -326,26 +306,20 @@ def test_mistral_ai_chat_completion_init_constructor(mistralai_unit_test_env) ->
 def test_mistral_ai_chat_completion_init_constructor_missing_model(mistralai_unit_test_env) -> None:
     # Test successful initialization
     with pytest.raises(ServiceInitializationError):
-        MistralAIChatCompletion(
-            api_key="overwrite_api_key",
-            env_file_path="test.env"
-        )
+        MistralAIChatCompletion(api_key="overwrite_api_key", env_file_path="test.env")
 
 
 @pytest.mark.parametrize("exclude_list", [["MISTRALAI_API_KEY", "MISTRALAI_CHAT_MODEL_ID"]], indirect=True)
 def test_mistral_ai_chat_completion_init_constructor_missing_api_key(mistralai_unit_test_env) -> None:
     # Test successful initialization
     with pytest.raises(ServiceInitializationError):
-        MistralAIChatCompletion(
-            ai_model_id="overwrite_model_id",
-            env_file_path="test.env"
-        )
+        MistralAIChatCompletion(ai_model_id="overwrite_model_id", env_file_path="test.env")
 
 
 def test_mistral_ai_chat_completion_init_hybrid(mistralai_unit_test_env) -> None:
     mistral_ai_chat_completion = MistralAIChatCompletion(
-            ai_model_id="overwrite_model_id",
-            env_file_path="test.env",
+        ai_model_id="overwrite_model_id",
+        env_file_path="test.env",
     )
     assert mistral_ai_chat_completion.ai_model_id == "overwrite_model_id"
     assert mistral_ai_chat_completion.async_client._api_key == "test_api_key"
