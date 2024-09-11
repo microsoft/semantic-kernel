@@ -19,6 +19,7 @@ from semantic_kernel.kernel import Kernel
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     google_ai_setup,
+    mistral_ai_setup,
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
@@ -28,6 +29,7 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
+
 
 class FunctionChoiceTestTypes(str, Enum):
     """Test function choice types."""
@@ -282,6 +284,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.AUTO},
+            marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
             id="mistral_ai_tool_call_auto",
         ),
         pytest.param(
@@ -301,6 +304,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.NON_AUTO},
+            marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
             id="mistral_ai_tool_call_non_auto",
         ),
         pytest.param(
@@ -327,6 +331,7 @@ pytestmark = pytest.mark.parametrize(
                 ],
             ],
             {"test_type": FunctionChoiceTestTypes.FLOW},
+            marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
             id="mistral_ai_tool_call_flow",
         ),
         pytest.param(
