@@ -143,6 +143,49 @@ public sealed class PromptyTest
     }
 
     [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlWithFileProvider()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
+        using PhysicalFileProvider fileProvider = new(currentDirectory);
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath,
+            fileProvider);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+
+        var executionSettings = kernelFunction.ExecutionSettings;
+        Assert.Single(executionSettings!);
+        Assert.True(executionSettings!.ContainsKey("default"));
+    }
+
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlWithFileInfo()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
+        using PhysicalFileProvider fileProvider = new(currentDirectory);
+        var fileInfo = fileProvider.GetFileInfo(chatPromptyPath);
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(
+            fileInfo: fileInfo);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+
+        var executionSettings = kernelFunction.ExecutionSettings;
+        Assert.Single(executionSettings!);
+        Assert.True(executionSettings!.ContainsKey("default"));
+    }
+
+    [Fact]
     public void ItFailsToParseAnEmptyHeader()
     {
         Kernel kernel = new();
