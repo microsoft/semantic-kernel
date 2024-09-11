@@ -295,4 +295,5 @@ More information here: [Function calling with Structured Outputs](https://platfo
 
 ## Decision Outcome
 
-TBD.
+1. Support Option #1 and Option #2, create a task for Option #3 to handle it separately. 
+2. Create a task for Structured Outputs in Function Calling and handle it separately.
