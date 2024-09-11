@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
+import logging
 from typing import ClassVar
 
 from azure.core.exceptions import ClientAuthenticationError
@@ -10,6 +10,8 @@ from pydantic import SecretStr
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidAuthError
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
+
+logging.basicConfig(level=logging.INFO)
 
 
 class AzureOpenAISettings(KernelBaseSettings):
