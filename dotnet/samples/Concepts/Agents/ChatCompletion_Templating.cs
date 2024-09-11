@@ -39,7 +39,7 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
                 }
             };
 
-        await InvokeChatCompletionAgentAsync(agent);
+        await InvokeChatCompletionAgentWithTemplateAsync(agent);
     }
 
     [Fact]
@@ -99,10 +99,10 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
                 }
             };
 
-        await InvokeChatCompletionAgentAsync(agent);
+        await InvokeChatCompletionAgentWithTemplateAsync(agent);
     }
 
-    private async Task InvokeChatCompletionAgentAsync(ChatCompletionAgent agent)
+    private async Task InvokeChatCompletionAgentWithTemplateAsync(ChatCompletionAgent agent)
     {
         ChatHistory chat = [];
 

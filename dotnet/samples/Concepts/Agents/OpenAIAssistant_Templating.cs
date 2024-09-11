@@ -21,6 +21,30 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAgentsTe
         ];
 
     [Fact]
+    public async Task InvokeAgentWithInstructionsAsync()
+    {
+        // Instruction based template always proceseed by KernelPromptTemplateFactory
+        OpenAIAssistantAgent agent = await OpenAIAssistantAgent.CreateAsync(
+                clientProvider: this.GetClientProvider(),
+                definition: new OpenAIAssistantDefinition(this.Model)
+                {
+                    Instructions =
+                        """
+                        Write a one verse poem on the requested topic in the styles of {{$style}}.
+                        Always state the requested style of the poem.
+                        """,
+                    Metadata = AssistantSampleMetadata
+                },
+                kernel: new Kernel(),
+                defaultArguments: new KernelArguments()
+                {
+                    {"style", "haiku"}
+                });
+
+        await InvokeAssistantAgentWithTemplateAsync(agent);
+    }
+
+    [Fact]
     public async Task InvokeAgentWithKernelTemplateAsync()
     {
         // Default factory is KernelPromptTemplateFactory
@@ -79,6 +103,11 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAgentsTe
                 },
                 templateFactory);
 
+        await InvokeAssistantAgentWithTemplateAsync(agent);
+    }
+
+    private async Task InvokeAssistantAgentWithTemplateAsync(OpenAIAssistantAgent agent)
+    {
         // Create a thread for the agent conversation.
         string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
 
