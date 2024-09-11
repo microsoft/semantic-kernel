@@ -59,6 +59,27 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     /// <summary>
     /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with name, instructions, and description from a template.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationDefaultTemplateAsync()
+    {
+        // Arrange
+        PromptTemplateConfig templateConfig =
+            new("test instructions")
+            {
+                Name = "testname",
+                Description = "testdescription",
+            };
+
+        OpenAIAssistantCapabilities capabilities = new("testmodel");
+
+        // Act and Assert
+        await this.VerifyAgentTemplateAsync(capabilities, templateConfig);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
     /// for an agent with code-interpreter enabled.
     /// </summary>
     [Fact]
@@ -600,33 +621,67 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         ValidateAgentDefinition(agent, definition);
     }
 
-    private static void ValidateAgentDefinition(OpenAIAssistantAgent agent, OpenAIAssistantDefinition sourceDefinition)
+    private async Task VerifyAgentTemplateAsync(
+        OpenAIAssistantCapabilities capabilities,
+        PromptTemplateConfig templateConfig,
+        IPromptTemplateFactory? templateFactory = null)
+    {
+        this.SetupResponse(HttpStatusCode.OK, capabilities, templateConfig);
+
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateFromTemplateAsync(
+                this.CreateTestConfiguration(),
+                capabilities,
+                this._emptyKernel,
+                new KernelArguments(),
+                templateConfig,
+                templateFactory);
+
+        ValidateAgentDefinition(agent, capabilities, templateConfig);
+    }
+
+    private static void ValidateAgentDefinition(OpenAIAssistantAgent agent, OpenAIAssistantDefinition expectedConfig)
+    {
+        ValidateAgent(agent, expectedConfig.Name, expectedConfig.Instructions, expectedConfig.Description, expectedConfig);
+    }
+
+    private static void ValidateAgentDefinition(OpenAIAssistantAgent agent, OpenAIAssistantCapabilities expectedConfig, PromptTemplateConfig templateConfig)
+    {
+        ValidateAgent(agent, templateConfig.Name, templateConfig.Template, templateConfig.Description, expectedConfig);
+}
+
+    private static void ValidateAgent(
+        OpenAIAssistantAgent agent,
+        string? expectedName,
+        string? expectedInstructions,
+        string? expectedDescription,
+        OpenAIAssistantCapabilities expectedConfig)
     {
         // Verify fundamental state
         Assert.NotNull(agent);
         Assert.NotNull(agent.Id);
         Assert.False(agent.IsDeleted);
         Assert.NotNull(agent.Definition);
-        Assert.Equal(sourceDefinition.ModelId, agent.Definition.ModelId);
+        Assert.Equal(expectedConfig.ModelId, agent.Definition.ModelId);
 
         // Verify core properties
-        Assert.Equal(sourceDefinition.Instructions ?? string.Empty, agent.Instructions);
-        Assert.Equal(sourceDefinition.Name ?? string.Empty, agent.Name);
-        Assert.Equal(sourceDefinition.Description ?? string.Empty, agent.Description);
+        Assert.Equal(expectedInstructions ?? string.Empty, agent.Instructions);
+        Assert.Equal(expectedName ?? string.Empty, agent.Name);
+        Assert.Equal(expectedDescription ?? string.Empty, agent.Description);
 
         // Verify options
-        Assert.Equal(sourceDefinition.Temperature, agent.Definition.Temperature);
-        Assert.Equal(sourceDefinition.TopP, agent.Definition.TopP);
-        Assert.Equal(sourceDefinition.ExecutionOptions?.MaxCompletionTokens, agent.Definition.ExecutionOptions?.MaxCompletionTokens);
-        Assert.Equal(sourceDefinition.ExecutionOptions?.MaxPromptTokens, agent.Definition.ExecutionOptions?.MaxPromptTokens);
-        Assert.Equal(sourceDefinition.ExecutionOptions?.ParallelToolCallsEnabled, agent.Definition.ExecutionOptions?.ParallelToolCallsEnabled);
-        Assert.Equal(sourceDefinition.ExecutionOptions?.TruncationMessageCount, agent.Definition.ExecutionOptions?.TruncationMessageCount);
+        Assert.Equal(expectedConfig.Temperature, agent.Definition.Temperature);
+        Assert.Equal(expectedConfig.TopP, agent.Definition.TopP);
+        Assert.Equal(expectedConfig.ExecutionOptions?.MaxCompletionTokens, agent.Definition.ExecutionOptions?.MaxCompletionTokens);
+        Assert.Equal(expectedConfig.ExecutionOptions?.MaxPromptTokens, agent.Definition.ExecutionOptions?.MaxPromptTokens);
+        Assert.Equal(expectedConfig.ExecutionOptions?.ParallelToolCallsEnabled, agent.Definition.ExecutionOptions?.ParallelToolCallsEnabled);
+        Assert.Equal(expectedConfig.ExecutionOptions?.TruncationMessageCount, agent.Definition.ExecutionOptions?.TruncationMessageCount);
 
         // Verify tool definitions
         int expectedToolCount = 0;
 
         bool hasCodeInterpreter = false;
-        if (sourceDefinition.EnableCodeInterpreter)
+        if (expectedConfig.EnableCodeInterpreter)
         {
             hasCodeInterpreter = true;
             ++expectedToolCount;
@@ -635,7 +690,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.Equal(hasCodeInterpreter, agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
 
         bool hasFileSearch = false;
-        if (sourceDefinition.EnableFileSearch)
+        if (expectedConfig.EnableFileSearch)
         {
             hasFileSearch = true;
             ++expectedToolCount;
@@ -647,17 +702,17 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         // Verify metadata
         Assert.NotNull(agent.Definition.Metadata);
-        if (sourceDefinition.ExecutionOptions == null)
+        if (expectedConfig.ExecutionOptions == null)
         {
-            Assert.Equal(sourceDefinition.Metadata ?? new Dictionary<string, string>(), agent.Definition.Metadata);
+            Assert.Equal(expectedConfig.Metadata ?? new Dictionary<string, string>(), agent.Definition.Metadata);
         }
         else // Additional metadata present when execution options are defined
         {
-            Assert.Equal((sourceDefinition.Metadata?.Count ?? 0) + 1, agent.Definition.Metadata.Count);
+            Assert.Equal((expectedConfig.Metadata?.Count ?? 0) + 1, agent.Definition.Metadata.Count);
 
-            if (sourceDefinition.Metadata != null)
+            if (expectedConfig.Metadata != null)
             {
-                foreach (var (key, value) in sourceDefinition.Metadata)
+                foreach (var (key, value) in expectedConfig.Metadata)
                 {
                     string? targetValue = agent.Definition.Metadata[key];
                     Assert.NotNull(targetValue);
@@ -667,8 +722,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         }
 
         // Verify detail definition
-        Assert.Equal(sourceDefinition.VectorStoreId, agent.Definition.VectorStoreId);
-        Assert.Equal(sourceDefinition.CodeInterpreterFileIds, agent.Definition.CodeInterpreterFileIds);
+        Assert.Equal(expectedConfig.VectorStoreId, agent.Definition.VectorStoreId);
+        Assert.Equal(expectedConfig.CodeInterpreterFileIds, agent.Definition.CodeInterpreterFileIds);
     }
 
     private Task<OpenAIAssistantAgent> CreateAgentAsync()
@@ -694,6 +749,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantDefinition definition) =>
         this._messageHandlerStub.SetupResponse(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(definition));
+
+    private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantCapabilities capabilities, PromptTemplateConfig templateConfig) =>
+        this._messageHandlerStub.SetupResponse(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(capabilities, templateConfig));
 
     private void SetupResponses(HttpStatusCode statusCode, params string[] content) =>
         this._messageHandlerStub.SetupResponses(statusCode, content);

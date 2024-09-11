@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
 
@@ -54,21 +55,38 @@ internal static class OpenAIAssistantResponseContent
     /// <summary>
     /// The response for creating or querying an assistant definition.
     /// </summary>
-    public static string AssistantDefinition(OpenAIAssistantDefinition definition)
+    public static string AssistantDefinition(OpenAIAssistantCapabilities capabilities, PromptTemplateConfig templateConfig) =>
+        AssistantDefinition(templateConfig.Name, templateConfig.Template, templateConfig.Description, capabilities);
+
+    /// <summary>
+    /// The response for creating or querying an assistant definition.
+    /// </summary>
+    public static string AssistantDefinition(OpenAIAssistantDefinition definition) =>
+        AssistantDefinition(definition.Name, definition.Instructions, definition.Description, definition);
+
+
+    /// <summary>
+    /// The response for creating or querying an assistant definition.
+    /// </summary>
+    public static string AssistantDefinition(
+        string? name,
+        string? instructions,
+        string? description,
+        OpenAIAssistantCapabilities capabilities)
     {
         StringBuilder builder = new();
         builder.AppendLine("{");
         builder.AppendLine(@$"  ""id"": ""{AssistantId}"",");
         builder.AppendLine(@"  ""object"": ""assistant"",");
         builder.AppendLine(@"  ""created_at"": 1698984975,");
-        builder.AppendLine(@$"  ""name"": ""{definition.Name}"",");
-        builder.AppendLine(@$"  ""description"": ""{definition.Description}"",");
-        builder.AppendLine(@$"  ""instructions"": ""{definition.Instructions}"",");
-        builder.AppendLine(@$"  ""model"": ""{definition.ModelId}"",");
+        builder.AppendLine(@$"  ""name"": ""{name}"",");
+        builder.AppendLine(@$"  ""description"": ""{description}"",");
+        builder.AppendLine(@$"  ""instructions"": ""{instructions}"",");
+        builder.AppendLine(@$"  ""model"": ""{capabilities.ModelId}"",");
 
-        bool hasCodeInterpreter = definition.EnableCodeInterpreter;
-        bool hasCodeInterpreterFiles = (definition.CodeInterpreterFileIds?.Count ?? 0) > 0;
-        bool hasFileSearch = definition.EnableFileSearch;
+        bool hasCodeInterpreter = capabilities.EnableCodeInterpreter;
+        bool hasCodeInterpreterFiles = (capabilities.CodeInterpreterFileIds?.Count ?? 0) > 0;
+        bool hasFileSearch = capabilities.EnableFileSearch;
         if (!hasCodeInterpreter && !hasFileSearch)
         {
             builder.AppendLine(@"  ""tools"": [],");
@@ -100,30 +118,30 @@ internal static class OpenAIAssistantResponseContent
 
             if (hasCodeInterpreterFiles)
             {
-                string fileIds = string.Join(",", definition.CodeInterpreterFileIds!.Select(fileId => "\"" + fileId + "\""));
+                string fileIds = string.Join(",", capabilities.CodeInterpreterFileIds!.Select(fileId => "\"" + fileId + "\""));
                 builder.AppendLine(@$"  ""code_interpreter"": {{ ""file_ids"": [{fileIds}] }}{(hasFileSearch ? "," : string.Empty)}");
             }
 
             if (hasFileSearch)
             {
-                builder.AppendLine(@$"  ""file_search"": {{ ""vector_store_ids"": [""{definition.VectorStoreId}""] }}");
+                builder.AppendLine(@$"  ""file_search"": {{ ""vector_store_ids"": [""{capabilities.VectorStoreId}""] }}");
             }
 
             builder.AppendLine("    },");
         }
 
-        if (definition.Temperature.HasValue)
+        if (capabilities.Temperature.HasValue)
         {
-            builder.AppendLine(@$"  ""temperature"": {definition.Temperature},");
+            builder.AppendLine(@$"  ""temperature"": {capabilities.Temperature},");
         }
 
-        if (definition.TopP.HasValue)
+        if (capabilities.TopP.HasValue)
         {
-            builder.AppendLine(@$"  ""top_p"": {definition.TopP},");
+            builder.AppendLine(@$"  ""top_p"": {capabilities.TopP},");
         }
 
-        bool hasExecutionOptions = definition.ExecutionOptions != null;
-        int metadataCount = (definition.Metadata?.Count ?? 0);
+        bool hasExecutionOptions = capabilities.ExecutionOptions != null;
+        int metadataCount = (capabilities.Metadata?.Count ?? 0);
         if (metadataCount == 0 && !hasExecutionOptions)
         {
             builder.AppendLine(@"  ""metadata"": {}");
@@ -135,13 +153,13 @@ internal static class OpenAIAssistantResponseContent
 
             if (hasExecutionOptions)
             {
-                string serializedExecutionOptions = JsonSerializer.Serialize(definition.ExecutionOptions);
+                string serializedExecutionOptions = JsonSerializer.Serialize(capabilities.ExecutionOptions);
                 builder.AppendLine(@$"    ""{OpenAIAssistantAgent.OptionsMetadataKey}"": ""{JsonEncodedText.Encode(serializedExecutionOptions)}""{(metadataCount > 0 ? "," : string.Empty)}");
             }
 
             if (metadataCount > 0)
             {
-                foreach (var (key, value) in definition.Metadata!)
+                foreach (var (key, value) in capabilities.Metadata!)
                 {
                     builder.AppendLine(@$"    ""{key}"": ""{value}""{(index < metadataCount - 1 ? "," : string.Empty)}");
                     ++index;
