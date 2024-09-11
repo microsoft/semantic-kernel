@@ -56,7 +56,13 @@
     <None Update="TestData\chat_completion_streaming_single_function_call_test_response.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="TestData\chat_completion_streaming_refusal_test_response.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TestData\chat_completion_streaming_test_response.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\chat_completion_refusal_test_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestData\chat_completion_test_response.json">

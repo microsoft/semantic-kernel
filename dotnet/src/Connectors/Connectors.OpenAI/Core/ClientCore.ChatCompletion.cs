@@ -112,6 +112,7 @@ internal partial class ClientCore
             { nameof(completions.CreatedAt), completions.CreatedAt },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
+            { nameof(completions.Refusal), completions.Refusal },
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completions.FinishReason), completions.FinishReason.ToString() },
@@ -126,6 +127,7 @@ internal partial class ClientCore
             { nameof(completionUpdate.Id), completionUpdate.Id },
             { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },
             { nameof(completionUpdate.SystemFingerprint), completionUpdate.SystemFingerprint },
+            { nameof(completionUpdate.RefusalUpdate), completionUpdate.RefusalUpdate },
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completionUpdate.FinishReason), completionUpdate.FinishReason?.ToString() },
