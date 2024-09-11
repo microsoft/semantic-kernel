@@ -13,7 +13,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
-# This sample demonstrates how the kernel will execute the functions in parallel.
+# This sample demonstrates how the kernel will execute functions in parallel.
 # The output of this sample should look similar to the following:
 #
 # [2024-09-11 10:15:35.070 INFO] processing 2 tool calls in parallel.
