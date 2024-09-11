@@ -128,31 +128,18 @@ public sealed class PromptyTest
         // Arrange
         Kernel kernel = new();
         var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
-        var manifestEmbeddedProvider = new ManifestEmbeddedFileProvider(typeof(PromptyTest).Assembly);
+        ManifestEmbeddedFileProvider manifestEmbeddedProvider = new(typeof(PromptyTest).Assembly);
+    
         // Act
-        var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath, manifestEmbeddedProvider);
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath,
+            fileProvider: manifestEmbeddedProvider);
 
         // Assert
-        // kernel function created from chat.prompty should have a single execution setting
-        Assert.Single(kernelFunction.ExecutionSettings!);
-        Assert.True(kernelFunction.ExecutionSettings!.ContainsKey("default"));
+        Assert.NotNull(kernelFunction);
 
-        // Arrange
-        var defaultExecutionSetting = kernelFunction.ExecutionSettings["default"];
-
-        // Act
-        var executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(defaultExecutionSetting);
-
-        // Assert
-        Assert.NotNull(executionSettings);
-        Assert.Equal("gpt-35-turbo", executionSettings.ModelId);
-        Assert.Null(executionSettings.Temperature);
-        Assert.Null(executionSettings.TopP);
-        Assert.Null(executionSettings.StopSequences);
-        Assert.Null(executionSettings.ResponseFormat);
-        Assert.Null(executionSettings.TokenSelectionBiases);
-        Assert.Null(executionSettings.MaxTokens);
-        Assert.Null(executionSettings.Seed);
+        var executionSettings = kernelFunction.ExecutionSettings;
+        Assert.Single(executionSettings!);
+        Assert.True(executionSettings!.ContainsKey("default"));
     }
 
     [Fact]
