@@ -59,17 +59,7 @@ public sealed class AgentGroupChat : AgentChat
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.EnsureStrategyLoggerAssignment();
-
-        if (this.IsComplete)
-        {
-            // Throw exception if chat is completed and automatic-reset is not enabled.
-            if (!this.ExecutionSettings.TerminationStrategy.AutomaticReset)
-            {
-                throw new KernelException("Agent Failure - Chat has completed.");
-            }
-
-            this.IsComplete = false;
-        }
+        this.EnsureCompletionStatus();
 
         this.Logger.LogAgentGroupChatInvokingAgents(nameof(InvokeAsync), this.Agents);
 
@@ -80,6 +70,42 @@ public sealed class AgentGroupChat : AgentChat
 
             // Invoke agent and process messages along with termination
             await foreach (var message in this.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
+            {
+                yield return message;
+            }
+
+            if (this.IsComplete)
+            {
+                break;
+            }
+        }
+
+        this.Logger.LogAgentGroupChatYield(nameof(InvokeAsync), this.IsComplete);
+    }
+
+    /// <summary>
+    /// Process a series of interactions between the <see cref="AgentGroupChat.Agents"/> that have joined this <see cref="AgentGroupChat"/>.
+    /// The interactions will proceed according to the <see cref="SelectionStrategy"/> and the <see cref="TerminationStrategy"/>
+    /// defined via <see cref="AgentGroupChat.ExecutionSettings"/>.
+    /// In the absence of an <see cref="AgentGroupChatSettings.SelectionStrategy"/>, this method will not invoke any agents.
+    /// Any agent may be explicitly selected by calling <see cref="AgentGroupChat.InvokeAsync(Agent, CancellationToken)"/>.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of streaming messages.</returns>
+    public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        this.EnsureStrategyLoggerAssignment();
+        this.EnsureCompletionStatus();
+
+        this.Logger.LogAgentGroupChatInvokingAgents(nameof(InvokeAsync), this.Agents);
+
+        for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
+        {
+            // Identify next agent using strategy
+            Agent agent = await this.SelectAgentAsync(cancellationToken).ConfigureAwait(false);
+
+            // Invoke agent and process messages along with termination
+            await foreach (var message in this.InvokeStreamingAsync(agent, cancellationToken).ConfigureAwait(false))
             {
                 yield return message;
             }
@@ -112,7 +138,36 @@ public sealed class AgentGroupChat : AgentChat
 
         this.AddAgent(agent);
 
-        await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
+        await foreach (ChatMessageContent message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
+        {
+            yield return message;
+        }
+
+        this.IsComplete = await this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken).ConfigureAwait(false);
+
+        this.Logger.LogAgentGroupChatYield(nameof(InvokeAsync), this.IsComplete);
+    }
+
+    /// <summary>
+    /// Process a single interaction between a given <see cref="Agent"/> an a <see cref="AgentGroupChat"/>.
+    /// </summary>
+    /// <param name="agent">The agent actively interacting with the chat.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remark>
+    /// Specified agent joins the chat.
+    /// </remark>
+    public async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+        Agent agent,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        this.EnsureStrategyLoggerAssignment();
+
+        this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id);
+
+        this.AddAgent(agent);
+
+        await foreach (StreamingChatMessageContent message in base.InvokeStreamingAgentAsync(agent, cancellationToken).ConfigureAwait(false))
         {
             yield return message;
         }
@@ -146,12 +201,25 @@ public sealed class AgentGroupChat : AgentChat
         }
     }
 
+    private void EnsureCompletionStatus()
+    {
+        if (this.IsComplete)
+        {
+            // Throw exception if chat is completed and automatic-reset is not enabled.
+            if (!this.ExecutionSettings.TerminationStrategy.AutomaticReset)
+            {
+                throw new KernelException("Agent Failure - Chat has completed.");
+            }
+
+            this.IsComplete = false;
+        }
+    }
+
     private async Task<Agent> SelectAgentAsync(CancellationToken cancellationToken)
     {
         this.Logger.LogAgentGroupChatSelectingAgent(nameof(InvokeAsync), this.ExecutionSettings.SelectionStrategy.GetType());
 
         Agent agent;
-
         try
         {
             agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
