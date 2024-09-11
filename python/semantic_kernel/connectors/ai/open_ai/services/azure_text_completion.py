@@ -70,13 +70,19 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         if not azure_openai_settings.text_deployment_name:
             raise ServiceInitializationError("The Azure Text deployment name is required.")
 
+        if azure_openai_settings.token_endpoint and ad_token is None:
+            ad_token = azure_openai_settings.get_azure_token(token_endpoint=azure_openai_settings.token_endpoint)
+
+        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
+            raise ServiceInitializationError("Please provide either api_key, ad_token or ad_token_provider")
+
         super().__init__(
             deployment_name=azure_openai_settings.text_deployment_name,
             endpoint=azure_openai_settings.endpoint,
             base_url=azure_openai_settings.base_url,
             api_version=azure_openai_settings.api_version,
             service_id=service_id,
-            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
+            api_key=None,  # Simulated, will revert
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
