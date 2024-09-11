@@ -46,7 +46,7 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
             }
             else if (property is VectorStoreRecordDataProperty dataProperty)
             {
-                if (dataModel.Data != null)
+                if (dataModel.Data is not null)
                 {
                     var storagePropertyName = dataProperty.StoragePropertyName ?? dataProperty.DataModelPropertyName;
                     var serializedJsonNode = JsonSerializer.SerializeToNode(dataModel.Data[dataProperty.DataModelPropertyName]);
@@ -55,7 +55,7 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
             }
             else if (property is VectorStoreRecordVectorProperty vectorProperty)
             {
-                if (dataModel.Vectors != null)
+                if (dataModel.Vectors is not null)
                 {
                     var storagePropertyName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
 
@@ -76,7 +76,7 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
         // Create variables to store the response properties.
         var dataProperties = new Dictionary<string, object?>();
         var vectorProperties = new Dictionary<string, object?>();
-        string key = string.Empty;
+        string? key = null;
 
         // Loop through all known properties and map each from json to the data type.
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
@@ -85,7 +85,7 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
             {
                 var storagePropertyName = keyProperty.StoragePropertyName ?? keyProperty.DataModelPropertyName;
                 var value = storageModel[storagePropertyName];
-                if (value == null)
+                if (value is null)
                 {
                     throw new InvalidOperationException($"The key property '{storagePropertyName}' is missing from the record retrieved from storage.");
                 }
@@ -96,7 +96,7 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
             {
                 var storagePropertyName = dataProperty.StoragePropertyName ?? dataProperty.DataModelPropertyName;
                 var value = storageModel[storagePropertyName];
-                if (value != null)
+                if (value is not null)
                 {
                     dataProperties.Add(dataProperty.DataModelPropertyName, GetDataPropertyValue(property.PropertyType, value));
                 }
@@ -109,7 +109,7 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
             {
                 var storagePropertyName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
                 var value = storageModel[storagePropertyName];
-                if (value != null)
+                if (value is not null)
                 {
                     ReadOnlyMemory<float> vector = value.AsArray().Select(x => (float)x!).ToArray();
                     vectorProperties.Add(vectorProperty.DataModelPropertyName, vector);
@@ -119,6 +119,11 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
                     vectorProperties.Add(vectorProperty.DataModelPropertyName, null);
                 }
             }
+        }
+
+        if (key is null)
+        {
+            throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
         }
 
         return new VectorStoreGenericDataModel<string>(key) { Data = dataProperties, Vectors = vectorProperties };
