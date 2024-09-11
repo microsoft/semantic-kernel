@@ -109,7 +109,6 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="definition">The assistant definition.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="defaultArguments">Optional default arguments, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
     public static async Task<OpenAIAssistantAgent> CreateAsync(
@@ -117,19 +116,12 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         OpenAIAssistantDefinition definition,
         Kernel kernel,
         KernelArguments? defaultArguments = null,
-        IPromptTemplateFactory? templateFactory = null,
         CancellationToken cancellationToken = default)
     {
         // Validate input
         Verify.NotNull(kernel, nameof(kernel));
         Verify.NotNull(clientProvider, nameof(clientProvider));
         Verify.NotNull(definition, nameof(definition));
-
-        // Ensure template is valid (avoid failure after posting assistant creation)
-        IPromptTemplate? template =
-            !string.IsNullOrWhiteSpace(definition.Instructions) ?
-                templateFactory?.Create(new PromptTemplateConfig(definition.Instructions!)) :
-                null;
 
         // Create the client
         AssistantClient client = CreateClient(clientProvider);
@@ -143,8 +135,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             new OpenAIAssistantAgent(model, clientProvider, client)
             {
                 Kernel = kernel,
-                Arguments = defaultArguments,
-                Template = template,
+                Arguments = defaultArguments
             };
     }
 
