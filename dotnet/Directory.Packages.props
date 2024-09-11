@@ -61,6 +61,11 @@
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -108,6 +113,12 @@
 >>>>>>> Stashed changes
 =======
 <<<<<<<+main
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+<<<<<<<+main
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.5.0" />
     <PackageVersion Include="System.Text.Json" Version="6.0.8" />
@@ -137,6 +148,10 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 >>>>>>> upstream/main
 =======
 >>>>>>>+upstream/main
@@ -177,6 +192,14 @@
 =======
 >>>>>>>+upstream/main
 >>>>>>> Stashed changes
+=======
+<<<<<<< Updated upstream
+>>>>>>>+upstream/main
+>>>>>>> Stashed changes
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> main-upstream
+>>>>>>> Stashed changes
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
@@ -194,6 +217,10 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<<+main
@@ -231,10 +258,23 @@
 =======
 <<<<<<<+main
 >>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+<<<<<<<+main
+>>>>>>> Stashed changes
     <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
 =======
     <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
 >>>>>>> upstream/main
+=======
+    <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
+=======
+    <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> main-upstream
+>>>>>>> Stashed changes
     <PackageVersion Include="xunit" Version="2.9.0" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
@@ -243,6 +283,10 @@
     <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
     <!-- Plugins -->
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
 <<<<<<< Updated upstream
@@ -251,6 +295,11 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
@@ -258,6 +307,12 @@
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 >>>>>>> Stashed changes
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.0.1" />
@@ -266,6 +321,10 @@
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.16" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.16" />
 =======
@@ -273,6 +332,11 @@
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.15" />
 >>>>>>> Stashed changes
 =======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.15" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.15" />
@@ -280,6 +344,12 @@
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.16" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.16" />
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 >>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
@@ -287,9 +357,18 @@
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     <PackageVersion Include="YamlDotNet" Version="16.0.0" />
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -298,7 +377,16 @@
     <PackageVersion Include="YamlDotNet" Version="15.3.0" />
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -317,9 +405,18 @@
     <!-- Toolset -->
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
 =======
+=======
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -328,9 +425,18 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 =======
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
