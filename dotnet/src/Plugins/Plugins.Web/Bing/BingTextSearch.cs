@@ -200,10 +200,8 @@ public sealed class BingTextSearch : ITextSearch
     /// <summary>
     /// Return the results metadata.
     /// </summary>
-    /// <typeparam name="T">The .NET type that maps to the index schema. Instances of this type
-    /// can be retrieved as documents from the index.</typeparam>
     /// <param name="searchResponse">Response containing the documents matching the query.</param>
-    private static Dictionary<string, object?>? GetResultsMetadata<T>(BingSearchResponse<T>? searchResponse) where T : class
+    private static Dictionary<string, object?>? GetResultsMetadata(BingSearchResponse<BingWebPage>? searchResponse)
     {
         return new Dictionary<string, object?>()
         {
