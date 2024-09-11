@@ -314,7 +314,6 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         // Arrange
         var options = new AzureAISearchVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<string>>
         {
-            JsonObjectCustomMapper = new AzureAISearchGenericDataModelMapper(fixture.VectorStoreRecordDefinition),
             VectorStoreRecordDefinition = fixture.VectorStoreRecordDefinition
         };
         var sut = new AzureAISearchVectorStoreRecordCollection<VectorStoreGenericDataModel<string>>(fixture.SearchIndexClient, fixture.TestIndexName, options);

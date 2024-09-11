@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <summary>
 /// A mapper that maps between the generic semantic kernel data model and the model that the data is stored in in Azure AI Search.
 /// </summary>
-public class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, JsonObject>
+internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, JsonObject>
 {
     /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
