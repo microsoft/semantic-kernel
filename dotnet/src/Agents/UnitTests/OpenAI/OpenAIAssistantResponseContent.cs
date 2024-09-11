@@ -64,7 +64,6 @@ internal static class OpenAIAssistantResponseContent
     public static string AssistantDefinition(OpenAIAssistantDefinition definition) =>
         AssistantDefinition(definition.Name, definition.Instructions, definition.Description, definition);
 
-
     /// <summary>
     /// The response for creating or querying an assistant definition.
     /// </summary>
