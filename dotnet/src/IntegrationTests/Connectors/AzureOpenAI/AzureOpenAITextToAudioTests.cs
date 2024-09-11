@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
@@ -27,9 +28,9 @@ public sealed class AzureOpenAITextToAudioTests
 
         var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAITextToAudio(
-                azureOpenAIConfiguration.DeploymentName,
-                azureOpenAIConfiguration.Endpoint,
-                azureOpenAIConfiguration.ApiKey)
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                credential: new AzureCliCredential())
             .Build();
 
         var service = kernel.GetRequiredService<ITextToAudioService>();

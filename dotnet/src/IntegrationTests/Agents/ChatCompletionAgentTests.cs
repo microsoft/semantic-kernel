@@ -4,12 +4,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -43,9 +43,9 @@ public sealed class ChatCompletionAgentTests()
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 
         this._kernelBuilder.AddAzureOpenAIChatCompletion(
-            configuration.ChatDeploymentName!,
-            configuration.Endpoint,
-            configuration.ApiKey);
+            deploymentName: configuration.ChatDeploymentName!,
+            endpoint: configuration.Endpoint,
+            credentials: new AzureCliCredential());
 
         if (useAutoFunctionTermination)
         {
@@ -107,7 +107,7 @@ public sealed class ChatCompletionAgentTests()
         this._kernelBuilder.AddAzureOpenAIChatCompletion(
             configuration.ChatDeploymentName!,
             configuration.Endpoint,
-            configuration.ApiKey);
+            new AzureCliCredential());
 
         this._kernelBuilder.Plugins.Add(plugin);
 

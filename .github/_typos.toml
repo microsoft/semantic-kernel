@@ -16,7 +16,8 @@ extend-exclude = [
     "test_code_tokenizer.py",
     "*response.json",
     "test_content.txt",
-    "serializedChatHistoryV1_15_1.json"
+    "serializedChatHistoryV1_15_1.json",
+    "MultipleFunctionsVsParameters.cs"
 ]
 
 [default.extend-words]
