@@ -68,6 +68,11 @@ async def main():
     kernel.add_service(OpenAIChatCompletion(service_id="open_ai"))
     kernel.add_plugin(EmployeePlugin(), "EmployeePlugin")
 
+    # With this query, the model will call the get_name and get_age functions in parallel.
+    # Note that for certain queries, the model may choose to call the functions sequentially.
+    # For example, if the available functions are `get_email_by_id` and `get_name_by_email`,
+    # the model will not be able to call them in parallel because the second function depends
+    # on the result of the first function.
     query = "What is the name and age of the employee of ID 123?"
     arguments = KernelArguments(
         settings=PromptExecutionSettings(
