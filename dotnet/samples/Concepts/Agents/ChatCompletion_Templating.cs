@@ -21,6 +21,28 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
         ];
 
     [Fact]
+    public async Task InvokeAgentWithInstructionsTemplateAsync()
+    {
+        // %%% Default factory is KernelPromptTemplateFactory
+        ChatCompletionAgent agent =
+            new()
+            {
+                Kernel = this.CreateKernelWithChatCompletion(),
+                Instructions =
+                    """
+                    Write a one verse poem on the requested topic in the style of {{$style}}.
+                    Always state the requested style of the poem.
+                    """,
+                Arguments = new KernelArguments()
+                {
+                    {"style", "haiku"}
+                }
+            };
+
+        await InvokeChatCompletionAgentAsync(agent);
+    }
+
+    [Fact]
     public async Task InvokeAgentWithKernelTemplateAsync()
     {
         // Default factory is KernelPromptTemplateFactory
@@ -77,11 +99,17 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
                 }
             };
 
+        await InvokeChatCompletionAgentAsync(agent);
+    }
+
+
+    private async Task InvokeChatCompletionAgentAsync(ChatCompletionAgent agent)
+    {
         ChatHistory chat = [];
 
-        // Respond to user input
         foreach ((string input, string? style) in s_inputs)
         {
+            // Add input to chat
             ChatMessageContent request = new(AuthorRole.User, input);
             chat.Add(request);
             this.WriteAgentChatMessage(request);
@@ -90,9 +118,11 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
 
             if (!string.IsNullOrWhiteSpace(style))
             {
+                // Override style template parameter
                 arguments = new() { { "style", style } };
             }
 
+            // Process agent response
             await foreach (ChatMessageContent message in agent.InvokeAsync(chat, arguments))
             {
                 chat.Add(message);

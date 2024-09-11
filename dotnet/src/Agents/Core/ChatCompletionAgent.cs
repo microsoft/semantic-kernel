@@ -24,7 +24,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     public ChatCompletionAgent() { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
+    /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class from
+    /// a <see cref="PromptTemplateConfig"/>.
     /// </summary>
     /// <param name="templateConfig">Prompt template configuration</param>
     /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent</param>
