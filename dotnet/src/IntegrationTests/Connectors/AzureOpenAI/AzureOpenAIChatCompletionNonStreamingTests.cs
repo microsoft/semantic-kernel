@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
+using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
@@ -16,7 +18,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTest
+public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
 {
     [Fact]
     public async Task ChatCompletionShouldUseChatSystemPromptAsync()
@@ -28,16 +30,11 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 
         var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
-        var stringBuilder = new StringBuilder();
-
         // Act
-        await foreach (var update in chatCompletion.GetStreamingChatMessageContentsAsync("What is the capital of France?", settings, kernel))
-        {
-            stringBuilder.Append(update.Content);
-        }
+        var result = await chatCompletion.GetChatMessageContentAsync("What is the capital of France?", settings, kernel);
 
         // Assert
-        Assert.Contains("I don't know", stringBuilder.ToString());
+        Assert.Contains("I don't know", result.Content);
     }
 
     [Fact]
@@ -51,34 +48,38 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
         var chatHistory = new ChatHistory("Reply \"I don't know\" to every question.");
         chatHistory.AddUserMessage("What is the capital of France?");
 
-        var stringBuilder = new StringBuilder();
-        var metadata = new Dictionary<string, object?>();
-
         // Act
-        await foreach (var update in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, null, kernel))
-        {
-            stringBuilder.Append(update.Content);
-
-            foreach (var key in update.Metadata!.Keys)
-            {
-                metadata[key] = update.Metadata[key];
-            }
-        }
+        var result = await chatCompletion.GetChatMessageContentAsync(chatHistory, null, kernel);
 
         // Assert
-        Assert.Contains("I don't know", stringBuilder.ToString());
-        Assert.NotNull(metadata);
+        Assert.Contains("I don't know", result.Content);
+        Assert.NotNull(result.Metadata);
 
-        Assert.True(metadata.TryGetValue("Id", out object? id));
+        Assert.True(result.Metadata.TryGetValue("Id", out object? id));
         Assert.NotNull(id);
 
-        Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));
+        Assert.True(result.Metadata.TryGetValue("CreatedAt", out object? createdAt));
         Assert.NotNull(createdAt);
 
-        Assert.True(metadata.ContainsKey("SystemFingerprint"));
+        Assert.True(result.Metadata.ContainsKey("SystemFingerprint"));
 
-        Assert.True(metadata.TryGetValue("FinishReason", out object? finishReason));
+        Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
+        Assert.NotNull(usageObject);
+
+        var jsonObject = JsonSerializer.SerializeToElement(usageObject);
+        Assert.True(jsonObject.TryGetProperty("InputTokens", out JsonElement promptTokensJson));
+        Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
+        Assert.NotEqual(0, promptTokens);
+
+        Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
+        Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
+        Assert.NotEqual(0, completionTokens);
+
+        Assert.True(result.Metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);
+
+        Assert.True(result.Metadata.TryGetValue("ContentTokenLogProbabilities", out object? logProbabilityInfo));
+        Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
     }
 
     [Fact]
@@ -91,16 +92,11 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 
         var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
-        var stringBuilder = new StringBuilder();
-
         // Act
-        await foreach (var update in textGeneration.GetStreamingTextContentsAsync("What is the capital of France?", settings, kernel))
-        {
-            stringBuilder.Append(update);
-        }
+        var result = await textGeneration.GetTextContentAsync("What is the capital of France?", settings, kernel);
 
         // Assert
-        Assert.Contains("I don't know", stringBuilder.ToString());
+        Assert.Contains("I don't know", result.Text);
     }
 
     [Fact]
@@ -112,33 +108,37 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
         var textGeneration = kernel.Services.GetRequiredService<ITextGenerationService>();
 
         // Act
-        var stringBuilder = new StringBuilder();
-        var metadata = new Dictionary<string, object?>();
-
-        // Act
-        await foreach (var update in textGeneration.GetStreamingTextContentsAsync("What is the capital of France?", null, kernel))
-        {
-            stringBuilder.Append(update);
-
-            foreach (var key in update.Metadata!.Keys)
-            {
-                metadata[key] = update.Metadata[key];
-            }
-        }
+        var result = await textGeneration.GetTextContentAsync("Reply \"I don't know\" to every question. What is the capital of France?", null, kernel);
 
         // Assert
-        Assert.NotNull(metadata);
+        Assert.Contains("I don't know", result.Text);
+        Assert.NotNull(result.Metadata);
 
-        Assert.True(metadata.TryGetValue("Id", out object? id));
+        Assert.True(result.Metadata.TryGetValue("Id", out object? id));
         Assert.NotNull(id);
 
-        Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));
+        Assert.True(result.Metadata.TryGetValue("CreatedAt", out object? createdAt));
         Assert.NotNull(createdAt);
 
-        Assert.True(metadata.ContainsKey("SystemFingerprint"));
+        Assert.True(result.Metadata.ContainsKey("SystemFingerprint"));
 
-        Assert.True(metadata.TryGetValue("FinishReason", out object? finishReason));
+        Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
+        Assert.NotNull(usageObject);
+
+        var jsonObject = JsonSerializer.SerializeToElement(usageObject);
+        Assert.True(jsonObject.TryGetProperty("InputTokens", out JsonElement promptTokensJson));
+        Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
+        Assert.NotEqual(0, promptTokens);
+
+        Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
+        Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
+        Assert.NotEqual(0, completionTokens);
+
+        Assert.True(result.Metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);
+
+        Assert.True(result.Metadata.TryGetValue("ContentTokenLogProbabilities", out object? logProbabilityInfo));
+        Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
     }
 
     #region internals
@@ -148,7 +148,6 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
-        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
         var kernelBuilder = base.CreateKernelBuilder();
@@ -157,7 +156,7 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey);
+            credentials: new AzureCliCredential());
 
         return kernelBuilder.Build();
     }
