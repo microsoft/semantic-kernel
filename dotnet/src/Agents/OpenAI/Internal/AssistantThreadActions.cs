@@ -2,7 +2,6 @@
 using System;
 using System.ClientModel;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -346,7 +345,6 @@ internal static class AssistantThreadActions
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
-    [ExcludeFromCodeCoverage] // This method is exercised by integration tests.  Server-Side Events not currently testable.
     public static async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         OpenAIAssistantAgent agent,
         AssistantClient client,
