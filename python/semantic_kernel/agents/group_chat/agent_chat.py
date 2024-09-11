@@ -162,7 +162,9 @@ class AgentChat(KernelBaseModel):
 
             # Broadcast message to other channels (in parallel)
             # Note: Able to queue messages without synchronizing channels.
-            channel_refs = [ChannelReference(channel=channel, hash=key) for key, channel in self.agent_channels.items()]
+            channel_refs = [
+                ChannelReference(channel=ch, hash=key) for key, ch in self.agent_channels.items() if ch != channel
+            ]
             await self.broadcast_queue.enqueue(channel_refs, messages)
         finally:
             self.clear_activity_signal()

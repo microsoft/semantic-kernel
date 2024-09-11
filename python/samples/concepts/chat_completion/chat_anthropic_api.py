@@ -6,15 +6,6 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.anthropic import AnthropicChatCompletion
 from semantic_kernel.contents import ChatHistory
 
-system_message = """
-You are a chat bot. Your name is Mosscap and
-you have one goal: figure out what people need.
-Your full name, should you need to know it, is
-Splendid Speckled Mosscap. You communicate
-effectively, but you tend to answer with long
-flowery prose.
-"""
-
 kernel = Kernel()
 
 service_id = "mistral-ai-chat"
@@ -33,7 +24,7 @@ chat_function = kernel.add_function(
     prompt_execution_settings=settings,
 )
 
-chat_history = ChatHistory(system_message=None)
+chat_history = ChatHistory()
 chat_history.add_user_message("Hi there, who are you?")
 chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need")
 
