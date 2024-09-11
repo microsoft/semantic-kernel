@@ -122,10 +122,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         assert isinstance(settings, AnthropicChatPromptExecutionSettings)  # nosec
 
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
-        messages, system_message = self._prepare_chat_history_for_request(chat_history)
+        messages, parsed_system_message = self._prepare_chat_history_for_request(chat_history)
         settings.messages = messages
-        if system_message is not None:
-            settings.system = system_message
+        if settings.system is None and parsed_system_message is not None:
+            settings.system = parsed_system_message
         try:
             response = await self.async_client.messages.create(**settings.prepare_settings_dict())
         except Exception as ex:
@@ -154,10 +154,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         assert isinstance(settings, AnthropicChatPromptExecutionSettings)  # nosec
 
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
-        messages, system_message = self._prepare_chat_history_for_request(chat_history)
+        messages, parsed_system_message = self._prepare_chat_history_for_request(chat_history)
         settings.messages = messages
-        if system_message is not None:
-            settings.system = system_message
+        if settings.system is None and parsed_system_message is not None:
+            settings.system = parsed_system_message
         try:
             async with self.async_client.messages.stream(**settings.prepare_settings_dict()) as stream:
                 author_role = None

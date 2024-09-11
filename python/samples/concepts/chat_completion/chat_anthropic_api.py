@@ -6,12 +6,22 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.anthropic import AnthropicChatCompletion
 from semantic_kernel.contents import ChatHistory
 
+system_message = """
+You are a chat bot. Your name is Mosscap and
+you have one goal: figure out what people need.
+Your full name, should you need to know it, is
+Splendid Speckled Mosscap. You communicate
+effectively, but you tend to answer with long
+flowery prose.
+"""
+
 kernel = Kernel()
 
 service_id = "mistral-ai-chat"
 kernel.add_service(AnthropicChatCompletion(service_id=service_id, ai_model_id="claude-3-opus-20240229"))
 
 settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
+settings.system = system_message
 settings.max_tokens = 2000
 settings.temperature = 0.7
 settings.top_p = 0.8
@@ -52,7 +62,7 @@ async def chat() -> bool:
         )
         print("Mosscap:> ", end="")
         async for message in answer:
-            print(str(message[0]), end="")
+            print(str(message[0]), end="", flush=True)
         print("\n")
         return True
     answer = await kernel.invoke(
