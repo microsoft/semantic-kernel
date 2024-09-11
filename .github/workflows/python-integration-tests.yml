@@ -48,6 +48,7 @@ jobs:
     needs: paths-filter
     if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     runs-on: ${{ matrix.os }}
+    environment: ${{ matrix.environment }}
     strategy:
       max-parallel: 1
       fail-fast: false
