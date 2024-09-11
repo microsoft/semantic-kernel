@@ -1219,7 +1219,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         }
         """;
 
-#pragma warning disable CS8618
+#pragma warning disable CS8618, CA1812
     private sealed class MathReasoning
     {
         public List<MathReasoningStep> Steps { get; set; }
@@ -1233,5 +1233,5 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         public string Output { get; set; }
     }
-#pragma warning restore CS8618
+#pragma warning restore CS8618, CA1812
 }
