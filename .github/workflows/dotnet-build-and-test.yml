@@ -21,6 +21,7 @@ concurrency:
 
 permissions:
   contents: read
+  id-token: "write"
 
 jobs:
   paths-filter:
@@ -57,11 +58,13 @@ jobs:
               os: "ubuntu-latest",
               configuration: Release,
               integration-tests: true,
+              environment: "integration",
             }
           - { dotnet: "8.0", os: "windows-latest", configuration: Debug }
           - { dotnet: "8.0", os: "windows-latest", configuration: Release }
 
     runs-on: ${{ matrix.os }}
+    environment: ${{ matrix.environment }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup dotnet ${{ matrix.dotnet }}
@@ -83,6 +86,14 @@ jobs:
           for project in $UT_PROJECTS; do
             dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx --collect:"XPlat Code Coverage" --results-directory:"TestResults/Coverage/" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute
           done
+
+      - name: Azure CLI Login
+        if: github.event_name != 'pull_request' && matrix.integration-tests
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Run Integration Tests
         shell: bash
@@ -125,10 +136,12 @@ jobs:
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
           OpenAI__ChatModelId: ${{ vars.OPENAI__CHATMODELID }}
+          AzureAIInference__ApiKey: ${{ secrets.AZUREAIINFERENCE__APIKEY }}
+          AzureAIInference__Endpoint: ${{ secrets.AZUREAIINFERENCE__ENDPOINT }}
 
       # Generate test reports and check coverage
       - name: Generate test reports
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.3.8
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.3.9
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"
