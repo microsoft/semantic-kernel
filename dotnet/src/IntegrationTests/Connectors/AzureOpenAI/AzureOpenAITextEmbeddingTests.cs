@@ -1,6 +1,7 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
@@ -27,6 +28,9 @@ public sealed class AzureOpenAITextEmbeddingTests
             this._azureOpenAIConfiguration.DeploymentName,
             this._azureOpenAIConfiguration.Endpoint,
             this._azureOpenAIConfiguration.ApiKey);
+            deploymentName: this._azureOpenAIConfiguration.DeploymentName,
+            endpoint: this._azureOpenAIConfiguration.Endpoint,
+            credential: new AzureCliCredential());
 
         // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
@@ -49,6 +53,9 @@ public sealed class AzureOpenAITextEmbeddingTests
             "text-embedding-3-large",
             this._azureOpenAIConfiguration.Endpoint,
             this._azureOpenAIConfiguration.ApiKey,
+            deploymentName: "text-embedding-3-large",
+            endpoint: this._azureOpenAIConfiguration.Endpoint,
+            credential: new AzureCliCredential(),
             dimensions: dimensions);
 
         // Act

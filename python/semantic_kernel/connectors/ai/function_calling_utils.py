@@ -18,12 +18,16 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function_metadata import (
         KernelFunctionMetadata,
     )
-
-
-def update_settings_from_function_call_configuration(
+>>>>>>>+main
+ionChoic        FunctionChoiceType,
+    )
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+>>>>>>>+upstream/main
+nfiguration(
     function_choice_configuration: "FunctionCallChoiceConfiguration",
     settings: "PromptExecutionSettings",
-    type: str,
+    type: "FunctionChoiceType",
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""
     if (

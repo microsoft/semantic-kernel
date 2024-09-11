@@ -15,6 +15,10 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidResponseError,
 )
+>>>>>>>+main
+_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 
 
 def test_settings(model_id):
@@ -78,12 +82,10 @@ async def test_custom_host(
     # Check that the client was initialized once with the correct host
     assert mock_client.call_count == 1
     mock_client.assert_called_with(host=host)
-    # Check that the chat client was called twice and the responses are correct
-    assert mock_chat_client.call_count == 2
+    # Check that the chat client was called once and the responses are correct
+    assert mock_chat_client.call_count == 1
     assert len(chat_responses) == 1
     assert chat_responses[0].content == "test_response"
-    assert len(text_responses) == 1
-    assert text_responses[0].text == "test_response"
 
 
 @pytest.mark.asyncio
@@ -127,8 +129,8 @@ async def test_custom_host_streaming(
     # Check that the client was initialized once with the correct host
     assert mock_client.call_count == 1
     mock_client.assert_called_with(host=host)
-    # Check that the chat client was called twice and the responses are correct
-    assert mock_chat_client.call_count == 2
+    # Check that the chat client was called once
+    assert mock_chat_client.call_count == 1
 
 
 @pytest.mark.asyncio
