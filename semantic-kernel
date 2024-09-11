@@ -31,6 +31,14 @@ gpgsig -----BEGIN SSH SIGNATURE-----
  
 
 
-=======
 
->>>>>>> 3ace628
+=======
+tree 8517131fbb708e8c1a07c71d1dc7a0c4621de82a
+parent 3ace628a3bd48156df0e191e09308bd77cdb8f6e
+author Bryan Roe <Bryanmroe@outlook.com> 1726073837 -0700
+committer Bryan Roe <74067792+Bryan-Roe@users.noreply.github.com> 1726075779 -0700
+
+Add Microsoft.Extensions.TimeProvider.Testing 8.8.0 version
+
+and DuckDB.NET.Data 1.0.1 version to PackageVersion.
+>>>>>>> 15978d9
