@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- Central version prefix - applies to all nuget packages. -->
+<<<<<<<-Updated upstrea
 <<<<<<< main
 <<<<<<< main
 <<<<<<< main
@@ -9,12 +10,9 @@
     <VersionPrefix>1.14.1</VersionPrefix>
     <VersionPrefix>1.16.2</VersionPrefix>
     <VersionPrefix>1.17.0</VersionPrefix>
-=======
-    <VersionPrefix>1.17.1</VersionPrefix>
->>>>>>> upstream/main
-=======
-    <VersionPrefix>1.17.2</VersionPrefix>
->>>>>>> upstream/main
+1</Versi    <VersionPrefix>1.17.1</VersionPrefix>
+>>>>>>>+upstream/main
+>>> upstream/main
 =======
     <VersionPrefix>1.17.2</VersionPrefix>
 >>>>>>> origin/main
@@ -22,6 +20,9 @@
 =======
     <VersionPrefix>1.18.2</VersionPrefix>
 >>>>>>> origin/main
+=======
+    <VersionPrefix>1.18.2</VersionPrefix>
+>>>>>>> Stashed changes
     <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
 
