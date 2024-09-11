@@ -27,6 +27,11 @@ examples of common AI-enabled scenarios.
 
 To run the LLM prompts and semantic functions in this kernel, make sure you have
 an [Open AI API Key](https://platform.openai.com/)
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> origin/111
+>>>>>>> origin/111
 or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/).
 
 ### Requirements
@@ -45,7 +50,7 @@ To build the Semantic Kernel, you will need:
 
 ### Build the Semantic Kernel
 
-1. Clone this repository
+1.  Clone this repository
 
         git clone -b java-development https://github.com/microsoft/semantic-kernel/
 
@@ -57,6 +62,11 @@ To build the Semantic Kernel, you will need:
         git clone -b java-v1 https://github.com/microsoft/semantic-kernel/
 
 2. Build the project with the Maven Wrapper
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> origin/111
+>>>>>>> origin/111
 
         cd semantic-kernel/java
         ./mvnw install
@@ -89,9 +99,18 @@ will need to set the following environment variable:
 
 If you are using Azure OpenAI, you will also need to set the following environment variables:
 
+<<<<<<< HEAD
+- `AZURE_OPENAI_ENDPOINT` - the Azure OpenAI endpoint found in **Keys \* Endpoint** section of the Azure OpenAI service.
+- `AZURE_OPENAI_API_KEY` - the Azure OpenAI API key found in **Keys \* Endpoint** section of the Azure OpenAI service.
+=======
+<<<<<<< main
 - `AZURE_OPENAI_ENDPOINT` - the Azure OpenAI endpoint found in **Keys * Endpoint** section of the Azure OpenAI service.
 - `AZURE_OPENAI_API_KEY` - the Azure OpenAI API key found in **Keys * Endpoint** section of the Azure OpenAI service.
-
+=======
+- `AZURE_OPENAI_API_KEY` - the Azure OpoenAI API key found in **Keys * Endpoint** section of the Azure OpenAI service.
+>>>>>>> main
+>>>>>>> origin/111
+>>>>>>> origin/111
 - `AZURE_OPENAI_DEPLOYMENT_NAME` - the custom name you chose for your deployment when you deployed a model. It can be
 - `CLIENT_ENDPOINT` - the Azure OpenAI endpoint found in **Keys * Endpoint** section of the Azure OpenAI service.
 - `AZURE_CLIENT_KEY` - the Azure OpenAI API key found in **Keys * Endpoint** section of the Azure OpenAI service.
@@ -139,9 +158,14 @@ This project is licensed under the [MIT License](../LICENSE).
 ## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_CONDUCT.md).
+<<<<<<< HEAD
+=======
+=======
 The Semantic Kernel for Java code has moved
 to [semantic-kernel-java](https://github.com/microsoft/semantic-kernel-java), please make code changes and submit issues
 to that repository. This move is purely to ease the development. The various Semantic Kernel languages are all still 
 aligned in their development.
 
 Project coordination is still performed within this [Project Board](https://github.com/orgs/microsoft/projects/866).
+>>>>>>> origin/111
+>>>>>>> origin/111
