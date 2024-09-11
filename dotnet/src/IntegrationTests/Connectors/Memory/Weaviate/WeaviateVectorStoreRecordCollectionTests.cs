@@ -13,9 +13,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 [Collection("WeaviateVectorStoreCollection")]
 public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreFixture fixture)
 {
-    private const string SkipReason = "Tests are disabled during batch/object request problem investigation.";
-
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task ItCanCreateCollectionAsync()
     {
         // Arrange
@@ -28,7 +26,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.True(await sut.CollectionExistsAsync());
     }
 
-    [Theory(Skip = SkipReason)]
+    [Theory]
     [InlineData("ExistingCollection", true)]
     [InlineData("NonExistentCollection", false)]
     public async Task ItCanCheckIfCollectionExistsAsync(string collectionName, bool collectionExists)
@@ -48,7 +46,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal(collectionExists, result);
     }
 
-    [Theory(Skip = SkipReason)]
+    [Theory]
     [InlineData("CollectionWithVectorAndDefinition", true, true)]
     [InlineData("CollectionWithVector", true, false)]
     [InlineData("CollectionWithDefinition", false, true)]
@@ -98,7 +96,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         }
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
@@ -117,13 +115,15 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.False(await sut.CollectionExistsAsync());
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task ItCanDeleteRecordAsync()
     {
         // Arrange
         var hotelId = new Guid("55555555-5555-5555-5555-555555555555");
 
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(fixture.HttpClient!, "TestDeleteRecord");
+
+        await sut.CreateCollectionAsync();
 
         var record = this.CreateTestHotel(hotelId);
 
@@ -142,7 +142,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Null(getResult);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task ItCanUpsertAndGetAndDeleteBatchAsync()
     {
         // Arrange
@@ -176,7 +176,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Empty(getResults);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task ItCanUpsertRecordAsync()
     {
         // Arrange
