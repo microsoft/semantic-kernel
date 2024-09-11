@@ -502,15 +502,4 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     {
         return config.Client.GetAssistantClient();
     }
-
-    private static IEnumerable<string> DefineChannelKeys(OpenAIClientProvider config)
-    {
-        // Distinguish from other channel types.
-        yield return typeof(AgentChannel<OpenAIAssistantAgent>).FullName!;
-
-        foreach (string key in config.ConfigurationKeys)
-        {
-            yield return key;
-        }
-    }
 }

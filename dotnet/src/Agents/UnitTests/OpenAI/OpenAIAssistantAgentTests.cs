@@ -362,6 +362,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         await Assert.ThrowsAsync<KernelException>(() => agent.AddChatMessageAsync("threadid", new(AuthorRole.User, "test")));
         await Assert.ThrowsAsync<KernelException>(() => agent.GetThreadMessagesAsync("threadid").ToArrayAsync().AsTask());
         await Assert.ThrowsAsync<KernelException>(() => agent.InvokeAsync("threadid").ToArrayAsync().AsTask());
+        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeStreamingAsync("threadid", []).ToArrayAsync().AsTask());
+        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeStreamingAsync("threadid", [], new OpenAIAssistantInvocationOptions()).ToArrayAsync().AsTask());
     }
 
     /// <summary>
@@ -557,6 +559,46 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         // Act: Get messages
         messages = await chat.GetChatMessagesAsync(agent).ToArrayAsync();
+        // Assert
+        Assert.Equal(5, messages.Length);
+    }
+
+    /// <summary>
+    /// Verify message retrieval via <see cref="OpenAIAssistantAgent.GetThreadMessagesAsync(string, System.Threading.CancellationToken)"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentAddThreadMessagesAsync()
+    {
+        // Arrange: Create agent
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+        // Arrange: Setup messages
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.GetTextMessage());
+
+        // Act (no exception)
+        await agent.AddChatMessageAsync(agent.Id, new ChatMessageContent(AuthorRole.User, "hi"));
+    }
+
+    /// <summary>
+    /// Verify message retrieval via <see cref="OpenAIAssistantAgent.GetThreadMessagesAsync(string, System.Threading.CancellationToken)"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentGetThreadMessagesAsync()
+    {
+        // Arrange: Create agent
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        // Arrange: Setup messages
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.ListMessagesPageMore,
+            OpenAIAssistantResponseContent.ListMessagesPageMore,
+            OpenAIAssistantResponseContent.ListMessagesPageFinal);
+
+        // Act: Get messages
+        ChatMessageContent[] messages = await agent.GetThreadMessagesAsync("threadid").ToArrayAsync();
+
         // Assert
         Assert.Equal(5, messages.Length);
     }
