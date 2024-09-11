@@ -59,8 +59,8 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
                                     "Explanation": { "type": "string" },
                                     "Output": { "type": "string" }
                                 },
-                            "required": ["Explanation", "Output"],
-                            "additionalProperties": false
+                                "required": ["Explanation", "Output"],
+                                "additionalProperties": false
                             }
                         },
                         "FinalAnswer": { "type": "string" }
