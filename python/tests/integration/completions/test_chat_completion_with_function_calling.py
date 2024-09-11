@@ -118,6 +118,24 @@ pytestmark = pytest.mark.parametrize(
             id="openai_tool_call_flow",
         ),
         pytest.param(
+            "openai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
+                )
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="Find the person whose id is 9b3f6e40.")],
+                    ),
+                ]
+            ],
+            {"test_type": FunctionChoiceTestTypes.AUTO},
+            id="openai_tool_call_auto_complex_return_type",
+        ),
+        pytest.param(
             "azure",
             {"function_choice_behavior": FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["task_plugin"]})},
             [
@@ -193,6 +211,24 @@ pytestmark = pytest.mark.parametrize(
             id="azure_tool_call_flow",
         ),
         pytest.param(
+            "azure",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
+                )
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="Find the person whose id is 9b3f6e40.")],
+                    ),
+                ]
+            ],
+            {"test_type": FunctionChoiceTestTypes.AUTO},
+            id="azure_tool_call_auto_complex_return_type",
+        ),
+        pytest.param(
             "azure_ai_inference",
             {
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
@@ -262,6 +298,28 @@ pytestmark = pytest.mark.parametrize(
             id="azure_ai_inference_tool_call_flow",
         ),
         pytest.param(
+            "azure_ai_inference",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
+                )
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="Find the person whose id is 9b3f6e40.")],
+                    ),
+                ]
+            ],
+            {"test_type": FunctionChoiceTestTypes.AUTO},
+            marks=pytest.mark.skip(
+                reason="Possible regression on the Azure AI Inference side when"
+                " returning tool calls in streaming responses. Investigating..."
+            ),
+            id="azure_ai_inference_tool_call_auto_complex_return_type",
+        ),
+        pytest.param(
             "google_ai",
             {
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
@@ -328,6 +386,24 @@ pytestmark = pytest.mark.parametrize(
             id="google_ai_tool_call_flow",
         ),
         pytest.param(
+            "google_ai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
+                )
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="Find the person whose id is 9b3f6e40.")],
+                    ),
+                ]
+            ],
+            {"test_type": FunctionChoiceTestTypes.AUTO},
+            id="google_ai_tool_call_auto_complex_return_type",
+        ),
+        pytest.param(
             "vertex_ai",
             {
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
@@ -391,6 +467,24 @@ pytestmark = pytest.mark.parametrize(
             ],
             {"test_type": FunctionChoiceTestTypes.FLOW},
             id="vertex_ai_tool_call_flow",
+        ),
+        pytest.param(
+            "vertex_ai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
+                )
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="Find the person whose id is 9b3f6e40.")],
+                    ),
+                ]
+            ],
+            {"test_type": FunctionChoiceTestTypes.AUTO},
+            id="vertex_ai_tool_call_auto_complex_return_type",
         ),
     ],
 )
