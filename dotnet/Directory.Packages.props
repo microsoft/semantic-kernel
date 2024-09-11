@@ -71,7 +71,11 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<<+main
+>>>>>>> Stashed changes
 =======
 <<<<<<<+main
 >>>>>>> Stashed changes
@@ -132,6 +136,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
 =======
 >>>>>>>+upstream/main
@@ -169,6 +174,9 @@
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
 >>>>>>> Stashed changes
+=======
+>>>>>>>+upstream/main
+>>>>>>> Stashed changes
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
@@ -185,7 +193,11 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<<+main
+>>>>>>> Stashed changes
 =======
 <<<<<<<+main
 >>>>>>> Stashed changes
@@ -230,6 +242,7 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
     <!-- Plugins -->
+<<<<<<< Updated upstream
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
 <<<<<<< Updated upstream
@@ -237,11 +250,21 @@
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
+=======
+    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.0.1" />
     <PackageVersion Include="MongoDB.Driver" Version="2.27.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.16" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.16" />
@@ -249,20 +272,35 @@
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.15" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.15" />
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.15" />
+    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.15" />
+=======
+    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.16" />
+    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.16" />
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.64.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
+<<<<<<< Updated upstream
     <PackageVersion Include="YamlDotNet" Version="16.0.0" />
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     <PackageVersion Include="YamlDotNet" Version="16.0.0" />
 =======
     <PackageVersion Include="YamlDotNet" Version="15.3.0" />
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     <PackageVersion Include="Fluid.Core" Version="2.11.1" />
@@ -278,17 +316,23 @@
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24318.1" />
 =======
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 >>>>>>> origin/main
 =======
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
