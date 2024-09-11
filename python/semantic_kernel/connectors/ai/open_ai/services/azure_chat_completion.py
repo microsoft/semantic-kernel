@@ -48,6 +48,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         api_version: str | None = None,
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        token_endpoint: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
@@ -69,6 +70,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                 in the env vars or .env file.
             ad_token (str | None): The Azure Active Directory token. (Optional)
             ad_token_provider (AsyncAzureADTokenProvider): The Azure Active Directory token provider. (Optional)
+            token_endpoint (str | None): The token endpoint to request an Azure token. (Optional)
             default_headers (Mapping[str, str]): The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client (AsyncAzureOpenAI | None): An existing client to use. (Optional)
@@ -84,6 +86,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                 api_version=api_version,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
+                token_endpoint=token_endpoint,
             )
         except ValidationError as exc:
             raise ServiceInitializationError(f"Failed to validate settings: {exc}") from exc
@@ -91,8 +94,16 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         if not azure_openai_settings.chat_deployment_name:
             raise ServiceInitializationError("chat_deployment_name is required.")
 
+        if azure_openai_settings.token_endpoint and ad_token is None:
+            ad_token = azure_openai_settings.get_azure_token(token_endpoint=azure_openai_settings.token_endpoint)
+
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise ServiceInitializationError("Please provide either api_key, ad_token or ad_token_provider")
+
+        # Similate that the API key isn't provided, so we use the AD token. This is for testing purposes.
+        # This is so we don't have to delete the key from GH secrets.
+        if azure_openai_settings.api_key is not None:
+            azure_openai_settings.api_key = None
 
         super().__init__(
             deployment_name=azure_openai_settings.chat_deployment_name,
@@ -100,7 +111,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             base_url=azure_openai_settings.base_url,
             api_version=azure_openai_settings.api_version,
             service_id=service_id,
-            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
+            api_key=None,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,

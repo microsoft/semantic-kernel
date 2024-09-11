@@ -3,9 +3,12 @@
 
 from typing import ClassVar
 
+from azure.core.exceptions import ClientAuthenticationError
+from azure.identity import DefaultAzureCredential
 from pydantic import SecretStr
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidAuthError
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
 
 
@@ -72,3 +75,28 @@ class AzureOpenAISettings(KernelBaseSettings):
     base_url: HttpsUrl | None = None
     api_key: SecretStr | None = None
     api_version: str = DEFAULT_AZURE_API_VERSION
+    token_endpoint: str | None = None
+
+    def get_azure_token(self, token_endpoint: str | None = None) -> str | None:
+        """Retrieve an Azure Token for a given or default token endpoint.
+
+        Args:
+            token_endpoint: The token endpoint to use. Defaults to None.
+
+        Returns:
+            The Azure token or None if the token could not be retrieved.
+        """
+        endpoint_to_use = token_endpoint or self.token_endpoint
+        if not endpoint_to_use:
+            raise ServiceInvalidAuthError(
+                "A token endpoint must be provided either in settings, as an environment variable, or as an argument."
+            )
+
+        credential = DefaultAzureCredential()
+
+        try:
+            auth_token = credential.get_token(endpoint_to_use)
+        except ClientAuthenticationError:
+            return None
+
+        return auth_token.token if auth_token else None
