@@ -200,21 +200,21 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             content_key: The key name for the content/message.
 
         Returns:
-            prepared_chat_history:
             A tuple containing the prepared chat history and the first SYSTEM message content.
         """
         system_message_content = None
         remaining_messages = []
-        system_message_found = False
 
+        system_message_found = False
         for message in chat_history.messages:
             # Skip system messages after the first one is found
-            if message.role == AuthorRole.SYSTEM and not system_message_found:
-                system_message_content = message.content
-                system_message_found = True
+            if message.role == AuthorRole.SYSTEM:
+                if not system_message_found:
+                    system_message_content = message.content
+                    system_message_found = True
                 continue
 
-            # Include only role and content keys for the remaining messages
+            # The API requires only role and content keys for the remaining messages
             remaining_messages.append({
                 role_key: getattr(message, role_key),
                 content_key: getattr(message, content_key),
