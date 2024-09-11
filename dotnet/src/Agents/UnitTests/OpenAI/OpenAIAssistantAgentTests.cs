@@ -314,6 +314,29 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.RetrieveAsync"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentRetrievalWithFactoryAsync()
+    {
+        // Arrange
+        OpenAIAssistantDefinition definition = new("testmodel");
+
+        this.SetupResponse(HttpStatusCode.OK, definition);
+
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.RetrieveAsync(
+                this.CreateTestConfiguration(),
+                "#id",
+                this._emptyKernel,
+                new KernelArguments(),
+                new KernelPromptTemplateFactory());
+
+        // Act and Assert
+        ValidateAgentDefinition(agent, definition);
+    }
+
+    /// <summary>
     /// Verify the deletion of agent via <see cref="OpenAIAssistantAgent.DeleteAsync"/>.
     /// </summary>
     [Fact]
@@ -337,11 +360,12 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Assert
         Assert.True(agent.IsDeleted);
         await Assert.ThrowsAsync<KernelException>(() => agent.AddChatMessageAsync("threadid", new(AuthorRole.User, "test")));
+        await Assert.ThrowsAsync<KernelException>(() => agent.GetThreadMessagesAsync("threadid").ToArrayAsync().AsTask());
         await Assert.ThrowsAsync<KernelException>(() => agent.InvokeAsync("threadid").ToArrayAsync().AsTask());
     }
 
     /// <summary>
-    /// Verify the deletion of agent via <see cref="OpenAIAssistantAgent.DeleteAsync"/>.
+    /// Verify the creating a thread via <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreateThreadAsync()
@@ -358,11 +382,34 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         // Arrange
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
-
         // Act
-        threadId = await agent.CreateThreadAsync(new());
+        threadId = await agent.CreateThreadAsync();
         // Assert
         Assert.NotNull(threadId);
+
+        // Arrange
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+        // Act
+        threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions());
+        // Assert
+        Assert.NotNull(threadId);
+    }
+
+    /// <summary>
+    /// Verify the deleting a thread via <see cref="OpenAIAssistantAgent.DeleteThreadAsync"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentDeleteThreadAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteThread);
+
+        // Act
+        bool isDeleted = await agent.DeleteThreadAsync("threadid");
+        // Assert
+        Assert.True(isDeleted);
     }
 
     /// <summary>

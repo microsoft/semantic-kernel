@@ -192,6 +192,15 @@ internal static class OpenAIAssistantResponseContent
         }
         """;
 
+    public const string DeleteThread =
+        $$$"""
+        {
+            "id": "{{{ThreadId}}}",
+            "object": "thread.deleted",
+            "deleted": true
+        }
+        """;
+
     public const string ToolResponse = "{ }";
 
     public const string GetImageMessage =
