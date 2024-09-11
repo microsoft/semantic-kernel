@@ -22,7 +22,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Instructions = ParrotInstructions,
                     Name = ParrotName,
@@ -51,7 +51,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Instructions = MenuInstructions,
                     Name = "Host",

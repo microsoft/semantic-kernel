@@ -23,14 +23,14 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
                 clientProvider: this.GetClientProvider(),
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Instructions = HostInstructions,
                     Name = HostName,
                     Metadata = AssistantSampleMetadata,
-                });
+                },
+                kernel: new Kernel());
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -75,28 +75,28 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateFromTemplateAsync(
-                kernel: new(),
                 clientProvider: this.GetClientProvider(),
-                new(this.Model)
+                capabilities: new OpenAIAssistantCapabilities(this.Model)
                 {
                     Metadata = AssistantSampleMetadata,
                 },
-                templateConfig,
-                new KernelPromptTemplateFactory());
+                kernel: new Kernel(),
+                defaultArguments: new KernelArguments()
+                {
+                    { "topic", "Dog" },
+                    { "length", "3" },
+                },
+                templateConfig);
 
         // Create a thread for the agent conversation.
         string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
 
         try
         {
-            // Respond to user input
-            await InvokeAgentAsync(
-                new()
-                {
-                    { "topic", "Dog" },
-                    { "length", "3" },
-                });
+            // Generate response with default arguments.
+            await InvokeAgentAsync();
 
+            // Generate response with specified arguments.
             await InvokeAgentAsync(
                 new()
                 {
@@ -110,8 +110,8 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
             await agent.DeleteAsync();
         }
 
-        // Local function to invoke agent and display the conversation messages.
-        async Task InvokeAgentAsync(KernelArguments arguments)
+        // Local function to invoke agent and display the response.
+        async Task InvokeAgentAsync(KernelArguments? arguments = null)
         {
             await foreach (ChatMessageContent response in agent.InvokeAsync(threadId, arguments))
             {

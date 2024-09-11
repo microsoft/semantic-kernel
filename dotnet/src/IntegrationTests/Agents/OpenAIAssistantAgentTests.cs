@@ -112,12 +112,12 @@ public sealed class OpenAIAssistantAgentTests
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel,
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu.",
-                });
+                },
+                kernel);
 
         try
         {
@@ -154,12 +154,12 @@ public sealed class OpenAIAssistantAgentTests
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel,
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu.",
-                });
+                },
+                kernel);
 
         AgentGroupChat chat = new();
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));

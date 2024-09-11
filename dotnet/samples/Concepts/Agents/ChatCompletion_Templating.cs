@@ -23,7 +23,7 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
     [Fact]
     public async Task InvokeAgentWithInstructionsTemplateAsync()
     {
-        // %%% Default factory is KernelPromptTemplateFactory
+        // Instruction based template always proceseed by KernelPromptTemplateFactory
         ChatCompletionAgent agent =
             new()
             {
@@ -101,7 +101,6 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
 
         await InvokeChatCompletionAgentAsync(agent);
     }
-
 
     private async Task InvokeChatCompletionAgentAsync(ChatCompletionAgent agent)
     {

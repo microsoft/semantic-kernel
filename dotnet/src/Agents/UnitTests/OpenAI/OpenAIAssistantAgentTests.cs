@@ -284,9 +284,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.RetrieveAsync(
-                this._emptyKernel,
                 this.CreateTestConfiguration(),
-                "#id");
+                "#id",
+                this._emptyKernel);
 
         // Act and Assert
         ValidateAgentDefinition(agent, definition);
@@ -593,9 +593,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                this._emptyKernel,
                 this.CreateTestConfiguration(),
-                definition);
+                definition,
+                this._emptyKernel);
 
         ValidateAgentDefinition(agent, definition);
     }
@@ -679,9 +679,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         return
             OpenAIAssistantAgent.CreateAsync(
-                this._emptyKernel,
                 this.CreateTestConfiguration(),
-                definition);
+                definition,
+                this._emptyKernel);
     }
 
     private OpenAIClientProvider CreateTestConfiguration(bool targetAzure = false)
@@ -693,7 +693,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         this._messageHandlerStub.SetupResponse(statusCode, content);
 
     private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantDefinition definition) =>
-        this._messageHandlerStub.SetupResponse(statusCode, OpenAIAssistantResponseContent.CreateAgentPayload(definition));
+        this._messageHandlerStub.SetupResponse(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(definition));
 
     private void SetupResponses(HttpStatusCode statusCode, params string[] content) =>
         this._messageHandlerStub.SetupResponses(statusCode, content);

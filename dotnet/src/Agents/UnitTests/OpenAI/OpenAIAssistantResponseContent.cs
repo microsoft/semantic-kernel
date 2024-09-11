@@ -15,7 +15,7 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI;
 internal static class OpenAIAssistantResponseContent
 {
     /// <summary>
-    /// %%%
+    /// Setup the response content for the <see cref="HttpMessageHandlerStub"/>.
     /// </summary>
     public static void SetupResponse(this HttpMessageHandlerStub messageHandlerStub, HttpStatusCode statusCode, string content)
     {
@@ -27,7 +27,7 @@ internal static class OpenAIAssistantResponseContent
     }
 
     /// <summary>
-    /// %%%
+    /// Setup the response content for the <see cref="HttpMessageHandlerStub"/>.
     /// </summary>
     public static void SetupResponses(this HttpMessageHandlerStub messageHandlerStub, HttpStatusCode statusCode, params string[] content)
     {
@@ -52,9 +52,9 @@ internal static class OpenAIAssistantResponseContent
     #region Assistant
 
     /// <summary>
-    /// %%%
+    /// The response for creating or querying an assistant definition.
     /// </summary>
-    public static string CreateAgentPayload(OpenAIAssistantDefinition definition)
+    public static string AssistantDefinition(OpenAIAssistantDefinition definition)
     {
         StringBuilder builder = new();
         builder.AppendLine("{");
@@ -409,6 +409,9 @@ internal static class OpenAIAssistantResponseContent
 
     #endregion
 
+    /// <summary>
+    /// Response payloads for a "regular" assistant run.
+    /// </summary>
     public static class Run
     {
         public const string CreateRun =
@@ -571,6 +574,9 @@ internal static class OpenAIAssistantResponseContent
             """;
     }
 
+    /// <summary>
+    /// Response payloads for a streaming assistant run.
+    /// </summary>
     public static class Streaming
     {
         public static string Response(params string[] eventPayloads)
