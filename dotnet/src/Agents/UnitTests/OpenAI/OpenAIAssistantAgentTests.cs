@@ -413,10 +413,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify complex chat interaction across multiple states.
+    /// Verify invocation via <see cref="AgentGroupChat"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentChatTextMessageAsync()
+    public async Task VerifyOpenAIAssistantAgentGroupChatAsync()
     {
         // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
@@ -433,6 +433,32 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         // Act
         ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+
+        // Assert
+        Assert.Single(messages);
+        Assert.Single(messages[0].Items);
+        Assert.IsType<TextContent>(messages[0].Items[0]);
+    }
+
+    /// <summary>
+    /// Verify direction invocation of <see cref="OpenAIAssistantAgent"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentInvokeAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage());
+
+        // Act
+        ChatMessageContent[] messages = await agent.InvokeAsync("threadid").ToArrayAsync();
 
         // Assert
         Assert.Single(messages);
