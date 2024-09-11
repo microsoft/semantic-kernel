@@ -96,7 +96,8 @@ public static class PromptyKernelExtensions
 
     /// <summary>
     /// Create a <see cref="KernelFunction"/> from a prompty template file.
-    /// </summary>    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// </summary>    
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="fileInfo">The file containing the Prompty representation of a prompt based <see cref="KernelFunction"/>.</param>
     /// <param name="promptTemplateFactory">
     /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the prompt template configuration into a <see cref="IPromptTemplate"/>.
