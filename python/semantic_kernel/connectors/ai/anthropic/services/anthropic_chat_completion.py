@@ -162,7 +162,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             async with self.async_client.messages.stream(**settings.prepare_settings_dict()) as stream:
                 author_role = None
                 metadata: dict[str, Any] = {"usage": {}, "id": None}
-                content_block_idx = None
+                content_block_idx = 0
 
                 async for stream_event in stream:
                     if isinstance(stream_event, RawMessageStartEvent):
@@ -249,7 +249,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     def _create_streaming_chat_message_content(
         self,
         stream_event: RawContentBlockDeltaEvent | RawMessageDeltaEvent,
-        content_block_idx: Any,
+        content_block_idx: int,
         role: str | None = None,
         metadata: dict[str, Any] = {},
     ) -> StreamingChatMessageContent:
