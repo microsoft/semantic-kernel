@@ -129,7 +129,7 @@ public sealed class PromptyTest
         Kernel kernel = new();
         var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
         ManifestEmbeddedFileProvider manifestEmbeddedProvider = new(typeof(PromptyTest).Assembly);
-    
+
         // Act
         var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath,
             fileProvider: manifestEmbeddedProvider);
