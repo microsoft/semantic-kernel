@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,6 +33,14 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
     /// <summary>
     /// Optional arguments for the agent.
+    /// </summary>
+    /// <remarks>
+    /// This property is not currently used by the agent, but is provided for future extensibility.
+    /// </remarks>
+    public KernelArguments? Arguments { get; init; }
+
+    /// <summary>
+    /// A list of previously uploaded file IDs to attach to the assistant.
     /// </summary>
     /// <remarks>
     /// This property is not currently used by the agent, but is provided for future extensibility.
@@ -274,6 +282,8 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
         OpenAIAssistantInvocationOptions? options,
+    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        string threadId,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -284,6 +294,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         arguments ??= this.Arguments;
 
         await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
+        await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, this._config.Polling, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
         {
             if (isVisible)
             {

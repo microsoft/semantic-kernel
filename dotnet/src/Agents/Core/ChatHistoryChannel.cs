@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -38,6 +38,7 @@ public sealed class ChatHistoryChannel : AgentChannel
 
         ChatMessageContent? yieldMessage = null;
         await foreach (ChatMessageContent responseMessage in historyAgent.InvokeAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
+        await foreach (ChatMessageContent responseMessage in historyHandler.InvokeAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
         {
             // Capture all messages that have been included in the mutated the history.
             for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++)

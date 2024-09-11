@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -139,6 +139,7 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
         agent.ThrowIfDeleted();
 
         return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+        return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, pollingConfiguration, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
     }
 
     /// <inheritdoc/>
