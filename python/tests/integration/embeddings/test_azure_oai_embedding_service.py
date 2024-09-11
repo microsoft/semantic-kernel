@@ -44,7 +44,7 @@ async def test_azure_text_embedding_service_with_provided_client(kernel: Kernel)
     client = AsyncAzureOpenAI(
         azure_endpoint=endpoint,
         azure_deployment=deployment_name,
-        ad_token=ad_token,
+        azure_ad_token=ad_token,
         api_version=api_version,
         default_headers={"Test-User-X-ID": "test"},
     )
