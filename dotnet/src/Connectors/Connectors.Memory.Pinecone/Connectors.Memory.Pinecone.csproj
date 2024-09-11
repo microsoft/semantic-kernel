@@ -19,6 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Pinecone.NET" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
