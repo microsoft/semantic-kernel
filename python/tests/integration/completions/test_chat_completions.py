@@ -1001,9 +1001,13 @@ class TestChatCompletion(ChatCompletionTestBase):
             history.add_message(cmc)
 
 <<<<<<< main
+async def execute_invoke(kernel: Kernel, history: ChatHistory, output: str, stream: bool) -> "ChatMessageContent":
+=======
+<<<<<<< main
 async def execute_invoke(
     kernel: Kernel, history: ChatHistory, output: str, stream: bool
 ) -> "ChatMessageContent":
+>>>>>>> origin/main
     if stream:
         invocation = kernel.invoke_stream(
             function_name="chat", plugin_name="chat", chat_history=history
@@ -1030,6 +1034,11 @@ async def execute_invoke(
                 assert item.arguments
                 assert kernel.get_function_from_fully_qualified_function_name(item.name)
         return response
+<<<<<<< main
+    with pytest.raises(AssertionError, match=f"Unexpected output: response: {invocation}, type: {type(invocation)}"):
+        raise AssertionError(f"Unexpected output: response: {invocation}, type: {type(invocation)}")
+        self.evaluate(history.messages, inputs=inputs)
+=======
     with pytest.raises(
         AssertionError,
         match=f"Unexpected output: response: {invocation}, type: {type(invocation)}",
@@ -1040,3 +1049,4 @@ async def execute_invoke(
 =======
         self.evaluate(history.messages, inputs=inputs)
 >>>>>>> upstream/main
+>>>>>>> origin/main

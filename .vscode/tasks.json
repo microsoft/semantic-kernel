@@ -2,7 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-<<<<<<< main
       "label": "setup (contributing-R#)",
       "detail": "",
       "group": "build",
@@ -39,16 +38,13 @@
     },
     {
       "label": "format-check (contributing-R#)",
-=======
       "label": "clean (functions)",
->>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
       "command": "dotnet",
       "args": [
         "clean",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
-<<<<<<< main
       "options": {
         "cwd": "${workspaceFolder}/dotnet"
       }
@@ -83,7 +79,6 @@
       ],
       "dependsOrder": "sequence"
     },
-<<<<<<< main
     {
       "label": "setup (contributing-python)",
       "detail": "",
@@ -136,23 +131,16 @@
         ".conf/.pre-commit-config.yaml",
         "-a"
       ],
-=======
       "type": "process",
       "problemMatcher": "$msCompile",
->>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
       "options": {
         "cwd": "${workspaceFolder}/dotnet/samples/CreateChatGptPlugin/MathPlugin/azure-function"
       }
     },
-<<<<<<< main
-=======
     // ***************
     // Kernel (dotnet)
     // ***************
     // Build
->>>>>>> upstream/main
-=======
->>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
     {
       "label": "build (functions)",
       "command": "dotnet",
@@ -161,7 +149,6 @@
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
-<<<<<<< main
       "problemMatcher": "$msCompile",
       "group": "build",
       "presentation": {
@@ -184,13 +171,11 @@
         "reveal": "always",
         "panel": "shared",
         "group": "PR-Validate"
-=======
       "type": "process",
       "dependsOn": "clean (functions)",
       "group": {
         "kind": "build",
         "isDefault": true
->>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
       },
       "problemMatcher": "$msCompile",
       "options": {
@@ -226,7 +211,6 @@
       "type": "process",
       "dependsOn": "clean release (functions)",
       "problemMatcher": "$msCompile",
-<<<<<<< main
       "group": "test",
       "presentation": {
         "reveal": "always",
@@ -236,7 +220,6 @@
         "cwd": "${workspaceFolder}/dotnet/src/IntegrationTests/"
       }
     },
-<<<<<<< main
     {
       "label": "test (Semantic-Kernel-Python)",
       "command": "poetry",
@@ -297,19 +280,14 @@
         "panel": "shared",
         "group": "PR-Validate"
       },
-=======
->>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
       "options": {
         "cwd": "${workspaceFolder}/dotnet/samples/CreateChatGptPlugin/MathPlugin/azure-function"
       }
     },
-<<<<<<< main
-=======
     // ****************
     // Samples (dotnet)
     // ****************
     // Kernel Syntax Examples
->>>>>>> upstream/main
     {
       "label": "build (Concepts)",
       "command": "dotnet",
@@ -346,7 +324,6 @@
         "--project",
         "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj",
         "${input:filter}"
-=======
     {
       "type": "go",
       "label": "go: build package",
@@ -356,12 +333,10 @@
       ],
       "problemMatcher": [
         "$go"
->>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
       ],
       "group": "build",
       "detail": "cd /workspaces/semantic-kernel; go build ${fileDirname}"
     },
-<<<<<<< main
     {
       "label": "clean (functions)",
       "command": "dotnet",
@@ -440,8 +415,6 @@
     }
   ],
   "inputs": [
-=======
->>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
     {
       "type": "func",
       "dependsOn": "build (functions)",
