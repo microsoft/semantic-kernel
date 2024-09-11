@@ -648,7 +648,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     private static void ValidateAgentDefinition(OpenAIAssistantAgent agent, OpenAIAssistantCapabilities expectedConfig, PromptTemplateConfig templateConfig)
     {
         ValidateAgent(agent, templateConfig.Name, templateConfig.Template, templateConfig.Description, expectedConfig);
-}
+    }
 
     private static void ValidateAgent(
         OpenAIAssistantAgent agent,
