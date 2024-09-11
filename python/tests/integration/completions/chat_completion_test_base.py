@@ -3,7 +3,7 @@
 
 import sys
 from functools import reduce
-from typing import Any
+from typing import Annotated, Any
 
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
@@ -45,7 +45,9 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.exceptions import ServiceInitializationError
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 
 if sys.version_info >= (3, 12):
@@ -87,6 +89,21 @@ try:
     anthropic_setup = True
 except ServiceInitializationError:
     anthropic_setup = False
+
+
+# A mock plugin that contains a function that returns a complex object.
+class PersonDetails(KernelBaseModel):
+    id: str
+    name: str
+    age: int
+
+
+class PersonSearchPlugin:
+    @kernel_function(name="SearchPerson", description="Search details of a person given their id.")
+    def search_person(
+        self, person_id: Annotated[str, "The person ID to search"]
+    ) -> Annotated[PersonDetails, "The details of the person"]:
+        return PersonDetails(id=person_id, name="John Doe", age=42)
 
 
 class ChatCompletionTestBase(CompletionTestBase):
@@ -135,6 +152,7 @@ class ChatCompletionTestBase(CompletionTestBase):
     def setup(self, kernel: Kernel):
         """Setup the kernel with the completion service and function."""
         kernel.add_plugin(MathPlugin(), plugin_name="math")
+        kernel.add_plugin(PersonSearchPlugin(), plugin_name="search")
 
     async def get_chat_completion_response(
         self,
