@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -119,6 +120,39 @@ public sealed class PromptyTest
         Assert.Single(kernelFunction.Metadata.Parameters);
         Assert.Equal("prompt", kernelFunction.Metadata.Parameters[0].Name);
         Assert.Empty(kernelFunction.ExecutionSettings!);
+    }
+
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlWithEmbeddedFileProvider()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
+        var manifestEmbeddedProvider = new ManifestEmbeddedFileProvider(typeof(PromptyTest).Assembly);
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath, manifestEmbeddedProvider);
+
+        // Assert
+        // kernel function created from chat.prompty should have a single execution setting
+        Assert.Single(kernelFunction.ExecutionSettings!);
+        Assert.True(kernelFunction.ExecutionSettings!.ContainsKey("default"));
+
+        // Arrange
+        var defaultExecutionSetting = kernelFunction.ExecutionSettings["default"];
+
+        // Act
+        var executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(defaultExecutionSetting);
+
+        // Assert
+        Assert.NotNull(executionSettings);
+        Assert.Equal("gpt-35-turbo", executionSettings.ModelId);
+        Assert.Null(executionSettings.Temperature);
+        Assert.Null(executionSettings.TopP);
+        Assert.Null(executionSettings.StopSequences);
+        Assert.Null(executionSettings.ResponseFormat);
+        Assert.Null(executionSettings.TokenSelectionBiases);
+        Assert.Null(executionSettings.MaxTokens);
+        Assert.Null(executionSettings.Seed);
     }
 
     [Fact]
