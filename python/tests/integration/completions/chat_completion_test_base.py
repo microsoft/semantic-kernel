@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-import os
 import sys
 from functools import reduce
 from typing import Annotated, Any
@@ -11,6 +10,7 @@ from azure.ai.inference.aio import ChatCompletionsClient
 from azure.core.credentials import AzureKeyCredential
 from openai import AsyncAzureOpenAI
 
+from semantic_kernel.connectors.ai.anthropic import AnthropicChatCompletion
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceChatPromptExecutionSettings,
 )
@@ -44,6 +44,7 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -56,17 +57,38 @@ else:
 
 mistral_ai_setup: bool = False
 try:
-    if os.environ["MISTRALAI_API_KEY"] and os.environ["MISTRALAI_CHAT_MODEL_ID"]:
-        mistral_ai_setup = True
-except KeyError:
+    MistralAIChatCompletion()
+    mistral_ai_setup = True
+except ServiceInitializationError:
     mistral_ai_setup = False
 
 ollama_setup: bool = False
 try:
-    if os.environ["OLLAMA_MODEL"]:
-        ollama_setup = True
-except KeyError:
+    OllamaChatCompletion()
+    ollama_setup = True
+except ServiceInitializationError:
     ollama_setup = False
+
+google_ai_setup: bool = False
+try:
+    GoogleAIChatCompletion()
+    google_ai_setup = True
+except ServiceInitializationError:
+    google_ai_setup = False
+
+vertex_ai_setup: bool = False
+try:
+    VertexAIChatCompletion()
+    vertex_ai_setup = True
+except ServiceInitializationError:
+    vertex_ai_setup = False
+
+anthropic_setup: bool = False
+try:
+    AnthropicChatCompletion()
+    anthropic_setup = True
+except ServiceInitializationError:
+    anthropic_setup = False
 
 
 # A mock plugin that contains a function that returns a complex object.
@@ -123,8 +145,8 @@ class ChatCompletionTestBase(CompletionTestBase):
                 MistralAIChatPromptExecutionSettings,
             ),
             "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
-            "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
-            "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
+            "google_ai": (GoogleAIChatCompletion() if google_ai_setup else None, GoogleAIChatPromptExecutionSettings),
+            "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
         }
 
     def setup(self, kernel: Kernel):

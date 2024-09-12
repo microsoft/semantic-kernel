@@ -16,7 +16,12 @@ from semantic_kernel.contents.function_result_content import FunctionResultConte
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
-from tests.integration.completions.chat_completion_test_base import ChatCompletionTestBase
+from tests.integration.completions.chat_completion_test_base import (
+    ChatCompletionTestBase,
+    google_ai_setup,
+    mistral_ai_setup,
+    vertex_ai_setup,
+)
 from tests.integration.completions.completion_test_base import ServiceType
 from tests.integration.completions.test_utils import retry
 
@@ -320,6 +325,74 @@ pytestmark = pytest.mark.parametrize(
             id="azure_ai_inference_tool_call_auto_complex_return_type",
         ),
         pytest.param(
+            "mistral_ai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
+                ),
+                "max_tokens": 256,
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.SYSTEM,
+                        items=[TextContent(text="You're very bad at math. Don't attempt to do it yourself.")],
+                    ),
+                    ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 345 + 3?")]),
+                ]
+            ],
+            {"test_type": FunctionChoiceTestTypes.AUTO},
+            marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
+            id="mistral_ai_tool_call_auto",
+        ),
+        pytest.param(
+            "mistral_ai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=False, filters={"excluded_plugins": ["task_plugin"]}
+                )
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.SYSTEM,
+                        items=[TextContent(text="You're very bad at math. Don't attempt to do it yourself.")],
+                    ),
+                    ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 345 + 3?")]),
+                ]
+            ],
+            {"test_type": FunctionChoiceTestTypes.NON_AUTO},
+            marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
+            id="mistral_ai_tool_call_non_auto",
+        ),
+        pytest.param(
+            "mistral_ai",
+            {},
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="What was our 2024 revenue?")],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        items=[
+                            FunctionCallContent(
+                                id="123456789", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                            )
+                        ],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.TOOL,
+                        items=[FunctionResultContent(id="123456789", name="finance-search", result="1.2B")],
+                    ),
+                ],
+            ],
+            {"test_type": FunctionChoiceTestTypes.FLOW},
+            marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
+            id="mistral_ai_tool_call_flow",
+        ),
+        pytest.param(
             "google_ai",
             {
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
@@ -337,6 +410,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.AUTO},
+            marks=pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
             id="google_ai_tool_call_auto",
         ),
         pytest.param(
@@ -356,6 +430,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.NON_AUTO},
+            marks=pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
             id="google_ai_tool_call_non_auto",
         ),
         pytest.param(
@@ -401,6 +476,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.AUTO},
+            marks=pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
             id="google_ai_tool_call_auto_complex_return_type",
         ),
         pytest.param(
@@ -421,6 +497,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.AUTO},
+            marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_tool_call_auto",
         ),
         pytest.param(
@@ -440,6 +517,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.NON_AUTO},
+            marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_tool_call_non_auto",
         ),
         pytest.param(
@@ -466,6 +544,7 @@ pytestmark = pytest.mark.parametrize(
                 ],
             ],
             {"test_type": FunctionChoiceTestTypes.FLOW},
+            marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_tool_call_flow",
         ),
         pytest.param(
@@ -484,6 +563,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.AUTO},
+            marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_tool_call_auto_complex_return_type",
         ),
     ],
