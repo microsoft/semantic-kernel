@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from typing import Any, ClassVar
 
 if sys.version_info >= (3, 12):
@@ -23,18 +23,23 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_base import MistralAIBase
 from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents import (
+    ChatMessageContent,
+    FunctionCallContent,
+    StreamingChatMessageContent,
+    StreamingTextContent,
+    TextContent,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
-from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
@@ -51,7 +56,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
     """Mistral Chat completion class."""
 
-    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
 
     def __init__(
         self,
@@ -266,3 +271,40 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         ]
 
     # endregion
+
+    def update_settings_from_function_call_configuration_mistral(
+        self,
+        function_choice_configuration: "FunctionCallChoiceConfiguration",
+        settings: "PromptExecutionSettings",
+        type: "FunctionChoiceType",
+    ) -> None:
+        """Update the settings from a FunctionChoiceConfiguration."""
+        if (
+            function_choice_configuration.available_functions
+            and hasattr(settings, "tool_choice")
+            and hasattr(settings, "tools")
+        ):
+            settings.tool_choice = type
+            settings.tools = [
+                kernel_function_metadata_to_function_call_format(f)
+                for f in function_choice_configuration.available_functions
+            ]
+            # Function Choice behavior required maps to MistralAI any
+            if (
+                settings.function_choice_behavior
+                and settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED
+            ):
+                settings.tool_choice = "any"
+
+    @override
+    def _update_function_choice_settings_callback(
+        self,
+    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+        return self.update_settings_from_function_call_configuration_mistral
+
+    @override
+    def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
+        if hasattr(settings, "tool_choice"):
+            settings.tool_choice = None
+        if hasattr(settings, "tools"):
+            settings.tools = None
