@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Xunit;
+using Assert = Xunit.Assert;
 
 namespace SemanticKernel.UnitTests;
 

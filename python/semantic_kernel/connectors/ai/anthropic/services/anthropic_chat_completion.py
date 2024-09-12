@@ -54,6 +54,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     """Antropic ChatCompletion class."""
 
     MODEL_PROVIDER_NAME: ClassVar[str] = "anthropic"
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
 
     async_client: AsyncAnthropic
 
@@ -103,31 +104,25 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             ai_model_id=anthropic_settings.chat_model_id,
         )
 
+    # region Overriding base class methods
+
+    # Override from AIServiceClientBase
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        return AnthropicChatPromptExecutionSettings
+
     @override
     @trace_chat_completion(MODEL_PROVIDER_NAME)
-    async def get_chat_message_contents(
+    async def _inner_get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Any,
     ) -> list["ChatMessageContent"]:
-        """Executes a chat completion request and returns the result.
-
-        Args:
-            chat_history: The chat history to use for the chat completion.
-            settings: The settings to use for the chat completion request.
-            kwargs: The optional arguments.
-
-        Returns:
-            The completion result(s).
-        """
         if not isinstance(settings, AnthropicChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, AnthropicChatPromptExecutionSettings)  # nosec
 
-        if not settings.ai_model_id:
-            settings.ai_model_id = self.ai_model_id
-
+        settings.ai_model_id = settings.ai_model_id or self.ai_model_id
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         try:
             response = await self.async_client.messages.create(**settings.prepare_settings_dict())
@@ -146,29 +141,17 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             self._create_chat_message_content(response, content_block, metadata) for content_block in response.content
         ]
 
-    async def get_streaming_chat_message_contents(
+    @override
+    async def _inner_get_streaming_chat_message_contents(
         self,
-        chat_history: ChatHistory,
-        settings: PromptExecutionSettings,
-        **kwargs: Any,
-    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
-        """Executes a streaming chat completion request and returns the result.
-
-        Args:
-            chat_history: The chat history to use for the chat completion.
-            settings: The settings to use for the chat completion request.
-            kwargs: The optional arguments.
-
-        Yields:
-            A stream of StreamingChatMessageContent.
-        """
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+    ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         if not isinstance(settings, AnthropicChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, AnthropicChatPromptExecutionSettings)  # nosec
 
-        if not settings.ai_model_id:
-            settings.ai_model_id = self.ai_model_id
-
+        settings.ai_model_id = settings.ai_model_id or self.ai_model_id
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         try:
             async with self.async_client.messages.stream(**settings.prepare_settings_dict()) as stream:
@@ -189,12 +172,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                         ]
                     elif isinstance(stream_event, ContentBlockStopEvent):
                         content_block_idx += 1
-
         except Exception as ex:
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the request",
                 ex,
             ) from ex
+
+    # endregion
 
     def _create_chat_message_content(
         self, response: Message, content: TextBlock, response_metadata: dict[str, Any]
@@ -249,7 +233,3 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             finish_reason=finish_reason,
             items=items,
         )
-
-    def get_prompt_execution_settings_class(self) -> "type[AnthropicChatPromptExecutionSettings]":
-        """Create a request settings object."""
-        return AnthropicChatPromptExecutionSettings
