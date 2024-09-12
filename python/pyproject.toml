@@ -3,6 +3,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 [project]
 name = "semantic-kernel"
 version = "1.8.0"
@@ -58,6 +59,8 @@ openapi_core = ">=0.18,<0.20"
     "nest-asyncio ~= 1.6"
 ]
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -125,6 +128,9 @@ nest-asyncio = "^1.6.0"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -155,7 +161,13 @@ sentence-transformers = { version = "^2.2.2", optional = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 torch = { version = "^2.2.2", optional = true}
+=======
+<<<<<<< main
+<<<<<<< main
+torch = { version = "^2.2.0", optional = true}
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 <<<<<<< main
@@ -191,7 +203,10 @@ weaviate-client = { version = ">=3.18,<5.0", optional = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -208,6 +223,9 @@ torch = {version = "2.2.2", optional = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -227,7 +245,11 @@ ipykernel = { version = "^6.21.1", optional = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 pymilvus = { version = ">=2.3,<2.4.6", optional = true}
+=======
+pymilvus = { version = ">=2.3,<2.4.5", optional = true}
+>>>>>>> Stashed changes
 =======
 pymilvus = { version = ">=2.3,<2.4.5", optional = true}
 >>>>>>> Stashed changes
@@ -253,6 +275,7 @@ ollama = { version = "^0.2.1", optional = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # anthropic
 anthropic = { version = "^0.32.0", optional = true }
 # pinecone
@@ -260,6 +283,8 @@ pinecone-client = { version = "^5.0.0", optional = true}
 # postgres
 psycopg = { version="^3.2.1", extras=["binary","pool"], optional = true}
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -283,6 +308,9 @@ psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -302,7 +330,10 @@ azure-cosmos = { version = "^4.7.0", optional = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -319,6 +350,9 @@ psycopg = { version="^3.2.1", extras=["binary","pool"], optional = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -339,6 +373,10 @@ types-redis = { version="^4.6.0.20240425", optional = true }
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> upstream/main
 >>>>>>> Stashed changes
@@ -365,7 +403,10 @@ pandas = {version = "^2.2.2", optional = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -401,6 +442,9 @@ qdrant-client = {version = "^1.3.2", python = ">=3.8,<3.12"}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -425,7 +469,11 @@ types-PyYAML = "^6.0.12.20240311"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ruff = ">=0.5.2,<0.7.0"
+=======
+ruff = "^0.5.2"
+>>>>>>> Stashed changes
 =======
 ruff = "^0.5.2"
 >>>>>>> Stashed changes
@@ -458,9 +506,12 @@ google-cloud-aiplatform = "^1.60.0"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 anthropic = "^0.32.0"
 google-generativeai = "^0.7.2"
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -483,6 +534,9 @@ torch = "^2.2.0"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -505,6 +559,10 @@ pandas = {version = "^2.2.2"}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> upstream/main
 >>>>>>> Stashed changes
@@ -529,6 +587,10 @@ optional = true
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -579,7 +641,11 @@ pyarrow = ">=12.0.1,<16.0.0"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -614,9 +680,12 @@ google-generativeai = "^0.7.2"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # milvus
 pymilvus = ">=2.3,<2.4.6"
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -647,6 +716,9 @@ pymilvus = ">=2.3,<2.4.5"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -666,6 +738,7 @@ ollama = "^0.2.1"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # anthropic
 anthropic = "^0.32.0"
 # mongodb
@@ -675,6 +748,8 @@ pinecone-client = "^5.0.0"
 # postgres
 psycopg = { version="^3.1.9", extras=["binary","pool"]}
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -699,6 +774,9 @@ psycopg = { version="^3.1.9", extras=["binary","pool"]}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -718,6 +796,10 @@ azure-cosmos = "^4.7.0"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -744,6 +826,10 @@ types-redis = { version="^4.6.0.20240425" }
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> upstream/main
 >>>>>>> Stashed changes
@@ -772,7 +858,11 @@ pandas = {version = "^2.2.2"}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 all = ["transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "mistralai", "ollama", "anthropic", "google", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
+=======
+all = ["transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "mistralai", "ollama", "google", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
+>>>>>>> Stashed changes
 =======
 all = ["transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "mistralai", "ollama", "google", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
 >>>>>>> Stashed changes
@@ -801,7 +891,10 @@ ollama = ["ollama"]
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 anthropic = ["anthropic"]
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -819,6 +912,7 @@ postgres = ["psycopg"]
 qdrant = ["qdrant-client"]
 redis = ["redis", "types-redis"]
 usearch = ["usearch", "pyarrow"]
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -924,6 +1018,8 @@ addopts = "-ra -q -r fEX"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 notebooks = ["ipykernel"]
 all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel"]
@@ -942,6 +1038,9 @@ addopts = "-ra -q -r fEX"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -961,7 +1060,10 @@ include = ["*.py", "*.pyi", "**/pyproject.toml", "*.ipynb"]
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 preview = true
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -981,6 +1083,10 @@ unfixable = []
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+preview = true
+>>>>>>> Stashed changes
 =======
 preview = true
 >>>>>>> Stashed changes
@@ -1025,6 +1131,10 @@ ignore = [
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+preview = true
+>>>>>>> Stashed changes
 =======
 preview = true
 >>>>>>> Stashed changes
@@ -1058,6 +1168,7 @@ notice-rgx = "^# Copyright \\(c\\) Microsoft\\. All rights reserved\\."
 min-file-size = 1
 
 [tool.bandit]
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1114,6 +1225,10 @@ exclude_dirs = ["python/tests"]
 targets = ["python/semantic_kernel"]
 exclude_dirs = ["python/tests"]
 >>>>>>> Stashed changes
+=======
+targets = ["python/semantic_kernel"]
+exclude_dirs = ["python/tests"]
+>>>>>>> Stashed changes
 
 [build-system]
 requires = ["poetry-core"]
@@ -1123,6 +1238,10 @@ build-backend = "poetry.core.masonry.api"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 =======
 
 >>>>>>> Stashed changes
