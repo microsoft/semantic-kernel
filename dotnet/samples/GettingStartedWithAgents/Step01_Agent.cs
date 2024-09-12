@@ -75,9 +75,10 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
         /// Create the chat history to capture the agent interaction.
         ChatHistory chat = [];
 
-        // Respond to user input
+        // Invoke the agent with the default arguments.
         await InvokeAgentAsync();
 
+        // Invoke the agent with the override arguments.
         await InvokeAgentAsync(
             new()
             {

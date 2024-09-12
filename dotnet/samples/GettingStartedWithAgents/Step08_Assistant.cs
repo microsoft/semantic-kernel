@@ -95,10 +95,10 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 
         try
         {
-            // Generate response with default arguments.
+            // Invoke the agent with the default arguments.
             await InvokeAgentAsync();
 
-            // Generate response with specified arguments.
+            // Invoke the agent with the override arguments.
             await InvokeAgentAsync(
                 new()
                 {
