@@ -38,7 +38,7 @@ internal static class OpenAIJsonSchemaTransformer
             if (type.Equals(ObjectValueName, StringComparison.OrdinalIgnoreCase))
             {
                 // Set "additionalProperties" to "false".
-                jsonSchemaObject[AdditionalPropertiesPropertyName] = JsonValue.Create(false);
+                jsonSchemaObject[AdditionalPropertiesPropertyName] = false;
 
                 // Specify all properties as "required".
                 if (jsonSchemaObject.TryGetPropertyValue(PropertiesPropertyName, out var properties) &&
