@@ -336,5 +336,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             "usage": CompletionUsage(
                 prompt_tokens=response.usage.prompt_tokens,
                 completion_tokens=response.usage.completion_tokens,
-            ),
+            )
+            if response.usage
+            else None,
         }
