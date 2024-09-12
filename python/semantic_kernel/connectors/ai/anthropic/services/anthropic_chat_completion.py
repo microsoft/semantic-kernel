@@ -25,6 +25,7 @@ from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic
 )
 from semantic_kernel.connectors.ai.anthropic.settings.anthropic_settings import AnthropicSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
@@ -36,7 +37,10 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
 from semantic_kernel.utils.experimental_decorator import experimental_class
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_chat_completion,
+    trace_streaming_chat_completion,
+)
 
 # map finish reasons from Anthropic to Semantic Kernel
 ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP = {
@@ -110,6 +114,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return AnthropicChatPromptExecutionSettings
 
+    # Override from AIServiceClientBase
+    @override
+    def service_url(self) -> str | None:
+        return str(self.async_client.base_url)
+
     @override
     @trace_chat_completion(MODEL_PROVIDER_NAME)
     async def _inner_get_chat_message_contents(
@@ -137,13 +146,17 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         metadata: dict[str, Any] = {"id": response.id}
         # Check if usage exists and has a value, then add it to the metadata
         if hasattr(response, "usage") and response.usage is not None:
-            metadata["usage"] = response.usage
+            metadata["usage"] = CompletionUsage(
+                prompt_tokens=response.usage.input_tokens,
+                completion_tokens=response.usage.output_tokens,
+            )
 
         return [
             self._create_chat_message_content(response, content_block, metadata) for content_block in response.content
         ]
 
     @override
+    @trace_streaming_chat_completion(MODEL_PROVIDER_NAME)
     async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
@@ -161,13 +174,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         try:
             async with self.async_client.messages.stream(**settings.prepare_settings_dict()) as stream:
                 author_role = None
-                metadata: dict[str, Any] = {"usage": {}, "id": None}
+                metadata: dict[str, Any] = {"usage": CompletionUsage(), "id": None}
                 content_block_idx = 0
 
                 async for stream_event in stream:
                     if isinstance(stream_event, RawMessageStartEvent):
                         author_role = stream_event.message.role
-                        metadata["usage"]["input_tokens"] = stream_event.message.usage.input_tokens
+                        metadata["usage"].prompt_tokens = stream_event.message.usage.input_tokens
                         metadata["id"] = stream_event.message.id
 
                     elif isinstance(stream_event, (RawContentBlockDeltaEvent, RawMessageDeltaEvent)):
@@ -266,7 +279,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             if stream_event.delta.stop_reason:
                 finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[stream_event.delta.stop_reason]
 
-            metadata["usage"]["output_tokens"] = stream_event.usage.output_tokens
+            metadata["usage"].completion_tokens = stream_event.usage.output_tokens
 
         return StreamingChatMessageContent(
             choice_index=content_block_idx,
