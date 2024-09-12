@@ -93,6 +93,10 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
                     statusCodes.Add(args.Outcome.Result?.StatusCode);
                     return ValueTask.CompletedTask;
                 };
+                o.AttemptTimeout = new HttpTimeoutStrategyOptions
+                {
+                    Timeout = TimeSpan.FromSeconds(30.0) // Increasing from the default 10s timeout
+                };
             });
         });
 

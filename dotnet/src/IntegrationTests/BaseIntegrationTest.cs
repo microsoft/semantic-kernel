@@ -26,7 +26,7 @@ public class BaseIntegrationTest
                 };
                 o.AttemptTimeout = new HttpTimeoutStrategyOptions
                 {
-                    Timeout = TimeSpan.FromSeconds(20.0) // Doubling the default 10s timeout
+                    Timeout = TimeSpan.FromSeconds(30.0) // Increasing from the default 10s timeout
                 };
             });
         });
