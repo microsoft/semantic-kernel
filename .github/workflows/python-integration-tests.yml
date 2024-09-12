@@ -177,6 +177,7 @@ jobs:
     needs: paths-filter
     if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.paths-filter.outputs.pythonChanges == 'true'
     runs-on: ${{ matrix.os }}
+    environment: ${{ matrix.environment }}
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -239,6 +240,13 @@ jobs:
       - name: Setup Redis Stack Server
         if: matrix.os == 'ubuntu-latest'
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+      - name: Azure CLI Login
+        if: github.event_name != 'pull_request'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests
         id: run_tests
         shell: bash
