@@ -1090,8 +1090,15 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("object", schema.GetProperty("type").GetString());
         Assert.False(schema.GetProperty("additionalProperties").GetBoolean());
         Assert.Equal(2, schema.GetProperty("required").GetArrayLength());
-        Assert.Equal("Steps", schema.GetProperty("required")[0].GetString());
-        Assert.Equal("FinalAnswer", schema.GetProperty("required")[1].GetString());
+
+        var requiredParentProperties = new List<string?>
+        {
+            schema.GetProperty("required")[0].GetString(),
+            schema.GetProperty("required")[1].GetString(),
+        };
+
+        Assert.Contains("Steps", requiredParentProperties);
+        Assert.Contains("FinalAnswer", requiredParentProperties);
 
         var schemaProperties = schema.GetProperty("properties");
 
@@ -1103,8 +1110,15 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("object", items.GetProperty("type").GetString());
         Assert.False(items.GetProperty("additionalProperties").GetBoolean());
         Assert.Equal(2, items.GetProperty("required").GetArrayLength());
-        Assert.Equal("Explanation", items.GetProperty("required")[0].GetString());
-        Assert.Equal("Output", items.GetProperty("required")[1].GetString());
+
+        var requiredChildProperties = new List<string?>
+        {
+            items.GetProperty("required")[0].GetString(),
+            items.GetProperty("required")[1].GetString(),
+        };
+
+        Assert.Contains("Explanation", requiredChildProperties);
+        Assert.Contains("Output", requiredChildProperties);
 
         var itemsProperties = items.GetProperty("properties");
 

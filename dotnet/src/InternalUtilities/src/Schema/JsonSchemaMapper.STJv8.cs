@@ -243,7 +243,7 @@ internal
                 List<string>? required = null;
                 JsonSchema? additionalProperties = null;
 
-                if (typeInfo.UnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow || state.Configuration.AdditionalProperties is false)
+                if (typeInfo.UnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
                 {
                     // Disallow unspecified properties.
                     additionalProperties = JsonSchema.False;
@@ -334,7 +334,7 @@ internal
 
                     (properties ??= new()).Add(new(property.Name, propertySchema));
 
-                    if (isRequired || state.Configuration.AllPropertiesRequired is true)
+                    if (isRequired)
                     {
                         (required ??= new()).Add(property.Name);
                     }

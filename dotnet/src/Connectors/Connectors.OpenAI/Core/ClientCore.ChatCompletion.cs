@@ -30,19 +30,12 @@ internal partial class ClientCore
     /// <summary>
     /// <see cref="JsonSchemaMapperConfiguration"/> for JSON schema format for structured outputs.
     /// </summary>
-    /// <remarks>
-    /// <see cref="JsonSchemaMapperConfiguration.AdditionalProperties"/> should be always "false" for structured outputs.
-    /// More information here: <see href="https://platform.openai.com/docs/guides/structured-outputs/additionalproperties-false-must-always-be-set-in-objects"/>.
-    /// <see cref="JsonSchemaMapperConfiguration.AllPropertiesRequired"/> should be always "true" for structured outputs.
-    /// More information here: <see href="https://platform.openai.com/docs/guides/structured-outputs/all-fields-must-be-required"/>.
-    /// </remarks>
     private static readonly JsonSchemaMapperConfiguration s_jsonSchemaMapperConfiguration = new()
     {
         IncludeSchemaVersion = false,
         IncludeTypeInEnums = true,
         TreatNullObliviousAsNonNullable = true,
-        AdditionalProperties = false,
-        AllPropertiesRequired = true
+        TransformSchemaNode = OpenAIJsonSchemaTransformer.Transform
     };
 
     protected const string ModelProvider = "openai";
