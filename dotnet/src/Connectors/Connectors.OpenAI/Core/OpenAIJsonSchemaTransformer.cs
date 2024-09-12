@@ -44,7 +44,7 @@ internal static class OpenAIJsonSchemaTransformer
                 if (jsonSchemaObject.TryGetPropertyValue(PropertiesPropertyName, out var properties) &&
                     properties is JsonObject propertiesObject)
                 {
-                    var propertyNames = propertiesObject.Select(l => JsonValue.Create(l.Key)).ToArray();
+                    var propertyNames = propertiesObject.Select(l => (JsonNode)l.Key).ToArray();
 
                     jsonSchemaObject[RequiredPropertyName] = new JsonArray(propertyNames);
                 }
