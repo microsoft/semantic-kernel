@@ -1,17 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import logging
 from typing import ClassVar
 
-from azure.core.exceptions import ClientAuthenticationError
-from azure.identity import DefaultAzureCredential
 from pydantic import SecretStr
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.exceptions.service_exceptions import ServiceInvalidAuthError
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
-
-logging.basicConfig(level=logging.INFO)
+from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 
 
 class AzureOpenAISettings(KernelBaseSettings):
@@ -64,7 +60,9 @@ class AzureOpenAISettings(KernelBaseSettings):
                 (Env var AZURE_OPENAI_ENDPOINT)
     - api_version: str | None - The API version to use. The default value is "2024-02-01".
                 (Env var AZURE_OPENAI_API_VERSION)
-    - env_file_path: str | None - if provided, the .env settings are read from this file path location
+    - token_endpoint: str - The token endpoint to use to retrieve the authentication token.
+                The default value is "https://cognitiveservices.azure.com".
+                (Env var AZURE_OPENAI_TOKEN_ENDPOINT)
     """
 
     env_prefix: ClassVar[str] = "AZURE_OPENAI_"
@@ -77,28 +75,26 @@ class AzureOpenAISettings(KernelBaseSettings):
     base_url: HttpsUrl | None = None
     api_key: SecretStr | None = None
     api_version: str = DEFAULT_AZURE_API_VERSION
-    token_endpoint: str | None = None
+    token_endpoint: str = "https://cognitiveservices.azure.com"
 
-    def get_azure_token(self, token_endpoint: str | None = None) -> str | None:
-        """Retrieve an Azure Token for a given or default token endpoint.
+    def get_azure_openai_auth_token(self, token_endpoint: str | None = None) -> str | None:
+        """Retrieve a Microsoft Entra Auth Token for a given token endpoint for the use with Azure OpenAI.
+
+        The required role for the token is `Cognitive Services OpenAI Contributor`.
+        The token endpoint may be specified as an environment variable, via the .env
+        file or as an argument. If the token endpoint is not provided, the default is None.
+        The `token_endpoint` argument takes precedence over the `token_endpoint` attribute.
 
         Args:
-            token_endpoint: The token endpoint to use. Defaults to None.
+            token_endpoint: The token endpoint to use. Defaults to `https://cognitiveservices.azure.com`.
 
         Returns:
             The Azure token or None if the token could not be retrieved.
+
+        Raises:
+            ServiceInitializationError: If the token endpoint is not provided.
         """
         endpoint_to_use = token_endpoint or self.token_endpoint
-        if not endpoint_to_use:
-            raise ServiceInvalidAuthError(
-                "A token endpoint must be provided either in settings, as an environment variable, or as an argument."
-            )
-
-        credential = DefaultAzureCredential()
-
-        try:
-            auth_token = credential.get_token(endpoint_to_use)
-        except ClientAuthenticationError:
-            return None
-
-        return auth_token.token if auth_token else None
+        if endpoint_to_use is None:
+            raise ServiceInitializationError("Please provide a token endpoint to retrieve the authentication token.")
+        return get_entra_auth_token(endpoint_to_use)

@@ -38,7 +38,7 @@ async def test_azure_text_embedding_service_with_provided_client(kernel: Kernel)
     azure_openai_settings = AzureOpenAISettings.create()
     endpoint = azure_openai_settings.endpoint
     deployment_name = azure_openai_settings.embedding_deployment_name
-    ad_token = azure_openai_settings.get_azure_token()
+    ad_token = azure_openai_settings.get_azure_openai_auth_token()
     api_version = azure_openai_settings.api_version
 
     client = AsyncAzureOpenAI(

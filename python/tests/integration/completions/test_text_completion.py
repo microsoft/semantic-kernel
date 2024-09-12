@@ -131,7 +131,7 @@ class TestTextCompletion(CompletionTestBase):
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = azure_openai_settings.endpoint
         deployment_name = azure_openai_settings.text_deployment_name
-        ad_token = azure_openai_settings.get_azure_token()
+        ad_token = azure_openai_settings.get_azure_openai_auth_token()
         api_version = azure_openai_settings.api_version
         azure_custom_client = AzureTextCompletion(
             async_client=AsyncAzureOpenAI(
