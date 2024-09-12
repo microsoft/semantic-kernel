@@ -1,23 +1,23 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import patch
+from collections.abc import AsyncGenerator
+from functools import reduce
+from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 from opentelemetry.trace import StatusCode
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
 from semantic_kernel.utils.telemetry.model_diagnostics import gen_ai_attributes
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
-    CHAT_COMPLETION_OPERATION,
+    TEXT_COMPLETION_OPERATION,
     _messages_to_openai_format,
-    trace_chat_completion,
+    trace_streaming_text_completion,
 )
-from tests.unit.utils.model_diagnostics.conftest import MockChatCompletion
+from tests.unit.utils.model_diagnostics.conftest import MockTextCompletion
 
 pytestmark = pytest.mark.parametrize(
     "execution_settings, mock_response",
@@ -31,12 +31,11 @@ pytestmark = pytest.mark.parametrize(
                 }
             ),
             [
-                ChatMessageContent(
-                    role=AuthorRole.ASSISTANT,
+                StreamingTextContent(
+                    choice_index=0,
                     ai_model_id="ai_model_id",
-                    content="Test content",
+                    text="Test content",
                     metadata={"id": "test_id"},
-                    finish_reason=FinishReason.STOP,
                 )
             ],
             id="test_execution_settings_with_extension_data",
@@ -44,11 +43,11 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             PromptExecutionSettings(),
             [
-                ChatMessageContent(
-                    role=AuthorRole.ASSISTANT,
+                StreamingTextContent(
+                    choice_index=0,
                     ai_model_id="ai_model_id",
+                    text="Test content",
                     metadata={"id": "test_id"},
-                    finish_reason=FinishReason.STOP,
                 )
             ],
             id="test_execution_settings_no_extension_data",
@@ -56,25 +55,14 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             PromptExecutionSettings(),
             [
-                ChatMessageContent(
-                    role=AuthorRole.ASSISTANT,
+                StreamingTextContent(
+                    choice_index=0,
                     ai_model_id="ai_model_id",
+                    text="Test content",
                     metadata={},
-                    finish_reason=FinishReason.STOP,
                 )
             ],
-            id="test_chat_message_content_no_metadata",
-        ),
-        pytest.param(
-            PromptExecutionSettings(),
-            [
-                ChatMessageContent(
-                    role=AuthorRole.ASSISTANT,
-                    ai_model_id="ai_model_id",
-                    metadata={"id": "test_id"},
-                )
-            ],
-            id="test_chat_message_content_no_finish_reason",
+            id="test_text_content_no_metadata",
         ),
     ],
 )
@@ -82,36 +70,41 @@ pytestmark = pytest.mark.parametrize(
 
 @pytest.mark.asyncio
 @patch("opentelemetry.trace.INVALID_SPAN")  # When no tracer provider is available, the span will be an INVALID_SPAN
-async def test_trace_chat_completion(
+async def test_trace_streaming_text_completion(
     mock_span,
     execution_settings,
     mock_response,
-    chat_history,
+    prompt,
     model_diagnostics_unit_test_env,
 ):
     # Setup
-    chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
+    text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
+    iterable = MagicMock(spec=AsyncGenerator)
+    iterable.__aiter__.return_value = [mock_response]
 
-    with patch.object(MockChatCompletion, "_inner_get_chat_message_contents", return_value=mock_response):
+    with patch.object(MockTextCompletion, "_inner_get_streaming_text_contents", return_value=iterable):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
-        MockChatCompletion._inner_get_chat_message_contents = trace_chat_completion(
-            MockChatCompletion.MODEL_PROVIDER_NAME
-        )(chat_completion._inner_get_chat_message_contents)
+        MockTextCompletion._inner_get_streaming_text_contents = trace_streaming_text_completion(
+            MockTextCompletion.MODEL_PROVIDER_NAME
+        )(text_completion._inner_get_streaming_text_contents)
 
-        results: list[ChatMessageContent] = await chat_completion.get_chat_message_contents(
-            chat_history, execution_settings
-        )
+        updates = []
+        async for update in text_completion.get_streaming_text_contents(prompt=prompt, settings=execution_settings):
+            updates.append(update)
+        updates_flatten = [reduce(lambda x, y: x + y, update) for update in updates]
 
-        assert results == mock_response
+        assert updates_flatten == mock_response
 
         # Before the call to the model
         mock_span.set_attributes.assert_called_with({
-            gen_ai_attributes.OPERATION: CHAT_COMPLETION_OPERATION,
-            gen_ai_attributes.SYSTEM: MockChatCompletion.MODEL_PROVIDER_NAME,
-            gen_ai_attributes.MODEL: chat_completion.ai_model_id,
+            gen_ai_attributes.OPERATION: TEXT_COMPLETION_OPERATION,
+            gen_ai_attributes.SYSTEM: MockTextCompletion.MODEL_PROVIDER_NAME,
+            gen_ai_attributes.MODEL: text_completion.ai_model_id,
         })
 
-        mock_span.set_attribute.assert_any_call(gen_ai_attributes.ADDRESS, chat_completion.service_url())
+        with pytest.raises(AssertionError):
+            # The service_url attribute is not set for text completion
+            mock_span.set_attribute.assert_any_call(gen_ai_attributes.ADDRESS, ANY)
 
         # No all connectors take the same parameters
         if execution_settings.extension_data.get("max_tokens") is not None:
@@ -126,19 +119,13 @@ async def test_trace_chat_completion(
             mock_span.set_attribute.assert_any_call(gen_ai_attributes.TOP_P, execution_settings.extension_data["top_p"])
 
         mock_span.add_event.assert_any_call(
-            gen_ai_attributes.PROMPT_EVENT,
-            {gen_ai_attributes.PROMPT_EVENT_PROMPT: _messages_to_openai_format(chat_history)},
+            gen_ai_attributes.PROMPT_EVENT, {gen_ai_attributes.PROMPT_EVENT_PROMPT: prompt}
         )
 
         # After the call to the model
         # Not all connectors return the same metadata
         if mock_response[0].metadata.get("id") is not None:
             mock_span.set_attribute.assert_any_call(gen_ai_attributes.RESPONSE_ID, mock_response[0].metadata["id"])
-        if any(completion.finish_reason is not None for completion in mock_response):
-            mock_span.set_attribute.assert_any_call(
-                gen_ai_attributes.FINISH_REASON,
-                ",".join([str(completion.finish_reason) for completion in mock_response]),
-            )
 
         mock_span.add_event.assert_any_call(
             gen_ai_attributes.COMPLETION_EVENT,
@@ -148,24 +135,25 @@ async def test_trace_chat_completion(
 
 @pytest.mark.asyncio
 @patch("opentelemetry.trace.INVALID_SPAN")  # When no tracer provider is available, the span will be an INVALID_SPAN
-async def test_trace_chat_completion_exception(
+async def test_trace_streaming_text_completion_exception(
     mock_span,
     execution_settings,
     mock_response,
-    chat_history,
+    prompt,
     model_diagnostics_unit_test_env,
 ):
     # Setup
-    chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
+    text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
 
-    with patch.object(MockChatCompletion, "_inner_get_chat_message_contents", side_effect=ServiceResponseException()):
+    with patch.object(MockTextCompletion, "_inner_get_streaming_text_contents", side_effect=ServiceResponseException()):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
-        MockChatCompletion._inner_get_chat_message_contents = trace_chat_completion(
-            MockChatCompletion.MODEL_PROVIDER_NAME
-        )(chat_completion._inner_get_chat_message_contents)
+        MockTextCompletion._inner_get_streaming_text_contents = trace_streaming_text_completion(
+            MockTextCompletion.MODEL_PROVIDER_NAME
+        )(text_completion._inner_get_streaming_text_contents)
 
         with pytest.raises(ServiceResponseException):
-            await chat_completion.get_chat_message_contents(chat_history, execution_settings)
+            async for update in text_completion.get_streaming_text_contents(prompt=prompt, settings=execution_settings):
+                pass
 
         exception = ServiceResponseException()
         mock_span.set_attribute.assert_any_call(gen_ai_attributes.ERROR_TYPE, str(type(exception)))
