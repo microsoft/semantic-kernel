@@ -67,6 +67,10 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -205,6 +209,12 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
 =======
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
@@ -306,6 +316,12 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> upstream/main
