@@ -186,7 +186,7 @@ internal static class AssistantThreadActions
 
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
-        Dictionary<string, FunctionCallContent> functionSteps = [];
+        Dictionary<string, FunctionResultContent> functionSteps = [];
 
         do
         {
@@ -208,11 +208,6 @@ internal static class AssistantThreadActions
 
                 // Execute functions in parallel and post results at once.
                 FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
-                // Capture function-call for message processing
-                foreach (FunctionCallContent functionCall in functionCalls)
-                {
-                    functionSteps.Add(functionCall.Id!, functionCall);
-                }
                 if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
@@ -223,6 +218,12 @@ internal static class AssistantThreadActions
 
                     // Block for function results
                     FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
+
+                    // Capture function-call for message processing
+                    foreach (FunctionResultContent functionCall in functionResults) // %%%
+                    {
+                        functionSteps.Add(functionCall.CallId!, functionCall);
+                    }
 
                     // Process tool output
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
@@ -260,8 +261,8 @@ internal static class AssistantThreadActions
                         // Process function result content
                         else if (toolCall.ToolKind == RunStepToolCallKind.Function)
                         {
-                            FunctionCallContent functionStep = functionSteps[toolCall.ToolCallId]; // Function step always captured on invocation
-                            content = GenerateFunctionResultContent(agent.GetName(), functionStep, toolCall.FunctionOutput);
+                            FunctionResultContent functionStep = functionSteps[toolCall.ToolCallId]; // Function step always captured on invocation
+                            content = GenerateFunctionResultContent(agent.GetName(), [functionStep]);
                         }
 
                         if (content is not null)
@@ -428,7 +429,7 @@ internal static class AssistantThreadActions
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
                     asyncUpdates = client.SubmitToolOutputsToRunStreamingAsync(run, toolOutputs);
 
-                    messages.Add(GenerateFunctionResultsContent(agent.GetName(), functionResults));
+                    messages.Add(GenerateFunctionResultContent(agent.GetName(), functionResults));
                 }
             }
 
@@ -634,24 +635,7 @@ internal static class AssistantThreadActions
         return functionCallContent;
     }
 
-    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionCallContent functionCall, string result)
-    {
-        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
-        {
-            AuthorName = agentName
-        };
-
-        functionCallContent.Items.Add(
-            new FunctionResultContent(
-                functionCall.FunctionName,
-                functionCall.PluginName,
-                functionCall.Id,
-                result));
-
-        return functionCallContent;
-    }
-
-    private static ChatMessageContent GenerateFunctionResultsContent(string agentName, IList<FunctionResultContent> functionResults)
+    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionResultContent[] functionResults)
     {
         ChatMessageContent functionResultContent = new(AuthorRole.Tool, content: null)
         {
@@ -677,7 +661,7 @@ internal static class AssistantThreadActions
 
         for (int index = 0; index < functionCalls.Length; ++index)
         {
-            functionTasks[index] = functionCalls[index].InvokeAsync(agent.Kernel, cancellationToken);
+            functionTasks[index] = ExecuteFunctionStep(agent, functionCalls[index], cancellationToken);
         }
 
         return functionTasks;
