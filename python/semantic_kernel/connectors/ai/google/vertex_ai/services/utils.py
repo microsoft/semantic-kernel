@@ -2,7 +2,6 @@
 
 import json
 import logging
-from typing import Any
 
 from google.cloud.aiplatform_v1beta1.types.content import Blob, Candidate, Part
 from google.cloud.aiplatform_v1beta1.types.tool import FunctionCall, FunctionResponse
@@ -128,7 +127,7 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
                         name=gemini_function_name,
                         response={
                             "name": gemini_function_name,
-                            "content": item.result,
+                            "content": str(item.result),
                         },
                     )
                 )
@@ -137,7 +136,7 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
     return parts
 
 
-def kernel_function_metadata_to_vertex_ai_function_call_format(metadata: KernelFunctionMetadata) -> dict[str, Any]:
+def kernel_function_metadata_to_vertex_ai_function_call_format(metadata: KernelFunctionMetadata) -> FunctionDeclaration:
     """Convert the kernel function metadata to function calling format."""
     return FunctionDeclaration(
         name=format_kernel_function_fully_qualified_name_to_gemini_function_name(metadata),

@@ -8,23 +8,29 @@ from collections.abc import AsyncGenerator, Callable
 from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from opentelemetry.trace import Span, Tracer, get_tracer, use_span
+
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_calling_utils import merge_function_results
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
+from semantic_kernel.const import AUTO_FUNCTION_INVOCATION_SPAN_NAME
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+from semantic_kernel.utils.telemetry.model_diagnostics.gen_ai_attributes import AVAILABLE_FUNCTIONS
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+    from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
+tracer: Tracer = get_tracer(__name__)
 
 
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
@@ -128,42 +134,43 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             return await self._inner_get_chat_message_contents(chat_history, settings)
 
         # Auto invoke loop
-        for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
-            completions = await self._inner_get_chat_message_contents(chat_history, settings)
-            # Get the function call contents from the chat message. There is only one chat message,
-            # which should be checked in the `_verify_function_choice_settings` method.
-            function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
-            if (fc_count := len(function_calls)) == 0:
-                return completions
+        with use_span(self._start_auto_function_invocation_activity(kernel, settings), end_on_exit=True) as _:
+            for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
+                completions = await self._inner_get_chat_message_contents(chat_history, settings)
+                # Get the function call contents from the chat message. There is only one chat message,
+                # which should be checked in the `_verify_function_choice_settings` method.
+                function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
+                if (fc_count := len(function_calls)) == 0:
+                    return completions
 
-            # Since we have a function call, add the assistant's tool call message to the history
-            chat_history.add_message(message=completions[0])
+                # Since we have a function call, add the assistant's tool call message to the history
+                chat_history.add_message(message=completions[0])
 
-            logger.info(f"processing {fc_count} tool calls in parallel.")
+                logger.info(f"processing {fc_count} tool calls in parallel.")
 
-            # This function either updates the chat history with the function call results
-            # or returns the context, with terminate set to True in which case the loop will
-            # break and the function calls are returned.
-            results = await asyncio.gather(
-                *[
-                    kernel.invoke_function_call(
-                        function_call=function_call,
-                        chat_history=chat_history,
-                        arguments=kwargs.get("arguments", None),
-                        function_call_count=fc_count,
-                        request_index=request_index,
-                        function_behavior=settings.function_choice_behavior,
-                    )
-                    for function_call in function_calls
-                ],
-            )
+                # This function either updates the chat history with the function call results
+                # or returns the context, with terminate set to True in which case the loop will
+                # break and the function calls are returned.
+                results = await asyncio.gather(
+                    *[
+                        kernel.invoke_function_call(
+                            function_call=function_call,
+                            chat_history=chat_history,
+                            arguments=kwargs.get("arguments", None),
+                            function_call_count=fc_count,
+                            request_index=request_index,
+                            function_behavior=settings.function_choice_behavior,
+                        )
+                        for function_call in function_calls
+                    ],
+                )
 
-            if any(result.terminate for result in results if result is not None):
-                return merge_function_results(chat_history.messages[-len(results) :])
-        else:
-            # Do a final call, without function calling when the max has been reached.
-            self._reset_function_choice_settings(settings)
-            return await self._inner_get_chat_message_contents(chat_history, settings)
+                if any(result.terminate for result in results if result is not None):
+                    return merge_function_results(chat_history.messages[-len(results) :])
+            else:
+                # Do a final call, without function calling when the max has been reached.
+                self._reset_function_choice_settings(settings)
+                return await self._inner_get_chat_message_contents(chat_history, settings)
 
     async def get_chat_message_content(
         self, chat_history: "ChatHistory", settings: "PromptExecutionSettings", **kwargs: Any
@@ -247,51 +254,52 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             return
 
         # Auto invoke loop
-        for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
-            # Hold the messages, if there are more than one response, it will not be used, so we flatten
-            all_messages: list["StreamingChatMessageContent"] = []
-            function_call_returned = False
-            async for messages in self._inner_get_streaming_chat_message_contents(chat_history, settings):
-                for msg in messages:
-                    if msg is not None:
-                        all_messages.append(msg)
-                        if any(isinstance(item, FunctionCallContent) for item in msg.items):
-                            function_call_returned = True
-                yield messages
+        with use_span(self._start_auto_function_invocation_activity(kernel, settings), end_on_exit=True) as _:
+            for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
+                # Hold the messages, if there are more than one response, it will not be used, so we flatten
+                all_messages: list["StreamingChatMessageContent"] = []
+                function_call_returned = False
+                async for messages in self._inner_get_streaming_chat_message_contents(chat_history, settings):
+                    for msg in messages:
+                        if msg is not None:
+                            all_messages.append(msg)
+                            if any(isinstance(item, FunctionCallContent) for item in msg.items):
+                                function_call_returned = True
+                    yield messages
 
-            if not function_call_returned:
-                return
+                if not function_call_returned:
+                    return
 
-            # There is one FunctionCallContent response stream in the messages, combining now to create
-            # the full completion depending on the prompt, the message may contain both function call
-            # content and others
-            full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
-            function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
-            chat_history.add_message(message=full_completion)
+                # There is one FunctionCallContent response stream in the messages, combining now to create
+                # the full completion depending on the prompt, the message may contain both function call
+                # content and others
+                full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
+                function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
+                chat_history.add_message(message=full_completion)
 
-            fc_count = len(function_calls)
-            logger.info(f"processing {fc_count} tool calls in parallel.")
+                fc_count = len(function_calls)
+                logger.info(f"processing {fc_count} tool calls in parallel.")
 
-            # This function either updates the chat history with the function call results
-            # or returns the context, with terminate set to True in which case the loop will
-            # break and the function calls are returned.
-            results = await asyncio.gather(
-                *[
-                    kernel.invoke_function_call(
-                        function_call=function_call,
-                        chat_history=chat_history,
-                        arguments=kwargs.get("arguments", None),
-                        function_call_count=fc_count,
-                        request_index=request_index,
-                        function_behavior=settings.function_choice_behavior,
-                    )
-                    for function_call in function_calls
-                ],
-            )
+                # This function either updates the chat history with the function call results
+                # or returns the context, with terminate set to True in which case the loop will
+                # break and the function calls are returned.
+                results = await asyncio.gather(
+                    *[
+                        kernel.invoke_function_call(
+                            function_call=function_call,
+                            chat_history=chat_history,
+                            arguments=kwargs.get("arguments", None),
+                            function_call_count=fc_count,
+                            request_index=request_index,
+                            function_behavior=settings.function_choice_behavior,
+                        )
+                        for function_call in function_calls
+                    ],
+                )
 
-            if any(result.terminate for result in results if result is not None):
-                yield merge_function_results(chat_history.messages[-len(results) :])  # type: ignore
-                break
+                if any(result.terminate for result in results if result is not None):
+                    yield merge_function_results(chat_history.messages[-len(results) :])  # type: ignore
+                    break
 
     async def get_streaming_chat_message_content(
         self,
@@ -382,5 +390,23 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             settings (PromptExecutionSettings): The prompt execution settings to reset.
         """
         return
+
+    def _start_auto_function_invocation_activity(self, kernel: "Kernel", settings: "PromptExecutionSettings") -> Span:
+        """Start the auto function invocation activity.
+
+        Args:
+            kernel (Kernel): The kernel instance.
+            settings (PromptExecutionSettings): The prompt execution settings.
+        """
+        span = tracer.start_span(AUTO_FUNCTION_INVOCATION_SPAN_NAME)
+
+        if settings.function_choice_behavior is not None:
+            available_functions = settings.function_choice_behavior.get_config(kernel).available_functions or []
+            span.set_attribute(
+                AVAILABLE_FUNCTIONS,
+                ",".join([f.fully_qualified_name for f in available_functions]),
+            )
+
+        return span
 
     # endregion
