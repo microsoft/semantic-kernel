@@ -37,7 +37,7 @@ public sealed class OpenAIFileServiceTests
         await this.VerifyFileServiceLifecycleAsync(fileService, fileName, mimeType);
     }
 
-    [Theory]
+    [Theory(Skip = "Failing with Response status code does not indicate success: 400 (Bad Request).")]
     [InlineData("test_image_001.jpg", "image/jpeg")]
     [InlineData("test_content.txt", "text/plain")]
     public async Task AzureOpenAIFileServiceLifecycleAsync(string fileName, string mimeType)
