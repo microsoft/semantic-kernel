@@ -67,7 +67,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
                 var cosmosClient = new CosmosClient(connectionString, new()
                 {
                     ApplicationName = HttpHeaderConstant.Values.UserAgent,
-                    Serializer = new CosmosSystemTextJsonSerializer(options?.JsonSerializerOptions ?? JsonSerializerOptions.Default)
+                    UseSystemTextJsonSerializerWithOptions = options?.JsonSerializerOptions ?? JsonSerializerOptions.Default,
                 });
 
                 var database = cosmosClient.GetDatabase(databaseName);
