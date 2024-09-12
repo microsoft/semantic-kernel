@@ -59,22 +59,24 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agent
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
+
+        // Instructions, Name and Description properties defined via the config.
         ChatCompletionAgent agent =
             new(templateConfig, new KernelPromptTemplateFactory())
             {
-                Kernel = this.CreateKernelWithChatCompletion()
+                Kernel = this.CreateKernelWithChatCompletion(),
+                Arguments = new KernelArguments()
+                {
+                    { "topic", "Dog" },
+                    { "length", "3" },
+                }
             };
 
         /// Create the chat history to capture the agent interaction.
         ChatHistory chat = [];
 
         // Respond to user input
-        await InvokeAgentAsync(
-            new()
-            {
-                { "topic", "Dog" },
-                { "length", "3" },
-            });
+        await InvokeAgentAsync();
 
         await InvokeAgentAsync(
             new()
@@ -84,7 +86,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
             });
 
         // Local function to invoke agent and display the conversation messages.
-        async Task InvokeAgentAsync(KernelArguments arguments)
+        async Task InvokeAgentAsync(KernelArguments? arguments = null)
         {
             await foreach (ChatMessageContent content in agent.InvokeAsync(chat, arguments))
             {

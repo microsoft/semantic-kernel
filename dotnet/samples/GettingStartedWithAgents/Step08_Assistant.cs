@@ -73,6 +73,8 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agent
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
+
+        // Instructions, Name and Description properties defined via the config.
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateFromTemplateAsync(
                 clientProvider: this.GetClientProvider(),
