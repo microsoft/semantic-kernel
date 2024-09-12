@@ -71,17 +71,25 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         var providedEndpoint = endpoint ?? httpClient?.BaseAddress;
         if (providedEndpoint is not null)
         {
-            // As OpenAI Client automatically adds the chat completions endpoint, we remove it to avoid duplication.
-            const string PathAndQueryPattern = "v1/chat/completions";
-            var providedEndpointText = providedEndpoint.ToString();
-            int index = providedEndpointText.IndexOf(PathAndQueryPattern, StringComparison.OrdinalIgnoreCase);
-            if (index >= 0)
+            // If the provided endpoint does not provide a path, we add a version to the base path for compatibility
+            if (providedEndpoint.PathAndQuery.Length == 0 || providedEndpoint.PathAndQuery == "/")
             {
-                internalClientEndpoint = new Uri($"{providedEndpointText.Substring(0, index)}{providedEndpointText.Substring(index + PathAndQueryPattern.Length)}");
+                internalClientEndpoint = new Uri(providedEndpoint, "/v1/");
             }
             else
             {
-                internalClientEndpoint = providedEndpoint;
+                // As OpenAI Client automatically adds the chatcompletions endpoint, we remove it to avoid duplication.
+                const string PathAndQueryPattern = "/chat/completions";
+                var providedEndpointText = providedEndpoint.ToString();
+                int index = providedEndpointText.IndexOf(PathAndQueryPattern, StringComparison.OrdinalIgnoreCase);
+                if (index >= 0)
+                {
+                    internalClientEndpoint = new Uri($"{providedEndpointText.Substring(0, index)}{providedEndpointText.Substring(index + PathAndQueryPattern.Length)}");
+                }
+                else
+                {
+                    internalClientEndpoint = providedEndpoint;
+                }
             }
         }
 
