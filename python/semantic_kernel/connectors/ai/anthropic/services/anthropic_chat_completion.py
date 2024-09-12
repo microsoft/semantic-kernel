@@ -12,7 +12,6 @@ else:
 
 from anthropic import AsyncAnthropic
 from anthropic.types import (
-    ContentBlockStopEvent,
     Message,
     RawContentBlockDeltaEvent,
     RawMessageDeltaEvent,
@@ -123,7 +122,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         assert isinstance(settings, AnthropicChatPromptExecutionSettings)  # nosec
 
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
-        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        messages, parsed_system_message = self._prepare_chat_history_for_request(chat_history)
+        settings.messages = messages
+        if settings.system is None and parsed_system_message is not None:
+            settings.system = parsed_system_message
         try:
             response = await self.async_client.messages.create(**settings.prepare_settings_dict())
         except Exception as ex:
@@ -152,7 +154,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         assert isinstance(settings, AnthropicChatPromptExecutionSettings)  # nosec
 
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
-        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        messages, parsed_system_message = self._prepare_chat_history_for_request(chat_history)
+        settings.messages = messages
+        if settings.system is None and parsed_system_message is not None:
+            settings.system = parsed_system_message
         try:
             async with self.async_client.messages.stream(**settings.prepare_settings_dict()) as stream:
                 author_role = None
@@ -164,19 +169,58 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                         author_role = stream_event.message.role
                         metadata["usage"]["input_tokens"] = stream_event.message.usage.input_tokens
                         metadata["id"] = stream_event.message.id
+
                     elif isinstance(stream_event, (RawContentBlockDeltaEvent, RawMessageDeltaEvent)):
+                        if hasattr(stream_event, "index") and stream_event.index is not None:
+                            content_block_idx = stream_event.index
                         yield [
                             self._create_streaming_chat_message_content(
                                 stream_event, content_block_idx, author_role, metadata
                             )
                         ]
-                    elif isinstance(stream_event, ContentBlockStopEvent):
-                        content_block_idx += 1
         except Exception as ex:
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the request",
                 ex,
             ) from ex
+
+    def _prepare_chat_history_for_request(
+        self,
+        chat_history: "ChatHistory",
+        role_key: str = "role",
+        content_key: str = "content",
+    ) -> tuple[list[dict[str, Any]], str | None]:
+        """Prepare the chat history for an Anthropic request.
+
+        Allowing customization of the key names for role/author, and optionally overriding the role.
+
+        Args:
+            chat_history: The chat history to prepare.
+            role_key: The key name for the role/author.
+            content_key: The key name for the content/message.
+
+        Returns:
+            A tuple containing the prepared chat history and the first SYSTEM message content.
+        """
+        system_message_content = None
+        remaining_messages = []
+
+        system_message_found = False
+        for message in chat_history.messages:
+            # Skip system messages after the first one is found
+            if message.role == AuthorRole.SYSTEM:
+                if not system_message_found:
+                    system_message_content = message.content
+                    system_message_found = True
+                continue
+
+            # The API requires only role and content keys for the remaining messages
+            remaining_messages.append({
+                role_key: getattr(message, role_key),
+                content_key: getattr(message, content_key),
+            })
+
+        return remaining_messages, system_message_content
 
     # endregion
 
