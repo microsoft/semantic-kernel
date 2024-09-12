@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -76,6 +78,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         // Act and Assert
         await this.VerifyAgentTemplateAsync(capabilities, templateConfig);
+
+        // Act and Assert
+        await this.VerifyAgentTemplateAsync(capabilities, templateConfig, new KernelPromptTemplateFactory());
     }
 
     /// <summary>
@@ -385,13 +390,6 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Arrange
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
         // Act
-        threadId = await agent.CreateThreadAsync();
-        // Assert
-        Assert.NotNull(threadId);
-
-        // Arrange
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
-        // Act
         threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions());
         // Assert
         Assert.NotNull(threadId);
@@ -412,6 +410,25 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         bool isDeleted = await agent.DeleteThreadAsync("threadid");
         // Assert
         Assert.True(isDeleted);
+    }
+
+    /// <summary>
+    /// Verify the deleting a thread via <see cref="OpenAIAssistantAgent.DeleteThreadAsync"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentUploadFileAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.UploadFile);
+
+        // Act
+        using MemoryStream stream = new(Encoding.UTF8.GetBytes("test"));
+        string fileId = await agent.UploadFileAsync(stream, "text.txt");
+
+        // Assert
+        Assert.NotNull(fileId);
     }
 
     /// <summary>
@@ -440,6 +457,15 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.Single(messages);
         Assert.Single(messages[0].Items);
         Assert.IsType<TextContent>(messages[0].Items[0]);
+
+        // Arrange
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteThread);
+
+        // Act
+        await chat.ResetAsync();
+
+        // Assert
+        Assert.Empty(this._messageHandlerStub.ResponseQueue);
     }
 
     /// <summary>
@@ -578,6 +604,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         // Act (no exception)
         await agent.AddChatMessageAsync(agent.Id, new ChatMessageContent(AuthorRole.User, "hi"));
+        Assert.Empty(this._messageHandlerStub.ResponseQueue);
     }
 
     /// <summary>
@@ -860,13 +887,13 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             OpenAIClientProvider.ForOpenAI(apiKey: "fakekey", endpoint: null, this._httpClient);
 
     private void SetupResponse(HttpStatusCode statusCode, string content) =>
-        this._messageHandlerStub.SetupResponse(statusCode, content);
+        this._messageHandlerStub.SetupResponses(statusCode, content);
 
     private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantDefinition definition) =>
-        this._messageHandlerStub.SetupResponse(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(definition));
+        this._messageHandlerStub.SetupResponses(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(definition));
 
     private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantCapabilities capabilities, PromptTemplateConfig templateConfig) =>
-        this._messageHandlerStub.SetupResponse(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(capabilities, templateConfig));
+        this._messageHandlerStub.SetupResponses(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(capabilities, templateConfig));
 
     private void SetupResponses(HttpStatusCode statusCode, params string[] content) =>
         this._messageHandlerStub.SetupResponses(statusCode, content);

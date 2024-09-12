@@ -433,6 +433,18 @@ internal static class OpenAIAssistantResponseContent
         }
         """;
 
+    public static string UploadFile =
+        """
+        {
+          "id": "file-abc123",
+          "object": "file",
+          "bytes": 120000,
+          "created_at": 1677610602,
+          "filename": "test.txt",
+          "purpose": "assistant"
+        }
+        """;
+
     #endregion
 
     /// <summary>
