@@ -759,10 +759,14 @@ internal partial class ClientCore
     /// </summary>
     private static ChatResponseFormat GetJsonSchemaResponseFormat(Type formatObjectType)
     {
-        var schema = KernelJsonSchemaBuilder.Build(options: null, formatObjectType, configuration: s_jsonSchemaMapperConfiguration);
+        var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ?
+            Nullable.GetUnderlyingType(formatObjectType)! :
+            formatObjectType;
+
+        var schema = KernelJsonSchemaBuilder.Build(options: null, type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
-        return ChatResponseFormat.CreateJsonSchemaFormat(formatObjectType.Name, schemaBinaryData, strictSchemaEnabled: true);
+        return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, strictSchemaEnabled: true);
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>

@@ -1128,6 +1128,51 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("string", itemsProperties.GetProperty("Output").GetProperty("type").GetString());
     }
 
+    [Theory]
+    [InlineData(typeof(TestStruct))]
+    [InlineData(typeof(TestStruct?))]
+    public async Task GetChatMessageContentsSendsValidJsonSchemaWithStruct(Type responseFormatType)
+    {
+        // Arrange
+        var executionSettings = new OpenAIPromptExecutionSettings { ResponseFormat = responseFormatType };
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        var sut = new OpenAIChatCompletionService("model-id", "api-key", httpClient: this._httpClient);
+
+        // Act
+        await sut.GetChatMessageContentsAsync(this._chatHistoryForTest, executionSettings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var requestJsonElement = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var requestResponseFormat = requestJsonElement.GetProperty("response_format");
+
+        Assert.Equal("json_schema", requestResponseFormat.GetProperty("type").GetString());
+        Assert.Equal("TestStruct", requestResponseFormat.GetProperty("json_schema").GetProperty("name").GetString());
+        Assert.True(requestResponseFormat.GetProperty("json_schema").GetProperty("strict").GetBoolean());
+
+        var schema = requestResponseFormat.GetProperty("json_schema").GetProperty("schema");
+
+        Assert.Equal("object", schema.GetProperty("type").GetString());
+        Assert.False(schema.GetProperty("additionalProperties").GetBoolean());
+        Assert.Equal(2, schema.GetProperty("required").GetArrayLength());
+
+        var requiredParentProperties = new List<string?>
+        {
+            schema.GetProperty("required")[0].GetString(),
+            schema.GetProperty("required")[1].GetString(),
+        };
+
+        Assert.Contains("TextProperty", requiredParentProperties);
+        Assert.Contains("NumericProperty", requiredParentProperties);
+    }
+
     [Fact]
     public async Task GetChatMessageContentReturnsRefusal()
     {
@@ -1248,6 +1293,13 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         public string Explanation { get; set; }
 
         public string Output { get; set; }
+    }
+
+    private struct TestStruct
+    {
+        public string TextProperty { get; set; }
+
+        public int? NumericProperty { get; set; }
     }
 #pragma warning restore CS8618, CA1812
 }
