@@ -81,6 +81,9 @@ class SessionsPythonTool(KernelBaseModel):
         """Generates a default authentication callback using the ACA settings."""
         token = aca_settings.get_sessions_auth_token()
 
+        if token is None:
+            raise FunctionInitializationError("Failed to retrieve the client auth token.")
+
         def auth_callback() -> str:
             """Retrieve the client auth token."""
             return token
