@@ -64,7 +64,7 @@ public sealed class AssemblyAIAudioToTextExecutionSettings : PromptExecutionSett
             PollingInterval = this.PollingInterval,
             PollingTimeout = this.PollingTimeout,
             ServiceId = this.ServiceId,
-            TranscriptParams = this.TranscriptParams
+            TranscriptParams = this.TranscriptParams?.Clone()
         };
     }
 
