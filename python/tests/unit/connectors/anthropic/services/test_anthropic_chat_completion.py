@@ -29,6 +29,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceResponseException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -317,3 +318,34 @@ async def test_with_different_execution_settings_stream(
     ):
         continue
     assert mock_anthropic_client_completion_stream.messages.stream.call_args.kwargs["temperature"] == 0.2
+
+
+@pytest.mark.asyncio
+async def test_prepare_chat_history_for_request_with_system_message(
+    kernel: Kernel, mock_anthropic_client_completion_stream: MagicMock
+):
+    chat_history = ChatHistory()
+    chat_history.add_system_message("System message")
+    chat_history.add_user_message("User message")
+    chat_history.add_assistant_message("Assistant message")
+    chat_history.add_system_message("Another system message")
+
+    chat_completion_base = AnthropicChatCompletion(
+        ai_model_id="test_model_id",
+        service_id="test",
+        api_key="",
+        async_client=mock_anthropic_client_completion_stream,
+    )
+
+    remaining_messages, system_message_content = chat_completion_base._prepare_chat_history_for_request(
+        chat_history, role_key="role", content_key="content"
+    )
+
+    assert system_message_content == "System message"
+
+    assert remaining_messages == [
+        {"role": AuthorRole.USER, "content": "User message"},
+        {"role": AuthorRole.ASSISTANT, "content": "Assistant message"},
+    ]
+
+    assert not any(msg["role"] == AuthorRole.SYSTEM for msg in remaining_messages)
