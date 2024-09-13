@@ -5,8 +5,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
-using Qdrant.Client.Grpc;
 using Microsoft.SemanticKernel.Data;
+using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
