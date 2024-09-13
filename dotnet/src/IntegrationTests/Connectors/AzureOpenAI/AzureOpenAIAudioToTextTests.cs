@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
@@ -33,9 +34,9 @@ public sealed class AzureOpenAIAudioToTextTests()
 
         var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIAudioToText(
-                azureOpenAIConfiguration.DeploymentName,
-                azureOpenAIConfiguration.Endpoint,
-                azureOpenAIConfiguration.ApiKey)
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                credentials: new AzureCliCredential())
             .Build();
 
         var service = kernel.GetRequiredService<IAudioToTextService>();

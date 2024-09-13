@@ -11,7 +11,7 @@ def test_default_anthropic_chat_prompt_execution_settings():
     settings = AnthropicChatPromptExecutionSettings()
     assert settings.temperature is None
     assert settings.top_p is None
-    assert settings.max_tokens is None
+    assert settings.max_tokens == 1024
     assert settings.messages is None
 
 
@@ -34,7 +34,7 @@ def test_anthropic_chat_prompt_execution_settings_from_default_completion_config
     assert chat_settings.service_id == "test_service"
     assert chat_settings.temperature is None
     assert chat_settings.top_p is None
-    assert chat_settings.max_tokens is None
+    assert chat_settings.max_tokens == 1024
 
 
 def test_anthropic_chat_prompt_execution_settings_from_openai_prompt_execution_settings():
