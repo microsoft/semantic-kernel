@@ -144,7 +144,7 @@ public sealed class OpenAIJsonSchemaTransformerTests
 
         public Child Item { get; set; } = new();
 
-        public List<ChildNullable>? NullableItems { get; set; }
+        public List<ChildNullable?>? NullableItems { get; set; }
 
         public ChildNullable? NullableItem { get; set; }
 
