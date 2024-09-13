@@ -54,3 +54,11 @@ class AIServiceClientBase(KernelBaseModel, ABC):
             return settings
 
         return prompt_execution_settings_type.from_prompt_execution_settings(settings)
+
+    def service_url(self) -> str | None:
+        """Get the URL of the service.
+
+        Override this in the subclass to return the proper URL.
+        If the service does not have a URL, return None.
+        """
+        return None

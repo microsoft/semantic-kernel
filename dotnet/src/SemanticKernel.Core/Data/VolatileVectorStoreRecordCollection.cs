@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 [Experimental("SKEXP0001")]
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>, IVectorSearch<TRecord>
+public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : class
@@ -215,64 +215,64 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously - Need to satisfy the interface which returns IAsyncEnumerable
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync(VectorSearchQuery vectorQuery, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 #pragma warning restore CS1998
     {
+        Verify.NotNull(vector);
+
         if (this._firstVectorPropertyInfo is null)
         {
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
 
-        if (vectorQuery is VectorizedSearchQuery<ReadOnlyMemory<float>> floatVectorQuery)
+        if (vector is not ReadOnlyMemory<float> floatVector)
         {
-            // Resolve options and get requested vector property or first as default.
-            var internalOptions = floatVectorQuery.SearchOptions ?? Data.VectorSearchOptions.Default;
-            PropertyInfo? vectorPropertyInfo;
-            if (internalOptions.VectorFieldName is not null)
+            throw new NotSupportedException($"The provided vector type {vector.GetType().Name} is not supported by the Qdrant connector.");
+        }
+
+        // Resolve options and get requested vector property or first as default.
+        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+        PropertyInfo? vectorPropertyInfo;
+        if (internalOptions.VectorFieldName is not null)
+        {
+            if (!this._vectorPropertiesInfo.TryGetValue(internalOptions.VectorFieldName, out vectorPropertyInfo))
             {
-                if (!this._vectorPropertiesInfo.TryGetValue(internalOptions.VectorFieldName, out vectorPropertyInfo))
-                {
-                    throw new InvalidOperationException($"The collection does not have a vector field named '{internalOptions.VectorFieldName}', so vector search is not possible.");
-                }
-            }
-            else
-            {
-                vectorPropertyInfo = this._firstVectorPropertyInfo;
-            }
-
-            var vectorProperty = this._vectorProperties[vectorPropertyInfo.Name];
-
-            // Filter records using the provided filter before doing the vector comparison.
-            var filteredRecords = VolatileVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.Filter, this.GetCollectionDictionary().Values);
-
-            // Compare each vector in the filtered results with the provided vector.
-            var results = filteredRecords.Select<object, (object record, float score)?>((record) =>
-            {
-                var vector = (ReadOnlyMemory<float>?)vectorPropertyInfo.GetValue(record);
-                if (vector is not null)
-                {
-                    var score = VolatileVectorStoreCollectionSearchMapping.CompareVectors(floatVectorQuery.Vector.Span, vector.Value.Span, vectorProperty.DistanceFunction);
-                    var convertedscore = VolatileVectorStoreCollectionSearchMapping.ConvertScore(score, vectorProperty.DistanceFunction);
-                    return (record, convertedscore);
-                }
-
-                return null;
-            });
-
-            // Get the non-null results, sort them appropriately for the selected distance function and return the requested page.
-            var nonNullResults = results.Where(x => x.HasValue).Select(x => x!.Value);
-            var sortedScoredResults = VolatileVectorStoreCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction) ?
-                nonNullResults.OrderByDescending(x => x.score) :
-                nonNullResults.OrderBy(x => x.score);
-
-            foreach (var scoredResult in sortedScoredResults.Skip(internalOptions.Offset).Take(internalOptions.Limit))
-            {
-                yield return new VectorSearchResult<TRecord>((TRecord)scoredResult.record, scoredResult.score);
+                throw new InvalidOperationException($"The collection does not have a vector field named '{internalOptions.VectorFieldName}', so vector search is not possible.");
             }
         }
         else
         {
-            throw new NotSupportedException($"A {nameof(VectorSearchQuery)} of type {vectorQuery.QueryType} is not supported by the Volatile connector.");
+            vectorPropertyInfo = this._firstVectorPropertyInfo;
+        }
+
+        var vectorProperty = this._vectorProperties[vectorPropertyInfo.Name];
+
+        // Filter records using the provided filter before doing the vector comparison.
+        var filteredRecords = VolatileVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.Filter, this.GetCollectionDictionary().Values);
+
+        // Compare each vector in the filtered results with the provided vector.
+        var results = filteredRecords.Select<object, (object record, float score)?>((record) =>
+        {
+            var dbVector = (ReadOnlyMemory<float>?)vectorPropertyInfo.GetValue(record);
+            if (dbVector is not null)
+            {
+                var score = VolatileVectorStoreCollectionSearchMapping.CompareVectors(floatVector.Span, dbVector.Value.Span, vectorProperty.DistanceFunction);
+                var convertedscore = VolatileVectorStoreCollectionSearchMapping.ConvertScore(score, vectorProperty.DistanceFunction);
+                return (record, convertedscore);
+            }
+
+            return null;
+        });
+
+        // Get the non-null results, sort them appropriately for the selected distance function and return the requested page.
+        var nonNullResults = results.Where(x => x.HasValue).Select(x => x!.Value);
+        var sortedScoredResults = VolatileVectorStoreCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction) ?
+            nonNullResults.OrderByDescending(x => x.score) :
+            nonNullResults.OrderBy(x => x.score);
+
+        foreach (var scoredResult in sortedScoredResults.Skip(internalOptions.Offset).Take(internalOptions.Limit))
+        {
+            yield return new VectorSearchResult<TRecord>((TRecord)scoredResult.record, scoredResult.score);
         }
     }
 

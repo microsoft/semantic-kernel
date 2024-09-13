@@ -63,7 +63,9 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         await sut.CreateCollectionAsync();
         var upsertResult = await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync("Upsert-10", new GetRecordOptions { IncludeVectors = true });
-        var searchResult = await sut.SearchAsync(VectorSearchQuery.CreateQuery(new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }), new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 10) })).ToListAsync();
+        var searchResult = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
+            new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 10) }).ToListAsync();
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -341,11 +343,9 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelCode", 1) : new VectorSearchFilter().AnyTagEqualTo("Tags", "pool");
 
         // Act
-        var actual = await sut.SearchAsync(
-            VectorSearchQuery.CreateQuery(
-                vector,
-                new VectorSearchOptions { IncludeVectors = true, Filter = filter }))
-            .ToListAsync();
+        var actual = await sut.VectorizedSearchAsync(
+            vector,
+            new VectorSearchOptions { IncludeVectors = true, Filter = filter }).ToListAsync();
 
         // Assert
         Assert.Single(actual);

@@ -21,6 +21,7 @@ service_id = "mistral-ai-chat"
 kernel.add_service(AnthropicChatCompletion(service_id=service_id, ai_model_id="claude-3-opus-20240229"))
 
 settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
+settings.system = system_message
 settings.max_tokens = 2000
 settings.temperature = 0.7
 settings.top_p = 0.8
@@ -33,7 +34,7 @@ chat_function = kernel.add_function(
     prompt_execution_settings=settings,
 )
 
-chat_history = ChatHistory(system_message=None)
+chat_history = ChatHistory()
 chat_history.add_user_message("Hi there, who are you?")
 chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need")
 
@@ -61,7 +62,7 @@ async def chat() -> bool:
         )
         print("Mosscap:> ", end="")
         async for message in answer:
-            print(str(message[0]), end="")
+            print(str(message[0]), end="", flush=True)
         print("\n")
         return True
     answer = await kernel.invoke(

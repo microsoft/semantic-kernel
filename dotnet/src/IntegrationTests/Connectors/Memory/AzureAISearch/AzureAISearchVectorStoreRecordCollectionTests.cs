@@ -61,7 +61,13 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var upsertResult = await sut.UpsertAsync(hotel);
         var getResult = await sut.GetAsync("Upsert-1");
         var embedding = new ReadOnlyMemory<float>(AzureAISearchVectorStoreFixture.CreateTestEmbedding());
-        var searchResult = await sut.SearchAsync(VectorSearchQuery.CreateQuery(embedding, new VectorSearchOptions { IncludeVectors = true, Filter = new VectorSearchFilter().EqualTo("HotelName", "MyHotel Upsert-1") })).ToListAsync();
+        var searchResult = await sut.VectorizedSearchAsync(
+            embedding,
+            new VectorSearchOptions
+            {
+                IncludeVectors = true,
+                Filter = new VectorSearchFilter().EqualTo("HotelName", "MyHotel Upsert-1")
+            }).ToListAsync();
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -331,15 +337,14 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act.
         var filter = option == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "Hotel 3") : new VectorSearchFilter().AnyTagEqualTo("Tags", "bar");
-        var searchResults = sut.SearchAsync(
-            VectorSearchQuery.CreateQuery(
-                new ReadOnlyMemory<float>(AzureAISearchVectorStoreFixture.CreateTestEmbedding()),
-                new()
-                {
-                    IncludeVectors = includeVectors,
-                    VectorFieldName = "DescriptionEmbedding",
-                    Filter = filter,
-                }));
+        var searchResults = sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(AzureAISearchVectorStoreFixture.CreateTestEmbedding()),
+            new()
+            {
+                IncludeVectors = includeVectors,
+                VectorFieldName = "DescriptionEmbedding",
+                Filter = filter,
+            });
 
         // Assert.
         Assert.NotNull(searchResults);
@@ -372,19 +377,71 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act.
         var filter = new VectorSearchFilter().EqualTo("HotelName", "Hotel 3");
-        var searchResults = sut.SearchAsync(
-            VectorSearchQuery.CreateQuery(
-                "A hotel with great views.",
-                new()
-                {
-                    VectorFieldName = "DescriptionEmbedding",
-                    Filter = filter,
-                }));
+        var searchResults = sut.VectorizableTextSearchAsync(
+            "A hotel with great views.",
+            new()
+            {
+                VectorFieldName = "DescriptionEmbedding",
+                Filter = filter,
+            });
 
         // Assert.
         Assert.NotNull(searchResults);
         var searchResultsList = await searchResults.ToListAsync();
         Assert.Single(searchResultsList);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
+    {
+        // Arrange
+        var options = new AzureAISearchVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<string>>
+        {
+            VectorStoreRecordDefinition = fixture.VectorStoreRecordDefinition
+        };
+        var sut = new AzureAISearchVectorStoreRecordCollection<VectorStoreGenericDataModel<string>>(fixture.SearchIndexClient, fixture.TestIndexName, options);
+
+        // Act
+        var baseSetGetResult = await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true });
+        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<string>("GenericMapper-1")
+        {
+            Data =
+            {
+                { "HotelName", "Generic Mapper Hotel" },
+                { "Description", "This is a generic mapper hotel" },
+                { "Tags", new string[] { "generic" } },
+                { "ParkingIncluded", false },
+                { "LastRenovationDate", new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero) },
+                { "Rating", 3.6d }
+            },
+            Vectors =
+            {
+                { "DescriptionEmbedding", new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }) }
+            }
+        });
+        var localGetResult = await sut.GetAsync("GenericMapper-1", new GetRecordOptions { IncludeVectors = true });
+
+        // Assert
+        Assert.NotNull(baseSetGetResult);
+        Assert.Equal("Hotel 1", baseSetGetResult.Data["HotelName"]);
+        Assert.Equal("This is a great hotel", baseSetGetResult.Data["Description"]);
+        Assert.Equal(new[] { "pool", "air conditioning", "concierge" }, baseSetGetResult.Data["Tags"]);
+        Assert.False((bool?)baseSetGetResult.Data["ParkingIncluded"]);
+        Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), baseSetGetResult.Data["LastRenovationDate"]);
+        Assert.Equal(3.6d, baseSetGetResult.Data["Rating"]);
+        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)baseSetGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+
+        Assert.NotNull(upsertResult);
+        Assert.Equal("GenericMapper-1", upsertResult);
+
+        Assert.NotNull(localGetResult);
+        Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
+        Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
+        Assert.Equal(new[] { "generic" }, localGetResult.Data["Tags"]);
+        Assert.False((bool?)localGetResult.Data["ParkingIncluded"]);
+        Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), localGetResult.Data["LastRenovationDate"]);
+        Assert.Equal(3.6d, localGetResult.Data["Rating"]);
+        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
     }
 
     private static Hotel CreateTestHotel(string hotelId) => new()

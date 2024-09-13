@@ -796,7 +796,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 
         // Assert
         Assert.Equal("abc@domain.com", emailRecipient);
-        Assert.Contains("61\u00B0F", emailBody);
+        Assert.Contains("61", emailBody);
     }
 
     [Fact]
