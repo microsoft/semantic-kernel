@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Embeddings;
@@ -24,21 +24,73 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
     /// </summary>
     /// <param name="vectorSearch"></param>
     /// <param name="textEmbeddingGeneration"></param>
-    /// <param name="options"></param>
+    /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
+    /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a Trecord to a <see cref="TextSearchResult"/></param>
+    /// <param name="options">Options used to construct an instance of <see cref="VectorStoreRecordTextSearch{TRecord}"/></param>
     public VectorStoreRecordTextSearch(
         IVectorSearch<TRecord> vectorSearch,
         ITextEmbeddingGenerationService textEmbeddingGeneration,
+        ITextSearchStringMapper stringMapper,
+        ITextSearchResultMapper resultMapper,
         VectorStoreRecordTextSearchOptions? options = null)
     {
         Verify.NotNull(vectorSearch);
         Verify.NotNull(textEmbeddingGeneration);
+        Verify.NotNull(stringMapper);
+        Verify.NotNull(resultMapper);
 
         this._vectorSearch = vectorSearch;
         this._textEmbeddingGeneration = textEmbeddingGeneration;
+        this._stringMapper = stringMapper;
+        this._resultMapper = resultMapper;
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        IAsyncEnumerable<VectorSearchResult<TRecord>> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = null;
+
+        return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+    }
+
+    /// <inheritdoc/>
+    public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        IAsyncEnumerable<VectorSearchResult<TRecord>> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = null;
+
+        return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+    }
+
+    /// <inheritdoc/>
+    public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        IAsyncEnumerable<VectorSearchResult<TRecord>> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+
+        long? totalCount = null;
+
+        return new KernelSearchResults<object>(this.GetResultsAsRecordAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+    }
+
+    #region private
+    private readonly IVectorSearch<TRecord> _vectorSearch;
+    private readonly ITextEmbeddingGenerationService _textEmbeddingGeneration;
+    private readonly ITextSearchStringMapper _stringMapper;
+    private readonly ITextSearchResultMapper _resultMapper;
+
+    //private static readonly ITextSearchStringMapper s_defaultStringMapper = new DefaultTextSearchStringMapper();
+    //private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
+
+    /// <summary>
+    /// Execute a vactor search and return the results.
+    /// </summary>
+    /// <param name="query">What to search for.</param>
+    /// <param name="searchOptions">Search options.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    private async Task<IAsyncEnumerable<VectorSearchResult<TRecord>>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, CancellationToken cancellationToken)
     {
         searchOptions ??= new TextSearchOptions();
         var vectorSearchOptions = new VectorSearchOptions
@@ -52,43 +104,24 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
         var vectorQuery = VectorSearchQuery.CreateQuery(vector);
 
         var searchResponse = this._vectorSearch.SearchAsync(vectorQuery, vectorSearchOptions, cancellationToken);
-
-        long? totalCount = null;
-
-        return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return searchResponse;
     }
-
-    /// <inheritdoc/>
-    public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    #region private
-    private readonly IVectorSearch<TRecord> _vectorSearch;
-    private readonly ITextEmbeddingGenerationService _textEmbeddingGeneration;
 
     /// <summary>
-    /// Return the search results as instances of <see cref="BingWebPage"/>.
+    /// Return the search results as instances of TRecord.
     /// </summary>
     /// <param name="searchResponse">Response containing the web pages matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async IAsyncEnumerable<object> GetResultsAsWebPageAsync(BingSearchResponse<BingWebPage>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<object> GetResultsAsRecordAsync(IAsyncEnumerable<VectorSearchResult<TRecord>>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (searchResponse is null || searchResponse.WebPages is null || searchResponse.WebPages.Value is null)
+        if (searchResponse is null)
         {
             yield break;
         }
 
-        foreach (var webPage in searchResponse.WebPages.Value)
+        await foreach (var result in searchResponse.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            yield return webPage;
+            yield return result.Record;
             await Task.Yield();
         }
     }
@@ -100,14 +133,14 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
     /// <param name="cancellationToken">Cancellation token</param>
     private async IAsyncEnumerable<TextSearchResult> GetResultsAsTextSearchResultAsync(IAsyncEnumerable<VectorSearchResult<TRecord>>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (searchResponse is null || searchResponse.WebPages is null || searchResponse.WebPages.Value is null)
+        if (searchResponse is null)
         {
             yield break;
         }
 
-        foreach (var webPage in searchResponse.WebPages.Value)
+        await foreach (var result in searchResponse.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            yield return this._resultMapper.MapFromResultToTextSearchResult(webPage);
+            yield return this._resultMapper.MapFromResultToTextSearchResult(result.Record);
             await Task.Yield();
         }
     }
@@ -119,14 +152,14 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
     /// <param name="cancellationToken">Cancellation token</param>
     private async IAsyncEnumerable<string> GetResultsAsStringAsync(IAsyncEnumerable<VectorSearchResult<TRecord>>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (searchResponse is null || searchResponse.WebPages is null || searchResponse.WebPages.Value is null)
+        if (searchResponse is null)
         {
             yield break;
         }
 
-        foreach (var webPage in searchResponse.WebPages.Value)
+        await foreach (var result in searchResponse.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            yield return this._stringMapper.MapFromResultToString(webPage);
+            yield return this._stringMapper.MapFromResultToString(result.Record);
             await Task.Yield();
         }
     }
@@ -134,15 +167,10 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
     /// <summary>
     /// Return the results metadata.
     /// </summary>
-    /// <typeparam name="T">The .NET type that maps to the index schema. Instances of this type
-    /// can be retrieved as documents from the index.</typeparam>
     /// <param name="searchResponse">Response containing the documents matching the query.</param>
-    private static Dictionary<string, object?>? GetResultsMetadata<T>(IAsyncEnumerable<VectorSearchResult<TRecord>>? searchResponse) where T : class
+    private static Dictionary<string, object?>? GetResultsMetadata(IAsyncEnumerable<VectorSearchResult<TRecord>>? searchResponse)
     {
-        return new Dictionary<string, object?>()
-        {
-            { "AlteredQuery", searchResponse?.QueryContext?.AlteredQuery },
-        };
+        return [];
     }
 
     #endregion

@@ -21,20 +21,20 @@ public sealed class TextSearchOptions
     /// Default value is false.
     /// Not all text search implementations will support this option.
     /// </remarks>
-    public bool IncludeTotalCount { get; set; } = false;
+    public bool IncludeTotalCount { get; init; } = false;
 
     /// <summary>
     /// The filter expression to apply to the search query.
     /// </summary>
-    public TextSearchFilter? Filter { get; set; }
+    public TextSearchFilter? Filter { get; init; }
 
     /// <summary>
     /// Number of search results to return.
     /// </summary>
-    public int Count { get; set; } = DefaultCount;
+    public int Count { get; init; } = DefaultCount;
 
     /// <summary>
     /// The index of the first result to return.
     /// </summary>
-    public int Offset { get; set; } = 0;
+    public int Offset { get; init; } = 0;
 }
