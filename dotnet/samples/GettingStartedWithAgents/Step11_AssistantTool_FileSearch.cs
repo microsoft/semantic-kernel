@@ -62,7 +62,7 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
         finally
         {
             await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync(CancellationToken.None);
+            await agent.DeleteAsync();
             await vectorStoreClient.DeleteVectorStoreAsync(vectorStore);
             await fileClient.DeleteFileAsync(fileInfo.Id);
         }

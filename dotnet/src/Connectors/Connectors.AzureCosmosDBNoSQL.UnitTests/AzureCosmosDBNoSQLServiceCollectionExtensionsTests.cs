@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Reflection;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Http;
 using Moq;
 using Xunit;
 
@@ -32,5 +34,21 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
         // Assert
         Assert.NotNull(vectorStore);
         Assert.IsType<AzureCosmosDBNoSQLVectorStore>(vectorStore);
+    }
+
+    [Fact]
+    public void AddVectorStoreWithConnectionStringRegistersClass()
+    {
+        // Act
+        this._serviceCollection.AddAzureCosmosDBNoSQLVectorStore("AccountEndpoint=https://test.documents.azure.com:443/;AccountKey=mock;", "mydb");
+
+        var serviceProvider = this._serviceCollection.BuildServiceProvider();
+        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+
+        // Assert
+        Assert.NotNull(vectorStore);
+        Assert.IsType<AzureCosmosDBNoSQLVectorStore>(vectorStore);
+        var database = (Database)vectorStore.GetType().GetField("_database", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(vectorStore)!;
+        Assert.Equal(HttpHeaderConstant.Values.UserAgent, database.Client.ClientOptions.ApplicationName);
     }
 }

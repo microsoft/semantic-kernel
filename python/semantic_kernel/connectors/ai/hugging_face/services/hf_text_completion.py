@@ -4,7 +4,7 @@ import logging
 import sys
 from collections.abc import AsyncGenerator
 from threading import Thread
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -20,12 +20,18 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceResponseException
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_streaming_text_completion,
+    trace_text_completion,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class HuggingFaceTextCompletion(TextCompletionClientBase):
     """Hugging Face text completion service."""
+
+    MODEL_PROVIDER_NAME: ClassVar[str] = "huggingface"
 
     task: Literal["summarization", "text-generation", "text2text-generation"]
     device: str
@@ -79,20 +85,20 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             generator=generator,
         )
 
-    async def get_text_contents(
+    # region Overriding base class methods
+
+    # Override from AIServiceClientBase
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        return HuggingFacePromptExecutionSettings
+
+    @override
+    @trace_text_completion(MODEL_PROVIDER_NAME)
+    async def _inner_get_text_contents(
         self,
         prompt: str,
-        settings: PromptExecutionSettings,
+        settings: "PromptExecutionSettings",
     ) -> list[TextContent]:
-        """This is the method that is called from the kernel to get a response from a text-optimized LLM.
-
-        Args:
-            prompt (str): The prompt to send to the LLM.
-            settings (HuggingFacePromptExecutionSettings): Settings for the request.
-
-        Returns:
-            List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
-        """
         if not isinstance(settings, HuggingFacePromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, HuggingFacePromptExecutionSettings)  # nosec
@@ -101,41 +107,26 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             results = self.generator(prompt, **settings.prepare_settings_dict())
         except Exception as e:
             raise ServiceResponseException("Hugging Face completion failed") from e
+
         if isinstance(results, list):
             return [self._create_text_content(results, result) for result in results]
         return [self._create_text_content(results, results)]
 
-    def _create_text_content(self, response: Any, candidate: dict[str, str]) -> TextContent:
-        return TextContent(
-            inner_content=response,
-            ai_model_id=self.ai_model_id,
-            text=candidate["summary_text" if self.task == "summarization" else "generated_text"],
-        )
-
-    async def get_streaming_text_contents(
+    @override
+    @trace_streaming_text_completion(MODEL_PROVIDER_NAME)
+    async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
-        settings: PromptExecutionSettings,
+        settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
-        """Streams a text completion using a Hugging Face model.
-
-        Note that this method does not support multiple responses.
-
-        Args:
-            prompt (str): Prompt to complete.
-            settings (HuggingFacePromptExecutionSettings): Request settings.
-
-        Yields:
-            List[StreamingTextContent]: List of StreamingTextContent objects.
-        """
         if not isinstance(settings, HuggingFacePromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, HuggingFacePromptExecutionSettings)  # nosec
 
         if settings.num_return_sequences > 1:
             raise ServiceInvalidExecutionSettingsError(
-                "HuggingFace TextIteratorStreamer does not stream multiple responses in a parseable format. \
-                    If you need multiple responses, please use the complete method.",
+                "HuggingFace TextIteratorStreamer does not stream multiple responses in a parsable format."
+                " If you need multiple responses, please use the complete method.",
             )
         try:
             streamer = TextIteratorStreamer(AutoTokenizer.from_pretrained(self.ai_model_id))
@@ -156,7 +147,11 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         except Exception as e:
             raise ServiceResponseException("Hugging Face completion failed") from e
 
-    @override
-    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
-        """Create a request settings object."""
-        return HuggingFacePromptExecutionSettings
+    # endregion
+
+    def _create_text_content(self, response: Any, candidate: dict[str, str]) -> TextContent:
+        return TextContent(
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            text=candidate["summary_text" if self.task == "summarization" else "generated_text"],
+        )
