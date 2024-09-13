@@ -123,9 +123,8 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// Create a new settings object with the values from another settings object.
     /// </summary>
     /// <param name="executionSettings">Template configuration</param>
-    /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    public static OpenAITextToImageExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    public static OpenAITextToImageExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         if (executionSettings is null)
         {
