@@ -97,29 +97,6 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
     [Fact]
     // [Fact(Skip = "This test is for manual verification.")]
-    public async Task AssemblyAIAudioToTextWithStreamTestAsync()
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-        const string Filename = "test_audio.wav";
-
-        var apiKey = this.GetAssemblyAIApiKey();
-
-        var fileService = new AssemblyAIFileService(apiKey, httpClient: httpClient);
-        var sttService = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
-
-        await using Stream audioStream = File.OpenRead($"./TestData/{Filename}");
-        var audioData = await fileService.UploadAsync(audioStream);
-        // Act
-        var result = await sttService.GetTextContentsAsync(audioData);
-
-        // Assert
-        Console.WriteLine(result[0].Text);
-        Assert.Contains("The sun rises in the east and sets in the west.", result[0].Text, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithUriTestAsync()
     {
         // Arrange
@@ -166,15 +143,9 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
     {
         // Arrange
         using var httpClient = new HttpClient();
-        const string Filename = "test_audio.wav";
-
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var fileService = new AssemblyAIFileService(apiKey, httpClient: httpClient);
         var sttService = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
-
-        await using Stream audioStream = File.OpenRead($"./TestData/{Filename}");
-        var audioData = await fileService.UploadAsync(audioStream);
         var textExecutionSettings = new AssemblyAIAudioToTextExecutionSettings
         {
             TranscriptParams = new TranscriptOptionalParams
@@ -184,7 +155,10 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         };
 
         // Act
-        var result = await sttService.GetTextContentsAsync(audioData, textExecutionSettings);
+        var result = await sttService.GetTextContentsAsync(
+            new AudioContent(new Uri("https://storage.googleapis.com/aai-docs-samples/nbc.mp3")),
+            textExecutionSettings
+        );
 
         // Assert
         Console.WriteLine(result[0].Text);
