@@ -349,6 +349,12 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         }
     }
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     #region private
 
     private Task<HttpResponseMessage> ExecuteRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)

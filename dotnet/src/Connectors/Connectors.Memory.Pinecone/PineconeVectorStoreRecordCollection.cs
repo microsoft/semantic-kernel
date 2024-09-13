@@ -227,6 +227,12 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         }
     }
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
     {
         try

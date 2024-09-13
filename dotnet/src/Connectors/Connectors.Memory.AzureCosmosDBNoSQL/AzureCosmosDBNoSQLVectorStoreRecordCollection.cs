@@ -360,6 +360,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         }
     }
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     #endregion
 
     #region private

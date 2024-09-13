@@ -15,26 +15,26 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 internal static class RedisVectorStoreCollectionSearchMapping
 {
     /// <summary>
-    /// Build a Redis <see cref="Query"/> object from the given <see cref="VectorizedSearchQuery{TVector}"/>.
+    /// Build a Redis <see cref="Query"/> object from the given vector and options.
     /// </summary>
-    /// <param name="floatVectorQuery">The <see cref="VectorizedSearchQuery{TVector}"/> to build the Redis query from.</param>
+    /// <param name="floatVector">The vector to search the database with.</param>
+    /// <param name="options">The options to configure the behavior of the search.</param>
     /// <param name="storagePropertyNames">A mapping of data model property names to the names under which they are stored.</param>
     /// <param name="firstVectorPropertyName">The name of the first vector property in the data model.</param>
     /// <param name="selectFields">The set of fields to limit the results to. Null for all.</param>
     /// <returns>The <see cref="Query"/>.</returns>
-    public static Query BuildQuery(VectorizedSearchQuery<ReadOnlyMemory<float>> floatVectorQuery, Dictionary<string, string> storagePropertyNames, string firstVectorPropertyName, string[]? selectFields)
+    public static Query BuildQuery(ReadOnlyMemory<float> floatVector, VectorSearchOptions options, Dictionary<string, string> storagePropertyNames, string firstVectorPropertyName, string[]? selectFields)
     {
         // Resolve options.
-        var internalOptions = floatVectorQuery.SearchOptions ?? Data.VectorSearchOptions.Default;
-        var vectorPropertyName = ResolveVectorFieldName(internalOptions.VectorFieldName, storagePropertyNames, firstVectorPropertyName);
+        var vectorPropertyName = ResolveVectorFieldName(options.VectorFieldName, storagePropertyNames, firstVectorPropertyName);
 
         // Build search query.
-        var filter = RedisVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, storagePropertyNames);
-        var vectorBytes = MemoryMarshal.AsBytes(floatVectorQuery.Vector.Span).ToArray();
-        var query = new Query($"{filter}=>[KNN {internalOptions.Limit} @{vectorPropertyName} $embedding AS vector_score]")
+        var filter = RedisVectorStoreCollectionSearchMapping.BuildFilter(options.Filter, storagePropertyNames);
+        var vectorBytes = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
+        var query = new Query($"{filter}=>[KNN {options.Limit} @{vectorPropertyName} $embedding AS vector_score]")
             .AddParam("embedding", vectorBytes)
             .SetSortBy("vector_score")
-            .Limit(internalOptions.Offset, internalOptions.Limit)
+            .Limit(options.Offset, options.Limit)
             .SetWithScores(true)
             .Dialect(2);
 

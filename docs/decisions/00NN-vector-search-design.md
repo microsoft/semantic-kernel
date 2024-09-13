@@ -371,3 +371,7 @@ class AzureAISearchVectorStoreRecordCollection<TRecord>: IVectorStoreRecordColle
 ```
 
 ## Decision Outcome
+
+Chosen option: 4
+
+The consensus is that option 4 is easier to understand for users, where only functionality that works for all vector stores are exposed by default.
