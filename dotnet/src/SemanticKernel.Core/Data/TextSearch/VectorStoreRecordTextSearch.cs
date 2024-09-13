@@ -22,25 +22,49 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
     /// provided <see cref="IVectorSearch{TRecord}"/> for performing searches and
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
-    /// <param name="vectorSearch"></param>
+    /// <param name="vectorizedSearch"></param>
     /// <param name="textEmbeddingGeneration"></param>
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a Trecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreRecordTextSearch{TRecord}"/></param>
     public VectorStoreRecordTextSearch(
-        IVectorSearch<TRecord> vectorSearch,
+        IVectorizedSearch<TRecord> vectorizedSearch,
         ITextEmbeddingGenerationService textEmbeddingGeneration,
         ITextSearchStringMapper stringMapper,
         ITextSearchResultMapper resultMapper,
         VectorStoreRecordTextSearchOptions? options = null)
     {
-        Verify.NotNull(vectorSearch);
+        Verify.NotNull(vectorizedSearch);
         Verify.NotNull(textEmbeddingGeneration);
         Verify.NotNull(stringMapper);
         Verify.NotNull(resultMapper);
 
-        this._vectorSearch = vectorSearch;
+        this._vectorizedSearch = vectorizedSearch;
         this._textEmbeddingGeneration = textEmbeddingGeneration;
+        this._stringMapper = stringMapper;
+        this._resultMapper = resultMapper;
+    }
+
+    /// <summary>
+    /// Create an instance of the <see cref="VectorStoreRecordTextSearch{TRecord}"/> with the
+    /// provided <see cref="IVectorSearch{TRecord}"/> for performing searches and
+    /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
+    /// </summary>
+    /// <param name="vectorizableTextSearch"></param>
+    /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
+    /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a Trecord to a <see cref="TextSearchResult"/></param>
+    /// <param name="options">Options used to construct an instance of <see cref="VectorStoreRecordTextSearch{TRecord}"/></param>
+    public VectorStoreRecordTextSearch(
+        IVectorizableTextSearch<TRecord> vectorizableTextSearch,
+        ITextSearchStringMapper stringMapper,
+        ITextSearchResultMapper resultMapper,
+        VectorStoreRecordTextSearchOptions? options = null)
+    {
+        Verify.NotNull(vectorizableTextSearch);
+        Verify.NotNull(stringMapper);
+        Verify.NotNull(resultMapper);
+
+        this._vectorizableTextSearch = vectorizableTextSearch;
         this._stringMapper = stringMapper;
         this._resultMapper = resultMapper;
     }
@@ -76,8 +100,9 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
     }
 
     #region private
-    private readonly IVectorSearch<TRecord> _vectorSearch;
-    private readonly ITextEmbeddingGenerationService _textEmbeddingGeneration;
+    private readonly IVectorizedSearch<TRecord>? _vectorizedSearch;
+    private readonly ITextEmbeddingGenerationService? _textEmbeddingGeneration;
+    private readonly IVectorizableTextSearch<TRecord>? _vectorizableTextSearch;
     private readonly ITextSearchStringMapper _stringMapper;
     private readonly ITextSearchResultMapper _resultMapper;
 
@@ -103,7 +128,7 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
         var vector = await this._textEmbeddingGeneration.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
         var vectorQuery = VectorSearchQuery.CreateQuery(vector);
 
-        var searchResponse = this._vectorSearch.SearchAsync(vectorQuery, vectorSearchOptions, cancellationToken);
+        var searchResponse = this._vectorizedSearch.VectorizedSearchAsync(vectorQuery, vectorSearchOptions, cancellationToken);
         return searchResponse;
     }
 
