@@ -22,7 +22,7 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
     messages: list[dict[str, Any]] | None = None
     stream: bool | None = None
     system: str | None = None
-    max_tokens: int | None = Field(None, gt=0)
+    max_tokens: int | None = Field(default=1024, gt=0)
     temperature: float | None = Field(None, ge=0.0, le=2.0)
     stop_sequences: list[str] | None = None
     top_p: float | None = Field(None, ge=0.0, le=1.0)
@@ -33,5 +33,5 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
         """Check if the user is requesting function call behavior."""
         if self.function_choice_behavior is not None:
             raise NotImplementedError("Anthropic does not support function call behavior.")
-            
+
         return self
