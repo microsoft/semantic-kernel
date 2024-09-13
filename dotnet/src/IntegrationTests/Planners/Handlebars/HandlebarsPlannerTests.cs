@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -117,7 +118,7 @@ public sealed class HandlebarsPlannerTests
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey);
+            credentials: new AzureCliCredential());
 
         if (useEmbeddings)
         {
@@ -125,7 +126,7 @@ public sealed class HandlebarsPlannerTests
                 deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                 modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId,
                 endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+                credential: new AzureCliCredential());
         }
 
         return builder.Build();
