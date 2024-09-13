@@ -76,11 +76,9 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData("http://localhost:1234/chat/completions", "http://localhost:1234/chat/completions")] // Uses full path when provided
-    [InlineData("http://localhost:1234/v2/chat/completions", "http://localhost:1234/v2/chat/completions")] // Uses full path when provided
-    [InlineData("http://localhost:1234", "http://localhost:1234/v1/chat/completions")]
-    [InlineData("http://localhost:8080", "http://localhost:8080/v1/chat/completions")]
-    [InlineData("https://something:8080", "https://something:8080/v1/chat/completions")] // Accepts TLS Secured endpoints
+    [InlineData("http://localhost:1234", "http://localhost:1234/chat/completions")]
+    [InlineData("http://localhost:8080", "http://localhost:8080/chat/completions")]
+    [InlineData("https://something:8080", "https://something:8080/chat/completions")] // Accepts TLS Secured endpoints
     [InlineData("http://localhost:1234/v2", "http://localhost:1234/v2/chat/completions")]
     [InlineData("http://localhost:8080/v2", "http://localhost:8080/v2/chat/completions")]
     public async Task ItUsesCustomEndpointsWhenProvidedDirectlyAsync(string endpointProvided, string expectedEndpoint)
@@ -98,11 +96,9 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData("http://localhost:1234/chat/completions", "http://localhost:1234/chat/completions")] // Uses full path when provided
-    [InlineData("http://localhost:1234/v2/chat/completions", "http://localhost:1234/v2/chat/completions")] // Uses full path when provided
-    [InlineData("http://localhost:1234", "http://localhost:1234/v1/chat/completions")]
-    [InlineData("http://localhost:8080", "http://localhost:8080/v1/chat/completions")]
-    [InlineData("https://something:8080", "https://something:8080/v1/chat/completions")] // Accepts TLS Secured endpoints
+    [InlineData("http://localhost:1234", "http://localhost:1234/chat/completions")]
+    [InlineData("http://localhost:8080", "http://localhost:8080/chat/completions")]
+    [InlineData("https://something:8080", "https://something:8080/chat/completions")] // Accepts TLS Secured endpoints
     [InlineData("http://localhost:1234/v2", "http://localhost:1234/v2/chat/completions")]
     [InlineData("http://localhost:8080/v2", "http://localhost:8080/v2/chat/completions")]
     public async Task ItUsesCustomEndpointsWhenProvidedAsBaseAddressAsync(string endpointProvided, string expectedEndpoint)
@@ -133,7 +129,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         await chatCompletion.GetChatMessageContentsAsync(this._chatHistoryForTest, this._executionSettings);
 
         // Assert
-        Assert.Equal("http://localhost:12312/v1/chat/completions", this._messageHandlerStub.RequestUri!.ToString());
+        Assert.Equal("http://localhost:12312/chat/completions", this._messageHandlerStub.RequestUri!.ToString());
     }
 
     [Fact]
