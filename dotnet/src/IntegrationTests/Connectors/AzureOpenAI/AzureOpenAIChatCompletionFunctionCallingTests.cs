@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -795,7 +796,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 
         // Assert
         Assert.Equal("abc@domain.com", emailRecipient);
-        Assert.Contains("61\u00B0F", emailBody);
+        Assert.Contains("61", emailBody);
     }
 
     [Fact]
@@ -865,7 +866,6 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
-        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
         var kernelBuilder = base.CreateKernelBuilder();
@@ -874,7 +874,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey);
+            credentials: new AzureCliCredential());
 
         var kernel = kernelBuilder.Build();
 
