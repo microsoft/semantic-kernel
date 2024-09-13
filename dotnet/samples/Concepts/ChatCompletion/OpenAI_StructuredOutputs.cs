@@ -134,15 +134,7 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
         // Explanation: To isolate the term containing x, subtract 7 from both sides of the equation.
         // Output: 8x + 7 - 7 = -23 - 7
 
-        // Step #3
-        // Explanation: To solve for x, divide both sides of the equation by 8, which is the coefficient of x.
-        // Output: (8x)/8 = (-30)/8
-
-        // Step #4
-        // Explanation: This simplifies to x = -3.75, as dividing -30 by 8 gives -3.75.
-        // Output: x = -3.75
-
-        // Final answer: x = -3.75
+        // ...and more...
     }
 
     /// <summary>
@@ -188,6 +180,55 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
         // ...and more...
     }
 
+    /// <summary>
+    /// This method shows how to use Structured Outputs feature in combination with Function Calling.
+    /// <see cref="EmailPlugin.GetEmails"/> function returns a <see cref="List{T}"/> of email bodies.
+    /// As for final result, the desired response format should be <see cref="Email"/>, which contains additional <see cref="Email.Category"/> property.
+    /// This shows how the data can be transformed with AI using strong types without additional instructions in the prompt.
+    /// </summary>
+    [Fact]
+    public async Task StructuredOutputsWithFunctionCallingAsync()
+    {
+        // Initialize kernel.
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
+                modelId: "gpt-4o-2024-08-06",
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .Build();
+
+        kernel.ImportPluginFromType<EmailPlugin>();
+
+        // Specify response format by setting Type object in prompt execution settings and enable automatic function calling.
+        var executionSettings = new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = typeof(EmailResult),
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        // Send a request and pass prompt execution settings with desired response format.
+        var result = await kernel.InvokePromptAsync("Process the emails.", new(executionSettings));
+
+        // Deserialize string response to a strong type to access type properties.
+        // At this point, the deserialization logic won't fail, because EmailResult type was specified as desired response format.
+        // This ensures that response string is a serialized version of EmailResult type.
+        var emailResult = JsonSerializer.Deserialize<EmailResult>(result.ToString())!;
+
+        // Output the result.
+        this.OutputResult(emailResult);
+
+        // Output:
+
+        // Email #1
+        // Body: Let's catch up over coffee this Saturday. It's been too long!
+        // Category: Social
+
+        // Email #2
+        // Body: Please review the attached document and provide your feedback by EOD.
+        // Category: Work
+
+        // ...and more...
+    }
+
     #region private
 
     /// <summary>Math reasoning class that will be used as desired chat completion response format (structured output).</summary>
@@ -228,6 +269,36 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
         public List<string> Tags { get; set; }
     }
 
+    private sealed class EmailResult
+    {
+        public List<Email> Emails { get; set; }
+    }
+
+    private sealed class Email
+    {
+        public string Body { get; set; }
+
+        public string Category { get; set; }
+    }
+
+    /// <summary>Plugin to simulate RAG scenario and return collection of data.</summary>
+    private sealed class EmailPlugin
+    {
+        /// <summary>Function to simulate RAG scenario and return collection of data.</summary>
+        [KernelFunction]
+        private List<string> GetEmails()
+        {
+            return
+            [
+                "Hey, just checking in to see how you're doing!",
+                "Can you pick up some groceries on your way back home? We need milk and bread.",
+                "Happy Birthday! Wishing you a fantastic day filled with love and joy.",
+                "Let's catch up over coffee this Saturday. It's been too long!",
+                "Please review the attached document and provide your feedback by EOD.",
+            ];
+        }
+    }
+
     /// <summary>Helper method to output <see cref="MathReasoning"/> object content.</summary>
     private void OutputResult(MathReasoning mathReasoning)
     {
@@ -255,6 +326,19 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
             this.Output.WriteLine($"Rating: {movie.Rating}");
             this.Output.WriteLine($"Is available on streaming: {movie.IsAvailableOnStreaming}");
             this.Output.WriteLine($"Tags: {string.Join(",", movie.Tags)}");
+        }
+    }
+
+    /// <summary>Helper method to output <see cref="EmailResult"/> object content.</summary>
+    private void OutputResult(EmailResult emailResult)
+    {
+        for (var i = 0; i < emailResult.Emails.Count; i++)
+        {
+            var email = emailResult.Emails[i];
+
+            this.Output.WriteLine($"Email #{i + 1}");
+            this.Output.WriteLine($"Body: {email.Body}");
+            this.Output.WriteLine($"Category: {email.Category}");
         }
     }
 
