@@ -22,10 +22,9 @@ from mistralai.models.chat_completion import (
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
-from semantic_kernel.connectors.ai.function_calling_utils import (
-    kernel_function_metadata_to_function_call_format,
-)
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
@@ -43,12 +42,12 @@ from semantic_kernel.contents import (
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
-from semantic_kernel.exceptions.service_exceptions import (
-    ServiceInitializationError,
-    ServiceResponseException,
-)
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
 from semantic_kernel.utils.experimental_decorator import experimental_class
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_chat_completion,
+    trace_streaming_chat_completion,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -113,6 +112,14 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         """Create a request settings object."""
         return MistralAIChatPromptExecutionSettings
 
+    # Override from AIServiceClientBase
+    @override
+    def service_url(self) -> str | None:
+        if hasattr(self.async_client, "_endpoint"):
+            # Best effort to get the endpoint
+            return self.async_client._endpoint
+        return None
+
     @override
     @trace_chat_completion(MistralAIBase.MODEL_PROVIDER_NAME)
     async def _inner_get_chat_message_contents(
@@ -139,6 +146,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
 
     @override
+    @trace_streaming_chat_completion(MistralAIBase.MODEL_PROVIDER_NAME)
     async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
@@ -226,7 +234,12 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         }
         # Check if usage exists and has a value, then add it to the metadata
         if hasattr(response, "usage") and response.usage is not None:
-            metadata["usage"] = response.usage
+            metadata["usage"] = (
+                CompletionUsage(
+                    prompt_tokens=response.usage.prompt_tokens,
+                    completion_tokens=response.usage.completion_tokens,
+                ),
+            )
 
         return metadata
 
