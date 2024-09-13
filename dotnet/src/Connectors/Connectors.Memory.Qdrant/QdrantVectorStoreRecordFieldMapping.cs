@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
 using Qdrant.Client.Grpc;
 using Microsoft.SemanticKernel.Data;
-using System;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
