@@ -38,4 +38,8 @@
     <PackageReference Include="OpenAI" />
     <PackageReference Include="System.ClientModel" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="TextToImage\" />
+  </ItemGroup>
 </Project>

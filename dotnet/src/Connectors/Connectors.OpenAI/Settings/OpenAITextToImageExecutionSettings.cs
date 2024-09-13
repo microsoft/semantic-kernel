@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
+using OpenAI.Images;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -13,35 +14,29 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
 {
-    private const int DefaultWidth = 1024;
-    private const int DefaultHeight = 1024;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAITextToImageExecutionSettings"/> class.
     /// </summary>
     public OpenAITextToImageExecutionSettings()
     {
-        this.Width = DefaultWidth;
-        this.Height = DefaultHeight;
     }
     /// <summary>
-    /// Width of the generated image.
+    /// Optional width and height of the generated image.
     /// </summary>
-    public int Width
+    public (int Width, int Height)? Size
     {
-        get => this._width;
+        get => this._size;
 
         set
         {
             this.ThrowIfFrozen();
-            this._width = value;
+            this._size = value;
         }
     }
 
     /// <summary>
-    /// The quality of the image that will be generated.
-    /// `hd` creates images with finer details and greater consistency across the image.
-    /// This param is only supported for dall-e-3.
+    /// The quality of the image that will be generated. Defaults to "standard"
+    /// "hd" or "high" creates images with finer details and greater consistency. This param is only supported for dall-e-3.
     /// </summary>
     public string? Quality
     {
@@ -51,21 +46,6 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._quality = value;
-        }
-    }
-
-    /// <summary>
-    /// The number of images to generate. Must be between 1 and 10.
-    /// For dall-e-3, only ImageCount = 1 is supported.
-    /// </summary>
-    public int? ImageCount
-    {
-        get => this._imageCount;
-
-        set
-        {
-            this.ThrowIfFrozen();
-            this._imageCount = value;
         }
     }
 
@@ -87,16 +67,33 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// Height of the generated image.
+    /// The format in which the generated images are returned.
+    /// Can be a <see cref="GeneratedImageFormat"/> or a string where:
+    /// <list type="bullet">
+    /// <item>Url = "url" or "uri".</item>
+    /// <item>Base64 = "b64_json" or "bytes".</item>
+    /// </list>
     /// </summary>
-    public int Height
+    public object? ResponseFormat
     {
-        get => this._height;
-
+        get => this._responseFormat;
         set
         {
             this.ThrowIfFrozen();
-            this._height = value;
+            this._responseFormat = value;
+        }
+    }
+
+    /// <summary>
+    /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
+    /// </summary>
+    public string? EndUserId
+    {
+        get => this._endUserId;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._endUserId = value;
         }
     }
 
@@ -118,8 +115,7 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
         {
             ModelId = this.ModelId,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
-            Width = this.Width,
-            Height = this.Height,
+            Size = this.Size
         };
     }
 
@@ -149,11 +145,11 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
 
     #region private ================================================================================
 
-    private int _width;
-    private int _height;
-    private int? _imageCount;
+    private (int Width, int Height)? _size;
     private string? _quality;
     private string? _style;
+    private object? _responseFormat;
+    private string? _endUserId;
 
     #endregion
 }
