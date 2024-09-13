@@ -6,7 +6,7 @@ using System.Threading;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Contains a method for doing a vector search on a vector store.
+/// Contains a method for doing a vector search using a vector.
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
 public interface IVectorizedSearch<TRecord>

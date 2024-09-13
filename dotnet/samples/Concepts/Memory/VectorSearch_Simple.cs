@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Memory.VectorStoreFixtures;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
-using Qdrant.Client;
 
 namespace Memory;
 
@@ -14,13 +11,11 @@ namespace Memory;
 ///
 /// The example shows the following steps:
 /// 1. Create an embedding generator.
-/// 2. Create a Qdrant Vector Store.
+/// 2. Create a Volatile Vector Store.
 /// 3. Ingest some data into the vector store.
 /// 4. Search the vector store with various text and filtering options.
-///
-/// You need a local instance of Docker running, since the associated fixture will try and start a Qdrant container in the local docker instance to run against.
 /// </summary>
-public class VectorSearch_Simple(ITestOutputHelper output, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
+public class VectorSearch_Simple(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task ExampleAsync()
@@ -32,8 +27,7 @@ public class VectorSearch_Simple(ITestOutputHelper output, VectorStoreQdrantCont
                 TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
 
         // Initiate the docker container and construct the vector store.
-        await qdrantFixture.ManualInitializeAsync();
-        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"));
+        var vectorStore = new VolatileVectorStore();
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<ulong, Glossary>("skglossary");
