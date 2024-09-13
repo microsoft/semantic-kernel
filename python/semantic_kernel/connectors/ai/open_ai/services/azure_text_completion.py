@@ -86,7 +86,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             base_url=azure_openai_settings.base_url,
             api_version=azure_openai_settings.api_version,
             service_id=service_id,
-            api_key=None,  # Simulated, will revert
+            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
