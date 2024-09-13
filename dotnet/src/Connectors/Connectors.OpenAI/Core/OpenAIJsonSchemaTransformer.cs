@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
 using JsonSchemaMapper;
@@ -29,13 +29,11 @@ internal static class OpenAIJsonSchemaTransformer
     internal static JsonNode Transform(JsonSchemaGenerationContext context, JsonNode schema)
     {
         // Transform schema if node is object only.
-        if (schema is JsonObject jsonSchemaObject &&
-            jsonSchemaObject.TryGetPropertyValue(TypePropertyName, out var typeProperty) &&
-            typeProperty is not null)
+        if (schema is JsonObject jsonSchemaObject)
         {
-            var type = typeProperty.GetValue<string>();
+            var types = GetTypes(jsonSchemaObject);
 
-            if (type.Equals(ObjectValueName, StringComparison.OrdinalIgnoreCase))
+            if (types is not null && types.Contains(ObjectValueName))
             {
                 // Set "additionalProperties" to "false".
                 jsonSchemaObject[AdditionalPropertiesPropertyName] = false;
@@ -52,5 +50,22 @@ internal static class OpenAIJsonSchemaTransformer
         }
 
         return schema;
+    }
+
+    private static List<string?>? GetTypes(JsonObject jsonObject)
+    {
+        if (jsonObject.TryGetPropertyValue(TypePropertyName, out var typeProperty) && typeProperty is not null)
+        {
+            // For cases when "type" has an array value (e.g "type": "["object", "null"]").
+            if (typeProperty is JsonArray nodeArray)
+            {
+                return nodeArray.ToArray().Select(element => element?.GetValue<string>()).ToList();
+            }
+
+            // Case when "type" has a string value (e.g. "type": "object").
+            return [typeProperty.GetValue<string>()];
+        }
+
+        return null;
     }
 }
