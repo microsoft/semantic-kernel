@@ -68,6 +68,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 
 <<<<<<< Updated upstream
     MODEL_PROVIDER_NAME: ClassVar[str] = "anthropic"
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
 
     async_client: AsyncAnthropic
 
@@ -132,6 +133,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             ai_model_id=anthropic_settings.chat_model_id,
         )
 
+<<<<<<< main
 <<<<<<< Updated upstream
     @override
     @trace_chat_completion(MODEL_PROVIDER_NAME)
@@ -157,13 +159,27 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         Returns:
             The completion result(s).
         """
+=======
+    # region Overriding base class methods
+
+    # Override from AIServiceClientBase
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        return AnthropicChatPromptExecutionSettings
+
+    @override
+    @trace_chat_completion(MODEL_PROVIDER_NAME)
+    async def _inner_get_chat_message_contents(
+        self,
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+    ) -> list["ChatMessageContent"]:
+>>>>>>> upstream/main
         if not isinstance(settings, AnthropicChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, AnthropicChatPromptExecutionSettings)  # nosec
 
-        if not settings.ai_model_id:
-            settings.ai_model_id = self.ai_model_id
-
+        settings.ai_model_id = settings.ai_model_id or self.ai_model_id
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         try:
             response = await self.async_client.messages.create(**settings.prepare_settings_dict())
@@ -188,8 +204,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             self._create_chat_message_content(response, content_block, metadata) for content_block in response.content
         ]
 
-    async def get_streaming_chat_message_contents(
+    @override
+    async def _inner_get_streaming_chat_message_contents(
         self,
+<<<<<<< main
         chat_history: ChatHistory,
         settings: PromptExecutionSettings,
         **kwargs: Any,
@@ -215,13 +233,16 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         Yields:
             A stream of StreamingChatMessageContent.
         """
+=======
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+    ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
+>>>>>>> upstream/main
         if not isinstance(settings, AnthropicChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, AnthropicChatPromptExecutionSettings)  # nosec
 
-        if not settings.ai_model_id:
-            settings.ai_model_id = self.ai_model_id
-
+        settings.ai_model_id = settings.ai_model_id or self.ai_model_id
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         try:
             async with self.async_client.messages.stream(**settings.prepare_settings_dict()) as stream:
@@ -253,12 +274,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
                     elif isinstance(stream_event, ContentBlockStopEvent):
                         content_block_idx += 1
-
         except Exception as ex:
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the request",
                 ex,
             ) from ex
+
+    # endregion
 
     def _create_chat_message_content(
 <<<<<<< Updated upstream
@@ -345,6 +367,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             finish_reason=finish_reason,
             items=items,
         )
+<<<<<<< main
 
     def get_prompt_execution_settings_class(self) -> "type[AnthropicChatPromptExecutionSettings]":
         """Create a request settings object."""
@@ -353,3 +376,5 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 =======
     
 >>>>>>> Stashed changes
+=======
+>>>>>>> upstream/main

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -64,6 +64,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         catch (NullReferenceException)
         {
             // Temporary bugfix for: https://github.com/openai/openai-dotnet/issues/198
+            // Temporary workaround for OpenAI SDK Bug here: https://github.com/openai/openai-dotnet/issues/198
             // TODO: Remove this try-catch block once the bug is fixed.
         }
     }

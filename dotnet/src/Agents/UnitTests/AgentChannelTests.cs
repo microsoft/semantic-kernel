@@ -1,12 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
-using System.Collections.Generic;
+// Copyright (c) Microsoft. All rights reserved.
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests;
@@ -25,11 +22,13 @@ public class AgentChannelTests
     {
         // Arrange
         TestChannel channel = new();
+        MockChannel channel = new();
         // Assert
         Assert.Equal(0, channel.InvokeCount);
 
         // Act
         var messages = channel.InvokeAgentAsync(new MockAgent()).ToArrayAsync();
+        var messages = await channel.InvokeAgentAsync(new MockAgent()).ToArrayAsync();
         // Assert
         Assert.Equal(1, channel.InvokeCount);
 
@@ -75,4 +74,9 @@ public class AgentChannelTests
     }
 
     private sealed class NextAgent : MockAgent;
+        Mock<Agent> mockAgent = new();
+        await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAgentAsync(mockAgent.Object).ToArrayAsync().AsTask());
+        // Assert
+        Assert.Equal(1, channel.InvokeCount);
+    }
 }
