@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from typing import Any, Literal
+from typing import Literal
 
 from pydantic import Field
 
@@ -26,6 +27,7 @@ class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
     temperature: float | None = Field(None, ge=0.0, le=1.0)
     top_p: float | None = Field(None, ge=0.0, le=1.0)
     extra_parameters: dict[str, Any] | None = None
+    extra_parameters: dict[str, str] | None = None
 
 
 @experimental_class

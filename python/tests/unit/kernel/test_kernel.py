@@ -37,6 +37,11 @@ from semantic_kernel.exceptions.kernel_exceptions import (
     KernelPluginNotFoundError,
     OperationCancelledException,
 )
+    FunctionCallInvalidArgumentsException,
+    KernelFunctionAlreadyExistsError,
+    KernelServiceNotFoundError,
+)
+from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
 from semantic_kernel.exceptions.template_engine_exceptions import TemplateSyntaxError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -412,6 +417,17 @@ async def test_invoke_function_call_non_allowed_func_throws(
     kernel: Kernel, get_tool_call_mock
 ):
     tool_call_mock = get_tool_call_mock
+async def test_invoke_function_call(kernel: Kernel):
+    tool_call_mock = MagicMock(spec=FunctionCallContent)
+    tool_call_mock.split_name_dict.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.to_kernel_arguments.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.name = "test_function"
+    tool_call_mock.arguments = {"arg_name": "arg_value"}
+    tool_call_mock.ai_model_id = None
+    tool_call_mock.metadata = {}
+    tool_call_mock.index = 0
+    tool_call_mock.parse_arguments.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.id = "test_id"
     result_mock = MagicMock(spec=ChatMessageContent)
     result_mock.items = [tool_call_mock]
     chat_history_mock = MagicMock(spec=ChatHistory)
@@ -420,6 +436,9 @@ async def test_invoke_function_call_non_allowed_func_throws(
     func_meta = KernelFunctionMetadata(name="function", is_prompt=False)
     func_mock.metadata = func_meta
     func_mock.name = "function"
+    func_meta = KernelFunctionMetadata(name="test_function", is_prompt=False)
+    func_mock.metadata = func_meta
+    func_mock.name = "test_function"
     func_result = FunctionResult(value="Function result", function=func_meta)
     func_mock.invoke = MagicMock(return_value=func_result)
 
@@ -509,6 +528,10 @@ async def test_invoke_function_call_with_continuation_on_malformed_arguments(
     tool_call_mock.name = "test-function"
     tool_call_mock.function_name = "function"
     tool_call_mock.plugin_name = "test"
+async def test_invoke_function_call_with_continuation_on_malformed_arguments(kernel: Kernel):
+    tool_call_mock = MagicMock(spec=FunctionCallContent)
+    tool_call_mock.to_kernel_arguments.side_effect = FunctionCallInvalidArgumentsException("Malformed arguments")
+    tool_call_mock.name = "test_function"
     tool_call_mock.arguments = {"arg_name": "arg_value"}
     tool_call_mock.ai_model_id = None
     tool_call_mock.metadata = {}
@@ -523,6 +546,9 @@ async def test_invoke_function_call_with_continuation_on_malformed_arguments(
     func_meta = KernelFunctionMetadata(name="function", is_prompt=False)
     func_mock.metadata = func_meta
     func_mock.name = "function"
+    func_meta = KernelFunctionMetadata(name="test_function", is_prompt=False)
+    func_mock.metadata = func_meta
+    func_mock.name = "test_function"
     func_result = FunctionResult(value="Function result", function=func_meta)
     func_mock.invoke = AsyncMock(return_value=func_result)
     arguments = KernelArguments()
@@ -539,6 +565,7 @@ async def test_invoke_function_call_with_continuation_on_malformed_arguments(
 
     logger_mock.info.assert_any_call(
         "Received invalid arguments for function test-function: Malformed arguments. Trying tool call again."
+        "Received invalid arguments for function test_function: Malformed arguments. Trying tool call again."
     )
 
     add_message_calls = chat_history_mock.add_message.call_args_list
@@ -547,6 +574,7 @@ async def test_invoke_function_call_with_continuation_on_malformed_arguments(
         == "The tool call arguments are malformed. Arguments must be in JSON format. Please try again."  # noqa: E501
         and call[1]["message"].items[0].id == "test_id"
         and call[1]["message"].items[0].name == "test-function"
+        and call[1]["message"].items[0].name == "test_function"
         for call in add_message_calls
     ), "Expected call to add_message not found with the expected message content and metadata."
 

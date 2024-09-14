@@ -91,6 +91,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     temperature=0.7,
     top_p=0.8,
     function_choice_behavior=FunctionChoiceBehavior.Auto(auto_invoke=True),
+    function_choice_behavior="auto",
 )
 
 history = ChatHistory()

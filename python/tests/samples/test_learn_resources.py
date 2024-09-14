@@ -17,6 +17,7 @@ from samples.learn_resources.templates import main as templates
 from samples.learn_resources.using_the_kernel import main as using_the_kernel
 from samples.learn_resources.your_first_prompt import main as your_first_prompt
 from tests.samples.samples_utils import retry
+from tests.samples.test_samples_utils import retry
 
 
 @mark.asyncio
@@ -60,3 +61,6 @@ async def test_learn_resources(func, responses, monkeypatch):
         return
 
     await retry(lambda: func(), reset=reset)
+        await retry(lambda: func(delay=10))
+        return
+    await retry(lambda: func())

@@ -230,4 +230,5 @@ def test_fc_dump_json(function_call: FunctionCallContent):
     assert (
         dumped
         == """{"metadata":{},"content_type":"function_call","id":"test","name":"Test-Function","function_name":"Function","plugin_name":"Test","arguments":"{\\"input\\": \\"world\\"}"}"""  # noqa: E501
+        == """{"metadata":{},"content_type":"function_call","id":"test","name":"Test-Function","arguments":"{\\"input\\": \\"world\\"}"}"""  # noqa: E501
     )

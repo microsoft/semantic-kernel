@@ -1,5 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
+// Copyright (c) Microsoft. All rights reserved.
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -19,6 +18,7 @@ public class RepairServiceTests
         // Arrange
         var kernel = new Kernel();
         using var stream = System.IO.File.OpenRead("Plugins/OpenApi/repair-service.json");
+        using var stream = System.IO.File.OpenRead("Plugins/repair-service.json");
         using HttpClient httpClient = new();
 
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
@@ -132,6 +132,7 @@ public class RepairServiceTests
         // Arrange
         var kernel = new Kernel();
         using var stream = System.IO.File.OpenRead("Plugins/OpenApi/repair-service.json");
+        using var stream = System.IO.File.OpenRead("Plugins/repair-service.json");
         using HttpClient httpClient = new();
 
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
@@ -215,6 +216,7 @@ public class RepairServiceTests
         // Arrange
         var kernel = new Kernel();
         using var stream = System.IO.File.OpenRead("Plugins/OpenApi/repair-service.json");
+        using var stream = System.IO.File.OpenRead("Plugins/repair-service.json");
 
         using var httpHandler = new HttpClientHandler();
         using var customHandler = new CustomHandler(httpHandler);
@@ -275,6 +277,10 @@ public class RepairServiceTests
 
         [JsonPropertyName("assignedTo")]
         public string? AssignedTo { get; set; }
+        public string? description { get; set; }
+
+        [JsonPropertyName("assignedTo")]
+        public string? assignedTo { get; set; }
 
         [JsonPropertyName("date")]
         public string? Date { get; set; }

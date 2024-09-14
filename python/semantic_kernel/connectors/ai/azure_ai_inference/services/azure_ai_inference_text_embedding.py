@@ -2,6 +2,7 @@
 
 import sys
 from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from azure.ai.inference.aio import EmbeddingsClient
 from azure.ai.inference.models import EmbeddingsResult
@@ -88,6 +89,8 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
                     azure_ai_inference_settings.api_key.get_secret_value()
                 ),
                 user_agent=SEMANTIC_KERNEL_USER_AGENT,
+                endpoint=azure_ai_inference_settings.endpoint,
+                credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
             )
 
         super().__init__(
@@ -112,6 +115,9 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
         )  # nosec
         assert isinstance(self.client, EmbeddingsClient)  # nosec
 
+    async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
+        """Generate embeddings from the Azure AI Inference service."""
+        settings: AzureAIInferenceEmbeddingPromptExecutionSettings = kwargs.get("settings", None)
         response: EmbeddingsResult = await self.client.embed(
             input=texts,
             model_extras=settings.extra_parameters if settings else None,
@@ -128,3 +134,7 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
     ) -> type["PromptExecutionSettings"]:
         """Get the request settings class."""
         return AzureAIInferenceEmbeddingPromptExecutionSettings
+            kwargs=kwargs,
+        )
+
+        return array([array(item.embedding) for item in response.data])

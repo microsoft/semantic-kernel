@@ -59,6 +59,8 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
         // Create a chat for agent interaction.
         AgentGroupChat chat =
             new(agentWriter, agentReviewer)
+        var chat =
+            new AgentGroupChat(agentWriter, agentReviewer)
             {
                 ExecutionSettings =
                     new()
