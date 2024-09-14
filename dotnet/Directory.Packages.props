@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -21,6 +22,8 @@
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     <PackageVersion Include="OpenAI" Version="2.0.0-beta.10" />
     <PackageVersion Include="System.ClientModel" Version="1.1.0-beta.7" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
@@ -46,6 +49,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.64.0" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -60,6 +64,9 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
+>>>>>>> Stashed changes
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="Pinecone.NET" Version="2.1.1" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
@@ -90,6 +97,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -149,6 +157,9 @@
 <<<<<<<+main
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+<<<<<<<+main
+>>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.5.0" />
     <PackageVersion Include="System.Text.Json" Version="6.0.8" />
     <PackageVersion Include="Microsoft.PowerShell.SDK" Version="6.2.7" />
@@ -165,6 +176,7 @@
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.7.0" />
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -227,6 +239,9 @@
 >>>>>>>+upstream/main
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+>>>>>>>+upstream/main
+>>>>>>> Stashed changes
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
@@ -244,6 +259,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -294,16 +310,21 @@
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 <<<<<<<+main
     <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
 =======
     <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 >>>>>>> upstream/main
     <PackageVersion Include="xunit" Version="2.9.0" />
@@ -314,6 +335,7 @@
     <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
     <!-- Plugins -->
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -328,6 +350,8 @@
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
@@ -335,12 +359,15 @@
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.0.1" />
@@ -348,6 +375,7 @@
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.16" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.16" />
@@ -360,6 +388,8 @@
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.15" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.15" />
@@ -367,12 +397,15 @@
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.16" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.16" />
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
@@ -383,6 +416,7 @@
     <PackageVersion Include="YamlDotNet" Version="16.0.0" />
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -404,12 +438,17 @@
 >>>>>>> upstream/main
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
     <PackageVersion Include="Fluid.Core" Version="2.11.1" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.42.0" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< main
 =======
@@ -429,6 +468,9 @@
     <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+    <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
+>>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.1" />
     <PackageVersion Include="Qdrant.Client" Version="1.9.0" />
     <!-- Symbols -->
@@ -436,6 +478,7 @@
     <!-- Toolset -->
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -450,11 +493,14 @@
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24318.1" />
 =======
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 >>>>>>> origin/main
 =======
@@ -467,6 +513,8 @@
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -503,6 +551,7 @@
     </PackageReference>
     <!-- OnnxRuntimeGenAI -->
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -521,6 +570,9 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
+>>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.3.0" />
 	  <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.4.0"/>
   </ItemGroup>
