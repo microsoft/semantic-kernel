@@ -15,7 +15,19 @@ namespace Microsoft.SemanticKernel;
 public class AudioContent : BinaryContent
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+    /// URI of audio file.
+    /// </summary>
+    private readonly Uri? _uri;
+
+    public Uri? Uri => _uri;
+
+    public AudioContent(Uri? uri)
+    {
+        _uri = uri;
+    }
+
+    /// <summary>
+    /// The audio data.
     /// </summary>
     [JsonConstructor]
     public AudioContent()
@@ -45,5 +57,22 @@ public class AudioContent : BinaryContent
     /// <param name="mimeType">Mime type of the audio</param>
     public AudioContent(ReadOnlyMemory<byte> data, string? mimeType) : base(data, mimeType)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+    /// </summary>
+    /// <param name="uri">URI of audio file.</param>
+    /// <param name="modelId">The model ID used to generate the content.</param>
+    /// <param name="innerContent">Inner content,</param>
+    /// <param name="metadata">Additional metadata</param>
+    public AudioContent(
+        Uri uri,
+        string? modelId = null,
+        object? innerContent = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this.Uri = uri;
     }
 }

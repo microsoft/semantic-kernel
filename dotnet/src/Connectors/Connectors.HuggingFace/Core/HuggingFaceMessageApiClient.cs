@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -275,7 +275,7 @@ internal sealed class HuggingFaceMessageApiClient
     private ChatCompletionRequest CreateChatRequest(
         ChatHistory chatHistory,
         HuggingFacePromptExecutionSettings huggingFaceExecutionSettings,
-        string? modelId)
+        string modelId)
     {
         HuggingFaceClient.ValidateMaxTokens(huggingFaceExecutionSettings.MaxTokens);
 

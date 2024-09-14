@@ -20,7 +20,7 @@ namespace FunctionCalling;
 ///
 /// 2. Manual Invocation by a Caller:
 ///    Functions called by the LLM are returned to the AI API caller. The caller controls the invocation phase where
-///    they may decide which function to call, when to call them, how to handle exceptions, call them in parallel or sequentially, etc.
+///    they may decide which function to call, when to call them, how to handle exceptions, and whether to call them in parallel or sequentially, etc.
 ///    The caller then adds the function results or exceptions to the chat history and returns it to the LLM, which reasons about it
 ///    and generates the final response.
 ///    This approach is manual and provides more control over the function invocation phase to the caller.
@@ -127,7 +127,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     /// This example demonstrates manual function calling with a streaming chat API.
     /// </summary>
     [Fact]
-    public async Task RunStreamingChatAPIWithManualFunctionCallingAsync()
+    public async Task RunStreamingChatWithManualFunctionCallingAsync()
     {
         Console.WriteLine("Manual function calling with a streaming prompt.");
 

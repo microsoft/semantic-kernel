@@ -18,7 +18,11 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatMessageContentItemCollection"/> class.
     /// </summary>
-    public StreamingKernelContentItemCollection()
+private readonly List<ChatMessageContentItem> _items = new List<ChatMessageContentItem>();
+
+public StreamingKernelContentItemCollection()
+{
+}
     {
         this._items = [];
     }

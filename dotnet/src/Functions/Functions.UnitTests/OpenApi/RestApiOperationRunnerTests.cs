@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections;
@@ -1435,6 +1435,12 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         public byte[]? RequestContent { get; private set; }
 
         public Uri? RequestUri => this.RequestMessage?.RequestUri;
+
+        public HttpMethod? Method => this.RequestMessage?.Method;
+
+
+        public HttpMethod? Method => this.RequestMessage?.Method;
+
 
         public HttpMethod? Method => this.RequestMessage?.Method;
 

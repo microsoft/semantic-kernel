@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// </summary>
 public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 {
-    private const string EmbeddingPath = "/embedding";
+    private const string DefaultEmbeddingPath = "/embedding";
 
     private readonly CosmosClient _cosmosClient;
     private readonly VectorEmbeddingPolicy _vectorEmbeddingPolicy;
@@ -231,7 +231,9 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        // In some cases we're expected to generate the key to use. Do so if one isn't provided.
+        // In some cases we're expected to generate the key to use. 
+        // This typically happens when the record is new and hasn't been assigned a key yet.
+        // Generating a new key ensures that each record can be uniquely identified in the database.
         if (string.IsNullOrEmpty(record.Key))
         {
             record.Key = Guid.NewGuid().ToString();
@@ -404,6 +406,8 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         {
             foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
             {
+                // Adjusting similarity score to normalize it between 0 and 1
+                // Adjusting similarity score to normalize it between 0 and 1
                 var relevanceScore = (memoryRecord.SimilarityScore + 1) / 2;
                 if (relevanceScore >= minRelevanceScore)
                 {

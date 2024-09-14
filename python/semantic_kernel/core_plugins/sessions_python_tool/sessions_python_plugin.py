@@ -10,6 +10,7 @@ from typing import Annotated, Any
 from httpx import AsyncClient, HTTPStatusError
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, version_info
 from semantic_kernel.const import USER_AGENT
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings import (
     ACASessionsSettings,
@@ -267,6 +268,8 @@ class SessionsPythonTool(KernelBaseModel):
             raise FunctionExecutionException(
                 f"Upload failed with status code {e.response.status_code} and error: {error_message}"
             ) from e
+            response_json = response.json()
+            return SessionsRemoteFileMetadata.from_dict(response_json["$values"][0])
 
     @kernel_function(
         name="list_files", description="Lists all files in the provided Session ID"
@@ -289,6 +292,13 @@ class SessionsPythonTool(KernelBaseModel):
             base_url=str(self.pool_management_endpoint),
             endpoint="files",
             params={"identifier": self.settings.session_id},
+            base_url=self.pool_management_endpoint,
+            endpoint="python/files",
+            params={"identifier": self.settings.session_id},
+        )
+
+        response = await self.http_client.get(
+            url=url,
         )
 
         try:
@@ -341,6 +351,13 @@ class SessionsPythonTool(KernelBaseModel):
             base_url=str(self.pool_management_endpoint),
             endpoint=f"files/content/{remote_file_name}",
             params={"identifier": self.settings.session_id},
+            base_url=self.pool_management_endpoint,
+            endpoint="python/downloadFile",
+            params={"identifier": self.settings.session_id, "filename": remote_file_path},
+        )
+
+        response = await self.http_client.get(
+            url=url,
         )
 
         try:

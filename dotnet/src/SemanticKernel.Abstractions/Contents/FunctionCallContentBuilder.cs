@@ -23,7 +23,12 @@ private Dictionary<int, string> _functionCallIdsByIndex = new();
     /// Extracts function call updates from the content and track them for later building.
     /// </summary>
     /// <param name="content">The content to extract function call updates from.</param>
-    public void Append(StreamingChatMessageContent content)
+public void Append(StreamingChatMessageContent content)
+{
+    if (content == null)
+    {
+        throw new ArgumentNullException(nameof(content));
+    }
     {
         var streamingFunctionCallUpdates = content.Items.OfType<StreamingFunctionCallUpdateContent>();
 
@@ -75,7 +80,7 @@ private Dictionary<int, string> _functionCallIdsByIndex = new();
             }
         }
 
-        return functionCalls ?? [];
+        return functionCalls ?? Array.Empty<FunctionCallContent>();
     }
 
     /// <summary>
@@ -92,7 +97,7 @@ private Dictionary<int, string> _functionCallIdsByIndex = new();
         }
 
         var argumentsString = functionArgumentsBuilder.ToString();
-        if (string.IsNullOrEmpty(argumentsString))
+        if (string.IsNullOrWhiteSpace(argumentsString))
         {
             return (null, null);
         }
@@ -129,6 +134,9 @@ private Dictionary<int, string> _functionCallIdsByIndex = new();
     private static void TrackStreamingFunctionCallUpdate(StreamingFunctionCallUpdateContent update, ref Dictionary<int, string>? functionCallIdsByIndex, ref Dictionary<int, string>? functionNamesByIndex, ref Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex)
     {
         if (update is null)
+        {
+            throw new ArgumentNullException(nameof(update));
+        }
         {
             // Nothing to track.
             return;

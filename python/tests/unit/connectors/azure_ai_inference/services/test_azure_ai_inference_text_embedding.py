@@ -15,6 +15,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_setting
 )
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
 def test_azure_ai_inference_text_embedding_init(
@@ -121,6 +122,7 @@ async def test_azure_ai_inference_text_embedding(
         dimensions=None,
         encoding_format=None,
         input_type=None,
+        kwargs={},
     )
 
 
@@ -141,6 +143,7 @@ async def test_azure_ai_inference_text_embedding_with_standard_settings(
         dimensions=1024, encoding_format="float", input_type="text"
     )
     await azure_ai_inference_service.generate_embeddings(texts, settings)
+    await azure_ai_inference_service.generate_embeddings(texts, settings=settings)
 
     mock_embed.assert_awaited_once_with(
         input=texts,
@@ -148,6 +151,7 @@ async def test_azure_ai_inference_text_embedding_with_standard_settings(
         dimensions=settings.dimensions,
         encoding_format=settings.encoding_format,
         input_type=settings.input_type,
+        kwargs={"settings": settings},
     )
 
 
@@ -169,6 +173,7 @@ async def test_azure_ai_inference_text_embedding_with_extra_parameters(
         extra_parameters=extra_parameters
     )
     await azure_ai_inference_service.generate_embeddings(texts, settings)
+    await azure_ai_inference_service.generate_embeddings(texts, settings=settings)
 
     mock_embed.assert_awaited_once_with(
         input=texts,
@@ -176,4 +181,5 @@ async def test_azure_ai_inference_text_embedding_with_extra_parameters(
         dimensions=settings.dimensions,
         encoding_format=settings.encoding_format,
         input_type=settings.input_type,
+        kwargs={"settings": settings},
     )
