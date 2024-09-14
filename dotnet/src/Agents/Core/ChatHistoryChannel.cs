@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -38,7 +38,6 @@ public sealed class ChatHistoryChannel : AgentChannel
 
         ChatMessageContent? yieldMessage = null;
         await foreach (ChatMessageContent responseMessage in historyAgent.InvokeAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
-        await foreach (ChatMessageContent responseMessage in historyHandler.InvokeAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
         {
             // Capture all messages that have been included in the mutated the history.
             for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++)
@@ -75,6 +74,30 @@ public sealed class ChatHistoryChannel : AgentChannel
         bool IsMessageVisible(ChatMessageContent message) =>
             (!message.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent) ||
               messageQueue.Count == 0);
+    }
+
+    /// <inheritdoc/>
+    protected override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(Agent agent, IList<ChatMessageContent> messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (agent is not ChatHistoryKernelAgent historyAgent)
+        {
+            throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
+        }
+
+        // Pre-process history reduction.
+        await historyAgent.ReduceAsync(this._history, cancellationToken).ConfigureAwait(false);
+
+        int messageCount = this._history.Count;
+
+        await foreach (StreamingChatMessageContent streamingMessage in historyAgent.InvokeStreamingAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
+        {
+            yield return streamingMessage;
+        }
+
+        for (int index = messageCount; index < this._history.Count; ++index)
+        {
+            messages.Add(this._history[index]);
+        }
     }
 
     /// <inheritdoc/>

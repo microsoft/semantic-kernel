@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -18,9 +18,6 @@ internal class MockAgent : ChatHistoryKernelAgent
     public IReadOnlyList<ChatMessageContent> Response { get; set; } = [];
 
     public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-    public IChatHistoryReducer? HistoryReducer { get; init; }
-
-    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
@@ -32,7 +29,6 @@ internal class MockAgent : ChatHistoryKernelAgent
     }
 
     public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
-    public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,

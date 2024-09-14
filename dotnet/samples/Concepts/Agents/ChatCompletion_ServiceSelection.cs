@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -8,12 +8,8 @@ namespace Agents;
 
 /// <summary>
 /// Demonstrate service selection for <see cref="ChatCompletionAgent"/> through setting service-id
-<<</// on <see cref="ChatHistoryKernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
->>>>>>>+Updated upstrea
-====
-////// on <see cref="ChatCompletionAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
->>>>>>>+Stashed changes
- when calling <see cref="ChatCompletionAgent.InvokeAsync"/>
+/// on <see cref="ChatHistoryKernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
+/// when calling <see cref="ChatCompletionAgent.InvokeAsync"/>
 /// </summary>
 public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseTest(output)
 {

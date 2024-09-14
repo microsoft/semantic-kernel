@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< main
 
 def test_empty_input():
     result = your_function("")
@@ -16,6 +17,8 @@ def test_empty_input():
 
 
 import os
+=======
+>>>>>>> upstream/main
 import sys
 from functools import partial
 from typing import Any
@@ -88,7 +91,13 @@ from semantic_kernel.contents import ChatMessageContent, TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
 >>>>>>> upstream/main
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from tests.integration.completions.chat_completion_test_base import ChatCompletionTestBase
+from tests.integration.completions.chat_completion_test_base import (
+    ChatCompletionTestBase,
+    anthropic_setup,
+    mistral_ai_setup,
+    ollama_setup,
+    vertex_ai_setup,
+)
 from tests.integration.completions.completion_test_base import ServiceType
 from tests.integration.completions.test_utils import retry
 
@@ -97,6 +106,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+<<<<<<< main
 mistral_ai_setup: bool = False
 try:
     if os.environ["MISTRALAI_API_KEY"] and os.environ["MISTRALAI_CHAT_MODEL_ID"]:
@@ -191,6 +201,8 @@ except KeyError:
 >>>>>>> upstream/main
 
 
+=======
+>>>>>>> upstream/main
 pytestmark = pytest.mark.parametrize(
     "service_id, execution_settings_kwargs, inputs, kwargs",
     [
@@ -769,6 +781,7 @@ pytestmark = pytest.mark.parametrize(
                 ),
             ],
             ["Hello", "well"],
+            marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_text_input",
         ),
 <<<<<<< main

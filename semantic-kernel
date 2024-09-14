@@ -1,8 +1,11 @@
 <<<<<<< main
+=======
+<<<<<<< main
 tree aa77d5c9de2ff4df053e5a2ce029904ec3471ee0
 parent ba7009bff2057cee326033e455907a403a8728e2
 author Bryan Roe <74067792+Bryan-Roe@users.noreply.github.com> 1722951676 -0700
 committer Bryan Roe <74067792+Bryan-Roe@users.noreply.github.com> 1722951676 -0700
+>>>>>>> origin/main
 tree 78036b380f2eacc5eda184acc66b4a2dba58668b
 parent f0d7072bbd7daa24b233e84abc7785260338d828
 author Bryan Roe <Bryan-Roe@github.com> 1724032958 -0700
@@ -16,6 +19,9 @@ gpgsig -----BEGIN SSH SIGNATURE-----
  -----END SSH SIGNATURE-----
  
 
+<<<<<<< main
+
+=======
 Update GitHub Action for generating test reports.q
 tree 78036b380f2eacc5eda184acc66b4a2dba58668b
 parent f0d7072bbd7daa24b233e84abc7785260338d828
@@ -42,3 +48,4 @@ Add Microsoft.Extensions.TimeProvider.Testing 8.8.0 version
 
 and DuckDB.NET.Data 1.0.1 version to PackageVersion.
 >>>>>>> 15978d9
+>>>>>>> origin/main

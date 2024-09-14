@@ -69,7 +69,11 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
         AgentClient agentClient = serviceProvider.GetRequiredService<AgentClient>();
 
         // Execute the agent-client
+<<<<<<< HEAD
         await WriteAgentResponse("The sunset is very colorful.");
+=======
+        await WriteAgentResponse("The sunset is nice.");
+>>>>>>> main
         await WriteAgentResponse("The sunset is setting over the mountains.");
         await WriteAgentResponse("The sunset is setting over the mountains and filled the sky with a deep red flame, setting the clouds ablaze.");
 

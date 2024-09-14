@@ -1,6 +1,7 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -14,18 +15,9 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <remarks>
 /// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
 /// (<see cref="ChatHistoryKernelAgent.Arguments"/>)
-/// (<see cref="ChatCompletionAgent.Arguments"/>)
 /// </remarks>
 public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 {
-    /// <summary>
-    /// Optional arguments for the agent.
-    /// </summary>
-    public KernelArguments? Arguments { get; init; }
-
-    /// <inheritdoc/>
-    public IChatHistoryReducer? HistoryReducer { get; init; }
-
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
@@ -37,7 +29,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         arguments ??= this.Arguments;
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
 
         ChatHistory chat = this.SetupAgentChatHistory(history);
 
@@ -83,7 +74,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         arguments ??= this.Arguments;
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
 
         ChatHistory chat = this.SetupAgentChatHistory(history);
 
@@ -100,12 +90,20 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, chatCompletionService.GetType());
 
+        AuthorRole? role = null;
+        StringBuilder builder = new();
         await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
         {
+            role ??= message.Role;
+            message.Role ??= AuthorRole.Assistant;
             message.AuthorName = this.Name;
+
+            builder.Append(message.ToString());
 
             yield return message;
         }
+
+        chat.Add(new(role ?? AuthorRole.Assistant, builder.ToString()) { AuthorName = this.Name });
 
         // Capture mutated messages related function calling / tools
         for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
@@ -119,19 +117,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     }
 
     internal static (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
-    {
-        // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
-        KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("placeholder", arguments?.ExecutionSettings?.Values);
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) =
-            kernel.ServiceSelector.SelectAIService<IChatCompletionService>(
-                kernel,
-                nullPrompt,
-                arguments ?? []);
-
-        return (chatCompletionService, executionSettings);
-    }
-
-    private (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
     {
         // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
         KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("placeholder", arguments?.ExecutionSettings?.Values);
