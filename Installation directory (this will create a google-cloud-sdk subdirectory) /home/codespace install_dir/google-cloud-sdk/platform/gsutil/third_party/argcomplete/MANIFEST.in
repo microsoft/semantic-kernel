@@ -1,3 +1,0 @@
-include argcomplete/bash_completion.d/*
-include *.rst
-include test/*

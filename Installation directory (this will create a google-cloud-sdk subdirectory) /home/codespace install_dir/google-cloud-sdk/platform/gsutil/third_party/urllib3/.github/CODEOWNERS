@@ -1,8 +1,0 @@
-# Restrict all files related to deploying to
-# require lead maintainer approval.
-
-.github/CODEOWNERS          @sethmlarson @shazow
-src/urllib3/_version.py     @sethmlarson @shazow
-setup.py                    @sethmlarson @shazow
-ci/                         @sethmlarson @shazow
-.travis.yml                 @sethmlarson @shazow

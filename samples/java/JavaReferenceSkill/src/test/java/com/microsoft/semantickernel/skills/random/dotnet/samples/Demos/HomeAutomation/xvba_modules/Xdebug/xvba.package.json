@@ -1,0 +1,15 @@
+{
+  "package": "Xdebug",
+  "version": "1.0.0",
+  "author": "Alberto Edaurdo",
+  "email": "alberto.aeraphe@gmail.com",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aeraphe/xdebug.git"
+  },
+  "description": "Creating amazing XVBA packages",
+  "dependencies": {},
+  "dev_dependencies": {},
+  "homepage": "www.xvba.dev"
+}

@@ -1,0 +1,40 @@
+[
+    {
+        "name": "MacOS - Hard-coded SSL/TLS Protocol",
+        "id": "DS440080",
+        "description": "MacOS - Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "overrides": [
+            "DS440000"
+        ],
+        "applies_to": [
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "_comment": "Generic, since there are multiple languages that bind to these constants.",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "\\bkSSLProtocol([\\d]+|MaxSupported)(Only)?",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "https://developer.apple.com/documentation/security/sslprotocol?language=objc"
+            },
+            {
+                "pattern": "SSLSetProtocolVersion(Min|Max|Enabled)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "https://developer.apple.com/documentation/security/1503754-sslsetprotocolversionenabled?language=objc"
+            }
+        ],
+        "fix_its": [
+        ]
+    }
+]

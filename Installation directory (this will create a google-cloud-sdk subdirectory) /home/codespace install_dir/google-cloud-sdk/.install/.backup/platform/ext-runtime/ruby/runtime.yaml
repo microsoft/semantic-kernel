@@ -1,8 +1,0 @@
-author: adamtanner@google.com
-name: ruby
-description: Official Google Ruby runtime definition.
-api_version: 0.2
-detect:
-  python: bin/detect
-generate_configs:
-  python: bin/generate_configs

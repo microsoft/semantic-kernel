@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es2019",
+		"lib": [
+			"ES2019"
+		],
+		"rootDir": "client",
+		"noEmit": true,
+		"sourceMap": true,
+		"strict": true,
+		"strictNullChecks": true,
+		"resolveJsonModule": true,
+		"esModuleInterop": true
+	},
+	"exclude": [ ".vscode", "node_modules", "scripts" ],
+	"references": [
+		{ "path": "./client" }
+	]
+}

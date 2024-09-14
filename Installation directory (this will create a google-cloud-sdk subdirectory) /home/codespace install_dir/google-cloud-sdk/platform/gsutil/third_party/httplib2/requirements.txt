@@ -1,2 +1,0 @@
-pyparsing>=2.4.2,<3; python_version<'3.0' # TODO remove after dropping Python2 support
-pyparsing>=2.4.2,<4, !=3.0.0, !=3.0.1, !=3.0.2, !=3.0.3; python_version>'3.0'

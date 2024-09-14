@@ -1,4 +1,0 @@
-google-cloud-compute==1.5.1
-google-cloud-storage==2.5.0
-google-auth==2.11.0
-pytest==7.1.2
