@@ -1,8 +1,0 @@
-<Project>
-  <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/samples/InternalUtilities/**/*.cs" Link="InternalUtilities/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile 
-      Include="$(RepoRoot)/dotnet/src/InternalUtilities/samples/AgentUtilities/**/*.cs" Link="InternalUtilities/%(RecursiveDir)%(Filename)%(Extension)"
-      Condition="$(IncludeAgentUtilities) == 'true'" />
-  </ItemGroup>
-</Project>

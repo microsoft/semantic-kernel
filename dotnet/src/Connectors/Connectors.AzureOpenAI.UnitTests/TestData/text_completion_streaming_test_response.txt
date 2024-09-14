@@ -1,3 +1,0 @@
-data: {"id":"response-id","object":"text_completion","created":1646932609,"model":"ada","choices":[{"text":"Test chat streaming response","index":0,"logprobs":null,"finish_reason":"length"}],"usage":{"prompt_tokens":55,"completion_tokens":100,"total_tokens":155}}
-
-data: [DONE]

@@ -1,9 +1,0 @@
-{
-  "messages": [
-    {
-      "content": "Can you help me tell the time in Seattle right now?",
-      "role": "user"
-    }
-  ],
-  "model": "Dummy"
-}
