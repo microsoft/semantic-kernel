@@ -1,0 +1,59 @@
+{
+	"image": "mcr.microsoft.com/devcontainers/universal:2",
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/jayree/devcontainer-features/npm-registry:1": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/devcontainers/features/dotnet:1": {
+			"version": "8"
+		},
+		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-dotnettools.dotnet-interactive-vscode",
+				"ms-semantic-kernel.semantic-kernel",
+				"esbenp.prettier-vscode",
+				"vscjava.vscode-gradle",
+				"GitHub.copilot-chat",
+				"GitHub.copilot",
+				"franneck94.c-cpp-runner",
+				"ms-python.debugpy",
+<<<<<<< main
+				"atariq11700.debugpy-old",
+				"ms-vscode.powershell"
+=======
+				"atariq11700.debugpy-old"
+>>>>>>> origin/PR
+			]
+		}
+	},
+	"postCreateCommand": "sudo chmod a+rwx /usr/share/dotnet" // avoids needing to run as 'sudo' when starting KernelHttpServer
+}
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/dotnet:2.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1": {
+      "version": "8"
+    },
+    "ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.dotnet-interactive-vscode",
+        "ms-semantic-kernel.semantic-kernel",
+        "esbenp.prettier-vscode",
+        "oracle-labs-graalvm.graalvm",
+        "geequlim.godot-tools",
+        "ms-vscode.powershell",
+        "ivanhofer.git-assistant",
+        "ms-pyright.pyright",
+        "Maimonator.gpu-monitor"
+      ]
+    }
+  },
+  "postCreateCommand": "sudo chmod a+rwx /usr/share/dotnet" // avoids needing to run as 'sudo' when starting KernelHttpServer
+}

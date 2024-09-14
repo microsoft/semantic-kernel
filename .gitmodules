@@ -1,0 +1,14 @@
+[submodule "Singularity"]
+[submodule "Bryan-Roe"]
+[submodule "semantic-kernel"]
+<<<<<<< main
+[submodule "semantic-kernel2"]
+[submodule "SK"]
+=======
+	path = semantic-kernel
+	url = git@github.com:Bryan-Roe/semantic-kernel.git
+[submodule "SK.AI"]
+	path = SK.AI
+	url = https://Bryan-Roe@github.com/Bryan-Roe/SK.AI
+[submodule "tree-sitter-python"]
+>>>>>>> origin/PR

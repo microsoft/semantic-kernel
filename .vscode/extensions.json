@@ -1,0 +1,21 @@
+{
+  "recommendations": [
+    "ms-azuretools.vscode-azurefunctions",
+    "ms-dotnettools.csharp",
+    "vscjava.vscode-gradle",
+    "github.copilot-chat",
+    "franneck94.c-cpp-runner",
+    "ms-azuretools.vscode-azureresourcegroups",
+<<<<<<< main
+    "quarto.quarto",
+    "stateful.runme"
+    "sourcery.sourcery",
+    "ms-toolsai.jupyter",
+    "geequlim.godot-tools",
+    "ms-vscode.powershell"
+=======
+    "ms-python.debugpy",
+    "atariq11700.debugpy-old"
+>>>>>>> origin/PR
+  ]
+}
