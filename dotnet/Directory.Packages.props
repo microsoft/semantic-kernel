@@ -62,26 +62,21 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -103,6 +98,12 @@
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -156,6 +157,9 @@
 <<<<<<<+main
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<<+main
 >>>>>>> Stashed changes
 =======
 <<<<<<<+main
@@ -191,6 +195,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 >>>>>>> upstream/main
@@ -299,6 +304,9 @@
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
 >>>>>>> upstream/main
 >>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
+>>>>>>>+upstream/main
 >>>>>>> Stashed changes
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
@@ -320,6 +328,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -366,10 +375,14 @@
 =======
 <<<<<<<+main
 >>>>>>> Stashed changes
+=======
+<<<<<<<+main
+>>>>>>> Stashed changes
     <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
 =======
     <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
     <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
@@ -439,6 +452,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     <PackageVersion Include="xunit" Version="2.9.0" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
@@ -446,6 +461,7 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
     <!-- Plugins -->
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -461,6 +477,8 @@
 >>>>>>> Stashed changes
 =======
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -477,10 +495,13 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -494,6 +515,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.16" />
@@ -504,6 +526,8 @@
 >>>>>>> Stashed changes
 =======
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -520,10 +544,13 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -536,6 +563,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
     <PackageVersion Include="YamlDotNet" Version="16.0.0" />
@@ -544,6 +572,8 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -559,6 +589,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -567,6 +598,8 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -590,6 +623,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -598,6 +632,8 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -613,6 +649,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -622,6 +659,8 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
