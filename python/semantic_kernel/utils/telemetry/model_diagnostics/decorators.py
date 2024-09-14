@@ -75,8 +75,12 @@ def trace_chat_completion(model_provider: str) -> Callable:
                 return await completion_func(*args, **kwargs)
 
             completion_service: ChatCompletionClientBase = args[0]
-            chat_history: ChatHistory = kwargs["chat_history"]
-            settings: PromptExecutionSettings = kwargs["settings"]
+            chat_history: ChatHistory = (
+                kwargs.get("chat_history") if kwargs.get("chat_history") is not None else args[1]
+            )
+            settings: PromptExecutionSettings = (
+                kwargs.get("settings") if kwargs.get("settings") is not None else args[2]
+            )
 
             with use_span(
                 _start_completion_activity(
@@ -113,8 +117,8 @@ def trace_text_completion(model_provider: str) -> Callable:
                 return await completion_func(*args, **kwargs)
 
             completion_service: TextCompletionClientBase = args[0]
-            prompt: str = kwargs["prompt"]
-            settings: PromptExecutionSettings = kwargs["settings"]
+            prompt: str = kwargs.get("prompt") if kwargs.get("prompt") is not None else args[1]
+            settings: PromptExecutionSettings = kwargs["settings"] if kwargs.get("settings") is not None else args[2]
 
             with use_span(
                 _start_completion_activity(

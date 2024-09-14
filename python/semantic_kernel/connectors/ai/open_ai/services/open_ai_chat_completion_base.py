@@ -1,11 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
-import logging
 import sys
-from collections.abc import AsyncGenerator
-from functools import reduce
+from collections.abc import AsyncGenerator, Callable
 from typing import TYPE_CHECKING, Any, ClassVar, cast
+
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -24,6 +25,7 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+<<<<<<< main
 from semantic_kernel.connectors.ai.function_calling_utils import (
 <<<<<<< main
     update_settings_from_function_call_configuration,
@@ -36,6 +38,10 @@ from semantic_kernel.connectors.ai.function_choice_behavior import (
     update_settings_from_function_call_configuration,
 )
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+>>>>>>> upstream/main
+=======
+from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 >>>>>>> upstream/main
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
@@ -58,7 +64,6 @@ from semantic_kernel.exceptions import (
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
-from semantic_kernel.utils.telemetry.model_diagnostics import trace_chat_completion
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import (
@@ -67,37 +72,42 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
 
+<<<<<<< main
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class InvokeTermination(Exception):
     """Exception for termination of function invocation."""
 
+=======
+>>>>>>> upstream/main
 
 class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     """OpenAI Chat completion class."""
 
     MODEL_PROVIDER_NAME: ClassVar[str] = "openai"
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
 
     # region Overriding base class methods
     # most of the methods are overridden from the ChatCompletionClientBase class, otherwise it is mentioned
 
+    # Override from AIServiceClientBase
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return OpenAIChatPromptExecutionSettings
 
     @override
     @trace_chat_completion(MODEL_PROVIDER_NAME)
-    async def get_chat_message_contents(
+    async def _inner_get_chat_message_contents(
         self,
-        chat_history: ChatHistory,
+        chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Any,
     ) -> list["ChatMessageContent"]:
         if not isinstance(settings, OpenAIChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
 
+<<<<<<< main
         # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
         # if this method is called with a `FunctionCallBehavior` object as part of the settings
         if hasattr(settings, "function_call_behavior") and isinstance(
@@ -181,24 +191,28 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
             if any(result.terminate for result in results if result is not None):
                 return merge_function_results(chat_history.messages[-len(results) :])
+=======
+        settings.stream = False
+        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        settings.ai_model_id = settings.ai_model_id or self.ai_model_id
+>>>>>>> upstream/main
 
-            self._update_settings(settings, chat_history, kernel=kernel)
-        else:
-            # do a final call, without function calling when the max has been reached.
-            settings.function_choice_behavior.auto_invoke_kernel_functions = False
-            return await self._send_chat_request(settings)
+        response = await self._send_request(request_settings=settings)
+        assert isinstance(response, ChatCompletion)  # nosec
+        response_metadata = self._get_metadata_from_chat_response(response)
+        return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
 
     @override
-    async def get_streaming_chat_message_contents(
+    async def _inner_get_streaming_chat_message_contents(
         self,
-        chat_history: ChatHistory,
+        chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Any,
-    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
+    ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         if not isinstance(settings, OpenAIChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
 
+<<<<<<< main
         # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
         # if this method is called with a `FunctionCallBehavior` object as part of the settings
         if hasattr(settings, "function_call_behavior") and isinstance(
@@ -319,11 +333,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             self._create_chat_message_content(response, choice, response_metadata)
             for choice in response.choices
         ]
+=======
+        settings.stream = True
+        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        settings.ai_model_id = settings.ai_model_id or self.ai_model_id
+>>>>>>> upstream/main
 
-    async def _send_chat_stream_request(
-        self, settings: OpenAIChatPromptExecutionSettings
-    ) -> AsyncGenerator[list["StreamingChatMessageContent"], None]:
-        """Send the chat stream request."""
         response = await self._send_request(request_settings=settings)
         if not isinstance(response, AsyncStream):
             raise ServiceInvalidResponseError(
@@ -341,7 +356,31 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 for choice in chunk.choices
             ]
 
+    @override
+    def _verify_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
+        if not isinstance(settings, OpenAIChatPromptExecutionSettings):
+            raise ServiceInvalidExecutionSettingsError("The settings must be an OpenAIChatPromptExecutionSettings.")
+        if settings.number_of_responses is not None and settings.number_of_responses > 1:
+            raise ServiceInvalidExecutionSettingsError(
+                "Auto-invocation of tool calls may only be used with a "
+                "OpenAIChatPromptExecutions.number_of_responses of 1."
+            )
+
+    @override
+    def _update_function_choice_settings_callback(
+        self,
+    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+        return update_settings_from_function_call_configuration
+
+    @override
+    def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
+        if hasattr(settings, "tool_choice"):
+            settings.tool_choice = None
+        if hasattr(settings, "tools"):
+            settings.tools = None
+
     # endregion
+
     # region content creation
 
     def _create_chat_message_content(
@@ -491,8 +530,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 >>>>>>> upstream/main
 
     # endregion
-    # region request preparation
 
+<<<<<<< main
     def _prepare_settings(
         self,
         settings: OpenAIChatPromptExecutionSettings,
@@ -529,6 +568,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     @deprecated(
         "Use `invoke_function_call` from the kernel instead with `FunctionChoiceBehavior`."
     )
+=======
+    # region function calling
+    @deprecated("Use `invoke_function_call` from the kernel instead with `FunctionChoiceBehavior`.")
+>>>>>>> upstream/main
     async def _process_function_call(
         self,
         function_call: FunctionCallContent,

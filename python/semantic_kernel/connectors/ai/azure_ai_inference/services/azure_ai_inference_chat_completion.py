@@ -1,12 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import logging
 import sys
-from collections.abc import AsyncGenerator
-from functools import reduce
-from typing import TYPE_CHECKING, Any
+from collections.abc import AsyncGenerator, Callable
+from typing import TYPE_CHECKING, Any, ClassVar
 
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
@@ -52,12 +51,17 @@ from semantic_kernel.connectors.ai.function_choice_behavior import (
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.azure_ai_inference.services.utils import MESSAGE_CONVERTERS
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+<<<<<<< main
 from semantic_kernel.connectors.ai.function_calling_utils import (
     merge_function_results,
     update_settings_from_function_call_configuration,
 )
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 >>>>>>> Stashed changes
+=======
+from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
+>>>>>>> upstream/main
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -75,8 +79,6 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
 )
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -90,6 +92,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 @experimental_class
 class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceBase):
     """Azure AI Inference Chat Completion Service."""
+
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
 
     def __init__(
         self,
@@ -147,13 +151,20 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             client=client,
         )
 
-    # region Non-streaming
+    # region Overriding base class methods
+
+    # Override from AIServiceClientBase
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        return AzureAIInferenceChatPromptExecutionSettings
+
     @override
     @trace_chat_completion(AzureAIInferenceBase.MODEL_PROVIDER_NAME)
-    async def get_chat_message_contents(
+    async def _inner_get_chat_message_contents(
         self,
-        chat_history: ChatHistory,
+        chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+<<<<<<< main
         **kwargs: Any,
     ) -> list[ChatMessageContent]:
         """Get chat message contents from the Azure AI Inference service.
@@ -240,6 +251,13 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         settings: AzureAIInferenceChatPromptExecutionSettings,
     ) -> list[ChatMessageContent]:
         """Send a chat request to the Azure AI Inference service."""
+=======
+    ) -> list["ChatMessageContent"]:
+        if not isinstance(settings, AzureAIInferenceChatPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, AzureAIInferenceChatPromptExecutionSettings)  # nosec
+
+>>>>>>> upstream/main
         assert isinstance(self.client, ChatCompletionsClient)  # nosec
         response: ChatCompletions = await self.client.complete(
             messages=self._prepare_chat_history_for_request(chat_history),
@@ -252,6 +270,77 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             self._create_chat_message_content(response, choice, response_metadata)
             for choice in response.choices
         ]
+
+    @override
+    async def _inner_get_streaming_chat_message_contents(
+        self,
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+    ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
+        if not isinstance(settings, AzureAIInferenceChatPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, AzureAIInferenceChatPromptExecutionSettings)  # nosec
+
+        assert isinstance(self.client, ChatCompletionsClient)  # nosec
+        response: AsyncStreamingChatCompletions = await self.client.complete(
+            stream=True,
+            messages=self._prepare_chat_history_for_request(chat_history),
+            model_extras=settings.extra_parameters,
+            **settings.prepare_settings_dict(),
+        )
+
+        async for chunk in response:
+            if len(chunk.choices) == 0:
+                continue
+            chunk_metadata = self._get_metadata_from_response(chunk)
+            yield [
+                self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
+            ]
+
+    @override
+    def _verify_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
+        if not isinstance(settings, AzureAIInferenceChatPromptExecutionSettings):
+            raise ServiceInvalidExecutionSettingsError(
+                "The settings must be an AzureAIInferenceChatPromptExecutionSettings."
+            )
+        if settings.extra_parameters is not None and settings.extra_parameters.get("n", 1) > 1:
+            # Currently only OpenAI models allow multiple completions but the Azure AI Inference service
+            # does not expose the functionality directly. If users want to have more than 1 responses, they
+            # need to configure `extra_parameters` with a key of "n" and a value greater than 1.
+            raise ServiceInvalidExecutionSettingsError(
+                "Auto invocation of tool calls may only be used with a single completion."
+            )
+
+    @override
+    def _update_function_choice_settings_callback(
+        self,
+    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+        return update_settings_from_function_call_configuration
+
+    @override
+    def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
+        if hasattr(settings, "tool_choice"):
+            settings.tool_choice = None
+        if hasattr(settings, "tools"):
+            settings.tools = None
+
+    @override
+    def _prepare_chat_history_for_request(
+        self,
+        chat_history: ChatHistory,
+        role_key: str = "role",
+        content_key: str = "content",
+    ) -> list[ChatRequestMessage]:
+        chat_request_messages: list[ChatRequestMessage] = []
+
+        for message in chat_history.messages:
+            chat_request_messages.append(MESSAGE_CONVERTERS[message.role](message))
+
+        return chat_request_messages
+
+    # endregion
+
+    # region Non-streaming
 
     def _create_chat_message_content(
         self, response: ChatCompletions, choice: ChatChoice, metadata: dict[str, Any]
@@ -299,6 +388,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     # endregion
 
     # region Streaming
+<<<<<<< main
     async def get_streaming_chat_message_contents(
         self,
         chat_history: ChatHistory,
@@ -439,6 +529,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                 )
                 for choice in chunk.choices
             ]
+=======
+>>>>>>> upstream/main
 
     def _create_streaming_chat_message_content(
         self,
@@ -495,6 +587,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
 
     # endregion
 
+<<<<<<< main
     @override
     def _prepare_chat_history_for_request(
         self,
@@ -512,6 +605,9 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     def _get_metadata_from_response(
         self, response: ChatCompletions | StreamingChatCompletionsUpdate
     ) -> dict[str, Any]:
+=======
+    def _get_metadata_from_response(self, response: ChatCompletions | StreamingChatCompletionsUpdate) -> dict[str, Any]:
+>>>>>>> upstream/main
         """Get metadata from the response.
 
         Args:
@@ -526,6 +622,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             "created": response.created,
             "usage": response.usage,
         }
+<<<<<<< main
 
     def _verify_function_choice_behavior(
         self, settings: AzureAIInferenceChatPromptExecutionSettings
@@ -604,3 +701,5 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     ) -> type["PromptExecutionSettings"]:
         """Get the request settings class."""
         return AzureAIInferenceChatPromptExecutionSettings
+=======
+>>>>>>> upstream/main

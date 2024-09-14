@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -85,12 +85,14 @@ public class WeaviateVectorStoreFixture : IAsyncLifetime
     private static async Task<string> SetupWeaviateContainerAsync(DockerClient client)
     {
         const string Image = "cr.weaviate.io/semitechnologies/weaviate";
+        const string Tag = "1.26.4";
 
         await client.Images.CreateImageAsync(
             new ImagesCreateParameters
             {
                 FromImage = Image,
                 Tag = "latest",
+                Tag = Tag,
             },
             null,
             new Progress<JSONMessage>());
@@ -98,6 +100,7 @@ public class WeaviateVectorStoreFixture : IAsyncLifetime
         var container = await client.Containers.CreateContainerAsync(new CreateContainerParameters()
         {
             Image = Image,
+            Image = $"{Image}:{Tag}",
             HostConfig = new HostConfig()
             {
                 PortBindings = new Dictionary<string, IList<PortBinding>>

@@ -28,7 +28,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.utils.telemetry.model_diagnostics import trace_text_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import (
@@ -43,13 +43,16 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 
     MODEL_PROVIDER_NAME: ClassVar[str] = "openai"
 
+    # region Overriding base class methods
+
+    # Override from AIServiceClientBase
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return OpenAITextPromptExecutionSettings
 
     @override
     @trace_text_completion(MODEL_PROVIDER_NAME)
-    async def get_text_contents(
+    async def _inner_get_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
@@ -63,14 +66,18 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             settings,
             (OpenAITextPromptExecutionSettings, OpenAIChatPromptExecutionSettings),
         )  # nosec
+        assert isinstance(settings, (OpenAITextPromptExecutionSettings, OpenAIChatPromptExecutionSettings))  # nosec
+
         if isinstance(settings, OpenAITextPromptExecutionSettings):
             settings.prompt = prompt
         else:
             settings.messages = [{"role": "user", "content": prompt}]
-        if settings.ai_model_id is None:
-            settings.ai_model_id = self.ai_model_id
+
+        settings.ai_model_id = settings.ai_model_id or self.ai_model_id
+
         response = await self._send_request(request_settings=settings)
         assert isinstance(response, (TextCompletion, ChatCompletion))  # nosec
+
         metadata = self._get_metadata_from_text_response(response)
         return [
             self._create_text_content(response, choice, metadata)
@@ -78,7 +85,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         ]
 
     @override
-    async def get_streaming_text_contents(
+    async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
@@ -100,10 +107,13 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
                 settings.messages = [{"role": "user", "content": prompt}]
             else:
                 settings.messages.append({"role": "user", "content": prompt})
-        settings.ai_model_id = self.ai_model_id
+
+        settings.ai_model_id = settings.ai_model_id or self.ai_model_id
         settings.stream = True
+
         response = await self._send_request(request_settings=settings)
         assert isinstance(response, AsyncStream)  # nosec
+
         async for chunk in response:
             if len(chunk.choices) == 0:
                 continue
@@ -113,6 +123,8 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
                 self._create_streaming_text_content(chunk, choice, chunk_metadata)
                 for choice in chunk.choices
             ]
+
+    # endregion
 
     def _create_text_content(
         self,

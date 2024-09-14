@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -122,6 +122,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         var hotelId = new Guid("55555555-5555-5555-5555-555555555555");
 
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(fixture.HttpClient!, "TestDeleteRecord");
+
+        await sut.CreateCollectionAsync();
 
         var record = this.CreateTestHotel(hotelId);
 

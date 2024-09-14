@@ -3,6 +3,10 @@ using System;
 using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
+<<<<<<< HEAD
+=======
+using Azure.Identity;
+>>>>>>> main
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -55,7 +59,11 @@ public sealed class MixedAgentTests
         // Arrange, Act & Assert
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(azureOpenAISettings),
+<<<<<<< HEAD
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAISettings.ApiKey, new Uri(azureOpenAISettings.Endpoint)),
+=======
+            OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAISettings.Endpoint)),
+>>>>>>> main
             azureOpenAISettings.ChatDeploymentName!);
     }
 
@@ -120,9 +128,15 @@ public sealed class MixedAgentTests
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
 
         kernelBuilder.AddAzureOpenAIChatCompletion(
+<<<<<<< HEAD
             configuration.ChatDeploymentName!,
             configuration.Endpoint,
             configuration.ApiKey);
+=======
+            deploymentName: configuration.ChatDeploymentName!,
+            endpoint: configuration.Endpoint,
+            credentials: new AzureCliCredential());
+>>>>>>> main
 
         return kernelBuilder.Build();
     }

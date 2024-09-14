@@ -96,7 +96,7 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
         chatHistory.AddUserMessage("Hi, I'm looking for new power tools, any suggestion?");
         await MessageOutputAsync(chatHistory);
 
-        // First bot assistant message
+        // First assistant message
         var reply = await chat.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         await MessageOutputAsync(chatHistory);
@@ -105,7 +105,7 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
         chatHistory.AddUserMessage("I'm looking for a drill, a screwdriver and a hammer.");
         await MessageOutputAsync(chatHistory);
 
-        // Second bot assistant message
+        // Second assistant message
         reply = await chat.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         await MessageOutputAsync(chatHistory);

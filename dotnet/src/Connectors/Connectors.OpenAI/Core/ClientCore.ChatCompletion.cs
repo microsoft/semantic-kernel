@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel;
@@ -410,6 +410,22 @@ internal partial class ClientCore
                             }
 
                             OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+                            try
+                            {
+                                foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
+                                {
+                                    if (contentPart.Kind == ChatMessageContentPartKind.Text)
+                                    {
+                                        (contentBuilder ??= new()).Append(contentPart.Text);
+                                    }
+                                }
+                                OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+                            }
+                            catch (NullReferenceException)
+                            {
+                                // Temporary workaround for OpenAI SDK Bug here: https://github.com/openai/openai-dotnet/issues/198
+                                // TODO: Remove this try-catch block once the bug is fixed.
+                            }
                         }
 
                         var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, targetModel, metadata);

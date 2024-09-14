@@ -65,9 +65,12 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
+<<<<<<< main
             chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+=======
+>>>>>>> upstream/main
             ChatMessageContent message = new(AuthorRole.User, input);
             chat.AddChatMessage(new(AuthorRole.User, input));
             this.WriteAgentChatMessage(message);

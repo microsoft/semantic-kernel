@@ -72,6 +72,7 @@ clean:
 
 build:
 	uvx --from build pyproject-build --installer uv
+<<<<<<< main
 SHELL = bash
 
 .PHONY: help install recreate-env pre-commit
@@ -126,3 +127,5 @@ install-pre-commit:
 	poetry run pre-commit install
 	# Edit the pre-commit config file to change the config path
 	sed -i 's|\.pre-commit-config\.yaml|\.conf/\.pre-commit-config\.yaml|g' .git/hooks/pre-commit
+=======
+>>>>>>> upstream/main

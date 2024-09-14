@@ -202,7 +202,7 @@ public class ChatMessageContentTests
             new FunctionCallContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }),
             new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result"),
             new FileReferenceContent(fileId: "file-id-1") { ModelId = "model-7", Metadata = new Dictionary<string, object?>() { ["metadata-key-7"] = "metadata-value-7" } },
-            new AnnotationContent() { ModelId = "model-8", FileId = "file-id-2", StartIndex = 2, EndIndex = 24, Quote = "quote-8", Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } }
+            new AnnotationContent("quote-8") { ModelId = "model-8", FileId = "file-id-2", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } }
         ];
 
         // Act

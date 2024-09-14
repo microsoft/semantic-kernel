@@ -77,9 +77,12 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
             };
 
         // Invoke chat and display messages.
+<<<<<<< main
         string input = "concept: maps made out of egg cartons.";
         chat.Add(new ChatMessageContent(AuthorRole.User, input));
         Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+=======
+>>>>>>> upstream/main
         ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
         chat.AddChatMessage(input);
         this.WriteAgentChatMessage(input);

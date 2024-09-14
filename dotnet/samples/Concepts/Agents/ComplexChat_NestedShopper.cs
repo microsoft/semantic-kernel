@@ -1,4 +1,8 @@
+<<<<<<< main
 // Copyright (c) Microsoft. All rights reserved.
+=======
+﻿// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> upstream/main
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -159,9 +163,12 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
 
         async Task InvokeChatAsync(string input)
         {
+<<<<<<< main
             chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+=======
+>>>>>>> upstream/main
             ChatMessageContent message = new(AuthorRole.User, input);
             chat.AddChatMessage(message);
             this.WriteAgentChatMessage(message);

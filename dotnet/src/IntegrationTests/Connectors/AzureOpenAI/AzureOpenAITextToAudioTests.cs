@@ -1,7 +1,11 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+usi>>>>>>>+HEAD
+tity;
+ususing Azure.Identity;
+>>>>>>>-main
+ion;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -27,12 +31,15 @@ public sealed class AzureOpenAITextToAudioTests
 
         var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAITextToAudio(
-                azureOpenAIConfiguration.DeploymentName,
+                azureOpenAIConfigurat                azureOpenAIConfiguration.DeploymentName,
                 azureOpenAIConfiguration.Endpoint,
                 azureOpenAIConfiguration.ApiKey)
-            .Build();
-
-        var service = kernel.GetRequiredService<ITextToAudioService>();
+>>>>>>>+HEAD
+ration.D                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                credential: new AzureCliCredential())
+>>>>>>>-main
+ITextToAudioService>();
 
         // Act
         var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");
