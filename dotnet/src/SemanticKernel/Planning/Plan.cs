@@ -245,6 +245,13 @@ public Plan(string? originalPlan)
             kernel.LoggerFactory);
 
         return this.InvokeNextStepAsync(context, cancellationToken);
+            variables
+            // kernel.Memory,
+            // kernel.Skills,
+            // kernel.Log,
+            // cancellationToken
+        );
+        return this.InvokeNextStepAsync(context);
     }
 
     /// <summary>
@@ -266,6 +273,9 @@ public Plan(string? originalPlan)
             // Execute the step
             var functionContext = new SKContext(functionVariables, context.Skills, context.LoggerFactory);
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
+            // var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
+            var functionContext = new SKContext(functionVariables);
+            var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
             if (result.ErrorOccurred)
@@ -326,6 +336,21 @@ public Plan(string? originalPlan)
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
+        // context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
+        context ??= new SKContext(new ContextVariables());
+
+        context.Variables.Update(input);
+
+        return this.InvokeAsync(context, settings, log, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+        CancellationToken cancellationToken = default)
+    {
+        // context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancellationToken);
+        context ??= new SKContext(this.State);
+
         if (this.Function is not null)
         {
             AddVariablesToContext(this.State, context);
