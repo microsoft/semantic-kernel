@@ -1,0 +1,44 @@
+<<<<<<< main
+tree aa77d5c9de2ff4df053e5a2ce029904ec3471ee0
+parent ba7009bff2057cee326033e455907a403a8728e2
+author Bryan Roe <74067792+Bryan-Roe@users.noreply.github.com> 1722951676 -0700
+committer Bryan Roe <74067792+Bryan-Roe@users.noreply.github.com> 1722951676 -0700
+tree 78036b380f2eacc5eda184acc66b4a2dba58668b
+parent f0d7072bbd7daa24b233e84abc7785260338d828
+author Bryan Roe <Bryan-Roe@github.com> 1724032958 -0700
+committer Bryan Roe <Bryan-Roe@github.com> 1724032958 -0700
+gpgsig -----BEGIN SSH SIGNATURE-----
+ U1NIU0lHAAAAAQAAAGgAAAATZWNkc2Etc2hhMi1uaXN0cDI1NgAAAAhuaXN0cDI1NgAAAEEE0qDc
+ g12H9DTxxQaXPCH7fBdg/mpUYNSO5mXg91HtJ4pzWNOYWzjecEzgGzR7iuR2+Ig79bhqT9QF75bd
+ ijncbgAAAANnaXQAAAAAAAAABnNoYTUxMgAAAGQAAAATZWNkc2Etc2hhMi1uaXN0cDI1NgAAAEkA
+ AAAgFV4yRfSI/NgTg1g2FO2n7RnmB6V0QYxb0lLn1Xsfr3MAAAAhAP493DL6glJadoCxs7a1BrXc
+ Vaz7ynz51/g0Hlt9MDNe
+ -----END SSH SIGNATURE-----
+ 
+
+Update GitHub Action for generating test reports.q
+tree 78036b380f2eacc5eda184acc66b4a2dba58668b
+parent f0d7072bbd7daa24b233e84abc7785260338d828
+author Bryan Roe <Bryan-Roe@github.com> 1724032958 -0700
+committer Bryan Roe <Bryan-Roe@github.com> 1724032958 -0700
+gpgsig -----BEGIN SSH SIGNATURE-----
+ U1NIU0lHAAAAAQAAAGgAAAATZWNkc2Etc2hhMi1uaXN0cDI1NgAAAAhuaXN0cDI1NgAAAEEE0qDc
+ g12H9DTxxQaXPCH7fBdg/mpUYNSO5mXg91HtJ4pzWNOYWzjecEzgGzR7iuR2+Ig79bhqT9QF75bd
+ ijncbgAAAANnaXQAAAAAAAAABnNoYTUxMgAAAGQAAAATZWNkc2Etc2hhMi1uaXN0cDI1NgAAAEkA
+ AAAgFV4yRfSI/NgTg1g2FO2n7RnmB6V0QYxb0lLn1Xsfr3MAAAAhAP493DL6glJadoCxs7a1BrXc
+ Vaz7ynz51/g0Hlt9MDNe
+ -----END SSH SIGNATURE-----
+ 
+
+
+
+=======
+tree 8517131fbb708e8c1a07c71d1dc7a0c4621de82a
+parent 3ace628a3bd48156df0e191e09308bd77cdb8f6e
+author Bryan Roe <Bryanmroe@outlook.com> 1726073837 -0700
+committer Bryan Roe <74067792+Bryan-Roe@users.noreply.github.com> 1726075779 -0700
+
+Add Microsoft.Extensions.TimeProvider.Testing 8.8.0 version
+
+and DuckDB.NET.Data 1.0.1 version to PackageVersion.
+>>>>>>> 15978d9
