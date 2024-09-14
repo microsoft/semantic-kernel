@@ -8,6 +8,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -23,6 +24,8 @@
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -54,6 +57,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -68,6 +72,9 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
+>>>>>>> Stashed changes
 =======
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
 >>>>>>> Stashed changes
@@ -106,6 +113,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -167,6 +175,10 @@
 >>>>>>> origin/main
 =======
 <<<<<<<+main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 <<<<<<<+main
@@ -184,6 +196,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
+<<<<<<< Updated upstream
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.7.0" />
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
@@ -257,6 +270,19 @@
 =======
 >>>>>>>+upstream/main
 >>>>>>> Stashed changes
+=======
+<<<<<<< Updated upstream
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.7.0" />
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>>+upstream/main
+>>>>>>> Stashed changes
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> main-upstream
+>>>>>>> Stashed changes
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
@@ -276,6 +302,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -328,10 +355,15 @@
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+    <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
+=======
+>>>>>>> Stashed changes
 <<<<<<<+main
     <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
 =======
     <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< main
 =======
@@ -349,6 +381,16 @@
     <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
 >>>>>>> Stashed changes
 >>>>>>> upstream/main
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> main-upstream
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
     <PackageVersion Include="xunit" Version="2.9.0" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
@@ -359,6 +401,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -378,6 +421,12 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
+=======
+    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" /> 
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
 =======
@@ -386,6 +435,7 @@
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -396,6 +446,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> Stashed changes
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.0.1" />
@@ -405,6 +457,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.16" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.16" />
@@ -419,6 +472,11 @@
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.16" />
+    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.16" />
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -430,6 +488,7 @@
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -440,12 +499,15 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.64.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
+<<<<<<< Updated upstream
 <<<<<<< main
     <PackageVersion Include="YamlDotNet" Version="16.0.0" />
 =======
@@ -476,6 +538,13 @@
 =======
     <PackageVersion Include="YamlDotNet" Version="15.3.0" />
 >>>>>>> upstream/main
+>>>>>>> Stashed changes
+=======
+<<<<<<< Updated upstream
+    <PackageVersion Include="YamlDotNet" Version="16.0.0" />
+=======
+<<<<<<< main
+    <PackageVersion Include="YamlDotNet" Version="16.0.0" />
 >>>>>>> Stashed changes
 =======
     <PackageVersion Include="YamlDotNet" Version="15.3.0" />
@@ -487,6 +556,7 @@
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -514,11 +584,15 @@
 =======
     <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
 >>>>>>> Stashed changes
+=======
+    <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
+>>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.1" />
     <PackageVersion Include="Qdrant.Client" Version="1.9.0" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
+<<<<<<< Updated upstream
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -540,6 +614,13 @@
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< Updated upstream
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
+=======
+<<<<<<< main
 >>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24318.1" />
 =======
@@ -548,6 +629,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 >>>>>>> origin/main
 =======
@@ -563,6 +645,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> Stashed changes
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
@@ -602,6 +686,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 <<<<<<< Updated upstream
@@ -620,6 +705,9 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+=======
+    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
+>>>>>>> Stashed changes
 =======
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
 >>>>>>> Stashed changes
