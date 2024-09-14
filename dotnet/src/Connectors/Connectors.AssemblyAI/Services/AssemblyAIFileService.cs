@@ -29,7 +29,7 @@ public sealed class AssemblyAIFileService
         string apiKey,
         Uri? endpoint = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null
+        public AssemblyAIFileService(string apiKey, Uri? endpoint = null, HttpClient? httpClient = null) : this(apiKey, endpoint, httpClient, null)
     )
     {
         Verify.NotNullOrWhiteSpace(apiKey);

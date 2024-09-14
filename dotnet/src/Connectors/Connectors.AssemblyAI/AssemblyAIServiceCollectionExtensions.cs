@@ -25,7 +25,7 @@ public static class AssemblyAIServiceCollectionExtensions
         this IServiceCollection services,
         string apiKey,
         Uri? endpoint = null,
-        string? serviceId = null
+        string serviceId
     )
     {
 Verify.NotNull(services);

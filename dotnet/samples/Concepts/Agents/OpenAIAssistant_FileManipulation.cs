@@ -19,6 +19,7 @@ namespace Agents;
 public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
+    public async Task RunAsync()
     public async Task AnalyzeCSVFileUsingOpenAIAssistantAgentAsync()
     {
         OpenAIClientProvider provider = this.GetClientProvider();

@@ -235,6 +235,7 @@ public abstract class AgentChat
                 this.History.Add(message);
 
                 if (isVisible)
+                // Don't expose internal messages to caller.
                 // Don't expose function-call and function-result messages to caller.
                 if (message.Items.All(i => i is FunctionCallContent || i is FunctionResultContent))
                 {

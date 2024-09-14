@@ -68,8 +68,8 @@ public class AudioContent : BinaryContent
     /// <param name="metadata">Additional metadata</param>
     public AudioContent(
         Uri uri,
-        string? modelId = null,
-        object? innerContent = null,
+        public AudioContent(Uri uri, string modelId, object? innerContent, IReadOnlyDictionary<string, object?>? metadata)
+        object innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {

@@ -63,7 +63,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="searchIndexClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when options are misconfigured.</exception>
-    public AzureAISearchMemoryRecordService(SearchIndexClient searchIndexClient, AzureAISearchMemoryRecordServiceOptions<TDataModel>? options = default)
+    public AzureAISearchMemoryRecordService(SearchIndexClient searchIndexClient) : this(searchIndexClient, default) { }
     {
         // Verify.
         Verify.NotNull(searchIndexClient);
