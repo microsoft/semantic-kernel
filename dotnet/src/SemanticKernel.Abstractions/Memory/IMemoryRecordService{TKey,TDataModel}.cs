@@ -55,7 +55,7 @@ public interface IMemoryRecordService<TKey, TDataModel>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The unique identifier for the memory record.</returns>
     /// <exception cref="MemoryServiceCommandExecutionException">Throw when the command fails to execute for any reason.</exception>
-    Task DeleteAsync(TKey key, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task DeleteAsync(TKey key);
 
     /// <summary>
     /// Deletes a batch of memory records from the data store. Does not guarantee that the collection exists.
@@ -78,7 +78,7 @@ public interface IMemoryRecordService<TKey, TDataModel>
     /// <returns>The unique identifier for the memory record.</returns>
     /// <exception cref="MemoryServiceCommandExecutionException">Throw when the command fails to execute for any reason.</exception>
     /// <exception cref="MemoryDataModelMappingException">Throw when mapping between the storage model and data model fails.</exception>
-    Task<TKey> UpsertAsync(TDataModel record, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task<TKey> UpsertAsync(TDataModel record) => UpsertAsync(record, default, CancellationToken.None);
 
     /// <summary>
     /// Upserts a group of memory records into the data store. Does not guarantee that the collection exists.

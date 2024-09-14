@@ -35,8 +35,8 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     public AssemblyAIAudioToTextService(
         string apiKey,
         Uri? endpoint = null,
-        HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null
+        public AssemblyAIAudioToTextService(string apiKey) : this(apiKey, null, null, null) {}
+        public AssemblyAIAudioToTextService(string apiKey, Uri? endpoint = null, HttpClient? httpClient = null) : this(apiKey, endpoint, httpClient, null)
     )
     {
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -52,7 +52,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         AudioContent content,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken
     )
     {
         Verify.NotNull(content);
@@ -60,7 +60,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         string uploadUrl;
         if (content.Data is { IsEmpty: false })
         {
-            uploadUrl = await this._client.UploadFileAsync(content.Data.Value, cancellationToken).ConfigureAwait(false);
+            await this._client.UploadFileAsync(content.Data.Value, cancellationToken).ConfigureAwait(false);
         }
         else if (content.Uri is not null)
         {

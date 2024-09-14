@@ -1,5 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Resources;
 
@@ -7,6 +8,8 @@ namespace Agents;
 
 /// <summary>
 /// Demonstrate using <see cref="OpenAIFileService"/> .
+/// Demonstrate using retrieval on <see cref="OpenAIAssistantAgent"/> .
+/// Demonstrate uploading and retrieving files with <see cref="OpenAIFileService"/> .
 /// </summary>
 public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(output)
 {
@@ -16,6 +19,7 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
     protected override bool ForceOpenAI => true;
 
     [Fact]
+    public async Task RunAsync()
     public async Task UploadAndRetrieveFilesAsync()
     {
 #pragma warning disable CS0618 // Type or member is obsolete
