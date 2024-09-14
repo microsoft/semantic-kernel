@@ -76,6 +76,42 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< main
@@ -191,6 +227,7 @@
 =======
 >>>>>>>+upstream/main
 >>>>>>> Stashed changes
+<<<<<<< main
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
 >>>>>>> Stashed changes
@@ -207,6 +244,61 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>>+upstream/main
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
+=======
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
+=======
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
+=======
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
+=======
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
+=======
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
+=======
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
+=======
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
+=======
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> upstream/main
+>>>>>>> origin/main
 >>>>>>> Stashed changes
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
@@ -284,6 +376,63 @@
 =======
     <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
 <<<<<<< main
+<<<<<<< main
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 >>>>>>> upstream/main
 =======
 >>>>>>> main-upstream
