@@ -1,0 +1,17 @@
+{
+  "messages": [
+    {
+      "content": "Can you help me tell the time in Seattle right now?",
+      "role": "user"
+    },
+    {
+      "content": "Sure! The time in Seattle is currently 3:00 PM.",
+      "role": "assistant"
+    },
+    {
+      "content": "What about New York?",
+      "role": "user"
+    }
+  ],
+  "model": "Dummy"
+}
