@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 runme:
   id: 01J0BYQX0015D3BH4FX0NPA9QQ
@@ -494,4 +495,9 @@ license: other
 ---
 
 Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+>>>>>>> main
+=======
+---
+license: mit
+---
 >>>>>>> main
