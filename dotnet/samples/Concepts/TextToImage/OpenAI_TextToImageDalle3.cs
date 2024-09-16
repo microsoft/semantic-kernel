@@ -92,7 +92,7 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
         var kernel = builder.Build();
         var service = kernel.GetRequiredService<ITextToImageService>();
 
-        var generatedImages = await service.GetImageContentsAsync(new TextContent("A cute baby sea otter"), new OpenAITextToImageExecutionSettings { Width = 1024, Height = 1024 });
+        var generatedImages = await service.GetImageContentsAsync(new TextContent("A cute baby sea otter"), new OpenAITextToImageExecutionSettings { Size = (Width: 1792, Height: 1024) });
 
         this.Output.WriteLine(generatedImages[0].Uri!.ToString());
     }

@@ -2,7 +2,6 @@
 
 using System;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -11,7 +10,6 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
@@ -156,14 +154,14 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
     [InlineData("bytes", "b64_json")]
     [InlineData("b64_json", "b64_json")]
     [InlineData("GeneratedImage.Bytes", "b64_json")]
-    public async Task GetUriImageContentsResponseFormatRequestWorksCorrectlyAsync(string? uri, string? expectedResponseFormat)
+    public async Task GetUriImageContentsResponseFormatRequestWorksCorrectlyAsync(string? responseFormatOption, string? expectedResponseFormat)
     {
         // Arrange
-        object? responseFormatObject = uri switch
+        object? responseFormatObject = responseFormatOption switch
         {
             "GeneratedImage.Uri" => GeneratedImageFormat.Uri,
             "GeneratedImage.Bytes" => GeneratedImageFormat.Bytes,
-            _ => uri
+            _ => responseFormatOption
         };
 
         this._httpClient.BaseAddress = new Uri("https://api-host");

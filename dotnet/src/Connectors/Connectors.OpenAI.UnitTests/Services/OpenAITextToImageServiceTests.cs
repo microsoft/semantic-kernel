@@ -3,16 +3,14 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 using Moq;
-using Xunit;
 using OpenAI.Images;
-using System.Text.Unicode;
-using System.Text;
+using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
 
@@ -42,7 +40,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public void ConstructorWorksCorrectly()
     {
         // Arrange & Act
-        var sut = new OpenAITextToImageService("apikey", "organization", "model");
+        var sut = new OpenAITextToImageService("apiKey", "organization", "model");
 
         // Assert
         Assert.NotNull(sut);
@@ -80,14 +78,14 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     [InlineData("bytes", "b64_json")]
     [InlineData("b64_json", "b64_json")]
     [InlineData("GeneratedImage.Bytes", "b64_json")]
-    public async Task GetUriImageContentsResponseFormatRequestWorksCorrectlyAsync(string? uri, string? expectedResponseFormat)
+    public async Task GetUriImageContentsResponseFormatRequestWorksCorrectlyAsync(string? responseFormatOption, string? expectedResponseFormat)
     {
         // Arrange
-        object? responseFormatObject = uri switch
+        object? responseFormatObject = responseFormatOption switch
         {
             "GeneratedImage.Uri" => GeneratedImageFormat.Uri,
             "GeneratedImage.Bytes" => GeneratedImageFormat.Bytes,
-            _ => uri
+            _ => responseFormatOption
         };
 
         var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
