@@ -5,7 +5,8 @@ contact: { Evan Mattson }
 date: { 2024-09-10 }
 deciders: { Ben Thomas }
 consulted: { Dmytro Struk }
-informed: { Eduard van Valkenburg, Ben Thomas, Tao Chen, Dmytro Struk, Mark Wallace }
+informed:
+  { Eduard van Valkenburg, Ben Thomas, Tao Chen, Dmytro Struk, Mark Wallace }
 ---
 
 # Supporting OpenAI's Structured Output in Semantic Kernel Python
@@ -26,107 +27,15 @@ Developers building AI-driven solutions using the OpenAI API often face challeng
 
 With the introduction of Structured Outputs, OpenAI models are now able to strictly adhere to developer-provided JSON schemas. This feature eliminates the need for cumbersome workarounds and provides a more streamlined, efficient way to ensure consistency and reliability in model outputs. Integrating Structured Outputs into the Semantic Kernel orchestration SDK will enable developers to create more powerful, schema-compliant applications, reduce errors, and improve overall productivity.
 
+## Out of scope
+
+This ADR will focus on the `structured outputs` `response_format` and not on the function calling aspect. A subsequent ADR will be created around that in the future.
+
 ## Using Structured Outputs
 
-### 1. Function Calling
+### Response Format
 
-Structured outputs can be used for function calling to ensure adherence to a schema. In Python, using OpenAI's latest SDK, developers can use the `pydantic_function_tool()` method to convert a Pydantic model into the required `structured output` function-calling JSON schema:
-
-
-```python
-client = AsyncOpenAI()
-
-# Note that the SDK method is `client.beta.chat.completions.parse` instead of our current `client.chat.completions.create` call.
-completion = await client.beta.chat.completions.parse(
-    model="gpt-4o-2024-08-06",
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a helpful assistant. The current date is August 6, 2024. You help users query for the data they are looking for by calling the query function.",
-        },
-        {
-            "role": "user",
-            "content": "look up all my orders in may of last year that were fulfilled but not delivered on time",
-        },
-    ],
-    tools=[
-        openai.pydantic_function_tool(SomeClass), # This is a new method provided by OpenAI to handle Pydantic models
-    ],
-)
-
-print(completion.choices[0].message)
-```
-
-This produces the following JSON Schema:
-
-```json
-{
-  "type": "function",
-  "function": {
-    "name": "math-add_numbers",
-    "description": "Adds two numbers together and provides the result",
-    "strict": true, // new key-value pair for structured output function calling
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "number_one": {
-          "type": "integer",
-          "description": "The first number to add"
-        },
-        "number_two": {
-          "type": "integer",
-          "description": "The second number to add"
-        }
-      },
-      "required": ["number_one", "number_two"],
-      "additionalProperties": false // new key-value pair for structured output function calling
-    }
-  }
-}
-```
-
-For non-Pydantic models, SK will need to manually add the `strict` and `additionalProperties` key-value pairs to the JSON schema, which is currently built as part of the `KernelParameterMetadata`.
-
-Additionally, OpenAI states:
-
-"By default, when you use function calling, the API will offer best-effort matching for your parameters, which means that occasionally the model may miss parameters or get their types wrong when using complicated schemas. Structured Outputs is a feature that ensures model outputs for function calls will exactly match your supplied schema. Structured Outputs for function calling can be enabled with a single parameter, just by supplying strict: true."
-
-source: https://platform.openai.com/docs/guides/function-calling/function-calling-with-structured-outputs
-
-When using `structured output` for function calling, we should default the `strict` boolean to true and allow developers to opt-out of the default `strict` behavior when their scenario requires it, such as:
-
-- The developer needs to use unsupported JSON Schema features (e.g., recursive schemas).
-- Each API request includes a dynamic schema that may change between requests and is not repeatable.
-
-source: https://platform.openai.com/docs/guides/function-calling/why-might-i-not-want-to-turn-on-structured-outputs
-
-### Structured Output Function Calling Implementation Options
-
-We have two main options to handle configuring the `strict` boolean when generating the JSON Schema for function calling:
-
-1. Kernel Function Decorator 
-
-Allow the developer to define on a kernel function decorator whether that they want it to be handled with the `strict` boolean:
-
-```python
-@kernel_function(name="my_function", description="A sample kernel function.", strict_schema=True|False)
-    def my_method(self) -> str:
-        pass
-```
-
-By default, the `strict_schema` would be set to `True`. Developers can toggle it off if necessary. This provides fine-grained control for each kernel function, particularly useful for dynamic or unsupported schemas.
-
-2. FunctionChoiceBehavior 
-
-Allow the developer to specify `strict_schema` on `FunctionChoiceBehavior`, which is part of the prompt execution settings. This method applies the `strict` boolean to all kernel plugins/functions defined, offering less fine-grained control than the first option.
-
-```python
-function_choice_behavior=FunctionChoiceBehavior.Auto(strict_schema=True|False)
-```
-
-### 2. Response Format
-
-OpenAI also offers a new way to set the `response_format` on the prompt execution settings attribute:
+OpenAI offers a new way to set the `response_format` on the prompt execution settings attribute:
 
 ```python
 from pydantic import BaseModel
@@ -152,7 +61,7 @@ completion = await client.beta.chat.completions.parse(
         {"role": "system", "content": "You are a helpful math tutor."},
         {"role": "user", "content": "solve 8x + 31 = 2"},
     ],
-    response_format=MathResponse, # a Pydantic model type is directly configured
+    response_format=MathResponse, # for example, a Pydantic model type is directly configured
 )
 
 message = completion.choices[0].message
@@ -194,7 +103,7 @@ For non-Pydantic models, SK will need to use the `KernelParameterMetadata`'s `sc
 }
 ```
 
-to create the required `json_schema` response format:
+to create the required `json_schema` `response_format`:
 
 ```json
 "response_format": {
@@ -202,7 +111,7 @@ to create the required `json_schema` response format:
     "json_schema": {
         "name": "math_response",
         "strict": true,
-        "schema": { // start of existing SK `schema_data`
+        "schema": { // start of existing SK `schema_data` from above
             "type": "object",
             "properties": {
                 "steps": {
@@ -227,7 +136,7 @@ to create the required `json_schema` response format:
             },
             "required": ["steps", "final_answer"],
             "additionalProperties": false
-        } // end of existing SK `schema_data`
+        } // end of existing SK `schema_data` from above
     }
 }
 ```
@@ -290,7 +199,7 @@ Since the `response_format` chat completion method differs from the current chat
 
 ### Callouts
 
-- The `structured output` `response_format` is limited to a single object type at this time. We will use a Pydantic validator to make sure a user is only specifying the proper type/amount:
+- The `structured output` `response_format` is limited to a single object type at this time. We will use a Pydantic validator to make sure a user is only specifying the proper type/amount of objects:
 
 ```python
 @field_validator("response_format", mode="before")
@@ -306,7 +215,4 @@ Since the `response_format` chat completion method differs from the current chat
 
 ### Chosen Solution
 
-There are two methods to support structured outputs in Semantic Kernel: function calling and response_format.
-
-- Function Calling: We will introduce the ability to handle a new key-value pair within the kernel function decorator. This will provide fine-grained control, allowing developers to specify whether a given Semantic Kernel function should adhere to the strict schema or not.
 - Response Format: Since there's a single approach here, we should integrate a clean implementation to define both streaming and non-streaming chat completions using our existing `OpenAIChatCompletionBase` and `OpenAIHandler` code.
