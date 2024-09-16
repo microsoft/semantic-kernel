@@ -421,14 +421,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             if (propertyInfo != null)
             {
                 var bsonElementAttribute = propertyInfo.GetCustomAttribute<BsonElementAttribute>();
-                if (bsonElementAttribute is not null)
-                {
-                    storagePropertyNames[property.DataModelPropertyName] = bsonElementAttribute.ElementName;
-                }
 
-                storagePropertyNames[property.DataModelPropertyName] = bsonElementAttribute is not null ?
-                    bsonElementAttribute.ElementName :
-                    property.DataModelPropertyName;
+                storagePropertyNames[property.DataModelPropertyName] = bsonElementAttribute?.ElementName ?? property.DataModelPropertyName;
             }
         }
 
