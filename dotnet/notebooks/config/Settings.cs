@@ -59,7 +59,7 @@ public static class Settings
             else
             {
                 // Use the best model by default, and reduce the setup friction, particularly in VS Studio.
-                model = "gpt-3.5-turbo";
+                model = "gpt-4o-mini";
             }
         }
 

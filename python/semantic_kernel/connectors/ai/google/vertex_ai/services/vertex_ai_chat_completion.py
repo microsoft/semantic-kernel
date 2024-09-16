@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.google.shared_utils import (
@@ -42,7 +43,10 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
 )
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_chat_completion,
+    trace_streaming_chat_completion,
+)
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -133,6 +137,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
 
     @override
+    @trace_streaming_chat_completion(VertexAIBase.MODEL_PROVIDER_NAME)
     async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
@@ -318,7 +323,10 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         """
         return {
             "prompt_feedback": response.prompt_feedback,
-            "usage": response.usage_metadata,
+            "usage": CompletionUsage(
+                prompt_tokens=response.usage_metadata.prompt_token_count,
+                completion_tokens=response.usage_metadata.candidates_token_count,
+            ),
         }
 
     def _get_metadata_from_candidate(self, candidate: Candidate) -> dict[str, Any]:
