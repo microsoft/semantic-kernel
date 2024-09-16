@@ -59,9 +59,9 @@ public sealed class TextContent : KernelContent
     }
 
     /// <summary>
-    /// When converting a string to a <see cref="TextContent"/>, the text is set to the string value.
+    /// When converting a string to a <see cref="TextContent"/>, the content is automatically set to the string value.
     /// </summary>
-    /// <param name="text"></param>
+    /// <param name="text">Text content</param>
     public static implicit operator TextContent(string text)
     {
         return new TextContent(text);
