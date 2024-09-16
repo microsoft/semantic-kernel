@@ -401,15 +401,22 @@ internal partial class ClientCore
                         // If we're intending to invoke function calls, we need to consume that function call information.
                         if (toolCallingConfig.AutoInvoke)
                         {
-                            foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
+                            try
                             {
-                                if (contentPart.Kind == ChatMessageContentPartKind.Text)
+                                foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
                                 {
-                                    (contentBuilder ??= new()).Append(contentPart.Text);
+                                    if (contentPart.Kind == ChatMessageContentPartKind.Text)
+                                    {
+                                        (contentBuilder ??= new()).Append(contentPart.Text);
+                                    }
                                 }
+                                OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                             }
-
-                            OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+                            catch (NullReferenceException)
+                            {
+                                // Temporary workaround for OpenAI SDK Bug here: https://github.com/openai/openai-dotnet/issues/198
+                                // TODO: Remove this try-catch block once the bug is fixed.
+                            }
                         }
 
                         var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, targetModel, metadata);
@@ -643,7 +650,9 @@ internal partial class ClientCore
             TopP = (float?)executionSettings.TopP,
             FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
             PresencePenalty = (float?)executionSettings.PresencePenalty,
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             Seed = executionSettings.Seed,
+#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
