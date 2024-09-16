@@ -12,6 +12,17 @@ namespace ChatCompletion;
 /// This gives more control over model responses, allows to avoid model hallucinations and write simpler prompts without a need to be specific about response format.
 /// More information here: <see href="https://platform.openai.com/docs/guides/structured-outputs/structured-outputs"/>.
 /// </summary>
+/// <remarks>
+/// OpenAI Structured Outputs feature is available only in latest large language models, starting with GPT-4o.
+/// More information here: <see href="https://platform.openai.com/docs/guides/structured-outputs/supported-models"/>.
+/// </remarks>
+/// <remarks>
+/// Some keywords from JSON Schema are not supported in OpenAI Structured Outputs yet. For example, "format" keyword for strings is not supported.
+/// It means that properties with types <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="DateOnly"/>, <see cref="TimeSpan"/>,
+/// <see cref="TimeOnly"/>, <see cref="Uri"/> are not supported.
+/// This information should be taken into consideration during response format type design.
+/// More information here: <see href="https://platform.openai.com/docs/guides/structured-outputs/some-type-specific-keywords-are-not-yet-supported"/>.
+/// </remarks>
 public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
