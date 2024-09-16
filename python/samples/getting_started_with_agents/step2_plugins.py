@@ -5,9 +5,11 @@ from typing import Annotated
 
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
@@ -72,13 +74,14 @@ async def main():
 
     # Add the OpenAIChatCompletion AI Service to the Kernel
     service_id = "agent"
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
+    kernel.add_service(OpenAIChatCompletion(service_id=service_id))
 
     settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
     # Configure the function choice behavior to auto invoke kernel functions
     settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
-    kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
+    kernel.add_plugin(MathPlugin(), plugin_name="math")
+    kernel.add_plugin(TimePlugin(), plugin_name="time")
 
     # Create the agent
     agent = ChatCompletionAgent(
@@ -89,10 +92,10 @@ async def main():
     chat = ChatHistory()
 
     # Respond to user input
-    await invoke_agent(agent, "Hello", chat)
-    await invoke_agent(agent, "What is the special soup?", chat)
-    await invoke_agent(agent, "What is the special drink?", chat)
-    await invoke_agent(agent, "Thank you", chat)
+    await invoke_agent(agent, "What is the current hour added to 10?", chat)
+    # await invoke_agent(agent, "What is the special soup?", chat)
+    # await invoke_agent(agent, "What is the special drink?", chat)
+    # await invoke_agent(agent, "Thank you", chat)
 
 
 if __name__ == "__main__":
