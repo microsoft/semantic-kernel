@@ -59,7 +59,7 @@ async def main():
     kernel = Kernel()
 
     # Add the sample plugin to the kernel
-    kernel.add_plugin(plugin=MenuPlugin(), name="menu")
+    kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
 
     # Create the OpenAI Assistant Agent
     service_id = "agent"
