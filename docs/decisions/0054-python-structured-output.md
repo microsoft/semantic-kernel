@@ -213,6 +213,8 @@ Since the `response_format` chat completion method differs from the current chat
         return value
 ```
 
+- We need to provide good (and easy-to-find) documentation to let users and developers know which OpenAI/AzureOpenAI models/API-versions support `structured outputs`.
+
 ### Chosen Solution
 
 - Response Format: Since there's a single approach here, we should integrate a clean implementation to define both streaming and non-streaming chat completions using our existing `OpenAIChatCompletionBase` and `OpenAIHandler` code.
