@@ -37,7 +37,7 @@ internal partial class ClientCore
         SpeechGenerationOptions options = new()
         {
             ResponseFormat = responseFormat,
-            Speed = audioExecutionSettings.Speed,
+            SpeedRatio = audioExecutionSettings.Speed,
         };
 
         ClientResult<BinaryData> response = await RunRequestAsync(() => this.Client!.GetAudioClient(targetModel).GenerateSpeechAsync(prompt, GetGeneratedSpeechVoice(audioExecutionSettings?.Voice), options, cancellationToken)).ConfigureAwait(false);
@@ -58,15 +58,17 @@ internal partial class ClientCore
         };
 
     private static (GeneratedSpeechFormat? Format, string? MimeType) GetGeneratedSpeechFormatAndMimeType(string? format)
-        => format?.ToUpperInvariant() switch
+    {
+        switch (format?.ToUpperInvariant())
         {
-            "WAV" => (GeneratedSpeechFormat.Wav, "audio/wav"),
-            "MP3" => (GeneratedSpeechFormat.Mp3, "audio/mpeg"),
-            "OPUS" => (GeneratedSpeechFormat.Opus, "audio/opus"),
-            "FLAC" => (GeneratedSpeechFormat.Flac, "audio/flac"),
-            "AAC" => (GeneratedSpeechFormat.Aac, "audio/aac"),
-            "PCM" => (GeneratedSpeechFormat.Pcm, "audio/l16"),
-            null => (null, null),
-            _ => throw new NotSupportedException($"The format '{format}' is not supported.")
-        };
+            case "WAV": return (GeneratedSpeechFormat.Wav, "audio/wav");
+            case "MP3": return (GeneratedSpeechFormat.Mp3, "audio/mpeg");
+            case "OPUS": return (GeneratedSpeechFormat.Opus, "audio/opus");
+            case "FLAC": return (GeneratedSpeechFormat.Flac, "audio/flac");
+            case "AAC": return (GeneratedSpeechFormat.Aac, "audio/aac");
+            case "PCM": return (GeneratedSpeechFormat.Pcm, "audio/l16");
+            case null: return (null, null);
+            default: throw new NotSupportedException($"The format '{format}' is not supported.");
+        }
+    }
 }
