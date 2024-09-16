@@ -178,7 +178,7 @@ public class RedisJsonGenericDataModelMapperTests
         Assert.Empty(dataModel.Vectors);
     }
 
-    private class ComplexObject
+    private sealed class ComplexObject
     {
         public string Prop1 { get; set; } = string.Empty;
 
