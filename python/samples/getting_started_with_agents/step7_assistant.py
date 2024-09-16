@@ -5,8 +5,6 @@ from typing import Annotated
 from semantic_kernel.agents.open_ai import AzureAssistantAgent, OpenAIAssistantAgent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.core_plugins.math_plugin import MathPlugin
-from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
@@ -61,8 +59,7 @@ async def main():
     kernel = Kernel()
 
     # Add the sample plugin to the kernel
-    kernel.add_plugin(MathPlugin(), plugin_name="math")
-    kernel.add_plugin(TimePlugin(), plugin_name="time")
+    kernel.add_plugin(plugin=MenuPlugin(), name="menu")
 
     # Create the OpenAI Assistant Agent
     service_id = "agent"
@@ -78,7 +75,10 @@ async def main():
     thread_id = await agent.create_thread()
 
     try:
-        await invoke_agent(agent, thread_id=thread_id, input="What is 10+10 and 10-10?")
+        await invoke_agent(agent, thread_id=thread_id, input="Hello")
+        await invoke_agent(agent, thread_id=thread_id, input="What is the special soup?")
+        await invoke_agent(agent, thread_id=thread_id, input="What is the special drink?")
+        await invoke_agent(agent, thread_id=thread_id, input="Thank you")
     finally:
         await agent.delete_thread(thread_id)
         await agent.delete()
