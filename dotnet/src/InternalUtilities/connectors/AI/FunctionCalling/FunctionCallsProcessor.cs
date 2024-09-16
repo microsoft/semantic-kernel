@@ -114,6 +114,11 @@ internal sealed class FunctionCallsProcessor
             }
         }
 
+        if (configuration.Functions?.Count == 0)
+        {
+            this._logger.LogDebug("No functions provided to AI model. Function calling is disabled.");
+        }
+
         return configuration;
     }
 

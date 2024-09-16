@@ -28,7 +28,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         }
         """;
 
-        var sut = JsonSerializer.Deserialize<AutoFunctionChoiceBehavior>(json);
+        var sut = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json);
 
         // Act
         var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
@@ -58,7 +58,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         }
         """;
 
-        var sut = JsonSerializer.Deserialize<AutoFunctionChoiceBehavior>(json);
+        var sut = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json);
 
         // Act
         var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
@@ -84,7 +84,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         }
         """;
 
-        var sut = JsonSerializer.Deserialize<AutoFunctionChoiceBehavior>(json);
+        var sut = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json);
 
         // Act
         var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
@@ -112,7 +112,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         }
         """;
 
-        var sut = JsonSerializer.Deserialize<RequiredFunctionChoiceBehavior>(json);
+        var sut = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json);
 
         // Act
         var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
@@ -142,7 +142,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         }
         """;
 
-        var sut = JsonSerializer.Deserialize<RequiredFunctionChoiceBehavior>(json);
+        var sut = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json);
 
         // Act
         var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
@@ -168,7 +168,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         }
         """;
 
-        var sut = JsonSerializer.Deserialize<RequiredFunctionChoiceBehavior>(json);
+        var sut = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json);
 
         // Act
         var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
@@ -196,7 +196,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         }
         """;
 
-        var sut = JsonSerializer.Deserialize<NoneFunctionChoiceBehavior>(json);
+        var sut = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json);
 
         // Act
         var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
@@ -226,7 +226,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         }
         """;
 
-        var sut = JsonSerializer.Deserialize<NoneFunctionChoiceBehavior>(json);
+        var sut = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json);
 
         // Act
         var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
@@ -252,7 +252,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         }
         """;
 
-        var sut = JsonSerializer.Deserialize<NoneFunctionChoiceBehavior>(json);
+        var sut = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json);
 
         // Act
         var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
