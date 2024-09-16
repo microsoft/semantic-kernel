@@ -22,7 +22,7 @@ public class BaseIntegrationTest
                 o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.TooManyRequests);
                 o.CircuitBreaker = new HttpCircuitBreakerStrategyOptions
                 {
-                    SamplingDuration = TimeSpan.FromSeconds(40.0), // The duration should be least double of an attempt timeout
+                    SamplingDuration = TimeSpan.FromSeconds(60.0), // The duration should be least double of an attempt timeout
                 };
                 o.AttemptTimeout = new HttpTimeoutStrategyOptions
                 {
