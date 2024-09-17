@@ -13,7 +13,7 @@ public class ContextDependentAdvertising(ITestOutputHelper output) : BaseTest(ou
 {
     /// <summary>
     /// This sample demonstrates how to advertise functions to AI model based on the context of the chat history.
-    /// It advertise functions to the AI model based on the game sate.
+    /// It advertises functions to the AI model based on the game state.
     /// For example, if the maze has not been created, advertise the create maze function only to prevent the AI model
     /// from adding traps or treasures to the maze before it is created.
     /// </summary>
@@ -35,7 +35,7 @@ public class ContextDependentAdvertising(ITestOutputHelper output) : BaseTest(ou
         KernelFunction addTreasures = gameUtils["AddTreasuresToMaze"];
         KernelFunction playGame = gameUtils["PlayGame"];
 
-        ChatHistory chatHistory = new();
+        ChatHistory chatHistory = [];
         chatHistory.AddUserMessage("I would like to play a maze game with a lot of tricky traps and shiny treasures.");
 
         // Loop until the game has started or the max iteration is reached.
@@ -87,7 +87,7 @@ public class ContextDependentAdvertising(ITestOutputHelper output) : BaseTest(ou
         return builder.Build();
     }
 
-    public sealed class GameUtils
+    private sealed class GameUtils
     {
         [KernelFunction]
         public static string CreateMaze() => "Maze created.";
