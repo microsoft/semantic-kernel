@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.contents import ChatHistory
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -38,6 +39,11 @@ You are a helpful math tutor. Guide the user through the solution step by step.
 """
 
 
+###################################################################
+# Define the Pydantic model that represents the structured output
+# from the OpenAI service. This model will be used to parse the
+# structured output from the OpenAI service, and ensure that the model
+# correctly outputs the schema based on the Pydantic model.
 class Step(KernelBaseModel):
     explanation: str
     output: str
@@ -46,6 +52,9 @@ class Step(KernelBaseModel):
 class Reasoning(KernelBaseModel):
     steps: list[Step]
     final_answer: str
+
+
+###################################################################
 
 
 auth_token: AccessToken | None = None
@@ -92,8 +101,8 @@ req_settings.temperature = 0.7
 req_settings.top_p = 0.8
 req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["chat"]})
 
-# This is the key setting in this example that tells the OpenAI service to return structured output based on the
-# Pydantic model Reasoning.
+# NOTE: This is the key setting in this example that tells the OpenAI service
+# to return structured output based on the Pydantic model Reasoning.
 req_settings.response_format = Reasoning
 
 
@@ -116,16 +125,19 @@ async def main():
             chat_history=history,
         )
         print("Mosscap:> ", end="")
+        result_content: list[StreamingChatMessageContent] = []
         async for message in answer:
-            print(str(message[0]), end="")
-        print("\n")
-        return True
-    answer = await kernel.invoke(
-        chat_function,
-        chat_history=history,
-    )
-    print(f"Mosscap:> {answer}")
-    return True
+            result_content.append(message[0])
+            print(str(message[0]), end="", flush=True)
+        if result_content:
+            result = "".join([str(content) for content in result_content])
+    else:
+        result = await kernel.invoke(
+            chat_function,
+            chat_history=history,
+        )
+        print(f"Mosscap:> {answer}")
+    history.add_assistant_message(str(result))
 
 
 if __name__ == "__main__":
