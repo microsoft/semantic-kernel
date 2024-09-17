@@ -32,7 +32,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         await foreach (string result in stringResults.Results)
         {
             Console.WriteLine(result);
-            Console.WriteLine(new string('-', HorizontalRuleLength));
+            WriteHorizontalRule();
         }
 
         // Search and return results as TextSearchResult items
@@ -43,7 +43,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
             Console.WriteLine($"Name:  {result.Name}");
             Console.WriteLine($"Value: {result.Value}");
             Console.WriteLine($"Link:  {result.Link}");
-            Console.WriteLine(new string('-', HorizontalRuleLength));
+            WriteHorizontalRule();
         }
 
         // Search and return s results as BingWebPage items
@@ -56,7 +56,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
             Console.WriteLine($"Url:             {result.Url}");
             Console.WriteLine($"DisplayUrl:      {result.DisplayUrl}");
             Console.WriteLine($"DateLastCrawled: {result.DateLastCrawled}");
-            Console.WriteLine(new string('-', HorizontalRuleLength));
+            WriteHorizontalRule();
         }
     }
 
@@ -85,7 +85,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         await foreach (string result in stringResults.Results)
         {
             Console.WriteLine(result);
-            Console.WriteLine(new string('-', HorizontalRuleLength));
+            WriteHorizontalRule();
         }
     }
 
@@ -115,13 +115,11 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         await foreach (TextSearchResult result in textResults.Results)
         {
             Console.WriteLine(result.Link);
-            Console.WriteLine(new string('-', HorizontalRuleLength));
+            WriteHorizontalRule();
         }
     }
 
     #region private
-    private const int HorizontalRuleLength = 80;
-
     /// <summary>
     /// Test mapper which converts an arbitrary search result to a string using JSON serialization.
     /// </summary>

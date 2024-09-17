@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 
@@ -16,17 +17,105 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task UsingVolatileVectorStoreRecordTextSearchAsync()
     {
-        var volatileStore = new VolatileVectorStore();
-        var recordCollection = volatileStore.GetCollection<string, DataModel>("MyData");
+        // Create an embedding generation service.
+        var textEmbeddingGeneration = new OpenAITextEmbeddingGenerationService(
+                modelId: TestConfiguration.OpenAI.EmbeddingModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey);
 
-        // Create an ITextSearch instance using Bing search
-        /*
-        var textSearch = new VectorStoreRecordTextSearch<DataModel<string>>(
-            vectorSearch: recordCollection,
-            textEmbeddingGeneration: );
-        */
+        // Construct a volatile vector store.
+        var vectorStore = new VolatileVectorStore();
+        var collectionName = "records";
+
+        // Delegate which will create a record.
+        static DataModel CreateRecord(string text, ReadOnlyMemory<float> embedding)
+        {
+            return new()
+            {
+                Key = Guid.NewGuid(),
+                Text = text,
+                Embedding = embedding
+            };
+        }
+
+        // Create a record collection from a list of strings using the provided delegate.
+        string[] lines =
+        [
+            "Semantic Kernel is a lightweight, open-source development kit that lets you easily build AI agents and integrate the latest AI models into your C#, Python, or Java codebase. It serves as an efficient middleware that enables rapid delivery of enterprise-grade solutions.",
+            "Semantic Kernel is a new AI SDK, and a simple and yet powerful programming model that lets you add large language capabilities to your app in just a matter of minutes. It uses natural language prompting to create and execute semantic kernel AI tasks across multiple languages and platforms.",
+            "In this guide, you learned how to quickly get started with Semantic Kernel by building a simple AI agent that can interact with an AI service and run your code. To see more examples and learn how to build more complex AI agents, check out our in-depth samples."
+        ];
+        var vectorizedSearch = await CreateCollectionFromListAsync<Guid, DataModel>(
+            vectorStore, collectionName, lines, textEmbeddingGeneration, CreateRecord);
+
+        // Create a text search instance using the volatile vector store.
+        var stringMapper = new DataModelTextSearchStringMapper();
+        var resultMapper = new DataModelTextSearchResultMapper();
+        var textSearch = new VectorStoreRecordTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration, stringMapper, resultMapper);
 
         var query = "What is the Semantic Kernel?";
+
+        // Search and return results as a string items
+        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new() { Count = 2, Offset = 0 });
+        Console.WriteLine("--- String Results ---\n");
+        await foreach (string result in stringResults.Results)
+        {
+            Console.WriteLine(result);
+            WriteHorizontalRule();
+        }
+
+        // Search and return results as TextSearchResult items
+        KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new() { Count = 2, Offset = 0 });
+        Console.WriteLine("\n--- Text Search Results ---\n");
+        await foreach (TextSearchResult result in textResults.Results)
+        {
+            Console.WriteLine($"Name:  {result.Name}");
+            Console.WriteLine($"Value: {result.Value}");
+            Console.WriteLine($"Link:  {result.Link}");
+            WriteHorizontalRule();
+        }
+
+        // Search and return s results as BingWebPage items
+        KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new() { Count = 2, Offset = 0 });
+        Console.WriteLine("\n--- DataModel Results ---\n");
+        await foreach (DataModel result in fullResults.Results)
+        {
+            Console.WriteLine($"Key:         {result.Key}");
+            Console.WriteLine($"Text:        {result.Text}");
+            Console.WriteLine($"Embedding:   {result.Embedding.Length}");
+            WriteHorizontalRule();
+        }
+    }
+
+    /// <summary>
+    /// String mapper which converts a DataModel to a string.
+    /// </summary>
+    private sealed class DataModelTextSearchStringMapper : ITextSearchStringMapper
+    {
+        /// <inheritdoc />
+        public string MapFromResultToString(object result)
+        {
+            if (result is DataModel dataModel)
+            {
+                return dataModel.Text;
+            }
+            throw new ArgumentException("Invalid result type.");
+        }
+    }
+
+    /// <summary>
+    /// Result mapper which converts a DataModel to a TextSearchResult.
+    /// </summary>
+    private sealed class DataModelTextSearchResultMapper : ITextSearchResultMapper
+    {
+        /// <inheritdoc />
+        public TextSearchResult MapFromResultToTextSearchResult(object result)
+        {
+            if (result is DataModel dataModel)
+            {
+                return new TextSearchResult(name: dataModel.Key.ToString(), value: dataModel.Text);
+            }
+            throw new ArgumentException("Invalid result type.");
+        }
     }
 
     /// <summary>
