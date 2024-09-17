@@ -39,9 +39,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
     public static readonly HashSet<Type> s_supportedVectorTypes =
     [
         typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-        typeof(ReadOnlyMemory<double>),
-        typeof(ReadOnlyMemory<double>?)
+        typeof(ReadOnlyMemory<float>?)
     ];
 
     /// <summary>
