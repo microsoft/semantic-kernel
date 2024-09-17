@@ -387,15 +387,11 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
 
-        if (vector is not ReadOnlyMemory<float> floatVector)
-        {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().Name} is not supported by the Redis JSON connector.");
-        }
-
         var internalOptions = options ?? Data.VectorSearchOptions.Default;
 
         // Build query & search.
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVector, internalOptions, this._storagePropertyNames, this._firstVectorPropertyName, null);
+        byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "JSON");
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(vectorBytes, internalOptions, this._storagePropertyNames, this._firstVectorPropertyName, null);
         var results = await this.RunOperationAsync(
             "FT.SEARCH",
             () => this._database

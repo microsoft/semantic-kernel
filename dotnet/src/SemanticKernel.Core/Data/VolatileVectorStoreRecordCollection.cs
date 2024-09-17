@@ -227,7 +227,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().Name} is not supported by the Qdrant connector.");
+            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Qdrant connector.");
         }
 
         // Resolve options and get requested vector property or first as default.

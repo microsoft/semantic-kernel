@@ -289,7 +289,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// A test model for the vector store that only uses basic types as supported by HashSets Redis mode.
     /// </summary>
-    public class BasicHotel
+    public class BasicHotel<TVectorElement>
     {
         [VectorStoreRecordKey]
         public string HotelId { get; init; }
@@ -304,7 +304,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         public string Description { get; init; }
 
         [VectorStoreRecordVector(4)]
-        public ReadOnlyMemory<float>? DescriptionEmbedding { get; init; }
+        public ReadOnlyMemory<TVectorElement>? DescriptionEmbedding { get; init; }
 
         [JsonPropertyName("parking_is_included")]
         [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
@@ -312,6 +312,20 @@ public class RedisVectorStoreFixture : IAsyncLifetime
 
         [VectorStoreRecordData]
         public double Rating { get; init; }
+    }
+
+    /// <summary>
+    /// A test model for the vector store that only uses basic types as supported by HashSets Redis mode.
+    /// </summary>
+    public class BasicFloat32Hotel : BasicHotel<float>
+    {
+    }
+
+    /// <summary>
+    /// A test model for the vector store that only uses basic types as supported by HashSets Redis mode.
+    /// </summary>
+    public class BasicFloat64Hotel : BasicHotel<double>
+    {
     }
 }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
