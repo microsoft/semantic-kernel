@@ -5,7 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Options used to construct an instance of <see cref="VectorStoreRecordTextSearch{TRecord}"/>
+/// Options used to construct an instance of <see cref="VectorStoreRecordTextSearch{TRecord}"/>.
+/// At the moment this is empty but it is being included for future use.
 /// </summary>
 [Experimental("SKEXP0001")]
 public sealed class VectorStoreRecordTextSearchOptions
