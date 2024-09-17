@@ -51,14 +51,14 @@ public class VolatileVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
             // Save the record collection to a file stream.
             using (FileStream fileStream = new(filePath, FileMode.OpenOrCreate))
             {
-                await vectorStore.SerializeAsJsonAsync<Guid, DataModel>(collectionName, fileStream);
+                await vectorStore.SerializeCollectionAsJsonAsync<Guid, DataModel>(collectionName, fileStream);
             }
         }
 
         // Load the record collection from the file stream and perform a search.
         using (FileStream fileStream = new(filePath, FileMode.Open))
         {
-            var vectorSearch = await vectorStore.DeserializeFromJsonAsync<Guid, DataModel>(fileStream);
+            var vectorSearch = await vectorStore.DeserializeCollectionFromJsonAsync<Guid, DataModel>(fileStream);
 
             // Search the collection using a vector search.
             var searchString = "What is the Semantic Kernel?";
