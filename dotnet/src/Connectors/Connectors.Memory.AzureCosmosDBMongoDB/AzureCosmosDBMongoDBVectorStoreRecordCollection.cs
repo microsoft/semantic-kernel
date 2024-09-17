@@ -523,10 +523,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? optionsVectorFieldName)
     {
         // If vector property name is provided in options, try to find it in schema or throw an exception.
-        if (optionsVectorFieldName is not null)
+        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
         {
-            var vectorDataModelPropertyNameExists = !this._dataModelPropertyNames
-                .TryGetValue(optionsVectorFieldName, out var vectorDataModelPropertyName);
+            var vectorDataModelPropertyNameExists = this._dataModelPropertyNames
+                .TryGetValue(optionsVectorFieldName!, out var vectorDataModelPropertyName);
 
             // Check vector properties by data model property name and storage property name.
             var vectorProperty = this._vectorProperties
@@ -618,7 +618,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         foreach (var keyValuePair in dictionary)
         {
-            result[keyValuePair.Key] = keyValuePair.Value;
+            result[keyValuePair.Value] = keyValuePair.Key;
         }
 
         return result;
