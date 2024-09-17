@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using JsonSchemaMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -26,6 +27,17 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
+    /// <summary>
+    /// <see cref="JsonSchemaMapperConfiguration"/> for JSON schema format for structured outputs.
+    /// </summary>
+    private static readonly JsonSchemaMapperConfiguration s_jsonSchemaMapperConfiguration = new()
+    {
+        IncludeSchemaVersion = false,
+        IncludeTypeInEnums = true,
+        TreatNullObliviousAsNonNullable = true,
+        TransformSchemaNode = OpenAIJsonSchemaTransformer.Transform
+    };
+
     protected const string ModelProvider = "openai";
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
 
@@ -90,6 +102,7 @@ internal partial class ClientCore
             { nameof(completions.CreatedAt), completions.CreatedAt },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
+            { nameof(completions.Refusal), completions.Refusal },
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completions.FinishReason), completions.FinishReason.ToString() },
@@ -104,6 +117,7 @@ internal partial class ClientCore
             { nameof(completionUpdate.Id), completionUpdate.Id },
             { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },
             { nameof(completionUpdate.SystemFingerprint), completionUpdate.SystemFingerprint },
+            { nameof(completionUpdate.RefusalUpdate), completionUpdate.RefusalUpdate },
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completionUpdate.FinishReason), completionUpdate.FinishReason?.ToString() },
@@ -528,9 +542,26 @@ internal partial class ClientCore
                     }
                 }
                 break;
+            case Type formatObjectType:
+                return GetJsonSchemaResponseFormat(formatObjectType);
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Gets instance of <see cref="ChatResponseFormat"/> object for JSON schema format for structured outputs.
+    /// </summary>
+    private static ChatResponseFormat GetJsonSchemaResponseFormat(Type formatObjectType)
+    {
+        var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ?
+            Nullable.GetUnderlyingType(formatObjectType)! :
+            formatObjectType;
+
+        var schema = KernelJsonSchemaBuilder.Build(options: null, type, configuration: s_jsonSchemaMapperConfiguration);
+        var schemaBinaryData = BinaryData.FromString(schema.ToString());
+
+        return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, strictSchemaEnabled: true);
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>

@@ -608,7 +608,7 @@ async def test_auth_token_fail(aca_python_sessions_unit_test_env):
 
     plugin = SessionsPythonTool(auth_callback=token_cb)
     with pytest.raises(
-        FunctionExecutionException, match="Failed to retrieve the client auth token with messages: Could not get token."
+        FunctionExecutionException, match="Failed to retrieve the client auth token with message: Could not get token."
     ):
         await plugin._ensure_auth_token()
 
