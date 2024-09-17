@@ -41,26 +41,29 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 
         // Initialize ChatResponseFormat object with JSON schema of desired response format.
         ChatResponseFormat chatResponseFormat = ChatResponseFormat.CreateJsonSchemaFormat(
-            name: "math_reasoning",
+            name: "movie_result",
             jsonSchema: BinaryData.FromString("""
                 {
                     "type": "object",
                     "properties": {
-                        "Steps": {
+                        "Movies": {
                             "type": "array",
                             "items": {
                                 "type": "object",
                                 "properties": {
-                                    "Explanation": { "type": "string" },
-                                    "Output": { "type": "string" }
+                                    "Title": { "type": "string" },
+                                    "Director": { "type": "string" },
+                                    "ReleaseYear": { "type": "integer" },
+                                    "Rating": { "type": "number" },
+                                    "IsAvailableOnStreaming": { "type": "boolean" },
+                                    "Tags": { "type": "array", "items": { "type": "string" } }
                                 },
-                                "required": ["Explanation", "Output"],
+                                "required": ["Title", "Director", "ReleaseYear", "Rating", "IsAvailableOnStreaming", "Tags"],
                                 "additionalProperties": false
                             }
-                        },
-                        "FinalAnswer": { "type": "string" }
+                        }
                     },
-                    "required": ["Steps", "FinalAnswer"],
+                    "required": ["Movies"],
                     "additionalProperties": false
                 }
                 """),
@@ -73,77 +76,24 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
         };
 
         // Send a request and pass prompt execution settings with desired response format.
-        var result = await kernel.InvokePromptAsync("How can I solve 8x + 7 = -23?", new(executionSettings));
+        var result = await kernel.InvokePromptAsync("What are the top 10 movies of all time?", new(executionSettings));
 
         // Deserialize string response to a strong type to access type properties.
-        // At this point, the deserialization logic won't fail, because MathReasoning type was described using JSON schema.
-        // This ensures that response string is a serialized version of MathReasoning type.
-        var mathReasoning = JsonSerializer.Deserialize<MathReasoning>(result.ToString())!;
+        // At this point, the deserialization logic won't fail, because MovieResult type was described using JSON schema.
+        // This ensures that response string is a serialized version of MovieResult type.
+        var movieResult = JsonSerializer.Deserialize<MovieResult>(result.ToString())!;
 
         // Output the result.
-        this.OutputResult(mathReasoning);
+        this.OutputResult(movieResult);
 
         // Output:
 
-        // Step #1
-        // Explanation: Start with the given equation.
-        // Output: 8x + 7 = -23
-
-        // Step #2
-        // Explanation: To isolate the term containing x, subtract 7 from both sides of the equation.
-        // Output: 8x + 7 - 7 = -23 - 7
-
-        // Step #3
-        // Explanation: To solve for x, divide both sides of the equation by 8, which is the coefficient of x.
-        // Output: (8x)/8 = (-30)/8
-
-        // Step #4
-        // Explanation: This simplifies to x = -3.75, as dividing -30 by 8 gives -3.75.
-        // Output: x = -3.75
-
-        // Final answer: x = -3.75
-    }
-
-    /// <summary>
-    /// This method shows how to enable Structured Outputs feature with <see cref="Type"/> object by providing
-    /// the type of desired response format. In this scenario, JSON schema will be created automatically based on provided type.
-    /// </summary>
-    [Fact]
-    public async Task StructuredOutputsWithTypeInExecutionSettingsExample1Async()
-    {
-        // Initialize kernel.
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
-                modelId: "gpt-4o-2024-08-06",
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
-
-        // Specify response format by setting Type object in prompt execution settings.
-        var executionSettings = new OpenAIPromptExecutionSettings
-        {
-            ResponseFormat = typeof(MathReasoning)
-        };
-
-        // Send a request and pass prompt execution settings with desired response format.
-        var result = await kernel.InvokePromptAsync("How can I solve 8x + 7 = -23?", new(executionSettings));
-
-        // Deserialize string response to a strong type to access type properties.
-        // At this point, the deserialization logic won't fail, because MathReasoning type was specified as desired response format.
-        // This ensures that response string is a serialized version of MathReasoning type.
-        var mathReasoning = JsonSerializer.Deserialize<MathReasoning>(result.ToString())!;
-
-        // Output the result.
-        this.OutputResult(mathReasoning);
-
-        // Output:
-
-        // Step #1
-        // Explanation: Start with the given equation.
-        // Output: 8x + 7 = -23
-
-        // Step #2
-        // Explanation: To isolate the term containing x, subtract 7 from both sides of the equation.
-        // Output: 8x + 7 - 7 = -23 - 7
+        // Title: The Lord of the Rings: The Fellowship of the Ring
+        // Director: Peter Jackson
+        // Release year: 2001
+        // Rating: 8.8
+        // Is available on streaming: True
+        // Tags: Adventure,Drama,Fantasy
 
         // ...and more...
     }
@@ -153,7 +103,7 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
     /// the type of desired response format. In this scenario, JSON schema will be created automatically based on provided type.
     /// </summary>
     [Fact]
-    public async Task StructuredOutputsWithTypeInExecutionSettingsExample2Async()
+    public async Task StructuredOutputsWithTypeInExecutionSettingsAsync()
     {
         // Initialize kernel.
         Kernel kernel = Kernel.CreateBuilder()
@@ -242,22 +192,6 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 
     #region private
 
-    /// <summary>Math reasoning class that will be used as desired chat completion response format (structured output).</summary>
-    private sealed class MathReasoning
-    {
-        public List<MathReasoningStep> Steps { get; set; }
-
-        public string FinalAnswer { get; set; }
-    }
-
-    /// <summary>Math reasoning step class that will be used as desired chat completion response format (structured output).</summary>
-    private sealed class MathReasoningStep
-    {
-        public string Explanation { get; set; }
-
-        public string Output { get; set; }
-    }
-
     /// <summary>Movie result struct that will be used as desired chat completion response format (structured output).</summary>
     private struct MovieResult
     {
@@ -308,19 +242,6 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
                 "Please review the attached document and provide your feedback by EOD.",
             ];
         }
-    }
-
-    /// <summary>Helper method to output <see cref="MathReasoning"/> object content.</summary>
-    private void OutputResult(MathReasoning mathReasoning)
-    {
-        for (var i = 0; i < mathReasoning.Steps.Count; i++)
-        {
-            this.Output.WriteLine($"Step #{i + 1}");
-            this.Output.WriteLine($"Explanation: {mathReasoning.Steps[i].Explanation}");
-            this.Output.WriteLine($"Output: {mathReasoning.Steps[i].Output}");
-        }
-
-        this.Output.WriteLine($"Final answer: {mathReasoning.FinalAnswer}");
     }
 
     /// <summary>Helper method to output <see cref="MovieResult"/> object content.</summary>
