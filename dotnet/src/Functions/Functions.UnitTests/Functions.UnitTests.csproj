@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Functions.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Functions.UnitTests</RootNamespace>
@@ -18,6 +18,10 @@
     <None Remove="OpenApi\TestPlugins\openapi_feature_testsV3_0.json" />
     <None Remove="OpenApi\TestPlugins\nonCompliant_documentV3_0.json" />
     <None Remove="OpenApi\TestPlugins\OpenApi.json" />
+    <None Remove="OpenAPI\TestPlugins\ai-plugin.json" />
+    <None Remove="OpenAPI\TestPlugins\documentV3_1.yaml" />
+    <None Remove="OpenAPI\TestPlugins\nonCompliant_documentV3_0.json" />
+    <None Remove="OpenAPI\TestPlugins\openapi.json" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Grpc\Protobuf\TestPlugins\protoV3.proto" />
@@ -38,6 +42,11 @@
     <EmbeddedResource Include="OpenApi\TestResponses\200FakeResponseSchema.json" />
     <EmbeddedResource Include="OpenApi\TestResponses\FakeResponseSchema.json" />
     <EmbeddedResource Include="OpenApi\TestResponses\DefaultResponseSchema.json" />
+    <EmbeddedResource Include="OpenAPI\TestPlugins\ai-plugin.json" />
+    <EmbeddedResource Include="OpenAPI\TestPlugins\documentV2_0.json" />
+    <EmbeddedResource Include="OpenAPI\TestPlugins\nonCompliant_documentV3_0.json" />
+    <EmbeddedResource Include="OpenAPI\TestPlugins\documentV3_1.yaml" />
+    <EmbeddedResource Include="OpenAPI\TestPlugins\documentV3_0.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
