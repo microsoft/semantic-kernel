@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToImage;
@@ -26,7 +27,10 @@ public sealed class AzureOpenAITextToImageTests
         Assert.NotNull(configuration);
 
         var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAITextToImage(configuration.DeploymentName, configuration.Endpoint, configuration.ApiKey)
+            .AddAzureOpenAITextToImage(
+                deploymentName: configuration.DeploymentName,
+                endpoint: configuration.Endpoint,
+                credentials: new AzureCliCredential())
             .Build();
 
         var service = kernel.GetRequiredService<ITextToImageService>();

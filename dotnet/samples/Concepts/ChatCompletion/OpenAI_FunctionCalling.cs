@@ -19,7 +19,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         const string ChatPrompt = """
             <message role="user">What is the weather like in Paris?</message>
         """;
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, executionSettings);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
@@ -39,7 +39,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result1 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result1);
 
@@ -60,7 +60,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         const string ChatPrompt = """
             <message role="user">Book a holiday for me from 6th June 2025 to 20th June 2025?</message>
         """;
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, executionSettings);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
@@ -79,7 +79,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         const string ChatPrompt = """
             <message role="user">Turn on the light?</message>
         """;
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, executionSettings);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
