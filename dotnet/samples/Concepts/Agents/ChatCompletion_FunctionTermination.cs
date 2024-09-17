@@ -112,7 +112,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             {
                 Instructions = "Answer questions about the menu.",
                 Kernel = CreateKernelWithFilter(),
-                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -175,7 +175,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             {
                 Instructions = "Answer questions about the menu.",
                 Kernel = CreateKernelWithFilter(),
-                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
