@@ -965,8 +965,8 @@ def test_format_tool_outputs(azure_openai_assistant_agent, openai_unit_test_env)
     frc = FunctionResultContent.from_function_call_content_and_result(fcc, 123, {"test2": "test2"})
     chat_history.add_message(message=frc.to_chat_message_content())
 
-    tool_outputs = azure_openai_assistant_agent._format_tool_outputs(chat_history)
-    assert tool_outputs[0] == {"tool_call_id": "test", "output": 123}
+    tool_outputs = azure_openai_assistant_agent._format_tool_outputs([fcc], chat_history)
+    assert tool_outputs[0] == {"tool_call_id": "test", "output": "123"}
 
 
 @pytest.mark.asyncio
