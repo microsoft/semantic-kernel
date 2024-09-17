@@ -22,15 +22,6 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord> where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-        typeof(ReadOnlyMemory<double>),
-        typeof(ReadOnlyMemory<double>?)
-    ];
-
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "AzureCosmosDBMongoDB";
 
@@ -119,8 +110,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         this._mapper = this._options.BsonDocumentCustomMapper ??
             new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(
                 this._vectorStoreRecordDefinition,
-                properties.KeyProperty.DataModelPropertyName,
-                s_supportedVectorTypes);
+                properties.KeyProperty.DataModelPropertyName);
     }
 
     /// <inheritdoc />
@@ -282,14 +272,16 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         Verify.NotNull(vector);
 
-        var vectorType = vector.GetType();
-
-        if (!s_supportedVectorTypes.Contains(vectorType))
+        Array vectorArray = vector switch
         {
-            throw new NotSupportedException(
-                $"The provided vector type {vectorType.FullName} is not supported by the Azure CosmosDB for MongoDB connector." +
-                $"Supported types are: {string.Join(", ", s_supportedVectorTypes.Select(l => l.FullName))}");
-        }
+            ReadOnlyMemory<float> memoryFloat => memoryFloat.ToArray(),
+            ReadOnlyMemory<double> memoryDouble => memoryDouble.ToArray(),
+            _ => throw new NotSupportedException(
+                $"The provided vector type {vector.GetType().FullName} is not supported by the Azure CosmosDB for MongoDB connector. " +
+                $"Supported types are: {string.Join(", ", [
+                    typeof(ReadOnlyMemory<float>).FullName,
+                    typeof(ReadOnlyMemory<double>).FullName])}")
+        };
 
         var searchOptions = options ?? VectorSearchOptions.Default;
         var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorFieldName);
@@ -303,10 +295,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         var searchQuery = vectorProperty.IndexKind switch
         {
-            IndexKind.Hnsw => GetSearchQueryForHnswIndex(vector, vectorPropertyName, searchOptions.Limit, this._options.EfSearch),
-            IndexKind.IvfFlat => GetSearchQueryForIvfIndex(vector, vectorPropertyName, searchOptions.Limit),
+            IndexKind.Hnsw => GetSearchQueryForHnswIndex(vectorArray, vectorPropertyName, searchOptions.Limit, this._options.EfSearch),
+            IndexKind.IvfFlat => GetSearchQueryForIvfIndex(vectorArray, vectorPropertyName, searchOptions.Limit),
             _ => throw new InvalidOperationException(
-                $"Index kind '{vectorProperty.IndexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore." +
+                $"Index kind '{vectorProperty.IndexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore. " +
                 $"Supported index kinds are: {string.Join(", ", [IndexKind.Hnsw, IndexKind.IvfFlat])}")
         };
 
