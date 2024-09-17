@@ -47,15 +47,13 @@ jobs:
     name: Python Pre-Merge Integration Tests
     needs: paths-filter
     if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
-    environment: ${{ matrix.environment }}
+    environment: "integration"
     strategy:
       max-parallel: 1
       fail-fast: false
       matrix:
         python-version: ["3.11"]
         os: [ubuntu-latest]
-        integration-tests: true,
-        environment: "integration",
     defaults:
       run:
         working-directory: python
@@ -115,7 +113,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
       - name: Azure CLI Login
-        if: github.event_name != 'pull_request' && matrix.integration-tests
+        if: github.event_name != 'pull_request'
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -185,13 +183,11 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
-        integration-tests: true,
-        environment: "integration",
     defaults:
       run:
         working-directory: python
     runs-on: ${{ matrix.os }}
-    environment: ${{ matrix.environment }}
+    environment: "integration"
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
