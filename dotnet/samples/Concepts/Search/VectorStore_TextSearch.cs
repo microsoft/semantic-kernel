@@ -6,12 +6,12 @@ using Microsoft.SemanticKernel.Embeddings;
 namespace Search;
 
 /// <summary>
-/// This example shows how to create and use a <see cref="VectorStoreRecordTextSearch{TRecord}"/>.
+/// This example shows how to create and use a <see cref="VectorStoreTextSearch{TRecord}"/>.
 /// </summary>
 public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Show how to create a <see cref="VectorStoreRecordTextSearch{TRecord}"/> and use it to perform a text search
+    /// Show how to create a <see cref="VectorStoreTextSearch{TRecord}"/> and use it to perform a text search
     /// on top of the <see cref="VolatileVectorStore"/>.
     /// </summary>
     [Fact]
@@ -50,7 +50,7 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         // Create a text search instance using the volatile vector store.
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
-        var textSearch = new VectorStoreRecordTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration, stringMapper, resultMapper);
+        var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration, stringMapper, resultMapper);
 
         var query = "What is the Semantic Kernel?";
 
@@ -74,7 +74,7 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
             WriteHorizontalRule();
         }
 
-        // Search and return s results as BingWebPage items
+        // Search and returns results as DataModel items
         KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new() { Count = 2, Offset = 0 });
         Console.WriteLine("\n--- DataModel Results ---\n");
         await foreach (DataModel result in fullResults.Results)

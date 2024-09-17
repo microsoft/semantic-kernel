@@ -13,12 +13,12 @@ namespace Microsoft.SemanticKernel.Data;
 /// A Vector Store Text Search implementation that can be used to perform searches using a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
-public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
+public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TRecord : class
 {
     /// <summary>
-    /// Create an instance of the <see cref="VectorStoreRecordTextSearch{TRecord}"/> with the
+    /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
     /// provided <see cref="IVectorizedSearch{TRecord}"/> for performing searches and
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
@@ -26,13 +26,13 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
     /// <param name="textEmbeddingGeneration"><see cref="ITextEmbeddingGenerationService"/> instance used to create a vector from the text query.</param>
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
-    /// <param name="options">Options used to construct an instance of <see cref="VectorStoreRecordTextSearch{TRecord}"/></param>
-    public VectorStoreRecordTextSearch(
+    /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
+    public VectorStoreTextSearch(
         IVectorizedSearch<TRecord> vectorizedSearch,
         ITextEmbeddingGenerationService textEmbeddingGeneration,
         ITextSearchStringMapper stringMapper,
         ITextSearchResultMapper resultMapper,
-        VectorStoreRecordTextSearchOptions? options = null)
+        VectorStoreTextSearchOptions? options = null)
     {
         Verify.NotNull(vectorizedSearch);
         Verify.NotNull(textEmbeddingGeneration);
@@ -46,19 +46,19 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
     }
 
     /// <summary>
-    /// Create an instance of the <see cref="VectorStoreRecordTextSearch{TRecord}"/> with the
+    /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
     /// provided <see cref="IVectorizableTextSearch{TRecord}"/> for performing searches and
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
     /// <param name="vectorizableTextSearch"><see cref="IVectorizableTextSearch{TRecord}"/> instance used to perform the text search.</param>
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
-    /// <param name="options">Options used to construct an instance of <see cref="VectorStoreRecordTextSearch{TRecord}"/></param>
-    public VectorStoreRecordTextSearch(
+    /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
+    public VectorStoreTextSearch(
         IVectorizableTextSearch<TRecord> vectorizableTextSearch,
         ITextSearchStringMapper stringMapper,
         ITextSearchResultMapper resultMapper,
-        VectorStoreRecordTextSearchOptions? options = null)
+        VectorStoreTextSearchOptions? options = null)
     {
         Verify.NotNull(vectorizableTextSearch);
         Verify.NotNull(stringMapper);
