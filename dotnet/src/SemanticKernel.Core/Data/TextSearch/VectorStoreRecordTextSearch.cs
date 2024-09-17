@@ -106,11 +106,8 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
     private readonly ITextSearchStringMapper _stringMapper;
     private readonly ITextSearchResultMapper _resultMapper;
 
-    //private static readonly ITextSearchStringMapper s_defaultStringMapper = new DefaultTextSearchStringMapper();
-    //private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
-
     /// <summary>
-    /// Execute a vactor search and return the results.
+    /// Execute a vector search and return the results.
     /// </summary>
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Search options.</param>
@@ -125,11 +122,14 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
             Limit = searchOptions.Count,
         };
 
-        var vector = await this._textEmbeddingGeneration.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
-        var vectorQuery = VectorSearchQuery.CreateQuery(vector);
+        if (this._vectorizedSearch is not null)
+        {
+            var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        var searchResponse = this._vectorizedSearch.VectorizedSearchAsync(vectorQuery, vectorSearchOptions, cancellationToken);
-        return searchResponse;
+            return this._vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, vectorSearchOptions, cancellationToken);
+        }
+
+        return this._vectorizableTextSearch!.VectorizableTextSearchAsync(query, vectorSearchOptions, cancellationToken);
     }
 
     /// <summary>
