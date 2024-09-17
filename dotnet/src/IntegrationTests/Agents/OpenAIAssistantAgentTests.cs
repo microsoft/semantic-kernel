@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -54,7 +56,43 @@ public sealed class OpenAIAssistantAgentTests
         Assert.NotNull(azureOpenAIConfiguration);
 
         await this.ExecuteAgentAsync(
-            OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
+            OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
+            azureOpenAIConfiguration.ChatDeploymentName!,
+            input,
+            expectedAnswerContains);
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
+    /// and targeting Open AI services.
+    /// </summary>
+    [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
+    [InlineData("What is the special soup?", "Clam Chowder")]
+    public async Task OpenAIAssistantAgentStreamingAsync(string input, string expectedAnswerContains)
+    {
+        OpenAIConfiguration openAISettings = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
+        Assert.NotNull(openAISettings);
+
+        await this.ExecuteStreamingAgentAsync(
+            OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
+            openAISettings.ModelId,
+            input,
+            expectedAnswerContains);
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
+    /// and targeting Azure OpenAI services.
+    /// </summary>
+    [Theory/*(Skip = "No supported endpoint configured.")*/]
+    [InlineData("What is the special soup?", "Clam Chowder")]
+    public async Task AzureOpenAIAssistantAgentStreamingAsync(string input, string expectedAnswerContains)
+    {
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        await this.ExecuteStreamingAgentAsync(
+            OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
             azureOpenAIConfiguration.ChatDeploymentName!,
             input,
             expectedAnswerContains);
@@ -100,6 +138,43 @@ public sealed class OpenAIAssistantAgentTests
         {
             await agent.DeleteAsync();
         }
+    }
+
+    private async Task ExecuteStreamingAgentAsync(
+        OpenAIClientProvider config,
+        string modelName,
+        string input,
+        string expected)
+    {
+        // Arrange
+        Kernel kernel = new();
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        kernel.Plugins.Add(plugin);
+
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                kernel,
+                config,
+                new(modelName)
+                {
+                    Instructions = "Answer questions about the menu.",
+                });
+
+        AgentGroupChat chat = new();
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+
+        // Act
+        StringBuilder builder = new();
+        await foreach (var message in chat.InvokeStreamingAsync(agent))
+        {
+            builder.Append(message.Content);
+        }
+
+        // Assert
+        ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
+        Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expected, history.First().Content, StringComparison.OrdinalIgnoreCase);
     }
 
     public sealed class MenuPlugin

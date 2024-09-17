@@ -27,3 +27,6 @@ COMPLETION_EVENT = "gen_ai.content.completion"
 # Activity event attributes
 PROMPT_EVENT_PROMPT = "gen_ai.prompt"
 COMPLETION_EVENT_COMPLETION = "gen_ai.completion"
+
+# Kernel specific attributes
+AVAILABLE_FUNCTIONS = "sk.available_functions"

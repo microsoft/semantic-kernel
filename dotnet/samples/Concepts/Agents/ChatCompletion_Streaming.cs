@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
-using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -9,8 +8,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 namespace Agents;
 
 /// <summary>
-/// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
-/// eliciting its response to three explicit user messages.
+/// Demonstrate consuming "streaming" message for <see cref="ChatCompletionAgent"/>.
 /// </summary>
 public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest(output)
 {
@@ -35,6 +33,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
         await InvokeAgentAsync(agent, chat, "Fortune favors the bold.");
         await InvokeAgentAsync(agent, chat, "I came, I saw, I conquered.");
         await InvokeAgentAsync(agent, chat, "Practice makes perfect.");
+
+        // Output the entire chat history
+        DisplayChatHistory(chat);
     }
 
     [Fact]
@@ -49,7 +50,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
                 Name = "Host",
                 Instructions = MenuInstructions,
                 Kernel = this.CreateKernelWithChatCompletion(),
-                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
@@ -61,6 +62,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
         // Respond to user input
         await InvokeAgentAsync(agent, chat, "What is the special soup?");
         await InvokeAgentAsync(agent, chat, "What is the special drink?");
+
+        // Output the entire chat history
+        DisplayChatHistory(chat);
     }
 
     // Local function to invoke agent and display the conversation messages.
@@ -70,7 +74,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
         chat.Add(message);
         this.WriteAgentChatMessage(message);
 
-        StringBuilder builder = new();
+        int historyCount = chat.Count;
+
+        bool isFirst = false;
         await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(chat))
         {
             if (string.IsNullOrEmpty(response.Content))
@@ -78,21 +84,34 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
                 continue;
             }
 
-            if (builder.Length == 0)
+            if (!isFirst)
             {
-                Console.WriteLine($"# {response.Role} - {response.AuthorName ?? "*"}:");
+                Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");
+                isFirst = true;
             }
 
             Console.WriteLine($"\t > streamed: '{response.Content}'");
-            builder.Append(response.Content);
         }
 
-        if (builder.Length > 0)
+        if (historyCount <= chat.Count)
         {
-            // Display full response and capture in chat history
-            ChatMessageContent response = new(AuthorRole.Assistant, builder.ToString()) { AuthorName = agent.Name };
-            chat.Add(response);
-            this.WriteAgentChatMessage(response);
+            for (int index = historyCount; index < chat.Count; index++)
+            {
+                this.WriteAgentChatMessage(chat[index]);
+            }
+        }
+    }
+
+    private void DisplayChatHistory(ChatHistory history)
+    {
+        // Display the chat history.
+        Console.WriteLine("================================");
+        Console.WriteLine("CHAT HISTORY");
+        Console.WriteLine("================================");
+
+        foreach (ChatMessageContent message in history)
+        {
+            this.WriteAgentChatMessage(message);
         }
     }
 

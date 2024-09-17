@@ -163,5 +163,11 @@ public class AgentChatTests
             this.SetActivityOrThrow();
             return this.InvokeAgentAsync(this.Agent, cancellationToken);
         }
+
+        public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(CancellationToken cancellationToken = default)
+        {
+            StreamingChatMessageContent[] messages = [new StreamingChatMessageContent(AuthorRole.Assistant, "sup")];
+            return messages.ToAsyncEnumerable();
+        }
     }
 }

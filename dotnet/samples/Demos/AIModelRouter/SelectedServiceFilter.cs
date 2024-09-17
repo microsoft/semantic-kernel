@@ -11,7 +11,7 @@ namespace AIModelRouter;
 /// <summary>
 /// Using a filter to log the service being used for the prompt.
 /// </summary>
-public class SelectedServiceFilter : IPromptRenderFilter
+internal sealed class SelectedServiceFilter : IPromptRenderFilter
 {
     /// <inheritdoc/>
     public Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)

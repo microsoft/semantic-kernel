@@ -106,10 +106,19 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         // Assign Mapper.
         if (this._options.JsonNodeCustomMapper is not null)
         {
+            // Custom Mapper.
             this._mapper = this._options.JsonNodeCustomMapper;
+        }
+        else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
+        {
+            // Generic data model mapper.
+            this._mapper = (IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)>)new RedisJsonGenericDataModelMapper(
+                this._vectorStoreRecordDefinition,
+                this._jsonSerializerOptions);
         }
         else
         {
+            // Default Mapper.
             this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(keyJsonPropertyName, this._jsonSerializerOptions);
         }
     }

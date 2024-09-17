@@ -62,7 +62,7 @@ public class CreatingFunctions(ITestOutputHelper output) : LearnBaseTest(["What 
             // Enable auto function calling
             OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
             {
-                ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
             };
 
             // Get the response from the AI

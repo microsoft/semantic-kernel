@@ -10,25 +10,28 @@ from google.generativeai.protos import Candidate
 from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAITextPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import GoogleAIBase
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
+from semantic_kernel.contents import TextContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_streaming_text_completion,
+    trace_text_completion,
+)
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
-
-from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
-from semantic_kernel.contents import TextContent
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-
-if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
 class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
@@ -77,21 +80,24 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             service_settings=google_ai_settings,
         )
 
-    # region Non-streaming
+    # region Overriding base class methods
+
+    # Override from AIServiceClientBase
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        return GoogleAITextPromptExecutionSettings
+
     @override
     @trace_text_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
-    async def get_text_contents(
+    async def _inner_get_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> list[TextContent]:
-        settings = self.get_prompt_execution_settings_from_settings(settings)
+        if not isinstance(settings, GoogleAITextPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAITextPromptExecutionSettings)  # nosec
 
-        return await self._send_request(prompt, settings)
-
-    async def _send_request(self, prompt: str, settings: GoogleAITextPromptExecutionSettings) -> list[TextContent]:
-        """Send a text generation request to the Google AI service."""
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
@@ -103,6 +109,33 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         )
 
         return [self._create_text_content(response, candidate) for candidate in response.candidates]
+
+    @override
+    @trace_streaming_text_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
+    async def _inner_get_streaming_text_contents(
+        self,
+        prompt: str,
+        settings: "PromptExecutionSettings",
+    ) -> AsyncGenerator[list[StreamingTextContent], Any]:
+        if not isinstance(settings, GoogleAITextPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, GoogleAITextPromptExecutionSettings)  # nosec
+
+        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
+        model = GenerativeModel(
+            self.service_settings.gemini_model_id,
+        )
+
+        response: AsyncGenerateContentResponse = await model.generate_content_async(
+            contents=prompt,
+            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
+            stream=True,
+        )
+
+        async for chunk in response:
+            yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]
+
+    # endregion
 
     def _create_text_content(self, response: AsyncGenerateContentResponse, candidate: Candidate) -> TextContent:
         """Create a text content object.
@@ -123,41 +156,6 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             inner_content=response,
             metadata=response_metadata,
         )
-
-    # endregion
-
-    # region Streaming
-    @override
-    async def get_streaming_text_contents(
-        self,
-        prompt: str,
-        settings: "PromptExecutionSettings",
-    ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
-        settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, GoogleAITextPromptExecutionSettings)  # nosec
-
-        async_generator = self._send_streaming_request(prompt, settings)
-
-        async for text_contents in async_generator:
-            yield text_contents
-
-    async def _send_streaming_request(
-        self, prompt: str, settings: GoogleAITextPromptExecutionSettings
-    ) -> AsyncGenerator[list[StreamingTextContent], Any]:
-        """Send a text generation request to the Google AI service."""
-        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
-        model = GenerativeModel(
-            self.service_settings.gemini_model_id,
-        )
-
-        response: AsyncGenerateContentResponse = await model.generate_content_async(
-            contents=prompt,
-            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
-            stream=True,
-        )
-
-        async for chunk in response:
-            yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]
 
     def _create_streaming_text_content(
         self, chunk: GenerateContentResponse, candidate: Candidate
@@ -182,8 +180,6 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             metadata=response_metadata,
         )
 
-    # endregion
-
     def _get_metadata_from_response(
         self,
         response: AsyncGenerateContentResponse | GenerateContentResponse,
@@ -198,7 +194,10 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         """
         return {
             "prompt_feedback": response.prompt_feedback,
-            "usage": response.usage_metadata,
+            "usage": CompletionUsage(
+                prompt_tokens=response.usage_metadata.prompt_token_count,
+                completion_tokens=response.usage_metadata.candidates_token_count,
+            ),
         }
 
     def _get_metadata_from_candidate(self, candidate: Candidate) -> dict[str, Any]:
@@ -216,10 +215,3 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             "safety_ratings": candidate.safety_ratings,
             "token_count": candidate.token_count,
         }
-
-    @override
-    def get_prompt_execution_settings_class(
-        self,
-    ) -> type["PromptExecutionSettings"]:
-        """Get the request settings class."""
-        return GoogleAITextPromptExecutionSettings

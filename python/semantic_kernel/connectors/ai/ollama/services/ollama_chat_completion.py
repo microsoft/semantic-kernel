@@ -3,29 +3,30 @@
 import logging
 import sys
 from collections.abc import AsyncGenerator, AsyncIterator, Mapping
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-from ollama import AsyncClient, Message
+import httpx
+from ollama import AsyncClient
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.ollama_settings import OllamaSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
-from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion, trace_text_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_chat_completion,
+    trace_streaming_chat_completion,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -33,11 +34,13 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionClientBase):
+class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
     """Initializes a new instance of the OllamaChatCompletion class.
 
     Make sure to have the ollama service running either locally or remotely.
     """
+
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
 
     def __init__(
         self,
@@ -69,32 +72,42 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create Ollama settings.", ex) from ex
 
+        if not ollama_settings.model:
+            raise ServiceInitializationError("Please provide ai_model_id or OLLAMA_MODEL env variable is required")
+
         super().__init__(
             service_id=service_id or ollama_settings.model,
             ai_model_id=ollama_settings.model,
             client=client or AsyncClient(host=ollama_settings.host),
         )
 
+    # region Overriding base class methods
+
+    # Override from AIServiceClientBase
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        """Get the request settings class."""
+        return OllamaChatPromptExecutionSettings
+
+    # Override from AIServiceClientBase
+    @override
+    def service_url(self) -> str | None:
+        if hasattr(self.client, "_client") and isinstance(self.client._client, httpx.AsyncClient):
+            # Best effort to get the endpoint
+            return str(self.client._client.base_url)
+        return None
+
     @override
     @trace_chat_completion(OllamaBase.MODEL_PROVIDER_NAME)
-    async def get_chat_message_contents(
+    async def _inner_get_chat_message_contents(
         self,
-        chat_history: ChatHistory,
+        chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Any,
-    ) -> list[ChatMessageContent]:
-        """This is the method that is called from the kernel to get a response from a chat-optimized LLM.
+    ) -> list["ChatMessageContent"]:
+        if not isinstance(settings, OllamaChatPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, OllamaChatPromptExecutionSettings)  # nosec
 
-        Args:
-            chat_history (ChatHistory): A chat history that contains a list of chat messages,
-                that can be rendered into a set of messages, from system, user, assistant and function.
-            settings (PromptExecutionSettings): Settings for the request.
-            kwargs (Dict[str, Any]): The optional arguments.
-
-        Returns:
-            List[ChatMessageContent]: A list of ChatMessageContent objects representing the response(s) from the LLM.
-        """
-        settings = self.get_prompt_execution_settings_from_settings(settings)
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
         response_object = await self.client.chat(
@@ -119,26 +132,17 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             )
         ]
 
-    async def get_streaming_chat_message_contents(
+    @override
+    @trace_streaming_chat_completion(OllamaBase.MODEL_PROVIDER_NAME)
+    async def _inner_get_streaming_chat_message_contents(
         self,
-        chat_history: ChatHistory,
+        chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Any,
-    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
-        """Streams a text completion using an Ollama model.
+    ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
+        if not isinstance(settings, OllamaChatPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, OllamaChatPromptExecutionSettings)  # nosec
 
-        Note that this method does not support multiple responses.
-
-        Args:
-            chat_history (ChatHistory): A chat history that contains a list of chat messages,
-                that can be rendered into a set of messages, from system, user, assistant and function.
-            settings (PromptExecutionSettings): Request settings.
-            kwargs (Dict[str, Any]): The optional arguments.
-
-        Yields:
-            List[StreamingChatMessageContent]: Stream of StreamingChatMessageContent objects.
-        """
-        settings = self.get_prompt_execution_settings_from_settings(settings)
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
         response_object = await self.client.chat(
@@ -165,89 +169,4 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
                 )
             ]
 
-    @override
-    @trace_text_completion(OllamaBase.MODEL_PROVIDER_NAME)
-    async def get_text_contents(
-        self,
-        prompt: str,
-        settings: "PromptExecutionSettings",
-    ) -> list[TextContent]:
-        """This is the method that is called from the kernel to get a response from a text-optimized LLM.
-
-        Args:
-            prompt (str): A prompt to complete
-            settings (PromptExecutionSettings): Settings for the request.
-
-        Returns:
-            List["TextContent"]: The completion result(s).
-        """
-        settings = self.get_prompt_execution_settings_from_settings(settings)
-        prepared_chat_history = [Message(role=AuthorRole.USER.value, content=prompt)]
-
-        response_object = await self.client.chat(
-            model=self.ai_model_id,
-            messages=prepared_chat_history,
-            stream=False,
-            **settings.prepare_settings_dict(),
-        )
-
-        if not isinstance(response_object, Mapping):
-            raise ServiceInvalidResponseError(
-                "Invalid response type from Ollama chat completion. "
-                f"Expected Mapping but got {type(response_object)}."
-            )
-
-        return [
-            TextContent(
-                inner_content=response_object,
-                ai_model_id=self.ai_model_id,
-                text=response_object.get("message", {"content": None}).get("content", None),
-            )
-        ]
-
-    async def get_streaming_text_contents(
-        self,
-        prompt: str,
-        settings: "PromptExecutionSettings",
-    ) -> AsyncGenerator[list[StreamingTextContent], Any]:
-        """Streams a text completion using an Ollama model.
-
-        Note that this method does not support multiple responses.
-
-        Args:
-            prompt (str): A chat history that contains the prompt to complete.
-            settings (PromptExecutionSettings): Request settings.
-
-        Yields:
-            List["StreamingTextContent"]: The result stream made up of StreamingTextContent objects.
-        """
-        settings = self.get_prompt_execution_settings_from_settings(settings)
-        prepared_chat_history = [Message(role=AuthorRole.USER.value, content=prompt)]
-
-        response_object = await self.client.chat(
-            model=self.ai_model_id,
-            messages=prepared_chat_history,
-            stream=True,
-            **settings.prepare_settings_dict(),
-        )
-
-        if not isinstance(response_object, AsyncIterator):
-            raise ServiceInvalidResponseError(
-                "Invalid response type from Ollama chat completion. "
-                f"Expected AsyncIterator but got {type(response_object)}."
-            )
-
-        async for part in response_object:
-            yield [
-                StreamingTextContent(
-                    choice_index=0,
-                    inner_content=part,
-                    ai_model_id=self.ai_model_id,
-                    text=part.get("message", {"content": None}).get("content", None),
-                )
-            ]
-
-    @override
-    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
-        """Get the request settings class."""
-        return OllamaChatPromptExecutionSettings
+    # endregion

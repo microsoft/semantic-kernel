@@ -92,14 +92,14 @@ async def test_trace_chat_completion(
     # Setup
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
 
-    with patch.object(MockChatCompletion, "get_chat_message_contents", return_value=mock_response):
+    with patch.object(MockChatCompletion, "_inner_get_chat_message_contents", return_value=mock_response):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
-        MockChatCompletion.get_chat_message_contents = trace_chat_completion(MockChatCompletion.MODEL_PROVIDER_NAME)(
-            chat_completion.get_chat_message_contents
-        )
+        MockChatCompletion._inner_get_chat_message_contents = trace_chat_completion(
+            MockChatCompletion.MODEL_PROVIDER_NAME
+        )(chat_completion._inner_get_chat_message_contents)
 
         results: list[ChatMessageContent] = await chat_completion.get_chat_message_contents(
-            chat_history=chat_history, settings=execution_settings
+            chat_history, execution_settings
         )
 
         assert results == mock_response
@@ -110,6 +110,8 @@ async def test_trace_chat_completion(
             gen_ai_attributes.SYSTEM: MockChatCompletion.MODEL_PROVIDER_NAME,
             gen_ai_attributes.MODEL: chat_completion.ai_model_id,
         })
+
+        mock_span.set_attribute.assert_any_call(gen_ai_attributes.ADDRESS, chat_completion.service_url())
 
         # No all connectors take the same parameters
         if execution_settings.extension_data.get("max_tokens") is not None:
@@ -156,14 +158,14 @@ async def test_trace_chat_completion_exception(
     # Setup
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
 
-    with patch.object(MockChatCompletion, "get_chat_message_contents", side_effect=ServiceResponseException()):
+    with patch.object(MockChatCompletion, "_inner_get_chat_message_contents", side_effect=ServiceResponseException()):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
-        MockChatCompletion.get_chat_message_contents = trace_chat_completion(MockChatCompletion.MODEL_PROVIDER_NAME)(
-            chat_completion.get_chat_message_contents
-        )
+        MockChatCompletion._inner_get_chat_message_contents = trace_chat_completion(
+            MockChatCompletion.MODEL_PROVIDER_NAME
+        )(chat_completion._inner_get_chat_message_contents)
 
         with pytest.raises(ServiceResponseException):
-            await chat_completion.get_chat_message_contents(chat_history=chat_history, settings=execution_settings)
+            await chat_completion.get_chat_message_contents(chat_history, execution_settings)
 
         exception = ServiceResponseException()
         mock_span.set_attribute.assert_any_call(gen_ai_attributes.ERROR_TYPE, str(type(exception)))
