@@ -234,6 +234,7 @@ def azure_openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dic
         "AZURE_OPENAI_ENDPOINT": "https://test-endpoint.com",
         "AZURE_OPENAI_API_VERSION": "2023-03-15-preview",
         "AZURE_OPENAI_BASE_URL": "https://test_text_deployment.test-base-url.com",
+        "AZURE_OPENAI_TOKEN_ENDPOINT": "https://test-token-endpoint.com",
     }
 
     env_vars.update(override_env_param_dict)
