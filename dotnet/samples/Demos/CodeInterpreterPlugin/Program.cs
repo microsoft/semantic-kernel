@@ -97,7 +97,7 @@ while (true)
     fullAssistantContent.Clear();
     await foreach (var content in chatCompletion.GetStreamingChatMessageContentsAsync(
         chatHistory,
-        new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
+        new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() },
         kernel)
         .ConfigureAwait(false))
     {

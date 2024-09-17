@@ -276,6 +276,22 @@ public class AzureOpenAIPromptExecutionSettingsTests
         AssertExecutionSettings(executionSettings);
     }
 
+    [Fact]
+    public void ItRestoresOriginalFunctionChoiceBehavior()
+    {
+        // Arrange
+        var functionChoiceBehavior = FunctionChoiceBehavior.Auto();
+
+        var originalExecutionSettings = new PromptExecutionSettings();
+        originalExecutionSettings.FunctionChoiceBehavior = functionChoiceBehavior;
+
+        // Act
+        var result = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(originalExecutionSettings);
+
+        // Assert
+        Assert.Equal(functionChoiceBehavior, result.FunctionChoiceBehavior);
+    }
+
     private static void AssertExecutionSettings(AzureOpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);
