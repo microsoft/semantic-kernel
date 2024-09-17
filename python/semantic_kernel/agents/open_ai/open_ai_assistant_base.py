@@ -735,7 +735,7 @@ class OpenAIAssistantBase(Agent):
                     chat_history = ChatHistory()
                     _ = await self._invoke_function_calls(fccs=fccs, chat_history=chat_history)
 
-                    tool_outputs = self._format_tool_outputs(chat_history)
+                    tool_outputs = self._format_tool_outputs(fccs, chat_history)
                     await self.client.beta.threads.runs.submit_tool_outputs(
                         run_id=run.id,
                         thread_id=thread_id,
@@ -982,22 +982,27 @@ class OpenAIAssistantBase(Agent):
         ]
         return await asyncio.gather(*tasks)
 
-    def _format_tool_outputs(self, chat_history: ChatHistory) -> list[dict[str, str]]:
+    def _format_tool_outputs(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[dict[str, str]]:
         """Format tool outputs from chat history for submission.
 
         Args:
+            fccs: The function call contents.
             chat_history: The chat history.
 
         Returns:
             The formatted tool outputs as a list of dictionaries.
         """
-        tool_outputs = []
-        for tool_call in chat_history.messages[0].items:
-            if isinstance(tool_call, FunctionResultContent):
-                tool_outputs.append({
-                    "tool_call_id": tool_call.id,
-                    "output": tool_call.result,
-                })
-        return tool_outputs
+        tool_call_lookup = {
+            tool_call.id: tool_call
+            for message in chat_history.messages
+            for tool_call in message.items
+            if isinstance(tool_call, FunctionResultContent)
+        }
+
+        return [
+            {"tool_call_id": fcc.id, "output": str(tool_call_lookup[fcc.id].result)}
+            for fcc in fccs
+            if fcc.id in tool_call_lookup
+        ]
 
     # endregion

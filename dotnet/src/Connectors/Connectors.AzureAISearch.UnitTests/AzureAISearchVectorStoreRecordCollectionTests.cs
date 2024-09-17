@@ -556,7 +556,9 @@ public class AzureAISearchVectorStoreRecordCollectionTests
     public async Task CanSearchWithVectorAndFilterAsync()
     {
         // Arrange.
+#pragma warning disable Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
         var searchResultsMock = Mock.Of<SearchResults<MultiPropsModel>>();
+#pragma warning restore Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
         this._searchClientMock
             .Setup(x => x.SearchAsync<MultiPropsModel>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Response.FromValue(searchResultsMock, Mock.Of<Response>()));
@@ -596,7 +598,9 @@ public class AzureAISearchVectorStoreRecordCollectionTests
     public async Task CanSearchWithTextAndFilterAsync()
     {
         // Arrange.
+#pragma warning disable Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
         var searchResultsMock = Mock.Of<SearchResults<MultiPropsModel>>();
+#pragma warning restore Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
         this._searchClientMock
             .Setup(x => x.SearchAsync<MultiPropsModel>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Response.FromValue(searchResultsMock, Mock.Of<Response>()));
