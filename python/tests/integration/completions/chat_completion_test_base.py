@@ -32,6 +32,7 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
+from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -49,6 +50,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
+from tests.integration.completions.test_utils import setup_onnx_gen_ai_chat_completion
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -89,6 +91,13 @@ try:
     anthropic_setup = True
 except ServiceInitializationError:
     anthropic_setup = False
+
+onnx_setup: bool = False
+try:
+    setup_onnx_gen_ai_chat_completion()
+    onnx_setup = True
+except ServiceInitializationError:
+    onnx_setup = False
 
 
 # A mock plugin that contains a function that returns a complex object.
@@ -147,6 +156,10 @@ class ChatCompletionTestBase(CompletionTestBase):
             "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
             "google_ai": (GoogleAIChatCompletion() if google_ai_setup else None, GoogleAIChatPromptExecutionSettings),
             "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
+            "onnx_gen_ai": (
+                setup_onnx_gen_ai_chat_completion() if onnx_setup else None,
+                OnnxGenAIPromptExecutionSettings,
+            ),
         }
 
     def setup(self, kernel: Kernel):

@@ -11,6 +11,7 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_prompt_execution_settings import OnnxGenAIPromptExecutionSettings
+from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_settings import OnnxGenAISettings
 from semantic_kernel.connectors.ai.onnx.services.onnx_gen_ai_completion_base import OnnxGenAICompletionBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
@@ -22,26 +23,37 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class OnnxGenAITextCompletion(OnnxGenAICompletionBase, TextCompletionClientBase):
+class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase):
     """OnnxGenAI text completion service."""
-    
+
     def __init__(
         self,
-        ai_model_path: str,
+        ai_model_path: str | None = None,
         ai_model_id: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the OnnxGenAITextCompletion class.
 
         Args:
-            ai_model_path (str): Local path to the ONNX model Folder.
+            ai_model_path (str | None): Local path to the ONNX model Folder.
             ai_model_id (str, optional): The ID of the AI model. Defaults to None.
+            env_file_path (str | None): Use the environment settings file as a fallback
+                to environment variables.
+            env_file_encoding (str | None): The encoding of the environment settings file.
         """
+        settings = OnnxGenAISettings.create(
+            model_path=ai_model_path,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
+
         if ai_model_id is None:
-            ai_model_id = ai_model_path
-            
+            ai_model_id = settings.model_path
+
         super().__init__(
             ai_model_id=ai_model_id,
-            ai_model_path=ai_model_path,
+            ai_model_path=settings.model_path,
         )
 
     @override
@@ -66,7 +78,7 @@ class OnnxGenAITextCompletion(OnnxGenAICompletionBase, TextCompletionClientBase)
         new_tokens = ""
         async for new_token in self._generate_next_token(prompt, settings):
             new_tokens += new_token
-                
+
         return [
             TextContent(
                 text=new_tokens,
@@ -94,16 +106,16 @@ class OnnxGenAITextCompletion(OnnxGenAICompletionBase, TextCompletionClientBase)
         if not isinstance(settings, OnnxGenAIPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OnnxGenAIPromptExecutionSettings)  # nosec
-        
+
         async for new_token in self._generate_next_token(prompt, settings):
             yield [
                 StreamingTextContent(
                     choice_index=0, inner_content=new_token, text=new_token, ai_model_id=self.ai_model_id
                 )
             ]
-                
+
         return
-        
+
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         """Create a request settings object."""

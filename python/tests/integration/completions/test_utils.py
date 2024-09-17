@@ -3,6 +3,9 @@
 import asyncio
 import logging
 
+from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion
+from semantic_kernel.prompt_template import PromptTemplateConfig
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 
@@ -19,3 +22,20 @@ async def retry(func, retries=20):
                 raise
             await asyncio.sleep(max(min(i, max_delay), min_delay))
     return None
+
+
+def setup_onnx_gen_ai_chat_completion():
+    prompt = """
+    {% for message in messages %}
+        {% if message['role'] == 'system' %}
+            {{'<|system|>\n' + message['content'] + '<|end|>\n'}}
+        {% elif message['role'] == 'user' %}
+            {{'<|user|>\n' + message['content'] + '<|end|>\n'}}
+        {% elif message['role'] == 'assistant' %}
+            {{'<|assistant|>\n' + message['content'] + '<|end|>\n' }}
+        {% endif %}
+    {% endfor %}
+    <|assistant|>"""
+
+    prompt_template_config = PromptTemplateConfig(template=prompt, template_format="jinja2")
+    return OnnxGenAIChatCompletion(prompt_template_config)

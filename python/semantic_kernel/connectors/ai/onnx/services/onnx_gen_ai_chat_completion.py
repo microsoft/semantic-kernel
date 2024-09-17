@@ -3,7 +3,7 @@
 import logging
 import sys
 from collections.abc import AsyncGenerator
-from typing import Any
+from typing import Any, ClassVar
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -13,6 +13,7 @@ else:
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_prompt_execution_settings import OnnxGenAIPromptExecutionSettings
+from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_settings import OnnxGenAISettings
 from semantic_kernel.connectors.ai.onnx.services.onnx_gen_ai_completion_base import OnnxGenAICompletionBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import (
@@ -35,30 +36,45 @@ logger: logging.Logger = logging.getLogger(__name__)
 @experimental_class
 class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase):
     """OnnxGenAI text completion service."""
-    
+
     prompt_template: PromptTemplateConfig
-    
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
+
     def __init__(
         self,
-        ai_model_path: str,
-        prompt_template_config: PromptTemplateConfig,
+        prompt_template: str | PromptTemplateConfig,
+        ai_model_path: str | None = None,
         ai_model_id: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the OnnxGenAITextCompletion class.
 
         Args:
             ai_model_path (str): Local path to the ONNX model Folder.
-            prompt_template_config (PromptTemplateConfig): The prompt template configuration.
+            prompt_template (str | PromptTemplateConfig): The prompt template configuration.
+                The template can either be a jinja template or a complete prompt template config.
             ai_model_id (str, optional): The ID of the AI model. Defaults to None.
+            env_file_path (str | None): Use the environment settings file as a fallback
+                to environment variables.
+            env_file_encoding (str | None): The encoding of the environment settings file.
         """
-        if ai_model_id is None:
-            ai_model_id = ai_model_path
-            
-        super().__init__(
-            ai_model_id=ai_model_id,
-            ai_model_path=ai_model_path,
-            prompt_template=prompt_template_config
+        settings = OnnxGenAISettings.create(
+            model_path=ai_model_path,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
         )
+
+        if ai_model_id is None:
+            ai_model_id = settings.model_path
+
+        if type(prompt_template) is str:
+            prompt_template = PromptTemplateConfig(
+                template=prompt_template,
+                template_format="jinja2",
+            )
+
+        super().__init__(ai_model_id=ai_model_id, ai_model_path=settings.model_path, prompt_template=prompt_template)
 
     async def get_chat_message_contents(
         self,
@@ -85,20 +101,17 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         new_tokens = ""
         async for new_token in self._generate_next_token(prompt, settings, images):
             new_tokens += new_token
-                
+
         model_answer = ChatMessageContent(
-                role=AuthorRole.ASSISTANT,
-                items=[
-                    TextContent(
-                        text=new_tokens,
-                        ai_model_id=self.ai_model_id,
-                    )
-                ]
-            )
-        chat_history.add_message(model_answer)
-        return [
-            model_answer
-        ]
+            role=AuthorRole.ASSISTANT,
+            items=[
+                TextContent(
+                    text=new_tokens,
+                    ai_model_id=self.ai_model_id,
+                )
+            ],
+        )
+        return [model_answer]
 
     @override
     async def get_streaming_chat_message_contents(
@@ -132,12 +145,8 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
                     ai_model_id=self.ai_model_id,
                 )
             ]
-    
-    async def _apply_chat_template(
-        self,
-        chat_history: "ChatHistory",
-        **kwargs
-    ) -> str:
+
+    async def _apply_chat_template(self, chat_history: "ChatHistory", **kwargs) -> str:
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
         if kernel is None:
@@ -146,10 +155,10 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             arguments = KernelArguments(messages=self._prepare_chat_history_for_request(chat_history))
             logger.warning("The arguments were not provided, auto injecting chat history as messages.")
         template = TEMPLATE_FORMAT_MAP[self.prompt_template.template_format](
-                prompt_template_config=self.prompt_template
-            )  # type: ignore
+            prompt_template_config=self.prompt_template
+        )  # type: ignore
         return await template.render(kernel, arguments)
-    
+
     async def _get_images_from_history(self, chat_history: "ChatHistory") -> ImageContent | None:
         images = []
         for message in chat_history.messages:
@@ -161,7 +170,9 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
                     if image.uri:
                         images.append(image)
                     else:
-                        raise ServiceInvalidExecutionSettingsError("Image Content URI needs to be set")
+                        raise ServiceInvalidExecutionSettingsError(
+                            "Image Content URI needs to be set, because onnx can only work with file paths"
+                        )
         # Currently Onnx Runtime only supports one image
         # Later we will add support for multiple images
         return images[-1] if len(images) > 0 else None

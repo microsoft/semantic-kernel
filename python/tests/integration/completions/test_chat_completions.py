@@ -16,6 +16,7 @@ from tests.integration.completions.chat_completion_test_base import (
     anthropic_setup,
     mistral_ai_setup,
     ollama_setup,
+    onnx_setup,
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
@@ -91,7 +92,18 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
         ),
-         pytest.param(
+        pytest.param(
+            "onnx_gen_ai",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            marks=pytest.mark.skipif(not onnx_setup, reason="Need a Onnx Model setup"),
+            id="onnx_gen_ai",
+        ),
+        pytest.param(
             "anthropic",
             {},
             [

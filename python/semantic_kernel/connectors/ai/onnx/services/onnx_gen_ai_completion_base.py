@@ -14,17 +14,13 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 class OnnxGenAICompletionBase(KernelBaseModel):
     """Base class for OnnxGenAI Completion services."""
-    
+
     model: Any
     tokenizer: Any
     tokenizer_stream: Any
     enable_multi_modality: bool = False
-    
-    def __init__(
-        self,
-        ai_model_path: str,
-        **kwargs
-    ) -> None:
+
+    def __init__(self, ai_model_path: str, **kwargs) -> None:
         """Creates a new instance of the OnnxGenAICompletionBase class,loads model & tokenizer.
 
         Args:
@@ -33,7 +29,7 @@ class OnnxGenAICompletionBase(KernelBaseModel):
 
         Raises:
             ServiceInitializationError: When model cannot be loaded
-            
+
         """
         try:
             if ai_model_path[:-1] in ["/", "\\"]:
@@ -51,25 +47,21 @@ class OnnxGenAICompletionBase(KernelBaseModel):
                     model = OnnxRuntimeGenAi.Model(ai_model_path)
                     tokenizer = OnnxRuntimeGenAi.Tokenizer(model)
                     tokenizer_stream = tokenizer.create_stream()
-                
+
         except Exception as e:
             raise ServiceInitializationError(f"Failed to initialize OnnxTextCompletion service: {e}")
-        
+
         super().__init__(
             model=model,
             tokenizer=tokenizer,
             tokenizer_stream=tokenizer_stream,
             enable_multi_modality=enable_multi_modality,
-            **kwargs
+            **kwargs,
         )
-        
+
     async def _prepare_input_params(
-        self,
-        prompt: str,
-        settings: OnnxGenAIPromptExecutionSettings,
-        image: ImageContent | None = None
+        self, prompt: str, settings: OnnxGenAIPromptExecutionSettings, image: ImageContent | None = None
     ) -> Any:
-        
         params = OnnxRuntimeGenAi.GeneratorParams(self.model)
         params.set_search_options(**settings.prepare_settings_dict())
         if not self.enable_multi_modality:
@@ -78,25 +70,25 @@ class OnnxGenAICompletionBase(KernelBaseModel):
         else:
             if image is not None:
                 # With the use of Pybind there is currently no way to load images from bytes
-                # We can only open images from a file path
+                # We can only open images from a file path currently
                 image = OnnxRuntimeGenAi.Images.open(str(image.uri))
             input_tokens = self.tokenizer(prompt, images=image)
             params.set_inputs(input_tokens)
         return params
-    
+
     async def _detokenize(self, token: int) -> str:
         return self.tokenizer_stream.decode(token)
-        
+
     async def _generate_next_token(
-        self, 
-        prompt: str, 
+        self,
+        prompt: str,
         settings: OnnxGenAIPromptExecutionSettings,
         image: ImageContent | None = None,
     ) -> AsyncGenerator[str, Any]:
         try:
             params = await self._prepare_input_params(prompt, settings, image)
             generator = OnnxRuntimeGenAi.Generator(self.model, params)
-            
+
             while not generator.is_done():
                 generator.compute_logits()
                 generator.generate_next_token()

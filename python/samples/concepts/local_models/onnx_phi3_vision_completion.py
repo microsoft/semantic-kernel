@@ -7,7 +7,6 @@ from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenA
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, ImageContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 
 # This concept sample shows how to use the Onnx connector with
 # a local model running in Onnx
@@ -16,14 +15,14 @@ kernel = Kernel()
 
 service_id = "phi3"
 #############################################
-# Make sure to download an ONNX model 
+# Make sure to download an ONNX model
 # e.g (https://huggingface.co/microsoft/Phi-3-vision-128k-instruct-onnx-cpu)
 # Then set the path to the model folder
 #############################################
 streaming = False
 model_path = r"C:\GIT\models\phi3V-cpu-onnx"
 
-prompt = """
+prompt_template = """
 {% for message in messages %}
     {% if message['content'] is not string %}
         {{'<|image_1|>'}}
@@ -39,22 +38,8 @@ prompt = """
 {% endfor %}
 <|assistant|>"""
 
-prompt_template_config = PromptTemplateConfig(
-    template=prompt,
-    name="chat",
-    template_format="jinja2",
-    input_variables=[
-        InputVariable(
-            name="messages",
-            description="The history of the conversation",
-            is_required=True,
-        ),
-    ],
-)
 chat_completion = OnnxGenAIChatCompletion(
-    ai_model_path=model_path,
-    ai_model_id=service_id,
-    prompt_template_config=prompt_template_config
+    ai_model_path=model_path, ai_model_id=service_id, prompt_template_config=prompt_template
 )
 settings = OnnxGenAIPromptExecutionSettings(
     max_length=3072,
@@ -85,9 +70,7 @@ async def chat() -> bool:
         print("Mosscap:> ", end="")
         message = ""
         async for chunk in chat_completion.get_streaming_chat_message_content(
-            chat_history=chat_history,
-            settings=settings,
-            kernel=kernel
+            chat_history=chat_history, settings=settings, kernel=kernel
         ):
             print(chunk.content, end="")
             if chunk.content:
@@ -96,9 +79,7 @@ async def chat() -> bool:
         chat_history.add_message(message)
     else:
         answer = await chat_completion.get_chat_message_content(
-            chat_history=chat_history,
-            settings=settings,
-            kernel=kernel
+            chat_history=chat_history, settings=settings, kernel=kernel
         )
         print(f"Mosscap:> {answer}")
         chat_history.add_message(answer)
@@ -113,9 +94,7 @@ async def main() -> None:
             ChatMessageContent(
                 role=AuthorRole.USER,
                 items=[
-                    ImageContent.from_image_path(
-                        image_path=image_path
-                    ),
+                    ImageContent.from_image_path(image_path=image_path),
                 ],
             ),
         )
