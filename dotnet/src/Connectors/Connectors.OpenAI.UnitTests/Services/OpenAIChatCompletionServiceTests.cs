@@ -1032,6 +1032,192 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("rainy", functionResult.GetProperty("content").GetString());
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetChatMessageContentsSendsValidJsonSchemaForStructuredOutputs(bool typedResponseFormat)
+    {
+        // Arrange
+        object responseFormat = typedResponseFormat ? typeof(MathReasoning) : ChatResponseFormat.CreateJsonSchemaFormat(
+            name: "MathReasoning",
+            jsonSchema: BinaryData.FromString("""
+                {
+                    "type": "object",
+                    "properties": {
+                        "Steps": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "Explanation": { "type": "string" },
+                                    "Output": { "type": "string" }
+                                },
+                            "required": ["Explanation", "Output"],
+                            "additionalProperties": false
+                            }
+                        },
+                        "FinalAnswer": { "type": "string" }
+                    },
+                    "required": ["Steps", "FinalAnswer"],
+                    "additionalProperties": false
+                }
+                """),
+            strictSchemaEnabled: true);
+
+        var executionSettings = new OpenAIPromptExecutionSettings { ResponseFormat = responseFormat };
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        var sut = new OpenAIChatCompletionService("model-id", "api-key", httpClient: this._httpClient);
+
+        // Act
+        await sut.GetChatMessageContentsAsync(this._chatHistoryForTest, executionSettings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var requestJsonElement = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var requestResponseFormat = requestJsonElement.GetProperty("response_format");
+
+        Assert.Equal("json_schema", requestResponseFormat.GetProperty("type").GetString());
+        Assert.Equal("MathReasoning", requestResponseFormat.GetProperty("json_schema").GetProperty("name").GetString());
+        Assert.True(requestResponseFormat.GetProperty("json_schema").GetProperty("strict").GetBoolean());
+
+        var schema = requestResponseFormat.GetProperty("json_schema").GetProperty("schema");
+
+        Assert.Equal("object", schema.GetProperty("type").GetString());
+        Assert.False(schema.GetProperty("additionalProperties").GetBoolean());
+        Assert.Equal(2, schema.GetProperty("required").GetArrayLength());
+
+        var requiredParentProperties = new List<string?>
+        {
+            schema.GetProperty("required")[0].GetString(),
+            schema.GetProperty("required")[1].GetString(),
+        };
+
+        Assert.Contains("Steps", requiredParentProperties);
+        Assert.Contains("FinalAnswer", requiredParentProperties);
+
+        var schemaProperties = schema.GetProperty("properties");
+
+        Assert.Equal("string", schemaProperties.GetProperty("FinalAnswer").GetProperty("type").GetString());
+        Assert.Equal("array", schemaProperties.GetProperty("Steps").GetProperty("type").GetString());
+
+        var items = schemaProperties.GetProperty("Steps").GetProperty("items");
+
+        Assert.Equal("object", items.GetProperty("type").GetString());
+        Assert.False(items.GetProperty("additionalProperties").GetBoolean());
+        Assert.Equal(2, items.GetProperty("required").GetArrayLength());
+
+        var requiredChildProperties = new List<string?>
+        {
+            items.GetProperty("required")[0].GetString(),
+            items.GetProperty("required")[1].GetString(),
+        };
+
+        Assert.Contains("Explanation", requiredChildProperties);
+        Assert.Contains("Output", requiredChildProperties);
+
+        var itemsProperties = items.GetProperty("properties");
+
+        Assert.Equal("string", itemsProperties.GetProperty("Explanation").GetProperty("type").GetString());
+        Assert.Equal("string", itemsProperties.GetProperty("Output").GetProperty("type").GetString());
+    }
+
+    [Theory]
+    [InlineData(typeof(TestStruct))]
+    [InlineData(typeof(TestStruct?))]
+    public async Task GetChatMessageContentsSendsValidJsonSchemaWithStruct(Type responseFormatType)
+    {
+        // Arrange
+        var executionSettings = new OpenAIPromptExecutionSettings { ResponseFormat = responseFormatType };
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        var sut = new OpenAIChatCompletionService("model-id", "api-key", httpClient: this._httpClient);
+
+        // Act
+        await sut.GetChatMessageContentsAsync(this._chatHistoryForTest, executionSettings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var requestJsonElement = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var requestResponseFormat = requestJsonElement.GetProperty("response_format");
+
+        Assert.Equal("json_schema", requestResponseFormat.GetProperty("type").GetString());
+        Assert.Equal("TestStruct", requestResponseFormat.GetProperty("json_schema").GetProperty("name").GetString());
+        Assert.True(requestResponseFormat.GetProperty("json_schema").GetProperty("strict").GetBoolean());
+
+        var schema = requestResponseFormat.GetProperty("json_schema").GetProperty("schema");
+
+        Assert.Equal("object", schema.GetProperty("type").GetString());
+        Assert.False(schema.GetProperty("additionalProperties").GetBoolean());
+        Assert.Equal(2, schema.GetProperty("required").GetArrayLength());
+
+        var requiredParentProperties = new List<string?>
+        {
+            schema.GetProperty("required")[0].GetString(),
+            schema.GetProperty("required")[1].GetString(),
+        };
+
+        Assert.Contains("TextProperty", requiredParentProperties);
+        Assert.Contains("NumericProperty", requiredParentProperties);
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentReturnsRefusal()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_refusal_test_response.json"))
+        };
+
+        var sut = new OpenAIChatCompletionService("model-id", "api-key", httpClient: this._httpClient);
+
+        // Act
+        var content = await sut.GetChatMessageContentAsync(this._chatHistoryForTest);
+
+        // Assert
+        var refusal = content.Metadata?["Refusal"] as string;
+
+        Assert.NotNull(refusal);
+        Assert.Equal("I'm sorry, I cannot assist with that request.", refusal);
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsReturnsRefusal()
+    {
+        // Arrange
+        var service = new OpenAIChatCompletionService("model-id", "api-key", "organization", this._httpClient);
+        using var stream = File.OpenRead("TestData/chat_completion_streaming_refusal_test_response.txt");
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+
+        // Act
+        var enumerator = service.GetStreamingChatMessageContentsAsync([]).GetAsyncEnumerator();
+
+        await enumerator.MoveNextAsync();
+
+        // Assert
+        var refusalUpdate = enumerator.Current.Metadata?["RefusalUpdate"] as string;
+
+        Assert.NotNull(refusalUpdate);
+        Assert.Equal("I'm sorry, I cannot assist with that request.", refusalUpdate);
+    }
+
     [Fact]
     public async Task ItCreatesCorrectFunctionToolCallsWhenUsingAutoFunctionChoiceBehaviorAsync()
     {
@@ -1055,7 +1241,6 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Act
         await chatCompletion.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
-        // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
@@ -1090,7 +1275,6 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Act
         await chatCompletion.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
-        // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
 
@@ -1226,4 +1410,27 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
           }
         }
         """;
+
+#pragma warning disable CS8618, CA1812
+    private sealed class MathReasoning
+    {
+        public List<MathReasoningStep> Steps { get; set; }
+
+        public string FinalAnswer { get; set; }
+    }
+
+    private sealed class MathReasoningStep
+    {
+        public string Explanation { get; set; }
+
+        public string Output { get; set; }
+    }
+
+    private struct TestStruct
+    {
+        public string TextProperty { get; set; }
+
+        public int? NumericProperty { get; set; }
+    }
+#pragma warning restore CS8618, CA1812
 }
