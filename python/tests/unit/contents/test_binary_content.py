@@ -45,7 +45,7 @@ def test_create_empty():
 
 def test_create_uri():
     binary = BinaryContent(uri="http://test_uri")
-    assert str(binary.uri) == "http://test_uri/"
+    if str(binary.uri) != "http://test_uri/": raise AssertionError("URI does not match expected value")
 
 
 def test_create_data():

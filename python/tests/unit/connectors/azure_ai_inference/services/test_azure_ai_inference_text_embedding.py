@@ -26,7 +26,7 @@ def test_azure_ai_inference_text_embedding_init(
 
     assert azure_ai_inference.ai_model_id == model_id
     assert azure_ai_inference.service_id == model_id
-    assert isinstance(azure_ai_inference.client, EmbeddingsClient)
+    if not isinstance(azure_ai_inference.client, EmbeddingsClient): raise TypeError("Expected azure_ai_inference.client to be an instance of EmbeddingsClient")
 
 
 @patch("azure.ai.inference.aio.EmbeddingsClient.__init__", return_value=None)
@@ -58,7 +58,7 @@ def test_azure_ai_inference_text_embedding_init_with_service_id(
     azure_ai_inference = AzureAIInferenceTextEmbedding(model_id, service_id=service_id)
 
     assert azure_ai_inference.ai_model_id == model_id
-    assert azure_ai_inference.service_id == service_id
+    if azure_ai_inference.service_id != service_id: raise ValueError("Service ID does not match the expected value")
     assert isinstance(azure_ai_inference.client, EmbeddingsClient)
 
 

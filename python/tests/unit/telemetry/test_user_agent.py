@@ -112,4 +112,4 @@ def test_app_info_when_telemetry_disabled(monkeypatch):
 
     importlib.reload(semantic_kernel.connectors.telemetry)
 
-    assert semantic_kernel.connectors.telemetry.APP_INFO is None
+    if semantic_kernel.connectors.telemetry.APP_INFO is not None: raise AssertionError
