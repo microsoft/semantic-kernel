@@ -9,8 +9,6 @@ from azure.core.credentials import AzureKeyCredential
 from numpy import array, ndarray
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -24,6 +22,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
