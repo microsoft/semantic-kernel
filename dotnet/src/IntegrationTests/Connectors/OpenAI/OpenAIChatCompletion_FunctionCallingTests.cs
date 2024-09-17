@@ -494,7 +494,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
     }
 
-    [Fact(Skip = "Weather in Boston (USA) is not supported.")]
+    [Fact]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForManualFunctionCallingForStreamingAsync()
     {
         // Arrange
