@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
@@ -142,7 +143,10 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Gets or sets the response format to use for the completion.
     /// </summary>
     /// <remarks>
-    /// Possible values are: "json_object", "text", <see cref="ChatResponseFormat"/> object.
+    /// Possible values are:
+    /// <para>- <see cref="string"/> values: <c>"json_object"</c>, <c>"text"</c>;</para>
+    /// <para>- <see cref="ChatResponseFormat"/> object;</para>
+    /// <para>- <see cref="Type"/> object, which will be used to automatically create a JSON schema.</para>
     /// </remarks>
     [Experimental("SKEXP0010")]
     [JsonPropertyName("response_format")]
