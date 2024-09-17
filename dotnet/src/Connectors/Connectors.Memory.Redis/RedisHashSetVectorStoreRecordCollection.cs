@@ -349,16 +349,12 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
 
-        if (vector is not ReadOnlyMemory<float> floatVector)
-        {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().Name} is not supported by the Redis HashSet connector.");
-        }
-
         var internalOptions = options ?? Data.VectorSearchOptions.Default;
 
         // Build query & search.
         var selectFields = internalOptions.IncludeVectors ? null : this._dataStoragePropertyNames;
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVector, internalOptions, this._storagePropertyNames, this._firstVectorPropertyName, selectFields);
+        byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "HashSet");
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(vectorBytes, internalOptions, this._storagePropertyNames, this._firstVectorPropertyName, selectFields);
         var results = await this.RunOperationAsync(
             "FT.SEARCH",
             () => this._database

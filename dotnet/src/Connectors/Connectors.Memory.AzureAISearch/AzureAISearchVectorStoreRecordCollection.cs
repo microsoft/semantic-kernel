@@ -353,7 +353,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
 
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().Name} is not supported by the Azure AI Search connector.");
+            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Azure AI Search connector.");
         }
 
         // Resolve options.
