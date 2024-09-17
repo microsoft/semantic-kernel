@@ -9,10 +9,14 @@ from azure.core.credentials import AzureKeyCredential
 from numpy import array, ndarray
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
+
+from azure.identity import DefaultAzureCredential
 
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceEmbeddingPromptExecutionSettings,
@@ -72,11 +76,21 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
             except ValidationError as e:
                 raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
 
-            client = EmbeddingsClient(
-                endpoint=str(azure_ai_inference_settings.endpoint),
-                credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
-                user_agent=SEMANTIC_KERNEL_USER_AGENT,
-            )
+            endpoint = str(azure_ai_inference_settings.endpoint)
+            if azure_ai_inference_settings.api_key is not None:
+                client = EmbeddingsClient(
+                    endpoint=endpoint,
+                    credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
+                    user_agent=SEMANTIC_KERNEL_USER_AGENT,
+                )
+            else:
+                client = EmbeddingsClient(
+                    endpoint=endpoint,
+                    credential=DefaultAzureCredential(),
+                    credential_scopes=["https://cognitiveservices.azure.com/.default"],
+                    api_version=DEFAULT_AZURE_API_VERSION,
+                    user_agent=SEMANTIC_KERNEL_USER_AGENT,
+                )
 
         super().__init__(
             ai_model_id=ai_model_id,
