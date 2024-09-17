@@ -9,6 +9,7 @@ import vertexai
 from pydantic import ValidationError
 from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
 
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_base import VertexAIBase
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAITextPromptExecutionSettings,
@@ -19,7 +20,10 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_streaming_text_completion,
+    trace_text_completion,
+)
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -73,21 +77,24 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
             service_settings=vertex_ai_settings,
         )
 
-    # region Non-streaming
+    # region Overriding base class methods
+
+    # Override from AIServiceClientBase
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        return VertexAITextPromptExecutionSettings
+
     @override
     @trace_text_completion(VertexAIBase.MODEL_PROVIDER_NAME)
-    async def get_text_contents(
+    async def _inner_get_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> list[TextContent]:
-        settings = self.get_prompt_execution_settings_from_settings(settings)
+        if not isinstance(settings, VertexAITextPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, VertexAITextPromptExecutionSettings)  # nosec
 
-        return await self._send_request(prompt, settings)
-
-    async def _send_request(self, prompt: str, settings: VertexAITextPromptExecutionSettings) -> list[TextContent]:
-        """Send a text generation request to the Vertex AI service."""
         vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
         model = GenerativeModel(self.service_settings.gemini_model_id)
 
@@ -97,6 +104,31 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
         )
 
         return [self._create_text_content(response, candidate) for candidate in response.candidates]
+
+    @override
+    @trace_streaming_text_completion(VertexAIBase.MODEL_PROVIDER_NAME)
+    async def _inner_get_streaming_text_contents(
+        self,
+        prompt: str,
+        settings: "PromptExecutionSettings",
+    ) -> AsyncGenerator[list[StreamingTextContent], Any]:
+        if not isinstance(settings, VertexAITextPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, VertexAITextPromptExecutionSettings)  # nosec
+
+        vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        model = GenerativeModel(self.service_settings.gemini_model_id)
+
+        response: AsyncIterable[GenerationResponse] = await model.generate_content_async(
+            contents=prompt,
+            generation_config=settings.prepare_settings_dict(),
+            stream=True,
+        )
+
+        async for chunk in response:
+            yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]
+
+    # endregion
 
     def _create_text_content(self, response: GenerationResponse, candidate: Candidate) -> TextContent:
         """Create a text content object.
@@ -117,39 +149,6 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
             inner_content=response,
             metadata=response_metadata,
         )
-
-    # endregion
-
-    # region Streaming
-    @override
-    async def get_streaming_text_contents(
-        self,
-        prompt: str,
-        settings: "PromptExecutionSettings",
-    ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
-        settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, VertexAITextPromptExecutionSettings)  # nosec
-
-        async_generator = self._send_streaming_request(prompt, settings)
-
-        async for text_contents in async_generator:
-            yield text_contents
-
-    async def _send_streaming_request(
-        self, prompt: str, settings: VertexAITextPromptExecutionSettings
-    ) -> AsyncGenerator[list[StreamingTextContent], Any]:
-        """Send a text generation request to the Vertex AI service."""
-        vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
-        model = GenerativeModel(self.service_settings.gemini_model_id)
-
-        response: AsyncIterable[GenerationResponse] = await model.generate_content_async(
-            contents=prompt,
-            generation_config=settings.prepare_settings_dict(),
-            stream=True,
-        )
-
-        async for chunk in response:
-            yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]
 
     def _create_streaming_text_content(self, chunk: GenerationResponse, candidate: Candidate) -> StreamingTextContent:
         """Create a streaming text content object.
@@ -172,8 +171,6 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
             metadata=response_metadata,
         )
 
-    # endregion
-
     def _get_metadata_from_response(self, response: GenerationResponse) -> dict[str, Any]:
         """Get metadata from the response.
 
@@ -185,7 +182,10 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
         """
         return {
             "prompt_feedback": response.prompt_feedback,
-            "usage": response.usage_metadata,
+            "usage": CompletionUsage(
+                prompt_tokens=response.usage_metadata.prompt_token_count,
+                completion_tokens=response.usage_metadata.candidates_token_count,
+            ),
         }
 
     def _get_metadata_from_candidate(self, candidate: Candidate) -> dict[str, Any]:
@@ -202,10 +202,3 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
             "finish_reason": candidate.finish_reason,
             "safety_ratings": candidate.safety_ratings,
         }
-
-    @override
-    def get_prompt_execution_settings_class(
-        self,
-    ) -> type["PromptExecutionSettings"]:
-        """Get the request settings class."""
-        return VertexAITextPromptExecutionSettings

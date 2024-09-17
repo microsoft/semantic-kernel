@@ -5,6 +5,7 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
 
@@ -34,6 +35,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
             {
                 var database = sp.GetRequiredService<Database>();
                 var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreOptions>();
+
                 return new AzureCosmosDBNoSQLVectorStore(database, options);
             });
 
@@ -64,11 +66,13 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
             {
                 var cosmosClient = new CosmosClient(connectionString, new()
                 {
-                    Serializer = new CosmosSystemTextJsonSerializer(options?.JsonSerializerOptions ?? JsonSerializerOptions.Default)
+                    ApplicationName = HttpHeaderConstant.Values.UserAgent,
+                    UseSystemTextJsonSerializerWithOptions = options?.JsonSerializerOptions ?? JsonSerializerOptions.Default,
                 });
 
                 var database = cosmosClient.GetDatabase(databaseName);
                 var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreOptions>();
+
                 return new AzureCosmosDBNoSQLVectorStore(database, options);
             });
 

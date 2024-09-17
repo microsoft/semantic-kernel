@@ -2,7 +2,9 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -20,7 +22,7 @@ public sealed class ChatCompletionAgentTests()
 {
     private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .AddUserSecrets<OpenAIAssistantAgentTests>()
@@ -41,9 +43,9 @@ public sealed class ChatCompletionAgentTests()
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 
         this._kernelBuilder.AddAzureOpenAIChatCompletion(
-            configuration.ChatDeploymentName!,
-            configuration.Endpoint,
-            configuration.ApiKey);
+            deploymentName: configuration.ChatDeploymentName!,
+            endpoint: configuration.Endpoint,
+            credentials: new AzureCliCredential());
 
         if (useAutoFunctionTermination)
         {
@@ -88,6 +90,162 @@ public sealed class ChatCompletionAgentTests()
         }
 
         Assert.Contains(expectedAnswerContains, messages.Single().Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="ChatCompletionAgent"/> using new function calling model
+    /// and targeting Azure OpenAI services.
+    /// </summary>
+    [Theory]
+    [InlineData("What is the special soup?", "Clam Chowder", false)]
+    [InlineData("What is the special soup?", "Clam Chowder", true)]
+    public async Task AzureChatCompletionAgentUsingNewFunctionCallingModelAsync(string input, string expectedAnswerContains, bool useAutoFunctionTermination)
+    {
+        // Arrange
+        AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+
+        this._kernelBuilder.AddAzureOpenAIChatCompletion(
+            deploymentName: configuration.ChatDeploymentName!,
+            endpoint: configuration.Endpoint,
+            credentials: new AzureCliCredential());
+
+        if (useAutoFunctionTermination)
+        {
+            this._kernelBuilder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoInvocationFilter());
+        }
+
+        this._kernelBuilder.Plugins.Add(plugin);
+
+        Kernel kernel = this._kernelBuilder.Build();
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Kernel = kernel,
+                Instructions = "Answer questions about the menu.",
+                Arguments = new(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+            };
+
+        AgentGroupChat chat = new();
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+
+        // Act
+        ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+        ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
+
+        // Assert
+        Assert.Single(messages);
+
+        ChatMessageContent response = messages.Single();
+
+        if (useAutoFunctionTermination)
+        {
+            Assert.Equal(3, history.Length);
+            Assert.Single(response.Items.OfType<FunctionResultContent>());
+            Assert.Single(response.Items.OfType<TextContent>());
+        }
+        else
+        {
+            Assert.Equal(4, history.Length);
+            Assert.Single(response.Items);
+            Assert.Single(response.Items.OfType<TextContent>());
+        }
+
+        Assert.Contains(expectedAnswerContains, messages.Single().Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="ChatCompletionAgent"/> using function calling
+    /// and targeting Azure OpenAI services.
+    /// </summary>
+    [Fact]
+    public async Task AzureChatCompletionStreamingAsync()
+    {
+        // Arrange
+        AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+
+        this._kernelBuilder.AddAzureOpenAIChatCompletion(
+            configuration.ChatDeploymentName!,
+            configuration.Endpoint,
+            new AzureCliCredential());
+
+        this._kernelBuilder.Plugins.Add(plugin);
+
+        Kernel kernel = this._kernelBuilder.Build();
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Kernel = kernel,
+                Instructions = "Answer questions about the menu.",
+                Arguments = new(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
+            };
+
+        AgentGroupChat chat = new();
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "What is the special soup?"));
+
+        // Act
+        StringBuilder builder = new();
+        await foreach (var message in chat.InvokeStreamingAsync(agent))
+        {
+            builder.Append(message.Content);
+        }
+
+        ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
+
+        // Assert
+        Assert.Contains("Clam Chowder", builder.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Clam Chowder", history.First().Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="ChatCompletionAgent"/> using new function calling model
+    /// and targeting Azure OpenAI services.
+    /// </summary>
+    [Fact]
+    public async Task AzureChatCompletionStreamingUsingNewFunctionCallingModelAsync()
+    {
+        // Arrange
+        AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+
+        this._kernelBuilder.AddAzureOpenAIChatCompletion(
+            configuration.ChatDeploymentName!,
+            configuration.Endpoint,
+            new AzureCliCredential());
+
+        this._kernelBuilder.Plugins.Add(plugin);
+
+        Kernel kernel = this._kernelBuilder.Build();
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Kernel = kernel,
+                Instructions = "Answer questions about the menu.",
+                Arguments = new(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+            };
+
+        AgentGroupChat chat = new();
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "What is the special soup?"));
+
+        // Act
+        StringBuilder builder = new();
+        await foreach (var message in chat.InvokeStreamingAsync(agent))
+        {
+            builder.Append(message.Content);
+        }
+
+        ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
+
+        // Assert
+        Assert.Contains("Clam Chowder", builder.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Clam Chowder", history.First().Content, StringComparison.OrdinalIgnoreCase);
     }
 
     public sealed class MenuPlugin
