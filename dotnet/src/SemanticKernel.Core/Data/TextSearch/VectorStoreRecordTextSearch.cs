@@ -19,13 +19,13 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
 {
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreRecordTextSearch{TRecord}"/> with the
-    /// provided <see cref="IVectorSearch{TRecord}"/> for performing searches and
+    /// provided <see cref="IVectorizedSearch{TRecord}"/> for performing searches and
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
-    /// <param name="vectorizedSearch"></param>
-    /// <param name="textEmbeddingGeneration"></param>
+    /// <param name="vectorizedSearch"><see cref="IVectorizedSearch{TRecord}"/> instance used to perform the search.</param>
+    /// <param name="textEmbeddingGeneration"><see cref="ITextEmbeddingGenerationService"/> instance used to create a vector from the text query.</param>
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
-    /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a Trecord to a <see cref="TextSearchResult"/></param>
+    /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreRecordTextSearch{TRecord}"/></param>
     public VectorStoreRecordTextSearch(
         IVectorizedSearch<TRecord> vectorizedSearch,
@@ -47,12 +47,12 @@ public sealed class VectorStoreRecordTextSearch<TRecord> : ITextSearch
 
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreRecordTextSearch{TRecord}"/> with the
-    /// provided <see cref="IVectorSearch{TRecord}"/> for performing searches and
+    /// provided <see cref="IVectorizableTextSearch{TRecord}"/> for performing searches and
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
-    /// <param name="vectorizableTextSearch"></param>
+    /// <param name="vectorizableTextSearch"><see cref="IVectorizableTextSearch{TRecord}"/> instance used to perform the text search.</param>
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
-    /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a Trecord to a <see cref="TextSearchResult"/></param>
+    /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreRecordTextSearch{TRecord}"/></param>
     public VectorStoreRecordTextSearch(
         IVectorizableTextSearch<TRecord> vectorizableTextSearch,
