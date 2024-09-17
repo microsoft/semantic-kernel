@@ -77,7 +77,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
     /// <summary>
     /// This example demonstrates how the chat completion service streams raw function call content.
-    /// See <see cref="FunctionCalling.OpenAI_FunctionCalling.RunStreamingChatAPIWithManualFunctionCallingAsync"/> for a sample demonstrating how to simplify
+    /// See <see cref="FunctionCalling.FunctionCalling.RunStreamingChatCompletionApiWithManualFunctionCallingAsync"/> for a sample demonstrating how to simplify
     /// function call content building out of streamed function call updates using the <see cref="FunctionCallContentBuilder"/>.
     /// </summary>
     [Fact]
@@ -96,7 +96,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         ]);
 
         // Create execution settings with manual function calling
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) };
 
         // Create chat history with initial user question
         ChatHistory chatHistory = [];

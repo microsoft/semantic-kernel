@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// A <see cref="KernelAgent"/> specialization bound to a <see cref="ChatHistoryChannel"/>.
 /// </summary>
 /// <remarks>
-/// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
+/// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins.
 /// (<see cref="KernelAgent.Arguments"/>)
 /// </remarks>
 public abstract class ChatHistoryKernelAgent : KernelAgent

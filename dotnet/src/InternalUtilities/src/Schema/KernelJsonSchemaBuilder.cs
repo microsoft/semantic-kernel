@@ -29,11 +29,16 @@ internal static class KernelJsonSchemaBuilder
         TreatNullObliviousAsNonNullable = true,
     };
 
-    public static KernelJsonSchema Build(JsonSerializerOptions? options, Type type, string? description = null)
+    public static KernelJsonSchema Build(
+        JsonSerializerOptions? options,
+        Type type,
+        string? description = null,
+        JsonSchemaMapperConfiguration? configuration = null)
     {
-        options ??= s_options;
+        var serializerOptions = options ?? s_options;
+        var mapperConfiguration = configuration ?? s_config;
 
-        JsonNode jsonSchema = options.GetJsonSchema(type, s_config);
+        JsonNode jsonSchema = serializerOptions.GetJsonSchema(type, mapperConfiguration);
         Debug.Assert(jsonSchema.GetValueKind() is JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True);
 
         if (jsonSchema is not JsonObject jsonObj)
@@ -49,7 +54,7 @@ internal static class KernelJsonSchemaBuilder
             jsonObj["description"] = description;
         }
 
-        return KernelJsonSchema.Parse(jsonObj.ToJsonString(options));
+        return KernelJsonSchema.Parse(jsonObj.ToJsonString(serializerOptions));
     }
 
     private static JsonSerializerOptions CreateDefaultOptions()
