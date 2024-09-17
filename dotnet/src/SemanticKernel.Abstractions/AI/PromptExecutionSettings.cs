@@ -149,7 +149,7 @@ public class PromptExecutionSettings
     /// </summary>
     public virtual PromptExecutionSettings Clone()
     {
-#pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0001 // FunctionChoiceBehavior is an experimental feature and is subject to change in future updates. Suppress this diagnostic to proceed.
         return new()
         {
             ModelId = this.ModelId,
@@ -157,7 +157,7 @@ public class PromptExecutionSettings
             FunctionChoiceBehavior = this.FunctionChoiceBehavior,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
         };
-#pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0001 // FunctionChoiceBehavior is an experimental feature and is subject to change in future updates. Suppress this diagnostic to proceed.
     }
 
     /// <summary>

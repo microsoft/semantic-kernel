@@ -81,7 +81,7 @@ public abstract class FunctionChoiceBehavior
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
     public static FunctionChoiceBehavior Required(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, FunctionChoiceBehaviorOptions? options = null)
     {
-        return new RequiredFunctionChoiceBehavior(functions, autoInvoke, null, options);
+        return new RequiredFunctionChoiceBehavior(functions, autoInvoke, options);
     }
 
     /// <summary>
@@ -105,8 +105,9 @@ public abstract class FunctionChoiceBehavior
     /// </summary>
     /// <param name="context">The context provided by AI connectors, used to determine the configuration.</param>
     /// <returns>The configuration.</returns>
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0001 // FunctionChoiceBehavior is an experimental feature and is subject to change in future updates. Suppress this diagnostic to proceed.
     public abstract FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context);
+#pragma warning restore SKEXP0001 // FunctionChoiceBehavior is an experimental feature and is subject to change in future updates. Suppress this diagnostic to proceed.
 
     /// <summary>
     /// Returns functions AI connector should provide to the AI model.
