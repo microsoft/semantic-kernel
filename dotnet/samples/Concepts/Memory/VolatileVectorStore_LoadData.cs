@@ -25,11 +25,11 @@ public class VolatileVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
         var vectorStore = new VolatileVectorStore();
         var collectionName = "records";
 
-        // Path to the file where the record collection will be loaded from.
+        // Path to the file where the record collection will be saved to and loaded from.
         string filePath = Path.Combine(Path.GetTempPath(), "semantic-kernel-info.json");
         if (!File.Exists(filePath))
         {
-            // Record collection doesn't exist so create it from the sample text file.
+            // Read a list of text strings from a file, to load into a new record collection.
             var skInfo = EmbeddedResource.Read("semantic-kernel-info.txt");
             var lines = skInfo!.Split('\n');
 
