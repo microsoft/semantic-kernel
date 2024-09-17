@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// <summary>
 /// Provides extension methods for interacting with <see cref="ITextSearch"/>.
 /// </summary>
+[Experimental("SKEXP0001")]
 public static class TextSearchExtensions
 {
     #region KernelPlugin factory methods

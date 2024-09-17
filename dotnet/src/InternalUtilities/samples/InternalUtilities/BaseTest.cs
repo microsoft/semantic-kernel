@@ -122,6 +122,13 @@ public abstract class BaseTest
         Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
     }
+
+    /// <summary>
+    /// Utility method to write a horizontal rule to the console.
+    /// </summary>
+    protected void WriteHorizontalRule()
+        => Console.WriteLine(new string('-', HorizontalRuleLength));
+
     protected sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
     {
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };
@@ -162,4 +169,8 @@ public abstract class BaseTest
             return response;
         }
     }
+
+    #region private
+    private const int HorizontalRuleLength = 80;
+    #endregion
 }
