@@ -85,7 +85,6 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         await InvokeAgentAsync("What is the special drink?");
         await InvokeAgentAsync("Thank you");
 
-
         // Display the entire chat history.
         WriteChatHistory(await chat.GetChatMessagesAsync().ToArrayAsync());
 
