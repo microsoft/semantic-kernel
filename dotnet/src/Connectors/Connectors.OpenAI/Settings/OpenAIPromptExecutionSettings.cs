@@ -333,7 +333,10 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
-        return openAIExecutionSettings!;
+        // Restore the function choice behavior that lost internal state(list of function instances) during serialization/deserialization process.
+        openAIExecutionSettings!.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
+
+        return openAIExecutionSettings;
     }
 
     /// <summary>
@@ -357,6 +360,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             ResponseFormat = this.ResponseFormat,
             TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
             ToolCallBehavior = this.ToolCallBehavior,
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
             User = this.User,
             ChatSystemPrompt = this.ChatSystemPrompt,
             Logprobs = this.Logprobs,
