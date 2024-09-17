@@ -94,7 +94,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         StringBuilder builder = new();
         await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
         {
-            role ??= message.Role;
+            role = message.Role;
             message.Role ??= AuthorRole.Assistant;
             message.AuthorName = this.Name;
 
@@ -102,8 +102,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
             yield return message;
         }
-
-        chat.Add(new(role ?? AuthorRole.Assistant, builder.ToString()) { AuthorName = this.Name });
 
         // Capture mutated messages related function calling / tools
         for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
@@ -113,6 +111,12 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             message.AuthorName = this.Name;
 
             history.Add(message);
+        }
+
+        // Do not duplicate terminated function result to history
+        if (role != AuthorRole.Tool)
+        {
+            history.Add(new(role ?? AuthorRole.Assistant, builder.ToString()) { AuthorName = this.Name });
         }
     }
 
