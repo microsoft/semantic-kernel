@@ -208,7 +208,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact(Skip = "Temporarily disabled to unblock PR pipeline.")]
+    [Fact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyForStreamingAsync()
     {
         // Arrange
