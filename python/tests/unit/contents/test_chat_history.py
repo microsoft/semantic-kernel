@@ -155,7 +155,7 @@ def test_add_message_with_image(chat_history: ChatHistory):
     assert chat_history.messages[-1].content == content
     assert chat_history.messages[-1].role == role
     assert chat_history.messages[-1].encoding == encoding
-    assert str(chat_history.messages[-1].items[1].uri) == "https://test/"
+    if str(chat_history.messages[-1].items[1].uri) != "https://test/": raise AssertionError("URI does not match expected value")
 
 
 def test_add_message_invalid_message(chat_history: ChatHistory):

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -79,6 +79,7 @@ public interface IMemoryRecordService<TKey, TDataModel>
     /// <exception cref="MemoryServiceCommandExecutionException">Throw when the command fails to execute for any reason.</exception>
     /// <exception cref="MemoryDataModelMappingException">Throw when mapping between the storage model and data model fails.</exception>
     Task<TKey> UpsertAsync(TDataModel record) => UpsertAsync(record, default, CancellationToken.None);
+    Task<TKey> UpsertAsync(TDataModel record, UpsertRecordOptions? options, CancellationToken cancellationToken);
 
     /// <summary>
     /// Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
