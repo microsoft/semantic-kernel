@@ -84,6 +84,7 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
                     user_agent=SEMANTIC_KERNEL_USER_AGENT,
                 )
             else:
+                # Try to create the client with a DefaultAzureCredential
                 client = EmbeddingsClient(
                     endpoint=endpoint,
                     credential=DefaultAzureCredential(),
