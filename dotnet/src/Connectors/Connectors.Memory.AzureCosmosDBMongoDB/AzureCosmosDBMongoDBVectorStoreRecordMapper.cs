@@ -37,15 +37,6 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
         typeof(decimal?),
     ];
 
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-        typeof(ReadOnlyMemory<double>),
-        typeof(ReadOnlyMemory<double>?)
-    ];
-
     /// <summary>A key property info of the data model.</summary>
     private readonly PropertyInfo _keyProperty;
 
@@ -57,13 +48,17 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
     /// </summary>
     /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
     /// <param name="keyPropertyName">A key property name of the data model.</param>
-    public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition, string keyPropertyName)
+    /// <param name="supportedVectorTypes">A set of types that vectors on the provided model may have.</param>
+    public AzureCosmosDBMongoDBVectorStoreRecordMapper(
+        VectorStoreRecordDefinition vectorStoreRecordDefinition,
+        string keyPropertyName,
+        HashSet<Type> supportedVectorTypes)
     {
         var (keyProperty, dataProperties, vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: true);
 
         VectorStoreRecordPropertyReader.VerifyPropertyTypes([keyProperty], s_supportedKeyTypes, "Key");
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(dataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(vectorProperties, s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(vectorProperties, supportedVectorTypes, "Vector");
 
         this._keyPropertyName = keyPropertyName;
         this._keyProperty = keyProperty;

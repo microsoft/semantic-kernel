@@ -22,8 +22,23 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord> where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
+    /// <summary>A set of types that vectors on the provided model may have.</summary>
+    private static readonly HashSet<Type> s_supportedVectorTypes =
+    [
+        typeof(ReadOnlyMemory<float>),
+        typeof(ReadOnlyMemory<float>?),
+        typeof(ReadOnlyMemory<double>),
+        typeof(ReadOnlyMemory<double>?)
+    ];
+
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "AzureCosmosDBMongoDB";
+
+    /// <summary>Property name to be used for search similarity score value.</summary>
+    private const string ScorePropertyName = "similarityScore";
+
+    /// <summary>Property name to be used for search document value.</summary>
+    private const string DocumentPropertyName = "document";
 
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
@@ -43,11 +58,17 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it for data and vector properties.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames;
 
+    /// <summary>A dictionary that maps from a storage name to the property name that should be used when deserializing it for data and vector properties.</summary>
+    private readonly Dictionary<string, string> _dataModelPropertyNames;
+
     /// <summary>Collection of vector storage property names.</summary>
     private readonly List<string> _vectorStoragePropertyNames;
 
     /// <summary>Collection of record vector properties.</summary>
     private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
+
+    /// <summary>First vector property for the collections that this class is used with.</summary>
+    private readonly VectorStoreRecordVectorProperty? _firstVectorProperty = null;
 
     /// <inheritdoc />
     public string CollectionName { get; }
@@ -85,11 +106,21 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         // Use Mongo reserved key property name as storage key property name
         this._storagePropertyNames[properties.KeyProperty.DataModelPropertyName] = AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName;
 
+        this._dataModelPropertyNames = ReverseDictionary(this._storagePropertyNames);
+
         this._vectorProperties = properties.VectorProperties;
         this._vectorStoragePropertyNames = this._vectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
 
+        if (this._vectorProperties.Count > 0)
+        {
+            this._firstVectorProperty = this._vectorProperties.First();
+        }
+
         this._mapper = this._options.BsonDocumentCustomMapper ??
-            new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, properties.KeyProperty.DataModelPropertyName);
+            new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(
+                this._vectorStoreRecordDefinition,
+                properties.KeyProperty.DataModelPropertyName,
+                s_supportedVectorTypes);
     }
 
     /// <inheritdoc />
@@ -242,9 +273,65 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
+        TVector vector,
+        VectorSearchOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        const string OperationName = "Aggregate";
+
+        Verify.NotNull(vector);
+
+        var vectorType = vector.GetType();
+
+        if (!s_supportedVectorTypes.Contains(vectorType))
+        {
+            throw new NotSupportedException(
+                $"The provided vector type {vectorType.FullName} is not supported by the Azure CosmosDB for MongoDB connector." +
+                $"Supported types are: {string.Join(", ", s_supportedVectorTypes.Select(l => l.FullName))}");
+        }
+
+        var searchOptions = options ?? VectorSearchOptions.Default;
+        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorFieldName);
+
+        if (vectorProperty is null)
+        {
+            throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
+        }
+
+        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
+
+        var searchQuery = vectorProperty.IndexKind switch
+        {
+            IndexKind.Hnsw => GetSearchQueryForHnswIndex(vector, vectorPropertyName, searchOptions.Limit, this._options.EfSearch),
+            IndexKind.IvfFlat => GetSearchQueryForIvfIndex(vector, vectorPropertyName, searchOptions.Limit),
+            _ => throw new InvalidOperationException(
+                $"Index kind '{vectorProperty.IndexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore." +
+                $"Supported index kinds are: {string.Join(", ", [IndexKind.Hnsw, IndexKind.IvfFlat])}")
+        };
+
+        var projectionQuery = GetProjectionQuery();
+
+        BsonDocument[] pipeline = [searchQuery, projectionQuery];
+
+        var cursor = await this._mongoCollection
+            .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        {
+            foreach (var response in cursor.Current)
+            {
+                var score = response[ScorePropertyName].AsDouble;
+                var record = VectorStoreErrorHandler.RunModelConversion(
+                    DatabaseName,
+                    this.CollectionName,
+                    OperationName,
+                    () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new()));
+
+                yield return new VectorSearchResult<TRecord>(record, score);
+            }
+        }
     }
 
     #region private
@@ -433,6 +520,116 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         }
 
         return storagePropertyNames;
+    }
+
+    /// <summary>
+    /// Get vector property to use for a search by using the storage name for the field name from options
+    /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
+    /// </summary>
+    /// <param name="optionsVectorFieldName">The vector field name provided via options.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
+    private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? optionsVectorFieldName)
+    {
+        // If vector property name is provided in options, try to find it in schema or throw an exception.
+        if (optionsVectorFieldName is not null)
+        {
+            var vectorDataModelPropertyNameExists = !this._dataModelPropertyNames
+                .TryGetValue(optionsVectorFieldName, out var vectorDataModelPropertyName);
+
+            // Check vector properties by data model property name and storage property name.
+            var vectorProperty = this._vectorProperties
+                .FirstOrDefault(l => l.DataModelPropertyName.Equals(optionsVectorFieldName, StringComparison.Ordinal) ||
+                    (vectorDataModelPropertyNameExists && l.DataModelPropertyName.Equals(vectorDataModelPropertyName, StringComparison.Ordinal)));
+
+            if (vectorProperty is not null)
+            {
+                return vectorProperty;
+            }
+
+            throw new InvalidOperationException($"The collection does not have a vector property named '{optionsVectorFieldName}'.");
+        }
+
+        // If vector property is not provided in options, return first vector property from schema.
+        return this._firstVectorProperty;
+    }
+
+    /// <summary>Returns search part of the search query for <see cref="IndexKind.Hnsw"/> index kind.</summary>
+    private static BsonDocument GetSearchQueryForHnswIndex<TVector>(
+        TVector vector,
+        string vectorPropertyName,
+        int limit,
+        int efSearch)
+    {
+        return new BsonDocument
+        {
+            { "$search",
+                new BsonDocument
+                {
+                    { "cosmosSearch",
+                        new BsonDocument
+                        {
+                            { "vector", BsonArray.Create(vector) },
+                            { "path", vectorPropertyName },
+                            { "k", limit },
+                            { "efSearch", efSearch }
+                        }
+                    }
+                }
+            }
+        };
+    }
+
+    /// <summary>Returns search part of the search query for <see cref="IndexKind.IvfFlat"/> index kind.</summary>
+    private static BsonDocument GetSearchQueryForIvfIndex<TVector>(
+        TVector vector,
+        string vectorPropertyName,
+        int limit)
+    {
+        return new BsonDocument
+        {
+            { "$search",
+                new BsonDocument
+                {
+                    { "cosmosSearch",
+                        new BsonDocument
+                        {
+                            { "vector", BsonArray.Create(vector) },
+                            { "path", vectorPropertyName },
+                            { "k", limit },
+                        }
+                    },
+                    { "returnStoredSource", true }
+                }
+            }
+        };
+    }
+
+    /// <summary>Returns projection part of the search query to return similarity score together with document.</summary>
+    private static BsonDocument GetProjectionQuery()
+    {
+        return new BsonDocument
+        {
+            { "$project",
+                new BsonDocument
+                {
+                    { ScorePropertyName, new BsonDocument { { "$meta", "searchScore" } } },
+                    { DocumentPropertyName, "$$ROOT" }
+                }
+            }
+        };
+    }
+
+    /// <summary>Swaps dictionary keys and values.</summary>
+    private static Dictionary<string, string> ReverseDictionary(Dictionary<string, string> dictionary)
+    {
+        var result = new Dictionary<string, string>();
+
+        foreach (var keyValuePair in dictionary)
+        {
+            result[keyValuePair.Key] = keyValuePair.Value;
+        }
+
+        return result;
     }
 
     #endregion
