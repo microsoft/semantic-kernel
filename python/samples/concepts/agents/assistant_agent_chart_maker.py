@@ -19,8 +19,6 @@ AGENT_INSTRUCTIONS = "Create charts as requested without explanation."
 # Note: you may toggle this to switch between AzureOpenAI and OpenAI
 use_azure_openai = True
 
-# temp code change to mark a python file is updated, so integration tests can run
-
 
 # A helper method to invoke the agent with the user input
 async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) -> None:
