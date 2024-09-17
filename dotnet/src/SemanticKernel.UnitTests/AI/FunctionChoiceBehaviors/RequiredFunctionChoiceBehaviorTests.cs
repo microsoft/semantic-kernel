@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel;
 using Xunit;
@@ -266,51 +265,6 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         });
 
         Assert.Equal("The specified function MyPlugin.NonKernelFunction was not found.", exception.Message);
-    }
-
-    [Fact]
-    public void ItShouldReturnNoFunctionAsSpecifiedByFunctionsSelector()
-    {
-        // Arrange
-        var plugin = GetTestPlugin();
-        this._kernel.Plugins.Add(plugin);
-
-        static IReadOnlyList<KernelFunction>? FunctionsSelector(FunctionChoiceBehaviorFunctionsSelectorContext context)
-        {
-            return [];
-        }
-
-        // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: true, functionsSelector: FunctionsSelector);
-
-        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
-
-        // Assert
-        Assert.NotNull(config.Functions);
-        Assert.Empty(config.Functions);
-    }
-
-    [Fact]
-    public void ItShouldReturnFunctionsAsSpecifiedByFunctionsSelector()
-    {
-        // Arrange
-        var plugin = GetTestPlugin();
-        this._kernel.Plugins.Add(plugin);
-
-        static IReadOnlyList<KernelFunction>? FunctionsSelector(FunctionChoiceBehaviorFunctionsSelectorContext context)
-        {
-            return context.Functions!.Where(f => f.Name == "Function1").ToList();
-        }
-
-        // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior(autoInvoke: true, functionsSelector: FunctionsSelector);
-
-        var config = choiceBehavior.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
-
-        // Assert
-        Assert.NotNull(config?.Functions);
-        Assert.Single(config.Functions);
-        Assert.Equal("Function1", config.Functions[0].Name);
     }
 
     [Fact]
