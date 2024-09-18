@@ -85,6 +85,17 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         // Verify.
         Verify.NotNull(qdrantClient);
         Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.True(
+            !(typeof(TRecord).IsGenericType &&
+                typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>) &&
+                !(typeof(TRecord).GetGenericArguments()[0] == typeof(ulong) || typeof(TRecord).GetGenericArguments()[0] == typeof(Guid)) &&
+                options?.PointStructCustomMapper is null),
+            "A data model of VectorStoreGenericDataModel with a different key type than ulong or Guid, is not supported by the default mappers. Please provide your own mapper to map to your chosen key type.",
+            nameof(options));
+        Verify.True(
+            !((typeof(TRecord) == typeof(VectorStoreGenericDataModel<ulong>) || typeof(TRecord) == typeof(VectorStoreGenericDataModel<Guid>)) && options?.VectorStoreRecordDefinition is null),
+            $"A {nameof(VectorStoreRecordDefinition)} must be provided when using {nameof(VectorStoreGenericDataModel<ulong>)}.",
+            nameof(options));
 
         // Assign.
         this._qdrantClient = qdrantClient;

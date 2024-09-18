@@ -19,4 +19,24 @@ public sealed class VolatileVectorStoreRecordCollectionOptions
     /// See <see cref="VectorStoreRecordKeyAttribute"/>, <see cref="VectorStoreRecordDataAttribute"/> and <see cref="VectorStoreRecordVectorAttribute"/>.
     /// </remarks>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+
+    /// <summary>
+    /// An optional function that can be used to look up vectors from a record.
+    /// </summary>
+    /// <remarks>
+    /// If not provided, the default behavior is to look for direct properties of the record
+    /// using reflection. This delegate can be used to provide a custom implementation if
+    /// the vector properties are located somewhere else on the record.
+    /// </remarks>
+    public VolatileVectorStoreVectorResolver? VectorResolver { get; init; } = null;
+
+    /// <summary>
+    /// An optional function that can be used to look up record keys.
+    /// </summary>
+    /// <remarks>
+    /// If not provided, the default behavior is to look for a direct property of the record
+    /// using reflection. This delegate can be used to provide a custom implementation if
+    /// the key property is located somewhere else on the record.
+    /// </remarks>
+    public VolatileVectorStoreKeyResolver? KeyResolver { get; init; } = null;
 }

@@ -448,6 +448,70 @@ public class VolatileVectorStoreRecordCollectionTests
         }
     }
 
+    [Theory]
+    [InlineData(TestRecordKey1, TestRecordKey2)]
+    [InlineData(TestRecordIntKey1, TestRecordIntKey2)]
+    public async Task ItCanSearchUsingTheGenericDataModelAsync<TKey>(TKey testKey1, TKey testKey2)
+        where TKey : notnull
+    {
+        // Arrange
+        var record1 = new VectorStoreGenericDataModel<TKey>(testKey1)
+        {
+            Data = new Dictionary<string, object?>
+            {
+                ["Data"] = $"data {testKey1}",
+                ["Tags"] = new List<string> { "default tag", "tag " + testKey1 }
+            },
+            Vectors = new Dictionary<string, object?>
+            {
+                ["Vector"] = new ReadOnlyMemory<float>([1, 1, 1, 1])
+            }
+        };
+        var record2 = new VectorStoreGenericDataModel<TKey>(testKey2)
+        {
+            Data = new Dictionary<string, object?>
+            {
+                ["Data"] = $"data {testKey2}",
+                ["Tags"] = new List<string> { "default tag", "tag " + testKey2 }
+            },
+            Vectors = new Dictionary<string, object?>
+            {
+                ["Vector"] = new ReadOnlyMemory<float>([-1, -1, -1, -1])
+            }
+        };
+
+        var collection = new ConcurrentDictionary<object, object>();
+        collection.TryAdd(testKey1, record1);
+        collection.TryAdd(testKey2, record2);
+
+        this._collectionStore.TryAdd(TestCollectionName, collection);
+
+        var sut = new VolatileVectorStoreRecordCollection<TKey, VectorStoreGenericDataModel<TKey>>(
+            this._collectionStore,
+            this._collectionStoreTypes,
+            TestCollectionName,
+            new()
+            {
+                VectorStoreRecordDefinition = this._singlePropsDefinition
+            });
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>([1, 1, 1, 1]),
+            new VectorSearchOptions { IncludeVectors = true, VectorFieldName = "Vector" },
+            this._testCancellationToken).ToListAsync();
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Equal(2, actual.Count);
+        Assert.Equal(testKey1, actual[0].Record.Key);
+        Assert.Equal($"data {testKey1}", actual[0].Record.Data["Data"]);
+        Assert.Equal(1, actual[0].Score);
+        Assert.Equal(testKey2, actual[1].Record.Key);
+        Assert.Equal($"data {testKey2}", actual[1].Record.Data["Data"]);
+        Assert.Equal(-1, actual[1].Score);
+    }
+
     private static SinglePropsModel<TKey> CreateModel<TKey>(TKey key, bool withVectors, float[]? vector = null)
     {
         return new SinglePropsModel<TKey>
