@@ -88,7 +88,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         public string HotelId { get; init; }
 
         /// <summary>A string metadata field.</summary>
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(IsFilterable = true)]
         public string? HotelName { get; set; }
 
         /// <summary>An int metadata field.</summary>

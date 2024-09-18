@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// <summary>
 /// Contains mapping helpers to use when searching for documents using Azure CosmosDB MongoDB.
 /// </summary>
-internal sealed class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
+internal static class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
 {
     /// <summary>Returns search part of the search query for <see cref="IndexKind.Hnsw"/> index kind.</summary>
     public static BsonDocument GetSearchQueryForHnswIndex<TVector>(
