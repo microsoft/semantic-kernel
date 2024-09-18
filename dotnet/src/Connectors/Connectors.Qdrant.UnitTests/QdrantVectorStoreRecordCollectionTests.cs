@@ -548,6 +548,54 @@ public class QdrantVectorStoreRecordCollectionTests
             new() { VectorStoreRecordDefinition = definition, PointStructCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel<ulong>, PointStruct>>() });
     }
 
+    [Theory]
+    [MemberData(nameof(TestOptions))]
+    public async Task CanSearchWithVectorAndFilterAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
+        where TKey : notnull
+    {
+        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
+
+        // Arrange.
+        var scoredPoint = CreateScoredPoint(hasNamedVectors, testRecordKey);
+        this.SetupQueryMock([scoredPoint]);
+        var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel<TKey>.Data), "data 1");
+
+        // Act.
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
+            new() { IncludeVectors = true, Filter = filter, Limit = 5, Offset = 2 },
+            this._testCancellationToken).ToListAsync();
+
+        // Assert.
+        this._qdrantClientMock
+            .Verify(
+                x => x.QueryAsync(
+                    TestCollectionName,
+                    It.Is<Query?>(x => x!.Nearest.Dense.Data.ToArray().SequenceEqual(new[] { 1f, 2f, 3f, 4f })),
+                    null,
+                    hasNamedVectors ? "vector_storage_name" : null,
+                    It.Is<Filter?>(x => x!.Must.Count == 1 && x.Must.First().Field.Key == "data_storage_name" && x.Must.First().Field.Match.Keyword == "data 1"),
+                    null,
+                    null,
+                    5,
+                    2,
+                    null,
+                    It.Is<WithVectorsSelector?>(x => x!.Enable == true),
+                    null,
+                    null,
+                    null,
+                    null,
+                    this._testCancellationToken),
+                Times.Once);
+
+        Assert.Single(actual);
+        Assert.Equal(testRecordKey, actual.First().Record.Key);
+        Assert.Equal("data 1", actual.First().Record.OriginalNameData);
+        Assert.Equal("data 1", actual.First().Record.Data);
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.First().Record.Vector!.Value.ToArray());
+        Assert.Equal(0.5f, actual.First().Score);
+    }
+
     private void SetupRetrieveMock(List<RetrievedPoint> retrievedPoints)
     {
         this._qdrantClientMock
@@ -560,6 +608,29 @@ public class QdrantVectorStoreRecordCollectionTests
                 It.IsAny<ShardKeySelector>(),
                 this._testCancellationToken))
             .ReturnsAsync(retrievedPoints);
+    }
+
+    private void SetupQueryMock(List<ScoredPoint> scoredPoints)
+    {
+        this._qdrantClientMock
+            .Setup(x => x.QueryAsync(
+                It.IsAny<string>(),
+                It.IsAny<Query?>(),
+                null,
+                It.IsAny<string?>(),
+                It.IsAny<Filter?>(),
+                null,
+                null,
+                It.IsAny<ulong>(),
+                It.IsAny<ulong>(),
+                null,
+                It.IsAny<WithVectorsSelector?>(),
+                null,
+                null,
+                null,
+                null,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(scoredPoints);
     }
 
     private void SetupDeleteMocks()
@@ -635,6 +706,43 @@ public class QdrantVectorStoreRecordCollectionTests
         {
             point = new RetrievedPoint()
             {
+                Payload = { ["OriginalNameData"] = "data 1", ["data_storage_name"] = "data 1" },
+                Vectors = new[] { 1f, 2f, 3f, 4f }
+            };
+        }
+
+        if (recordKey is ulong ulongKey)
+        {
+            point.Id = ulongKey;
+        }
+
+        if (recordKey is Guid guidKey)
+        {
+            point.Id = guidKey;
+        }
+
+        return point;
+    }
+
+    private static ScoredPoint CreateScoredPoint<TKey>(bool hasNamedVectors, TKey recordKey)
+    {
+        ScoredPoint point;
+        if (hasNamedVectors)
+        {
+            var namedVectors = new NamedVectors();
+            namedVectors.Vectors.Add("vector_storage_name", new[] { 1f, 2f, 3f, 4f });
+            point = new ScoredPoint()
+            {
+                Score = 0.5f,
+                Payload = { ["OriginalNameData"] = "data 1", ["data_storage_name"] = "data 1" },
+                Vectors = new Vectors { Vectors_ = namedVectors }
+            };
+        }
+        else
+        {
+            point = new ScoredPoint()
+            {
+                Score = 0.5f,
                 Payload = { ["OriginalNameData"] = "data 1", ["data_storage_name"] = "data 1" },
                 Vectors = new[] { 1f, 2f, 3f, 4f }
             };

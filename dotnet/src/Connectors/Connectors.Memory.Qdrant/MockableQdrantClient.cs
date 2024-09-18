@@ -255,4 +255,61 @@ internal class MockableQdrantClient
         ShardKeySelector? shardKeySelector = null,
         CancellationToken cancellationToken = default)
         => this._qdrantClient.RetrieveAsync(collectionName, ids, withPayload, withVectors, readConsistency, shardKeySelector, cancellationToken);
+
+    /// <summary>
+    /// Universally query points.
+    /// Covers all capabilities of search, recommend, discover, filters.
+    /// Also enables hybrid and multi-stage queries.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="query">Query to perform. If missing, returns points ordered by their IDs.</param>
+    /// <param name="prefetch">Sub-requests to perform first. If present, the query will be performed on the results of the prefetches.</param>
+    /// <param name="usingVector">Name of the vector to use for querying. If missing, the default vector is used..</param>
+    /// <param name="filter">Filter conditions - return only those points that satisfy the specified conditions.</param>
+    /// <param name="scoreThreshold">Return points with scores better than this threshold.</param>
+    /// <param name="searchParams">Search config.</param>
+    /// <param name="limit">Max number of results.</param>
+    /// <param name="offset">Offset of the result.</param>
+    /// <param name="payloadSelector">Options for specifying which payload to include or not.</param>
+    /// <param name="vectorsSelector">Options for specifying which vectors to include into the response.</param>
+    /// <param name="readConsistency">Options for specifying read consistency guarantees.</param>
+    /// <param name="shardKeySelector">Specify in which shards to look for the points, if not specified - look in all shards.</param>
+    /// <param name="lookupFrom">The location to use for IDs lookup, if not specified - use the current collection and the 'usingVector' vector</param>
+    /// <param name="timeout">If set, overrides global timeout setting for this request.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.
+    /// </param>
+    public virtual Task<IReadOnlyList<ScoredPoint>> QueryAsync(
+        string collectionName,
+        Query? query = null,
+        IReadOnlyList<PrefetchQuery>? prefetch = null,
+        string? usingVector = null,
+        Filter? filter = null,
+        float? scoreThreshold = null,
+        SearchParams? searchParams = null,
+        ulong limit = 10,
+        ulong offset = 0,
+        WithPayloadSelector? payloadSelector = null,
+        WithVectorsSelector? vectorsSelector = null,
+        ReadConsistency? readConsistency = null,
+        ShardKeySelector? shardKeySelector = null,
+        LookupLocation? lookupFrom = null,
+        TimeSpan? timeout = null,
+        CancellationToken cancellationToken = default)
+        => this._qdrantClient.QueryAsync(
+            collectionName,
+            query,
+            prefetch,
+            usingVector,
+            filter,
+            scoreThreshold,
+            searchParams,
+            limit,
+            offset,
+            payloadSelector,
+            vectorsSelector,
+            readConsistency,
+            shardKeySelector,
+            lookupFrom,
+            timeout,
+            cancellationToken);
 }

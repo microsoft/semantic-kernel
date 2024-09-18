@@ -13,6 +13,7 @@ using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Data;
+using SemanticKernel.IntegrationTests.TestSettings;
 using SemanticKernel.IntegrationTests.TestSettings.Memory;
 using Xunit;
 
@@ -33,11 +34,11 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// Test Configuration setup.
     /// </summary>
-    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
+    private static readonly IConfigurationRoot s_configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<AzureAISearchVectorStoreRecordCollectionTests>()
+        .AddUserSecrets<AzureAISearchVectorStoreFixture>()
         .Build();
 
     /// <summary>
@@ -45,7 +46,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     /// </summary>
     public AzureAISearchVectorStoreFixture()
     {
-        var config = this._configuration.GetRequiredSection("AzureAISearch").Get<AzureAISearchConfiguration>();
+        var config = s_configuration.GetRequiredSection("AzureAISearch").Get<AzureAISearchConfiguration>();
         Assert.NotNull(config);
         this.Config = config;
         this.SearchIndexClient = new SearchIndexClient(new Uri(config.ServiceUrl), new AzureKeyCredential(config.ApiKey));
@@ -56,7 +57,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
                 new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 1536 },
                 new VectorStoreRecordDataProperty("Tags", typeof(string[])) { IsFilterable = true },
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool?)) { IsFilterable = true, StoragePropertyName = "parking_is_included" },
                 new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset?)) { IsFilterable = true },
@@ -93,7 +94,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     {
         await AzureAISearchVectorStoreFixture.DeleteIndexIfExistsAsync(this._testIndexName, this.SearchIndexClient);
         await AzureAISearchVectorStoreFixture.CreateIndexAsync(this._testIndexName, this.SearchIndexClient);
-        AzureAISearchVectorStoreFixture.UploadDocuments(this.SearchIndexClient.GetSearchClient(this._testIndexName));
+        await AzureAISearchVectorStoreFixture.UploadDocumentsAsync(this.SearchIndexClient.GetSearchClient(this._testIndexName));
     }
 
     /// <summary>
@@ -127,16 +128,31 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     /// <returns>An async task.</returns>
     public static async Task CreateIndexAsync(string indexName, SearchIndexClient adminClient)
     {
+        AzureOpenAIConfiguration openAIConfiguration = s_configuration.GetRequiredSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>()!;
+
+        // Build the list of fields from the model, and then replace the DescriptionEmbedding field with a vector field, to work around
+        // issue where the field is not recognized as an array on parsing on the server side when apply the VectorSearchFieldAttribute.
         FieldBuilder fieldBuilder = new();
         var searchFields = fieldBuilder.Build(typeof(Hotel));
         var embeddingfield = searchFields.First(x => x.Name == "DescriptionEmbedding");
         searchFields.Remove(embeddingfield);
-        searchFields.Add(new VectorSearchField("DescriptionEmbedding", 4, "my-vector-profile"));
+        searchFields.Add(new VectorSearchField("DescriptionEmbedding", 1536, "my-vector-profile"));
 
+        // Create an index definition with a vectorizer to use when doing vector searches using text.
         var definition = new SearchIndex(indexName, searchFields);
         definition.VectorSearch = new VectorSearch();
+        definition.VectorSearch.Vectorizers.Add(new AzureOpenAIVectorizer("text-embedding-vectorizer")
+        {
+            Parameters = new AzureOpenAIVectorizerParameters
+            {
+                ResourceUri = new Uri(openAIConfiguration.Endpoint),
+                DeploymentName = openAIConfiguration.DeploymentName,
+                ApiKey = openAIConfiguration.ApiKey,
+                ModelName = openAIConfiguration.EmbeddingModelId
+            }
+        });
         definition.VectorSearch.Algorithms.Add(new HnswAlgorithmConfiguration("my-hnsw-vector-config-1") { Parameters = new HnswParameters { Metric = VectorSearchAlgorithmMetric.Cosine } });
-        definition.VectorSearch.Profiles.Add(new VectorSearchProfile("my-vector-profile", "my-hnsw-vector-config-1"));
+        definition.VectorSearch.Profiles.Add(new VectorSearchProfile("my-vector-profile", "my-hnsw-vector-config-1") { VectorizerName = "text-embedding-vectorizer" });
 
         var suggester = new SearchSuggester("sg", new[] { "HotelName" });
         definition.Suggesters.Add(suggester);
@@ -148,8 +164,10 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     /// Upload test documents to the index.
     /// </summary>
     /// <param name="searchClient">The client to use for uploading the documents.</param>
-    public static void UploadDocuments(SearchClient searchClient)
+    public static async Task UploadDocumentsAsync(SearchClient searchClient)
     {
+        var embedding = CreateTestEmbedding();
+
         IndexDocumentsBatch<Hotel> batch = IndexDocumentsBatch.Create(
             IndexDocumentsAction.Upload(
                 new Hotel()
@@ -157,7 +175,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     HotelId = "BaseSet-1",
                     HotelName = "Hotel 1",
                     Description = "This is a great hotel",
-                    DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+                    DescriptionEmbedding = embedding,
                     Tags = new[] { "pool", "air conditioning", "concierge" },
                     ParkingIncluded = false,
                     LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
@@ -169,7 +187,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     HotelId = "BaseSet-2",
                     HotelName = "Hotel 2",
                     Description = "This is a great hotel",
-                    DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+                    DescriptionEmbedding = embedding,
                     Tags = new[] { "pool", "free wifi", "concierge" },
                     ParkingIncluded = false,
                     LastRenovationDate = new DateTimeOffset(1979, 2, 18, 0, 0, 0, TimeSpan.Zero),
@@ -181,7 +199,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     HotelId = "BaseSet-3",
                     HotelName = "Hotel 3",
                     Description = "This is a great hotel",
-                    DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+                    DescriptionEmbedding = embedding,
                     Tags = new[] { "air conditioning", "bar", "continental breakfast" },
                     ParkingIncluded = true,
                     LastRenovationDate = new DateTimeOffset(2015, 9, 20, 0, 0, 0, TimeSpan.Zero),
@@ -193,7 +211,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     HotelId = "BaseSet-4",
                     HotelName = "Hotel 4",
                     Description = "This is a great hotel",
-                    DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+                    DescriptionEmbedding = embedding,
                     Tags = new[] { "concierge", "view", "24-hour front desk service" },
                     ParkingIncluded = true,
                     LastRenovationDate = new DateTimeOffset(1960, 2, 06, 0, 0, 0, TimeSpan.Zero),
@@ -201,7 +219,19 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                 })
             );
 
-        searchClient.IndexDocuments(batch);
+        await searchClient.IndexDocumentsAsync(batch);
+
+        // Add some delay to allow time for the documents to get indexed and show up in search.
+        await Task.Delay(5000);
+    }
+
+    /// <summary>
+    /// Create a test embedding.
+    /// </summary>
+    /// <returns>The test embedding.</returns>
+    public static float[] CreateTestEmbedding()
+    {
+        return Enumerable.Range(1, 1536).Select(x => (float)x).ToArray();
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -211,7 +241,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         [VectorStoreRecordKey]
         public string HotelId { get; set; }
 
-        [SearchableField(IsSortable = true)]
+        [SearchableField(IsFilterable = true, IsSortable = true)]
         [VectorStoreRecordData(IsFilterable = true, IsFullTextSearchable = true)]
         public string HotelName { get; set; }
 
@@ -219,7 +249,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         [VectorStoreRecordData]
         public string Description { get; set; }
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreRecordVector(1536)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 
         [SearchableField(IsFilterable = true, IsFacetable = true)]

@@ -61,7 +61,21 @@ public class VolatileVectorStoreTests
         Assert.Equal(new[] { "collection1", "collection2" }, collectionNamesList);
     }
 
-    public sealed class SinglePropsModel<TKey>
+    [Fact]
+    public async Task GetCollectionDoesNotAllowADifferentDataTypeThanPreviouslyUsedAsync()
+    {
+        // Arrange.
+        var sut = new VolatileVectorStore();
+        var stringKeyCollection = sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName);
+        await stringKeyCollection.CreateCollectionAsync();
+
+        // Act and assert.
+        var exception = Assert.Throws<InvalidOperationException>(() => sut.GetCollection<string, SecondModel>(TestCollectionName));
+        Assert.Equal($"Collection '{TestCollectionName}' already exists and with data type 'SinglePropsModel`1' so cannot be re-created with data type 'SecondModel'.", exception.Message);
+    }
+
+#pragma warning disable CA1812 // Classes are used as generic arguments
+    private sealed class SinglePropsModel<TKey>
     {
         [VectorStoreRecordKey]
         public required TKey Key { get; set; }
@@ -74,4 +88,14 @@ public class VolatileVectorStoreTests
 
         public string? NotAnnotated { get; set; }
     }
+
+    private sealed class SecondModel
+    {
+        [VectorStoreRecordKey]
+        public required int Key { get; set; }
+
+        [VectorStoreRecordData]
+        public string Data { get; set; } = string.Empty;
+    }
+#pragma warning restore CA1812
 }
