@@ -156,7 +156,9 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 ### PromptTemplates - Using [`Templates`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/PromptTemplate/IPromptTemplate.cs) with parametrization for `Prompt` rendering
 
 - [ChatCompletionPrompts](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/ChatCompletionPrompts.cs)
+- [ChatLoop](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/ChatLoop.cs)
 - [ChatWithPrompts](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/ChatWithPrompts.cs)
+- [SafeChatPrompts](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/SafeChatPrompts.cs)
 - [LiquidPrompts](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/LiquidPrompts.cs)
 - [MultiplePromptTemplates](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/MultiplePromptTemplates.cs)
 - [PromptFunctionsWithChatGPT](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/PromptFunctionsWithChatGPT.cs)

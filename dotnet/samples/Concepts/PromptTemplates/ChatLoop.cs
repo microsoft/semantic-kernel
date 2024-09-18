@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
-namespace ChatPrompts;
+namespace PromptTemplates;
 
 public sealed class ChatLoop(ITestOutputHelper output) : BaseTest(output)
 {
