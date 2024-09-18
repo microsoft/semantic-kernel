@@ -143,6 +143,30 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
+    public async Task GetStreamingChatMessageContentsShouldHaveFinishReasonAsync()
+    {
+        //Arrange
+        var expectedModel = "phi3";
+        var sut = new OllamaChatCompletionService(
+            expectedModel,
+            httpClient: this._httpClient);
+
+        var chat = new ChatHistory();
+        chat.AddMessage(AuthorRole.User, "fake-text");
+
+        // Act
+        StreamingChatMessageContent? lastMessage = null;
+        await foreach (var message in sut.GetStreamingChatMessageContentsAsync(chat))
+        {
+            lastMessage = message;
+        }
+
+        // Assert
+        Assert.NotNull(lastMessage!.Metadata);
+        Assert.Equal("STOP", lastMessage!.Metadata["FinishReason"]);
+    }
+
+    [Fact]
     public async Task GetStreamingChatMessageContentsExecutionSettingsMustBeSentAsync()
     {
         //Arrange
