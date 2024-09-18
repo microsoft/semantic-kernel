@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -324,9 +325,41 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
+    [Fact(Skip = SkipReason)]
+    public async Task VectorizedSearchWorksCorrectlyAsync()
+    {
+        // Arrange
+        var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
+        var hotel2 = this.CreateTestHotel(hotelId: "key2", embedding: new[] { 31f, 32f, 33f, 34f });
+        var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
+        var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearch");
+
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+
+        // Act
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])).ToListAsync();
+
+        // Assert
+        var ids = searchResults.Select(l => l.Record.HotelId).ToList();
+
+        Assert.Equal("key1", ids[0]);
+        Assert.Equal("key2", ids[1]);
+        Assert.Equal("key3", ids[2]);
+
+        Assert.DoesNotContain("key4", ids);
+
+        Assert.Equal(1, searchResults.First(l => l.Record.HotelId == "key1").Score);
+
+        await sut.DeleteCollectionAsync();
+    }
+
     #region private
 
-    private AzureCosmosDBMongoDBHotel CreateTestHotel(string hotelId)
+    private AzureCosmosDBMongoDBHotel CreateTestHotel(string hotelId, ReadOnlyMemory<float>? embedding = null)
     {
         return new AzureCosmosDBMongoDBHotel
         {
@@ -337,7 +370,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
             ParkingIncluded = true,
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
-            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+            DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
         };
     }
 

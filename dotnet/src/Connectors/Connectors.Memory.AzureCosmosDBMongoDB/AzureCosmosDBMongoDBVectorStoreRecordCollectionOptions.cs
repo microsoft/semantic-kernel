@@ -39,4 +39,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
     /// also increase the time required to build the index. EfConstruction has to be at least 2 * m
     /// </summary>
     public int? EfConstruction { get; set; } = null;
+
+    /// <summary>
+    /// The size of the dynamic candidate list for search (40 by default). A higher value provides better recall at
+    /// the cost of speed.
+    /// </summary>
+    public int EfSearch { get; set; } = 40;
 }
