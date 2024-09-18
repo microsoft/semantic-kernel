@@ -23,7 +23,7 @@ public static class ChatHistoryReducerExtensions
     /// </remarks>
     /// <param name="chatHistory">The current chat history, including system messages, user messages, assistant messages and tool invocations.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancell this operation />
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this operation.</param>
     /// <returns></returns>
     public static async Task<IEnumerable<ChatMessageContent>> TryReduceAsync(this ChatHistory chatHistory, Kernel? kernel, CancellationToken cancellationToken)
     {

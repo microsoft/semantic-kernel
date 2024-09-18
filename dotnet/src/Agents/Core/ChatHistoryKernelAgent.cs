@@ -45,7 +45,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// </summary>
     /// <param name="history">The source history</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A boolean indicating if the operation was successfull or not.</returns>
+    /// <returns>A boolean indicating if the operation was successful or not.</returns>
     public Task<bool> TryReduceAsync(ChatHistory history, CancellationToken cancellationToken = default) =>
         history.TryReduceAsync(this.HistoryReducer, cancellationToken);
 

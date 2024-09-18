@@ -1038,7 +1038,6 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     public async Task GetChatMessageContentShouldSendReducedChatHistoryToLLM()
     {
         // Arrange
-
         var moqReducer = new Mock<IChatHistoryReducer>();
         moqReducer.Setup(x => x.ReduceAsync(It.IsAny<ChatHistory>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((ChatHistory chatHistory, CancellationToken ct) =>

@@ -19,7 +19,6 @@ public interface IChatHistoryReducer
     /// </summary>
     /// <param name="chatHistory">The current chat history, including system messages, user messages, assistant messages and tool invocations.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>
-    /// <returns>The reduced history, or 'null' if no reduction has occurred</returns>
+    /// <returns>The reduced history, or 'null' if no reduction has occurred.</returns>
     Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> chatHistory, CancellationToken cancellationToken);
 }
