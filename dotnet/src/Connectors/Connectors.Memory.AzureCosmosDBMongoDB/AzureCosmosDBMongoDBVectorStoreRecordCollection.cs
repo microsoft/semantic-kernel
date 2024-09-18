@@ -49,9 +49,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it for data and vector properties.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames;
 
-    /// <summary>A dictionary that maps from a storage name to the property name that should be used when deserializing it for data and vector properties.</summary>
-    private readonly Dictionary<string, string> _dataModelPropertyNames;
-
     /// <summary>Collection of vector storage property names.</summary>
     private readonly List<string> _vectorStoragePropertyNames;
 
@@ -96,8 +93,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         // Use Mongo reserved key property name as storage key property name
         this._storagePropertyNames[properties.KeyProperty.DataModelPropertyName] = AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName;
-
-        this._dataModelPropertyNames = ReverseDictionary(this._storagePropertyNames);
 
         this._vectorProperties = properties.VectorProperties;
         this._vectorStoragePropertyNames = this._vectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
@@ -525,20 +520,16 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         // If vector property name is provided in options, try to find it in schema or throw an exception.
         if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
         {
-            var vectorDataModelPropertyNameExists = this._dataModelPropertyNames
-                .TryGetValue(optionsVectorFieldName!, out var vectorDataModelPropertyName);
-
-            // Check vector properties by data model property name and storage property name.
+            // Check vector properties by data model property name.
             var vectorProperty = this._vectorProperties
-                .FirstOrDefault(l => l.DataModelPropertyName.Equals(optionsVectorFieldName, StringComparison.Ordinal) ||
-                    (vectorDataModelPropertyNameExists && l.DataModelPropertyName.Equals(vectorDataModelPropertyName, StringComparison.Ordinal)));
+                .FirstOrDefault(l => l.DataModelPropertyName.Equals(optionsVectorFieldName, StringComparison.Ordinal));
 
             if (vectorProperty is not null)
             {
                 return vectorProperty;
             }
 
-            throw new InvalidOperationException($"The collection does not have a vector property named '{optionsVectorFieldName}'.");
+            throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{optionsVectorFieldName}'.");
         }
 
         // If vector property is not provided in options, return first vector property from schema.
@@ -609,19 +600,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
                 }
             }
         };
-    }
-
-    /// <summary>Swaps dictionary keys and values.</summary>
-    private static Dictionary<string, string> ReverseDictionary(Dictionary<string, string> dictionary)
-    {
-        var result = new Dictionary<string, string>();
-
-        foreach (var keyValuePair in dictionary)
-        {
-            result[keyValuePair.Value] = keyValuePair.Key;
-        }
-
-        return result;
     }
 
     #endregion

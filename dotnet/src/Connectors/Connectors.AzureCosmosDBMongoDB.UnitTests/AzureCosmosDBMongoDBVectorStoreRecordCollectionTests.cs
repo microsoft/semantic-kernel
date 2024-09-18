@@ -574,8 +574,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
     [InlineData(null, "TestEmbedding1", 1, 1)]
     [InlineData("", "TestEmbedding1", 2, 2)]
     [InlineData("TestEmbedding1", "TestEmbedding1", 3, 3)]
-    [InlineData("test_embedding_2", "test_embedding_2", 4, 4)]
-    [InlineData("TestEmbedding2", "test_embedding_2", 5, 5)]
+    [InlineData("TestEmbedding2", "test_embedding_2", 4, 4)]
     public async Task VectorizedSearchUsesValidQueryAsync(
         string? vectorPropertyName,
         string expectedVectorPropertyName,
