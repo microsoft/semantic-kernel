@@ -46,9 +46,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <summary>A dictionary of vector properties on the provided model, keyed by the property name.</summary>
     private readonly Dictionary<string, VectorStoreRecordVectorProperty> _vectorProperties;
 
-    /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
-    private readonly PropertyInfo _keyPropertyInfo;
-
     /// <summary>The name of the first vector field for the collections that this class is used with.</summary>
     private readonly string? _firstVectorPropertyName = null;
 
@@ -83,8 +80,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
         this._vectorProperties = properties.VectorProperties.ToDictionary(x => x.DataModelPropertyName);
-
-        this._keyPropertyInfo = typeof(TRecord).GetProperty(properties.KeyProperty.DataModelPropertyName) ?? throw new ArgumentException($"Key property {properties.KeyProperty.DataModelPropertyName} not found on {typeof(TRecord).Name}");
         if (properties.VectorProperties.Count > 0)
         {
             this._firstVectorPropertyName = properties.VectorProperties.First().DataModelPropertyName;
@@ -204,7 +199,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         var collectionDictionary = this.GetCollectionDictionary();
 
-        var key = (TKey)this._keyPropertyInfo.GetValue(record)!;
+        var key = (TKey)this._keyResolver(record)!;
         collectionDictionary.AddOrUpdate(key!, record, (key, currentValue) => record);
 
         return Task.FromResult(key!);
