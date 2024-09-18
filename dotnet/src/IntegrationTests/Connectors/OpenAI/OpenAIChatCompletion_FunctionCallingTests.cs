@@ -879,7 +879,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
-        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday, "GetDayOfWeek", "Retrieves the current day of the week.");
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
         kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
 
         var chatHistory = new ChatHistory();
@@ -903,7 +903,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
-        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday, "GetDayOfWeek", "Retrieves the current day of the week.");
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
         kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
 
         var chatHistory = new ChatHistory();
