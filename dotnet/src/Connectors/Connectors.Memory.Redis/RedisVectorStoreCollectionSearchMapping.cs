@@ -56,11 +56,12 @@ internal static class RedisVectorStoreCollectionSearchMapping
         var vectorPropertyName = ResolveVectorFieldName(options.VectorFieldName, storagePropertyNames, firstVectorPropertyName);
 
         // Build search query.
+        var redisLimit = options.Limit + options.Offset;
         var filter = RedisVectorStoreCollectionSearchMapping.BuildFilter(options.Filter, storagePropertyNames);
-        var query = new Query($"{filter}=>[KNN {options.Limit} @{vectorPropertyName} $embedding AS vector_score]")
+        var query = new Query($"{filter}=>[KNN {redisLimit} @{vectorPropertyName} $embedding AS vector_score]")
             .AddParam("embedding", vectorBytes)
             .SetSortBy("vector_score")
-            .Limit(options.Offset, options.Limit)
+            .Limit(options.Offset, redisLimit)
             .SetWithScores(true)
             .Dialect(2);
 
@@ -128,9 +129,9 @@ internal static class RedisVectorStoreCollectionSearchMapping
     private static string ResolveVectorFieldName(string? optionsVectorFieldName, Dictionary<string, string> storagePropertyNames, string firstVectorPropertyName)
     {
         string? vectorFieldName;
-        if (optionsVectorFieldName is not null)
+        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
         {
-            if (!storagePropertyNames.TryGetValue(optionsVectorFieldName, out vectorFieldName))
+            if (!storagePropertyNames.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
             {
                 throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
             }
