@@ -292,14 +292,27 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
+        var filter = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.BuildFilter(
+            searchOptions.Filter,
+            this._storagePropertyNames);
+
         // Constructing a query to fetch "offset + limit" total items
         // to perform offset logic locally, since offset parameter is not part of API. 
         var itemsAmount = searchOptions.Offset + searchOptions.Limit;
 
         var searchQuery = vectorProperty.IndexKind switch
         {
-            IndexKind.Hnsw => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForHnswIndex(vectorArray, vectorPropertyName, itemsAmount, this._options.EfSearch),
-            IndexKind.IvfFlat => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForIvfIndex(vectorArray, vectorPropertyName, itemsAmount),
+            IndexKind.Hnsw => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForHnswIndex(
+                vectorArray,
+                vectorPropertyName,
+                itemsAmount,
+                this._options.EfSearch,
+                filter),
+            IndexKind.IvfFlat => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForIvfIndex(
+                vectorArray,
+                vectorPropertyName,
+                itemsAmount,
+                filter),
             _ => throw new InvalidOperationException(
                 $"Index kind '{vectorProperty.IndexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore. " +
                 $"Supported index kinds are: {string.Join(", ", [IndexKind.Hnsw, IndexKind.IvfFlat])}")
