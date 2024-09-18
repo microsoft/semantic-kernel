@@ -8,7 +8,7 @@ consulted: {}
 informed: {}
 ---
 
-# Allow Empty Choices in Streaming Responses for Token Usage Information (Semantic Kernel Python)
+# Streaming Contents for Token Usage Information (Semantic Kernel Python)
 
 ## Context and Problem Statement
 
