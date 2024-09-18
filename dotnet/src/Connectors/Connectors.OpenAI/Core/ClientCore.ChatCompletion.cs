@@ -609,7 +609,7 @@ internal partial class ClientCore
 
     private static async Task<IList<ChatMessage>> CreateChatCompletionMessagesAsync(OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory, Kernel? kernel, CancellationToken cancellationToken)
     {
-        var sourceMessages = await chatHistory.TryReduceAsync(kernel, cancellationToken).ConfigureAwait(false);
+        var sourceMessages = await chatHistory.ReduceAsync(kernel, cancellationToken).ConfigureAwait(false);
 
         List<ChatMessage> messages = [];
 

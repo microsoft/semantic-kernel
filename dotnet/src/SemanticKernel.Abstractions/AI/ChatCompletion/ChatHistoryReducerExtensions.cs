@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 public static class ChatHistoryReducerExtensions
 {
     /// <summary>
-    /// Try to reduce the chat history before sending it to the chat completion provider.
+    /// Reduces the chat history before sending it to the chat completion provider.
     /// </summary>
     /// <remarks>
     /// If there is no <see cref="IChatHistoryReducer"/> registered in the <see cref="Kernel"/>, the original chat history will be returned.
@@ -25,7 +25,7 @@ public static class ChatHistoryReducerExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this operation.</param>
     /// <returns>The reduced chat history if the kernel had one reducer configured, or the same <see cref="ChatHistory"/> if it cannot be reduced.</returns>
-    public static async Task<IEnumerable<ChatMessageContent>> TryReduceAsync(this ChatHistory chatHistory, Kernel? kernel, CancellationToken cancellationToken)
+    public static async Task<IEnumerable<ChatMessageContent>> ReduceAsync(this ChatHistory chatHistory, Kernel? kernel, CancellationToken cancellationToken)
     {
         if (kernel is null)
         {
