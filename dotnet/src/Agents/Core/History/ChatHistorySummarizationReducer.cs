@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Agents.History;
 /// is provided (recommended), reduction will scan within the threshold window in an attempt to
 /// avoid orphaning a user message from an assistant response.
 /// </remarks>
-public class ChatHistorySummarizationReducer : IChatHistoryReducer
+public class ChatHistorySummarizationReducer : IAgentChatHistoryReducer
 {
     /// <summary>
     /// Metadata key to indicate a summary message.
@@ -64,13 +64,13 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     public bool UseSingleSummary { get; init; } = true;
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> chatHistory, CancellationToken cancellationToken = default)
     {
         // Identify where summary messages end and regular history begins
-        int insertionPoint = history.LocateSummarizationBoundary(SummaryMetadataKey);
+        int insertionPoint = chatHistory.LocateSummarizationBoundary(SummaryMetadataKey);
 
         // First pass to determine the truncation index
-        int truncationIndex = history.LocateSafeReductionIndex(this._targetCount, this._thresholdCount, insertionPoint);
+        int truncationIndex = chatHistory.LocateSafeReductionIndex(this._targetCount, this._thresholdCount, insertionPoint);
 
         IEnumerable<ChatMessageContent>? truncatedHistory = null;
 
@@ -78,7 +78,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         {
             // Second pass to extract history for summarization
             IEnumerable<ChatMessageContent> summarizedHistory =
-                history.Extract(
+                chatHistory.Extract(
                     this.UseSingleSummary ? 0 : insertionPoint,
                     truncationIndex - 1,
                     (m) => m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent));
@@ -111,7 +111,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
             {
                 for (int index = 0; index <= insertionPoint - 1; ++index)
                 {
-                    yield return history[index];
+                    yield return chatHistory[index];
                 }
             }
 
@@ -120,9 +120,9 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
                 yield return summary;
             }
 
-            for (int index = truncationIndex; index < history.Count; ++index)
+            for (int index = truncationIndex; index < chatHistory.Count; ++index)
             {
-                yield return history[index];
+                yield return chatHistory[index];
             }
         }
     }

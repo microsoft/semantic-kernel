@@ -142,7 +142,7 @@ internal static class ChatHistoryReducerExtensions
     /// Using the existing <see cref="ChatHistory"/> for a reduction in collection size eliminates the need
     /// for re-allocation (of memory).
     /// </remarks>
-    public static async Task<bool> ReduceAsync(this ChatHistory history, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
+    public static async Task<bool> TryReduceAsync(this ChatHistory history, IAgentChatHistoryReducer? reducer, CancellationToken cancellationToken)
     {
         if (reducer == null)
         {

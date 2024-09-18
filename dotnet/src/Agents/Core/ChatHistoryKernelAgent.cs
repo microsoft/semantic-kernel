@@ -24,7 +24,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     public KernelArguments? Arguments { get; init; }
 
     /// <inheritdoc/>
-    public IChatHistoryReducer? HistoryReducer { get; init; }
+    public IAgentChatHistoryReducer? HistoryReducer { get; init; }
 
     /// <inheritdoc/>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
@@ -45,9 +45,9 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// </summary>
     /// <param name="history">The source history</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    public Task<bool> ReduceAsync(ChatHistory history, CancellationToken cancellationToken = default) =>
-        history.ReduceAsync(this.HistoryReducer, cancellationToken);
+    /// <returns>A boolean indicating if the operation was successfull or not.</returns>
+    public Task<bool> TryReduceAsync(ChatHistory history, CancellationToken cancellationToken = default) =>
+        history.TryReduceAsync(this.HistoryReducer, cancellationToken);
 
     /// <inheritdoc/>
     protected sealed override IEnumerable<string> GetChannelKeys()
@@ -59,7 +59,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
         if (this.HistoryReducer != null)
         {
             // Explicitly include the reducer type to eliminate the possibility of hash collisions
-            // with custom implementations of IChatHistoryReducer.
+            // with custom implementations of IAgentChatHistoryReducer.
             yield return this.HistoryReducer.GetType().FullName!;
 
             yield return this.HistoryReducer.GetHashCode().ToString(CultureInfo.InvariantCulture);

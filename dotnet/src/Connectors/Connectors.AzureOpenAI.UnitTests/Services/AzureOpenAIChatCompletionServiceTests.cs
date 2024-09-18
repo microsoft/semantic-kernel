@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.AI.OpenAI.Chat;
@@ -15,6 +16,7 @@ using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -1221,6 +1223,162 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var functionResult = messages[4];
         Assert.Equal("tool", functionResult.GetProperty("role").GetString());
         Assert.Equal("rainy", functionResult.GetProperty("content").GetString());
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentShouldSendReducedChatHistoryToLLM()
+    {
+        // Arrange
+        var moqReducer = new Mock<IChatHistoryReducer>();
+        moqReducer.Setup(x => x.ReduceAsync(It.IsAny<ChatHistory>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ChatHistory chatHistory, CancellationToken ct) =>
+            {
+                var duplicatedChatHistory = chatHistory.ToList();
+                duplicatedChatHistory.RemoveRange(1, 2);
+
+                return duplicatedChatHistory;
+            });
+
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.Services.AddSingleton<IChatHistoryReducer>(moqReducer.Object);
+        var kernel = kernelBuilder.Build();
+        kernel.ImportPluginFromFunctions("MyPlugin", [KernelFunctionFactory.CreateFromMethod(() => "rainy", "GetCurrentWeather")]);
+
+        using var firstResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/chat_completion_single_function_call_test_response.json")) };
+        this._messageHandlerStub.ResponsesToReturn.Add(firstResponse);
+
+        using var secondResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/chat_completion_test_response.json")) };
+        this._messageHandlerStub.ResponsesToReturn.Add(secondResponse);
+
+        var sut = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What time is it?"),
+            new ChatMessageContent(AuthorRole.Assistant, [
+                new FunctionCallContent("Date", "TimePlugin", "2")
+            ]),
+            new ChatMessageContent(AuthorRole.Tool, [
+                new FunctionResultContent("Date",  "TimePlugin", "2", "rainy")
+            ]),
+            new ChatMessageContent(AuthorRole.Assistant, "08/06/2024 00:00:00"),
+            new ChatMessageContent(AuthorRole.User, "Given the current time of day and weather, what is the likely color of the sky in Boston?")
+        };
+
+        // Act
+        await sut.GetChatMessageContentAsync(chatHistory, new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }, kernel);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[1]!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(5, messages.GetArrayLength());
+
+        var userFirstPrompt = messages[0];
+        Assert.Equal("user", userFirstPrompt.GetProperty("role").GetString());
+        Assert.Equal("What time is it?", userFirstPrompt.GetProperty("content").ToString());
+
+        var assistantFirstResponse = messages[1];
+        Assert.Equal("assistant", assistantFirstResponse.GetProperty("role").GetString());
+        Assert.Equal("08/06/2024 00:00:00", assistantFirstResponse.GetProperty("content").GetString());
+
+        var userSecondPrompt = messages[2];
+        Assert.Equal("user", userSecondPrompt.GetProperty("role").GetString());
+        Assert.Equal("Given the current time of day and weather, what is the likely color of the sky in Boston?", userSecondPrompt.GetProperty("content").ToString());
+
+        var assistantSecondResponse = messages[3];
+        Assert.Equal("assistant", assistantSecondResponse.GetProperty("role").GetString());
+        Assert.Equal("1", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("id").GetString());
+        Assert.Equal("MyPlugin-GetCurrentWeather", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("function").GetProperty("name").GetString());
+
+        var functionResult = messages[4];
+        Assert.Equal("tool", functionResult.GetProperty("role").GetString());
+        Assert.Equal("rainy", functionResult.GetProperty("content").GetString());
+
+        // Verify that Chat History instance was not mutated and contains all messages
+        Assert.Equal(7, chatHistory.Count);
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsShouldSendReducedChatHistoryToLLM()
+    {
+        // Arrange
+        var moqReducer = new Mock<IChatHistoryReducer>();
+        moqReducer.Setup(x => x.ReduceAsync(It.IsAny<ChatHistory>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ChatHistory chatHistory, CancellationToken ct) =>
+            {
+                var duplicatedChatHistory = chatHistory.ToList();
+                duplicatedChatHistory.RemoveRange(1, 2);
+
+                return duplicatedChatHistory;
+            });
+
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.Services.AddSingleton<IChatHistoryReducer>(moqReducer.Object);
+        var kernel = kernelBuilder.Build();
+        kernel.ImportPluginFromFunctions("MyPlugin", [KernelFunctionFactory.CreateFromMethod(() => "rainy", "GetCurrentWeather")]);
+
+        using var firstResponse = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_single_function_call_test_response.txt")) };
+        this._messageHandlerStub.ResponsesToReturn.Add(firstResponse);
+
+        using var secondResponse = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_test_response.txt")) };
+        this._messageHandlerStub.ResponsesToReturn.Add(secondResponse);
+
+        var sut = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What time is it?"),
+            new ChatMessageContent(AuthorRole.Assistant, [
+                new FunctionCallContent("Date", "TimePlugin", "2")
+            ]),
+            new ChatMessageContent(AuthorRole.Tool, [
+                new FunctionResultContent("Date",  "TimePlugin", "2", "rainy")
+            ]),
+            new ChatMessageContent(AuthorRole.Assistant, "08/06/2024 00:00:00"),
+            new ChatMessageContent(AuthorRole.User, "Given the current time of day and weather, what is the likely color of the sky in Boston?")
+        };
+
+        // Act
+        await foreach (var update in sut.GetStreamingChatMessageContentsAsync(chatHistory, new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }, kernel))
+        {
+        }
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[1]!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(5, messages.GetArrayLength());
+
+        var userFirstPrompt = messages[0];
+        Assert.Equal("user", userFirstPrompt.GetProperty("role").GetString());
+        Assert.Equal("What time is it?", userFirstPrompt.GetProperty("content").ToString());
+
+        var assistantFirstResponse = messages[1];
+        Assert.Equal("assistant", assistantFirstResponse.GetProperty("role").GetString());
+        Assert.Equal("08/06/2024 00:00:00", assistantFirstResponse.GetProperty("content").GetString());
+
+        var userSecondPrompt = messages[2];
+        Assert.Equal("user", userSecondPrompt.GetProperty("role").GetString());
+        Assert.Equal("Given the current time of day and weather, what is the likely color of the sky in Boston?", userSecondPrompt.GetProperty("content").ToString());
+
+        var assistantSecondResponse = messages[3];
+        Assert.Equal("assistant", assistantSecondResponse.GetProperty("role").GetString());
+        Assert.Equal("1", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("id").GetString());
+        Assert.Equal("MyPlugin-GetCurrentWeather", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("function").GetProperty("name").GetString());
+
+        var functionResult = messages[4];
+        Assert.Equal("tool", functionResult.GetProperty("role").GetString());
+        Assert.Equal("rainy", functionResult.GetProperty("content").GetString());
+
+        // Verify that Chat History instance was not mutated and contains all messages
+        Assert.Equal(7, chatHistory.Count);
     }
 
     [Fact]

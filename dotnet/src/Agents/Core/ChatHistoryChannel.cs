@@ -27,7 +27,7 @@ public sealed class ChatHistoryChannel : AgentChannel
         }
 
         // Pre-process history reduction.
-        await historyAgent.ReduceAsync(this._history, cancellationToken).ConfigureAwait(false);
+        await historyAgent.TryReduceAsync(this._history, cancellationToken).ConfigureAwait(false);
 
         // Capture the current message count to evaluate history mutation.
         int messageCount = this._history.Count;
@@ -85,7 +85,7 @@ public sealed class ChatHistoryChannel : AgentChannel
         }
 
         // Pre-process history reduction.
-        await historyAgent.ReduceAsync(this._history, cancellationToken).ConfigureAwait(false);
+        await historyAgent.TryReduceAsync(this._history, cancellationToken).ConfigureAwait(false);
 
         int messageCount = this._history.Count;
 

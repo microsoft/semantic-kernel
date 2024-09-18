@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JsonSchemaMapper;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using OpenAI.Chat;
@@ -156,7 +157,7 @@ internal partial class ClientCore
 
         for (int requestIndex = 0; ; requestIndex++)
         {
-            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
+            var chatForRequest = await CreateChatCompletionMessagesAsync(chatExecutionSettings, chatHistory, kernel, cancellationToken).ConfigureAwait(false);
 
             var functionCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
@@ -244,7 +245,7 @@ internal partial class ClientCore
 
         for (int requestIndex = 0; ; requestIndex++)
         {
-            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
+            var chatForRequest = await CreateChatCompletionMessagesAsync(chatExecutionSettings, chatHistory, kernel, cancellationToken).ConfigureAwait(false);
 
             var toolCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
@@ -606,8 +607,10 @@ internal partial class ClientCore
         return chat;
     }
 
-    private static List<ChatMessage> CreateChatCompletionMessages(OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory)
+    private static async Task<IList<ChatMessage>> CreateChatCompletionMessagesAsync(OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory, Kernel? kernel, CancellationToken cancellationToken)
     {
+        var sourceMessages = await chatHistory.TryReduceAsync(kernel, cancellationToken).ConfigureAwait(false);
+
         List<ChatMessage> messages = [];
 
         if (!string.IsNullOrWhiteSpace(executionSettings.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
@@ -615,7 +618,7 @@ internal partial class ClientCore
             messages.Add(new SystemChatMessage(executionSettings.ChatSystemPrompt));
         }
 
-        foreach (var message in chatHistory)
+        foreach (var message in sourceMessages)
         {
             messages.AddRange(CreateRequestMessages(message));
         }

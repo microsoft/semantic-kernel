@@ -80,7 +80,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
             Console.WriteLine($"# {AuthorRole.User}: '{index}'");
 
             // Reduce prior to invoking the agent
-            bool isReduced = await agent.ReduceAsync(chat);
+            bool isReduced = await agent.TryReduceAsync(chat);
 
             // Invoke and display assistant response
             await foreach (ChatMessageContent message in agent.InvokeAsync(chat))

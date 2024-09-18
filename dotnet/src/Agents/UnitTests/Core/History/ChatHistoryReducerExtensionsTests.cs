@@ -85,18 +85,18 @@ public class ChatHistoryReducerExtensionsTests
     {
         // Arrange
         ChatHistory history = [];
-        Mock<IChatHistoryReducer> mockReducer = new();
+        Mock<IAgentChatHistoryReducer> mockReducer = new();
         mockReducer.Setup(r => r.ReduceAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), default)).ReturnsAsync((IEnumerable<ChatMessageContent>?)null);
 
         // Act
-        bool isReduced = await history.ReduceAsync(null, default);
+        bool isReduced = await history.TryReduceAsync(null, default);
 
         // Assert
         Assert.False(isReduced);
         Assert.Empty(history);
 
         // Act
-        isReduced = await history.ReduceAsync(mockReducer.Object, default);
+        isReduced = await history.TryReduceAsync(mockReducer.Object, default);
 
         // Assert
         Assert.False(isReduced);
@@ -110,13 +110,13 @@ public class ChatHistoryReducerExtensionsTests
     public async Task VerifyChatHistoryReducedAsync()
     {
         // Arrange
-        Mock<IChatHistoryReducer> mockReducer = new();
+        Mock<IAgentChatHistoryReducer> mockReducer = new();
         mockReducer.Setup(r => r.ReduceAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), default)).ReturnsAsync((IEnumerable<ChatMessageContent>?)[]);
 
         ChatHistory history = [.. MockHistoryGenerator.CreateSimpleHistory(10)];
 
         // Act
-        bool isReduced = await history.ReduceAsync(mockReducer.Object, default);
+        bool isReduced = await history.TryReduceAsync(mockReducer.Object, default);
 
         // Assert
         Assert.True(isReduced);

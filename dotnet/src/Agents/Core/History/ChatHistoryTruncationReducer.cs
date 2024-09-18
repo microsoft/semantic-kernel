@@ -15,20 +15,20 @@ namespace Microsoft.SemanticKernel.Agents.History;
 /// is provided (recommended), reduction will scan within the threshold window in an attempt to
 /// avoid orphaning a user message from an assistant response.
 /// </remarks>
-public class ChatHistoryTruncationReducer : IChatHistoryReducer
+public class ChatHistoryTruncationReducer : IAgentChatHistoryReducer
 {
     /// <inheritdoc/>
-    public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+    public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> chatHistory, CancellationToken cancellationToken = default)
     {
         // First pass to determine the truncation index
-        int truncationIndex = history.LocateSafeReductionIndex(this._targetCount, this._thresholdCount);
+        int truncationIndex = chatHistory.LocateSafeReductionIndex(this._targetCount, this._thresholdCount);
 
         IEnumerable<ChatMessageContent>? truncatedHistory = null;
 
         if (truncationIndex > 0)
         {
             // Second pass to truncate the history
-            truncatedHistory = history.Extract(truncationIndex);
+            truncatedHistory = chatHistory.Extract(truncationIndex);
         }
 
         return Task.FromResult(truncatedHistory);
