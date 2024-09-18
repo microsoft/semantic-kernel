@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Runtime.CompilerServices;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -6,7 +7,7 @@ using Microsoft.SemanticKernel.Embeddings;
 namespace Search;
 
 /// <summary>
-/// This example shows how to create and use a <see cref="VectorStoreTextSearch{TRecord}"/>.
+/// This example shows how to create and use a <see cref="VectorStoreTextSearch{TRecord}"/> instance.
 /// </summary>
 public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
 {
@@ -51,7 +52,16 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
         var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration, stringMapper, resultMapper);
+        await ExecuteSearchesAsync(textSearch);
 
+        // Create a text search instance using a vectorized search wrapper around the volatile vector store.
+        IVectorizableTextSearch<DataModel> vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorizedSearch, textEmbeddingGeneration);
+        textSearch = new VectorStoreTextSearch<DataModel>(vectorizableTextSearch, stringMapper, resultMapper);
+        await ExecuteSearchesAsync(textSearch);
+    }
+
+    private async Task ExecuteSearchesAsync(VectorStoreTextSearch<DataModel> textSearch)
+    {
         var query = "What is the Semantic Kernel?";
 
         // Search and return results as a string items
@@ -159,6 +169,24 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
         return collection;
+    }
+
+    /// <summary>
+    /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
+    /// </summary>
+    private sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
+        where TRecord : class
+    {
+        /// <inheritdoc/>
+        public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var vectorizedQuery = await textEmbeddingGeneration!.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            await foreach (var result in vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, options, cancellationToken))
+            {
+                yield return result;
+            }
+        }
     }
 
     /// <summary>
