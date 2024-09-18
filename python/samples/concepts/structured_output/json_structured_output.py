@@ -114,11 +114,11 @@ chat_function = kernel.add_function(
 )
 
 history = ChatHistory()
-history.add_user_message("how can I solve 8x + 7 = -23")
+history.add_user_message("how can I solve 8x + 7y - 6z = -23")
 
 
 async def main():
-    stream = True
+    stream = False
     if stream:
         answer = kernel.invoke_stream(
             chat_function,
@@ -136,7 +136,7 @@ async def main():
             chat_function,
             chat_history=history,
         )
-        print(f"Mosscap:> {answer}")
+        print(f"Mosscap:> {result}")
     history.add_assistant_message(str(result))
 
 

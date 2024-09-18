@@ -4,12 +4,15 @@ import sys
 from collections.abc import AsyncGenerator, Callable
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidResponseError
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
 from openai import AsyncStream
+from openai.lib.streaming.chat._completions import AsyncChatCompletionStream, AsyncChatCompletionStreamManager
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, ChoiceDeltaFunctionCall, ChoiceDeltaToolCall
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
@@ -36,7 +39,7 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
-from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceInvalidResponseError
+from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
@@ -105,17 +108,35 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
 
-        response = await self._send_request(request_settings=settings)
-        if not isinstance(response, AsyncStream):
-            raise ServiceInvalidResponseError("Expected an AsyncStream[ChatCompletionChunk] response.")
-        async for chunk in response:
-            if len(chunk.choices) == 0:
-                continue
-            assert isinstance(chunk, ChatCompletionChunk)  # nosec
-            chunk_metadata = self._get_metadata_from_streaming_chat_response(chunk)
-            yield [
-                self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
-            ]
+        if settings.structured_json_response:
+            stream = await self._send_request(settings)
+            if isinstance(stream, AsyncChatCompletionStreamManager):
+                async with stream as response_stream:
+                    async for chunk in self._handle_structured_output_chat_stream(response_stream):
+                        yield chunk
+        else:
+            response = await self._send_request(request_settings=settings)
+            if not isinstance(response, AsyncStream):
+                raise ServiceInvalidResponseError("Expected an AsyncStream[ChatCompletionChunk] response.")
+            async for chunk in response:
+                if len(chunk.choices) == 0:
+                    continue
+                assert isinstance(chunk, ChatCompletionChunk)  # nosec
+                chunk_metadata = self._get_metadata_from_streaming_chat_response(chunk)
+                yield [
+                    self._create_streaming_chat_message_content(chunk, choice, chunk_metadata)
+                    for choice in chunk.choices
+                ]
+
+    async def _handle_structured_output_chat_stream(self, stream: AsyncChatCompletionStream) -> AsyncGenerator:
+        """Handle the events from the chat stream."""
+        async for event in stream:
+            if event.type == "chunk":
+                chunk_metadata = self._get_metadata_from_streaming_chat_response(event.chunk)
+                yield [
+                    self._create_streaming_chat_message_content(event.chunk, choice, chunk_metadata)
+                    for choice in event.chunk.choices
+                ]
 
     @override
     def _verify_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:

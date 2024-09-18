@@ -5,9 +5,9 @@ from abc import ABC
 from typing import Any
 
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
+from openai.lib.streaming.chat._completions import AsyncChatCompletionStreamManager
 from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
-from pydantic import BaseModel
 
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -33,16 +33,20 @@ class OpenAIHandler(KernelBaseModel, ABC):
     async def _send_request(
         self,
         request_settings: OpenAIPromptExecutionSettings,
-    ) -> ChatCompletion | Completion | AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]:
+    ) -> (
+        ChatCompletion
+        | Completion
+        | AsyncStream[ChatCompletionChunk]
+        | AsyncStream[Completion]
+        | AsyncChatCompletionStreamManager
+    ):
         """Execute the appropriate call to OpenAI models."""
         try:
             if self.ai_model_type == OpenAIModelTypes.CHAT:
-                if hasattr(request_settings, "response_format") and issubclass(
-                    request_settings.response_format, BaseModel
-                ):
+                if hasattr(request_settings, "structured_json_response") and request_settings.structured_json_response:
                     settings = request_settings.prepare_settings_dict()
-                    # if not hasattr(settings, "stream"):
-                    settings.pop("stream", None)
+                    if settings.pop("stream", None):
+                        return self.client.beta.chat.completions.stream(**settings)
                     response = await self.client.beta.chat.completions.parse(**settings)
                 else:
                     response = await self.client.chat.completions.create(**request_settings.prepare_settings_dict())

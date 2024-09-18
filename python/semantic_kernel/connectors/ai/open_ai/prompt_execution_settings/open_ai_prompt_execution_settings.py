@@ -75,6 +75,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         None,
         description="Do not set this manually. It is set by the service based on the function choice configuration.",
     )
+    structured_json_response: bool = Field(False, description="Do not set this manually. It is set by the service.")
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
@@ -86,15 +87,32 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
             )
         return v
 
-    @field_validator("response_format", mode="before")
-    @classmethod
-    def validate_response_format(cls, value):
-        """Validate the response_format parameter."""
-        if not isinstance(value, dict) and not (isinstance(value, type) and issubclass(value, BaseModel)):
+    @model_validator(mode="before")
+    def validate_response_format_and_set_flag(cls, values):
+        """Validate the response_format and set structured_json_response accordingly."""
+        response_format = values.get("response_format")
+
+        # Check if response_format is a dictionary
+        if isinstance(response_format, dict):
+            # If it's {"type": "json_object"}
+            if response_format.get("type") == "json_object":
+                return values  # No need to set structured_json_response
+            # If it's any other valid dict[str, str]
+            if all(isinstance(k, str) and isinstance(v, str) for k, v in response_format.items()):
+                values["structured_json_response"] = True
+            else:
+                raise ServiceInvalidExecutionSettingsError(
+                    "If response_format is a dictionary, it must have string keys and values"
+                )
+        # Check if response_format is a subclass of BaseModel
+        elif isinstance(response_format, type) and issubclass(response_format, BaseModel):
+            values["structured_json_response"] = True
+        elif response_format is not None:
             raise ServiceInvalidExecutionSettingsError(
-                "response_format must be a dictionary or a single Pydantic model class"
+                "response_format must be a dictionary, a subclass of BaseModel, or None"
             )
-        return value
+
+        return values
 
     @model_validator(mode="before")
     @classmethod
