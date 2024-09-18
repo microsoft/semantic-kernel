@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Agents;
@@ -32,7 +33,7 @@ public sealed class ChatCompletionAgentTests()
     /// Integration test for <see cref="ChatCompletionAgent"/> using function calling
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Theory]
+    [RetryTheory(typeof(HttpOperationException))]
     [InlineData("What is the special soup?", "Clam Chowder", false)]
     [InlineData("What is the special soup?", "Clam Chowder", true)]
     public async Task AzureChatCompletionAgentAsync(string input, string expectedAnswerContains, bool useAutoFunctionTermination)
@@ -96,7 +97,7 @@ public sealed class ChatCompletionAgentTests()
     /// Integration test for <see cref="ChatCompletionAgent"/> using new function calling model
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Theory]
+    [RetryTheory(typeof(HttpOperationException))]
     [InlineData("What is the special soup?", "Clam Chowder", false)]
     [InlineData("What is the special soup?", "Clam Chowder", true)]
     public async Task AzureChatCompletionAgentUsingNewFunctionCallingModelAsync(string input, string expectedAnswerContains, bool useAutoFunctionTermination)
@@ -160,7 +161,7 @@ public sealed class ChatCompletionAgentTests()
     /// Integration test for <see cref="ChatCompletionAgent"/> using function calling
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Fact]
+    [RetryFact(typeof(HttpOperationException))]
     public async Task AzureChatCompletionStreamingAsync()
     {
         // Arrange
@@ -206,7 +207,7 @@ public sealed class ChatCompletionAgentTests()
     /// Integration test for <see cref="ChatCompletionAgent"/> using new function calling model
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Fact]
+    [RetryFact(typeof(HttpOperationException))]
     public async Task AzureChatCompletionStreamingUsingNewFunctionCallingModelAsync()
     {
         // Arrange
