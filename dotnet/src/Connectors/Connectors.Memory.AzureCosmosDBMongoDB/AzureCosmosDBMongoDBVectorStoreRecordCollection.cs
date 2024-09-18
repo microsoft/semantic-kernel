@@ -290,14 +290,16 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         var searchQuery = vectorProperty.IndexKind switch
         {
-            IndexKind.Hnsw => GetSearchQueryForHnswIndex(vectorArray, vectorPropertyName, searchOptions.Limit, this._options.EfSearch),
-            IndexKind.IvfFlat => GetSearchQueryForIvfIndex(vectorArray, vectorPropertyName, searchOptions.Limit),
+            IndexKind.Hnsw => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForHnswIndex(vectorArray, vectorPropertyName, searchOptions.Limit, this._options.EfSearch),
+            IndexKind.IvfFlat => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForIvfIndex(vectorArray, vectorPropertyName, searchOptions.Limit),
             _ => throw new InvalidOperationException(
                 $"Index kind '{vectorProperty.IndexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore. " +
                 $"Supported index kinds are: {string.Join(", ", [IndexKind.Hnsw, IndexKind.IvfFlat])}")
         };
 
-        var projectionQuery = GetProjectionQuery();
+        var projectionQuery = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetProjectionQuery(
+            ScorePropertyName,
+            DocumentPropertyName);
 
         BsonDocument[] pipeline = [searchQuery, projectionQuery];
 
@@ -534,72 +536,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         // If vector property is not provided in options, return first vector property from schema.
         return this._firstVectorProperty;
-    }
-
-    /// <summary>Returns search part of the search query for <see cref="IndexKind.Hnsw"/> index kind.</summary>
-    private static BsonDocument GetSearchQueryForHnswIndex<TVector>(
-        TVector vector,
-        string vectorPropertyName,
-        int limit,
-        int efSearch)
-    {
-        return new BsonDocument
-        {
-            { "$search",
-                new BsonDocument
-                {
-                    { "cosmosSearch",
-                        new BsonDocument
-                        {
-                            { "vector", BsonArray.Create(vector) },
-                            { "path", vectorPropertyName },
-                            { "k", limit },
-                            { "efSearch", efSearch }
-                        }
-                    }
-                }
-            }
-        };
-    }
-
-    /// <summary>Returns search part of the search query for <see cref="IndexKind.IvfFlat"/> index kind.</summary>
-    private static BsonDocument GetSearchQueryForIvfIndex<TVector>(
-        TVector vector,
-        string vectorPropertyName,
-        int limit)
-    {
-        return new BsonDocument
-        {
-            { "$search",
-                new BsonDocument
-                {
-                    { "cosmosSearch",
-                        new BsonDocument
-                        {
-                            { "vector", BsonArray.Create(vector) },
-                            { "path", vectorPropertyName },
-                            { "k", limit },
-                        }
-                    },
-                    { "returnStoredSource", true }
-                }
-            }
-        };
-    }
-
-    /// <summary>Returns projection part of the search query to return similarity score together with document.</summary>
-    private static BsonDocument GetProjectionQuery()
-    {
-        return new BsonDocument
-        {
-            { "$project",
-                new BsonDocument
-                {
-                    { ScorePropertyName, new BsonDocument { { "$meta", "searchScore" } } },
-                    { DocumentPropertyName, "$$ROOT" }
-                }
-            }
-        };
     }
 
     #endregion
