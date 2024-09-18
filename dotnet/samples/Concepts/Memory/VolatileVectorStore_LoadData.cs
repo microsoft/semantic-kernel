@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -14,7 +15,7 @@ namespace Memory;
 public class VolatileVectorStore_LoadData(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task LoadRecordCollectionAndSearchAsync()
+    public async Task LoadStringListAndSearchAsync()
     {
         // Create an embedding generation service.
         var embeddingGenerationService = new OpenAITextEmbeddingGenerationService(
@@ -71,6 +72,49 @@ public class VolatileVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
         }
     }
 
+    [Fact]
+    public async Task LoadTextSearchResultsAndSearchAsync()
+    {
+        // Create an embedding generation service.
+        var embeddingGenerationService = new OpenAITextEmbeddingGenerationService(
+                modelId: TestConfiguration.OpenAI.EmbeddingModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey);
+
+        // Construct a volatile vector store.
+        var vectorStore = new VolatileVectorStore();
+        var collectionName = "records";
+
+        // Read a list of text strings from a file, to load into a new record collection.
+        var searchResultsJson = EmbeddedResource.Read("what-is-semantic-kernel.json");
+        var searchResults = JsonSerializer.Deserialize<List<TextSearchResult>>(searchResultsJson!);
+
+        // Delegate which will create a record.
+        static DataModel CreateRecord(TextSearchResult searchResult, ReadOnlyMemory<float> embedding)
+        {
+            return new()
+            {
+                Key = Guid.NewGuid(),
+                Title = searchResult.Name,
+                Text = searchResult.Value ?? string.Empty,
+                Link = searchResult.Link,
+                Embedding = embedding
+            };
+        }
+
+        // Create a record collection from a list of strings using the provided delegate.
+        var vectorSearch = await vectorStore.CreateCollectionFromTextSearchResultsAsync<Guid, DataModel>(
+            collectionName, searchResults!, embeddingGenerationService, CreateRecord);
+
+        // Search the collection using a vector search.
+        var searchString = "What is the Semantic Kernel?";
+        var searchVector = await embeddingGenerationService.GenerateEmbeddingAsync(searchString);
+        var searchResult = await vectorSearch!.VectorizedSearchAsync(searchVector, new() { Limit = 1 }).ToListAsync();
+
+        Console.WriteLine("Search string: " + searchString);
+        Console.WriteLine("Result: " + searchResult.First().Record.Text);
+        Console.WriteLine();
+    }
+
     /// <summary>
     /// Sample model class that represents a record entry.
     /// </summary>
@@ -84,7 +128,13 @@ public class VolatileVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
         public Guid Key { get; init; }
 
         [VectorStoreRecordData]
+        public string? Title { get; init; }
+
+        [VectorStoreRecordData]
         public string Text { get; init; }
+
+        [VectorStoreRecordData]
+        public string? Link { get; init; }
 
         [VectorStoreRecordVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
