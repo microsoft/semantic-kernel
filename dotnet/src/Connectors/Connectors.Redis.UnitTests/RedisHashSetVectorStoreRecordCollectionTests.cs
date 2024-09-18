@@ -457,13 +457,13 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var expectedArgsPart1 = new object[]
         {
             "testcollection",
-            "(@data_storage_name:{data 1})=>[KNN 5 @vector_storage_name $embedding AS vector_score]",
+            "(@data_storage_name:{data 1})=>[KNN 7 @vector_storage_name $embedding AS vector_score]",
             "WITHSCORES",
             "SORTBY",
             "vector_score",
             "LIMIT",
             2,
-            5
+            7
         };
         var returnArgs = includeVectors ? Array.Empty<object>() : new object[]
         {

@@ -364,6 +364,34 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, searchResult?.DescriptionEmbedding?.ToArray());
     }
 
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanSearchWithFloat32VectorAndLimitOffsetAsync()
+    {
+        // Arrange
+        var options = new RedisJsonVectorStoreRecordCollectionOptions<BasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisJsonVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName + "TopSkip", options);
+        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "TopSkip_1", HotelName = "1", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 1.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "TopSkip_2", HotelName = "2", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 2.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "TopSkip_3", HotelName = "3", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 3.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "TopSkip_4", HotelName = "4", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 4.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "TopSkip_5", HotelName = "5", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 5.0f]) });
+        var vector = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 1.0f]);
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(
+            vector,
+            new VectorSearchOptions
+            {
+                Limit = 3,
+                Offset = 2
+            }).ToListAsync();
+
+        // Assert
+        Assert.Equal(3, actual.Count);
+        Assert.True(actual.Select(x => x.Record.HotelId).SequenceEqual(["TopSkip_3", "TopSkip_4", "TopSkip_5"]));
+    }
+
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]

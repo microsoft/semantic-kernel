@@ -99,7 +99,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
 
         // Assert.
         Assert.NotNull(query);
-        Assert.Equal("*=>[KNN 5 @storage_Vector $embedding AS vector_score]", query.QueryString);
+        Assert.Equal("*=>[KNN 8 @storage_Vector $embedding AS vector_score]", query.QueryString);
     }
 
     [Fact]

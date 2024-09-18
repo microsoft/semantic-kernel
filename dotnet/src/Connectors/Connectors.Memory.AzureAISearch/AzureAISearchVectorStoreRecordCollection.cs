@@ -565,9 +565,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     private string ResolveVectorFieldName(string? optionsVectorFieldName)
     {
         string? vectorFieldName;
-        if (optionsVectorFieldName is not null)
+        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
         {
-            if (!this._storagePropertyNames.TryGetValue(optionsVectorFieldName, out vectorFieldName))
+            if (!this._storagePropertyNames.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
             {
                 throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
             }

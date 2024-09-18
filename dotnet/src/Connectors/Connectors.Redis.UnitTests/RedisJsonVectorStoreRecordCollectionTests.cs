@@ -472,13 +472,13 @@ public class RedisJsonVectorStoreRecordCollectionTests
         var expectedArgs = new object[]
         {
             "testcollection",
-            "(@data1_json_name:{data 1})=>[KNN 5 @vector1_json_name $embedding AS vector_score]",
+            "(@data1_json_name:{data 1})=>[KNN 7 @vector1_json_name $embedding AS vector_score]",
             "WITHSCORES",
             "SORTBY",
             "vector_score",
             "LIMIT",
             2,
-            5,
+            7,
             "PARAMS",
             2,
             "embedding",

@@ -340,6 +340,34 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         }
     }
 
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanSearchWithFloat32VectorAndLimitOffsetAsync()
+    {
+        // Arrange
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName + "TopSkip", options);
+        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "HTopSkip_1", HotelName = "1", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 1.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "HTopSkip_2", HotelName = "2", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 2.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "HTopSkip_3", HotelName = "3", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 3.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "HTopSkip_4", HotelName = "4", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 4.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "HTopSkip_5", HotelName = "5", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 5.0f]) });
+        var vector = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 1.0f]);
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(
+            vector,
+            new VectorSearchOptions
+            {
+                Limit = 3,
+                Offset = 2
+            }).ToListAsync();
+
+        // Assert
+        Assert.Equal(3, actual.Count);
+        Assert.True(actual.Select(x => x.Record.HotelId).SequenceEqual(["HTopSkip_3", "HTopSkip_4", "HTopSkip_5"]));
+    }
+
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
