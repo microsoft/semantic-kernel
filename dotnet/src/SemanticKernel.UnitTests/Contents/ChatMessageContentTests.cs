@@ -320,4 +320,58 @@ public class ChatMessageContentTests
         Assert.Single(annotationContent.Metadata);
         Assert.Equal("metadata-value-8", annotationContent.Metadata["metadata-key-8"]?.ToString());
     }
+
+    [Fact]
+    public void ItCanBePolymorphicallySerializedAndDeserializedAsKernelContentType()
+    {
+        // Arrange
+        KernelContent sut = new ChatMessageContent(AuthorRole.User, "test-content", "test-model", metadata: new Dictionary<string, object?>()
+        {
+            ["test-metadata-key"] = "test-metadata-value"
+        })
+        {
+            MimeType = "test-mime-type"
+        };
+
+        // Act
+        var json = JsonSerializer.Serialize(sut);
+
+        var deserialized = JsonSerializer.Deserialize<KernelContent>(json)!;
+
+        // Assert
+        Assert.IsType<ChatMessageContent>(deserialized);
+        Assert.Equal("test-content", ((ChatMessageContent)deserialized).Content);
+        Assert.Equal("test-model", deserialized.ModelId);
+        Assert.Equal("test-mime-type", deserialized.MimeType);
+        Assert.NotNull(deserialized.Metadata);
+        Assert.Single(deserialized.Metadata);
+        Assert.Equal("test-metadata-value", deserialized.Metadata["test-metadata-key"]?.ToString());
+    }
+
+    [Fact]
+    public void UnknownDerivativeCanBePolymorphicallySerializedAndDeserializedAsChatMessageContentType()
+    {
+        // Arrange
+        KernelContent sut = new UnknownExternalChatMessageContent(AuthorRole.User, "test-content")
+        {
+            MimeType = "test-mime-type",
+        };
+
+        // Act
+        var json = JsonSerializer.Serialize(sut);
+
+        var deserialized = JsonSerializer.Deserialize<KernelContent>(json)!;
+
+        // Assert
+        Assert.IsType<ChatMessageContent>(deserialized);
+        Assert.Equal("test-content", ((ChatMessageContent)deserialized).Content);
+        Assert.Equal("test-mime-type", deserialized.MimeType);
+    }
+
+    private sealed class UnknownExternalChatMessageContent : ChatMessageContent
+    {
+        public UnknownExternalChatMessageContent(AuthorRole role, string? content) : base(role, content)
+        {
+        }
+    }
 }
