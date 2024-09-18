@@ -12,7 +12,6 @@ def test_default_onnx_chat_prompt_execution_settings():
     settings = OnnxGenAIPromptExecutionSettings()
     assert settings.temperature is None
     assert settings.top_p is None
-    assert settings.max_length is None
 
 
 def test_custom_onnx_chat_prompt_execution_settings():
@@ -32,7 +31,6 @@ def test_onnx_chat_prompt_execution_settings_from_default_completion_config():
     assert chat_settings.service_id == "test_service"
     assert chat_settings.temperature is None
     assert chat_settings.top_p is None
-    assert chat_settings.max_length is None
 
 
 def test_onnx_chat_prompt_execution_settings_from_onnx_prompt_execution_settings():

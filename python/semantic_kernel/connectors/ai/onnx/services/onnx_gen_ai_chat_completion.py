@@ -76,6 +76,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
 
         super().__init__(ai_model_id=ai_model_id, ai_model_path=settings.model_path, prompt_template=prompt_template)
 
+    @override
     async def get_chat_message_contents(
         self,
         chat_history: "ChatHistory",

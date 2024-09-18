@@ -4,12 +4,16 @@ from semantic_kernel.prompt_template import PromptTemplateConfig
 
 jinja_template = """
     {% for message in messages %}
-        {% if message['role'] == 'system' %}
-            {{'<|system|>\n' + message['content'] + '<|end|>\n'}}
-        {% elif message['role'] == 'user' %}
-            {{'<|user|>\n' + message['content'] + '<|end|>\n'}}
-        {% elif message['role'] == 'assistant' %}
-            {{'<|assistant|>\n' + message['content'] + '<|end|>\n' }}
+        {% if message['content'] is not string %}
+            {{'<|image_1|>'}}
+        {% else %}
+            {% if message['role'] == 'system' %}
+                {{'<|system|>\n' + message['content'] + '<|end|>\n'}}
+            {% elif message['role'] == 'user' %}
+                {{'<|user|>\n' + message['content'] + '<|end|>\n'}}
+            {% elif message['role'] == 'assistant' %}
+                {{'<|assistant|>\n' + message['content'] + '<|end|>\n' }}
+            {% endif %}
         {% endif %}
     {% endfor %}
     <|assistant|>"""
@@ -20,9 +24,7 @@ prompt_template = PromptTemplateConfig(
     template_format="jinja2",
 )
 
-broken_jinja_prompt = """
-    {{'<|system|>\n' + message['content'] + '<|end|>\n'}}
-    <|assistant|>"""
+broken_jinja_prompt = "This is a test with a {{broken jinja template}}"
 
 broken_prompt_template = PromptTemplateConfig(template=broken_jinja_prompt, name="chat", template_format="jinja2")
 

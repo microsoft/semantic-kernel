@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+import os
 from collections.abc import AsyncGenerator
 from typing import Any
 
@@ -32,9 +33,7 @@ class OnnxGenAICompletionBase(KernelBaseModel):
 
         """
         try:
-            if ai_model_path[:-1] in ["/", "\\"]:
-                ai_model_path = ai_model_path[:-1]
-            json_gen_ai_config = ai_model_path + "/genai_config.json"
+            json_gen_ai_config = os.path.join(ai_model_path + "/genai_config.json")
             with open(json_gen_ai_config) as file:
                 config: dict = json.load(file)
                 if "vision" in config.get("model", {}):
