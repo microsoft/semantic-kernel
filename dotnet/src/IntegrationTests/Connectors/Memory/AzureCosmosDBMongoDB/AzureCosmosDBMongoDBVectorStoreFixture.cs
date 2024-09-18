@@ -69,9 +69,14 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        foreach (var collection in this._testCollections)
+        var cursor = await this.MongoDatabase.ListCollectionNamesAsync();
+
+        while (await cursor.MoveNextAsync().ConfigureAwait(false))
         {
-            await this.MongoDatabase.DropCollectionAsync(collection);
+            foreach (var collection in cursor.Current)
+            {
+                await this.MongoDatabase.DropCollectionAsync(collection);
+            }
         }
     }
 

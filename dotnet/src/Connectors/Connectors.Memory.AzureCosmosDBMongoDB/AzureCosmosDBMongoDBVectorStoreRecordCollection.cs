@@ -288,10 +288,14 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
+        // Constructing a query to fetch "offset + limit" total items
+        // to perform offset logic locally, since offset parameter is not part of API. 
+        var itemsAmount = searchOptions.Offset + searchOptions.Limit;
+
         var searchQuery = vectorProperty.IndexKind switch
         {
-            IndexKind.Hnsw => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForHnswIndex(vectorArray, vectorPropertyName, searchOptions.Limit, this._options.EfSearch),
-            IndexKind.IvfFlat => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForIvfIndex(vectorArray, vectorPropertyName, searchOptions.Limit),
+            IndexKind.Hnsw => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForHnswIndex(vectorArray, vectorPropertyName, itemsAmount, this._options.EfSearch),
+            IndexKind.IvfFlat => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForIvfIndex(vectorArray, vectorPropertyName, itemsAmount),
             _ => throw new InvalidOperationException(
                 $"Index kind '{vectorProperty.IndexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore. " +
                 $"Supported index kinds are: {string.Join(", ", [IndexKind.Hnsw, IndexKind.IvfFlat])}")
@@ -307,18 +311,25 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
+        var offsetCounter = 0;
+
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
         {
             foreach (var response in cursor.Current)
             {
-                var score = response[ScorePropertyName].AsDouble;
-                var record = VectorStoreErrorHandler.RunModelConversion(
-                    DatabaseName,
-                    this.CollectionName,
-                    OperationName,
-                    () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new()));
+                if (offsetCounter >= searchOptions.Offset)
+                {
+                    var score = response[ScorePropertyName].AsDouble;
+                    var record = VectorStoreErrorHandler.RunModelConversion(
+                        DatabaseName,
+                        this.CollectionName,
+                        OperationName,
+                        () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new()));
 
-                yield return new VectorSearchResult<TRecord>(record, score);
+                    yield return new VectorSearchResult<TRecord>(record, score);
+                }
+
+                offsetCounter++;
             }
         }
     }
