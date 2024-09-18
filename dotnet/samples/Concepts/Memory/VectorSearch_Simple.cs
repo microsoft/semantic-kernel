@@ -26,7 +26,7 @@ public class VectorSearch_Simple(ITestOutputHelper output) : BaseTest(output)
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
 
-        // Initiate the docker container and construct the vector store.
+        // Construct a volatile vector store.
         var vectorStore = new VolatileVectorStore();
 
         // Get and create collection if it doesn't exist.
