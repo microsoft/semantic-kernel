@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
-
 using OpenAI;
 using OpenAI.Assistants;
 
