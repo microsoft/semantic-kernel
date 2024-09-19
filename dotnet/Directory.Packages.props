@@ -31,16 +31,6 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.64.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.19.2" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime"    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.19
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.19.0" />                                                                                                                                                      
-
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
-    <    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.19.0" />                                                                                                                                                      
-PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="Pinecone.NET" Version="2.1.1" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
@@ -70,7 +60,7 @@ PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.5.0" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.9.1" />
     <PackageVersion Include="System.Text.Json" Version="6.0.8" />
     <PackageVersion Include="Microsoft.PowerShell.SDK" Version="6.2.7" />
     <!-- Microsoft.Extensions.Logging -->
@@ -83,7 +73,6 @@ PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.9.1" /> 
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
@@ -125,10 +114,6 @@ PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24318.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -164,14 +149,7 @@ PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <!-- OnnxRuntimeGenAI -->
-    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.4.0" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.3.0" />
 	  <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.4.0"/>
   </ItemGroup>
