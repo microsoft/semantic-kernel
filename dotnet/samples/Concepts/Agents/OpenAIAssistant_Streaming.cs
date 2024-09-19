@@ -83,7 +83,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
         ChatHistory history = [];
 
         bool isFirst = false;
-        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(threadId, history))
+        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(threadId, messages: history))
         {
             if (string.IsNullOrEmpty(response.Content))
             {
