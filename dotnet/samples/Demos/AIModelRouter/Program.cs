@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,13 +7,7 @@ using Microsoft.SemanticKernel;
 #pragma warning disable SKEXP0001
 #pragma warning disable SKEXP0010
 #pragma warning disable SKEXP0070
-<<<<<<< main
-<<<<<<< main
-=======
->>>>>>> f149f95
 #pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
-=======
->>>>>>> upstream/main
 
 namespace AIModelRouter;
 
@@ -28,12 +22,10 @@ internal sealed class Program
         ServiceCollection services = new();
 
         // Adding multiple connectors targeting different providers / models.
-<<<<<<< main
         services.AddKernel()                /* LMStudio model is selected in server side. */
             .AddOpenAIChatCompletion(serviceId: "lmstudio", modelId: "N/A", endpoint: new Uri("http://localhost:1234"), apiKey: null)
             .AddOllamaChatCompletion(serviceId: "ollama", modelId: "phi3", endpoint: new Uri("http://localhost:11434"))
             .AddOpenAIChatCompletion(serviceId: "openai", modelId: "gpt-4o", apiKey: config["OpenAI:ApiKey"]!)
-=======
         services
             .AddKernel()
             .AddOpenAIChatCompletion(
@@ -41,7 +33,6 @@ internal sealed class Program
                 modelId: "N/A", // LMStudio model is pre defined in the UI List box.
                 endpoint: new Uri(config["LMStudio:Endpoint"] ?? "http://localhost:1234"),
                 apiKey: null);
->>>>>>> upstream/main
 
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("======== AI Services Added ========");
