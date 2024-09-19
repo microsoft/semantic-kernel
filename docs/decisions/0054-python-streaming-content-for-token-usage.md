@@ -4,8 +4,8 @@ status: { proposed }
 contact: { Tao Chen }
 date: { 2024-09-18 }
 deciders: {}
-consulted: {}
-informed: {}
+consulted: { Eduard van Valkenburg, Evan Mattson }
+informed: { Eduard van Valkenburg, Evan Mattson, Ben Thomas }
 ---
 
 # Streaming Contents for Token Usage Information (Semantic Kernel Python)
@@ -92,5 +92,75 @@ This is a simpler solution compared to Proposal 1, and it is more in line with w
 ### Risks
 
 This is potentially a breaking change since the `choice_index` field is currently required.
+
+## Proposal 3
+
+We will merge `ChatMessageContent` and `StreamingChatMessageContent` into a single class, `ChatMessageContent`, and mark `StreamingChatMessageContent` as deprecated. The `StreamingChatMessageContent` class will be removed in a future release. Then we apply the either [Proposal 1](#proposal-1) or [Proposal 2](#proposal-2) to the `ChatMessageContent` class to handle the token usage information.
+
+This approach simplifies the codebase by removing the need for a separate class for streaming chat messages. The `ChatMessageContent` class will be able to handle both streaming and non-streaming chat messages.
+
+```Python
+# semantic_kernel/content/streaming_chat_message_content.py
+@deprecated("StreamingChatMessageContent is deprecated. Use ChatMessageContent instead.")
+class StreamingChatMessageContent(ChatMessageContent):
+    pass
+
+# semantic_kernel/content/chat_message_content.py
+class ChatMessageContent(KernelContent):
+    ...
+    # Add the choice_index field to the ChatMessageContent class and make it optional
+    choice_index: int | None
+
+    # Add the __add__ method to merge the metadata when two ChatMessageContent instances are added together. This is currently an abstract method in the `StreamingContentMixin` class.
+    def __add__(self, other: "ChatMessageContent") -> "ChatMessageContent":
+        ...
+
+        return ChatMessageContent(
+            ...,
+            choice_index=self.choice_index,
+            ...
+        )
+
+    # Add the __bytes__ method to return the bytes representation of the ChatMessageContent instance. This is currently an abstract method in the `StreamingContentMixin` class.
+    def __bytes__(self) -> bytes:
+        ...
+```
+
+### Risks
+
+We are unifying the returned data structure for streaming and non-streaming chat messages, which may lead to confusion for developers initially, especially if they are not aware of the deprecation of the `StreamingChatMessageContent` class, or they came from SK .Net. It may also create a sharper learning curve if developers started with Python but later move to .Net for production.
+
+> We will also need to update the `StreamingTextContent` and `TextContent` in a similar way too for this proposal.
+
+## Proposal 4
+
+Similar to [Proposal 3](#proposal-3), we will merge `ChatMessageContent` and `StreamingChatMessageContent` into a single class, `ChatMessageContent`, and mark `StreamingChatMessageContent` as deprecated. In addition, we will introduce another a new mixin called `ChatMessageContentConcatenationMixin` to handle the concatenation of two `ChatMessageContent` instances. Then we apply the either [Proposal 1](#proposal-1) or [Proposal 2](#proposal-2) to the `ChatMessageContent` class to handle the token usage information.
+
+```Python
+# semantic_kernel/content/streaming_chat_message_content.py
+@deprecated("StreamingChatMessageContent is deprecated. Use ChatMessageContent instead.")
+class StreamingChatMessageContent(ChatMessageContent):
+    pass
+
+# semantic_kernel/content/chat_message_content.py
+class ChatMessageContent(KernelContent, ChatMessageContentConcatenationMixin):
+    ...
+    # Add the choice_index field to the ChatMessageContent class and make it optional
+    choice_index: int | None
+
+    # Add the __bytes__ method to return the bytes representation of the ChatMessageContent instance. This is currently an abstract method in the `StreamingContentMixin` class.
+    def __bytes__(self) -> bytes:
+        ...
+
+class ChatMessageContentConcatenationMixin(KernelBaseModel, ABC):
+    def __add__(self, other: "ChatMessageContent") -> "ChatMessageContent":
+        ...
+```
+
+This approach separates the concerns of the `ChatMessageContent` class and the concatenation logic into two separate classes. This can help to keep the codebase clean and maintainable.
+
+### Risks
+
+Same as [Proposal 3](#proposal-3).
 
 ## Decision Outcome
