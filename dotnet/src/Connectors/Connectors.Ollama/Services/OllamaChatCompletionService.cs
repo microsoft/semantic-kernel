@@ -122,24 +122,13 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         var settings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
         var request = CreateChatRequest(chatHistory, settings, this._client.SelectedModel);
 
-        IReadOnlyDictionary<string, object?>? metadata = null;
-
         await foreach (var message in this._client.Chat(request, cancellationToken).ConfigureAwait(false))
         {
-            if (message?.Done == true)
-            {
-                metadata = new Dictionary<string, object?>
-                {
-                    { "FinishReason", "STOP" }
-                };
-            }
-
             yield return new StreamingChatMessageContent(
                 role: GetAuthorRole(message!.Message.Role),
                 content: message.Message.Content,
                 modelId: message.Model,
-                innerContent: message,
-                metadata: metadata);
+                innerContent: message);
         }
     }
 
