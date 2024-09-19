@@ -367,8 +367,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         await Assert.ThrowsAsync<KernelException>(() => agent.AddChatMessageAsync("threadid", new(AuthorRole.User, "test")));
         await Assert.ThrowsAsync<KernelException>(() => agent.GetThreadMessagesAsync("threadid").ToArrayAsync().AsTask());
         await Assert.ThrowsAsync<KernelException>(() => agent.InvokeAsync("threadid").ToArrayAsync().AsTask());
-        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeStreamingAsync("threadid", []).ToArrayAsync().AsTask());
-        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeStreamingAsync("threadid", [], new OpenAIAssistantInvocationOptions()).ToArrayAsync().AsTask());
+        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeStreamingAsync("threadid").ToArrayAsync().AsTask());
+        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeStreamingAsync("threadid", new OpenAIAssistantInvocationOptions()).ToArrayAsync().AsTask());
     }
 
     /// <summary>
