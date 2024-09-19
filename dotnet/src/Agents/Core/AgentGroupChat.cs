@@ -202,7 +202,6 @@ public sealed class AgentGroupChat : AgentChat
         return KernelFunctionFactory.CreateFromPrompt(config, promptTemplateFactory: templateFactory);
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentGroupChat"/> class.
     /// </summary>
