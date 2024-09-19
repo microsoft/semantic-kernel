@@ -1,8 +1,10 @@
 {
+    "version": "2.0.0"
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
-    "version": "2.0.0",
-    "tasks": [
+    "tasks": [],
+    // Add a comma after the closing square bracket
+    ,
         {
             "label": "Python: Run Checks",
             "type": "shell",
@@ -38,7 +40,7 @@
             "args": [
                 "run",
                 "pre-commit",
-                "run",
+                "run"
             ],
             "problemMatcher": {
                 "owner": "python",

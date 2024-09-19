@@ -7,11 +7,11 @@
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
   "[csharp]": {
-    "editor.defaultFormatter": "ms-dotnettools.csharp",
-    "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit"
-    }
-  },
+      "editor.defaultFormatter": "GitHub.copilot",
+      "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit"
+      }
+    },
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": "active",
   "python.formatting.provider": "autopep8",
@@ -177,6 +177,7 @@
     "COBOL",
     "ACUCOBOL"
   ],
+  "inlineChat.accessibleDiffView": "on"
   "cursorless.commandHistory": true,
   "cmake.options.statusBarVisibility": "visible",
   "files.autoSave": "afterDelay",
@@ -325,4 +326,13 @@
         "OPENAI",
         "skfunction"
     ],
+}
+  "iis.configDir": "",
+  "yaml.schemas": {
+    "https://json.schemastore.org/dependabot-2.0.json": "vscode-vfs://github/Bryan-Roe/semantic-kernel/.github/dependabot.yml"
+  },
+  "editor.defaultFormatter": "GitHub.copilot",
+  "notebook.defaultFormatter": "GitHub.copilot",
+  "gitlens.ai.experimental.vscode.model": "modelName:modelVersion",
+  "wolf.disableHotModeWarning": true
 }

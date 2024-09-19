@@ -1,4 +1,5 @@
 {
+  "program": "",
   "version": "0.2.0",
   "configurations": [
   {
@@ -38,18 +39,17 @@
       "projectName": "JavaReferenceSkill"
     },
     {
-      "name": "Python Debugger: Current File",
-      "type": "debugpy",
+      "name": "RobotCode: Run All",
+      "type": "robotcode",
       "request": "launch",
-      "program": "${file}",
-      "console": "integratedTerminal"
-    },
-    {
+      "cwd": "${workspaceFolder}",
+      "target": "."
       "name": "C#: Concept Samples",
       "name": ".NET Core Launch (dotnet-kernel-syntax-examples)",
       "type": "coreclr",
       "type": "java",
       "name": "Main",
+      "type": "clr",
       "request": "launch",
       "preLaunchTask": "build (Concepts)",
       "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
@@ -76,31 +76,50 @@
       "type": "debugpy",
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
+      "console": "internalConsole"
+    },
+    {
+      "type": "lldb",
       "request": "launch",
-      "module": "pytest",
-      "args": [
-        "${file}"
-      ]
+      "name": "Launch",
+      "program": "${workspaceFolder}/path/to/your/program",
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "PowerShell: Binary Module Pester Tests",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "Invoke-Pester",
+      "createTemporaryIntegratedConsole": true,
+      "attachDotnetDebugger": true
+    },
+    {
+      "name": "C#: Concept Samples",
+          "type": "lldb",
+          "request": "launch",
+          "preLaunchTask": "build (Concepts)",
+          "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
+          "args": [],
+          "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
+          "console": "internalConsole"
+    },
+    {
+      "name": ".NET Core Attach",
+      "type": "lldb",
+      "request": "attach"
     },
     {
       "name": "C#: HuggingFaceImageToText Demo",
-      "type": "dotnet",
+      "type": "lldb",
       "request": "launch",
-      "projectPath": "${workspaceFolder}\\dotnet\\samples\\Demos\\HuggingFaceImageToText.csproj",
-      "launchConfigurationId": "TargetFramework=;HuggingFaceImageToText"
+      "program": "${workspaceFolder}/dotnet/samples/Demos/bin/Debug/net6.0/HuggingFaceImageToText.dll"
     },
     {
       "name": "C#: GettingStarted Samples",
-      "type": "dotnet",
+      "type": "lldb",
       "request": "launch",
-      "projectPath": "${workspaceFolder}\\dotnet\\samples\\GettingStarted\\GettingStarted.csproj",
-      "launchConfigurationId": "TargetFramework=;GettingStarted"
-    },
-    {
-      "name": "Attach to .NET Functions",
-      "type": "coreclr",
-      "request": "attach",
-      "processId": "${command:azureFunctions.pickProcess}"
+      "program": "${workspaceFolder}/dotnet/samples/GettingStarted/bin/Debug/net6.0/GettingStarted.dll"
     }
   ]
       "name": "C/C++ Runner: Debug Session",
