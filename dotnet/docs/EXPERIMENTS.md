@@ -4,7 +4,11 @@ The following capabilities are marked experimental in the .NET SDK. Once the API
 
 You can use the following diagnostic IDs to ignore warnings or errors for a particular experimental feature. For example, to ignore warnings for the embedding services, add `SKEXP0001` to your list of ignored warnings in your .NET project file as well as the ID for the embedding service you want to use. For example:
 
+<<<<<<< main
 ```xml {"id":"01J6KNVXZHXHYS15JPS6S743K4"}
+=======
+```xml {"id":"01J60JDT3YV637KKDXXWHNG3JR"}
+>>>>>>> origin/Bryan-Roe/issue389
 <PropertyGroup>
   <NoWarn>SKEXP0001,SKEXP0010</NoWarn>
 </PropertyGroup>

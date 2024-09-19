@@ -120,6 +120,29 @@
       "type": "lldb",
       "request": "launch",
       "program": "${workspaceFolder}/dotnet/samples/GettingStarted/bin/Debug/net6.0/GettingStarted.dll"
+      "name": "Attach to .NET Functions",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:azureFunctions.pickProcess}"
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/Bryan/semantic-kernel",
+      "program": "c:/Users/Bryan/semantic-kernel/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
       "name": "C/C++ Runner: Debug Session",
