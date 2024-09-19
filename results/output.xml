@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 6.1.1 (Python 3.10.14 on linux)" generated="20240916 02:52:47.010" rpa="true" schemaversion="4">
+<suite id="s1" name="App" source="/home/user/app">
+<suite id="s1-s1" name="Consumer" source="/home/user/app/consumer.robot">
+<test id="s1-s1-t1" name="Consume Input" line="74">
+<kw name="For Each Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>Process Input</arg>
+<arg>return_results=${False}</arg>
+<doc>Run a keyword or function for each work item in the input queue.</doc>
+<msg timestamp="20240916 02:52:47.220" level="FAIL">KeyError: 'Missing required environment variable: RC_WORKSPACE_ID'</msg>
+<status status="FAIL" starttime="20240916 02:52:47.219" endtime="20240916 02:52:47.221"/>
+</kw>
+<kw name="Log To Console" library="BuiltIn">
+<arg>Done with processing all the input Work Items (Producer outputs).</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.945" endtime="20240916 02:53:37.946"/>
+</kw>
+<doc>Read and process the output Work Items from the 1st Step and
+optionally create output ones (the result) as inputs for the 3rd Step.</doc>
+<status status="FAIL" starttime="20240916 02:52:47.217" endtime="20240916 02:53:37.946">KeyError: 'Missing required environment variable: RC_WORKSPACE_ID'</status>
+</test>
+<doc>Robot Framework template implementing a Producer-Consumer model using
+custom libraries and resources. (Consumer robot which consumes input work)</doc>
+<status status="FAIL" starttime="20240916 02:52:47.101" endtime="20240916 02:53:37.947"/>
+</suite>
+<suite id="s1-s2" name="Producer" source="/home/user/app/producer.robot">
+<test id="s1-s2-t1" name="Produce Output" line="26">
+<kw name="Get Work Item Variable" library="RPA.Robocorp.WorkItems">
+<var>${message}</var>
+<arg>message</arg>
+<doc>Return a single variable value from the work item,
+or default value if defined and key does not exist.</doc>
+<msg timestamp="20240916 02:53:37.960" level="FAIL">No active work item</msg>
+<status status="FAIL" starttime="20240916 02:53:37.959" endtime="20240916 02:53:37.960"/>
+</kw>
+<kw name="Log And Return Today">
+<var>${today}</var>
+<doc>Logs today's date with both the RF and Python keywords, then
+returns today's date from the set variable.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.961" endtime="20240916 02:53:37.961"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${output_data}</var>
+<arg>${message} (${today})</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.961" endtime="20240916 02:53:37.961"/>
+</kw>
+<kw name="Get Work Item Variable" library="RPA.Robocorp.WorkItems">
+<var>${count}</var>
+<arg>count</arg>
+<doc>Return a single variable value from the work item,
+or default value if defined and key does not exist.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.961" endtime="20240916 02:53:37.961"/>
+</kw>
+<for flavor="IN RANGE">
+<var>${index}</var>
+<value>${1}</value>
+<value>${count + 1}</value>
+<iter>
+<var name="${index}"/>
+<kw name="Log To Console" library="BuiltIn">
+<arg>Creating output item no. #${index}...</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.962" endtime="20240916 02:53:37.962"/>
+</kw>
+<kw name="Create Output Work Item" library="RPA.Robocorp.WorkItems">
+<doc>Create a new output work item with optional variables and files.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.962" endtime="20240916 02:53:37.962"/>
+</kw>
+<kw name="Set Work Item Variable" library="RPA.Robocorp.WorkItems">
+<arg>data</arg>
+<arg>${index}. ${output_data}</arg>
+<doc>Set a single variable value in the current work item.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.962" endtime="20240916 02:53:37.963"/>
+</kw>
+<kw name="Does File Exist" library="RPA.FileSystem">
+<var>${file_available}</var>
+<arg>${WORKITEM_FILE_PATH}</arg>
+<doc>Returns True if the given file exists, False if not.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.963" endtime="20240916 02:53:37.963"/>
+</kw>
+<if>
+<branch type="IF" condition="${file_available}">
+<kw name="Add Work Item File" library="RPA.Robocorp.WorkItems">
+<arg>${WORKITEM_FILE_PATH}</arg>
+<doc>Add given file to work item.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.963" endtime="20240916 02:53:37.963"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 02:53:37.963" endtime="20240916 02:53:37.963"/>
+</branch>
+<status status="NOT RUN" starttime="20240916 02:53:37.963" endtime="20240916 02:53:37.964"/>
+</if>
+<kw name="Save Work Item" library="RPA.Robocorp.WorkItems">
+<doc>Save the current data and files in the work item. If not saved,
+all changes are discarded when the library goes out of scope.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.964" endtime="20240916 02:53:37.964"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 02:53:37.962" endtime="20240916 02:53:37.964"/>
+</iter>
+<status status="NOT RUN" starttime="20240916 02:53:37.962" endtime="20240916 02:53:37.964"/>
+</for>
+<kw name="Log To Console" library="BuiltIn">
+<arg>Done with creating ${count} output Work Items for consuming!</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.964" endtime="20240916 02:53:37.964"/>
+</kw>
+<doc>Read input data from the initial Work Item and create as many
+output Work Items for the 2nd Step as instructed to.</doc>
+<status status="FAIL" starttime="20240916 02:53:37.959" endtime="20240916 02:53:37.964">No active work item</status>
+</test>
+<doc>Robot Framework template implementing a Producer-Consumer model using
+custom libraries and resources. (Producer robot which produces output work)</doc>
+<status status="FAIL" starttime="20240916 02:53:37.948" endtime="20240916 02:53:37.965"/>
+</suite>
+<suite id="s1-s3" name="Reporter" source="/home/user/app/reporter.robot">
+<test id="s1-s3-t1" name="Report Result" line="23">
+<if>
+<branch type="IF" condition="not &quot;%{CREATE_REPORT=}&quot;">
+<kw name="Fail" library="BuiltIn">
+<arg>Reporting is disabled!</arg>
+<doc>Fails the test with the given message and optionally alters its tags.</doc>
+<msg timestamp="20240916 02:53:37.970" level="FAIL">Reporting is disabled!</msg>
+<status status="FAIL" starttime="20240916 02:53:37.970" endtime="20240916 02:53:37.970"/>
+</kw>
+<status status="FAIL" starttime="20240916 02:53:37.969" endtime="20240916 02:53:37.970"/>
+</branch>
+<status status="FAIL" starttime="20240916 02:53:37.969" endtime="20240916 02:53:37.971"/>
+</if>
+<kw name="For Each Input Work Item" library="RPA.Robocorp.WorkItems">
+<var>@{results}</var>
+<arg>Count Input</arg>
+<doc>Run a keyword or function for each work item in the input queue.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.971" endtime="20240916 02:53:37.971"/>
+</kw>
+<kw name="Evaluate" library="BuiltIn">
+<var>${total}</var>
+<arg>sum(${results})</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.971" endtime="20240916 02:53:37.971"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Successfully processed items: ${total}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.972" endtime="20240916 02:53:37.972"/>
+</kw>
+<kw name="Log To Console" library="BuiltIn">
+<arg>Done with processing all the input Work Items (Consumer outputs).</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" starttime="20240916 02:53:37.972" endtime="20240916 02:53:37.972"/>
+</kw>
+<doc>Generate a report comprising all the details of the previously
+processed items.</doc>
+<status status="FAIL" starttime="20240916 02:53:37.969" endtime="20240916 02:53:37.972">Reporting is disabled!</status>
+</test>
+<doc>Robot Framework template implementing a Producer-Consumer model using
+custom libraries and resources. (Reporter robot which reports Consumer's results)</doc>
+<status status="FAIL" starttime="20240916 02:53:37.966" endtime="20240916 02:53:37.973"/>
+</suite>
+<status status="FAIL" starttime="20240916 02:52:47.081" endtime="20240916 02:53:37.974"/>
+</suite>
+<statistics>
+<total>
+<stat pass="0" fail="3" skip="0">All Tasks</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat pass="0" fail="3" skip="0" id="s1" name="App">App</stat>
+<stat pass="0" fail="1" skip="0" id="s1-s1" name="Consumer">App.Consumer</stat>
+<stat pass="0" fail="1" skip="0" id="s1-s2" name="Producer">App.Producer</stat>
+<stat pass="0" fail="1" skip="0" id="s1-s3" name="Reporter">App.Reporter</stat>
+</suite>
+</statistics>
+<errors>
+<msg timestamp="20240916 02:52:47.104" level="ERROR">Error in file '/home/user/app/consumer.robot' on line 5: Importing library 'DummyLibrary' failed: ModuleNotFoundError: No module named 'DummyLibrary'
+Traceback (most recent call last):
+  None
+PYTHONPATH:
+  /home/user/app/lib
+  /home/user/app/resources
+  /home/user/.openvscode-server/extensions/d-biehl.robotcode-0.89.1-universal/bundled/libs
+  /home/user/.openvscode-server/extensions/d-biehl.robotcode-0.89.1-universal/bundled/tool/robotcode
+  /home/user/app
+  /opt/robocorp/ht/59acff1_b1f3c24_1c0bc041/lib/python310.zip
+  /opt/robocorp/ht/59acff1_b1f3c24_1c0bc041/lib/python3.10
+  /opt/robocorp/ht/59acff1_b1f3c24_1c0bc041/lib/python3.10/lib-dynload
+  /home/user/.local/lib/python3.10/site-packages
+  /opt/robocorp/ht/59acff1_b1f3c24_1c0bc041/lib/python3.10/site-packages</msg>
+<msg timestamp="20240916 02:52:47.217" level="WARN">Failed to load input work item: 'Missing required environment variable: RC_WORKSPACE_ID'</msg>
+<msg timestamp="20240916 02:53:37.950" level="ERROR">Error in file '/home/user/app/producer.robot' on line 5: Importing library 'DummyLibrary' failed: ModuleNotFoundError: No module named 'DummyLibrary'
+Traceback (most recent call last):
+  None
+PYTHONPATH:
+  /home/user/app/lib
+  /home/user/app/resources
+  /home/user/.openvscode-server/extensions/d-biehl.robotcode-0.89.1-universal/bundled/libs
+  /home/user/.openvscode-server/extensions/d-biehl.robotcode-0.89.1-universal/bundled/tool/robotcode
+  /home/user/app
+  /opt/robocorp/ht/59acff1_b1f3c24_1c0bc041/lib/python310.zip
+  /opt/robocorp/ht/59acff1_b1f3c24_1c0bc041/lib/python3.10
+  /opt/robocorp/ht/59acff1_b1f3c24_1c0bc041/lib/python3.10/lib-dynload
+  /home/user/.local/lib/python3.10/site-packages
+  /opt/robocorp/ht/59acff1_b1f3c24_1c0bc041/lib/python3.10/site-packages</msg>
+</errors>
+</robot>

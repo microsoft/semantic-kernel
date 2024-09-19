@@ -1,0 +1,5 @@
+{
+  "RPA_WORKITEMS_ADAPTER": "RPA.Robocorp.WorkItems.FileAdapter",
+  "RPA_INPUT_WORKITEM_PATH": "devdata/work-items-out/reporter-input/work-items.json",
+  "CREATE_REPORT": "Yes"
+}
