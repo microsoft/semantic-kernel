@@ -348,7 +348,7 @@ internal static class AssistantThreadActions
         OpenAIAssistantAgent agent,
         AssistantClient client,
         string threadId,
-        IList<ChatMessageContent> messages,
+        IList<ChatMessageContent>? messages,
         OpenAIAssistantInvocationOptions? invocationOptions,
         ILogger logger,
         Kernel kernel,
@@ -413,7 +413,7 @@ internal static class AssistantThreadActions
                 if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
-                    messages.Add(GenerateFunctionCallContent(agent.GetName(), functionCalls));
+                    messages?.Add(GenerateFunctionCallContent(agent.GetName(), functionCalls));
 
                     // Invoke functions for each tool-step
                     IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, functionCalls, cancellationToken);
@@ -425,7 +425,7 @@ internal static class AssistantThreadActions
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
                     asyncUpdates = client.SubmitToolOutputsToRunStreamingAsync(run, toolOutputs);
 
-                    messages.Add(GenerateFunctionResultsContent(agent.GetName(), functionResults));
+                    messages?.Add(GenerateFunctionResultsContent(agent.GetName(), functionResults));
                 }
             }
 
@@ -440,7 +440,7 @@ internal static class AssistantThreadActions
                     if (message != null)
                     {
                         ChatMessageContent content = GenerateMessageContent(agent.GetName(), message);
-                        messages.Add(content);
+                        messages?.Add(content);
                     }
                 }
 
