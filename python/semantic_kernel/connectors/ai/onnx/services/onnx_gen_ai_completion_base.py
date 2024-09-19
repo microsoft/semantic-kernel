@@ -22,7 +22,7 @@ class OnnxGenAICompletionBase(KernelBaseModel):
     enable_multi_modality: bool = False
 
     def __init__(self, ai_model_path: str, **kwargs) -> None:
-        """Creates a new instance of the OnnxGenAICompletionBase class,loads model & tokenizer.
+        """Creates a new instance of the OnnxGenAICompletionBase class, loads model & tokenizer.
 
         Args:
             ai_model_path (str): Path to Onnx Model.
