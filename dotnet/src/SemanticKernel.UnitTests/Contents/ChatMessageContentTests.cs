@@ -202,7 +202,7 @@ public class ChatMessageContentTests
             new FunctionCallContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }),
             new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result"),
             new FileReferenceContent(fileId: "file-id-1") { ModelId = "model-7", Metadata = new Dictionary<string, object?>() { ["metadata-key-7"] = "metadata-value-7" } },
-            new AnnotationContent("quote-8") { ModelId = "model-8", FileId = "file-id-2", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } }
+            new AnnotationContent("quote-8") { ModelId = "model-8", FileId = "file-id-2", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } },
         ];
 
         // Act
@@ -366,6 +366,40 @@ public class ChatMessageContentTests
         Assert.IsType<ChatMessageContent>(deserialized);
         Assert.Equal("test-content", ((ChatMessageContent)deserialized).Content);
         Assert.Equal("test-mime-type", deserialized.MimeType);
+    }
+
+    [Fact]
+    public void ItCanBeSerializeAndDeserializedWithFunctionResultOfChatMessageType()
+    {
+        // Arrange
+        ChatMessageContentItemCollection items = [
+            new FunctionResultContent(new FunctionCallContent("function-name-1", "plugin-name-1", "function-id-1"), new ChatMessageContent(AuthorRole.User, "test-content-1")),
+            new FunctionResultContent(new FunctionCallContent("function-name-2", "plugin-name-2", "function-id-2"), new UnknownExternalChatMessageContent(AuthorRole.Assistant, "test-content-2")),
+        ];
+
+        // Act
+        var chatMessageJson = JsonSerializer.Serialize(new ChatMessageContent(AuthorRole.User, items: items, "message-model"));
+
+        var deserializedMessage = JsonSerializer.Deserialize<ChatMessageContent>(chatMessageJson)!;
+
+        // Assert
+        var functionResultContentWithResultOfChatMessageContentType = deserializedMessage.Items[0] as FunctionResultContent;
+        Assert.NotNull(functionResultContentWithResultOfChatMessageContentType);
+        Assert.Equal("function-name-1", functionResultContentWithResultOfChatMessageContentType.FunctionName);
+        Assert.Equal("function-id-1", functionResultContentWithResultOfChatMessageContentType.CallId);
+        Assert.Equal("plugin-name-1", functionResultContentWithResultOfChatMessageContentType.PluginName);
+        var chatMessageContent = Assert.IsType<JsonElement>(functionResultContentWithResultOfChatMessageContentType.Result);
+        Assert.Equal("user", chatMessageContent.GetProperty("Role").GetProperty("Label").GetString());
+        Assert.Equal("test-content-1", chatMessageContent.GetProperty("Items")[0].GetProperty("Text").GetString());
+
+        var functionResultContentWithResultOfUnknownChatMessageContentType = deserializedMessage.Items[1] as FunctionResultContent;
+        Assert.NotNull(functionResultContentWithResultOfUnknownChatMessageContentType);
+        Assert.Equal("function-name-2", functionResultContentWithResultOfUnknownChatMessageContentType.FunctionName);
+        Assert.Equal("function-id-2", functionResultContentWithResultOfUnknownChatMessageContentType.CallId);
+        Assert.Equal("plugin-name-2", functionResultContentWithResultOfUnknownChatMessageContentType.PluginName);
+        var unknownChatMessageContent = Assert.IsType<JsonElement>(functionResultContentWithResultOfUnknownChatMessageContentType.Result);
+        Assert.Equal("assistant", unknownChatMessageContent.GetProperty("Role").GetProperty("Label").GetString());
+        Assert.Equal("test-content-2", unknownChatMessageContent.GetProperty("Items")[0].GetProperty("Text").GetString());
     }
 
     private sealed class UnknownExternalChatMessageContent : ChatMessageContent
