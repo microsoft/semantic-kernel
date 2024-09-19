@@ -30,7 +30,6 @@ class OnnxGenAICompletionBase(KernelBaseModel):
 
         Raises:
             ServiceInitializationError: When model cannot be loaded
-
         """
         try:
             json_gen_ai_config = os.path.join(ai_model_path + "/genai_config.json")
