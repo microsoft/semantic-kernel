@@ -19,4 +19,4 @@ class OnnxGenAISettings(KernelBaseSettings):
     """
 
     env_prefix: ClassVar[str] = "ONNX_GEN_AI_"
-    model_path: str | None = None
+    model_path: str

@@ -10,6 +10,8 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+from pydantic import ValidationError
+
 from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_prompt_execution_settings import OnnxGenAIPromptExecutionSettings
 from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_settings import OnnxGenAISettings
 from semantic_kernel.connectors.ai.onnx.services.onnx_gen_ai_completion_base import OnnxGenAICompletionBase
@@ -17,6 +19,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -42,11 +45,14 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
                 to environment variables.
             env_file_encoding (str | None): The encoding of the environment settings file.
         """
-        settings = OnnxGenAISettings.create(
-            model_path=ai_model_path,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
+        try:
+            settings = OnnxGenAISettings.create(
+                model_path=ai_model_path,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as e:
+            raise ServiceInitializationError(f"Invalid settings for OnnxGenAITextCompletion: {e}")
 
         if ai_model_id is None:
             ai_model_id = settings.model_path

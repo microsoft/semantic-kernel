@@ -187,9 +187,8 @@ async def test_onnx_apply_chat_template(gen_ai_config, model, tokenizer, prompt_
     assert "<|user|>\ntest<|end|>" in rendered_template
 
 
-@pytest.mark.asyncio
 @patch("onnxruntime_genai.Model")
-async def test_onnx_chat_get_image_history(model):
+def test_onnx_chat_get_image_history(model):
     builtin_open = open  # save the unpatched version
 
     def patch_open(*args, **kwargs):
@@ -219,7 +218,7 @@ async def test_onnx_chat_get_image_history(model):
             ),
         )
 
-        last_image = await chat_completion._get_images_from_history(history)
+        last_image = chat_completion._get_images_from_history(history)
         assert last_image == image_content
 
 

@@ -11,6 +11,8 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 
+from pydantic import ValidationError
+
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_prompt_execution_settings import OnnxGenAIPromptExecutionSettings
 from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_settings import OnnxGenAISettings
@@ -24,7 +26,7 @@ from semantic_kernel.contents import (
     TextContent,
 )
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidExecutionSettingsError
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.prompt_template import PromptTemplateConfig
@@ -59,11 +61,14 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
                 to environment variables.
             env_file_encoding (str | None): The encoding of the environment settings file.
         """
-        settings = OnnxGenAISettings.create(
-            model_path=ai_model_path,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
+        try:
+            settings = OnnxGenAISettings.create(
+                model_path=ai_model_path,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as e:
+            raise ServiceInitializationError(f"Error creating OnnxGenAISettings: {e!s}") from e
 
         if ai_model_id is None:
             ai_model_id = settings.model_path
@@ -98,7 +103,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OnnxGenAIPromptExecutionSettings)  # nosec
         prompt = await self._apply_chat_template(chat_history, **kwargs)
-        images = await self._get_images_from_history(chat_history)
+        images = self._get_images_from_history(chat_history)
         new_tokens = ""
         async for new_token in self._generate_next_token(prompt, settings, images):
             new_tokens += new_token
@@ -136,7 +141,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OnnxGenAIPromptExecutionSettings)  # nosec
         prompt = await self._apply_chat_template(chat_history, **kwargs)
-        images = await self._get_images_from_history(chat_history)
+        images = self._get_images_from_history(chat_history)
         async for new_token in self._generate_next_token(prompt, settings, images):
             yield [
                 StreamingChatMessageContent(
@@ -160,7 +165,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         )  # type: ignore
         return await template.render(kernel, arguments)
 
-    async def _get_images_from_history(self, chat_history: "ChatHistory") -> ImageContent | None:
+    def _get_images_from_history(self, chat_history: "ChatHistory") -> ImageContent | None:
         images = []
         for message in chat_history.messages:
             image_content = message.items
@@ -176,7 +181,9 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
                         )
         # Currently Onnx Runtime only supports one image
         # Later we will add support for multiple images
-        return images[-1] if len(images) > 0 else None
+        if len(images) > 1:
+            raise ServiceInvalidExecutionSettingsError("The model does not support more than one image")
+        return images[-1] if images else None
 
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:

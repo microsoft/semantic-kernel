@@ -58,25 +58,21 @@ class OnnxGenAICompletionBase(KernelBaseModel):
             **kwargs,
         )
 
-    async def _prepare_input_params(
+    def _prepare_input_params(
         self, prompt: str, settings: OnnxGenAIPromptExecutionSettings, image: ImageContent | None = None
     ) -> Any:
         params = OnnxRuntimeGenAi.GeneratorParams(self.model)
         params.set_search_options(**settings.prepare_settings_dict())
         if not self.enable_multi_modality:
             input_tokens = self.tokenizer.encode(prompt)
-            params.input_ids = input_tokens
         else:
             if image is not None:
                 # With the use of Pybind there is currently no way to load images from bytes
                 # We can only open images from a file path currently
                 image = OnnxRuntimeGenAi.Images.open(str(image.uri))
             input_tokens = self.tokenizer(prompt, images=image)
-            params.set_inputs(input_tokens)
+        params.set_inputs(input_tokens)
         return params
-
-    async def _detokenize(self, token: int) -> str:
-        return self.tokenizer_stream.decode(token)
 
     async def _generate_next_token(
         self,
@@ -85,7 +81,7 @@ class OnnxGenAICompletionBase(KernelBaseModel):
         image: ImageContent | None = None,
     ) -> AsyncGenerator[str, Any]:
         try:
-            params = await self._prepare_input_params(prompt, settings, image)
+            params = self._prepare_input_params(prompt, settings, image)
             generator = OnnxRuntimeGenAi.Generator(self.model, params)
 
             while not generator.is_done():
