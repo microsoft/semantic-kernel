@@ -46,6 +46,151 @@ public class VectorStoreTextSearchTests
         Assert.NotNull(sut);
     }
 
+    [Fact]
+    public async Task CanSearchWithVectorizedSearchAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchFromVectorizedSearchAsync();
+
+        // Act.
+        KernelSearchResults<string> searchResults = await sut.SearchAsync("What is the Semantic Kernel?", new() { Count = 2, Offset = 0 });
+        var results = await ToListAsync(searchResults.Results);
+
+        Assert.Equal(2, results.Count);
+    }
+
+    [Fact]
+    public async Task CanGetTextSearchResultsWithVectorizedSearchAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchFromVectorizedSearchAsync();
+
+        // Act.
+        KernelSearchResults<TextSearchResult> searchResults = await sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 2, Offset = 0 });
+        var results = await ToListAsync(searchResults.Results);
+
+        Assert.Equal(2, results.Count);
+    }
+
+    [Fact]
+    public async Task CanGetSearchResultsWithVectorizedSearchAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchFromVectorizedSearchAsync();
+
+        // Act.
+        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 2, Offset = 0 });
+        var results = await ToListAsync(searchResults.Results);
+
+        Assert.Equal(2, results.Count);
+    }
+
+    [Fact]
+    public async Task CanSearchWithVectorizableTextSearchAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchFromVectorizableTextSearchAsync();
+
+        // Act.
+        KernelSearchResults<string> searchResults = await sut.SearchAsync("What is the Semantic Kernel?", new() { Count = 2, Offset = 0 });
+        var results = await ToListAsync(searchResults.Results);
+
+        Assert.Equal(2, results.Count);
+    }
+
+    [Fact]
+    public async Task CanGetTextSearchResultsWithVectorizableTextSearchAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchFromVectorizableTextSearchAsync();
+
+        // Act.
+        KernelSearchResults<TextSearchResult> searchResults = await sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 2, Offset = 0 });
+        var results = await ToListAsync(searchResults.Results);
+
+        Assert.Equal(2, results.Count);
+    }
+
+    [Fact]
+    public async Task CanGetSearchResultsWithVectorizableTextSearchAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchFromVectorizableTextSearchAsync();
+
+        // Act.
+        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 2, Offset = 0 });
+        var results = await ToListAsync(searchResults.Results);
+
+        Assert.Equal(2, results.Count);
+    }
+
+    /// <summary>
+    /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// </summary>
+    private static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchFromVectorizedSearchAsync()
+    {
+        var vectorStore = new VolatileVectorStore();
+        var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
+        var stringMapper = new DataModelTextSearchStringMapper();
+        var resultMapper = new DataModelTextSearchResultMapper();
+        var embeddingService = new MockTextEmbeddingGenerationService();
+        await AddRecordsAsync(vectorSearch, embeddingService);
+        var sut = new VectorStoreTextSearch<DataModel>(vectorSearch, embeddingService, stringMapper, resultMapper);
+        return sut;
+    }
+
+    /// <summary>
+    /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// </summary>
+    private static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchFromVectorizableTextSearchAsync()
+    {
+        var vectorStore = new VolatileVectorStore();
+        var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
+        var stringMapper = new DataModelTextSearchStringMapper();
+        var resultMapper = new DataModelTextSearchResultMapper();
+        var embeddingService = new MockTextEmbeddingGenerationService();
+        await AddRecordsAsync(vectorSearch, embeddingService);
+        var vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorSearch, new MockTextEmbeddingGenerationService());
+        var sut = new VectorStoreTextSearch<DataModel>(vectorizableTextSearch, stringMapper, resultMapper);
+        return sut;
+    }
+
+    /// <summary>
+    /// Convert an <see cref="IAsyncEnumerable{T}"/> to a <see cref="List{T}"/>.
+    /// </summary>
+    private static async ValueTask<List<T>> ToListAsync<T>(IAsyncEnumerable<T> source, CancellationToken cancellationToken = default)
+    {
+        var result = new List<T>();
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            result.Add(item);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Add sample records to the vector store record collection.
+    /// </summary>
+    private static async Task AddRecordsAsync(
+        IVectorStoreRecordCollection<Guid, DataModel> recordCollection,
+        ITextEmbeddingGenerationService embeddingService,
+        int? count = 10)
+    {
+        await recordCollection.CreateCollectionIfNotExistsAsync();
+        for (var i = 0; i < count; i++)
+        {
+            DataModel dataModel = new()
+            {
+                Key = Guid.NewGuid(),
+                Text = $"Record {i}",
+                Embedding = await embeddingService.GenerateEmbeddingAsync($"Record {i}")
+            };
+            await recordCollection.UpsertAsync(dataModel);
+        }
+    }
+
     /// <summary>
     /// String mapper which converts a DataModel to a string.
     /// </summary>
@@ -119,13 +264,15 @@ public class VectorStoreTextSearchTests
     /// Note that each property is decorated with an attribute that specifies how the property should be treated by the vector store.
     /// This allows us to create a collection in the vector store and upsert and retrieve instances of this class without any further configuration.
     /// </remarks>
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
     private sealed class DataModel
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
         [VectorStoreRecordKey]
         public Guid Key { get; init; }
 
         [VectorStoreRecordData]
-        public string Text { get; init; }
+        public required string Text { get; init; }
 
         [VectorStoreRecordVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }

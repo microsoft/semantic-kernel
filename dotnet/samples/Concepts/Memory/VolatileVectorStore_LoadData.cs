@@ -17,10 +17,15 @@ public class VolatileVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
     [Fact]
     public async Task LoadStringListAndSearchAsync()
     {
+        // Create a logging handler to output HTTP requests and responses
+        var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
+        var httpClient = new HttpClient(handler);
+
         // Create an embedding generation service.
         var embeddingGenerationService = new OpenAITextEmbeddingGenerationService(
                 modelId: TestConfiguration.OpenAI.EmbeddingModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey);
+                apiKey: TestConfiguration.OpenAI.ApiKey,
+                httpClient: httpClient);
 
         // Construct a volatile vector store.
         var vectorStore = new VolatileVectorStore();
