@@ -96,6 +96,14 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
 
         # If the async_client is None, the api_key is none, the ad_token is none, and the ad_token_provider is none,
         # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
+
+        # Temp debug logging
+        print(f"async_client: {async_client is not None}")
+        print(f"api_key: {azure_openai_settings.api_key is not None}")
+        print(f"ad_token: {ad_token is not None}")
+        print(f"ad_token_provider: {ad_token_provider is not None}")
+        print(f"token_endpoint: {azure_openai_settings.token_endpoint is not None}")
+
         if (
             async_client is None
             and azure_openai_settings.api_key is None
@@ -103,9 +111,11 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             and ad_token is None
             and azure_openai_settings.token_endpoint
         ):
+            print("Getting ad_token")
             ad_token = azure_openai_settings.get_azure_openai_auth_token(
                 token_endpoint=azure_openai_settings.token_endpoint
             )
+            print(f"Called get ad_token: {ad_token is not None}")
 
         if not async_client and not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise ServiceInitializationError(
