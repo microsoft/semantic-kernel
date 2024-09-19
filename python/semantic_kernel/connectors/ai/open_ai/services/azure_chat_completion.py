@@ -94,10 +94,11 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         if not azure_openai_settings.chat_deployment_name:
             raise ServiceInitializationError("chat_deployment_name is required.")
 
-        # If the api_key is none, and the ad_token is none, and the ad_token_provider is none,
+        # If the async_client is None, the api_key is none, the ad_token is none, and the ad_token_provider is none,
         # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
         if (
-            azure_openai_settings.api_key is None
+            async_client is None
+            and azure_openai_settings.api_key is None
             and ad_token_provider is None
             and ad_token is None
             and azure_openai_settings.token_endpoint
@@ -106,8 +107,10 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                 token_endpoint=azure_openai_settings.token_endpoint
             )
 
-        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise ServiceInitializationError("Please provide either api_key, ad_token or ad_token_provider")
+        if not async_client and not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
+            raise ServiceInitializationError(
+                "Please provide either a custom client, or an api_key, an ad_token or an ad_token_provider"
+            )
 
         super().__init__(
             deployment_name=azure_openai_settings.chat_deployment_name,
