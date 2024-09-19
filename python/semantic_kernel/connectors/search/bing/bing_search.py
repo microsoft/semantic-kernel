@@ -15,21 +15,24 @@ from semantic_kernel.connectors.search.bing.const import (
     QUERY_PARAMETERS,
 )
 from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
-from semantic_kernel.data.filters.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filters.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.filters.not_equal_to_filter_clause import NotEqualTo
-from semantic_kernel.data.filters.search_filter_base import SearchFilter
-from semantic_kernel.data.kernel_search_result import KernelSearchResult
-from semantic_kernel.data.text_search import TextSearch
-from semantic_kernel.data.text_search_options import TextSearchOptions
-from semantic_kernel.data.text_search_result import TextSearchResult
+from semantic_kernel.data import (
+    AnyTagsEqualTo,
+    EqualTo,
+    KernelSearchResult,
+    TextSearch,
+    TextSearchFilter,
+    TextSearchOptions,
+    TextSearchResult,
+)
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class BingSearch(KernelBaseModel, TextSearch):
     """A search engine connector that uses the Bing Search API to perform a web search."""
 
@@ -194,7 +197,7 @@ class BingSearch(KernelBaseModel, TextSearch):
             return params
         extra_query_params = []
         for filter in options.filter.filters:
-            if isinstance(filter, SearchFilter):
+            if isinstance(filter, TextSearchFilter):
                 logger.warning("Groups are not supported by Bing search, ignored.")
                 continue
             if isinstance(filter, EqualTo):
@@ -202,12 +205,7 @@ class BingSearch(KernelBaseModel, TextSearch):
                     params[filter.field_name] = escape(filter.value)
                 else:
                     extra_query_params.append(f"{filter.field_name}:{filter.value}")
-            if isinstance(filter, NotEqualTo):
-                if filter.field_name in QUERY_PARAMETERS:
-                    params[filter.field_name] = f"-{escape(filter.value)}"
-                else:
-                    extra_query_params.append(f"-{filter.field_name}:{filter.value}")
-            if isinstance(filter, AnyTagsEqualTo):
+            elif isinstance(filter, AnyTagsEqualTo):
                 logger.debug("Any tag equals to filter is not supported by Bing Search API.")
         params["q"] = f"{options.query}+{f' {options.filter.group_type} '.join(extra_query_params)}".strip()
         return params

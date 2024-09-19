@@ -6,8 +6,10 @@ from pydantic import Field
 
 from semantic_kernel.connectors.search.bing.bing_web_page import BingWebPage
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class BingWebPages(KernelBaseModel):
     """The web pages from a Bing search."""
 
@@ -18,6 +20,7 @@ class BingWebPages(KernelBaseModel):
     value: list[BingWebPage] = Field(default_factory=list)
 
 
+@experimental_class
 class BingSearchResponse(KernelBaseModel):
     """The response from a Bing search."""
 

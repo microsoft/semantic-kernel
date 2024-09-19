@@ -3,9 +3,12 @@
 from collections.abc import Sequence
 from typing import Any, Protocol, TypeVar, runtime_checkable
 
+from semantic_kernel.utils.experimental_decorator import experimental_class
+
 TModel = TypeVar("TModel", bound=object)
 
 
+@experimental_class
 @runtime_checkable
 class VectorStoreModelFunctionSerdeProtocol(Protocol):
     """Data model serialization and deserialization protocol.
@@ -24,6 +27,7 @@ class VectorStoreModelFunctionSerdeProtocol(Protocol):
         ...  # pragma: no cover
 
 
+@experimental_class
 @runtime_checkable
 class VectorStoreModelPydanticProtocol(Protocol):
     """Class used internally to make sure a datamodel has model_dump and model_validate."""
@@ -38,6 +42,7 @@ class VectorStoreModelPydanticProtocol(Protocol):
         ...  # pragma: no cover
 
 
+@experimental_class
 @runtime_checkable
 class VectorStoreModelToDictFromDictProtocol(Protocol):
     """Class used internally to check if a model has to_dict and from_dict methods."""
@@ -52,6 +57,7 @@ class VectorStoreModelToDictFromDictProtocol(Protocol):
         ...  # pragma: no cover
 
 
+@experimental_class
 @runtime_checkable
 class ToDictProtocol(Protocol):
     """Protocol for to_dict method.
@@ -67,6 +73,7 @@ class ToDictProtocol(Protocol):
     def __call__(self, record: Any, **kwargs: Any) -> Sequence[dict[str, Any]]: ...  # pragma: no cover  # noqa: D102
 
 
+@experimental_class
 @runtime_checkable
 class FromDictProtocol(Protocol):
     """Protocol for from_dict method.
@@ -82,6 +89,7 @@ class FromDictProtocol(Protocol):
     def __call__(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Any: ...  # noqa: D102
 
 
+@experimental_class
 @runtime_checkable
 class SerializeProtocol(Protocol):
     """Protocol for serialize method.
@@ -98,6 +106,7 @@ class SerializeProtocol(Protocol):
     def __call__(self, record: Any, **kwargs: Any) -> Any: ...  # noqa: D102
 
 
+@experimental_class
 @runtime_checkable
 class DeserializeProtocol(Protocol):
     """Protocol for deserialize method.

@@ -3,11 +3,13 @@
 
 from typing import Literal
 
-from semantic_kernel.data.const import VectorSearchQueryTypes
-from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.text_search_options import TextSearchOptions
+from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
+from semantic_kernel.data.vector_search.const import VectorSearchQueryTypes
+from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class VectorSearchOptions(TextSearchOptions):
     """Options for vector search, builds on TextSearchOptions."""
 

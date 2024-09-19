@@ -2,10 +2,12 @@
 
 from pydantic import Field
 
-from semantic_kernel.data.filters.filter_clause_base import FilterClauseBase
+from semantic_kernel.data.filter_clauses.filter_clause_base import FilterClauseBase
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class EqualTo(FilterClauseBase, KernelBaseModel):
     """A filter clause for an equals comparison."""
 

@@ -2,15 +2,18 @@
 
 import sys
 
+from semantic_kernel.utils.experimental_decorator import experimental_class
+
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
     from typing_extensions import Self
 
-from semantic_kernel.data.filters.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filters.search_filter_base import SearchFilter
+from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
+from semantic_kernel.data.search_filter_base import SearchFilter
 
 
+@experimental_class
 class VectorSearchFilter(SearchFilter):
     """A filter clause for a vector search query."""
 

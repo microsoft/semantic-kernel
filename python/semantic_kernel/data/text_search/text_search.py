@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING, Any, TypeVar
 
 from semantic_kernel.data.kernel_search_result import KernelSearchResult
 from semantic_kernel.data.search_base import SearchBase
-from semantic_kernel.data.text_search_options import TextSearchOptions
+from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.data.search_options_base import SearchOptions
-    from semantic_kernel.data.text_search_result import TextSearchResult
+    from semantic_kernel.data.text_search.text_search_result import TextSearchResult
 
 TMapInput = TypeVar("TMapInput")
 

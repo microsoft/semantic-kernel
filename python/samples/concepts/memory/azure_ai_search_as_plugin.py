@@ -16,26 +16,28 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAITextEmbedding,
 )
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
-from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents import ChatHistory
 from semantic_kernel.data import (
+    DEFAULT_DESCRIPTION,
+    SearchOptions,
+    TextSearch,
+    VectorSearchFilter,
+    VectorSearchOptions,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
     vectorstoremodel,
 )
-from semantic_kernel.data.const import DEFAULT_DESCRIPTION
-from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.search_options_base import SearchOptions
-from semantic_kernel.data.text_search import TextSearch
-from semantic_kernel.data.vector_search_options import VectorSearchOptions
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
-from semantic_kernel.functions import kernel_function
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
-from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+from semantic_kernel.functions import (
+    KernelArguments,
+    KernelFunction,
+    KernelFunctionFromMethod,
+    KernelParameterMetadata,
+    kernel_function,
+)
 
 
 @vectorstoremodel
@@ -202,16 +204,6 @@ plugin = kernel.add_functions(
         ),
     ],
 )
-
-#             # "dynamic_filters": [
-#             #     DynamicFilterClause(field_name="address/city", parameter_name="city", clause_type="equality"),
-#             #     DynamicFilterClause(
-#             #         field_name="address/country",
-#             #         parameter_name="country",
-#             #         clause_type="direct",
-#             #         function=lambda x: f"address/country eq '{x}'",
-#             #     ),
-#             # ],
 
 
 chat_function = kernel.add_function(

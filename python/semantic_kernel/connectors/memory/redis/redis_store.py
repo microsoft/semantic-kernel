@@ -16,9 +16,7 @@ from redis.asyncio.client import Redis
 from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
 from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection, RedisJsonCollection
 from semantic_kernel.connectors.memory.redis.utils import RedisWrapper
-from semantic_kernel.data.vector_store import VectorStore
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data import VectorStore, VectorStoreRecordCollection, VectorStoreRecordDefinition
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 

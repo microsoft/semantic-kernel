@@ -5,11 +5,13 @@ from typing import Literal
 
 from pydantic import Field
 
-from semantic_kernel.data.const import VectorSearchQueryTypes
-from semantic_kernel.data.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search.const import VectorSearchQueryTypes
+from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class VectorSearchQuery(KernelBaseModel):
     """A query for vector search."""
 

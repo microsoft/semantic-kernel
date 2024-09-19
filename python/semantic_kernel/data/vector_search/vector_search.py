@@ -11,9 +11,9 @@ from pydantic import BaseModel
 from semantic_kernel.data.kernel_search_result import KernelSearchResult
 from semantic_kernel.data.search_base import SearchBase
 from semantic_kernel.data.search_options_base import SearchOptions
-from semantic_kernel.data.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
+from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -138,7 +138,7 @@ class VectorSearch(VectorStoreRecordCollection[TKey, TModel], SearchBase, Generi
         return [record.model_dump_json() if isinstance(record, BaseModel) else json.dumps(record) for record in records]
 
     def _get_records_from_results(self, results: Sequence[Any]) -> Sequence[TModel]:
-        return [self.deserialize(self._get_record_from_result(res)) for res in results]
+        return [self.deserialize(self._get_record_from_result(res)) for res in results]  # type: ignore
 
     def _get_vector_search_results_from_results(self, results: Sequence[Any]) -> Sequence[VectorSearchResult[TModel]]:
         scores = [self._get_score_from_result(res) for res in results]

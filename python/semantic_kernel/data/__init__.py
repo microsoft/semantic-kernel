@@ -1,28 +1,49 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.filters.text_search_filter import TextSearchFilter
-from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_store import VectorStore
-from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_model_definition import (
-    VectorStoreRecordDefinition,
-)
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.data.const import DEFAULT_COUNT, DEFAULT_DESCRIPTION
+from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
+from semantic_kernel.data.kernel_search_result import KernelSearchResult
+from semantic_kernel.data.record_definition import (
+    DistanceFunction,
+    IndexKind,
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
+    VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
+    vectorstoremodel,
 )
-from semantic_kernel.data.vector_store_record_utils import VectorStoreRecordUtils
+from semantic_kernel.data.search_options_base import SearchOptions
+from semantic_kernel.data.text_search import TextSearch, TextSearchFilter, TextSearchOptions, TextSearchResult
+from semantic_kernel.data.vector_search import (
+    VectorSearch,
+    VectorSearchFilter,
+    VectorSearchOptions,
+    VectorSearchQuery,
+    VectorSearchQueryTypes,
+    VectorSearchResult,
+)
+from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
 
 __all__ = [
+    "DEFAULT_COUNT",
+    "DEFAULT_DESCRIPTION",
+    "AnyTagsEqualTo",
     "DistanceFunction",
+    "EqualTo",
     "IndexKind",
+    "KernelSearchResult",
+    "SearchOptions",
+    "TextSearch",
     "TextSearchFilter",
+    "TextSearchOptions",
+    "TextSearchResult",
+    "VectorSearch",
     "VectorSearchFilter",
     "VectorSearchOptions",
+    "VectorSearchQuery",
+    "VectorSearchQueryTypes",
+    "VectorSearchResult",
     "VectorStore",
     "VectorStoreRecordCollection",
     "VectorStoreRecordDataField",

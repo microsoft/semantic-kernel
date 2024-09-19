@@ -6,13 +6,6 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
-from semantic_kernel.data.filters.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filters.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.filters.not_equal_to_filter_clause import NotEqualTo
-from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search_options import VectorSearchOptions
-from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -29,11 +22,18 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_client,
     get_search_index_client,
 )
-from semantic_kernel.data.const import VectorSearchQueryTypes
-from semantic_kernel.data.vector_search import VectorSearch
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data import (
+    AnyTagsEqualTo,
+    EqualTo,
+    VectorSearch,
+    VectorSearchFilter,
+    VectorSearchOptions,
+    VectorSearchQueryTypes,
+    VectorStoreRecordDefinition,
+    VectorStoreRecordVectorField,
+)
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -263,8 +263,6 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
         for filter in search_filter.filters:
             if isinstance(filter, EqualTo):
                 filter_string += f"{filter.field_name} eq '{filter.value}' {search_filter.group_type.lower()} "
-            elif isinstance(filter, NotEqualTo):
-                filter_string += f"{filter.field_name} ne '{filter.value}' {search_filter.group_type.lower()} "
             elif isinstance(filter, AnyTagsEqualTo):
                 filter_string += (
                     f"{filter.field_name}/any(t: t eq '{filter.value}') {search_filter.group_type.lower()} "

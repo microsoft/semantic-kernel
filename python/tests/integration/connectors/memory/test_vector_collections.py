@@ -14,9 +14,9 @@ from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_store imp
 from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
 from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
 from semantic_kernel.connectors.memory.redis.redis_store import RedisStore
-from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.data.record_definition.vector_store_model_decorator import vectorstoremodel
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
