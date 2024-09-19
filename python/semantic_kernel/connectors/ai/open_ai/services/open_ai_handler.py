@@ -8,6 +8,7 @@ from openai import AsyncOpenAI, AsyncStream, BadRequestError
 from openai.lib.streaming.chat._completions import AsyncChatCompletionStreamManager
 from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
+from pydantic import BaseModel
 
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -15,8 +16,10 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
+from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -43,8 +46,20 @@ class OpenAIHandler(KernelBaseModel, ABC):
         """Execute the appropriate call to OpenAI models."""
         try:
             if self.ai_model_type == OpenAIModelTypes.CHAT:
-                if hasattr(request_settings, "structured_json_response") and request_settings.structured_json_response:
+                if (
+                    hasattr(request_settings, "structured_json_response")
+                    and hasattr(request_settings, "response_format")
+                    and request_settings.structured_json_response
+                ):
                     settings = request_settings.prepare_settings_dict()
+                    if not issubclass(request_settings.response_format, BaseModel):
+                        generated_schema = KernelJsonSchemaBuilder.build(
+                            parameter_type=request_settings.response_format, structured_output=True
+                        )
+                        assert generated_schema is not None  # nosec
+                        settings["response_format"] = generate_structured_output_response_format_schema(
+                            name=request_settings.response_format.__name__, schema=generated_schema
+                        )
                     if settings.pop("stream", None):
                         return self.client.beta.chat.completions.stream(**settings)
                     response = await self.client.beta.chat.completions.parse(**settings)

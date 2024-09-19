@@ -61,7 +61,9 @@ class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
 class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the Chat Completion endpoint."""
 
-    response_format: dict[Literal["type"], Literal["text", "json_object"]] | type[BaseModel] | None = None
+    response_format: (
+        dict[Literal["type"], Literal["text", "json_object"]] | dict[str, Any] | type[BaseModel] | type | None
+    ) = None
     function_call: str | None = None
     functions: list[dict[str, Any]] | None = None
     messages: list[dict[str, Any]] | None = None
@@ -88,28 +90,32 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         return v
 
     @model_validator(mode="before")
-    def validate_response_format_and_set_flag(cls, values):
+    def validate_response_format_and_set_flag(cls, values) -> Any:
         """Validate the response_format and set structured_json_response accordingly."""
-        response_format = values.get("response_format")
+        response_format = values.get("response_format", None)
 
-        # Check if response_format is a dictionary
+        if response_format is None:
+            return values
+
         if isinstance(response_format, dict):
-            # If it's {"type": "json_object"}
             if response_format.get("type") == "json_object":
-                return values  # No need to set structured_json_response
-            # If it's any other valid dict[str, str]
-            if all(isinstance(k, str) and isinstance(v, str) for k, v in response_format.items()):
+                return values
+            if response_format.get("type") == "json_schema":
+                json_schema = response_format.get("json_schema")
+                if isinstance(json_schema, dict):
+                    values["structured_json_response"] = True
+                    return values
+                raise ServiceInvalidExecutionSettingsError(
+                    "If response_format has type 'json_schema', 'json_schema' must be a valid dictionary."
+                )
+        if isinstance(response_format, type):
+            if issubclass(response_format, BaseModel):
                 values["structured_json_response"] = True
             else:
-                raise ServiceInvalidExecutionSettingsError(
-                    "If response_format is a dictionary, it must have string keys and values"
-                )
-        # Check if response_format is a subclass of BaseModel
-        elif isinstance(response_format, type) and issubclass(response_format, BaseModel):
-            values["structured_json_response"] = True
-        elif response_format is not None:
+                values["structured_json_response"] = True
+        else:
             raise ServiceInvalidExecutionSettingsError(
-                "response_format must be a dictionary, a subclass of BaseModel, or None"
+                "response_format must be a dictionary, a subclass of BaseModel, a Python class/type, or None"
             )
 
         return values

@@ -1,11 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import datetime
-
-from azure.core.credentials import AccessToken
-from azure.core.exceptions import ClientAuthenticationError
-from azure.identity import DefaultAzureCredential
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
@@ -13,7 +8,6 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 ###################################################################
@@ -40,10 +34,11 @@ You are a helpful math tutor. Guide the user through the solution step by step.
 
 
 ###################################################################
-# Define the Pydantic model that represents the structured output
-# from the OpenAI service. This model will be used to parse the
-# structured output from the OpenAI service, and ensure that the model
-# correctly outputs the schema based on the Pydantic model.
+# OPTION 1: Define the Pydantic model that represents the
+# structured output from the OpenAI service. This model will be
+# used to parse the structured output from the OpenAI service,
+# and ensure that the model correctly outputs the schema based
+# on the Pydantic model.
 class Step(KernelBaseModel):
     explanation: str
     output: str
@@ -57,37 +52,29 @@ class Reasoning(KernelBaseModel):
 ###################################################################
 
 
-auth_token: AccessToken | None = None
+# OPTION 2: Define a non-Pydantic model that should represent the
+# structured output from the OpenAI service. This model will be
+# converted to the proper JSON Schema and sent to the LLM.
+# Uncomment the follow lines and comment out the Pydantic model
+# above to use this option.
+# class Step:
+#     explanation: str
+#     output: str
 
-AOAI_TOKEN_ENDPOINT: str = "https://cognitiveservices.azure.com"  # nosec
+
+# class Reasoning:
+#     steps: list[Step]
+#     final_answer: str
 
 
-async def auth_callback() -> str:
-    """A sample auth callback that shows how to use Azure's DefaultAzureCredential."""
-    global auth_token
-    current_utc_timestamp = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
-
-    if not auth_token or auth_token.expires_on < current_utc_timestamp:
-        credential = DefaultAzureCredential()
-
-        try:
-            auth_token = credential.get_token(AOAI_TOKEN_ENDPOINT)
-        except ClientAuthenticationError as cae:
-            err_messages = getattr(cae, "messages", [])
-            raise FunctionExecutionException(
-                f"Failed to retrieve the client auth token with messages: {' '.join(err_messages)}"
-            ) from cae
-
-    return auth_token.token
-
+###################################################################
 
 kernel = Kernel()
 
-service_id = "chat-gpt"
+service_id = "structured-output"
 if use_azure_openai:
     chat_service = AzureChatCompletion(
         service_id=service_id,
-        ad_token_provider=auth_callback,
     )
 else:
     chat_service = OpenAIChatCompletion(
@@ -118,7 +105,7 @@ history.add_user_message("how can I solve 8x + 7y - 6z = -23")
 
 
 async def main():
-    stream = False
+    stream = True
     if stream:
         answer = kernel.invoke_stream(
             chat_function,
