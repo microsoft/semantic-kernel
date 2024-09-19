@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
+import logging
 import sys
 from functools import reduce
 from typing import Annotated, Any
@@ -55,6 +55,10 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
+
+logger: logging.Logger = logging.getLogger(__name__)
+
+logging.basicConfig(level=logging.DEBUG)
 
 mistral_ai_setup: bool = False
 try:
