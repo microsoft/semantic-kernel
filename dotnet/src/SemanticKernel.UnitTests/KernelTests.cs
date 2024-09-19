@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -342,6 +343,45 @@ public class KernelTests
         // Assert
         Assert.Equal(1, invoked);
         mockTextCompletion.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+    }
+
+    [Fact]
+    public async Task InvokeAsyncForwardsProvidedSettingsToChatCompletionServiceAsync()
+    {
+        // Arrange
+        var (mockChatMessage, mockChatCompletion) = this.SetupChatMocks();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<IChatCompletionService>(mockChatCompletion.Object);
+        Kernel kernel = builder.Build();
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+        var expectedModelId = "model-id";
+
+        // Act
+        var specificSettings = new PromptExecutionSettings { ModelId = expectedModelId };
+        var result = await kernel.InvokeAsync(function, new(specificSettings));
+
+        // Assert
+        mockChatCompletion.Verify(m => m.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.Is<PromptExecutionSettings>(settings => settings.ModelId == expectedModelId), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+    }
+
+    [Fact]
+    public async Task InvokeStreamingAsyncForwardsProvidedSettingsToChatCompletionServiceAsync()
+    {
+        // Arrange
+        var (mockChatMessage, mockChatCompletion) = this.SetupChatMocks();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<IChatCompletionService>(mockChatCompletion.Object);
+        Kernel kernel = builder.Build();
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+        var expectedModelId = "model-id";
+
+        // Act
+        var specificSettings = new PromptExecutionSettings { ModelId = expectedModelId };
+        var enumerator = kernel.InvokeStreamingAsync(function, new(specificSettings)).GetAsyncEnumerator();
+        await enumerator.MoveNextAsync();
+
+        // Assert
+        mockChatCompletion.Verify(m => m.GetStreamingChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.Is<PromptExecutionSettings>(settings => settings.ModelId == expectedModelId), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
     [Fact]
@@ -701,6 +741,22 @@ public class KernelTests
         mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent]);
         return (mockTextContent, mockTextCompletion);
     }
+
+    private (ChatMessageContent mockChatContent, Mock<IChatCompletionService> chatCompletionMock) SetupChatMocks(string? completionResult = null)
+    {
+        var mockChatContent = new ChatMessageContent(AuthorRole.Assistant, completionResult ?? "LLM Result about UnitTests");
+
+        var mockChatCompletion = new Mock<IChatCompletionService>();
+        mockChatCompletion.Setup(m => m.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockChatContent]);
+        mockChatCompletion.Setup(m => m.GetStreamingChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
+            .Returns(new List<StreamingChatMessageContent> 
+            {
+                new(AuthorRole.Assistant, "chunk1")
+            }.ToAsyncEnumerable());
+
+        return (mockChatContent, mockChatCompletion);
+    }
+
 
     private Mock<ITextGenerationService> SetupStreamingMocks(params StreamingTextContent[] streamingContents)
     {

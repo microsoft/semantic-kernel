@@ -17,6 +17,19 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSettings
 {
     /// <summary>
+    /// The name of the deployment to use for the completion request.
+    /// </summary>
+    /// <remarks>
+    /// Azure API's doesn't make a distinction between the modelId and the deploymentName.
+    /// </remarks>
+    [Experimental("SKEXP0010")]
+    public string? DeploymentName
+    {
+        get => this.ModelId;
+        set => this.ModelId = value;
+    }
+
+    /// <summary>
     /// An abstraction of additional settings for chat completion, see https://learn.microsoft.com/en-us/dotnet/api/azure.ai.openai.azurechatextensionsoptions.
     /// This property is compatible only with Azure OpenAI.
     /// </summary>
@@ -103,6 +116,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     #region private ================================================================================
 
     private AzureChatDataSource? _azureChatDataSource;
+    private string? _deploymentName;
 
     #endregion
 }

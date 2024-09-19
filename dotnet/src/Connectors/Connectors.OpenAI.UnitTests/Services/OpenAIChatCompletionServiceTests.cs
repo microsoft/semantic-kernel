@@ -350,6 +350,55 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("user", messages[0].GetProperty("role").GetString());
     }
 
+    [Theory]
+    [InlineData(null, "model-id")] // Defaults to service definition
+    [InlineData("", "model-id")]  // Defaults to service definition
+    [InlineData(" ", "model-id")]  // Defaults to service definition
+    [InlineData("gpt-4o", "gpt-4o")] // Uses provided model id
+    [InlineData("gpt-3.5-turbo", "gpt-3.5-turbo")] // Uses provided model id
+    public async Task GetChatMessageContentsUseModelIdFromSettingsAsync(string? providedModelId, string expectedModelId)
+    {
+        // Arrange
+        var service = new OpenAIChatCompletionService("model-id", "api-key", "organization", this._httpClient);
+        using var stream = File.OpenRead("TestData/chat_completion_test_response.json");
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+
+        // Act
+        await service.GetChatMessageContentsAsync(this._chatHistoryForTest, new OpenAIPromptExecutionSettings() { ModelId = providedModelId });
+
+        var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.Contains($"\"model\":\"{expectedModelId}\"", requestBody);
+    }
+
+    [Theory]
+    [InlineData(null, "model-id")] // Defaults to service definition
+    [InlineData("", "model-id")]  // Defaults to service definition
+    [InlineData(" ", "model-id")]  // Defaults to service definition
+    [InlineData("gpt-4o", "gpt-4o")] // Uses provided model id
+    [InlineData("gpt-3.5-turbo", "gpt-3.5-turbo")] // Uses provided model id
+    public async Task GetStreamingChatMessageContentsUseModelIdFromSettingsAsync(string? providedModelId, string expectedModelId)
+    {
+        // Arrange
+        var service = new OpenAIChatCompletionService("model-id", "api-key", "organization", this._httpClient);
+        using var stream = File.OpenRead("TestData/chat_completion_test_response.json");
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+
+        // Act
+        var enumerator = service.GetStreamingChatMessageContentsAsync(this._chatHistoryForTest, new OpenAIPromptExecutionSettings() { ModelId = providedModelId }).GetAsyncEnumerator();
+        await enumerator.MoveNextAsync();
+
+        var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.Contains($"\"model\":\"{expectedModelId}\"", requestBody);
+    }
+
     [Fact]
     public async Task GetStreamingChatMessageContentsWithFunctionCallAsync()
     {

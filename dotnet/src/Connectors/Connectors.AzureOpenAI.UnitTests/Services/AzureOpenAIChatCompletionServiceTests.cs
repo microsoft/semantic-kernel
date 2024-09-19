@@ -1261,6 +1261,66 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("auto", optionsJson.GetProperty("tool_choice").ToString());
     }
 
+    [Theory]
+    [InlineData(null, "deployment-name")] // Defaults to service definition
+    [InlineData("", "deployment-name")]  // Defaults to service definition
+    [InlineData(" ", "deployment-name")]  // Defaults to service definition
+    [InlineData("gpt-4o", "gpt-4o")] // Uses provided model id
+    [InlineData("gpt-35-turbo", "gpt-35-turbo")] // Uses provided model id
+    public async Task GetChatMessageContentsUseDeploymentNameFromSettingsAsync(string? providedDeploymentName, string expectedDeploymentName)
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("Fake prompt");
+
+        var service = new AzureOpenAIChatCompletionService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        using var stream = File.OpenRead("TestData/chat_completion_test_response.json");
+
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        });
+
+        // Act
+        await service.GetChatMessageContentsAsync(chatHistory, new AzureOpenAIPromptExecutionSettings() { DeploymentName = providedDeploymentName });
+
+        var requestUri = this._messageHandlerStub.RequestUris[0]!;
+        Assert.Contains($"openai/deployments/{expectedDeploymentName}/chat/completions", requestUri.ToString());
+
+        var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.Contains($"\"model\":\"{expectedDeploymentName}\"", requestBody);
+    }
+
+    [Theory]
+    [InlineData(null, "deployment-name")] // Defaults to service definition
+    [InlineData("", "deployment-name")]  // Defaults to service definition
+    [InlineData(" ", "deployment-name")]  // Defaults to service definition
+    [InlineData("gpt-4o", "gpt-4o")] // Uses provided model id
+    [InlineData("gpt-35-turbo", "gpt-35-turbo")] // Uses provided model id
+    public async Task GetStreamingChatMessageContentsUseDeploymentNAmeFromSettingsAsync(string? providedDeploymentName, string expectedDeploymentName)
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("Fake prompt");
+        var service = new AzureOpenAIChatCompletionService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        using var stream = File.OpenRead("TestData/chat_completion_test_response.json");
+
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        });
+
+        // Act
+        var enumerator = service.GetStreamingChatMessageContentsAsync(chatHistory, new AzureOpenAIPromptExecutionSettings() { ModelId = providedDeploymentName }).GetAsyncEnumerator();
+        await enumerator.MoveNextAsync();
+
+        var requestUri = this._messageHandlerStub.RequestUris[0]!;
+        Assert.Contains($"openai/deployments/{expectedDeploymentName}/chat/completions", requestUri.ToString());
+
+        var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.Contains($"\"model\":\"{expectedDeploymentName}\"", requestBody);
+    }
+
     [Fact]
     public async Task ItCreatesCorrectFunctionToolCallsWhenUsingNoneFunctionChoiceBehaviorAsync()
     {
