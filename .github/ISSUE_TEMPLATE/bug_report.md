@@ -1,12 +1,10 @@
 ---
-about: Create a report to help us improve
-assignees: ""
-labels: ""
 name: Bug report
-runme:
-  id: 01J0BTG8CANBSFT2PB9SAS2DFC
-  version: v3
-title: ""
+about: Create a report to help us improve
+title: ''
+labels: ''
+assignees: ''
+
 ---
 
 **Describe the bug**
