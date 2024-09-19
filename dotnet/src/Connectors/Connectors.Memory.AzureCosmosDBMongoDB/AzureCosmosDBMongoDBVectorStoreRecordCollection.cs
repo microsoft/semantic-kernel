@@ -55,7 +55,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>Collection of record vector properties.</summary>
     private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
 
-    /// <summary>Collection of record vector properties.</summary>
+    /// <summary>Collection of record data properties.</summary>
     private readonly List<VectorStoreRecordDataProperty> _dataProperties;
 
     /// <summary>First vector property for the collections that this class is used with.</summary>
