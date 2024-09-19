@@ -18,6 +18,24 @@ class AgentChannel(ABC):
     An agent provides it own AgentChannel via CreateChannel.
     """
 
+    # My Experiments
+
+    This is a markdown file where I document my experiments.
+
+    ## Experiment 1: Example Experiment
+
+    ### Objective
+    Describe the objective of the experiment.
+
+    ### Method
+    Outline the steps taken to perform the experiment.
+
+    ### Results
+    Document the results of the experiment.
+
+    ### Conclusion
+    Summarize the findings and conclusions drawn from the experiment.
+
     @abstractmethod
     async def receive(
         self,
@@ -62,3 +80,5 @@ class AgentChannel(ABC):
     async def reset(self) -> None:
         """Reset any persistent state associated with the channel."""
         ...
+
+
