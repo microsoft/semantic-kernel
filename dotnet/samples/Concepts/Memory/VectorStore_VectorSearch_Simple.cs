@@ -15,7 +15,7 @@ namespace Memory;
 /// 3. Ingest some data into the vector store.
 /// 4. Search the vector store with various text and filtering options.
 /// </summary>
-public class VectorStore_VectorSeach_Simple(ITestOutputHelper output) : BaseTest(output)
+public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task ExampleAsync()

@@ -11,15 +11,15 @@ namespace Memory;
 /// This class contains the common code.
 ///
 /// For the entrypoint of the example for each database, see the following classes:
-/// <para><see cref="VectorStore_VectorSeach_MultiStore_AzureAISearch"/></para>
-/// <para><see cref="VectorStore_VectorSeach_MultiStore_Qdrant"/></para>
-/// <para><see cref="VectorStore_VectorSeach_MultiStore_Redis"/></para>
-/// <para><see cref="VectorStore_VectorSeach_MultiStore_Volatile"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_AzureAISearch"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_Qdrant"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_Redis"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_Volatile"/></para>
 /// </summary>
 /// <param name="vectorStore">The vector store to ingest data into.</param>
 /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings.</param>
 /// <param name="output">A helper to write output to the xunit test output stream.</param>
-public class VectorStore_VectorSeach_MultiStore_Common(IVectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService, ITestOutputHelper output)
+public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService, ITestOutputHelper output)
 {
     /// <summary>
     /// Ingest data into a collection with the given name, and search over that data.
