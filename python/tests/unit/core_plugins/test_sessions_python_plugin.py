@@ -406,14 +406,11 @@ async def test_upload_file_with_buffer(
         ),
         patch("builtins.open", mock_open(read_data="print('hello, world~')")),
     ):
-<<<<<<< main
         mock_request = httpx.Request(
             method="POST", url="https://example.com/files/upload?identifier=None"
         )
-=======
         mock_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
         mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
->>>>>>> origin/PR
 
         mock_response = httpx.Response(
             status_code=200,
@@ -737,6 +734,7 @@ async def test_auth_token_fail(aca_python_sessions_unit_test_env):
     with pytest.raises(
         FunctionExecutionException,
         match="Failed to retrieve the client auth token with messages: Could not get token.",
+        FunctionExecutionException, match="Failed to retrieve the client auth token with message: Could not get token."
     ):
         await plugin._ensure_auth_token()
 

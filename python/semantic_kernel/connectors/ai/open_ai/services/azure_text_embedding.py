@@ -82,6 +82,13 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
                 "The Azure OpenAI embedding deployment name is required."
             )
 
+        # If the api_key is none, and the ad_token is none, and the ad_token_provider is none,
+        # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
+        if api_key is None and ad_token_provider is None and azure_openai_settings.token_endpoint and ad_token is None:
+            ad_token = azure_openai_settings.get_azure_openai_auth_token(
+                token_endpoint=azure_openai_settings.token_endpoint
+            )
+
         super().__init__(
             deployment_name=azure_openai_settings.embedding_deployment_name,
             endpoint=azure_openai_settings.endpoint,

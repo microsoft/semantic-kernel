@@ -48,6 +48,30 @@ class ApiKeyAuthentication(AzureChatRequestBase):
     key: str | None = None
 
 
+class SystemAssignedManagedIdentityAuthentication(AzureChatRequestBase):
+    """System assigned managed identity authentication."""
+
+    type: Annotated[
+        Literal["SystemAssignedManagedIdentity", "system_assigned_managed_identity"], AfterValidator(to_snake)
+    ] = "system_assigned_managed_identity"
+
+
+class UserAssignedManagedIdentityAuthentication(AzureChatRequestBase):
+    """User assigned managed identity authentication."""
+
+    type: Annotated[
+        Literal["UserAssignedManagedIdentity", "user_assigned_managed_identity"], AfterValidator(to_snake)
+    ] = "user_assigned_managed_identity"
+    managed_identity_resource_id: str | None
+
+
+class AccessTokenAuthentication(AzureChatRequestBase):
+    """Access token authentication."""
+
+    type: Annotated[Literal["AccessToken", "access_token"], AfterValidator(to_snake)] = "access_token"
+    access_token: str | None
+
+
 class AzureEmbeddingDependency(AzureChatRequestBase):
     """Azure embedding dependency."""
 
@@ -109,7 +133,13 @@ class AzureAISearchDataSourceParameters(AzureDataSourceParameters):
         ],
         AfterValidator(to_snake),
     ] = "simple"
-    authentication: ApiKeyAuthentication | None = None
+    authentication: (
+        ApiKeyAuthentication
+        | SystemAssignedManagedIdentityAuthentication
+        | UserAssignedManagedIdentityAuthentication
+        | AccessTokenAuthentication
+        | None
+    ) = None
 
 
 class AzureAISearchDataSource(AzureChatRequestBase):

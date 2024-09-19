@@ -4,6 +4,7 @@ import pytest
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSource,
+    AzureAISearchDataSourceParameters,
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
@@ -221,7 +222,7 @@ def test_create_options_azure_data():
         parameters={
             "indexName": "test-index",
             "endpoint": "test-endpoint",
-            "authentication": {"type": "api_key", "api_key": "test-key"},
+            "authentication": {"type": "api_key", "key": "test-key"},
         }
     )
     extra = ExtraBody(data_sources=[az_source])
@@ -307,6 +308,27 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources
         input_dict, strict=True, from_attributes=True
     )
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCognitiveSearch"
+
+
+@pytest.mark.parametrize(
+    "authentication",
+    [
+        {"type": "APIKey", "key": "test_key"},
+        {"type": "api_key", "key": "test_key"},
+        pytest.param({"type": "api_key"}, marks=pytest.mark.xfail),
+        {"type": "SystemAssignedManagedIdentity"},
+        {"type": "system_assigned_managed_identity"},
+        {"type": "UserAssignedManagedIdentity", "managed_identity_resource_id": "test_id"},
+        {"type": "user_assigned_managed_identity", "managed_identity_resource_id": "test_id"},
+        pytest.param({"type": "user_assigned_managed_identity"}, marks=pytest.mark.xfail),
+        {"type": "AccessToken", "access_token": "test_token"},
+        {"type": "access_token", "access_token": "test_token"},
+        pytest.param({"type": "access_token"}, marks=pytest.mark.xfail),
+        pytest.param({"type": "invalid"}, marks=pytest.mark.xfail),
+    ],
+)
+def test_aisearch_data_source_parameters(authentication) -> None:
+    AzureAISearchDataSourceParameters(index_name="test_index", authentication=authentication)
 
 
 def test_azure_open_ai_chat_prompt_execution_settings_with_response_format_json():

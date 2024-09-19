@@ -97,8 +97,6 @@ Version="8.7.0" />    <PackageVersion Include="Microsoft.Extensions.TimeProvider
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.7.0" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
->>>>>>>+upstream/main
->>>>>>> Stashed changes
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
@@ -132,22 +130,14 @@ Version="8.7.0" />    <PackageVersion Include="Microsoft.Extensions.TimeProvider
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.0.1" />
-    <PackageVersion Include="MongoDB.Driver" Version="2.27.0" />
+    <PackageVersion Include="MongoDB.Driver" Version="2.28.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.16" />
-    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.16" />
-Qq="Microsoft.OpenApi" Version="1.6.16" />
-    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.16" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.16" />
-    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.16" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.15" />
-    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.15" />
-  <PackageVersion Include="Microsoft.OpenApi" Version="1.6.16" />
-    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.16" />
+    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.21" />
+    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.21" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.64.0" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.65.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="YamlDotNet" Version="16.0.0" />
@@ -156,69 +146,15 @@ Qq="Microsoft.OpenApi" Version="1.6.16" />
     <PackageVersion Include="YamlDotNet" Version="15.3.0" />
     <PackageVersion Include="YamlDotNet" Version="15.3.0" />
     <PackageVersion Include="YamlDotNet" Version="15.3.0" />
->>>>>>> upstream/main
->>>>>>> Stashed changes
-=======
-<<<<<<< Updated upstream
-    <PackageVersion Include="YamlDotNet" Version="16.0.0" />
-=======
-<<<<<<< main
-    <PackageVersion Include="YamlDotNet" Version="16.0.0" />
->>>>>>> Stashed changes
-=======
-    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
->>>>>>> upstream/main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-    <PackageVersion Include="YamlDotNet" Version="16.0.0" />
-=======
-    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
->>>>>>> upstream/main
->>>>>>> Stashed changes
     <PackageVersion Include="Fluid.Core" Version="2.11.1" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.42.0" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< main
-=======
-<<<<<<< Updated upstream
->>>>>>> origin/main
-<<<<<<< main
-    <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
-=======
     <PackageVersion Include="Testcontainers.Milvus" Version="3.10.0" />
->>>>>>> upstream/main
-=======
-    <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
-    <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
->>>>>>> Stashed changes
->>>>>>> origin/main
-=======
-    <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
->>>>>>> Stashed changes
-=======
-    <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
->>>>>>> Stashed changes
-=======
-    <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
->>>>>>> Stashed changes
-=======
-    <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
->>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.1" />
-    <PackageVersion Include="Qdrant.Client" Version="1.9.0" />
+    <PackageVersion Include="Qdrant.Client" Version="1.10.0" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
@@ -241,7 +177,7 @@ Qq="Microsoft.OpenApi" Version="1.6.16" />
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Moq.Analyzers" Version="0.1.1" />
+    <PackageVersion Include="Moq.Analyzers" Version="0.1.2" />
     <PackageReference Include="Moq.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -263,7 +199,6 @@ Qq="Microsoft.OpenApi" Version="1.6.16" />
     </PackageReference>
     <!-- OnnxRuntimeGenAI -->
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
-<<<<<<< main
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.4.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
@@ -271,8 +206,6 @@ Qq="Microsoft.OpenApi" Version="1.6.16" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
-=======
->>>>>>> f149f95
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.3.0" />
 	  <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.4.0"/>
   </ItemGroup>

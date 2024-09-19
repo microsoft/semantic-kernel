@@ -1,11 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import datetime
-
-from azure.core.credentials import AccessToken
-from azure.core.exceptions import ClientAuthenticationError
-from azure.identity import DefaultAzureCredential
 
 from semantic_kernel.connectors.ai.function_choice_behavior import (
     FunctionChoiceBehavior,
@@ -21,7 +16,6 @@ from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin im
     SessionsPythonTool,
 )
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
-from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 
@@ -62,9 +56,7 @@ chat_service = AzureChatCompletion(
 )
 kernel.add_service(chat_service)
 
-sessions_tool = SessionsPythonTool(
-    auth_callback=auth_callback,
-)
+sessions_tool = SessionsPythonTool()
 
 kernel.add_plugin(sessions_tool, "SessionsTool")
 kernel.add_plugin(TimePlugin(), "Time")

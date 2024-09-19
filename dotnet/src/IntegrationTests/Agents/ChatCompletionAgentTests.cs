@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Agents;
@@ -32,7 +33,7 @@ public sealed class ChatCompletionAgentTests()
     /// Integration test for <see cref="ChatCompletionAgent"/> using function calling
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Theory]
+    [RetryTheory(typeof(HttpOperationException))]
     [InlineData("What is the special soup?", "Clam Chowder", false)]
     [InlineData("What is the special soup?", "Clam Chowder", true)]
     public async Task AzureChatCompletionAgentAsync(string input, string expectedAnswerContains, bool useAutoFunctionTermination)
@@ -93,10 +94,74 @@ public sealed class ChatCompletionAgentTests()
     }
 
     /// <summary>
+    /// Integration test for <see cref="ChatCompletionAgent"/> using new function calling model
+    /// and targeting Azure OpenAI services.
+    /// </summary>
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData("What is the special soup?", "Clam Chowder", false)]
+    [InlineData("What is the special soup?", "Clam Chowder", true)]
+    public async Task AzureChatCompletionAgentUsingNewFunctionCallingModelAsync(string input, string expectedAnswerContains, bool useAutoFunctionTermination)
+    {
+        // Arrange
+        AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+
+        this._kernelBuilder.AddAzureOpenAIChatCompletion(
+            deploymentName: configuration.ChatDeploymentName!,
+            endpoint: configuration.Endpoint,
+            credentials: new AzureCliCredential());
+
+        if (useAutoFunctionTermination)
+        {
+            this._kernelBuilder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoInvocationFilter());
+        }
+
+        this._kernelBuilder.Plugins.Add(plugin);
+
+        Kernel kernel = this._kernelBuilder.Build();
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Kernel = kernel,
+                Instructions = "Answer questions about the menu.",
+                Arguments = new(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+            };
+
+        AgentGroupChat chat = new();
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+
+        // Act
+        ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+        ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
+
+        // Assert
+        Assert.Single(messages);
+
+        ChatMessageContent response = messages.Single();
+
+        if (useAutoFunctionTermination)
+        {
+            Assert.Equal(3, history.Length);
+            Assert.Single(response.Items.OfType<FunctionResultContent>());
+            Assert.Single(response.Items.OfType<TextContent>());
+        }
+        else
+        {
+            Assert.Equal(4, history.Length);
+            Assert.Single(response.Items);
+            Assert.Single(response.Items.OfType<TextContent>());
+        }
+
+        Assert.Contains(expectedAnswerContains, messages.Single().Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
     /// Integration test for <see cref="ChatCompletionAgent"/> using function calling
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Fact]
+    [RetryFact(typeof(HttpOperationException))]
     public async Task AzureChatCompletionStreamingAsync()
     {
         // Arrange
@@ -119,6 +184,52 @@ public sealed class ChatCompletionAgentTests()
                 Kernel = kernel,
                 Instructions = "Answer questions about the menu.",
                 Arguments = new(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
+            };
+
+        AgentGroupChat chat = new();
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "What is the special soup?"));
+
+        // Act
+        StringBuilder builder = new();
+        await foreach (var message in chat.InvokeStreamingAsync(agent))
+        {
+            builder.Append(message.Content);
+        }
+
+        ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
+
+        // Assert
+        Assert.Contains("Clam Chowder", builder.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Clam Chowder", history.First().Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="ChatCompletionAgent"/> using new function calling model
+    /// and targeting Azure OpenAI services.
+    /// </summary>
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task AzureChatCompletionStreamingUsingNewFunctionCallingModelAsync()
+    {
+        // Arrange
+        AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+
+        this._kernelBuilder.AddAzureOpenAIChatCompletion(
+            configuration.ChatDeploymentName!,
+            configuration.Endpoint,
+            new AzureCliCredential());
+
+        this._kernelBuilder.Plugins.Add(plugin);
+
+        Kernel kernel = this._kernelBuilder.Build();
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Kernel = kernel,
+                Instructions = "Answer questions about the menu.",
+                Arguments = new(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         AgentGroupChat chat = new();

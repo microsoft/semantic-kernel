@@ -69,28 +69,30 @@ class OpenApiParser:
         """Parse the parameters from the OpenAPI document."""
         result: list[RestApiOperationParameter] = []
         for param in parameters:
-            name = param["name"]
-            type = param["schema"]["type"]
+            name: str = param["name"]
             if not param.get("in"):
                 raise PluginInitializationError(
                     f"Parameter {name} is missing 'in' field"
                 )
+                raise PluginInitializationError(f"Parameter {name} is missing 'in' field")
+            if param.get("content", None) is not None:
+                # The schema and content fields are mutually exclusive.
+                raise PluginInitializationError(f"Parameter {name} cannot have a 'content' field. Expected: schema.")
             location = RestApiOperationParameterLocation(param["in"])
-            description = param.get("description", None)
-            is_required = param.get("required", False)
+            description: str = param.get("description", None)
+            is_required: bool = param.get("required", False)
             default_value = param.get("default", None)
-            schema = param.get("schema", None)
-            schema_type = schema.get("type", None) if schema else "string"
+            schema: dict[str, Any] | None = param.get("schema", None)
 
             result.append(
                 RestApiOperationParameter(
                     name=name,
-                    type=type,
+                    type=schema.get("type", "string") if schema else "string",
                     location=location,
                     description=description,
                     is_required=is_required,
                     default_value=default_value,
-                    schema=schema_type,
+                    schema=schema if schema else {"type": "string"},
                 )
             )
         return result

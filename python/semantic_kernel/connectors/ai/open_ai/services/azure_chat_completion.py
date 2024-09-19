@@ -66,6 +66,7 @@ class AzureChatCompletion(
         api_version: str | None = None,
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        token_endpoint: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
@@ -87,6 +88,7 @@ class AzureChatCompletion(
                 in the env vars or .env file.
             ad_token (str | None): The Azure Active Directory token. (Optional)
             ad_token_provider (AsyncAzureADTokenProvider): The Azure Active Directory token provider. (Optional)
+            token_endpoint (str | None): The token endpoint to request an Azure token. (Optional)
             default_headers (Mapping[str, str]): The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client (AsyncAzureOpenAI | None): An existing client to use. (Optional)
@@ -102,6 +104,7 @@ class AzureChatCompletion(
                 api_version=api_version,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
+                token_endpoint=token_endpoint,
             )
         except ValidationError as exc:
             raise ServiceInitializationError(
@@ -110,6 +113,13 @@ class AzureChatCompletion(
 
         if not azure_openai_settings.chat_deployment_name:
             raise ServiceInitializationError("chat_deployment_name is required.")
+
+        # If the api_key is none, and the ad_token is none, and the ad_token_provider is none,
+        # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
+        if api_key is None and ad_token_provider is None and azure_openai_settings.token_endpoint and ad_token is None:
+            ad_token = azure_openai_settings.get_azure_openai_auth_token(
+                token_endpoint=azure_openai_settings.token_endpoint
+            )
 
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise ServiceInitializationError(

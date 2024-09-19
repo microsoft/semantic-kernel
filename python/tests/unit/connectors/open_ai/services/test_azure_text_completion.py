@@ -64,18 +64,15 @@ def test_init_with_custom_header(azure_openai_unit_test_env) -> None:
         assert azure_text_completion.client.default_headers[key] == value
 
 
-<<<<<<< main
 @pytest.mark.parametrize(
     "exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True
 )
 def test_init_with_empty_deployment_name(
     monkeypatch, azure_openai_unit_test_env
 ) -> None:
-=======
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True)
 def test_init_with_empty_deployment_name(monkeypatch, azure_openai_unit_test_env) -> None:
 def test_azure_text_completion_init_with_empty_deployment_name(monkeypatch, azure_openai_unit_test_env) -> None:
->>>>>>> origin/PR
     monkeypatch.delenv("AZURE_OPENAI_TEXT_DEPLOYMENT_NAME", raising=False)
     with pytest.raises(ServiceInitializationError):
         AzureTextCompletion(
@@ -94,6 +91,7 @@ def test_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
 @pytest.mark.parametrize(
     "exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True
 )
+@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True)
 def test_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureTextCompletion(
