@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using OllamaSharp.Models.Chat;
 using Xunit;
-using Xunit.Sdk;
 
 namespace SemanticKernel.Connectors.Ollama.UnitTests.Services;
 
