@@ -298,9 +298,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// Invoke the assistant on the specified thread.
     /// </summary>
     /// <param name="threadId">The thread identifier</param>
-    /// <param name="messages">The receiver for the completed messages generated</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
+    /// <param name="messages">Optional receiver of the completed messages generated</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     /// <remarks>
@@ -308,20 +308,20 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// </remarks>
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string threadId,
-        ChatHistory messages,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
+        ChatHistory? messages = null,
         CancellationToken cancellationToken = default)
-            => this.InvokeStreamingAsync(threadId, messages, options: null, arguments, kernel, cancellationToken);
+            => this.InvokeStreamingAsync(threadId, options: null, arguments, kernel, messages, cancellationToken);
 
     /// <summary>
     /// Invoke the assistant on the specified thread.
     /// </summary>
     /// <param name="threadId">The thread identifier</param>
-    /// <param name="messages">The receiver for the completed messages generated</param>
     /// <param name="options">Optional invocation options</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
+    /// <param name="messages">Optional receiver of the completed messages generated</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     /// <remarks>
@@ -329,10 +329,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// </remarks>
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string threadId,
-        ChatHistory messages,
         OpenAIAssistantInvocationOptions? options,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
+        ChatHistory? messages = null,
         CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
