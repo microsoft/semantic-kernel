@@ -83,34 +83,13 @@ PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />                                                                                                                                                      
-   <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />                                                                                                                                                      
-Version="8.7.0" />    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />                                                                                                                                                      
-
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />                                                                                                                                                      
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />                                                                                                                                                      
-
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.9.1" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.7.0" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.7.0" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.9.1" /> 
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
     <PackageVersion Include="System.Threading.Channels" Version="8.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.0" />
     <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
-   <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
-    <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
-    <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
-    <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
-    <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
-    <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
-    <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
-    <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
     <PackageVersion Include="xunit" Version="2.9.0" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
@@ -118,16 +97,8 @@ Version="8.7.0" />    <PackageVersion Include="Microsoft.Extensions.TimeProvider
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
     <!-- Plugins -->
-    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
-    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" /> 
-    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
-   <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.0.1" />
     <PackageVersion Include="MongoDB.Driver" Version="2.28.0" />
@@ -141,11 +112,6 @@ Version="8.7.0" />    <PackageVersion Include="Microsoft.Extensions.TimeProvider
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="YamlDotNet" Version="16.0.0" />
-    <PackageVersion Include="YamlDotNet" Version="16.0.0" />
-    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
-    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
-    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
-    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
     <PackageVersion Include="Fluid.Core" Version="2.11.1" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.42.0" />
