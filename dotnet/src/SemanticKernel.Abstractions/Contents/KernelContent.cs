@@ -16,10 +16,10 @@ namespace Microsoft.SemanticKernel;
 [JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: nameof(FunctionResultContent))]
 [JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
 [JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
+[JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]
 #pragma warning disable SKEXP0110
 [JsonDerivedType(typeof(AnnotationContent), typeDiscriminator: nameof(AnnotationContent))]
 [JsonDerivedType(typeof(FileReferenceContent), typeDiscriminator: nameof(FileReferenceContent))]
-[JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]
 #pragma warning disable SKEXP0110
 public abstract class KernelContent
 {
