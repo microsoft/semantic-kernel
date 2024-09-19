@@ -22,7 +22,7 @@ class OnnxGenAICompletionBase(KernelBaseModel):
     enable_multi_modality: bool = False
 
     def __init__(self, ai_model_path: str, **kwargs) -> None:
-        """Creates a new instance of the OnnxGenAICompletionBase class,loads model & tokenizer.
+        """Creates a new instance of the OnnxGenAICompletionBase class, loads model & tokenizer.
 
         Args:
             ai_model_path (str): Path to Onnx Model.
@@ -30,23 +30,15 @@ class OnnxGenAICompletionBase(KernelBaseModel):
 
         Raises:
             ServiceInitializationError: When model cannot be loaded
-
         """
         try:
             json_gen_ai_config = os.path.join(ai_model_path + "/genai_config.json")
             with open(json_gen_ai_config) as file:
                 config: dict = json.load(file)
-                if "vision" in config.get("model", {}):
-                    enable_multi_modality = True
-                    model = OnnxRuntimeGenAi.Model(ai_model_path)
-                    tokenizer = model.create_multimodal_processor()
-                    tokenizer_stream = tokenizer.create_stream()
-                else:
-                    enable_multi_modality = False
-                    model = OnnxRuntimeGenAi.Model(ai_model_path)
-                    tokenizer = OnnxRuntimeGenAi.Tokenizer(model)
-                    tokenizer_stream = tokenizer.create_stream()
-
+                enable_multi_modality = "vision" in config.get("model", {})
+                model = OnnxRuntimeGenAi.Model(ai_model_path)
+                tokenizer = model.create_multimodal_processor() if enable_multi_modality else OnnxRuntimeGenAi.Tokenizer(model)
+                tokenizer_stream = tokenizer.create_stream()
         except Exception as e:
             raise ServiceInitializationError(f"Failed to initialize OnnxTextCompletion service: {e}")
 

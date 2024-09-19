@@ -168,9 +168,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
     def _get_images_from_history(self, chat_history: "ChatHistory") -> ImageContent | None:
         images = []
         for message in chat_history.messages:
-            image_content = message.items
-            for image in image_content:
-                if isinstance(image, ImageContent):
+            for image in message.items if isinstance(image, ImageContent):
                     if not self.enable_multi_modality:
                         raise ServiceInvalidExecutionSettingsError("The model does not support multi-modality")
                     if image.uri:
