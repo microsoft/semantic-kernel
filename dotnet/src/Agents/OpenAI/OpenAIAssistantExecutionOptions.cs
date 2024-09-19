@@ -12,6 +12,12 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 public sealed class OpenAIAssistantExecutionOptions
 {
     /// <summary>
+    /// Appends additional instructions.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AdditionalInstructions { get; init; }
+
+    /// <summary>
     /// The maximum number of completion tokens that may be used over the course of the run.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

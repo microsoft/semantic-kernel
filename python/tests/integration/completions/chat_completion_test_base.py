@@ -7,7 +7,7 @@ from typing import Annotated, Any
 
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
-from azure.core.credentials import AzureKeyCredential
+from azure.identity import DefaultAzureCredential
 from openai import AsyncAzureOpenAI
 
 from semantic_kernel.connectors.ai.anthropic import AnthropicChatCompletion
@@ -32,6 +32,7 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -115,13 +116,13 @@ class ChatCompletionTestBase(CompletionTestBase):
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = azure_openai_settings.endpoint
         deployment_name = azure_openai_settings.chat_deployment_name
-        api_key = azure_openai_settings.api_key.get_secret_value()
+        ad_token = azure_openai_settings.get_azure_openai_auth_token()
         api_version = azure_openai_settings.api_version
         azure_custom_client = AzureChatCompletion(
             async_client=AsyncAzureOpenAI(
                 azure_endpoint=endpoint,
                 azure_deployment=deployment_name,
-                api_key=api_key,
+                azure_ad_token=ad_token,
                 api_version=api_version,
                 default_headers={"Test-User-X-ID": "test"},
             ),
@@ -130,8 +131,9 @@ class ChatCompletionTestBase(CompletionTestBase):
             ai_model_id=deployment_name,
             client=ChatCompletionsClient(
                 endpoint=f'{str(endpoint).strip("/")}/openai/deployments/{deployment_name}',
-                credential=AzureKeyCredential(""),
-                headers={"api-key": api_key},
+                credential=DefaultAzureCredential(),
+                credential_scopes=["https://cognitiveservices.azure.com/.default"],
+                api_version=DEFAULT_AZURE_API_VERSION,
             ),
         )
 

@@ -18,26 +18,21 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 
     public AzureCosmosDBMongoDBVectorStoreRecordMapperTests()
     {
+        var keyProperty = new VectorStoreRecordKeyProperty("HotelId", typeof(string));
+
         var definition = new VectorStoreRecordDefinition
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
+                keyProperty,
                 new VectorStoreRecordDataProperty("HotelName", typeof(string)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { StoragePropertyName = "description_embedding " }
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)),
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?))
             ]
         };
 
-        var storagePropertyNames = new Dictionary<string, string>
-        {
-            ["HotelId"] = "HotelId",
-            ["HotelName"] = "HotelName",
-            ["Tags"] = "Tags",
-            ["DescriptionEmbedding"] = "description_embedding",
-        };
-
-        this._sut = new(definition, storagePropertyNames);
+        this._sut = new(definition, keyProperty.DataModelPropertyName);
     }
 
     [Fact]
@@ -48,6 +43,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
         {
             HotelName = "Test Name",
             Tags = ["tag1", "tag2"],
+            ParkingIncluded = true,
             DescriptionEmbedding = new ReadOnlyMemory<float>([1f, 2f, 3f])
         };
 
@@ -60,7 +56,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
         Assert.Equal("key", document["_id"]);
         Assert.Equal("Test Name", document["HotelName"]);
         Assert.Equal(["tag1", "tag2"], document["Tags"].AsBsonArray);
-        Assert.Equal([1f, 2f, 3f], document["description_embedding"].AsBsonArray);
+        Assert.True(document["parking_is_included"].AsBoolean);
+        Assert.Equal([1f, 2f, 3f], document["DescriptionEmbedding"].AsBsonArray);
     }
 
     [Fact]
@@ -72,7 +69,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
             ["_id"] = "key",
             ["HotelName"] = "Test Name",
             ["Tags"] = BsonArray.Create(new List<string> { "tag1", "tag2" }),
-            ["description_embedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
+            ["parking_is_included"] = BsonValue.Create(true),
+            ["DescriptionEmbedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
         };
 
         // Act
@@ -84,6 +82,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
         Assert.Equal("key", hotel.HotelId);
         Assert.Equal("Test Name", hotel.HotelName);
         Assert.Equal(["tag1", "tag2"], hotel.Tags);
+        Assert.True(hotel.ParkingIncluded);
         Assert.True(new ReadOnlyMemory<float>([1f, 2f, 3f]).Span.SequenceEqual(hotel.DescriptionEmbedding!.Value.Span));
     }
 }

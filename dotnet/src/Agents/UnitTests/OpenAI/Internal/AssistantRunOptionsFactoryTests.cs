@@ -23,6 +23,11 @@ public class AssistantRunOptionsFactoryTests
             new("gpt-anything")
             {
                 Temperature = 0.5F,
+                ExecutionOptions =
+                    new()
+                    {
+                        AdditionalInstructions = "test",
+                    },
             };
 
         // Act
@@ -32,6 +37,7 @@ public class AssistantRunOptionsFactoryTests
         Assert.NotNull(options);
         Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
+        Assert.Equal("test", options.AdditionalInstructions);
         Assert.Empty(options.Metadata);
     }
 
@@ -77,6 +83,7 @@ public class AssistantRunOptionsFactoryTests
                 ExecutionOptions =
                     new()
                     {
+                        AdditionalInstructions = "test1",
                         TruncationMessageCount = 5,
                     },
             };
@@ -84,6 +91,7 @@ public class AssistantRunOptionsFactoryTests
         OpenAIAssistantInvocationOptions invocationOptions =
             new()
             {
+                AdditionalInstructions = "test2",
                 Temperature = 0.9F,
                 TruncationMessageCount = 8,
                 EnableJsonResponse = true,
@@ -96,6 +104,7 @@ public class AssistantRunOptionsFactoryTests
         Assert.NotNull(options);
         Assert.Equal(0.9F, options.Temperature);
         Assert.Equal(8, options.TruncationStrategy.LastMessages);
+        Assert.Equal("test2", options.AdditionalInstructions);
         Assert.Equal(AssistantResponseFormat.JsonObject, options.ResponseFormat);
         Assert.Null(options.NucleusSamplingFactor);
     }

@@ -2,7 +2,7 @@
 
 from semantic_kernel.kernel import Kernel
 
-__version__ = "1.8.3"
+__version__ = "1.9.0"
 __all__ = ["Kernel", "__version__"]
 import semantic_kernel.memory as memory
 from semantic_kernel.configuration.kernel_config import KernelConfig

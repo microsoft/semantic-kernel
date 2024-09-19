@@ -47,7 +47,7 @@ public class AzureAISearchGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
     {
         // Arrange
-        var mapper = new AzureAISearchGenericDataModelMapper(s_vectorStoreRecordDefinition);
+        var sut = new AzureAISearchGenericDataModelMapper(s_vectorStoreRecordDefinition);
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data =
@@ -75,7 +75,7 @@ public class AzureAISearchGenericDataModelMapperTests
         };
 
         // Act
-        var storageModel = mapper.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel);
 
         // Assert
         Assert.Equal("key", (string?)storageModel["Key"]);
@@ -125,10 +125,10 @@ public class AzureAISearchGenericDataModelMapperTests
             },
         };
 
-        var mapper = new AzureAISearchGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new AzureAISearchGenericDataModelMapper(vectorStoreRecordDefinition);
 
         // Act
-        var storageModel = mapper.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel);
 
         // Assert
         Assert.Null(storageModel["StringDataProp"]);
@@ -140,7 +140,7 @@ public class AzureAISearchGenericDataModelMapperTests
     public void MapFromStorageToDataModelMapsAllSupportedTypes()
     {
         // Arrange
-        var mapper = new AzureAISearchGenericDataModelMapper(s_vectorStoreRecordDefinition);
+        var sut = new AzureAISearchGenericDataModelMapper(s_vectorStoreRecordDefinition);
         var storageModel = new JsonObject();
         storageModel["Key"] = "key";
         storageModel["StringDataProp"] = "string";
@@ -161,7 +161,7 @@ public class AzureAISearchGenericDataModelMapperTests
         storageModel["NullableFloatVector"] = new JsonArray { 4.0f, 5.0f, 6.0f };
 
         // Act
-        var dataModel = mapper.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
 
         // Assert
         Assert.Equal("key", dataModel.Key);
@@ -204,10 +204,10 @@ public class AzureAISearchGenericDataModelMapperTests
         storageModel["NullableIntDataProp"] = null;
         storageModel["NullableFloatVector"] = null;
 
-        var mapper = new AzureAISearchGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new AzureAISearchGenericDataModelMapper(vectorStoreRecordDefinition);
 
         // Act
-        var dataModel = mapper.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
 
         // Assert
         Assert.Equal("key", dataModel.Key);
@@ -220,13 +220,67 @@ public class AzureAISearchGenericDataModelMapperTests
     public void MapFromStorageToDataModelThrowsForMissingKey()
     {
         // Arrange
-        var mapper = new AzureAISearchGenericDataModelMapper(s_vectorStoreRecordDefinition);
+        var sut = new AzureAISearchGenericDataModelMapper(s_vectorStoreRecordDefinition);
         var storageModel = new JsonObject();
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => mapper.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true }));
+        var exception = Assert.Throws<VectorStoreRecordMappingException>(() => sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true }));
 
         // Assert
         Assert.Equal("The key property 'Key' is missing from the record retrieved from storage.", exception.Message);
+    }
+
+    [Fact]
+    public void MapFromDataToStorageModelSkipsMissingProperties()
+    {
+        // Arrange
+        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
+        {
+            Properties = new List<VectorStoreRecordProperty>
+            {
+                new VectorStoreRecordKeyProperty("Key", typeof(string)),
+                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+            },
+        };
+
+        var dataModel = new VectorStoreGenericDataModel<string>("key");
+        var sut = new AzureAISearchGenericDataModelMapper(vectorStoreRecordDefinition);
+
+        // Act
+        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+
+        // Assert
+        Assert.Equal("key", (string?)storageModel["Key"]);
+        Assert.False(storageModel.ContainsKey("StringDataProp"));
+        Assert.False(storageModel.ContainsKey("FloatVector"));
+    }
+
+    [Fact]
+    public void MapFromStorageToDataModelSkipsMissingProperties()
+    {
+        // Arrange
+        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
+        {
+            Properties = new List<VectorStoreRecordProperty>
+            {
+                new VectorStoreRecordKeyProperty("Key", typeof(string)),
+                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+            },
+        };
+
+        var storageModel = new JsonObject();
+        storageModel["Key"] = "key";
+
+        var sut = new AzureAISearchGenericDataModelMapper(vectorStoreRecordDefinition);
+
+        // Act
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+
+        // Assert
+        Assert.Equal("key", dataModel.Key);
+        Assert.False(dataModel.Data.ContainsKey("StringDataProp"));
+        Assert.False(dataModel.Vectors.ContainsKey("FloatVector"));
     }
 }

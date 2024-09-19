@@ -8,6 +8,9 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+#pragma warning disable IDE0005 // Using directive is unnecessary
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
+#pragma warning restore IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
@@ -55,6 +58,7 @@ internal partial class AzureClientCore : ClientCore
         this.DeploymentName = deploymentName;
         this.Endpoint = new Uri(endpoint);
         this.Client = new AzureOpenAIClient(this.Endpoint, apiKey, options);
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }
@@ -84,6 +88,7 @@ internal partial class AzureClientCore : ClientCore
         this.DeploymentName = deploymentName;
         this.Endpoint = new Uri(endpoint);
         this.Client = new AzureOpenAIClient(this.Endpoint, credential, options);
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }
@@ -107,6 +112,7 @@ internal partial class AzureClientCore : ClientCore
         this.Logger = logger ?? NullLogger.Instance;
         this.DeploymentName = deploymentName;
         this.Client = openAIClient;
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }

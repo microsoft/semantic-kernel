@@ -102,6 +102,13 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
             // Custom Mapper.
             this._mapper = this._options.PointStructCustomMapper;
         }
+        else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<ulong>) || typeof(TRecord) == typeof(VectorStoreGenericDataModel<Guid>))
+        {
+            // Generic data model mapper.
+            this._mapper = (IVectorStoreRecordMapper<TRecord, PointStruct>)new QdrantGenericDataModelMapper(
+                this._vectorStoreRecordDefinition,
+                this._options.HasNamedVectors);
+        }
         else
         {
             // Default Mapper.

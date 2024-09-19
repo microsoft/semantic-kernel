@@ -87,11 +87,11 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
                 // collection constructor to ensure that the model has no other vector types.
                 if (value is ReadOnlyMemory<float> rom)
                 {
-                    hashEntries.Add(new HashEntry(storageName, ConvertVectorToBytes(rom)));
+                    hashEntries.Add(new HashEntry(storageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(rom)));
                 }
                 else if (value is ReadOnlyMemory<double> rod)
                 {
-                    hashEntries.Add(new HashEntry(storageName, ConvertVectorToBytes(rod)));
+                    hashEntries.Add(new HashEntry(storageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(rod)));
                 }
             }
         }
@@ -155,15 +155,5 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         jsonObject.Add(this._keyFieldJsonPropertyName, storageModel.Key);
 
         return JsonSerializer.Deserialize<TConsumerDataModel>(jsonObject)!;
-    }
-
-    private static byte[] ConvertVectorToBytes(ReadOnlyMemory<float> vector)
-    {
-        return MemoryMarshal.AsBytes(vector.Span).ToArray();
-    }
-
-    private static byte[] ConvertVectorToBytes(ReadOnlyMemory<double> vector)
-    {
-        return MemoryMarshal.AsBytes(vector.Span).ToArray();
     }
 }

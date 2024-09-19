@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Data;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
 
@@ -25,7 +26,8 @@ public class AzureCosmosDBMongoDBHotelModel(string hotelId)
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
-    [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
+    [BsonElement("parking_is_included")]
+    [VectorStoreRecordData]
     public bool ParkingIncluded { get; set; }
 
     /// <summary>An array metadata field.</summary>

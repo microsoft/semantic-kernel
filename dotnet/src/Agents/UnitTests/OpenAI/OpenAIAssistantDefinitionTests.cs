@@ -62,6 +62,7 @@ public class OpenAIAssistantDefinitionTests
                 ExecutionOptions =
                     new()
                     {
+                        AdditionalInstructions = "test instructions",
                         MaxCompletionTokens = 1000,
                         MaxPromptTokens = 1000,
                         ParallelToolCallsEnabled = false,
@@ -83,6 +84,7 @@ public class OpenAIAssistantDefinitionTests
         Assert.Equal(2, definition.Temperature);
         Assert.Equal(0, definition.TopP);
         Assert.NotNull(definition.ExecutionOptions);
+        Assert.Equal("test instructions", definition.ExecutionOptions.AdditionalInstructions);
         Assert.Equal(1000, definition.ExecutionOptions.MaxCompletionTokens);
         Assert.Equal(1000, definition.ExecutionOptions.MaxPromptTokens);
         Assert.Equal(12, definition.ExecutionOptions.TruncationMessageCount);

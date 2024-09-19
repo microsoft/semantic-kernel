@@ -50,7 +50,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
                 Name = "Host",
                 Instructions = MenuInstructions,
                 Kernel = this.CreateKernelWithChatCompletion(),
-                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).

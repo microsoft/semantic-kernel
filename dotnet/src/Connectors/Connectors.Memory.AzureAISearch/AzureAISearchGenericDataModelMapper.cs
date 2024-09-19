@@ -46,20 +46,19 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
             }
             else if (property is VectorStoreRecordDataProperty dataProperty)
             {
-                if (dataModel.Data is not null)
+                if (dataModel.Data is not null && dataModel.Data.TryGetValue(dataProperty.DataModelPropertyName, out var dataValue))
                 {
                     var storagePropertyName = dataProperty.StoragePropertyName ?? dataProperty.DataModelPropertyName;
-                    var serializedJsonNode = JsonSerializer.SerializeToNode(dataModel.Data[dataProperty.DataModelPropertyName]);
+                    var serializedJsonNode = JsonSerializer.SerializeToNode(dataValue);
                     storageJsonObject.Add(storagePropertyName, serializedJsonNode);
                 }
             }
             else if (property is VectorStoreRecordVectorProperty vectorProperty)
             {
-                if (dataModel.Vectors is not null)
+                if (dataModel.Vectors is not null && dataModel.Vectors.TryGetValue(vectorProperty.DataModelPropertyName, out var vectorValue))
                 {
                     var storagePropertyName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
-
-                    var serializedJsonNode = JsonSerializer.SerializeToNode(dataModel.Vectors[vectorProperty.DataModelPropertyName]);
+                    var serializedJsonNode = JsonSerializer.SerializeToNode(vectorValue);
                     storageJsonObject.Add(storagePropertyName, serializedJsonNode);
                 }
             }
@@ -87,7 +86,7 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
                 var value = storageModel[storagePropertyName];
                 if (value is null)
                 {
-                    throw new InvalidOperationException($"The key property '{storagePropertyName}' is missing from the record retrieved from storage.");
+                    throw new VectorStoreRecordMappingException($"The key property '{storagePropertyName}' is missing from the record retrieved from storage.");
                 }
 
                 key = (string)value!;
@@ -95,7 +94,11 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
             else if (property is VectorStoreRecordDataProperty dataProperty)
             {
                 var storagePropertyName = dataProperty.StoragePropertyName ?? dataProperty.DataModelPropertyName;
-                var value = storageModel[storagePropertyName];
+                if (!storageModel.TryGetPropertyValue(storagePropertyName, out var value))
+                {
+                    continue;
+                }
+
                 if (value is not null)
                 {
                     dataProperties.Add(dataProperty.DataModelPropertyName, GetDataPropertyValue(property.PropertyType, value));
@@ -108,7 +111,11 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
             else if (property is VectorStoreRecordVectorProperty vectorProperty && options.IncludeVectors)
             {
                 var storagePropertyName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
-                var value = storageModel[storagePropertyName];
+                if (!storageModel.TryGetPropertyValue(storagePropertyName, out var value))
+                {
+                    continue;
+                }
+
                 if (value is not null)
                 {
                     ReadOnlyMemory<float> vector = value.AsArray().Select(x => (float)x!).ToArray();
@@ -123,7 +130,7 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
 
         if (key is null)
         {
-            throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
+            throw new VectorStoreRecordMappingException("No key property was found in the record retrieved from storage.");
         }
 
         return new VectorStoreGenericDataModel<string>(key) { Data = dataProperties, Vectors = vectorProperties };

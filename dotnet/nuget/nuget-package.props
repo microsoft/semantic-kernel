@@ -2,10 +2,11 @@
   <PropertyGroup>
     <!-- Central version prefix - applies to all nuget packages. -->
     <VersionPrefix>1.15.0</VersionPrefix>
-=======
     <VersionPrefix>1.15.0</VersionPrefix>
->>>>>>> Stashed changes
 
+=======
+    <VersionPrefix>1.20.0</VersionPrefix>
+>>>>>>> ms/main
     <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
 

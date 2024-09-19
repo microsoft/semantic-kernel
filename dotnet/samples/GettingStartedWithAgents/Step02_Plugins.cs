@@ -26,7 +26,7 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
                 Instructions = HostInstructions,
                 Name = HostName,
                 Kernel = this.CreateKernelWithChatCompletion(),
-                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).

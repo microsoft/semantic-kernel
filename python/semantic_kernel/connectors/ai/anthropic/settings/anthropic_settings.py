@@ -16,9 +16,9 @@ class AnthropicSettings(KernelBaseSettings):
     however, validation will fail alerting that the settings are missing.
 
     Optional settings for prefix 'ANTHROPIC_' are:
-    - api_key: ANTHROPIC API key, see https://console.mistral.ai/api-keys
+    - api_key: ANTHROPIC API key, see https://console.anthropic.com/settings/keys
         (Env var ANTHROPIC_API_KEY)
-    - chat_model_id: The Anthropic chat model ID to use see https://docs.mistral.ai/getting-started/models/.
+    - chat_model_id: The Anthropic chat model ID to use see https://docs.anthropic.com/en/docs/about-claude/models.
         (Env var ANTHROPIC_CHAT_MODEL_ID)
     - env_file_path: if provided, the .env settings are read from this file path location
     """

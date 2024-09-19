@@ -422,7 +422,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             }
         };
 
-        await this.TestUpsertWithModeAsync<TestModel>(
+        await this.TestUpsertWithModelAsync<TestModel>(
             dataModel: new TestModel { Id = "key", HotelName = "Test Name" },
             expectedPropertyName: "HotelName",
             definition: definition);
@@ -431,9 +431,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
     [Fact]
     public async Task UpsertWithVectorStoreModelWorksCorrectlyAsync()
     {
-        await this.TestUpsertWithModeAsync<VectorStoreTestModel>(
+        await this.TestUpsertWithModelAsync<VectorStoreTestModel>(
             dataModel: new VectorStoreTestModel { Id = "key", HotelName = "Test Name" },
-            expectedPropertyName: "hotel_name");
+            expectedPropertyName: "HotelName");
     }
 
     [Fact]
@@ -448,7 +448,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             }
         };
 
-        await this.TestUpsertWithModeAsync<BsonTestModel>(
+        await this.TestUpsertWithModelAsync<BsonTestModel>(
             dataModel: new BsonTestModel { Id = "key", HotelName = "Test Name" },
             expectedPropertyName: "hotel_name",
             definition: definition);
@@ -457,7 +457,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
     [Fact]
     public async Task UpsertWithBsonVectorStoreModelWorksCorrectlyAsync()
     {
-        await this.TestUpsertWithModeAsync<BsonVectorStoreTestModel>(
+        await this.TestUpsertWithModelAsync<BsonVectorStoreTestModel>(
             dataModel: new BsonVectorStoreTestModel { Id = "key", HotelName = "Test Name" },
             expectedPropertyName: "hotel_name");
     }
@@ -465,7 +465,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
     [Fact]
     public async Task UpsertWithBsonVectorStoreWithNameModelWorksCorrectlyAsync()
     {
-        await this.TestUpsertWithModeAsync<BsonVectorStoreWithNameTestModel>(
+        await this.TestUpsertWithModelAsync<BsonVectorStoreWithNameTestModel>(
             dataModel: new BsonVectorStoreWithNameTestModel { Id = "key", HotelName = "Test Name" },
             expectedPropertyName: "bson_hotel_name");
     }
@@ -560,7 +560,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
 
     #region private
 
-    private async Task TestUpsertWithModeAsync<TDataModel>(
+    private async Task TestUpsertWithModelAsync<TDataModel>(
         TDataModel dataModel,
         string expectedPropertyName,
         VectorStoreRecordDefinition? definition = null)

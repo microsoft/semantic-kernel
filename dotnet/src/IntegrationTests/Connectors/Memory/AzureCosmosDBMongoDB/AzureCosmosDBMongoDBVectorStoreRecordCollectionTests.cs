@@ -236,19 +236,19 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     public async Task UpsertWithVectorStoreModelWorksCorrectlyAsync()
     {
         // Arrange
-        var model = new VectorStoreTestModel { Id = "key", HotelName = "Test Name" };
+        var model = new VectorStoreTestModel { HotelId = "key", HotelName = "Test Name" };
 
         var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<VectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
         var upsertResult = await sut.UpsertAsync(model);
-        var getResult = await sut.GetAsync(model.Id);
+        var getResult = await sut.GetAsync(model.HotelId);
 
         // Assert
         Assert.Equal("key", upsertResult);
 
         Assert.NotNull(getResult);
-        Assert.Equal("key", getResult.Id);
+        Assert.Equal("key", getResult.HotelId);
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
@@ -288,19 +288,19 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     public async Task UpsertWithBsonVectorStoreModelWorksCorrectlyAsync()
     {
         // Arrange
-        var model = new BsonVectorStoreTestModel { Id = "key", HotelName = "Test Name" };
+        var model = new BsonVectorStoreTestModel { HotelId = "key", HotelName = "Test Name" };
 
         var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<BsonVectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
         var upsertResult = await sut.UpsertAsync(model);
-        var getResult = await sut.GetAsync(model.Id);
+        var getResult = await sut.GetAsync(model.HotelId);
 
         // Assert
         Assert.Equal("key", upsertResult);
 
         Assert.NotNull(getResult);
-        Assert.Equal("key", getResult.Id);
+        Assert.Equal("key", getResult.HotelId);
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
@@ -351,7 +351,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     private sealed class VectorStoreTestModel
     {
         [VectorStoreRecordKey]
-        public string? Id { get; set; }
+        public string? HotelId { get; set; }
 
         [VectorStoreRecordData(StoragePropertyName = "hotel_name")]
         public string? HotelName { get; set; }
@@ -370,7 +370,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     {
         [BsonId]
         [VectorStoreRecordKey]
-        public string? Id { get; set; }
+        public string? HotelId { get; set; }
 
         [BsonElement("hotel_name")]
         [VectorStoreRecordData]

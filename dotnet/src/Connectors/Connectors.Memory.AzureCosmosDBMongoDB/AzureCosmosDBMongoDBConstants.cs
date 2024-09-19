@@ -9,4 +9,7 @@ internal static class AzureCosmosDBMongoDBConstants
 {
     /// <summary>Reserved key property name in Azure CosmosDB MongoDB.</summary>
     internal const string MongoReservedKeyPropertyName = "_id";
+
+    /// <summary>Reserved key property name in data model.</summary>
+    internal const string DataModelReservedKeyPropertyName = "Id";
 }

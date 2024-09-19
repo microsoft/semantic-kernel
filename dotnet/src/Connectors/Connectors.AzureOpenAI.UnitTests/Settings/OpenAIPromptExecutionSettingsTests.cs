@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Azure.AI.OpenAI.Chat;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -43,6 +44,22 @@ public class OpenAIPromptExecutionSettingsTests
 
         // Assert
         AssertExecutionSettings(executionSettings);
+    }
+
+    [Fact]
+    public void ItRestoresOriginalFunctionChoiceBehavior()
+    {
+        // Arrange
+        var functionChoiceBehavior = FunctionChoiceBehavior.Auto();
+
+        var originalExecutionSettings = new PromptExecutionSettings();
+        originalExecutionSettings.FunctionChoiceBehavior = functionChoiceBehavior;
+
+        // Act
+        var result = OpenAIPromptExecutionSettings.FromExecutionSettings(originalExecutionSettings);
+
+        // Assert
+        Assert.Equal(functionChoiceBehavior, result.FunctionChoiceBehavior);
     }
 
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)
