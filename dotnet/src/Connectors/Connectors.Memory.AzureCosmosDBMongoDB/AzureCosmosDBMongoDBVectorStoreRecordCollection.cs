@@ -55,6 +55,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>Collection of record vector properties.</summary>
     private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
 
+    /// <summary>Collection of record data properties.</summary>
+    private readonly List<VectorStoreRecordDataProperty> _dataProperties;
+
     /// <summary>First vector property for the collections that this class is used with.</summary>
     private readonly VectorStoreRecordVectorProperty? _firstVectorProperty = null;
 
@@ -94,6 +97,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         // Use Mongo reserved key property name as storage key property name
         this._storagePropertyNames[properties.KeyProperty.DataModelPropertyName] = AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName;
 
+        this._dataProperties = properties.DataProperties;
         this._vectorProperties = properties.VectorProperties;
         this._vectorStoragePropertyNames = this._vectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
 
@@ -118,8 +122,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         await this.RunOperationAsync("CreateCollection",
             () => this._mongoDatabase.CreateCollectionAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-        await this.RunOperationAsync("CreateIndex",
-            () => this.CreateIndexAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
+        await this.RunOperationAsync("CreateIndexes",
+            () => this.CreateIndexesAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -288,10 +292,27 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
+        var filter = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.BuildFilter(
+            searchOptions.Filter,
+            this._storagePropertyNames);
+
+        // Constructing a query to fetch "offset + limit" total items
+        // to perform offset logic locally, since offset parameter is not part of API. 
+        var itemsAmount = searchOptions.Offset + searchOptions.Limit;
+
         var searchQuery = vectorProperty.IndexKind switch
         {
-            IndexKind.Hnsw => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForHnswIndex(vectorArray, vectorPropertyName, searchOptions.Limit, this._options.EfSearch),
-            IndexKind.IvfFlat => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForIvfIndex(vectorArray, vectorPropertyName, searchOptions.Limit),
+            IndexKind.Hnsw => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForHnswIndex(
+                vectorArray,
+                vectorPropertyName,
+                itemsAmount,
+                this._options.EfSearch,
+                filter),
+            IndexKind.IvfFlat => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForIvfIndex(
+                vectorArray,
+                vectorPropertyName,
+                itemsAmount,
+                filter),
             _ => throw new InvalidOperationException(
                 $"Index kind '{vectorProperty.IndexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore. " +
                 $"Supported index kinds are: {string.Join(", ", [IndexKind.Hnsw, IndexKind.IvfFlat])}")
@@ -307,25 +328,32 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
+        var offsetCounter = 0;
+
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
         {
             foreach (var response in cursor.Current)
             {
-                var score = response[ScorePropertyName].AsDouble;
-                var record = VectorStoreErrorHandler.RunModelConversion(
-                    DatabaseName,
-                    this.CollectionName,
-                    OperationName,
-                    () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new()));
+                if (offsetCounter >= searchOptions.Offset)
+                {
+                    var score = response[ScorePropertyName].AsDouble;
+                    var record = VectorStoreErrorHandler.RunModelConversion(
+                        DatabaseName,
+                        this.CollectionName,
+                        OperationName,
+                        () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new()));
 
-                yield return new VectorSearchResult<TRecord>(record, score);
+                    yield return new VectorSearchResult<TRecord>(record, score);
+                }
+
+                offsetCounter++;
             }
         }
     }
 
     #region private
 
-    private async Task CreateIndexAsync(string collectionName, CancellationToken cancellationToken)
+    private async Task CreateIndexesAsync(string collectionName, CancellationToken cancellationToken)
     {
         var indexCursor = await this._mongoCollection.Indexes.ListAsync(cancellationToken).ConfigureAwait(false);
         var indexes = indexCursor.ToList(cancellationToken).Select(index => index["name"].ToString()) ?? [];
@@ -333,42 +361,17 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         var indexArray = new BsonArray();
 
-        // Create separate index for each vector property
-        foreach (var property in this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>())
-        {
-            // Use index name same as vector property name with underscore
-            var vectorPropertyName = this._storagePropertyNames[property.DataModelPropertyName];
-            var indexName = $"{vectorPropertyName}_";
+        indexArray.AddRange(AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping.GetVectorIndexes(
+            this._vectorProperties,
+            this._storagePropertyNames,
+            uniqueIndexes,
+            this._options.NumLists,
+            this._options.EfConstruction));
 
-            // If index already exists, proceed to the next vector property
-            if (uniqueIndexes.Contains(indexName))
-            {
-                continue;
-            }
-
-            // Otherwise, create a new index
-            var searchOptions = new BsonDocument
-            {
-                { "kind", GetIndexKind(property.IndexKind, vectorPropertyName) },
-                { "numLists", this._options.NumLists },
-                { "similarity", GetDistanceFunction(property.DistanceFunction, vectorPropertyName) },
-                { "dimensions", property.Dimensions }
-            };
-
-            if (this._options.EfConstruction is not null)
-            {
-                searchOptions["efConstruction"] = this._options.EfConstruction;
-            }
-
-            var indexDocument = new BsonDocument
-            {
-                ["name"] = indexName,
-                ["key"] = new BsonDocument { [vectorPropertyName] = "cosmosSearch" },
-                ["cosmosSearchOptions"] = searchOptions
-            };
-
-            indexArray.Add(indexDocument);
-        }
+        indexArray.AddRange(AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping.GetFilterableDataIndexes(
+            this._dataProperties,
+            this._storagePropertyNames,
+            uniqueIndexes));
 
         if (indexArray.Count > 0)
         {
@@ -454,33 +457,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
                 OperationName = operationName
             };
         }
-    }
-
-    /// <summary>
-    /// More information about Azure CosmosDB for MongoDB index kinds here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search" />.
-    /// </summary>
-    private static string GetIndexKind(string? indexKind, string vectorPropertyName)
-    {
-        return indexKind switch
-        {
-            IndexKind.Hnsw => "vector-hnsw",
-            IndexKind.IvfFlat => "vector-ivf",
-            _ => throw new InvalidOperationException($"Index kind '{indexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
-        };
-    }
-
-    /// <summary>
-    /// More information about Azure CosmosDB for MongoDB distance functions here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search" />.
-    /// </summary>
-    private static string GetDistanceFunction(string? distanceFunction, string vectorPropertyName)
-    {
-        return distanceFunction switch
-        {
-            DistanceFunction.CosineDistance => "COS",
-            DistanceFunction.DotProductSimilarity => "IP",
-            DistanceFunction.EuclideanDistance => "L2",
-            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
-        };
     }
 
     /// <summary>

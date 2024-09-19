@@ -326,7 +326,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task VectorizedSearchWorksCorrectlyAsync()
+    public async Task VectorizedSearchReturnsValidResultsByDefaultAsync()
     {
         // Arrange
         var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
@@ -353,8 +353,69 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.DoesNotContain("key4", ids);
 
         Assert.Equal(1, searchResults.First(l => l.Record.HotelId == "key1").Score);
+    }
 
-        await sut.DeleteCollectionAsync();
+    [Fact(Skip = SkipReason)]
+    public async Task VectorizedSearchReturnsValidResultsWithOffsetAsync()
+    {
+        // Arrange
+        var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
+        var hotel2 = this.CreateTestHotel(hotelId: "key2", embedding: new[] { 31f, 32f, 33f, 34f });
+        var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
+        var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
+
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+
+        // Act
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        {
+            Limit = 2,
+            Offset = 2
+        }).ToListAsync();
+
+        // Assert
+        var ids = searchResults.Select(l => l.Record.HotelId).ToList();
+
+        Assert.Equal("key3", ids[0]);
+        Assert.Equal("key4", ids[1]);
+
+        Assert.DoesNotContain("key1", ids);
+        Assert.DoesNotContain("key2", ids);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task VectorizedSearchReturnsValidResultsWithFilterAsync()
+    {
+        // Arrange
+        var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
+        var hotel2 = this.CreateTestHotel(hotelId: "key2", embedding: new[] { 31f, 32f, 33f, 34f });
+        var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
+        var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
+
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+
+        // Act
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        {
+            Filter = new VectorSearchFilter().EqualTo(nameof(AzureCosmosDBMongoDBHotel.HotelName), "My Hotel key2")
+        }).ToListAsync();
+
+        // Assert
+        var ids = searchResults.Select(l => l.Record.HotelId).ToList();
+
+        Assert.Equal("key2", ids[0]);
+
+        Assert.DoesNotContain("key1", ids);
+        Assert.DoesNotContain("key3", ids);
+        Assert.DoesNotContain("key4", ids);
     }
 
     #region private
