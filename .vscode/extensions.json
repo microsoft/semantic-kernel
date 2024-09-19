@@ -16,6 +16,11 @@
 =======
     "ms-python.debugpy",
     "atariq11700.debugpy-old"
+<<<<<<< main
 >>>>>>> origin/PR
+=======
+    "ms-dotnettools.dotnet-interactive-vscode",
+    "ms-vscode-remote.remote-containers"
+>>>>>>> origin/Bryan-Roe/issue389
   ]
 }

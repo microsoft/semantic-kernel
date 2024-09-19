@@ -121,7 +121,7 @@
   "C_Cpp_Runner.debuggerPath": "gdb",
   "C_Cpp_Runner.cStandard": "",
   "C_Cpp_Runner.cppStandard": "",
-  "C_Cpp_Runner.msvcBatchPath": "",
+  "C_Cpp_Runner.msvcBatchPath": "C:/Program Files/Microsoft Visual Studio/VR_NR/Community/VC/Auxiliary/Build/vcvarsall.bat",
   "C_Cpp_Runner.useMsvc": false,
   "C_Cpp_Runner.warnings": [
     "-Wall",
@@ -327,6 +327,7 @@
         "skfunction"
     ],
 }
+<<<<<<< Updated upstream
   "iis.configDir": "",
   "yaml.schemas": {
     "https://json.schemastore.org/dependabot-2.0.json": "vscode-vfs://github/Bryan-Roe/semantic-kernel/.github/dependabot.yml"
@@ -336,3 +337,19 @@
   "gitlens.ai.experimental.vscode.model": "modelName:modelVersion",
   "wolf.disableHotModeWarning": true
 }
+=======
+  "iis.configDir": "",
+  "swift.path": "c:\\Users\\Bryan\\semantic-kernel\\.devcontainer",
+  "swift.swiftEnvironmentVariables": {
+    "DEVELOPER_DIR": "public"
+  },
+  "cSpell.language": "en,en-US",
+  "cSpell.enableFiletypes": [
+    "objective-cpp",
+    "tex",
+    "vb",
+    "xml",
+    "xsl"
+  ]
+}
+>>>>>>> Stashed changes

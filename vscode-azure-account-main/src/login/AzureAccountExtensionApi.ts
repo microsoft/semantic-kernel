@@ -6,7 +6,7 @@
 import { callWithTelemetryAndErrorHandling, IActionContext } from '@microsoft/vscode-azext-utils';
 import { Disposable, Event } from 'vscode';
 import * as types from '../azure-account.api';
-import { createCloudConsole, OSName } from '../cloudConsole/cloudConsole';
+import { createCloudConsole, OSName } from '../cloudConsole/OS.4';
 import { AzureAccountLoginHelper } from './AzureAccountLoginHelper';
 
 export class AzureAccountExtensionApi implements types.AzureAccountExtensionApi {

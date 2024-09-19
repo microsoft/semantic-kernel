@@ -1,3 +1,12 @@
+---
+runme:
+  document:
+    relativePath: TELEMETRY.md
+  session:
+    id: 01J60HY32DYPWGP0XGNRBSF0N3
+    updated: 2024-08-23 18:31:43-03:00
+---
+
 # Telemetry
 
 Telemetry in Semantic Kernel (SK) .NET implementation includes _logging_, _metering_ and _tracing_.
@@ -37,11 +46,7 @@ Log levels used in SK:
 
 Enable logging for Kernel instance:
 
-<<<<<<< main
-```csharp {"id":"01J6KNWQV3VZ83K65ZV4HMJNA9"}
-=======
 ```csharp {"id":"01J60JDXTTJV5TQ82EJ6S064EQ"}
->>>>>>> origin/Bryan-Roe/issue389
 IKernelBuilder builder = Kernel.CreateBuilder();
 
 // Assuming loggerFactory is already defined.
@@ -57,11 +62,7 @@ All kernel functions and planners will be instrumented. It includes _logs_, _met
 
 Log filtering configuration has been refined to strike a balance between visibility and relevance:
 
-<<<<<<< main
-```csharp {"id":"01J6KNWQV3VZ83K65ZV7AARYBQ"}
-=======
 ```csharp {"id":"01J60JDXTTJV5TQ82EJ8MQNGTB"}
->>>>>>> origin/Bryan-Roe/issue389
 using var loggerFactory = LoggerFactory.Create(builder =>
 {
   // Add OpenTelemetry as a logging provider
@@ -77,7 +78,7 @@ using var loggerFactory = LoggerFactory.Create(builder =>
 }
 ```
 
-> Read more at: https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/docs/logs/customizing-the-sdk/README.md
+> Read more at: ht****************************************************************************************************md
 
 ## Metering
 
@@ -102,33 +103,25 @@ Available meters:
 
 Measurements will be associated with tags that will allow data to be categorized for analysis:
 
-<<<<<<< main
-```csharp {"id":"01J6KNWQV3VZ83K65ZV7X2S3DX"}
-=======
 ```csharp {"id":"01J60JDXTTJV5TQ82EJBAV9EHC"}
->>>>>>> origin/Bryan-Roe/issue389
 TagList tags = new() { { "semantic_kernel.function.name", this.Name } };
 s_invocationDuration.Record(duration.TotalSeconds, in tags);
 ```
 
-### [Examples](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Demos/TelemetryWithAppInsights/Program.cs)
+### [Examples](ht***********************************************************************************************************cs)
 
 Depending on monitoring tool, there are different ways how to subscribe to available meters. Following example shows how to subscribe to available meters and export metrics to Application Insights using `OpenTelemetry.Sdk`:
 
-<<<<<<< main
-```csharp {"id":"01J6KNWQV3VZ83K65ZV8JN78CW"}
-=======
 ```csharp {"id":"01J60JDXTTJV5TQ82EJEFQQHSK"}
->>>>>>> origin/Bryan-Roe/issue389
 using var meterProvider = Sdk.CreateMeterProviderBuilder()
   .AddMeter("Microsoft.SemanticKernel*")
   .AddAzureMonitorMetricExporter(options => options.ConnectionString = connectionString)
   .Build();
 ```
 
-> Read more at: https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-enable?tabs=net
+> Read more at: ht***********************************************************************************et
 
-> Read more at: https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/docs/metrics/customizing-the-sdk/README.md
+> Read more at: ht*******************************************************************************************************md
 
 ## Tracing
 
@@ -143,15 +136,11 @@ Available activity sources:
 
 Subscribe to available activity sources using `OpenTelemetry.Sdk`:
 
-<<<<<<< main
-```csharp {"id":"01J6KNWQV3VZ83K65ZVBT57F10"}
-=======
 ```csharp {"id":"01J60JDXTVQ2KV8HSY2NZGTEY6"}
->>>>>>> origin/Bryan-Roe/issue389
 using var traceProvider = Sdk.CreateTracerProviderBuilder()
   .AddSource("Microsoft.SemanticKernel*")
   .AddAzureMonitorTraceExporter(options => options.ConnectionString = connectionString)
   .Build();
 ```
 
-> Read more at: https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/docs/trace/customizing-the-sdk/README.md
+> Read more at: ht*****************************************************************************************************md
