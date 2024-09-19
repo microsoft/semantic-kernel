@@ -52,7 +52,7 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
                 throw new NotSupportedException(
                     $"Unsupported filter clause type '{filterClause.GetType().Name}'. " +
                     $"Supported filter clause types are: {string.Join(", ", [
-                        typeof(EqualToFilterClause).FullName])}");
+                        nameof(EqualToFilterClause)])}");
             }
 
             if (!storagePropertyNames.TryGetValue(propertyName, out var storagePropertyName))
