@@ -1,0 +1,35 @@
+block-beta
+columns 1
+  block:Plugin
+    PluginAbstraction[["TextMemoryPlugin"]]
+    PluginDescription["Provides a plugin to save or recall information from the long or short term memory."]
+  end
+  space
+  block:SemanticMemory
+    SemanticMemoryAbstraction[["ISemanticTextMemory"]]
+    SemanticMemoryDescription["An interface for semantic memory that creates and recalls memories associated with text."]
+  end
+  space
+  block:Memory
+    MemoryAbstraction[["IMemoryStore"]]
+    MemoryDescription["An interface for storing and retrieving indexed MemoryRecord objects in a data store."]
+  end
+  space
+  block:MemoryClient
+    MemoryClientAbstraction[["Memory Client"]]
+    MemoryClientDescription["A database specific service client."]
+  end
+  space
+  block:VectorDatabaseService
+    VectorDatabase[["Vector Database"]]
+    VectorDatabaseDescription["A vector database e.g. Redis, Milvus, Pinecone, Qdrant."]
+  end
+  Plugin-- "Uses the provided Semantic Memory implementation to recall text memories." -->SemanticMemory
+  SemanticMemory-- "Uses the provided Memory Store to query the database." -->Memory
+  Memory-- "Uses a Memory Client (if available) to interact with the database." -->MemoryClient
+  MemoryClient-- "Invokes the Vector Database Service." -->VectorDatabaseService
+  style PluginDescription fill:#FFF,stroke-width:0px
+  style SemanticMemoryDescription fill:#FFF,stroke-width:0px
+  style MemoryDescription fill:#FFF,stroke-width:0px
+  style MemoryClientDescription fill:#FFF,stroke-width:0px
+  style VectorDatabaseDescription fill:#FFF,stroke-width:0px

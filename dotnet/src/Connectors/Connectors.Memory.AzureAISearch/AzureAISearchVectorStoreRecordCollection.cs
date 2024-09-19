@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IVectorizableTextSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TRecord : class
 {
@@ -89,6 +89,12 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     /// <summary>The storage names of all non vector fields on the current model.</summary>
     private readonly List<string> _nonVectorStoragePropertyNames = new();
 
+    /// <summary>The name of the first vector field for the collections that this class is used with.</summary>
+    private readonly string? _firstVectorPropertyName = null;
+
+    /// <summary>The name of the first string data field for the collections that this class is used with.</summary>
+    private readonly string? _firstStringDataPropertyName = null;
+
     /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it to json for data and vector properties.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames = new();
 
@@ -137,6 +143,17 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
             .Concat([properties.KeyProperty])
             .Select(x => this._storagePropertyNames[x.DataModelPropertyName])
             .ToList();
+
+        if (properties.VectorProperties.Count > 0)
+        {
+            this._firstVectorPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(properties.VectorProperties.First(), typeof(TRecord), jsonSerializerOptions);
+        }
+
+        var firstStringDataProperty = properties.DataProperties.FirstOrDefault(x => x.PropertyType == typeof(string));
+        if (firstStringDataProperty is not null)
+        {
+            this._firstStringDataPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(firstStringDataProperty, typeof(TRecord), jsonSerializerOptions);
+        }
 
         // Resolve mapper.
         // First, if someone has provided a custom mapper, use that.
@@ -324,6 +341,87 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         foreach (var resultKey in resultKeys) { yield return resultKey; }
     }
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, Data.VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(vector);
+
+        if (this._firstVectorPropertyName is null)
+        {
+            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
+        }
+
+        if (vector is not ReadOnlyMemory<float> floatVector)
+        {
+            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Azure AI Search connector.");
+        }
+
+        // Resolve options.
+        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+        string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
+
+        // Configure search settings.
+        var vectorQueries = new List<VectorQuery>();
+        vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Limit, Fields = { vectorFieldName } });
+        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._storagePropertyNames);
+
+        // Build search options.
+        var searchOptions = new SearchOptions
+        {
+            VectorSearch = new(),
+            Size = internalOptions.Limit,
+            Skip = internalOptions.Offset,
+            Filter = filterString,
+        };
+        searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
+
+        // Filter out vector fields if requested.
+        if (!internalOptions.IncludeVectors)
+        {
+            searchOptions.Select.AddRange(this._nonVectorStoragePropertyNames);
+        }
+
+        return this.SearchAndMapToDataModelAsync(null, searchOptions, internalOptions.IncludeVectors, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, Data.VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(searchText);
+
+        if (this._firstVectorPropertyName is null)
+        {
+            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
+        }
+
+        // Resolve options.
+        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+        string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
+
+        // Configure search settings.
+        var vectorQueries = new List<VectorQuery>();
+        vectorQueries.Add(new VectorizableTextQuery(searchText) { KNearestNeighborsCount = internalOptions.Limit, Fields = { vectorFieldName } });
+        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._storagePropertyNames);
+
+        // Build search options.
+        var searchOptions = new SearchOptions
+        {
+            VectorSearch = new(),
+            Size = internalOptions.Limit,
+            Skip = internalOptions.Offset,
+            Filter = filterString,
+        };
+        searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
+
+        // Filter out vector fields if requested.
+        if (!internalOptions.IncludeVectors)
+        {
+            searchOptions.Select.AddRange(this._nonVectorStoragePropertyNames);
+        }
+
+        return this.SearchAndMapToDataModelAsync(null, searchOptions, internalOptions.IncludeVectors, cancellationToken);
+    }
+
     /// <summary>
     /// Get the document with the given key and map it to the data model using the configured mapper type.
     /// </summary>
@@ -363,6 +461,48 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         return await this.RunOperationAsync(
             OperationName,
             () => GetDocumentWithNotFoundHandlingAsync<TRecord>(this._searchClient, key, innerOptions, cancellationToken)).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Search for the documents matching the given options and map them to the data model using the configured mapper type.
+    /// </summary>
+    /// <param name="searchText">Text to use if doing a hybrid search. Null for non-hybrid search.</param>
+    /// <param name="searchOptions">The options controlling the behavior of the search operation.</param>
+    /// <param name="includeVectors">A value indicating whether to include vectors in the result or not.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAndMapToDataModelAsync(
+        string? searchText,
+        SearchOptions searchOptions,
+        bool includeVectors,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        const string OperationName = "Search";
+
+        // Execute search and map using the user provided mapper.
+        if (this._options.JsonObjectCustomMapper is not null)
+        {
+            var jsonObjectResults = await this.RunOperationAsync(
+                OperationName,
+                () => this._searchClient.SearchAsync<JsonObject>(searchText, searchOptions, cancellationToken)).ConfigureAwait(false);
+
+            foreach (var result in jsonObjectResults.Value.GetResults())
+            {
+                var document = VectorStoreErrorHandler.RunModelConversion(
+                    DatabaseName,
+                    this._collectionName,
+                    OperationName,
+                    () => this._options.JsonObjectCustomMapper!.MapFromStorageToDataModel(result.Document, new() { IncludeVectors = includeVectors }));
+                yield return new(document, result.Score);
+            }
+        }
+
+        // Execute search and map using the built in Azure AI Search mapper.
+        Response<SearchResults<TRecord>> results = await this.RunOperationAsync(OperationName, () => this._searchClient.SearchAsync<TRecord>(searchText, searchOptions, cancellationToken)).ConfigureAwait(false);
+        foreach (var result in results.Value.GetResults())
+        {
+            yield return new(result.Document, result.Score);
+        }
     }
 
     /// <summary>
@@ -413,6 +553,31 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         }
 
         return innerOptions;
+    }
+
+    /// <summary>
+    /// Resolve the vector field name to use for a search by using the storage name for the field name from options
+    /// if available, and falling back to the first vector field name if not.
+    /// </summary>
+    /// <param name="optionsVectorFieldName">The vector field name provided via options.</param>
+    /// <returns>The resolved vector field name.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
+    private string ResolveVectorFieldName(string? optionsVectorFieldName)
+    {
+        string? vectorFieldName;
+        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
+        {
+            if (!this._storagePropertyNames.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
+            {
+                throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
+            }
+        }
+        else
+        {
+            vectorFieldName = this._firstVectorPropertyName;
+        }
+
+        return vectorFieldName!;
     }
 
     /// <summary>

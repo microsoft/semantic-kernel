@@ -73,11 +73,20 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 
+    /// <summary>An array of the names of all the data properties that are part of the Redis payload as RedisValue objects, i.e. all properties except the key and vector properties.</summary>
+    private readonly RedisValue[] _dataStoragePropertyNameRedisValues;
+
     /// <summary>An array of the names of all the data properties that are part of the Redis payload, i.e. all properties except the key and vector properties.</summary>
-    private readonly RedisValue[] _dataStoragePropertyNames;
+    private readonly string[] _dataStoragePropertyNames;
+
+    /// <summary>An array of the names of all the properties that are part of the Redis payload, i.e. all properties except the key property.</summary>
+    private readonly string[] _dataAndVectorStoragePropertyNames;
 
     /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it to json for data and vector properties.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames = new();
+
+    /// <summary>The name of the first vector field for the collections that this class is used with.</summary>
+    private readonly string? _firstVectorPropertyName = null;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)> _mapper;
@@ -112,8 +121,21 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         this._dataStoragePropertyNames = properties
             .DataProperties
             .Select(x => this._storagePropertyNames[x.DataModelPropertyName])
+            .ToArray();
+        this._dataStoragePropertyNameRedisValues = this._dataStoragePropertyNames
             .Select(RedisValue.Unbox)
             .ToArray();
+        this._dataAndVectorStoragePropertyNames = properties
+            .DataProperties
+            .Cast<VectorStoreRecordProperty>()
+            .Concat(properties.VectorProperties)
+            .Select(x => this._storagePropertyNames[x.DataModelPropertyName])
+            .ToArray();
+
+        if (properties.VectorProperties.Count > 0)
+        {
+            this._firstVectorPropertyName = this._storagePropertyNames[properties.VectorProperties.First().DataModelPropertyName];
+        }
 
         // Assign Mapper.
         if (this._options.HashEntriesCustomMapper is not null)
@@ -210,7 +232,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         }
         else
         {
-            var fieldKeys = this._dataStoragePropertyNames;
+            var fieldKeys = this._dataStoragePropertyNameRedisValues;
             var retrievedValues = await this.RunOperationAsync(
                 operationName,
                 () => this._database.HashGetAsync(maybePrefixedKey, fieldKeys)).ConfigureAwait(false);
@@ -317,6 +339,47 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         }
     }
 
+    /// <inheritdoc />
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(vector);
+
+        if (this._firstVectorPropertyName is null)
+        {
+            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
+        }
+
+        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+
+        // Build query & search.
+        var selectFields = internalOptions.IncludeVectors ? null : this._dataStoragePropertyNames;
+        byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "HashSet");
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(vectorBytes, internalOptions, this._storagePropertyNames, this._firstVectorPropertyName, selectFields);
+        var results = await this.RunOperationAsync(
+            "FT.SEARCH",
+            () => this._database
+                .FT()
+                .SearchAsync(this._collectionName, query)).ConfigureAwait(false);
+
+        // Loop through result and convert to the caller's data model.
+        foreach (var result in results.Documents)
+        {
+            var retrievedHashEntries = this._dataAndVectorStoragePropertyNames.Select(propertyName => new HashEntry(propertyName, result[propertyName])).ToArray();
+
+            // Convert to the caller's data model.
+            var dataModel = VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this._collectionName,
+                "FT.SEARCH",
+                () =>
+                {
+                    return this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(result.Id), retrievedHashEntries), new() { IncludeVectors = internalOptions.IncludeVectors });
+                });
+
+            yield return new VectorSearchResult<TRecord>(dataModel, result.Score);
+        }
+    }
+
     /// <summary>
     /// Prefix the key with the collection name if the option is set.
     /// </summary>
@@ -327,6 +390,23 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         if (this._options.PrefixCollectionNameToKeyNames)
         {
             return $"{this._collectionName}:{key}";
+        }
+
+        return key;
+    }
+
+    /// <summary>
+    /// Remove the prefix of the given key if the option is set.
+    /// </summary>
+    /// <param name="key">The key to remove a prefix from.</param>
+    /// <returns>The updated key if updating is required, otherwise the input key.</returns>
+    private string RemoveKeyPrefixIfNeeded(string key)
+    {
+        var prefixLength = this._collectionName.Length + 1;
+
+        if (this._options.PrefixCollectionNameToKeyNames && key.Length > prefixLength)
+        {
+            return key.Substring(prefixLength);
         }
 
         return key;

@@ -552,6 +552,91 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             new() { VectorStoreRecordDefinition = definition, JsonObjectCustomMapper = Mock.Of<IVectorStoreRecordMapper<MultiPropsModel, JsonObject>>() });
     }
 
+    [Fact]
+    public async Task CanSearchWithVectorAndFilterAsync()
+    {
+        // Arrange.
+#pragma warning disable Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
+        var searchResultsMock = Mock.Of<SearchResults<MultiPropsModel>>();
+#pragma warning restore Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
+        this._searchClientMock
+            .Setup(x => x.SearchAsync<MultiPropsModel>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(searchResultsMock, Mock.Of<Response>()));
+
+        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
+            this._searchIndexClientMock.Object,
+            TestCollectionName);
+        var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
+
+        // Act.
+        var searchResults = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[4]),
+            new()
+            {
+                Limit = 5,
+                Offset = 3,
+                Filter = filter,
+                VectorFieldName = nameof(MultiPropsModel.Vector1)
+            },
+            this._testCancellationToken).ToListAsync();
+
+        // Assert.
+        this._searchClientMock.Verify(
+            x => x.SearchAsync<MultiPropsModel>(
+                null,
+                It.Is<SearchOptions>(x =>
+                    x.Filter == "storage_data1 eq 'Data1FilterValue'" &&
+                    x.Size == 5 &&
+                    x.Skip == 3 &&
+                    x.VectorSearch.Queries.First().GetType() == typeof(VectorizedQuery) &&
+                    x.VectorSearch.Queries.First().Fields.First() == "storage_vector1"),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task CanSearchWithTextAndFilterAsync()
+    {
+        // Arrange.
+#pragma warning disable Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
+        var searchResultsMock = Mock.Of<SearchResults<MultiPropsModel>>();
+#pragma warning restore Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
+        this._searchClientMock
+            .Setup(x => x.SearchAsync<MultiPropsModel>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(searchResultsMock, Mock.Of<Response>()));
+
+        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
+            this._searchIndexClientMock.Object,
+            TestCollectionName);
+        var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
+
+        // Act.
+        var searchResults = await sut.VectorizableTextSearchAsync(
+            "search string",
+            new()
+            {
+                Limit = 5,
+                Offset = 3,
+                Filter = filter,
+                VectorFieldName = nameof(MultiPropsModel.Vector1)
+            },
+            this._testCancellationToken).ToListAsync();
+
+        // Assert.
+        this._searchClientMock.Verify(
+            x => x.SearchAsync<MultiPropsModel>(
+                null,
+                It.Is<SearchOptions>(x =>
+                    x.Filter == "storage_data1 eq 'Data1FilterValue'" &&
+                    x.Size == 5 &&
+                    x.Skip == 3 &&
+                    x.VectorSearch.Queries.First().GetType() == typeof(VectorizableTextQuery) &&
+                    x.VectorSearch.Queries.First().Fields.First() == "storage_vector1" &&
+                    ((VectorizableTextQuery)x.VectorSearch.Queries.First()).Text == "search string"),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
     private AzureAISearchVectorStoreRecordCollection<MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)
     {
         return new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
@@ -600,7 +685,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         public string Key { get; set; } = string.Empty;
 
         [JsonPropertyName("storage_data1")]
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(IsFilterable = true)]
         public string Data1 { get; set; } = string.Empty;
 
         [VectorStoreRecordData]

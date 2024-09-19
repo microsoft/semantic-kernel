@@ -56,6 +56,9 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     /// <summary>A dictionary that maps from a property name to the configured name that should be used when storing it.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames = new();
 
+    /// <summary>The name of the first vector field for the collections that this class is used with.</summary>
+    private readonly string? _firstVectorPropertyName = null;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
     /// </summary>
@@ -95,6 +98,10 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 
         // Build a map of property names to storage names.
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
+        if (properties.VectorProperties.Count > 0)
+        {
+            this._firstVectorPropertyName = this._storagePropertyNames[properties.VectorProperties.First().DataModelPropertyName];
+        }
 
         // Assign Mapper.
         if (this._options.PointStructCustomMapper is not null)
@@ -437,6 +444,93 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
         }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(vector);
+
+        if (this._firstVectorPropertyName is null)
+        {
+            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
+        }
+
+        if (vector is not ReadOnlyMemory<float> floatVector)
+        {
+            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Qdrant connector.");
+        }
+
+        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+
+        // Build filter object.
+        var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._storagePropertyNames);
+
+        // Specify the vector name if named vectors are used.
+        string? vectorName = null;
+        if (this._options.HasNamedVectors)
+        {
+            vectorName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
+        }
+
+        // Specify whether to include vectors in the search results.
+        var vectorsSelector = new WithVectorsSelector();
+        vectorsSelector.Enable = internalOptions.IncludeVectors;
+
+        var query = new Query
+        {
+            Nearest = new VectorInput(floatVector.ToArray()),
+        };
+
+        // Execute Search.
+        var points = await this.RunOperationAsync(
+            "Query",
+            () => this._qdrantClient.QueryAsync(
+                this.CollectionName,
+                query: query,
+                usingVector: vectorName,
+                filter: filter,
+                limit: (ulong)internalOptions.Limit,
+                offset: (ulong)internalOptions.Offset,
+                vectorsSelector: vectorsSelector,
+                cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        // Map to data model and return results.
+        foreach (var point in points)
+        {
+            yield return QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult(
+                point,
+                this._mapper,
+                internalOptions.IncludeVectors,
+                DatabaseName,
+                this._collectionName,
+                "Query");
+        }
+    }
+
+    /// <summary>
+    /// Resolve the vector field name to use for a search by using the storage name for the field name from options
+    /// if available, and falling back to the first vector field name if not.
+    /// </summary>
+    /// <param name="optionsVectorFieldName">The vector field name provided via options.</param>
+    /// <returns>The resolved vector field name.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
+    private string ResolveVectorFieldName(string? optionsVectorFieldName)
+    {
+        string? vectorFieldName;
+        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
+        {
+            if (!this._storagePropertyNames.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
+            {
+                throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
+            }
+        }
+        else
+        {
+            vectorFieldName = this._firstVectorPropertyName;
+        }
+
+        return vectorFieldName!;
     }
 
     /// <summary>

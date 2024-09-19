@@ -88,23 +88,36 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379,connectTimeout=60000,connectRetry=5");
         this.Database = redis.GetDatabase();
 
-        // Create a schema for the vector store.
-        var schema = new Schema();
-        schema.AddTextField(new FieldName("$.HotelName", "HotelName"));
-        schema.AddNumericField(new FieldName("$.HotelCode", "HotelCode"));
-        schema.AddTextField(new FieldName("$.Description", "Description"));
-        schema.AddVectorField(new FieldName("$.DescriptionEmbedding", "DescriptionEmbedding"), Schema.VectorField.VectorAlgo.HNSW, new Dictionary<string, object>()
+        // Create a JSON index.
+        var jsonSchema = new Schema();
+        jsonSchema.AddTagField(new FieldName("$.HotelName", "HotelName"));
+        jsonSchema.AddNumericField(new FieldName("$.HotelCode", "HotelCode"));
+        jsonSchema.AddTextField(new FieldName("$.Description", "Description"));
+        jsonSchema.AddTagField(new FieldName("$.Tags", "Tags"));
+        jsonSchema.AddTextField(new FieldName("$.FTSTags", "FTSTags"));
+        jsonSchema.AddVectorField(new FieldName("$.DescriptionEmbedding", "DescriptionEmbedding"), Schema.VectorField.VectorAlgo.HNSW, new Dictionary<string, object>()
         {
             ["TYPE"] = "FLOAT32",
             ["DIM"] = "4",
             ["DISTANCE_METRIC"] = "L2"
         });
         var jsonCreateParams = new FTCreateParams().AddPrefix("jsonhotels:").On(IndexDataType.JSON);
-        await this.Database.FT().CreateAsync("jsonhotels", jsonCreateParams, schema);
+        await this.Database.FT().CreateAsync("jsonhotels", jsonCreateParams, jsonSchema);
 
         // Create a hashset index.
+        var hashSchema = new Schema();
+        hashSchema.AddTagField(new FieldName("HotelName", "HotelName"));
+        hashSchema.AddNumericField(new FieldName("HotelCode", "HotelCode"));
+        hashSchema.AddTextField(new FieldName("Description", "Description"));
+        hashSchema.AddVectorField(new FieldName("DescriptionEmbedding", "DescriptionEmbedding"), Schema.VectorField.VectorAlgo.HNSW, new Dictionary<string, object>()
+        {
+            ["TYPE"] = "FLOAT32",
+            ["DIM"] = "4",
+            ["DISTANCE_METRIC"] = "L2"
+        });
+
         var hashsetCreateParams = new FTCreateParams().AddPrefix("hashhotels:").On(IndexDataType.HASH);
-        await this.Database.FT().CreateAsync("hashhotels", hashsetCreateParams, schema);
+        await this.Database.FT().CreateAsync("hashhotels", hashsetCreateParams, hashSchema);
 
         // Create some test data.
         var address = new HotelAddress { City = "Seattle", Country = "USA" };
@@ -129,7 +142,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         await this.Database.JSON().SetAsync("jsonhotels:BaseSet-4-Invalid", "$", new { HotelId = "AnotherId", HotelName = "My Invalid Hotel", HotelCode = 4, Description = "This is an invalid hotel.", DescriptionEmbedding = embedding, parking_is_included = false });
 
         // Add hashset test data.
-        await this.Database.HashSetAsync("hashhotels:BaseSet-1", new HashEntry[]
+        await this.Database.HashSetAsync("hashhotels:HBaseSet-1", new HashEntry[]
         {
             new("HotelName", "My Hotel 1"),
             new("HotelCode", 1),
@@ -138,7 +151,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             new("parking_is_included", true),
             new("Rating", 3.6)
         });
-        await this.Database.HashSetAsync("hashhotels:BaseSet-2", new HashEntry[]
+        await this.Database.HashSetAsync("hashhotels:HBaseSet-2", new HashEntry[]
         {
             new("HotelName", "My Hotel 2"),
             new("HotelCode", 2),
@@ -146,7 +159,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             new("DescriptionEmbedding", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(embedding)).ToArray()),
             new("parking_is_included", false),
         });
-        await this.Database.HashSetAsync("hashhotels:BaseSet-3", new HashEntry[]
+        await this.Database.HashSetAsync("hashhotels:HBaseSet-3", new HashEntry[]
         {
             new("HotelName", "My Hotel 3"),
             new("HotelCode", 3),
@@ -154,7 +167,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             new("DescriptionEmbedding", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(embedding)).ToArray()),
             new("parking_is_included", false),
         });
-        await this.Database.HashSetAsync("hashhotels:BaseSet-4-Invalid", new HashEntry[]
+        await this.Database.HashSetAsync("hashhotels:HBaseSet-4-Invalid", new HashEntry[]
         {
             new("HotelId", "AnotherId"),
             new("HotelName", "My Invalid Hotel"),
@@ -201,19 +214,23 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             {
                 PortBindings = new Dictionary<string, IList<PortBinding>>
                 {
-                    {"6379", new List<PortBinding> {new() {HostPort = "6379"}}}
+                    {"6379", new List<PortBinding> {new() {HostPort = "6379"}}},
+                    {"8001", new List<PortBinding> {new() {HostPort = "8001"}}}
                 },
                 PublishAllPorts = true
             },
             ExposedPorts = new Dictionary<string, EmptyStruct>
             {
-                { "6379", default }
+                { "6379", default },
+                { "8001", default }
             },
         });
 
         await client.Containers.StartContainerAsync(
             container.ID,
             new ContainerStartParameters());
+
+        await Task.Delay(1000);
 
         return container.ID;
     }
@@ -272,7 +289,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// A test model for the vector store that only uses basic types as supported by HashSets Redis mode.
     /// </summary>
-    public class BasicHotel
+    public class BasicHotel<TVectorElement>
     {
         [VectorStoreRecordKey]
         public string HotelId { get; init; }
@@ -287,7 +304,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         public string Description { get; init; }
 
         [VectorStoreRecordVector(4)]
-        public ReadOnlyMemory<float>? DescriptionEmbedding { get; init; }
+        public ReadOnlyMemory<TVectorElement>? DescriptionEmbedding { get; init; }
 
         [JsonPropertyName("parking_is_included")]
         [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
@@ -295,6 +312,20 @@ public class RedisVectorStoreFixture : IAsyncLifetime
 
         [VectorStoreRecordData]
         public double Rating { get; init; }
+    }
+
+    /// <summary>
+    /// A test model for the vector store that only uses basic types as supported by HashSets Redis mode.
+    /// </summary>
+    public class BasicFloat32Hotel : BasicHotel<float>
+    {
+    }
+
+    /// <summary>
+    /// A test model for the vector store that only uses basic types as supported by HashSets Redis mode.
+    /// </summary>
+    public class BasicFloat64Hotel : BasicHotel<double>
+    {
     }
 }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

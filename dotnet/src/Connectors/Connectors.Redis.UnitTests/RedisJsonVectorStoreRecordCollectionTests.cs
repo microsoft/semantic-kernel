@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -438,6 +439,69 @@ public class RedisJsonVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanSearchWithVectorAndFilterAsync(bool useDefinition)
+    {
+        // Arrange
+        var jsonResult = """{ "data1_json_name": "data 1", "Data2": "data 2", "vector1_json_name": [1, 2, 3, 4], "Vector2": [1, 2, 3, 4] }""";
+        SetupExecuteMock(this._redisDatabaseMock, new RedisResult[]
+        {
+            RedisResult.Create(new RedisValue("1")),
+            RedisResult.Create(new RedisValue(TestRecordKey1)),
+            RedisResult.Create(new RedisValue("0.5")),
+            RedisResult.Create([new RedisValue("$"), new RedisValue(jsonResult)]),
+        });
+        var sut = this.CreateRecordCollection(useDefinition);
+
+        var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "data 1");
+
+        // Act.
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
+            new()
+            {
+                IncludeVectors = true,
+                Filter = filter,
+                Limit = 5,
+                Offset = 2
+            }).ToListAsync();
+
+        // Assert.
+        var expectedArgs = new object[]
+        {
+            "testcollection",
+            "(@data1_json_name:{data 1})=>[KNN 7 @vector1_json_name $embedding AS vector_score]",
+            "WITHSCORES",
+            "SORTBY",
+            "vector_score",
+            "LIMIT",
+            2,
+            7,
+            "PARAMS",
+            2,
+            "embedding",
+            MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).ToArray(),
+            "DIALECT",
+            2
+        };
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "FT.SEARCH",
+                    It.Is<object[]>(x => x.Where(y => !(y is byte[])).SequenceEqual(expectedArgs.Where(y => !(y is byte[]))))),
+                Times.Once);
+
+        Assert.Single(actual);
+        Assert.Equal(TestRecordKey1, actual.First().Record.Key);
+        Assert.Equal(0.5d, actual.First().Score);
+        Assert.Equal("data 1", actual.First().Record.Data1);
+        Assert.Equal("data 2", actual.First().Record.Data2);
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.First().Record.Vector1!.Value.ToArray());
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.First().Record.Vector2!.Value.ToArray());
+    }
+
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
     /// In this case, the expectation is that a custom mapper will be provided to map between the
@@ -491,6 +555,19 @@ public class RedisJsonVectorStoreRecordCollectionTests
     {
         var results = redisResultStrings
             .Select(x => RedisResult.Create(new RedisValue(x)))
+            .ToArray();
+        redisDatabaseMock
+            .Setup(
+                x => x.ExecuteAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<object[]>()))
+            .ReturnsAsync(RedisResult.Create(results));
+    }
+
+    private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, IEnumerable<RedisResult> redisResultStrings)
+    {
+        var results = redisResultStrings
+            .Select(x => x)
             .ToArray();
         redisDatabaseMock
             .Setup(
