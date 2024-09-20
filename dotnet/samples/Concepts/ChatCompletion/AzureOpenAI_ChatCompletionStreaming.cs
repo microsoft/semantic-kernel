@@ -16,7 +16,7 @@ public class AzureOpenAI_ChatCompletionStreaming(ITestOutputHelper output) : Bas
     /// This example demonstrates chat completion streaming using Azure OpenAI.
     /// </summary>
     [Fact]
-    public Task StreamAzureOpenAIChatAsync()
+    public Task StreamServicePromptAsync()
     {
         Console.WriteLine("======== Azure Open AI Chat Completion Streaming ========");
 
@@ -35,9 +35,9 @@ public class AzureOpenAI_ChatCompletionStreaming(ITestOutputHelper output) : Bas
     /// and alternatively via the StreamingChatMessageContent.Items property.
     /// </summary>
     [Fact]
-    public async Task StreamTextContentAsync()
+    public async Task StreamServicePromptTextAsync()
     {
-        Console.WriteLine("======== Stream Text Content ========");
+        Console.WriteLine("======== Azure Open AI Streaming Text ========");
 
         // Create chat completion service
         AzureOpenAIChatCompletionService chatCompletionService = new(

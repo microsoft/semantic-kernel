@@ -12,7 +12,7 @@ namespace ChatCompletion;
 public class AzureOpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task AzureOpenAIChatPromptAsync()
+    public async Task ChatPromptAsync()
     {
         Assert.NotNull(TestConfiguration.Ollama.ModelId);
 
@@ -40,7 +40,7 @@ public class AzureOpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(out
     }
 
     [Fact]
-    public async Task AzureOpenAIServicePromptAsync()
+    public async Task ServicePromptAsync()
     {
         Console.WriteLine("======== Azure Open AI - Chat Completion ========");
 
@@ -58,7 +58,7 @@ public class AzureOpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(out
     /// If local auth is disabled in the Azure Open AI deployment, you can use Azure Default Credential to authenticate.
     /// </summary>
     [Fact]
-    public async Task AzureOpenAIWithDefaultAzureCredentialSampleAsync()
+    public async Task DefaultAzureCredentialSampleAsync()
     {
         Console.WriteLine("======== Azure Open AI - Chat Completion with Azure Default Credential ========");
 

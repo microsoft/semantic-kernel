@@ -1,39 +1,37 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ClientModel.Primitives;
-using Azure;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
+using OpenAI;
 
 namespace ChatCompletion;
 
-public sealed class AzureOpenAI_CustomClient(ITestOutputHelper output) : BaseTest(output)
+public sealed class OpenAI_CustomClient(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
     {
-        Console.WriteLine("======== Using a custom AzureOpenAI client ========");
+        Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
+        Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
 
-        Assert.NotNull(TestConfiguration.AzureOpenAI.Endpoint);
-        Assert.NotNull(TestConfiguration.AzureOpenAI.ChatDeploymentName);
-        Assert.NotNull(TestConfiguration.AzureOpenAI.ApiKey);
+        Console.WriteLine("======== Using a custom OpenAI client ========");
 
         // Create an HttpClient and include your custom header(s)
-        var httpClient = new HttpClient();
+        using var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Add("My-Custom-Header", "My Custom Value");
 
         // Configure AzureOpenAIClient to use the customized HttpClient
-        var clientOptions = new AzureOpenAIClientOptions
+        var clientOptions = new OpenAIClientOptions
         {
             Transport = new HttpClientPipelineTransport(httpClient),
             NetworkTimeout = TimeSpan.FromSeconds(30),
             RetryPolicy = new ClientRetryPolicy()
         };
 
-        var customClient = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), TestConfiguration.AzureOpenAI.ApiKey, clientOptions);
+        var customClient = new OpenAIClient(TestConfiguration.OpenAI.ApiKey, clientOptions);
 
         var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, customClient)
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, customClient)
             .Build();
 
         // Load semantic plugin defined with prompt templates
