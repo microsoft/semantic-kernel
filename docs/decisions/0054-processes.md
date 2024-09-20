@@ -12,43 +12,56 @@ informed: SK-3P-FTE
 
 ## Context and Problem Statement
 
-Enterprises are built on business processes. Our enterprise customers have told us time and time again that they need help automating these processes with AI.
-
-The high level structure of a business process can be modeled as:
+We have heard from many customers about the need for an enterprise grade solution for automating AI-integrated business processes.
+At a high level, the structure of a business process is:
 
 - Starts with external event
-- A collection of structured activities or tasks
+- Contains a collection of structured activities or tasks
 - A defined sequence of these tasks that produces a service or product that adds value
 - Serves a business goal
 
-Some examples of a business process
+In technical terms, a process is something that can be represented as a graph where nodes in the graph represent units of work and edges between nodes represent causal activations that may or may not also carry data. There are many examples of graph based workflow engines that are suitable for handling traditional enterprise processes. Examples include GitHub Actions & Workflows, Argo Workflows, Dapr Workflows, and many more. However, the additional requirements for integration with AI adds new requirements that may not be adequately supported by these frameworks. Features such as support for cycles in the graph, dynamically created nodes and edges, node and edge level metadata to support AI driven scenarios, and streamlined integration with AI orchestration are missing examples of things that are not fully supported by any of these.
 
 ## Decision Drivers
 
-- Customers should be able to leverage their existing investments in Sematic Kernel.
+- Customers should be able to leverage their existing investments in all supported languages of Sematic Kernel.
 - Customers should be able to leverage their existing investments in infrastructure.
 - Customers should be able to collaborate with their business process peers to build up composable processes.
 - Customers should be able to use AI to enhance and streamline the steps within their business processes.
 - Customers should be able to control the process flow in a defined and repeatable way.
+- Customers should be able to easily model typical AI driven scenarios that may require cycles and dynamic edges.
 - Processes should be able to support short lived transient business processes as well as long lived business processes.
 - Processes should be able to be run locally, deployed as a single process or or deployed to a distributed service.
 - Processes should be able to run and debug locally without additional software or infrastructure.
+- Processes should be stateful and able resume from a paused state or a recoverable error.
 - Regulated Customers should be able to audit currently running or completed processes end to end.
 
 ## Considered Options
 
-**_Options #1 - Build existing samples on top of existing workflow frameworks_**:
+### Options #1:
 
-**_Options #2 - Build SK Process library within an existing workflow framework_**:
+**_Build existing samples on top of existing workflow frameworks_**:
+This option was explored with frameworks such as Dapr Workflows, Argo, Durable Tasks, and others. Among the subset or these options that can support the technical requirements listed above, the main concern with these frameworks is the amount of overhead required to work with them. Many of these frameworks require a lot of code and infrastructure to get up and running and require special emulators to run locally which is undesirable. It's important to call out that this option is not mutually exclusive with the others, we may choose to build samples showing SK integrating with other workflow engines even we choose to also go a different route.
 
-**_Options #3 - Build SK Process library with a custom build workflow engine_**:
+### Options #2:
 
-**_Options #4 - Build platform agnostic SK Process library with connectors for existing workflow frameworks_**:
+**_Build SK Process library within an existing workflow framework_**:
+Of all the frameworks explored, the few that seem closest to meeting the technical requirements listed above are based on Durable Tasks. This includes things like Dapr Workflows, Azure Durable Functions, and Azure Durable Tasks Library. Attempts to build a working solution on these frameworks resulted an awkward interface due to the underlying structure of Durable Tasks where nodes are stateless and only the central orchestrator is stateful.
+
+### Options #3:
+
+**_Build SK Process library with a custom build workflow engine_**:
+Building a custom workflow engine might provide the cleanest integration but would require extensive resources and time that we don't have. Distributed workflow engines are products in and of themselves.
+
+### Options #4:
+
+**_Build platform agnostic SK Process library with connectors for existing workflow frameworks_**:
+This is the chosen option.
 
 ## Decision Outcome
 
-**_Chosen option - #4_**: Build platform agnostic SK Process library with connectors for existing workflow frameworks, because
-this is the only option that allows customers to leverage their existing investments in Semantic Kernel, leverage investments in their existing infrastructure, and allows Semantic Kernel to stay out of the business of building distributed workflow engines.
+**_Chosen option - #4_**: Build platform agnostic SK Process library with connectors for existing workflow frameworks.
+This was the only option that was ale to meet all the technical and scenario driven requirements. This option should allow for a simple and well-integrated interface into Semantic Kernel as well as the ability to support many existing distributed runtimes that will give our customers the flexibility to use their existing infrastructure and expertise.
 
 ### Components of the Process library
 
@@ -186,6 +199,8 @@ process.OnEvent(ChatBotEvents.AssistantResponseGenerated).Run((CloudEvent e) =>
 });
 
 ```
+
+#### Step 4 - Run the Process:
 
 ## Validation
 
