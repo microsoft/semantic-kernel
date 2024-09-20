@@ -175,7 +175,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         if (this._vectorProperties.Count > 0)
         {
-            this._firstVectorProperty = this._vectorProperties.First();
+            this._firstVectorProperty = this._vectorProperties[0];
         }
     }
 

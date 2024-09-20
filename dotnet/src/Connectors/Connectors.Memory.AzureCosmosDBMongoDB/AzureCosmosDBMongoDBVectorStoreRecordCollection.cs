@@ -103,7 +103,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         if (this._vectorProperties.Count > 0)
         {
-            this._firstVectorProperty = this._vectorProperties.First();
+            this._firstVectorProperty = this._vectorProperties[0];
         }
 
         this._mapper = this._options.BsonDocumentCustomMapper ??
