@@ -47,7 +47,7 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
         """
         try:
             settings = OnnxGenAISettings.create(
-                model_path=ai_model_path,
+                folder=ai_model_path,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
@@ -55,11 +55,11 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
             raise ServiceInitializationError(f"Invalid settings for OnnxGenAITextCompletion: {e}")
 
         if ai_model_id is None:
-            ai_model_id = settings.model_path
+            ai_model_id = settings.folder
 
         super().__init__(
             ai_model_id=ai_model_id,
-            ai_model_path=settings.model_path,
+            ai_model_path=settings.folder,
         )
 
     @override

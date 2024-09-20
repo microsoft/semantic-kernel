@@ -12,7 +12,7 @@ def onnx_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         override_env_param_dict = {}
 
     env_vars = {
-        "ONNX_GEN_AI_MODEL_PATH": "test_chat_model_id",
+        "ONNX_GEN_AI_FOLDER": "test_chat_model_id",
     }
 
     env_vars.update(override_env_param_dict)
@@ -24,3 +24,8 @@ def onnx_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
             monkeypatch.delenv(key, raising=False)
 
     return env_vars
+
+
+gen_ai_config = {"model": {"test": "test"}}
+
+gen_ai_config_vision = {"model": {"vision": "test"}}

@@ -16,30 +16,12 @@ service_id = "phi3"
 #############################################
 # Make sure to download an ONNX model
 # e.g (https://huggingface.co/microsoft/Phi-3-mini-128k-instruct-onnx)
-# Then set the path to the model folder
+# Then set ONNX_GEN_AI_FOLDER environment variable to the path to the model folder
 #############################################
 streaming = True
-model_path = r"C:\GIT\models\phi3-cpu-onnx"
 
-prompt_template = """
-{% for message in messages %}
-    {% if message['role'] == 'system' %}
-        {{'<|system|>\n' + message['content'] + '<|end|>\n'}}
-    {% elif message['role'] == 'user' %}
-        {{'<|user|>\n' + message['content'] + '<|end|>\n'}}
-    {% elif message['role'] == 'assistant' %}
-        {{'<|assistant|>\n' + message['content'] + '<|end|>\n' }}
-    {% endif %}
-{% endfor %}
-<|assistant|>"""
-
-
-chat_completion = OnnxGenAIChatCompletion(
-    ai_model_path=model_path, ai_model_id=service_id, prompt_template=prompt_template
-)
-settings = OnnxGenAIPromptExecutionSettings(
-    max_length=3072,
-)
+chat_completion = OnnxGenAIChatCompletion(ai_model_id=service_id, template="phi3")
+settings = OnnxGenAIPromptExecutionSettings()
 
 system_message = """You are a helpful assistant."""
 chat_history = ChatHistory(system_message=system_message)

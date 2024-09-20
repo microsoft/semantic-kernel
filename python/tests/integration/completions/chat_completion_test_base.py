@@ -32,7 +32,8 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
-from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings
+from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
+from semantic_kernel.connectors.ai.onnx.onnx_utils import ONNXTemplate
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
@@ -51,7 +52,6 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
-from tests.integration.completions.test_utils import setup_onnx_gen_ai_chat_completion
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -95,7 +95,7 @@ except ServiceInitializationError:
 
 onnx_setup: bool = False
 try:
-    setup_onnx_gen_ai_chat_completion()
+    OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3)
     onnx_setup = True
 except ServiceInitializationError:
     onnx_setup = False
@@ -159,7 +159,7 @@ class ChatCompletionTestBase(CompletionTestBase):
             "google_ai": (GoogleAIChatCompletion() if google_ai_setup else None, GoogleAIChatPromptExecutionSettings),
             "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
             "onnx_gen_ai": (
-                setup_onnx_gen_ai_chat_completion() if onnx_setup else None,
+                OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3V) if onnx_setup else None,
                 OnnxGenAIPromptExecutionSettings,
             ),
         }

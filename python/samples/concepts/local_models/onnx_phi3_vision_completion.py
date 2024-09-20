@@ -16,34 +16,20 @@ kernel = Kernel()
 service_id = "phi3"
 #############################################
 # Make sure to download an ONNX model
-# e.g (https://huggingface.co/microsoft/Phi-3-vision-128k-instruct-onnx-cpu)
-# Then set the path to the model folder
+# If onnxruntime-genai is used:
+# (https://huggingface.co/microsoft/Phi-3-vision-128k-instruct-onnx-cpu)
+# If onnxruntime-genai-cuda is installed for gpu use:
+# (https://huggingface.co/microsoft/Phi-3-vision-128k-instruct-onnx-gpu)
+# Then set ONNX_GEN_AI_FOLDER environment variable to the path to the model folder
 #############################################
 streaming = False
-model_path = r"C:\GIT\models\phi3V-cpu-onnx"
 
-prompt_template = """
-{% for message in messages %}
-    {% if message['content'] is not string %}
-        {{'<|image_1|>'}}
-    {% else %}
-        {% if message['role'] == 'system' %}
-            {{'<|system|>\n' + message['content'] + '<|end|>\n'}}
-        {% elif message['role'] == 'user' %}
-            {{'<|user|>\n' + message['content'] + '<|end|>\n'}}
-        {% elif message['role'] == 'assistant' %}
-            {{'<|assistant|>\n' + message['content'] + '<|end|>\n' }}
-        {% endif %}
-    {% endif %}
-{% endfor %}
-<|assistant|>"""
+chat_completion = OnnxGenAIChatCompletion(ai_model_id=service_id, template="phi3v")
 
-chat_completion = OnnxGenAIChatCompletion(
-    ai_model_path=model_path, ai_model_id=service_id, prompt_template_config=prompt_template
-)
-settings = OnnxGenAIPromptExecutionSettings(
-    max_length=3072,
-)
+# Max length prperty is important to allocate RAM
+# If the value is to big, you ran out of memory
+# If the value is to small, your input is limited
+settings = OnnxGenAIPromptExecutionSettings(max_length=3072)
 
 system_message = """
 You are a helpful assistant.

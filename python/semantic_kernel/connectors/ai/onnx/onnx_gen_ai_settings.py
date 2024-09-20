@@ -14,9 +14,9 @@ class OnnxGenAISettings(KernelBaseSettings):
     however, validation will fail alerting that the settings are missing.
 
     Optional settings for prefix 'ONNX_GEN_AI_' are:
-    - model_path: Path to the Onnx model (ENV: ONNX_GEN_AI_MODEL_PATH).
+    - folder: Path to the Onnx model (ENV: ONNX_GEN_AI_FOLDER).
     - env_file_path: if provided, the .env settings are read from this file path location
     """
 
     env_prefix: ClassVar[str] = "ONNX_GEN_AI_"
-    model_path: str
+    folder: str

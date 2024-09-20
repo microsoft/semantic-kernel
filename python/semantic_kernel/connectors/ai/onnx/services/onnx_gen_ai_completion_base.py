@@ -37,7 +37,10 @@ class OnnxGenAICompletionBase(KernelBaseModel):
                 config: dict = json.load(file)
                 enable_multi_modality = "vision" in config.get("model", {})
                 model = OnnxRuntimeGenAi.Model(ai_model_path)
-                tokenizer = model.create_multimodal_processor() if enable_multi_modality else OnnxRuntimeGenAi.Tokenizer(model)
+                if enable_multi_modality:
+                    tokenizer = model.create_multimodal_processor()
+                else:
+                    tokenizer = OnnxRuntimeGenAi.Tokenizer(model)
                 tokenizer_stream = tokenizer.create_stream()
         except Exception as e:
             raise ServiceInitializationError(f"Failed to initialize OnnxTextCompletion service: {e}")
@@ -57,13 +60,14 @@ class OnnxGenAICompletionBase(KernelBaseModel):
         params.set_search_options(**settings.prepare_settings_dict())
         if not self.enable_multi_modality:
             input_tokens = self.tokenizer.encode(prompt)
+            params.input_ids = input_tokens
         else:
             if image is not None:
                 # With the use of Pybind there is currently no way to load images from bytes
                 # We can only open images from a file path currently
                 image = OnnxRuntimeGenAi.Images.open(str(image.uri))
             input_tokens = self.tokenizer(prompt, images=image)
-        params.set_inputs(input_tokens)
+            params.set_inputs(input_tokens)
         return params
 
     async def _generate_next_token(
