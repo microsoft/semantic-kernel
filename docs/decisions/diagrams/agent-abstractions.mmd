@@ -1,0 +1,64 @@
+classDiagram
+
+    Agent --> AgentChannel
+    class Agent {
+        <<Abstract>>        
+        +String Id
+        +String? Description
+        +String? Name
+        ~#IEnumerable~String~ GetChannelKeys()*
+        ~#Task~AgentChannel~ CreateChannelAsync()*
+    }
+
+    class AgentChannel {
+        <<Abstract>>
+        ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent)*
+        ~#IAsyncEnumerable~ChatMessageContent~ GetHistoryAsync()*
+        ~#Task ReceiveAsync(IReadOnlyList~ChatMessageContent~ history)*
+    }
+
+    Agent <|-- KernelAgent
+    class KernelAgent {
+        <<Abstract>>
+        +String? Instructions
+        +Kernel Kernel
+    }
+
+    class IChatHistoryHandler {
+        <<Interface>>
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAsync(IReadOnlyList~ChatMessageContent~ history, )*
+    }
+
+    KernelAgent <|-- ChatHistoryKernelAgent
+    IChatHistoryHandler <|-- ChatHistoryKernelAgent
+    ChatHistoryKernelAgent --> ChatHistoryChannel
+    class ChatHistoryKernelAgent {
+        #IEnumerable~String GetChannelKeys()
+        #Task~AgentChannel~ CreateChannelAsync()
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAsync(IReadOnlyList~ChatMessageContent~ history, )*
+    }
+
+    AgentChannel <|-- ChatHistoryChannel
+    class ChatHistoryChannel {
+        <<Final>>
+        -ChatHistory _history
+        ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent)
+        ~#IAsyncEnumerable~ChatMessageContent~ GetHistoryAsync()
+        ~#Task ReceiveAsync(IReadOnlyList~ChatMessageContent~ history)
+    }
+
+    AgentChat o-- AgentChannel
+    class AgentChat {
+        <<Abstract>>
+        #ChatHistory History
+        +bool IsActive
+        +ILoggerFactory LoggerFactory;
+        #ILogger Logger;
+        +void AddChatMessage(ChatMessageContent message)
+        +void AddChatMessages(IReadOnlyList~ChatMessageContent~ messages)
+        +IAsyncEnumerable~ChatMessageContent~ GetChatMessagesAsync()
+        +IAsyncEnumerable~ChatMessageContent~ GetChatMessagesAsync(Agent? agent)
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync()*
+        #IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync(Agent agent)
+    }
+

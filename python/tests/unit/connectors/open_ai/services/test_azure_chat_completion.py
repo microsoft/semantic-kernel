@@ -92,14 +92,6 @@ def test_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
         )
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
-def test_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ServiceInitializationError):
-        AzureChatCompletion(
-            env_file_path="test.env",
-        )
-
-
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True)
 def test_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
@@ -341,18 +333,16 @@ async def test_azure_on_your_data_string(
             message=ChatCompletionMessage(
                 content="test",
                 role="assistant",
-                context=json.dumps(
-                    {
-                        "citations": {
-                            "content": "test content",
-                            "title": "test title",
-                            "url": "test url",
-                            "filepath": "test filepath",
-                            "chunk_id": "test chunk_id",
-                        },
-                        "intent": "query used",
-                    }
-                ),
+                context=json.dumps({
+                    "citations": {
+                        "content": "test content",
+                        "title": "test title",
+                        "url": "test url",
+                        "filepath": "test filepath",
+                        "chunk_id": "test chunk_id",
+                    },
+                    "intent": "query used",
+                }),
             ),
             finish_reason="stop",
         )
@@ -653,7 +643,7 @@ async def test_content_filtering_raises_correct_exception(
 
     with pytest.raises(ContentFilterAIException, match="service encountered a content error") as exc_info:
         await azure_chat_completion.get_chat_message_contents(
-            chat_history, complete_prompt_execution_settings, kernel=kernel
+            chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
         )
 
     content_filter_exc = exc_info.value
@@ -696,7 +686,7 @@ async def test_content_filtering_without_response_code_raises_with_default_code(
 
     with pytest.raises(ContentFilterAIException, match="service encountered a content error"):
         await azure_chat_completion.get_chat_message_contents(
-            chat_history, complete_prompt_execution_settings, kernel=kernel
+            chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
         )
 
 
@@ -718,7 +708,7 @@ async def test_bad_request_non_content_filter(
 
     with pytest.raises(ServiceResponseException, match="service failed to complete the prompt"):
         await azure_chat_completion.get_chat_message_contents(
-            chat_history, complete_prompt_execution_settings, kernel=kernel
+            chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
         )
 
 
@@ -742,9 +732,11 @@ async def test_no_kernel_provided_throws_error(
 
     with pytest.raises(
         ServiceInvalidExecutionSettingsError,
-        match="The kernel is required for OpenAI tool calls.",
+        match="The kernel is required for function calls.",
     ):
-        await azure_chat_completion.get_chat_message_contents(chat_history, complete_prompt_execution_settings)
+        await azure_chat_completion.get_chat_message_contents(
+            chat_history=chat_history, settings=complete_prompt_execution_settings
+        )
 
 
 @pytest.mark.asyncio
@@ -767,9 +759,11 @@ async def test_auto_invoke_false_no_kernel_provided_throws_error(
 
     with pytest.raises(
         ServiceInvalidExecutionSettingsError,
-        match="The kernel is required for OpenAI tool calls.",
+        match="The kernel is required for function calls.",
     ):
-        await azure_chat_completion.get_chat_message_contents(chat_history, complete_prompt_execution_settings)
+        await azure_chat_completion.get_chat_message_contents(
+            chat_history=chat_history, settings=complete_prompt_execution_settings
+        )
 
 
 @pytest.mark.asyncio

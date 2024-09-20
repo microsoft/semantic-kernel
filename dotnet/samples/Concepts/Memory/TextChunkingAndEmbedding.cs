@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.ML.Tokenizers;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Text;
 
 namespace Memory;
@@ -9,7 +9,7 @@ namespace Memory;
 public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(output)
 {
     private const string EmbeddingModelName = "text-embedding-ada-002";
-    private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel(EmbeddingModelName);
+    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel(EmbeddingModelName);
 
     [Fact]
     public async Task RunAsync()

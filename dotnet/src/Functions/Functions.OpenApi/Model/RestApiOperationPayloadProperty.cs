@@ -20,6 +20,12 @@ public sealed class RestApiOperationPayloadProperty
     public string Type { get; }
 
     /// <summary>
+    /// The property type modifier that refines the generic parameter type to a more specific one.
+    /// More details can be found at https://swagger.io/docs/specification/data-models/data-types
+    /// </summary>
+    public string? Format { get; }
+
+    /// <summary>
     /// The property description.
     /// </summary>
     public string? Description { get; }
@@ -52,6 +58,8 @@ public sealed class RestApiOperationPayloadProperty
     /// <param name="isRequired">A flag specifying if the property is required or not.</param>
     /// <param name="properties">A list of properties for the payload property.</param>
     /// <param name="description">A description of the property.</param>
+    /// <param name="format">The parameter type modifier that refines the generic parameter type to a more specific one.
+    /// More details can be found at https://swagger.io/docs/specification/data-models/data-types</param>
     /// <param name="schema">The schema of the payload property.</param>
     /// <param name="defaultValue">The default value of the property.</param>
     /// <returns>Returns a new instance of the <see cref="RestApiOperationPayloadProperty"/> class.</returns>
@@ -61,6 +69,7 @@ public sealed class RestApiOperationPayloadProperty
         bool isRequired,
         IList<RestApiOperationPayloadProperty> properties,
         string? description = null,
+        string? format = null,
         KernelJsonSchema? schema = null,
         object? defaultValue = null)
     {
@@ -70,6 +79,7 @@ public sealed class RestApiOperationPayloadProperty
         this.Description = description;
         this.Properties = properties;
         this.Schema = schema;
+        this.Format = format;
         this.DefaultValue = defaultValue;
     }
 }
