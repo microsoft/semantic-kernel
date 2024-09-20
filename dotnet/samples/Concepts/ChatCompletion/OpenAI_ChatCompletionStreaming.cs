@@ -4,7 +4,6 @@ using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using OpenAI.Chat;
 
 namespace ChatCompletion;
 
@@ -266,14 +265,14 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     }
 
     /// <summary>
-    /// Retrieve extra information from a <see cref="StreamingChatMessageContent"/> inner content of type <see cref="StreamingChatCompletionUpdate"/>.
+    /// Retrieve extra information from a <see cref="StreamingChatMessageContent"/> inner content of type <see cref="OpenAI.Chat.StreamingChatCompletionUpdate"/>.
     /// </summary>
-    /// <param name="streamChunk">An instance of <see cref="StreamingChatCompletionUpdate"/> retrieved as an inner content of <see cref="StreamingChatMessageContent"/>.</param>
+    /// <param name="streamChunk">An instance of <see cref="OpenAI.Chat.StreamingChatCompletionUpdate"/> retrieved as an inner content of <see cref="StreamingChatMessageContent"/>.</param>
     /// <remarks>
     /// This is a breaking glass scenario, any attempt on running with different versions of OpenAI SDK that introduces breaking changes
     /// may break the code below.
     /// </remarks>
-    private void OutputInnerContent(StreamingChatCompletionUpdate streamChunk)
+    private void OutputInnerContent(OpenAI.Chat.StreamingChatCompletionUpdate streamChunk)
     {
         Console.WriteLine($"Id: {streamChunk.Id}");
         Console.WriteLine($"Model: {streamChunk.Model}");
@@ -285,12 +284,12 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         foreach (var contentUpdate in streamChunk.ContentUpdate)
         {
             Console.WriteLine($"   Kind: {contentUpdate.Kind}");
-            if (contentUpdate.Kind == ChatMessageContentPartKind.Text)
+            if (contentUpdate.Kind == OpenAI.Chat.ChatMessageContentPartKind.Text)
             {
                 Console.WriteLine($"   Text: {contentUpdate.Text}"); // Available as a properties of StreamingChatMessageContent.Items
                 Console.WriteLine("   =======");
             }
-            else if (contentUpdate.Kind == ChatMessageContentPartKind.Image)
+            else if (contentUpdate.Kind == OpenAI.Chat.ChatMessageContentPartKind.Image)
             {
                 Console.WriteLine($"   Image uri: {contentUpdate.ImageUri}");
                 Console.WriteLine($"   Image media type: {contentUpdate.ImageBytesMediaType}");
@@ -298,7 +297,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
                 Console.WriteLine($"   Image bytes: {contentUpdate.ImageBytes}");
                 Console.WriteLine("   =======");
             }
-            else if (contentUpdate.Kind == ChatMessageContentPartKind.Refusal)
+            else if (contentUpdate.Kind == OpenAI.Chat.ChatMessageContentPartKind.Refusal)
             {
                 Console.WriteLine($"   Refusal: {contentUpdate.Refusal}");
                 Console.WriteLine("   =======");
