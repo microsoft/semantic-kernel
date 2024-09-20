@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>SemanticKernel.Agents.UnitTests</RootNamespace>
-    <AssemblyName>SemanticKernel.Agents.UnitTests</AssemblyName>
+    <RootNamespace>SemanticKernel.Process.UnitTests</RootNamespace>
+    <AssemblyName>SemanticKernel.Process.UnitTests</AssemblyName>
     <TargetFrameworks>net8.0</TargetFrameworks>
     <!-- ;net48 -->
     <RollForward>LatestMajor</RollForward>
