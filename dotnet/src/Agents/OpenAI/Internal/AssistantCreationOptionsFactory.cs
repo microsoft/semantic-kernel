@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 /// </summary>
 internal static class AssistantCreationOptionsFactory
 {
-    public static AssistantCreationOptions CreateAssistantCreationOptions(this PromptTemplateConfig templateConfig, OpenAIAssistantCapabilities capabilities)
+    public static AssistantCreationOptions CreateAssistantOptions(this PromptTemplateConfig templateConfig, OpenAIAssistantCapabilities capabilities)
     {
         AssistantCreationOptions assistantCreationOptions = capabilities.CreateAssistantCreationOptions(templateConfig.TemplateFormat);
 
@@ -21,7 +21,7 @@ internal static class AssistantCreationOptionsFactory
         return assistantCreationOptions;
     }
 
-    public static AssistantCreationOptions CreateAssistantCreationOptions(this OpenAIAssistantDefinition definition)
+    public static AssistantCreationOptions CreateAssistantOptions(this OpenAIAssistantDefinition definition)
     {
         AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantCreationOptions(PromptTemplateConfig.SemanticKernelTemplateFormat);
 

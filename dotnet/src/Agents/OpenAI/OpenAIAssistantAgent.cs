@@ -89,7 +89,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         AssistantClient client = CreateClient(clientProvider);
 
         // Create the assistant
-        AssistantCreationOptions assistantCreationOptions = templateConfig.CreateAssistantCreationOptions(capabilities);
+        AssistantCreationOptions assistantCreationOptions = templateConfig.CreateAssistantOptions(capabilities);
         Assistant model = await client.CreateAssistantAsync(capabilities.ModelId, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
@@ -127,7 +127,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         AssistantClient client = CreateClient(clientProvider);
 
         // Create the assistant
-        AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantCreationOptions();
+        AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantOptions();
         Assistant model = await client.CreateAssistantAsync(definition.ModelId, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent

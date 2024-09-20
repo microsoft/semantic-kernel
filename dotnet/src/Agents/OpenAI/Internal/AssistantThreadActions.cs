@@ -219,7 +219,7 @@ internal static class AssistantThreadActions
                     FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
 
                     // Capture function-call for message processing
-                    foreach (FunctionResultContent functionCall in functionResults) // %%%
+                    foreach (FunctionResultContent functionCall in functionResults)
                     {
                         functionSteps.Add(functionCall.CallId!, functionCall);
                     }
