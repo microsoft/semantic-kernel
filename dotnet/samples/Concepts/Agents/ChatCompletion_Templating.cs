@@ -23,7 +23,7 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
     [Fact]
     public async Task InvokeAgentWithInstructionsTemplateAsync()
     {
-        // Instruction based template always proceseed by KernelPromptTemplateFactory
+        // Instruction based template always processed by KernelPromptTemplateFactory
         ChatCompletionAgent agent =
             new()
             {
