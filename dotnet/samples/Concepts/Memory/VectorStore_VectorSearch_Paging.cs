@@ -84,5 +84,4 @@ public class VectorStore_VectorSearch_Paging(ITestOutputHelper output) : BaseTes
         [VectorStoreRecordVector(4)]
         public ReadOnlyMemory<float> TextEmbedding { get; set; }
     }
-
 }
