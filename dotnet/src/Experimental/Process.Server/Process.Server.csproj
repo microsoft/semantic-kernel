@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Process.Server</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Process</RootNamespace>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <VersionSuffix>alpha</VersionSuffix>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel Process - Server</Title>
+    <Description>Semantic Kernel Process server. This package is automatically installed by Semantic Kernel Process packages if needed.</Description>
+  </PropertyGroup>
+
+</Project>
