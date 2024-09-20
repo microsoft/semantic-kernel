@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0005 // Using directive is unnecessary
+
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -7,6 +10,8 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using StepwisePlannerMigration.Models;
 using StepwisePlannerMigration.Plugins;
 using StepwisePlannerMigration.Services;
+
+#pragma warning restore IDE0005 // Using directive is unnecessary
 
 namespace StepwisePlannerMigration.Controllers;
 
@@ -43,7 +48,7 @@ public class AutoFunctionCallingController : ControllerBase
         ChatHistory chatHistory = [];
         chatHistory.AddUserMessage(request.Goal);
 
-        OpenAIPromptExecutionSettings executionSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings executionSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         await this._chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, this._kernel);
 
@@ -57,7 +62,7 @@ public class AutoFunctionCallingController : ControllerBase
     [HttpPost, Route("execute-new-plan")]
     public async Task<IActionResult> ExecuteNewPlanAsync(PlanRequest request)
     {
-        OpenAIPromptExecutionSettings executionSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings executionSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         FunctionResult result = await this._kernel.InvokePromptAsync(request.Goal, new(executionSettings));
 
@@ -72,7 +77,7 @@ public class AutoFunctionCallingController : ControllerBase
     public async Task<IActionResult> ExecuteExistingPlanAsync()
     {
         ChatHistory chatHistory = this._planProvider.GetPlan("auto-function-calling-plan.json");
-        OpenAIPromptExecutionSettings executionSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings executionSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         ChatMessageContent result = await this._chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, this._kernel);
 

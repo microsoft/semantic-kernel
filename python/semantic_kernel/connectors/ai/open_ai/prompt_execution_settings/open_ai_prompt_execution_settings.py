@@ -62,12 +62,19 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the Chat Completion endpoint."""
 
     response_format: dict[Literal["type"], Literal["text", "json_object"]] | None = None
-    tools: list[dict[str, Any]] | None = Field(None, max_length=64)
-    tool_choice: str | None = None
     function_call: str | None = None
     functions: list[dict[str, Any]] | None = None
     messages: list[dict[str, Any]] | None = None
     function_call_behavior: FunctionCallBehavior | None = Field(None, exclude=True)
+    tools: list[dict[str, Any]] | None = Field(
+        None,
+        max_length=64,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
+    tool_choice: str | None = Field(
+        None,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
@@ -107,6 +114,8 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 
 
 class OpenAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):
+    """Specific settings for the text embedding endpoint."""
+
     input: str | list[str] | list[int] | list[list[int]] | None = None
     ai_model_id: str | None = Field(None, serialization_alias="model")
     encoding_format: Literal["float", "base64"] | None = None

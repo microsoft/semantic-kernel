@@ -97,7 +97,7 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
         chatHistory.AddUserMessage("Hi, I'm looking for alternative coffee brew methods, can you help me?");
         await MessageOutputAsync(chatHistory);
 
-        // First bot assistant message
+        // First assistant message
         var streamingChat = chat.GetStreamingChatMessageContentsAsync(chatHistory);
         var reply = await MessageOutputAsync(streamingChat);
         chatHistory.Add(reply);
@@ -106,7 +106,7 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
         chatHistory.AddUserMessage("Give me the best speciality coffee roasters.");
         await MessageOutputAsync(chatHistory);
 
-        // Second bot assistant message
+        // Second assistant message
         streamingChat = chat.GetStreamingChatMessageContentsAsync(chatHistory);
         reply = await MessageOutputAsync(streamingChat);
         chatHistory.Add(reply);

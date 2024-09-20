@@ -6,7 +6,7 @@
     <RootNamespace></RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn);CA2007;VSTHRD111</NoWarn>
+    <NoWarn>$(NoWarn);CA2007;VSTHRD111;SKEXP0001</NoWarn>
     <UserSecretsId>c478d0b2-7145-4d1a-9600-3130c04085cd</UserSecretsId>
   </PropertyGroup>
 
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+    <ProjectReference Include="..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>

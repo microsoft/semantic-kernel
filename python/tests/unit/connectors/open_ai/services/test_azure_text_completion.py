@@ -63,14 +63,6 @@ def test_init_with_empty_deployment_name(monkeypatch, azure_openai_unit_test_env
         )
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
-def test_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ServiceInitializationError):
-        AzureTextCompletion(
-            env_file_path="test.env",
-        )
-
-
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True)
 def test_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
@@ -103,7 +95,7 @@ async def test_call_with_parameters(
     complete_prompt_execution_settings = OpenAITextPromptExecutionSettings()
     azure_text_completion = AzureTextCompletion()
 
-    await azure_text_completion.get_text_contents(prompt, complete_prompt_execution_settings)
+    await azure_text_completion.get_text_contents(prompt=prompt, settings=complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
@@ -135,7 +127,7 @@ async def test_call_with_parameters_logit_bias_not_none(
 
     azure_text_completion = AzureTextCompletion()
 
-    await azure_text_completion.get_text_contents(prompt, complete_prompt_execution_settings)
+    await azure_text_completion.get_text_contents(prompt=prompt, settings=complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
