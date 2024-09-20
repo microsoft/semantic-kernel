@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace ChatCompletion;
 
-// The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
+// The following example shows how to use Semantic Kernel with OpenAI API
 public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]

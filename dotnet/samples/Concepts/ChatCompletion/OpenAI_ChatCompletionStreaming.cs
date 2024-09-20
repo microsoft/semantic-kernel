@@ -4,7 +4,6 @@ using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using OllamaSharp.Models.Chat;
 using OpenAI.Chat;
 
 namespace ChatCompletion;

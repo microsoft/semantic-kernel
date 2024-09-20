@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ClientModel.Primitives;
-using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 
