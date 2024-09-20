@@ -266,9 +266,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     }
 
     /// <summary>
-    /// Retrieve extra information from a <see cref="ChatMessageContent"/> inner content of type <see cref="OpenAI.Chat.ChatCompletion"/>.
+    /// Retrieve extra information from a <see cref="StreamingChatMessageContent"/> inner content of type <see cref="StreamingChatCompletionUpdate"/>.
     /// </summary>
-    /// <param name="streamChunk">An instance of <see cref="OpenAI.Chat.ChatCompletion"/> retrieved as an inner content of <see cref="ChatMessageContent"/>.</param>
+    /// <param name="streamChunk">An instance of <see cref="StreamingChatCompletionUpdate"/> retrieved as an inner content of <see cref="StreamingChatMessageContent"/>.</param>
     /// <remarks>
     /// This is a breaking glass scenario, any attempt on running with different versions of OpenAI SDK that introduces breaking changes
     /// may break the code below.
