@@ -19,7 +19,7 @@ namespace Memory;
 public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task ExampleAsync()
+    public async Task VectorSearchWithMultiVectorRecordAsync()
     {
         // Create an embedding generation service.
         var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(

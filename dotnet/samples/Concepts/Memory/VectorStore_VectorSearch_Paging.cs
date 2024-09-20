@@ -15,7 +15,7 @@ namespace Memory;
 public class VectorStore_VectorSearch_Paging(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task ExampleAsync()
+    public async Task VectorSearchWithPagingAsync()
     {
         // Construct a volatile vector store.
         var vectorStore = new VolatileVectorStore();
