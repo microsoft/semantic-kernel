@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
@@ -61,7 +62,7 @@ internal static partial class AgentChatLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "[{MethodName}] Adding Messages: {MessageCount}.")]
+        Message = "[{MethodName}] Added Messages: {MessageCount}.")]
     public static partial void LogAgentChatAddedMessages(
         this ILogger logger,
         string methodName,
@@ -93,6 +94,31 @@ internal static partial class AgentChatLogMessages
         Type agentType,
         string agentId,
         ChatMessageContent message);
+
+    /// <summary>
+    /// Logs retrieval of streamed <see cref="AgentChat"/> messages.
+    /// </summary>
+    private static readonly Action<ILogger, string, Type, string, ChatMessageContent, Exception?> s_logAgentChatInvokedStreamingAgentMessages =
+        LoggerMessage.Define<string, Type, string, ChatMessageContent>(
+            logLevel: LogLevel.Debug,
+            eventId: 0,
+            "[{MethodName}] Agent message {AgentType}/{AgentId}: {Message}.");
+
+    public static void LogAgentChatInvokedStreamingAgentMessages(
+        this ILogger logger,
+        string methodName,
+        Type agentType,
+        string agentId,
+        IList<ChatMessageContent> messages)
+    {
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            foreach (ChatMessageContent message in messages)
+            {
+                s_logAgentChatInvokedStreamingAgentMessages(logger, methodName, agentType, agentId, message, null);
+            }
+        }
+    }
 
     /// <summary>
     /// Logs <see cref="AgentChat"/> invoked agent (complete).

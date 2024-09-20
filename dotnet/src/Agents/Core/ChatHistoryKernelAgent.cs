@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// A <see cref="KernelAgent"/> specialization bound to a <see cref="ChatHistoryChannel"/>.
 /// </summary>
 /// <remarks>
-/// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
+/// NOTE: Enable OpenAIPromptExecutionSettings.FunctionChoiceBehavior for agent plugins.
 /// (<see cref="ChatHistoryKernelAgent.Arguments"/>)
 /// </remarks>
 public abstract class ChatHistoryKernelAgent : KernelAgent
@@ -23,7 +23,13 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// </summary>
     public KernelArguments? Arguments { get; init; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Optionally specify a <see cref="IChatHistoryReducer"/> to reduce the history.
+    /// </summary>
+    /// <remarks>
+    /// This is automatically applied to the history before invoking the agent, only when using
+    /// an <see cref="AgentChat"/>.  It must be explicitly applied via <see cref="ReduceAsync"/>.
+    /// </remarks>
     public IChatHistoryReducer? HistoryReducer { get; init; }
 
     /// <inheritdoc/>

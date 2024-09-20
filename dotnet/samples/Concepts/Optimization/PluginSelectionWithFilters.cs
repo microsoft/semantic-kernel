@@ -66,7 +66,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         await pluginStore.SaveAsync(CollectionName, kernel.Plugins);
 
         // Enable automatic function calling by default.
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Define kernel arguments with specific request.
         var kernelArguments = new KernelArguments(executionSettings) { ["Request"] = "Provide latest headlines" };
@@ -91,9 +91,9 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         // Invoke the request with plugin selection filter.
         Console.WriteLine("\nRun with filter:");
 
-        // ToolCallBehavior.AutoInvokeKernelFunctions is used here as well as defined above.
-        // In case there will be related functions found for specific request, the ToolCallBehavior will be updated in filter to
-        // ToolCallBehavior.EnableFunctions(functions, autoInvoke: true) - this will allow to share only related set of functions with AI.
+        // FunctionChoiceBehavior.Auto() is used here as well as defined above.
+        // In case there will be related functions found for specific request, the FunctionChoiceBehavior will be updated in filter to
+        // FunctionChoiceBehavior.Auto(functions) - this will allow to share only related set of functions with AI.
         result = await kernel.InvokePromptAsync("{{$Request}}", kernelArguments);
 
         Console.WriteLine(result);
@@ -140,7 +140,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         await pluginStore.SaveAsync(CollectionName, kernel.Plugins);
 
         // Enable automatic function calling by default.
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Get function provider and find best functions for specified prompt.
         var functionProvider = kernel.GetRequiredService<IFunctionProvider>();
@@ -155,11 +155,8 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             bestFunctions.ForEach(function
                 => logger.LogInformation("Best function found: {PluginName}-{FunctionName}", function.PluginName, function.Name));
 
-            // Convert selected functions to OpenAI functions.
-            var openAIFunctions = bestFunctions.Select(function => function.Metadata.ToOpenAIFunction());
-
             // Share only selected functions with AI.
-            executionSettings.ToolCallBehavior = ToolCallBehavior.EnableFunctions(openAIFunctions, autoInvoke: true);
+            executionSettings.FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(bestFunctions);
         }
 
         // Get chat completion service and execute a request.
@@ -228,11 +225,8 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
 
             if (promptExecutionSettings is not null && promptExecutionSettings is OpenAIPromptExecutionSettings openAIPromptExecutionSettings)
             {
-                // Convert selected functions to OpenAI functions.
-                var openAIFunctions = functions.Select(function => function.Metadata.ToOpenAIFunction());
-
                 // Share only selected functions with AI.
-                openAIPromptExecutionSettings.ToolCallBehavior = ToolCallBehavior.EnableFunctions(openAIFunctions, autoInvoke: true);
+                openAIPromptExecutionSettings.FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(functions);
 
                 return new() { [PromptExecutionSettings.DefaultServiceId] = openAIPromptExecutionSettings };
             }
