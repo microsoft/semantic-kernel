@@ -14,7 +14,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAgentsTe
 {
     private readonly static (string Input, string? Style)[] s_inputs =
         [
-            (Input: "Home cooking is the great.", Style: null),
+            (Input: "Home cooking is great.", Style: null),
             (Input: "Talk about world peace.", Style: "iambic pentameter"),
             (Input: "Say something about doing your best.", Style: "e. e. cummings"),
             (Input: "What do you think about having fun?", Style: "old school rap")
