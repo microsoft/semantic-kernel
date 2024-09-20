@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Process.Server</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Process.LocalRuntime</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Process</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <EnablePackageValidation>false</EnablePackageValidation>
@@ -14,8 +14,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel Process - Server</Title>
-    <Description>Semantic Kernel Process server. This package is automatically installed by Semantic Kernel Process packages if needed.</Description>
+    <Title>Semantic Kernel Process - LocalRuntime</Title>
+    <Description>Semantic Kernel Process LocalRuntime. This package is automatically installed by Semantic Kernel Process packages if needed.</Description>
   </PropertyGroup>
 
   <ItemGroup>
