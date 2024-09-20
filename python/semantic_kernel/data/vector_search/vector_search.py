@@ -91,7 +91,7 @@ class VectorSearch(VectorStoreRecordCollection[TKey, TModel], SearchBase, Generi
         The text string will be vectorized downstream and used for the vector search.
 
         Args:
-            options: options, should include query_text
+            options: options, should include query
             **kwargs: if options are not set, this is used to create them.
 
         Raises:

@@ -82,7 +82,7 @@ kernel.add_service(OpenAIChatCompletion(service_id=service_id))
 embeddings = OpenAITextEmbedding(service_id="embedding", ai_model_id="text-embedding-3-small")
 kernel.add_service(embeddings)
 vectorizer = VectorStoreRecordUtils(kernel)
-store: AzureAISearchCollection[HotelSampleClassType] = AzureAISearchCollection(
+azure_ai_search_collection: AzureAISearchCollection[HotelSampleClassType] = AzureAISearchCollection(
     collection_name="hotels-sample-index", data_model_type=HotelSampleClass
 )
 
@@ -110,7 +110,7 @@ def update_options_details(options: SearchOptions, func_args: dict[str, Any]) ->
 plugin = kernel.add_functions(
     plugin_name="azure_ai_search",
     functions=[
-        store.create_kernel_function(
+        azure_ai_search_collection.create_kernel_function(
             search_function="vectorizable_text_search",
             description="A hotel search engine, allows searching for hotels in specific cities, "
             "you do not have to specify that you are searching for hotels, for all, use `*`.",
@@ -150,7 +150,7 @@ plugin = kernel.add_functions(
             ],
             update_options_function=update_options_search,
         ),
-        store.create_kernel_function(
+        azure_ai_search_collection.create_kernel_function(
             search_function="vectorizable_text_search",
             function_name="get_details",
             description="Get details about a hotel, by ID, use the overview function to get the ID.",

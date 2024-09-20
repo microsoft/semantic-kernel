@@ -142,7 +142,4 @@ class SearchBase(ABC):
 
         Can be overwritten by subclasses.
         """
-        return {
-            "search": self.search,
-            "get_search_result": self.get_search_result,
-        }
+        return {}
