@@ -10,7 +10,7 @@ T = TypeVar("T")
 
 
 @experimental_class
-class KernelSearchResult(KernelBaseModel, Generic[T]):
+class KernelSearchResults(KernelBaseModel, Generic[T]):
     """The result of a kernel search."""
 
     results: Sequence[T]

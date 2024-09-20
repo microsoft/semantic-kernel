@@ -21,6 +21,4 @@ class VectorSearchOptions(TextSearchOptions):
     query_type: Literal[
         VectorSearchQueryTypes.VECTORIZED_SEARCH_QUERY,
         VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY,
-        VectorSearchQueryTypes.HYBRID_TEXT_VECTORIZED_SEARCH_QUERY,
-        VectorSearchQueryTypes.HYBRID_VECTORIZABLE_TEXT_SEARCH_QUERY,
     ] = VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY

@@ -106,7 +106,7 @@ async def main():
     print(
         "Welcome to the chat bot!\
         \n  Type 'exit' to exit.\
-        \n  Try a math question to see the function calling in action (i.e. what is 3+3?)."
+        \n  Try to find out more about the inner workings of Semantic Kernel."
     )
     while chatting:
         chatting = await chat()

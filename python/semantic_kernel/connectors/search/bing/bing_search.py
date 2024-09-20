@@ -17,7 +17,7 @@ from semantic_kernel.connectors.search.bing.const import (
 from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
 from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
 from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.kernel_search_result import KernelSearchResult
+from semantic_kernel.data.kernel_search_result import KernelSearchResults
 from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.data.text_search.text_search_filter import TextSearchFilter
 from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
@@ -67,11 +67,11 @@ class BingSearch(KernelBaseModel, TextSearch):
 
         super().__init__(settings=settings)
 
-    async def search(self, options: TextSearchOptions | None = None, **kwargs: Any) -> "KernelSearchResult[str]":
+    async def search(self, options: TextSearchOptions | None = None, **kwargs: Any) -> "KernelSearchResults[str]":
         """Search for text, returning a KernelSearchResult with a list of strings."""
         options = self._get_options(options, **kwargs)
         results = await self._inner_search(options=options)
-        return KernelSearchResult(
+        return KernelSearchResults(
             results=self._get_result_strings(results),
             total_count=self._get_total_count(results, options),
             metadata=self._get_metadata(results),
@@ -79,11 +79,11 @@ class BingSearch(KernelBaseModel, TextSearch):
 
     async def get_text_search_result(
         self, options: TextSearchOptions | None = None, **kwargs
-    ) -> "KernelSearchResult[TextSearchResult]":
+    ) -> "KernelSearchResults[TextSearchResult]":
         """Search for text, returning a KernelSearchResult with TextSearchResults."""
         options = self._get_options(options, **kwargs)
         results = await self._inner_search(options=options)
-        return KernelSearchResult(
+        return KernelSearchResults(
             results=self._get_text_search_results(results),
             total_count=self._get_total_count(results, options),
             metadata=self._get_metadata(results),
@@ -91,11 +91,11 @@ class BingSearch(KernelBaseModel, TextSearch):
 
     async def get_search_result(
         self, options: TextSearchOptions | None = None, **kwargs
-    ) -> "KernelSearchResult[BingWebPage]":
+    ) -> "KernelSearchResults[BingWebPage]":
         """Search for text, returning a KernelSearchResult with the results directly from the service."""
         options = self._get_options(options, **kwargs)
         results = await self._inner_search(options=options)
-        return KernelSearchResult(
+        return KernelSearchResults(
             results=self._get_bing_web_pages(results),
             total_count=self._get_total_count(results, options),
             metadata=self._get_metadata(results),
