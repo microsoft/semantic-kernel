@@ -14,6 +14,8 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
 {
     private const string SelectClauseDelimiter = ",";
+    private const string AndConditionDelimiter = " AND ";
+    private const string OrConditionDelimiter = " OR ";
 
     /// <summary>
     /// Builds <see cref="QueryDefinition"/> to get items from Azure CosmosDB NoSQL using vector search.
@@ -26,7 +28,6 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         string scorePropertyName,
         VectorSearchOptions searchOptions)
     {
-        const string AndConditionDelimiter = " AND ";
         const string VectorVariableName = "@vector";
         const string OffsetVariableName = "@offset";
         const string LimitVariableName = "@limit";
@@ -83,8 +84,6 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
     {
         Verify.True(keys.Count > 0, "At least one key should be provided.", nameof(keys));
 
-        const string OrConditionDelimiter = " OR ";
-
         const string RecordKeyVariableName = "@rk";
         const string PartitionKeyVariableName = "@pk";
 
@@ -95,7 +94,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
 
         var whereClauseArguments = string.Join(OrConditionDelimiter,
             keys.Select((key, index) =>
-                $"({tableVariableName}.{keyStoragePropertyName} = {RecordKeyVariableName}{index} AND " +
+                $"({tableVariableName}.{keyStoragePropertyName} = {RecordKeyVariableName}{index} {AndConditionDelimiter} " +
                 $"{tableVariableName}.{partitionKeyStoragePropertyName} = {PartitionKeyVariableName}{index})"));
 
         var query =

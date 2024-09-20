@@ -384,6 +384,15 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         Verify.NotNull(vector);
 
+        var vectorType = vector.GetType();
+
+        if (!s_supportedVectorTypes.Contains(vectorType))
+        {
+            throw new NotSupportedException(
+                $"The provided vector type {vectorType.FullName} is not supported by the Azure CosmosDB NoSQL connector. " +
+                $"Supported types are: {string.Join(", ", s_supportedVectorTypes.Select(l => l.FullName))}");
+        }
+
         var searchOptions = options ?? VectorSearchOptions.Default;
         var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorFieldName);
 
