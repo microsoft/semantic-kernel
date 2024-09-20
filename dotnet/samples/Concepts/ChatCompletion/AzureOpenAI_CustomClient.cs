@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 
 namespace ChatCompletion;
 
-public sealed class OpenAI_CustomAzureOpenAIClient(ITestOutputHelper output) : BaseTest(output)
+public sealed class AzureOpenAI_CustomClient(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -32,12 +32,15 @@ public sealed class OpenAI_CustomAzureOpenAIClient(ITestOutputHelper output) : B
         var clientOptions = new AzureOpenAIClientOptions
         {
             Transport = new HttpClientPipelineTransport(httpClient),
+            NetworkTimeout = TimeSpan.FromSeconds(30),
+            RetryPolicy = new ClientRetryPolicy()
         };
-        var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), clientOptions);
 
-        IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.AddAzureOpenAIChatCompletion(deploymentName, openAIClient);
-        Kernel kernel = builder.Build();
+        var customClient = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), clientOptions);
+
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(deploymentName, customClient)
+            .Build();
 
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
