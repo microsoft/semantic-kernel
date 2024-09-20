@@ -11,6 +11,7 @@ from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.memory.postgres.constants import DEFAULT_SCHEMA, MAX_DIMENSIONALITY
 from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
@@ -21,10 +22,6 @@ from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnect
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
-
-# Limitation based on pgvector documentation https://github.com/pgvector/pgvector#what-if-i-want-to-index-vectors-with-more-than-2000-dimensions
-MAX_DIMENSIONALITY = 2000
-DEFAULT_SCHEMA = "public"
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -42,8 +39,8 @@ class PostgresMemoryStore(MemoryStoreBase):
         self,
         connection_string: str,
         default_dimensionality: int,
-        min_pool: int,
-        max_pool: int,
+        min_pool: int | None = None,
+        max_pool: int | None = None,
         schema: str = DEFAULT_SCHEMA,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
@@ -69,11 +66,14 @@ class PostgresMemoryStore(MemoryStoreBase):
         except ValidationError as ex:
             raise MemoryConnectorInitializationError("Failed to create Postgres settings.", ex) from ex
 
+        min_pool = min_pool or postgres_settings.min_pool
+        max_pool = max_pool or postgres_settings.max_pool
+
         self._check_dimensionality(default_dimensionality)
 
         self._default_dimensionality = default_dimensionality
         self._connection_pool = ConnectionPool(
-            postgres_settings.connection_string.get_secret_value(), min_size=min_pool, max_size=max_pool
+            min_size=min_pool, max_size=max_pool, open=True, kwargs=postgres_settings.get_connection_args()
         )
         self._schema = schema
         atexit.register(self._connection_pool.close)
@@ -317,9 +317,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 MemoryRecord.local_record(
                     id=result[0],
                     embedding=(
-                        np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
-                        if with_embeddings
-                        else np.array([])
+                        np.fromstring(result[1].strip("[]"), dtype=float, sep=",") if with_embeddings else np.array([])
                     ),
                     text=result[2]["text"],
                     description=result[2]["description"],
@@ -497,10 +495,8 @@ class PostgresMemoryStore(MemoryStoreBase):
             raise ServiceInitializationError("Dimensionality must be a positive integer. ")
 
     def __serialize_metadata(self, record: MemoryRecord) -> str:
-        return json.dumps(
-            {
-                "text": record._text,
-                "description": record._description,
-                "additional_metadata": record._additional_metadata,
-            }
-        )
+        return json.dumps({
+            "text": record._text,
+            "description": record._description,
+            "additional_metadata": record._additional_metadata,
+        })
