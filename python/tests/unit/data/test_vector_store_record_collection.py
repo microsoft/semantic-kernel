@@ -311,7 +311,7 @@ async def test_get_fail_multiple(DictVectorStoreRecordCollection, data_model_def
     assert len(vector_store_record_collection.inner_storage) == 1
     with (
         patch(
-            "semantic_kernel.data.vector_store_record_collection.VectorStoreRecordCollection.deserialize"
+            "semantic_kernel.data.vector_storage.vector_store_record_collection.VectorStoreRecordCollection.deserialize"
         ) as deserialize_mock,
         raises(MemoryConnectorException, match="Error deserializing record, multiple records returned:"),
     ):

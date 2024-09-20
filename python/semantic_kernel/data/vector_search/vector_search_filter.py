@@ -2,8 +2,6 @@
 
 import sys
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
-
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
@@ -11,6 +9,7 @@ else:
 
 from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
 from semantic_kernel.data.search_filter_base import SearchFilter
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
 @experimental_class

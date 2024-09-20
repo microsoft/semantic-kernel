@@ -22,15 +22,13 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_client,
     get_search_index_client,
 )
-from semantic_kernel.data import (
-    AnyTagsEqualTo,
-    EqualTo,
+from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
+from semantic_kernel.data.vector_search import (
     VectorSearch,
     VectorSearchFilter,
     VectorSearchOptions,
     VectorSearchQueryTypes,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata

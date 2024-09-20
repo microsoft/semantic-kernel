@@ -14,7 +14,8 @@ from pydantic import ValidationError
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
 
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
-from semantic_kernel.data import VectorStore, VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_storage import VectorStore
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
