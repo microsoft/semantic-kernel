@@ -1,28 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ClientModel.Primitives;
-using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 
 namespace ChatCompletion;
 
-public sealed class OpenAI_CustomAzureOpenAIClient(ITestOutputHelper output) : BaseTest(output)
+public sealed class AzureOpenAI_CustomClient(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
     {
-        Console.WriteLine("======== Using a custom OpenAI client ========");
+        Console.WriteLine("======== Using a custom AzureOpenAI client ========");
 
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-        string deploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-
-        if (endpoint is null || deploymentName is null || apiKey is null)
-        {
-            Console.WriteLine("Azure OpenAI credentials not found. Skipping example.");
-            return;
-        }
+        Assert.NotNull(TestConfiguration.AzureOpenAI.Endpoint);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.ChatDeploymentName);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.ApiKey);
 
         // Create an HttpClient and include your custom header(s)
         var httpClient = new HttpClient();
@@ -32,12 +25,15 @@ public sealed class OpenAI_CustomAzureOpenAIClient(ITestOutputHelper output) : B
         var clientOptions = new AzureOpenAIClientOptions
         {
             Transport = new HttpClientPipelineTransport(httpClient),
+            NetworkTimeout = TimeSpan.FromSeconds(30),
+            RetryPolicy = new ClientRetryPolicy()
         };
-        var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), clientOptions);
 
-        IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.AddAzureOpenAIChatCompletion(deploymentName, openAIClient);
-        Kernel kernel = builder.Build();
+        var customClient = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), TestConfiguration.AzureOpenAI.ApiKey, clientOptions);
+
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, customClient)
+            .Build();
 
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
