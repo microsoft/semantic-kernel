@@ -61,7 +61,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="clientProvider">OpenAI client provider for accessing the API service.</param>
     /// <param name="capabilities">Defines the assistant's capabilities.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="defaultArguments">Optional default arguments, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="defaultArguments">Required arguments that provide default template parameters, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="templateConfig">Prompt template configuration</param>
     /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
