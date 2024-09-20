@@ -15,7 +15,11 @@ kernel = Kernel()
 service_id = "phi3"
 #############################################
 # Make sure to download an ONNX model
-# e.g (https://huggingface.co/microsoft/Phi-3-mini-128k-instruct-onnx)
+# (https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx)
+# If onnxruntime-genai is used:
+# use the model stored in /cpu folder
+# If onnxruntime-genai-cuda is installed for gpu use:
+# use the model stored in /cuda folder
 # Then set ONNX_GEN_AI_FOLDER environment variable to the path to the model folder
 #############################################
 streaming = True
