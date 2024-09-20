@@ -19,8 +19,12 @@ namespace Microsoft.SemanticKernel.Agents;
 public abstract class ChatHistoryKernelAgent : KernelAgent
 {
     /// <summary>
-    /// An optional reducer for limiting the size of the conversation history.
+    /// Optionally specify a <see cref="IChatHistoryReducer"/> to reduce the history.
     /// </summary>
+    /// <remarks>
+    /// This is automatically applied to the history before invoking the agent, only when using
+    /// an <see cref="AgentChat"/>.  It must be explicitly applied via <see cref="ReduceAsync"/>.
+    /// </remarks>
     public IChatHistoryReducer? HistoryReducer { get; init; }
 
     /// <summary>
