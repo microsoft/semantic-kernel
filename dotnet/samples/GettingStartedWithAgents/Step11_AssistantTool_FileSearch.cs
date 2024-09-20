@@ -20,13 +20,13 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
         OpenAIClientProvider provider = this.GetClientProvider();
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
                 clientProvider: this.GetClientProvider(),
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     EnableFileSearch = true,
                     Metadata = AssistantSampleMetadata,
-                });
+                },
+                kernel: new Kernel());
 
         // Upload file - Using a table of fictional employees.
         FileClient fileClient = provider.Client.GetFileClient();
