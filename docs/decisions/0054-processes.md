@@ -8,7 +8,7 @@ consulted: bentho, markwallace, estenori, crickman, eavanvalkenburg, evchaki, ma
 informed: SK-3P-FTE
 ---
 
-# Business Process execution with Semantic Kernel
+# Business Process Execution with Semantic Kernel
 
 ## Context and Problem Statement
 
@@ -46,7 +46,7 @@ This option was explored with frameworks such as Dapr Workflows, Argo, Durable T
 ### Options #2:
 
 **_Build SK Process library within an existing workflow framework_**:
-Of all the frameworks explored, the few that seem closest to meeting the technical requirements listed above are based on Durable Tasks. This includes things like Dapr Workflows, Azure Durable Functions, and Azure Durable Tasks Library. Attempts to build a working solution on these frameworks resulted an awkward interface for basic scenarios due to the underlying structure of Durable Tasks where nodes are stateless and only the central orchestrator is stateful. While it is likely that many AI driven workflows could be modeled in this type of system, our exploration did not produce something we were happy with from a usability perspective.
+Of all the frameworks explored, the few that seem closest to meeting the technical requirements listed above are based on [Durable Tasks](https://github.com/Azure/durabletask). This includes things like Dapr Workflows, Azure Durable Functions, or the Durable Tasks Framework itself. Attempts to build a working solution on these frameworks resulted an awkward interface for basic scenarios due to the underlying structure of Durable Tasks where nodes are stateless and only the central orchestrator is stateful. While it is likely that many AI driven workflows could be modeled in this type of system, our exploration did not produce something we were happy with from a usability perspective.
 
 ### Options #3:
 
@@ -65,7 +65,7 @@ This was the only option that was ale to meet all the technical and scenario dri
 
 ### Components of the Process library
 
-The proposed architecture of a Process is based on a graph execution model where nodes, which we call Steps, perform work by invoking user defined Kernel Functions. Edges in the graph are defined from an event driven perspective and carry information about the event as well as a data payload.
+The proposed architecture of a Process is based on a graph execution model where nodes, which we call Steps, perform work by invoking user defined Kernel Functions. Edges in the graph are defined from an event driven perspective and carry metadata about the event as well as a data payload containing the output of the Kernel Function invocation.
 
 Starting from the ground up, the components of a processes are:
 
@@ -295,6 +295,10 @@ The following packages will be created for Processes:
 
   Contains the in-process runtime.
 
+- **_Microsoft.SemanticKernel.Process_**
+
+  Contains Microsoft.SemanticKernel.Process.Abstractions, Microsoft.SemanticKernel.Process.Core, and Microsoft.SemanticKernel.Process.Server
+
 - **_Microsoft.SemanticKernel.Process.Orleans_**
 
   Contains the Orleans based runtime.
@@ -305,4 +309,9 @@ The following packages will be created for Processes:
 
 ## More Information
 
-CodeGen info here
+### Process runtime architecture:
+
+In validation of the proposed solution, two runtimes were created, one for the local/server scenario and one for the distributed actor scenario using Orleans. Both of these implementation were based on the [Pregel Algorithm](https://kowshik.github.io/JPregel/pregel_paper.pdf) for large-scale graph processing. This algorithm is well tested and well suited for single machine scenarios as well as distributed systems. More information on how the Pregel algorithm works can be found in the following links.
+
+[Pregel - The Morning Paper](https://blog.acolyer.org/2015/05/26/pregel-a-system-for-large-scale-graph-processing/)
+[Pregel - Distributed Algorithms and Optimization](https://web.stanford.edu/~rezab/classes/cme323/S15/notes/lec8.pdf)
