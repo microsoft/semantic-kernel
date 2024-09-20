@@ -14,14 +14,17 @@ kernel = Kernel()
 
 service_id = "phi3"
 #############################################
-# Make sure to download an ONNX model 
-# e.g (https://huggingface.co/microsoft/Phi-3-mini-128k-instruct-onnx)
-# Then set the path to the model folder
+# Make sure to download an ONNX model
+# (https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx)
+# If onnxruntime-genai is used:
+# use the model stored in /cpu folder
+# If onnxruntime-genai-cuda is installed for gpu use:
+# use the model stored in /cuda folder
+# Then set ONNX_GEN_AI_FOLDER environment variable to the path to the model folder
 #############################################
 streaming = True
-model_path = r"C:\GIT\models\phi3-cpu-onnx"
 
-kernel.add_service(OnnxGenAITextCompletion(ai_model_path=model_path, ai_model_id=service_id))
+kernel.add_service(OnnxGenAITextCompletion(ai_model_id=service_id))
 
 settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
 
