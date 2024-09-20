@@ -134,10 +134,13 @@ EndProject
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connectors", "connectors", "{314A2705-0F70-44B6-8988-C6DF77BDFD42}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AI", "AI", "{C7299F56-3A55-471E-B10E-B1FBE101C625}"
 EndProject
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -232,6 +235,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{B00AD427-0
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -332,65 +338,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AI", "AI", "{1B4CBDE0-10C2-
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Memory", "Memory", "{24503383-A8C4-4255-9998-28D70FE8E99A}"
 EndProject
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Memory", "Memory", "{24503383-A8C4-4255-9998-28D70FE8E99A}"
-EndProject
-<<<<<<< main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
->>>>>>> Stashed changes
-<<<<<<< Updated upstream
-=======
-<<<<<<< main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
 =======
 =======
 >>>>>>> Stashed changes
@@ -405,6 +356,65 @@ EndProject
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Memory", "Memory", "{24503383-A8C4-4255-9998-28D70FE8E99A}"
 EndProject
+<<<<<<< main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Memory", "Memory", "{24503383-A8C4-4255-9998-28D70FE8E99A}"
+EndProject
 =======
 =======
 >>>>>>> Stashed changes
@@ -444,10 +454,22 @@ EndProject
 >>>>>>> Stashed changes
 =======
 <<<<<<< Updated upstream
+=======
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Agents", "src\Experimental\Agents\Experimental.Agents.csproj", "{5438D1E3-E03D-444B-BBBA-478F93161AA8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Agents.UnitTests", "src\Experimental\Agents.UnitTests\Experimental.Agents.UnitTests.csproj", "{4AD80279-9AC1-476F-8103-E6CD5E4FD525}"
+EndProject
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -534,6 +556,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow", "src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj", "{B0CE8C69-EC56-4825-94AB-01CA7E8BA55B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.IntegrationTests", "src\Experimental\Orchestration.Flow.IntegrationTests\Experimental.Orchestration.Flow.IntegrationTests.csproj", "{3A4B8F90-3E74-43E0-800C-84F8AA9B5BF3}"
+=======
+>>>>>>> upstream/main
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow", "src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj", "{B0CE8C69-EC56-4825-94AB-01CA7E8BA55B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.IntegrationTests", "src\Experimental\Orchestration.Flow.IntegrationTests\Experimental.Orchestration.Flow.IntegrationTests.csproj", "{3A4B8F90-3E74-43E0-800C-84F8AA9B5BF3}"
+>>>>>>> Stashed changes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.UnitTests", "src\Experimental\Orchestration.Flow.UnitTests\Experimental.Orchestration.Flow.UnitTests.csproj", "{731CC542-8BE9-42D4-967D-99206EC2B310}"
 EndProject
@@ -584,6 +612,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Functions", "Functions", "{
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -618,6 +649,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{77E1
 		src\InternalUtilities\samples\ConfigurationNotFoundException.cs = src\InternalUtilities\samples\ConfigurationNotFoundException.cs
 		src\InternalUtilities\samples\EnumerableExtensions.cs = src\InternalUtilities\samples\EnumerableExtensions.cs
 		src\InternalUtilities\samples\Env.cs = src\InternalUtilities\samples\Env.cs
+<<<<<<< Updated upstream
 		src\InternalUtilities\samples\ObjectExtensions.cs = src\InternalUtilities\samples\ObjectExtensions.cs
 		src\InternalUtilities\samples\PlanExtensions.cs = src\InternalUtilities\samples\PlanExtensions.cs
 		src\InternalUtilities\samples\RepoFiles.cs = src\InternalUtilities\samples\RepoFiles.cs
@@ -14432,12 +14464,65 @@ Global
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+		src\InternalUtilities\samples\ObjectExtensions.cs = src\InternalUtilities\samples\ObjectExtensions.cs
+		src\InternalUtilities\samples\PlanExtensions.cs = src\InternalUtilities\samples\PlanExtensions.cs
+		src\InternalUtilities\samples\RepoFiles.cs = src\InternalUtilities\samples\RepoFiles.cs
+		src\InternalUtilities\samples\SamplesInternalUtilities.props = src\InternalUtilities\samples\SamplesInternalUtilities.props
+		src\InternalUtilities\samples\TextOutputHelperExtensions.cs = src\InternalUtilities\samples\TextOutputHelperExtensions.cs
+		src\InternalUtilities\samples\XunitLogger.cs = src\InternalUtilities\samples\XunitLogger.cs
+		src\InternalUtilities\samples\YourAppException.cs = src\InternalUtilities\samples\YourAppException.cs
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.Prompty", "src\Functions\Functions.Prompty\Functions.Prompty.csproj", "{12B06019-740B-466D-A9E0-F05BC123A47D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PromptTemplates.Liquid", "src\Extensions\PromptTemplates.Liquid\PromptTemplates.Liquid.csproj", "{66D94E25-9B63-4C29-B7A1-3DFA17A90745}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PromptTemplates.Liquid.UnitTests", "src\Extensions\PromptTemplates.Liquid.UnitTests\PromptTemplates.Liquid.UnitTests.csproj", "{CC6DEE89-57AA-494D-B40D-B09E1CCC6FAD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.Prompty.UnitTests", "src\Functions\Functions.Prompty.UnitTests\Functions.Prompty.UnitTests.csproj", "{AD787471-5E43-44DF-BF3E-5CD26C765B4E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ContentSafety", "samples\Demos\ContentSafety\ContentSafety.csproj", "{6EF9663D-976C-4A27-B8D3-8B1E63BA3BF2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Concepts", "samples\Concepts\Concepts.csproj", "{925B1185-8B58-4E2D-95C9-4CA0BA9364E5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionInvocationApproval", "samples\Demos\FunctionInvocationApproval\FunctionInvocationApproval.csproj", "{6B56D8EE-9991-43E3-90B2-B8F5C5CE77C2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.SqlServer", "src\Connectors\Connectors.Memory.SqlServer\Connectors.Memory.SqlServer.csproj", "{24B8041B-92C6-4BB3-A699-C593AF5A870F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeInterpreterPlugin", "samples\Demos\CodeInterpreterPlugin\CodeInterpreterPlugin.csproj", "{3ED53702-0E53-473A-A0F4-645DB33541C2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QualityCheckWithFilters", "samples\Demos\QualityCheck\QualityCheckWithFilters\QualityCheckWithFilters.csproj", "{1D3EEB5B-0E06-4700-80D5-164956E43D0A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimePlugin", "samples\Demos\TimePlugin\TimePlugin.csproj", "{F312FCE1-12D7-4DEF-BC29-2FF6618509F3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCosmosDBNoSQL", "src\Connectors\Connectors.Memory.AzureCosmosDBNoSQL\Connectors.Memory.AzureCosmosDBNoSQL.csproj", "{B0B3901E-AF56-432B-8FAA-858468E5D0DF}"
+EndProject
+<<<<<<< main
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AIPluginsServer", "AIPluginsServer", "{F2682681-956D-4E4F-9092-C82351B16BD1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIPlugins.AzureFunctions", "..\samples\dotnet\AIPluginsServer\AIPlugins.AzureFunctions\AIPlugins.AzureFunctions.csproj", "{AD3CA6E8-B73C-4B50-A875-D8CE24483895}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1} = {0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIPlugins.AzureFunctions.Extensions", "..\samples\dotnet\AIPluginsServer\AIPlugins.AzureFunctions.Extensions\AIPlugins.AzureFunctions.Extensions.csproj", "{F4FF316F-DD81-405B-8020-7BAF0DFE3269}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIPlugins.AzureFunctions.Generator", "..\samples\dotnet\AIPluginsServer\AIPlugins.AzureFunctions.Generator\AIPlugins.AzureFunctions.Generator.csproj", "{33208A2E-EB4E-4994-A246-D66C7CFE7362}"
+=======
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Redis.UnitTests", "src\Connectors\Connectors.Redis.UnitTests\Connectors.Redis.UnitTests.csproj", "{1D4667B9-9381-4E32-895F-123B94253EE8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Qdrant.UnitTests", "src\Connectors\Connectors.Qdrant.UnitTests\Connectors.Qdrant.UnitTests.csproj", "{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF}"
+EndProject
+<<<<<<< main
+>>>>>>> Stashed changes
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
@@ -14482,31 +14567,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIModelRouter", "samples\De
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureCosmosDBNoSQL.UnitTests", "src\Connectors\Connectors.AzureCosmosDBNoSQL.UnitTests\Connectors.AzureCosmosDBNoSQL.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
 =======
->>>>>>> upstream/main
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.OpenAI.UnitTests", "src\Connectors\Connectors.OpenAI.UnitTests\Connectors.OpenAI.UnitTests.csproj", "{36DDC119-C030-407E-AC51-A877E9E0F660}"
-EndProject
+=======
 <<<<<<< main
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
 >>>>>>> upstream/main
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureCosmosDBNoSQL.UnitTests", "src\Connectors\Connectors.AzureCosmosDBNoSQL.UnitTests\Connectors.AzureCosmosDBNoSQL.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
->>>>>>> Stashed changes
 =======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> upstream/main
-<<<<<<< Updated upstream
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -14525,6 +14601,61 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureCosmosDBNoSQL.UnitTests", "src\Connectors\Connectors.AzureCosmosDBNoSQL.UnitTests\Connectors.AzureCosmosDBNoSQL.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Weaviate.UnitTests", "src\Connectors\Connectors.Weaviate.UnitTests\Connectors.Weaviate.UnitTests.csproj", "{AD9ECE32-088A-49D8-8ACB-890E79F1E7B8}"
+>>>>>>> Stashed changes
+>>>>>>> upstream/main
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.OpenAI.UnitTests", "src\Connectors\Connectors.OpenAI.UnitTests\Connectors.OpenAI.UnitTests.csproj", "{36DDC119-C030-407E-AC51-A877E9E0F660}"
+EndProject
+<<<<<<< main
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
+>>>>>>> upstream/main
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureCosmosDBNoSQL.UnitTests", "src\Connectors\Connectors.AzureCosmosDBNoSQL.UnitTests\Connectors.AzureCosmosDBNoSQL.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Ollama", "src\Connectors\Connectors.Ollama\Connectors.Ollama.csproj", "{E7E60E1D-1A44-4DE9-A44D-D5052E809DDD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureCosmosDBMongoDB.UnitTests", "src\Connectors\Connectors.AzureCosmosDBMongoDB.UnitTests\Connectors.AzureCosmosDBMongoDB.UnitTests.csproj", "{2918478E-BC86-4D53-9D01-9C318F80C14F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Ollama.UnitTests", "src\Connectors\Connectors.Ollama.UnitTests\Connectors.Ollama.UnitTests.csproj", "{924DB138-1223-4C99-B6E6-0938A3FA14EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureCosmosDBNoSQL.UnitTests", "src\Connectors\Connectors.AzureCosmosDBNoSQL.UnitTests\Connectors.AzureCosmosDBNoSQL.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Weaviate.UnitTests", "src\Connectors\Connectors.Weaviate.UnitTests\Connectors.Weaviate.UnitTests.csproj", "{AD9ECE32-088A-49D8-8ACB-890E79F1E7B8}"
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.OpenAI.UnitTests", "src\Connectors\Connectors.OpenAI.UnitTests\Connectors.OpenAI.UnitTests.csproj", "{36DDC119-C030-407E-AC51-A877E9E0F660}"
@@ -14545,6 +14676,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI.UnitTests", "src\Connectors\Connectors.AzureOpenAI.UnitTests\Connectors.AzureOpenAI.UnitTests.csproj", "{8CF06B22-50F3-4F71-A002-622DB49DF0F5}"
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> upstream/main
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.OpenAI.UnitTests", "src\Connectors\Connectors.OpenAI.UnitTests\Connectors.OpenAI.UnitTests.csproj", "{36DDC119-C030-407E-AC51-A877E9E0F660}"
@@ -14557,15 +14690,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI", "s
 >>>>>>> upstream/main
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI.UnitTests", "src\Connectors\Connectors.AzureOpenAI.UnitTests\Connectors.AzureOpenAI.UnitTests.csproj", "{8CF06B22-50F3-4F71-A002-622DB49DF0F5}"
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> main-upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> Stashed changes
@@ -14579,6 +14718,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI.UnitTests", "src\Connectors\Connectors.AzureOpenAI.UnitTests\Connectors.AzureOpenAI.UnitTests.csproj", "{8CF06B22-50F3-4F71-A002-622DB49DF0F5}"
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -14591,6 +14731,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI.UnitTests", "src\Connectors\Connectors.AzureOpenAI.UnitTests\Connectors.AzureOpenAI.UnitTests.csproj", "{8CF06B22-50F3-4F71-A002-622DB49DF0F5}"
 >>>>>>> main-upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 EndProject
 Global
@@ -14820,6 +14962,7 @@ Global
 		{352DAE69-E31C-44E3-A35F-E0342A955869}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{352DAE69-E31C-44E3-A35F-E0342A955869}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
 		{352DAE69-E31C-44E3-A35F-E0342A955869}.Publish|Any CPU.Build.0 = Publish|Any CPU
+<<<<<<< Updated upstream
 		{352DAE69-E31C-44E3-A35F-E0342A955869}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{352DAE69-E31C-44E3-A35F-E0342A955869}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3FC4A81B-8ABE-473F-BC7C-6F4885775534}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -14915,6 +15058,33 @@ Global
 <<<<<<< Updated upstream
 =======
 =======
+		{352DAE69-E31C-44E3-A35F-E0342A955869}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{352DAE69-E31C-44E3-A35F-E0342A955869}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FC4A81B-8ABE-473F-BC7C-6F4885775534}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FC4A81B-8ABE-473F-BC7C-6F4885775534}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FC4A81B-8ABE-473F-BC7C-6F4885775534}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FC4A81B-8ABE-473F-BC7C-6F4885775534}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{3FC4A81B-8ABE-473F-BC7C-6F4885775534}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FC4A81B-8ABE-473F-BC7C-6F4885775534}.Release|Any CPU.Build.0 = Release|Any CPU
+<<<<<<< main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+		{5438D1E3-E03D-444B-BBBA-478F93161AA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5438D1E3-E03D-444B-BBBA-478F93161AA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5438D1E3-E03D-444B-BBBA-478F93161AA8}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{5438D1E3-E03D-444B-BBBA-478F93161AA8}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{5438D1E3-E03D-444B-BBBA-478F93161AA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5438D1E3-E03D-444B-BBBA-478F93161AA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AD80279-9AC1-476F-8103-E6CD5E4FD525}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AD80279-9AC1-476F-8103-E6CD5E4FD525}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AD80279-9AC1-476F-8103-E6CD5E4FD525}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AD80279-9AC1-476F-8103-E6CD5E4FD525}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{4AD80279-9AC1-476F-8103-E6CD5E4FD525}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AD80279-9AC1-476F-8103-E6CD5E4FD525}.Release|Any CPU.Build.0 = Release|Any CPU
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -14924,9 +15094,12 @@ Global
 >>>>>>> Stashed changes
 =======
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> main-upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 		{B0CE8C69-EC56-4825-94AB-01CA7E8BA55B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B0CE8C69-EC56-4825-94AB-01CA7E8BA55B}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -15051,6 +15224,9 @@ Global
 		{B04C26BC-A933-4A53-BE17-7875EB12E012}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B04C26BC-A933-4A53-BE17-7875EB12E012}.Debug|Any CPU.Build.0 = Debug|Any CPU
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -15064,6 +15240,9 @@ Global
 		{E6204E79-EFBF-499E-9743-85199310A455}.Publish|Any CPU.Build.0 = Debug|Any CPU
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -15076,6 +15255,7 @@ Global
 		{CBEEF941-AEC6-42A4-A567-B5641CEFBB87}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
 		{CBEEF941-AEC6-42A4-A567-B5641CEFBB87}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{CBEEF941-AEC6-42A4-A567-B5641CEFBB87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+<<<<<<< Updated upstream
 		{CBEEF941-AEC6-42A4-A567-B5641CEFBB87}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -15293,6 +15473,102 @@ Global
 =======
 >>>>>>> Stashed changes
 =======
+=======
+		{CBEEF941-AEC6-42A4-A567-B5641CEFBB87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C813F83-9FD8-462A-9B38-865CA01C384C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C813F83-9FD8-462A-9B38-865CA01C384C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C813F83-9FD8-462A-9B38-865CA01C384C}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C813F83-9FD8-462A-9B38-865CA01C384C}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{5C813F83-9FD8-462A-9B38-865CA01C384C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C813F83-9FD8-462A-9B38-865CA01C384C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5E4C960-53B3-4C35-99C1-1BA97AECC489}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5E4C960-53B3-4C35-99C1-1BA97AECC489}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5E4C960-53B3-4C35-99C1-1BA97AECC489}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5E4C960-53B3-4C35-99C1-1BA97AECC489}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{D5E4C960-53B3-4C35-99C1-1BA97AECC489}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5E4C960-53B3-4C35-99C1-1BA97AECC489}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D98CF16-5156-40F0-91F0-76294B153DB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D98CF16-5156-40F0-91F0-76294B153DB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D98CF16-5156-40F0-91F0-76294B153DB3}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D98CF16-5156-40F0-91F0-76294B153DB3}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{1D98CF16-5156-40F0-91F0-76294B153DB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D98CF16-5156-40F0-91F0-76294B153DB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87DA81FE-112E-4AF5-BEFB-0B91B993F749}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87DA81FE-112E-4AF5-BEFB-0B91B993F749}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87DA81FE-112E-4AF5-BEFB-0B91B993F749}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{87DA81FE-112E-4AF5-BEFB-0B91B993F749}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{87DA81FE-112E-4AF5-BEFB-0B91B993F749}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87DA81FE-112E-4AF5-BEFB-0B91B993F749}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12B06019-740B-466D-A9E0-F05BC123A47D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12B06019-740B-466D-A9E0-F05BC123A47D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12B06019-740B-466D-A9E0-F05BC123A47D}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{12B06019-740B-466D-A9E0-F05BC123A47D}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{12B06019-740B-466D-A9E0-F05BC123A47D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12B06019-740B-466D-A9E0-F05BC123A47D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66D94E25-9B63-4C29-B7A1-3DFA17A90745}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66D94E25-9B63-4C29-B7A1-3DFA17A90745}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66D94E25-9B63-4C29-B7A1-3DFA17A90745}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{66D94E25-9B63-4C29-B7A1-3DFA17A90745}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{66D94E25-9B63-4C29-B7A1-3DFA17A90745}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66D94E25-9B63-4C29-B7A1-3DFA17A90745}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC6DEE89-57AA-494D-B40D-B09E1CCC6FAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC6DEE89-57AA-494D-B40D-B09E1CCC6FAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC6DEE89-57AA-494D-B40D-B09E1CCC6FAD}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC6DEE89-57AA-494D-B40D-B09E1CCC6FAD}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{CC6DEE89-57AA-494D-B40D-B09E1CCC6FAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC6DEE89-57AA-494D-B40D-B09E1CCC6FAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD787471-5E43-44DF-BF3E-5CD26C765B4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD787471-5E43-44DF-BF3E-5CD26C765B4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD787471-5E43-44DF-BF3E-5CD26C765B4E}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD787471-5E43-44DF-BF3E-5CD26C765B4E}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{AD787471-5E43-44DF-BF3E-5CD26C765B4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD787471-5E43-44DF-BF3E-5CD26C765B4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EF9663D-976C-4A27-B8D3-8B1E63BA3BF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EF9663D-976C-4A27-B8D3-8B1E63BA3BF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EF9663D-976C-4A27-B8D3-8B1E63BA3BF2}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EF9663D-976C-4A27-B8D3-8B1E63BA3BF2}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{6EF9663D-976C-4A27-B8D3-8B1E63BA3BF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EF9663D-976C-4A27-B8D3-8B1E63BA3BF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{925B1185-8B58-4E2D-95C9-4CA0BA9364E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{925B1185-8B58-4E2D-95C9-4CA0BA9364E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{925B1185-8B58-4E2D-95C9-4CA0BA9364E5}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{925B1185-8B58-4E2D-95C9-4CA0BA9364E5}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{925B1185-8B58-4E2D-95C9-4CA0BA9364E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{925B1185-8B58-4E2D-95C9-4CA0BA9364E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B56D8EE-9991-43E3-90B2-B8F5C5CE77C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B56D8EE-9991-43E3-90B2-B8F5C5CE77C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B56D8EE-9991-43E3-90B2-B8F5C5CE77C2}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B56D8EE-9991-43E3-90B2-B8F5C5CE77C2}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{6B56D8EE-9991-43E3-90B2-B8F5C5CE77C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B56D8EE-9991-43E3-90B2-B8F5C5CE77C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24B8041B-92C6-4BB3-A699-C593AF5A870F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24B8041B-92C6-4BB3-A699-C593AF5A870F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24B8041B-92C6-4BB3-A699-C593AF5A870F}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{24B8041B-92C6-4BB3-A699-C593AF5A870F}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{24B8041B-92C6-4BB3-A699-C593AF5A870F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24B8041B-92C6-4BB3-A699-C593AF5A870F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3ED53702-0E53-473A-A0F4-645DB33541C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ED53702-0E53-473A-A0F4-645DB33541C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ED53702-0E53-473A-A0F4-645DB33541C2}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ED53702-0E53-473A-A0F4-645DB33541C2}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{3ED53702-0E53-473A-A0F4-645DB33541C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ED53702-0E53-473A-A0F4-645DB33541C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D3EEB5B-0E06-4700-80D5-164956E43D0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D3EEB5B-0E06-4700-80D5-164956E43D0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D3EEB5B-0E06-4700-80D5-164956E43D0A}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D3EEB5B-0E06-4700-80D5-164956E43D0A}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{1D3EEB5B-0E06-4700-80D5-164956E43D0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D3EEB5B-0E06-4700-80D5-164956E43D0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F312FCE1-12D7-4DEF-BC29-2FF6618509F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F312FCE1-12D7-4DEF-BC29-2FF6618509F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F312FCE1-12D7-4DEF-BC29-2FF6618509F3}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+>>>>>>> Stashed changes
 		{F312FCE1-12D7-4DEF-BC29-2FF6618509F3}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{F312FCE1-12D7-4DEF-BC29-2FF6618509F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F312FCE1-12D7-4DEF-BC29-2FF6618509F3}.Release|Any CPU.Build.0 = Release|Any CPU
@@ -15317,9 +15593,12 @@ Global
 		{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF}.Release|Any CPU.Build.0 = Release|Any CPU
+<<<<<<< Updated upstream
 =======
 <<<<<<< main
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -15329,6 +15608,9 @@ Global
 <<<<<<< Updated upstream
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -15340,6 +15622,7 @@ Global
 >>>>>>> Stashed changes
 =======
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15361,6 +15644,8 @@ Global
 >>>>>>> Stashed changes
 =======
 >>>>>>> main-upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 		{E7E60E1D-1A44-4DE9-A44D-D5052E809DDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E7E60E1D-1A44-4DE9-A44D-D5052E809DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -15377,12 +15662,15 @@ Global
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 <<<<<<< main
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
@@ -15394,10 +15682,13 @@ Global
 =======
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> main-upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 		{38374C62-0263-4FE8-A18C-70FC8132912B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{38374C62-0263-4FE8-A18C-70FC8132912B}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -15406,8 +15697,11 @@ Global
 		{38374C62-0263-4FE8-A18C-70FC8132912B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38374C62-0263-4FE8-A18C-70FC8132912B}.Release|Any CPU.Build.0 = Release|Any CPU
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -15416,8 +15710,11 @@ Global
 =======
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 		{2918478E-BC86-4D53-9D01-9C318F80C14F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2918478E-BC86-4D53-9D01-9C318F80C14F}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -15426,12 +15723,16 @@ Global
 		{2918478E-BC86-4D53-9D01-9C318F80C14F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2918478E-BC86-4D53-9D01-9C318F80C14F}.Release|Any CPU.Build.0 = Release|Any CPU
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
 =======
 <<<<<<< Updated upstream
 =======
 >>>>>>> upstream/main
 >>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
+>>>>>>> upstream/main
 >>>>>>> Stashed changes
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -15440,6 +15741,7 @@ Global
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Release|Any CPU.Build.0 = Release|Any CPU
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 >>>>>>> upstream/main
 =======
@@ -15450,6 +15752,11 @@ Global
 >>>>>>> upstream/main
 =======
 >>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
 >>>>>>> Stashed changes
 		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -15458,6 +15765,7 @@ Global
 		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Release|Any CPU.Build.0 = Release|Any CPU
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< Updated upstream
 =======
@@ -15465,6 +15773,8 @@ Global
 <<<<<<< main
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -15484,11 +15794,14 @@ Global
 =======
 =======
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> main-upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 		{AD9ECE32-088A-49D8-8ACB-890E79F1E7B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AD9ECE32-088A-49D8-8ACB-890E79F1E7B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -15519,6 +15832,7 @@ Global
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15571,6 +15885,8 @@ Global
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -15581,9 +15897,12 @@ Global
 >>>>>>> upstream/main
 =======
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 =======
 >>>>>>> main-upstream
 >>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
@@ -15639,6 +15958,7 @@ Global
 		{6009CC87-32F1-4282-88BB-8E5A7BA12925} = {24503383-A8C4-4255-9998-28D70FE8E99A}
 		{8B62C632-9D70-4DC1-AEAB-82D057A09A19} = {24503383-A8C4-4255-9998-28D70FE8E99A}
 		{B0646036-0C50-4F66-B479-ADA9C1166816} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
+<<<<<<< Updated upstream
 		{4AD4E731-16E7-4A0E-B403-6C96459F989B} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
 		{E576E260-4030-4C4C-B207-CA3B684E9669} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
 		{352DAE69-E31C-44E3-A35F-E0342A955869} = {A21FAC7C-0C09-4EAD-843B-926ACEF73C80}
@@ -15666,6 +15986,19 @@ Global
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+		{4AD4E731-16E7-4A0E-B403-6C96459F989B} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
+		{E576E260-4030-4C4C-B207-CA3B684E9669} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
+		{352DAE69-E31C-44E3-A35F-E0342A955869} = {A21FAC7C-0C09-4EAD-843B-926ACEF73C80}
+		{A7DAB812-81CF-4931-B38C-468A3261C4C8} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
+		{3F4E0DC5-2241-4EF2-9F69-E7EC7834D349} = {A7DAB812-81CF-4931-B38C-468A3261C4C8}
+		{873281F6-9C31-4641-98AE-F1D2844DE9F0} = {A7DAB812-81CF-4931-B38C-468A3261C4C8}
+		{3FC4A81B-8ABE-473F-BC7C-6F4885775534} = {A21FAC7C-0C09-4EAD-843B-926ACEF73C80}
+		{1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{24503383-A8C4-4255-9998-28D70FE8E99A} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+<<<<<<< main
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15687,6 +16020,10 @@ Global
 		{4AD80279-9AC1-476F-8103-E6CD5E4FD525} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 >>>>>>> Stashed changes
 =======
+		{5438D1E3-E03D-444B-BBBA-478F93161AA8} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
+		{4AD80279-9AC1-476F-8103-E6CD5E4FD525} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -15696,6 +16033,7 @@ Global
 >>>>>>> Stashed changes
 =======
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15721,6 +16059,8 @@ Global
 >>>>>>> Stashed changes
 =======
 >>>>>>> main-upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 		{B0CE8C69-EC56-4825-94AB-01CA7E8BA55B} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 		{3A4B8F90-3E74-43E0-800C-84F8AA9B5BF3} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
@@ -15779,6 +16119,7 @@ Global
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15856,6 +16197,8 @@ Global
 >>>>>>> Stashed changes
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 		{E7E60E1D-1A44-4DE9-A44D-D5052E809DDD} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{924DB138-1223-4C99-B6E6-0938A3FA14EF} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 >>>>>>> Stashed changes
@@ -15871,17 +16214,24 @@ Global
 		{E7E60E1D-1A44-4DE9-A44D-D5052E809DDD} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{924DB138-1223-4C99-B6E6-0938A3FA14EF} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> upstream/main
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 >>>>>>> Stashed changes
 =======
 		{E7E60E1D-1A44-4DE9-A44D-D5052E809DDD} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{924DB138-1223-4C99-B6E6-0938A3FA14EF} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> upstream/main
 =======
 >>>>>>> main-upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> upstream/main
 >>>>>>> Stashed changes
 		{38374C62-0263-4FE8-A18C-70FC8132912B} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{2918478E-BC86-4D53-9D01-9C318F80C14F} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
@@ -15893,6 +16243,7 @@ Global
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 =======
@@ -15966,6 +16317,17 @@ Global
 >>>>>>> Stashed changes
 =======
 >>>>>>> main-upstream
+>>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> upstream/main
 >>>>>>> Stashed changes
 		{AD9ECE32-088A-49D8-8ACB-890E79F1E7B8} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{36DDC119-C030-407E-AC51-A877E9E0F660} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
@@ -15976,6 +16338,7 @@ Global
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -16020,6 +16383,8 @@ Global
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -16029,6 +16394,7 @@ Global
 >>>>>>> Stashed changes
 =======
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -16044,6 +16410,8 @@ Global
 >>>>>>> Stashed changes
 =======
 >>>>>>> main-upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
