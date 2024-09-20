@@ -95,6 +95,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// <summary>The key property of the current storage model.</summary>
     private readonly VectorStoreRecordKeyProperty _keyProperty;
 
+    /// <summary>Collection of record vector properties.</summary>
+    private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
+
+    /// <summary>First vector property for the collections that this class is used with.</summary>
+    private readonly VectorStoreRecordVectorProperty? _firstVectorProperty = null;
+
     /// <summary>The property name to use as partition key.</summary>
     private readonly string _partitionKeyPropertyName;
 
@@ -164,6 +170,13 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             .Concat([properties.KeyProperty])
             .Select(x => this._storagePropertyNames[x.DataModelPropertyName])
             .ToList();
+
+        this._vectorProperties = properties.VectorProperties;
+
+        if (this._vectorProperties.Count > 0)
+        {
+            this._firstVectorProperty = this._vectorProperties.First();
+        }
     }
 
     /// <inheritdoc />
@@ -361,9 +374,50 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
+        TVector vector,
+        VectorSearchOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        const string OperationName = "VectorizedSearch";
+        const string ScorePropertyName = "SimilarityScore";
+
+        Verify.NotNull(vector);
+
+        var searchOptions = options ?? VectorSearchOptions.Default;
+        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorFieldName);
+
+        if (vectorProperty is null)
+        {
+            throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
+        }
+
+        var fields = new List<string>(searchOptions.IncludeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);
+        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
+
+        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
+            vector,
+            fields,
+            this._storagePropertyNames,
+            vectorPropertyName,
+            ScorePropertyName,
+            searchOptions);
+
+        await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken).ConfigureAwait(false))
+        {
+            var score = jsonObject[ScorePropertyName]?.AsValue().GetValue<double>();
+
+            // Remove score from result object for mapping.
+            jsonObject.Remove(ScorePropertyName);
+
+            var record = VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this.CollectionName,
+                OperationName,
+                () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = searchOptions.IncludeVectors }));
+
+            yield return new VectorSearchResult<TRecord>(record, score);
+        }
     }
 
     #endregion
@@ -534,9 +588,13 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         var includeVectors = options?.IncludeVectors ?? false;
         var fields = new List<string>(includeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);
-        var queryDefinition = this.GetSelectQuery(keys.ToList(), fields);
+        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSelectQuery(
+            this._keyStoragePropertyName,
+            this._partitionKeyStoragePropertyName,
+            keys.ToList(),
+            fields);
 
-        await foreach (var jsonObject in this.GetItemsAsync(queryDefinition, cancellationToken).ConfigureAwait(false))
+        await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken).ConfigureAwait(false))
         {
             yield return VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,
@@ -600,50 +658,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
-    private QueryDefinition GetSelectQuery(List<AzureCosmosDBNoSQLCompositeKey> keys, List<string> fields)
-    {
-        Verify.True(keys.Count > 0, "At least one key should be provided.", nameof(keys));
-
-        const string WhereClauseDelimiter = " OR ";
-        const string SelectClauseDelimiter = ",";
-
-        const string RecordKeyVariableName = "rk";
-        const string PartitionKeyVariableName = "pk";
-
-        const string TableVariableName = "x";
-
-        var selectClauseArguments = string.Join(SelectClauseDelimiter,
-            fields.Select(field => $"{TableVariableName}.{field}"));
-
-        var whereClauseArguments = string.Join(WhereClauseDelimiter,
-            keys.Select((key, index) =>
-                $"({TableVariableName}.{this._keyStoragePropertyName} = @{RecordKeyVariableName}{index} AND " +
-                $"{TableVariableName}.{this._partitionKeyStoragePropertyName} = @{PartitionKeyVariableName}{index})"));
-
-        var query = $"SELECT {selectClauseArguments} FROM {TableVariableName} WHERE {whereClauseArguments}";
-
-        var queryDefinition = new QueryDefinition(query);
-
-        for (var i = 0; i < keys.Count; i++)
-        {
-            var recordKey = keys[i].RecordKey;
-            var partitionKey = keys[i].PartitionKey;
-
-            Verify.NotNullOrWhiteSpace(recordKey);
-            Verify.NotNullOrWhiteSpace(partitionKey);
-
-            queryDefinition.WithParameter($"@{RecordKeyVariableName}{i}", recordKey);
-            queryDefinition.WithParameter($"@{PartitionKeyVariableName}{i}", partitionKey);
-        }
-
-        return queryDefinition;
-    }
-
-    private async IAsyncEnumerable<JsonObject> GetItemsAsync(QueryDefinition queryDefinition, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<T> GetItemsAsync<T>(QueryDefinition queryDefinition, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var iterator = this._database
             .GetContainer(this.CollectionName)
-            .GetItemQueryIterator<JsonObject>(queryDefinition);
+            .GetItemQueryIterator<T>(queryDefinition);
 
         while (iterator.HasMoreResults)
         {
@@ -657,6 +676,33 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Get vector property to use for a search by using the storage name for the field name from options
+    /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
+    /// </summary>
+    /// <param name="optionsVectorFieldName">The vector field name provided via options.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
+    private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? optionsVectorFieldName)
+    {
+        // If vector property name is provided in options, try to find it in schema or throw an exception.
+        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
+        {
+            // Check vector properties by data model property name.
+            var vectorProperty = this._vectorProperties
+                .FirstOrDefault(l => l.DataModelPropertyName.Equals(optionsVectorFieldName, StringComparison.Ordinal));
+
+            if (vectorProperty is not null)
+            {
+                return vectorProperty;
+            }
+
+            throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{optionsVectorFieldName}'.");
+        }
+
+        // If vector property is not provided in options, return first vector property from schema.
+        return this._firstVectorProperty;
     }
 
     #endregion

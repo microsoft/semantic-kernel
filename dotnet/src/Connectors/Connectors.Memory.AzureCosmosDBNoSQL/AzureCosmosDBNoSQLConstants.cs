@@ -6,4 +6,7 @@ internal static class AzureCosmosDBNoSQLConstants
 {
     /// <summary>Reserved key property name in Azure CosmosDB NoSQL.</summary>
     internal const string ReservedKeyPropertyName = "id";
+
+    /// <summary>Variable name for table in Azure CosmosDB NoSQL queries.</summary>
+    internal const string TableQueryVariableName = "x";
 }
