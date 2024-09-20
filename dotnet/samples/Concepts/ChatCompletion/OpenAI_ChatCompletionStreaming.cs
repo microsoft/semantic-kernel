@@ -89,7 +89,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         await foreach (var chatUpdate in chatService.GetStreamingChatMessageContentsAsync(chatHistory))
         {
-            var innerContent = chatUpdate.InnerContent as StreamingChatCompletionUpdate;
+            var innerContent = chatUpdate.InnerContent as OpenAI.Chat.StreamingChatCompletionUpdate;
             OutputInnerContent(innerContent!);
         }
     }
@@ -147,7 +147,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         await foreach (var chatUpdate in kernel.InvokePromptStreamingAsync<StreamingChatMessageContent>(chatPrompt.ToString()))
         {
-            var innerContent = chatUpdate.InnerContent as StreamingChatCompletionUpdate;
+            var innerContent = chatUpdate.InnerContent as OpenAI.Chat.StreamingChatCompletionUpdate;
             OutputInnerContent(innerContent!);
         }
     }
