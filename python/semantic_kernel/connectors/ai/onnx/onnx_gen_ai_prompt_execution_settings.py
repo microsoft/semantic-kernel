@@ -13,7 +13,7 @@ class OnnxGenAIPromptExecutionSettings(PromptExecutionSettings):
     do_sample: bool = False
     early_stopping: bool = True
     length_penalty: float | None = Field(None, ge=0.0, le=1.0)
-    max_length: int = Field(2048, gt=0)
+    max_length: int = Field(3072, gt=0)
     min_length: int | None = Field(None, gt=0)
     no_repeat_ngram_size: int = 0
     num_beams: int | None = Field(None, gt=0)

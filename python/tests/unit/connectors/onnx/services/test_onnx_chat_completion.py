@@ -4,6 +4,7 @@ import os
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
 from semantic_kernel.connectors.ai.onnx.onnx_utils import ONNXTemplate
@@ -20,7 +21,8 @@ from tests.unit.connectors.onnx.conftest import (
 @patch("onnxruntime_genai.Model")
 @patch("onnxruntime_genai.Tokenizer")
 def test_onnx_chat_completion_with_valid_env_variable(gen_ai_config, model, tokenizer, onnx_unit_test_env):
-    assert OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3, env_file_path="test.env")
+    service = OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3, env_file_path="test.env")
+    assert not service.enable_multi_modality
 
 
 @patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config_vision))
@@ -29,7 +31,8 @@ def test_onnx_chat_completion_with_valid_env_variable(gen_ai_config, model, toke
 def test_onnx_chat_completion_with_vision_valid_env_variable(
     gen_ai_vision_config, model, tokenizer, onnx_unit_test_env
 ):
-    assert OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3, env_file_path="test.env")
+    service = OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3, env_file_path="test.env")
+    assert service.enable_multi_modality
 
 
 @patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config))
@@ -55,7 +58,7 @@ def test_onnx_chat_completion_with_invalid_model():
 
 
 def test_onnx_chat_completion_without_prompt_template():
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         OnnxGenAIChatCompletion()
 
 
