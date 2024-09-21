@@ -4,10 +4,9 @@ import os
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
-from semantic_kernel.connectors.ai.onnx.onnx_utils import ONNXTemplate
+from semantic_kernel.connectors.ai.onnx.utils import ONNXTemplate
 from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent, ImageContent
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidExecutionSettingsError
 from semantic_kernel.kernel import Kernel
@@ -58,7 +57,7 @@ def test_onnx_chat_completion_with_invalid_model():
 
 
 def test_onnx_chat_completion_without_prompt_template():
-    with pytest.raises(ValidationError):
+    with pytest.raises(TypeError):
         OnnxGenAIChatCompletion()
 
 

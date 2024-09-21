@@ -26,26 +26,23 @@ def apply_template(history: ChatHistory, template: ONNXTemplate) -> str:
 
     Args:
         history (ChatHistory): The chat history to which the template will be applied.
-        template (ONNXTemplate): The ONNX template to apply. Possible values are:
-            - ONNXTemplate.PHI3
-            - ONNXTemplate.GEMMA
-            - ONNXTemplate.LLAMA
-            - ONNXTemplate.PHI3V
+        template (ONNXTemplate): The ONNX template to apply.
+
     Returns:
         str: The result of applying the template to the chat history.
 
     Raises:
         ServiceException: If an error occurs while applying the template.
     """
+    template_functions = {
+        ONNXTemplate.PHI3: phi3_template,
+        ONNXTemplate.GEMMA: gemma_template,
+        ONNXTemplate.LLAMA: llama_template,
+        ONNXTemplate.PHI3V: phi3v_template,
+    }
+
     try:
-        if template == ONNXTemplate.PHI3:
-            return phi3_template(history)
-        if template == ONNXTemplate.GEMMA:
-            return gemma_template(history)
-        if template == ONNXTemplate.LLAMA:
-            return llama_template(history)
-        if template == ONNXTemplate.PHI3V:
-            return phi3v_template(history)
+        return template_functions[template](history)
     except Exception as e:
         raise ServiceException(f"An error occurred while applying the template: {template.value}") from e
 

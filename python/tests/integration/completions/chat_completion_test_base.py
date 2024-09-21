@@ -33,7 +33,7 @@ from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completio
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
 from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
-from semantic_kernel.connectors.ai.onnx.onnx_utils import ONNXTemplate
+from semantic_kernel.connectors.ai.onnx.utils import ONNXTemplate
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,

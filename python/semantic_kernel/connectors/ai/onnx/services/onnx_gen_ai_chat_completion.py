@@ -16,8 +16,8 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_prompt_execution_settings import OnnxGenAIPromptExecutionSettings
 from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_settings import OnnxGenAISettings
-from semantic_kernel.connectors.ai.onnx.onnx_utils import ONNXTemplate, apply_template
 from semantic_kernel.connectors.ai.onnx.services.onnx_gen_ai_completion_base import OnnxGenAICompletionBase
+from semantic_kernel.connectors.ai.onnx.utils import ONNXTemplate, apply_template
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import (
     ChatHistory,
