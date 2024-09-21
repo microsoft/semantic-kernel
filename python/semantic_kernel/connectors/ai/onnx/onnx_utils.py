@@ -5,7 +5,7 @@ from semantic_kernel.contents import AuthorRole, ChatHistory, ImageContent, Text
 from semantic_kernel.exceptions import ServiceException, ServiceInvalidRequestError
 
 
-class ONNXTemplate(Enum):
+class ONNXTemplate(str, Enum):
     """ONNXTemplate is an enumeration that represents different ONNX model templates.
 
     Attributes:
