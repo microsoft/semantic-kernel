@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.ImageToText;
 using Microsoft.SemanticKernel.TextGeneration;
 using OllamaSharp;
 
@@ -234,6 +235,83 @@ public static class OllamaServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OllamaTextEmbeddingGenerationService(
+                modelId: modelId,
+                ollamaClient: ollamaClient,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+    }
+
+    #endregion
+
+    #region Image To Text
+
+    /// <summary>
+    /// Add Ollama Image To Text services to the specified service collection.
+    /// </summary>
+    /// <param name="services">The target service collection.</param>
+    /// <param name="modelId">The model for Vision.</param>
+    /// <param name="endpoint">The endpoint to Ollama hosted service.</param>
+    /// <param name="serviceId">Optional service ID.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddOllamaImageToText(
+        this IServiceCollection services,
+        string modelId,
+        Uri endpoint,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+
+        services.AddKeyedSingleton<IImageToTextService>(serviceId, (serviceProvider, _) =>
+            new OllamaImageToTextService(
+                modelId: modelId,
+                endpoint: endpoint,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Add Ollama Image To Text services to the specified service collection.
+    /// </summary>
+    /// <param name="services">The target service collection.</param>
+    /// <param name="modelId">The model for Vision.</param>
+    /// <param name="httpClient">Optional custom HttpClient, picked from ServiceCollection if not provided.</param>
+    /// <param name="serviceId">Optional service ID.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddOllamaImageToText(
+        this IServiceCollection services,
+        string modelId,
+        HttpClient? httpClient = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+
+        services.AddKeyedSingleton<IImageToTextService>(serviceId, (serviceProvider, _) =>
+            new OllamaImageToTextService(
+                modelId: modelId,
+                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Add Ollama Image To Text service to the kernel builder.
+    /// </summary>
+    /// <param name="services">The target service collection.</param>
+    /// <param name="modelId">The model for Vision.</param>
+    /// <param name="ollamaClient">The Ollama Sharp library client.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IServiceCollection AddOllamaImageToText(
+        this IServiceCollection services,
+        string modelId,
+        OllamaApiClient ollamaClient,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+
+        return services.AddKeyedSingleton<IImageToTextService>(serviceId, (serviceProvider, _) =>
+            new OllamaImageToTextService(
                 modelId: modelId,
                 ollamaClient: ollamaClient,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
