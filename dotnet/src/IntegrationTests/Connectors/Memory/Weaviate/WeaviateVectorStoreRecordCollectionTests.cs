@@ -206,9 +206,83 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal(10, getResult.HotelRating);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task VectorizedSearchReturnsValidResultsByDefaultAsync(bool includeVectors)
+    {
+        // Arrange
+        var hotel1 = this.CreateTestHotel(hotelId: new Guid("11111111-1111-1111-1111-111111111111"), embedding: new[] { 30f, 31f, 32f, 33f });
+        var hotel2 = this.CreateTestHotel(hotelId: new Guid("22222222-2222-2222-2222-222222222222"), embedding: new[] { 31f, 32f, 33f, 34f });
+        var hotel3 = this.CreateTestHotel(hotelId: new Guid("33333333-3333-3333-3333-333333333333"), embedding: new[] { 20f, 20f, 20f, 20f });
+        var hotel4 = this.CreateTestHotel(hotelId: new Guid("44444444-4444-4444-4444-444444444444"), embedding: new[] { -1000f, -1000f, -1000f, -1000f });
+
+        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(fixture.HttpClient!, "VectorSearchDefault");
+
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+
+        // Act
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        {
+            IncludeVectors = includeVectors
+        }).ToListAsync();
+
+        // Assert
+        var ids = searchResults.Select(l => l.Record.HotelId.ToString()).ToList();
+
+        Assert.Equal("11111111-1111-1111-1111-111111111111", ids[0]);
+        Assert.Equal("22222222-2222-2222-2222-222222222222", ids[1]);
+        Assert.Equal("33333333-3333-3333-3333-333333333333", ids[2]);
+
+        Assert.DoesNotContain("44444444-4444-4444-4444-444444444444", ids);
+
+        Assert.True(
+            searchResults[0].Score < searchResults[1].Score &&
+            searchResults[1].Score < searchResults[2].Score);
+
+        Assert.Equal(includeVectors, searchResults.All(l => l.Record.DescriptionEmbedding is not null));
+    }
+
+    [Fact]
+    public async Task VectorizedSearchReturnsValidResultsWithOffsetAsync()
+    {
+        // Arrange
+        var hotel1 = this.CreateTestHotel(hotelId: new Guid("11111111-1111-1111-1111-111111111111"), embedding: new[] { 30f, 31f, 32f, 33f });
+        var hotel2 = this.CreateTestHotel(hotelId: new Guid("22222222-2222-2222-2222-222222222222"), embedding: new[] { 31f, 32f, 33f, 34f });
+        var hotel3 = this.CreateTestHotel(hotelId: new Guid("33333333-3333-3333-3333-333333333333"), embedding: new[] { 20f, 20f, 20f, 20f });
+        var hotel4 = this.CreateTestHotel(hotelId: new Guid("44444444-4444-4444-4444-444444444444"), embedding: new[] { -1000f, -1000f, -1000f, -1000f });
+
+        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(fixture.HttpClient!, "VectorSearchWithOffset");
+
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+
+        // Act
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        {
+            Limit = 2,
+            Offset = 2
+        }).ToListAsync();
+
+        // Assert
+        var ids = searchResults.Select(l => l.Record.HotelId.ToString()).ToList();
+
+        Assert.Equal("33333333-3333-3333-3333-333333333333", ids[0]);
+        Assert.Equal("44444444-4444-4444-4444-444444444444", ids[1]);
+
+        Assert.DoesNotContain("11111111-1111-1111-1111-111111111111", ids);
+        Assert.DoesNotContain("22222222-2222-2222-2222-222222222222", ids);
+    }
+
     #region private
 
-    private WeaviateHotel CreateTestHotel(Guid hotelId, string? hotelName = null)
+    private WeaviateHotel CreateTestHotel(
+        Guid hotelId,
+        string? hotelName = null,
+        ReadOnlyMemory<float>? embedding = null)
     {
         return new WeaviateHotel
         {
@@ -219,7 +293,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
             ParkingIncluded = true,
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
-            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+            DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
             Timestamp = new DateTime(2024, 8, 28, 10, 11, 12)
         };
     }

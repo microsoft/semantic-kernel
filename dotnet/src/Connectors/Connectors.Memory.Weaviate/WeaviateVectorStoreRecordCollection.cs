@@ -104,6 +104,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <summary>The vector properties of the current storage model.</summary>
     private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
 
+    /// <summary>First vector property for the collections that this class is used with.</summary>
+    private readonly VectorStoreRecordVectorProperty? _firstVectorProperty;
+
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, JsonNode> _mapper;
 
@@ -156,6 +159,11 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         this._keyProperty = properties.KeyProperty;
         this._dataProperties = properties.DataProperties;
         this._vectorProperties = properties.VectorProperties;
+
+        if (this._vectorProperties.Count > 0)
+        {
+            this._firstVectorProperty = this._vectorProperties[0];
+        }
 
         // Assign mapper.
         this._mapper = this._options.JsonNodeCustomMapper ??
@@ -350,9 +358,96 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
+        TVector vector,
+        VectorSearchOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        const string OperationName = "VectorSearch";
+
+        Verify.NotNull(vector);
+
+        var vectorType = vector.GetType();
+
+        if (!s_supportedVectorTypes.Contains(vectorType))
+        {
+            throw new NotSupportedException(
+                $"The provided vector type {vectorType.FullName} is not supported by the Azure CosmosDB NoSQL connector. " +
+                $"Supported types are: {string.Join(", ", s_supportedVectorTypes.Select(l => l.FullName))}");
+        }
+
+        var searchOptions = options ?? VectorSearchOptions.Default;
+        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorFieldName);
+
+        if (vectorProperty is null)
+        {
+            throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
+        }
+
+        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
+        var fields = this._dataProperties.Select(l => this._storagePropertyNames[l.DataModelPropertyName]);
+
+        var vectorsQuery = true ?
+            $"vectors {{ {string.Join(" ", this._vectorProperties.Select(l => this._storagePropertyNames[l.DataModelPropertyName]))} }}" :
+            string.Empty;
+
+        var vectorArray = JsonSerializer.Serialize(vector);
+
+        string graphqlQuery = $$"""
+        {
+          Get {
+            {{this.CollectionName}} (
+              limit: {{searchOptions.Limit}}
+              offset: {{searchOptions.Offset}}
+              nearVector: {
+                targetVectors: ["{{vectorPropertyName}}"]
+                vector: {{vectorArray}}
+              }
+            ) {
+              {{string.Join(" ", fields)}}
+              {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
+                {{WeaviateConstants.ReservedKeyPropertyName}}
+                {{WeaviateConstants.ScorePropertyName}}
+                {{vectorsQuery}}
+              }
+            }
+          }
+        }
+        """;
+
+        using var request = new WeaviateVectorSearchRequest(graphqlQuery).Build();
+
+        var response = await this.ExecuteRequestAsync<WeaviateVectorSearchResponse>(request, cancellationToken).ConfigureAwait(false);
+
+        var collectionResults = response?.Data?.GetOperation?[this.CollectionName] ?? [];
+
+        foreach (var result in collectionResults)
+        {
+            if (result is not null)
+            {
+                var additionalProperties = result[WeaviateConstants.AdditionalPropertiesPropertyName];
+
+                var score = additionalProperties?[WeaviateConstants.ScorePropertyName]?.GetValue<double>();
+
+                var id = additionalProperties?[WeaviateConstants.ReservedKeyPropertyName];
+                var vectors = additionalProperties?[WeaviateConstants.ReservedVectorPropertyName];
+
+                var storageModel = new JsonObject
+                {
+                    { WeaviateConstants.ReservedKeyPropertyName, id?.DeepClone() },
+                    { WeaviateConstants.ReservedDataPropertyName, result?.DeepClone() },
+                    { WeaviateConstants.ReservedVectorPropertyName, vectors?.DeepClone() },
+                };
+
+                var record = VectorStoreErrorHandler.RunModelConversion(
+                    DatabaseName,
+                    this.CollectionName,
+                    OperationName,
+                    () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = searchOptions.IncludeVectors }));
+
+                yield return new VectorSearchResult<TRecord>(record, score);
+            }
+        }
     }
 
     #region private
@@ -405,6 +500,33 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 OperationName = operationName
             };
         }
+    }
+
+    /// <summary>
+    /// Get vector property to use for a search by using the storage name for the field name from options
+    /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
+    /// </summary>
+    /// <param name="vectorFieldName">The vector field name.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
+    private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? vectorFieldName)
+    {
+        // If vector property name is provided in options, try to find it in schema or throw an exception.
+        if (!string.IsNullOrWhiteSpace(vectorFieldName))
+        {
+            // Check vector properties by data model property name.
+            var vectorProperty = this._vectorProperties
+                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
+
+            if (vectorProperty is not null)
+            {
+                return vectorProperty;
+            }
+
+            throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{vectorFieldName}'.");
+        }
+
+        // If vector property is not provided in options, return first vector property from schema.
+        return this._firstVectorProperty;
     }
 
     #endregion
