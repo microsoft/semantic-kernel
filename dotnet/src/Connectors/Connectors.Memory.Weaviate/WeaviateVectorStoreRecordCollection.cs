@@ -107,6 +107,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <summary>First vector property for the collections that this class is used with.</summary>
     private readonly VectorStoreRecordVectorProperty? _firstVectorProperty;
 
+    /// <summary>Collection of storage names for data properties of the current storage model.</summary>
+    private readonly List<string> _dataPropertyStorageNames;
+
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, JsonNode> _mapper;
 
@@ -164,6 +167,10 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         {
             this._firstVectorProperty = this._vectorProperties[0];
         }
+
+        this._dataPropertyStorageNames = this._dataProperties
+            .Select(l => this._storagePropertyNames[l.DataModelPropertyName])
+            .ToList();
 
         // Assign mapper.
         this._mapper = this._options.JsonNodeCustomMapper ??
@@ -385,9 +392,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         }
 
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
-        var fields = this._dataProperties.Select(l => this._storagePropertyNames[l.DataModelPropertyName]);
+        var fields = this._dataPropertyStorageNames;
 
-        var vectorsQuery = true ?
+        var vectorsQuery = searchOptions.IncludeVectors ?
             $"vectors {{ {string.Join(" ", this._vectorProperties.Select(l => this._storagePropertyNames[l.DataModelPropertyName]))} }}" :
             string.Empty;
 
