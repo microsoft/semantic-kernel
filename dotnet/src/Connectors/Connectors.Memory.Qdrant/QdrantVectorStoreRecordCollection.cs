@@ -85,17 +85,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         // Verify.
         Verify.NotNull(qdrantClient);
         Verify.NotNullOrWhiteSpace(collectionName);
-        Verify.True(
-            !(typeof(TRecord).IsGenericType &&
-                typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>) &&
-                !(typeof(TRecord).GetGenericArguments()[0] == typeof(ulong) || typeof(TRecord).GetGenericArguments()[0] == typeof(Guid)) &&
-                options?.PointStructCustomMapper is null),
-            "A data model of VectorStoreGenericDataModel with a different key type than ulong or Guid, is not supported by the default mappers. Please provide your own mapper to map to your chosen key type.",
-            nameof(options));
-        Verify.True(
-            !((typeof(TRecord) == typeof(VectorStoreGenericDataModel<ulong>) || typeof(TRecord) == typeof(VectorStoreGenericDataModel<Guid>)) && options?.VectorStoreRecordDefinition is null),
-            $"A {nameof(VectorStoreRecordDefinition)} must be provided when using {nameof(VectorStoreGenericDataModel<ulong>)}.",
-            nameof(options));
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.PointStructCustomMapper is not null, s_supportedKeyTypes);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._qdrantClient = qdrantClient;
@@ -469,7 +460,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().Name} is not supported by the Qdrant connector.");
+            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Qdrant connector.");
         }
 
         var internalOptions = options ?? Data.VectorSearchOptions.Default;
@@ -529,9 +520,9 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     private string ResolveVectorFieldName(string? optionsVectorFieldName)
     {
         string? vectorFieldName;
-        if (optionsVectorFieldName is not null)
+        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
         {
-            if (!this._storagePropertyNames.TryGetValue(optionsVectorFieldName, out vectorFieldName))
+            if (!this._storagePropertyNames.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
             {
                 throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
             }

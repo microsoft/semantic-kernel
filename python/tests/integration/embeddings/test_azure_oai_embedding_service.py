@@ -35,17 +35,16 @@ async def test_azure_text_embedding_service(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_azure_text_embedding_service_with_provided_client(kernel: Kernel):
-
     azure_openai_settings = AzureOpenAISettings.create()
     endpoint = azure_openai_settings.endpoint
     deployment_name = azure_openai_settings.embedding_deployment_name
-    api_key = azure_openai_settings.api_key.get_secret_value()
+    ad_token = azure_openai_settings.get_azure_openai_auth_token()
     api_version = azure_openai_settings.api_version
 
     client = AsyncAzureOpenAI(
         azure_endpoint=endpoint,
         azure_deployment=deployment_name,
-        api_key=api_key,
+        azure_ad_token=ad_token,
         api_version=api_version,
         default_headers={"Test-User-X-ID": "test"},
     )

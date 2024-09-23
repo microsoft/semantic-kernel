@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
-
 using OpenAI;
 using OpenAI.Assistants;
 
@@ -58,6 +57,7 @@ internal static class AssistantThreadActions
                 ThreadInitializationMessage threadMessage = new(
                     role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Assistant,
                     content: AssistantMessageFactory.GetMessageContents(message));
+
                 createOptions.InitialMessages.Add(threadMessage);
             }
         }
@@ -154,9 +154,6 @@ internal static class AssistantThreadActions
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    /// <remarks>
-    /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
-    /// </remarks>
     public static async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         OpenAIAssistantAgent agent,
         AssistantClient client,
@@ -176,7 +173,9 @@ internal static class AssistantThreadActions
 
         ToolDefinition[]? tools = [.. agent.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
 
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, invocationOptions);
+        string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, instructions, invocationOptions);
 
         options.ToolsOverride.AddRange(tools);
 
@@ -186,7 +185,7 @@ internal static class AssistantThreadActions
 
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
-        Dictionary<string, FunctionCallContent> functionSteps = [];
+        Dictionary<string, FunctionResultContent> functionSteps = [];
 
         do
         {
@@ -208,11 +207,6 @@ internal static class AssistantThreadActions
 
                 // Execute functions in parallel and post results at once.
                 FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
-                // Capture function-call for message processing
-                foreach (FunctionCallContent functionCall in functionCalls)
-                {
-                    functionSteps.Add(functionCall.Id!, functionCall);
-                }
                 if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
@@ -223,6 +217,12 @@ internal static class AssistantThreadActions
 
                     // Block for function results
                     FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
+
+                    // Capture function-call for message processing
+                    foreach (FunctionResultContent functionCall in functionResults)
+                    {
+                        functionSteps.Add(functionCall.CallId!, functionCall);
+                    }
 
                     // Process tool output
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
@@ -260,8 +260,8 @@ internal static class AssistantThreadActions
                         // Process function result content
                         else if (toolCall.ToolKind == RunStepToolCallKind.Function)
                         {
-                            FunctionCallContent functionStep = functionSteps[toolCall.ToolCallId]; // Function step always captured on invocation
-                            content = GenerateFunctionResultContent(agent.GetName(), functionStep, toolCall.FunctionOutput);
+                            FunctionResultContent functionStep = functionSteps[toolCall.ToolCallId]; // Function step always captured on invocation
+                            content = GenerateFunctionResultContent(agent.GetName(), [functionStep]);
                         }
 
                         if (content is not null)
@@ -349,7 +349,7 @@ internal static class AssistantThreadActions
         OpenAIAssistantAgent agent,
         AssistantClient client,
         string threadId,
-        IList<ChatMessageContent> messages,
+        IList<ChatMessageContent>? messages,
         OpenAIAssistantInvocationOptions? invocationOptions,
         ILogger logger,
         Kernel kernel,
@@ -365,7 +365,9 @@ internal static class AssistantThreadActions
 
         ToolDefinition[]? tools = [.. agent.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
 
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, invocationOptions);
+        string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, instructions, invocationOptions);
 
         options.ToolsOverride.AddRange(tools);
 
@@ -414,7 +416,7 @@ internal static class AssistantThreadActions
                 if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
-                    messages.Add(GenerateFunctionCallContent(agent.GetName(), functionCalls));
+                    messages?.Add(GenerateFunctionCallContent(agent.GetName(), functionCalls));
 
                     // Invoke functions for each tool-step
                     IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, functionCalls, cancellationToken);
@@ -426,7 +428,7 @@ internal static class AssistantThreadActions
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
                     asyncUpdates = client.SubmitToolOutputsToRunStreamingAsync(run, toolOutputs);
 
-                    messages.Add(GenerateFunctionResultsContent(agent.GetName(), functionResults));
+                    messages?.Add(GenerateFunctionResultContent(agent.GetName(), functionResults));
                 }
             }
 
@@ -441,7 +443,7 @@ internal static class AssistantThreadActions
                     if (message != null)
                     {
                         ChatMessageContent content = GenerateMessageContent(agent.GetName(), message);
-                        messages.Add(content);
+                        messages?.Add(content);
                     }
                 }
 
@@ -632,24 +634,7 @@ internal static class AssistantThreadActions
         return functionCallContent;
     }
 
-    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionCallContent functionCall, string result)
-    {
-        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
-        {
-            AuthorName = agentName
-        };
-
-        functionCallContent.Items.Add(
-            new FunctionResultContent(
-                functionCall.FunctionName,
-                functionCall.PluginName,
-                functionCall.Id,
-                result));
-
-        return functionCallContent;
-    }
-
-    private static ChatMessageContent GenerateFunctionResultsContent(string agentName, IList<FunctionResultContent> functionResults)
+    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionResultContent[] functionResults)
     {
         ChatMessageContent functionResultContent = new(AuthorRole.Tool, content: null)
         {
@@ -675,7 +660,7 @@ internal static class AssistantThreadActions
 
         for (int index = 0; index < functionCalls.Length; ++index)
         {
-            functionTasks[index] = functionCalls[index].InvokeAsync(agent.Kernel, cancellationToken);
+            functionTasks[index] = ExecuteFunctionStep(agent, functionCalls[index], cancellationToken);
         }
 
         return functionTasks;

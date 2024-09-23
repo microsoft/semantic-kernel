@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Microsoft.SemanticKernel.Data;
 using Xunit;
 
@@ -13,10 +14,55 @@ namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 public class RedisVectorStoreCollectionSearchMappingTests
 {
     [Fact]
+    public void ValidateVectorAndConvertToBytesConvertsFloatVector()
+    {
+        // Arrange.
+        var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
+
+        // Act.
+        var byteArray = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(floatVector, "Test");
+
+        // Assert.
+        Assert.NotNull(byteArray);
+        Assert.Equal(12, byteArray.Length);
+        Assert.Equal(new byte[12] { 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64 }, byteArray);
+    }
+
+    [Fact]
+    public void ValidateVectorAndConvertToBytesConvertsDoubleVector()
+    {
+        // Arrange.
+        var doubleVector = new ReadOnlyMemory<double>(new double[] { 1.0, 2.0, 3.0 });
+
+        // Act.
+        var byteArray = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(doubleVector, "Test");
+
+        // Assert.
+        Assert.NotNull(byteArray);
+        Assert.Equal(24, byteArray.Length);
+        Assert.Equal(new byte[24] { 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 8, 64 }, byteArray);
+    }
+
+    [Fact]
+    public void ValidateVectorAndConvertToBytesThrowsForUnsupportedType()
+    {
+        // Arrange.
+        var unsupportedVector = new ReadOnlyMemory<int>(new int[] { 1, 2, 3 });
+
+        // Act & Assert.
+        var exception = Assert.Throws<NotSupportedException>(() =>
+        {
+            var byteArray = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(unsupportedVector, "Test");
+        });
+        Assert.Equal("The provided vector type System.ReadOnlyMemory`1[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]] is not supported by the Redis Test connector.", exception.Message);
+    }
+
+    [Fact]
     public void BuildQueryBuildsRedisQueryWithDefaults()
     {
         // Arrange.
         var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
+        var byteArray = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
         var storagePropertyNames = new Dictionary<string, string>()
         {
             { "Vector", "storage_Vector" },
@@ -24,7 +70,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var firstVectorPropertyName = "storage_Vector";
 
         // Act.
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVector, VectorSearchOptions.Default, storagePropertyNames, firstVectorPropertyName, null);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, VectorSearchOptions.Default, storagePropertyNames, firstVectorPropertyName, null);
 
         // Assert.
         Assert.NotNull(query);
@@ -39,6 +85,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
     {
         // Arrange.
         var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
+        var byteArray = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
         var vectorSearchOptions = new VectorSearchOptions { Limit = 5, Offset = 3, VectorFieldName = "Vector" };
         var storagePropertyNames = new Dictionary<string, string>()
         {
@@ -48,11 +95,11 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var selectFields = new string[] { "storage_Field1", "storage_Field2" };
 
         // Act.
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVector, vectorSearchOptions, storagePropertyNames, firstVectorPropertyName, selectFields);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, vectorSearchOptions, storagePropertyNames, firstVectorPropertyName, selectFields);
 
         // Assert.
         Assert.NotNull(query);
-        Assert.Equal("*=>[KNN 5 @storage_Vector $embedding AS vector_score]", query.QueryString);
+        Assert.Equal("*=>[KNN 8 @storage_Vector $embedding AS vector_score]", query.QueryString);
     }
 
     [Fact]
@@ -60,6 +107,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
     {
         // Arrange.
         var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
+        var byteArray = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
         var vectorSearchOptions = new VectorSearchOptions { VectorFieldName = "UnknownVector" };
         var storagePropertyNames = new Dictionary<string, string>()
         {
@@ -70,7 +118,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         // Act & Assert.
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVector, vectorSearchOptions, storagePropertyNames, firstVectorPropertyName, null);
+            var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, vectorSearchOptions, storagePropertyNames, firstVectorPropertyName, null);
         });
     }
 

@@ -91,7 +91,7 @@ public sealed class OpenAIClientProvider
     public static OpenAIClientProvider ForOpenAI(ApiKeyCredential apiKey, Uri? endpoint = null, HttpClient? httpClient = null)
     {
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);
-        return new(new OpenAIClient(apiKey ?? SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
+        return new(new OpenAIClient(apiKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
     }
 
     /// <summary>

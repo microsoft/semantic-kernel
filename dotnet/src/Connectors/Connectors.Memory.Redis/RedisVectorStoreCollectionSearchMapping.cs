@@ -15,26 +15,53 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 internal static class RedisVectorStoreCollectionSearchMapping
 {
     /// <summary>
+    /// Validate that the given vector is one of the types supported by the Redis connector and convert it to a byte array.
+    /// </summary>
+    /// <typeparam name="TVector">The vector type.</typeparam>
+    /// <param name="vector">The vector to validate and convert.</param>
+    /// <param name="connectorTypeName">The type of connector, HashSet or JSON, to use for error reporting.</param>
+    /// <returns>The vector converted to a byte array.</returns>
+    /// <exception cref="NotSupportedException">Thrown if the vector type is not supported.</exception>
+    public static byte[] ValidateVectorAndConvertToBytes<TVector>(TVector vector, string connectorTypeName)
+    {
+        byte[] vectorBytes;
+        if (vector is ReadOnlyMemory<float> floatVector)
+        {
+            vectorBytes = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
+        }
+        else if (vector is ReadOnlyMemory<double> doubleVector)
+        {
+            vectorBytes = MemoryMarshal.AsBytes(doubleVector.Span).ToArray();
+        }
+        else
+        {
+            throw new NotSupportedException($"The provided vector type {vector?.GetType().FullName} is not supported by the Redis {connectorTypeName} connector.");
+        }
+
+        return vectorBytes;
+    }
+
+    /// <summary>
     /// Build a Redis <see cref="Query"/> object from the given vector and options.
     /// </summary>
-    /// <param name="floatVector">The vector to search the database with.</param>
+    /// <param name="vectorBytes">The vector to search the database with as a byte array.</param>
     /// <param name="options">The options to configure the behavior of the search.</param>
     /// <param name="storagePropertyNames">A mapping of data model property names to the names under which they are stored.</param>
     /// <param name="firstVectorPropertyName">The name of the first vector property in the data model.</param>
     /// <param name="selectFields">The set of fields to limit the results to. Null for all.</param>
     /// <returns>The <see cref="Query"/>.</returns>
-    public static Query BuildQuery(ReadOnlyMemory<float> floatVector, VectorSearchOptions options, Dictionary<string, string> storagePropertyNames, string firstVectorPropertyName, string[]? selectFields)
+    public static Query BuildQuery(byte[] vectorBytes, VectorSearchOptions options, Dictionary<string, string> storagePropertyNames, string firstVectorPropertyName, string[]? selectFields)
     {
         // Resolve options.
         var vectorPropertyName = ResolveVectorFieldName(options.VectorFieldName, storagePropertyNames, firstVectorPropertyName);
 
         // Build search query.
+        var redisLimit = options.Limit + options.Offset;
         var filter = RedisVectorStoreCollectionSearchMapping.BuildFilter(options.Filter, storagePropertyNames);
-        var vectorBytes = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
-        var query = new Query($"{filter}=>[KNN {options.Limit} @{vectorPropertyName} $embedding AS vector_score]")
+        var query = new Query($"{filter}=>[KNN {redisLimit} @{vectorPropertyName} $embedding AS vector_score]")
             .AddParam("embedding", vectorBytes)
             .SetSortBy("vector_score")
-            .Limit(options.Offset, options.Limit)
+            .Limit(options.Offset, redisLimit)
             .SetWithScores(true)
             .Dialect(2);
 
@@ -102,9 +129,9 @@ internal static class RedisVectorStoreCollectionSearchMapping
     private static string ResolveVectorFieldName(string? optionsVectorFieldName, Dictionary<string, string> storagePropertyNames, string firstVectorPropertyName)
     {
         string? vectorFieldName;
-        if (optionsVectorFieldName is not null)
+        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
         {
-            if (!storagePropertyNames.TryGetValue(optionsVectorFieldName, out vectorFieldName))
+            if (!storagePropertyNames.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
             {
                 throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
             }

@@ -83,17 +83,8 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         // Verify.
         Verify.NotNull(database);
         Verify.NotNullOrWhiteSpace(collectionName);
-        Verify.True(
-            !(typeof(TRecord).IsGenericType &&
-                typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>) &&
-                typeof(TRecord).GetGenericArguments()[0] != typeof(string) &&
-                options?.JsonNodeCustomMapper is null),
-            "A data model of VectorStoreGenericDataModel with a different key type than string, is not supported by the default mappers. Please provide your own mapper to map to your chosen key type.",
-            nameof(options));
-        Verify.True(
-            !(typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>) && options?.VectorStoreRecordDefinition is null),
-            $"A {nameof(VectorStoreRecordDefinition)} must be provided when using {nameof(VectorStoreGenericDataModel<string>)}.",
-            nameof(options));
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.JsonNodeCustomMapper is not null, s_supportedKeyTypes);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._database = database;
@@ -398,15 +389,11 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
 
-        if (vector is not ReadOnlyMemory<float> floatVector)
-        {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().Name} is not supported by the Redis JSON connector.");
-        }
-
         var internalOptions = options ?? Data.VectorSearchOptions.Default;
 
         // Build query & search.
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVector, internalOptions, this._storagePropertyNames, this._firstVectorPropertyName, null);
+        byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "JSON");
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(vectorBytes, internalOptions, this._storagePropertyNames, this._firstVectorPropertyName, null);
         var results = await this.RunOperationAsync(
             "FT.SEARCH",
             () => this._database

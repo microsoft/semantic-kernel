@@ -103,17 +103,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         // Verify.
         Verify.NotNull(database);
         Verify.NotNullOrWhiteSpace(collectionName);
-        Verify.True(
-            !(typeof(TRecord).IsGenericType &&
-                typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>) &&
-                typeof(TRecord).GetGenericArguments()[0] != typeof(string) &&
-                options?.HashEntriesCustomMapper is null),
-            "A data model of VectorStoreGenericDataModel with a different key type than string, is not supported by the default mappers. Please provide your own mapper to map to your chosen key type.",
-            nameof(options));
-        Verify.True(
-            !(typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>) && options?.VectorStoreRecordDefinition is null),
-            $"A {nameof(VectorStoreRecordDefinition)} must be provided when using {nameof(VectorStoreGenericDataModel<string>)}.",
-            nameof(options));
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.HashEntriesCustomMapper is not null, s_supportedKeyTypes);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._database = database;
@@ -360,16 +351,12 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
 
-        if (vector is not ReadOnlyMemory<float> floatVector)
-        {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().Name} is not supported by the Redis HashSet connector.");
-        }
-
         var internalOptions = options ?? Data.VectorSearchOptions.Default;
 
         // Build query & search.
         var selectFields = internalOptions.IncludeVectors ? null : this._dataStoragePropertyNames;
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(floatVector, internalOptions, this._storagePropertyNames, this._firstVectorPropertyName, selectFields);
+        byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "HashSet");
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(vectorBytes, internalOptions, this._storagePropertyNames, this._firstVectorPropertyName, selectFields);
         var results = await this.RunOperationAsync(
             "FT.SEARCH",
             () => this._database

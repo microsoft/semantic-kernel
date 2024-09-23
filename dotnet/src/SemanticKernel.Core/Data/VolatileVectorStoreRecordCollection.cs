@@ -30,8 +30,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         typeof(ReadOnlyMemory<float>?),
     ];
 
-    /// <summary>Internal storage for the record collection.</summary>
-    private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollection;
+    /// <summary>Internal storage for all of the record collections.</summary>
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollections;
 
     /// <summary>The data type of each collection, to enforce a single type per collection.</summary>
     private readonly ConcurrentDictionary<string, Type> _internalCollectionTypes;
@@ -70,7 +70,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         // Assign.
         this._collectionName = collectionName;
-        this._internalCollection = new();
+        this._internalCollections = new();
         this._internalCollectionTypes = new();
         this._options = options ?? new VolatileVectorStoreRecordCollectionOptions();
         var vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
@@ -103,7 +103,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         VolatileVectorStoreRecordCollectionOptions? options = default)
         : this(collectionName, options)
     {
-        this._internalCollection = internalCollection;
+        this._internalCollections = internalCollection;
         this._internalCollectionTypes = internalCollectionTypes;
     }
 
@@ -113,15 +113,15 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this._internalCollection.ContainsKey(this._collectionName) ? Task.FromResult(true) : Task.FromResult(false);
+        return this._internalCollections.ContainsKey(this._collectionName) ? Task.FromResult(true) : Task.FromResult(false);
     }
 
     /// <inheritdoc />
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        if (!this._internalCollection.ContainsKey(this._collectionName))
+        if (!this._internalCollections.ContainsKey(this._collectionName))
         {
-            this._internalCollection.TryAdd(this._collectionName, new ConcurrentDictionary<object, object>());
+            this._internalCollections.TryAdd(this._collectionName, new ConcurrentDictionary<object, object>());
             this._internalCollectionTypes.TryAdd(this._collectionName, typeof(TRecord));
         }
 
@@ -140,7 +140,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        this._internalCollection.TryRemove(this._collectionName, out _);
+        this._internalCollections.TryRemove(this._collectionName, out _);
         return Task.CompletedTask;
     }
 
@@ -227,7 +227,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().Name} is not supported by the Qdrant connector.");
+            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Volatile Vector Store.");
         }
 
         // Resolve options and get requested vector property or first as default.
@@ -272,9 +272,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// Get the collection dictionary from the internal storage, throws if it does not exist.
     /// </summary>
     /// <returns>The retrieved collection dictionary.</returns>
-    private ConcurrentDictionary<object, object> GetCollectionDictionary()
+    internal ConcurrentDictionary<object, object> GetCollectionDictionary()
     {
-        if (!this._internalCollection.TryGetValue(this._collectionName, out var collectionDictionary))
+        if (!this._internalCollections.TryGetValue(this._collectionName, out var collectionDictionary))
         {
             throw new VectorStoreOperationException($"Call to vector store failed. Collection '{this._collectionName}' does not exist.");
         }

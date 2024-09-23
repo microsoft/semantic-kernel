@@ -334,7 +334,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     [Theory(Skip = SkipReason)]
     [InlineData("equality")]
     [InlineData("tagContains")]
-    public async Task ItCanSearchWithVectorAndFilterAsync(string filterType)
+    public async Task ItCanSearchWithFloat32VectorAndFilterAsync(string filterType)
     {
         // Arrange
         var options = new RedisJsonVectorStoreRecordCollectionOptions<Hotel> { PrefixCollectionNameToKeyNames = true };
@@ -362,6 +362,70 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Equal("Seattle", searchResult?.Address.City);
         Assert.Equal("This is a great hotel.", searchResult?.Description);
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, searchResult?.DescriptionEmbedding?.ToArray());
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanSearchWithFloat32VectorAndLimitOffsetAsync()
+    {
+        // Arrange
+        var options = new RedisJsonVectorStoreRecordCollectionOptions<BasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisJsonVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName + "TopSkip", options);
+        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "TopSkip_1", HotelName = "1", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 1.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "TopSkip_2", HotelName = "2", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 2.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "TopSkip_3", HotelName = "3", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 3.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "TopSkip_4", HotelName = "4", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 4.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "TopSkip_5", HotelName = "5", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 5.0f]) });
+        var vector = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 1.0f]);
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(
+            vector,
+            new VectorSearchOptions
+            {
+                Limit = 3,
+                Offset = 2
+            }).ToListAsync();
+
+        // Assert
+        Assert.Equal(3, actual.Count);
+        Assert.True(actual.Select(x => x.Record.HotelId).SequenceEqual(["TopSkip_3", "TopSkip_4", "TopSkip_5"]));
+    }
+
+    [Theory(Skip = SkipReason)]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItCanSearchWithFloat64VectorAsync(bool includeVectors)
+    {
+        // Arrange
+        var options = new RedisJsonVectorStoreRecordCollectionOptions<BasicFloat64Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisJsonVectorStoreRecordCollection<BasicFloat64Hotel>(fixture.Database, TestCollectionName + "Float64", options);
+        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.UpsertAsync(new BasicFloat64Hotel { HotelId = "Float64_1", HotelName = "1", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<double>([1.0d, 1.1d, 1.2d, 1.3d]) });
+        await sut.UpsertAsync(new BasicFloat64Hotel { HotelId = "Float64_2", HotelName = "2", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<double>([2.0d, 2.1d, 2.2d, 2.3d]) });
+        await sut.UpsertAsync(new BasicFloat64Hotel { HotelId = "Float64_3", HotelName = "3", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<double>([3.0d, 3.1d, 3.2d, 3.3d]) });
+
+        var vector = new ReadOnlyMemory<double>([2.0d, 2.1d, 2.2d, 2.3d]);
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(
+            vector,
+            new VectorSearchOptions
+            {
+                IncludeVectors = includeVectors,
+                Limit = 1
+            }).ToListAsync();
+
+        // Assert
+        Assert.Single(actual);
+        var searchResult = actual.First().Record;
+        Assert.Equal("Float64_2", searchResult?.HotelId);
+        Assert.Equal("2", searchResult?.HotelName);
+        Assert.Equal("Nice hotel", searchResult?.Description);
+        if (includeVectors)
+        {
+            Assert.Equal<double[]>([2.0d, 2.1d, 2.2d, 2.3d], searchResult?.DescriptionEmbedding?.ToArray());
+        }
     }
 
     [Fact(Skip = SkipReason)]
