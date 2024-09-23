@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -137,6 +138,8 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
+
+        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForResponse"));
     }
 
     [Theory(Skip = "This test is for manual verification.")]

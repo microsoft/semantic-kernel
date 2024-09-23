@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -57,5 +57,5 @@ public static class IndexKind
     /// </summary>
     public const string Dynamic = nameof(Dynamic);
 =======
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> ms/features/bugbash-prep
 }

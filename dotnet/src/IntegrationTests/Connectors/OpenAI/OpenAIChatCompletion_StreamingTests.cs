@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Text;
@@ -120,6 +120,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 
         // Act
         await foreach (var update in textGeneration.GetStreamingTextContentsAsync("What is the capital of France?", null, kernel))
+        await foreach (var update in textGeneration.GetStreamingTextContentsAsync("Reply \"I don't know\" to every question. What is the capital of France?", null, kernel))
         {
             stringBuilder.Append(update);
 
@@ -133,6 +134,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         }
 
         // Assert
+        Assert.Contains("I don't know", stringBuilder.ToString());
         Assert.NotNull(metadata);
 
         Assert.True(metadata.TryGetValue("Id", out object? id));

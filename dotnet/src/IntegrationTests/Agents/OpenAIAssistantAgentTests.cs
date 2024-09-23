@@ -41,6 +41,7 @@ public sealed class OpenAIAssistantAgentTests
         await this.ExecuteAgentAsync(
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
             openAISettings.ChatModelId!,
+            openAISettings.ModelId,
             input,
             expectedAnswerContains);
     }
@@ -50,6 +51,7 @@ public sealed class OpenAIAssistantAgentTests
     /// and targeting Azure OpenAI services.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
+    [Theory/*(Skip = "No supported endpoint configured.")*/]
     [InlineData("What is the special soup?", "Clam Chowder")]
     public async Task AzureOpenAIAssistantAgentAsync(string input, string expectedAnswerContains)
     {
@@ -57,9 +59,7 @@ public sealed class OpenAIAssistantAgentTests
         Assert.NotNull(azureOpenAIConfiguration);
 
         await this.ExecuteAgentAsync(
-<<<<<<< main
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
-=======
             OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
             azureOpenAIConfiguration.ChatDeploymentName!,
             input,
@@ -97,7 +97,7 @@ public sealed class OpenAIAssistantAgentTests
 
         await this.ExecuteStreamingAgentAsync(
             OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
->>>>>>> upstream/main
+            OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
             azureOpenAIConfiguration.ChatDeploymentName!,
             input,
             expectedAnswerContains);
@@ -111,8 +111,6 @@ public sealed class OpenAIAssistantAgentTests
     {
         // Arrange
         Kernel kernel = new();
-<<<<<<< main
-=======
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         kernel.Plugins.Add(plugin);
@@ -155,7 +153,6 @@ public sealed class OpenAIAssistantAgentTests
     {
         // Arrange
         Kernel kernel = new();
->>>>>>> upstream/main
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         kernel.Plugins.Add(plugin);
@@ -168,18 +165,16 @@ public sealed class OpenAIAssistantAgentTests
                     Instructions = "Answer questions about the menu.",
                 },
                 kernel);
+                });
 
         AgentGroupChat chat = new();
         chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
         // Act
         StringBuilder builder = new();
-<<<<<<< main
         await foreach (var message in chat.InvokeAsync(agent))
         try
-=======
         await foreach (var message in chat.InvokeStreamingAsync(agent))
->>>>>>> upstream/main
         {
             AgentGroupChat chat = new();
             chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
@@ -198,14 +193,11 @@ public sealed class OpenAIAssistantAgentTests
         {
             await agent.DeleteAsync();
         }
-<<<<<<< main
-=======
 
         // Assert
         ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
         Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
         Assert.Contains(expected, history.First().Content, StringComparison.OrdinalIgnoreCase);
->>>>>>> upstream/main
     }
 
     public sealed class MenuPlugin

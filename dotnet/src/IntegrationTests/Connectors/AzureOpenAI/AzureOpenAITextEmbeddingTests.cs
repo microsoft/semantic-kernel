@@ -2,6 +2,9 @@
 
 using System.Threading.Tasks;
 using Azure.Identity;
+// Copyright (c) Microsoft. All rights reserved.
+
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;

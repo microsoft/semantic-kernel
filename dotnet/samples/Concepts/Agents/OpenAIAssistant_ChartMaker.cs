@@ -26,15 +26,25 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< main
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
+=======
+                kernel: new(),
+                provider,
+                new(this.Model)
+>>>>>>> ms/features/bugbash-prep
                 {
                     Instructions = AgentInstructions,
                     Name = AgentName,
                     EnableCodeInterpreter = true,
                     Metadata = AssistantSampleMetadata,
+<<<<<<< main
                 },
                 kernel: new());
+=======
+                });
+>>>>>>> ms/features/bugbash-prep
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();
@@ -66,11 +76,14 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
         async Task InvokeAgentAsync(string input)
         {
 <<<<<<< main
+<<<<<<< main
             chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 =======
 >>>>>>> upstream/main
+=======
+>>>>>>> ms/features/bugbash-prep
             ChatMessageContent message = new(AuthorRole.User, input);
             chat.AddChatMessage(new(AuthorRole.User, input));
             this.WriteAgentChatMessage(message);

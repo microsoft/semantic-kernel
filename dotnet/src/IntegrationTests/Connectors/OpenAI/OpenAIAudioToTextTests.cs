@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.IO;
@@ -45,6 +45,7 @@ public sealed class OpenAIAudioToTextTests()
             new AudioContent(audioData, mimeType: "audio/wav"), 
             new OpenAIAudioToTextExecutionSettings(Filename)
         );
+        var result = await service.GetTextContentAsync(new AudioContent(audioData, mimeType: "audio/wav"), new OpenAIAudioToTextExecutionSettings(Filename));
 
         // Assert
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);

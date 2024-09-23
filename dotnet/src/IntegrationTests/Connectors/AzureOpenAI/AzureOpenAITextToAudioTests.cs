@@ -6,6 +6,10 @@ tity;
 ususing Azure.Identity;
 >>>>>>>-main
 ion;
+// Copyright (c) Microsoft. All rights reserved.
+
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -40,6 +44,12 @@ ration.D                deploymentName: azureOpenAIConfiguration.DeploymentName,
                 credential: new AzureCliCredential())
 >>>>>>>-main
 ITextToAudioService>();
+                azureOpenAIConfiguration.DeploymentName,
+                azureOpenAIConfiguration.Endpoint,
+                azureOpenAIConfiguration.ApiKey)
+            .Build();
+
+        var service = kernel.GetRequiredService<ITextToAudioService>();
 
         // Act
         var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");

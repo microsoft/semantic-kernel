@@ -2,7 +2,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 =======
 ﻿// Copyright (c) Microsoft. All rights reserved.
+<<<<<<< main
 >>>>>>> upstream/main
+=======
+>>>>>>> ms/features/bugbash-prep
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -101,7 +104,11 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
         Console.WriteLine($"! {Model}");
 
         OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatResponseFormat.JsonObject };
+<<<<<<< main
         OpenAIPromptExecutionSettings autoInvokeSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+=======
+        OpenAIPromptExecutionSettings autoInvokeSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+>>>>>>> ms/features/bugbash-prep
 
         ChatCompletionAgent internalLeaderAgent = CreateAgent(InternalLeaderName, InternalLeaderInstructions);
         ChatCompletionAgent internalGiftIdeaAgent = CreateAgent(InternalGiftIdeaAgentName, InternalGiftIdeaAgentInstructions);
@@ -164,11 +171,14 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
         async Task InvokeChatAsync(string input)
         {
 <<<<<<< main
+<<<<<<< main
             chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 =======
 >>>>>>> upstream/main
+=======
+>>>>>>> ms/features/bugbash-prep
             ChatMessageContent message = new(AuthorRole.User, input);
             chat.AddChatMessage(message);
             this.WriteAgentChatMessage(message);

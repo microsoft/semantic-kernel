@@ -15,3 +15,68 @@ temp/
 testrun/*
 .~lock*
 *.pkl
+.ipynb_checkpoints
+.jython_cache/
+__pycache__/
+.mypy_cache/
+__pypackages__/
+.pdm.toml
+global.json
+
+# doxfx
+**/DROP/
+**/TEMP/
+**/packages/
+**/bin/
+**/obj/
+_site
+
+# Yarn
+.yarn
+.yarnrc.yml
+
+# Python Environments
+.env
+.venv
+.myenv
+env/
+venv/
+myvenv/
+ENV/
+.venv*/
+
+# Python dist
+dist/
+
+# Peristant storage
+data/qdrant
+data/chatstore*
+
+# Java build
+java/**/target
+java/.mvn/wrapper/maven-wrapper.jar
+
+# Java settings
+conf.properties
+
+# Intellij configuration
+*.iml
+
+# Playwright
+playwright-report/
+
+# Static Web App deployment config
+swa-cli.config.json
+**/copilot-chat-app/webapp/build
+**/copilot-chat-app/webapp/node_modules
+**/copilot-chat-app/webapi/data/eng.traineddata
+
+# Semantic Kernel Tools
+/.semantic-kernel
+
+# python devcontainer
+/python/.devcontainer/*
+!/.vscode/tasks.json
+
+!/.vscode/tasks.json
+

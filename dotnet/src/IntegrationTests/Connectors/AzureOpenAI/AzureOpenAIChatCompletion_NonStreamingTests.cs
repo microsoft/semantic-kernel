@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Text.Json;
@@ -60,6 +60,8 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.True(result.Metadata.TryGetValue("CreatedAt", out object? createdAt));
         Assert.NotNull(createdAt);
 
+        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForPrompt"));
+
         Assert.True(result.Metadata.ContainsKey("SystemFingerprint"));
 
         Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
@@ -73,6 +75,8 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
+
+        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForResponse"));
 
         Assert.True(result.Metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);
@@ -119,6 +123,8 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.True(result.Metadata.TryGetValue("CreatedAt", out object? createdAt));
         Assert.NotNull(createdAt);
 
+        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForPrompt"));
+
         Assert.True(result.Metadata.ContainsKey("SystemFingerprint"));
 
         Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
@@ -132,6 +138,8 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
+
+        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForResponse"));
 
         Assert.True(result.Metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);

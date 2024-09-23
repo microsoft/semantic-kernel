@@ -34,14 +34,24 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agents
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< main
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
+=======
+                kernel: new(),
+                provider,
+                new(this.Model)
+>>>>>>> ms/features/bugbash-prep
                 {
                     EnableCodeInterpreter = true,
                     CodeInterpreterFileIds = [uploadFile.Id], // Associate uploaded file with assistant code-interpreter
                     Metadata = AssistantSampleMetadata,
+<<<<<<< main
                 },
                 kernel: new Kernel());
+=======
+                });
+>>>>>>> ms/features/bugbash-prep
 
         ChatCompletionAgent summaryAgent =
             new()

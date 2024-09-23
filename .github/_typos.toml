@@ -19,6 +19,7 @@ extend-exclude = [
     "google_what_is_the_semantic_kernel.json",
     "serializedChatHistoryV1_15_1.json",
     "MultipleFunctionsVsParameters.cs"
+    "serializedChatHistoryV1_15_1.json"
 ]
 
 [default.extend-words]

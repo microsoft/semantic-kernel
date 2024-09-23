@@ -47,14 +47,24 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 
         OpenAIAssistantAgent agentWriter =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< main
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
+=======
+                kernel: new(),
+                clientProvider: this.GetClientProvider(),
+                definition: new(this.Model)
+>>>>>>> ms/features/bugbash-prep
                 {
                     Instructions = CopyWriterInstructions,
                     Name = CopyWriterName,
                     Metadata = AssistantSampleMetadata,
+<<<<<<< main
                 },
                 kernel: new Kernel());
+=======
+                });
+>>>>>>> ms/features/bugbash-prep
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
@@ -80,11 +90,14 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 
         // Invoke chat and display messages.
 <<<<<<< main
+<<<<<<< main
         string input = "concept: maps made out of egg cartons.";
         chat.Add(new ChatMessageContent(AuthorRole.User, input));
         Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 =======
 >>>>>>> upstream/main
+=======
+>>>>>>> ms/features/bugbash-prep
         ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
         chat.AddChatMessage(input);
         this.WriteAgentChatMessage(input);

@@ -74,6 +74,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
         chat.Add(message);
         this.WriteAgentChatMessage(message);
 <<<<<<< main
+<<<<<<< main
 
         StringBuilder builder = new();
 =======
@@ -82,6 +83,10 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 
         bool isFirst = false;
 >>>>>>> upstream/main
+=======
+
+        StringBuilder builder = new();
+>>>>>>> ms/features/bugbash-prep
         await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(chat))
         {
             if (string.IsNullOrEmpty(response.Content))
@@ -91,6 +96,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 
             if (!isFirst)
             {
+<<<<<<< main
 <<<<<<< main
                 Console.WriteLine($"# {response.Role} - {response.AuthorName ?? "*"}:");
             }
@@ -103,6 +109,13 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             }
 
             Console.WriteLine($"\t > streamed: '{response.Content}'");
+=======
+                Console.WriteLine($"# {response.Role} - {response.AuthorName ?? "*"}:");
+            }
+
+            Console.WriteLine($"\t > streamed: '{response.Content}'");
+            builder.Append(response.Content);
+>>>>>>> ms/features/bugbash-prep
         }
 
         if (historyCount <= chat.Count)
@@ -129,9 +142,12 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             ChatMessageContent response = new(AuthorRole.Assistant, builder.ToString()) { AuthorName = agent.Name };
             chat.Add(response);
             this.WriteAgentChatMessage(response);
+<<<<<<< main
 =======
             this.WriteAgentChatMessage(message);
 >>>>>>> upstream/main
+=======
+>>>>>>> ms/features/bugbash-prep
         }
     }
 

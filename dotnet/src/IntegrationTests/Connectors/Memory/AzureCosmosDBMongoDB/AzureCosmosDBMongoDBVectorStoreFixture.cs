@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -77,6 +77,9 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
             {
                 await this.MongoDatabase.DropCollectionAsync(collection);
             }
+        foreach (var collection in this._testCollections)
+        {
+            await this.MongoDatabase.DropCollectionAsync(collection);
         }
     }
 
@@ -89,6 +92,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 
         /// <summary>A string metadata field.</summary>
         [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData]
         public string? HotelName { get; set; }
 
         /// <summary>An int metadata field.</summary>

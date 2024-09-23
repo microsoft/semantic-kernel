@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -15,14 +15,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-<<<<<<< main
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-=======
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
->>>>>>> ms/feature-error-handling
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -312,14 +309,11 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         // Act and Assert
         var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = "Any" }));
 
-<<<<<<< main
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
-=======
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<HttpOperationException>(context.LastException);
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
->>>>>>> ms/feature-error-handling
     }
 
     [Fact]
@@ -344,14 +338,11 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         // Act and Assert
         var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = "Any" }));
 
-<<<<<<< main
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
-=======
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<HttpOperationException>(context.LastException);
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
->>>>>>> ms/feature-error-handling
     }
 
     [Fact]
@@ -375,11 +366,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 
         // Act
         // Assert
-<<<<<<< main
         await Assert.ThrowsAsync<HttpOperationException>(() => plugins["SummarizePlugin"]["Summarize"].InvokeAsync(target, new() { [InputParameterName] = string.Join('.', Enumerable.Range(1, 40000)) }));
-=======
         await Assert.ThrowsAsync<HttpOperationException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000))));
->>>>>>> ms/feature-error-handling
     }
 
     [Theory(Skip = "This test is for manual verification.")]

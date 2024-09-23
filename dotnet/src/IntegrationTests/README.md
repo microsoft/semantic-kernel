@@ -50,7 +50,6 @@
    and select `Try Now` to get started.
 1. **Postgres**: start a postgres with the [pgvector](https://github.com/pgvector/pgvector) extension installed. You can easily do it using the docker image [ankane/pgvector](https://hub.docker.com/r/ankane/pgvector).
 1. **Weaviate**: go to `IntegrationTests/Connectors/Weaviate` where `docker-compose.yml` is located and run `docker-compose up --build`. 
-=======
     1. Deploy the following models:
         1. `dall-e-3` DALL-E 3 generates images  and is used in Text to Image tests.
         1. `tts` TTS is a model that converts text to natural sounding speech and is used in Text to Audio tests.
@@ -66,9 +65,6 @@
    and select `Try Now` to get started.
 1. **Postgres**: start a postgres with the [pgvector](https://github.com/pgvector/pgvector) extension installed. You can easily do it using the docker image [ankane/pgvector](https://hub.docker.com/r/ankane/pgvector).
 1. **Weaviate**: go to `IntegrationTests/Connectors/Weaviate` where `docker-compose.yml` is located and run `docker-compose up --build`. 
-<<<<<<< main
-=======
-=======
     1. Deploy the following models:
         1. `dall-e-3` DALL-E 3 generates images  and is used in Text to Image tests.
         1. `tts` TTS is a model that converts text to natural sounding speech and is used in Text to Audio tests.
@@ -84,7 +80,6 @@
    and select `Try Now` to get started.
 1. **Postgres**: start a postgres with the [pgvector](https://github.com/pgvector/pgvector) extension installed. You can easily do it using the docker image [ankane/pgvector](https://hub.docker.com/r/ankane/pgvector).
 1. **Weaviate**: go to `IntegrationTests/Connectors/Weaviate` where `docker-compose.yml` is located and run `docker-compose up --build`. 
->>>>>>> cc4a497
 
 ## Setup
 

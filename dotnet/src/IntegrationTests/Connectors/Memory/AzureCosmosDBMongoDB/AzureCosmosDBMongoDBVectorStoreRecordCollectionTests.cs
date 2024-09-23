@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -238,18 +238,21 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     {
         // Arrange
         var model = new VectorStoreTestModel { HotelId = "key", HotelName = "Test Name" };
+        var model = new VectorStoreTestModel { Id = "key", HotelName = "Test Name" };
 
         var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<VectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
         var upsertResult = await sut.UpsertAsync(model);
         var getResult = await sut.GetAsync(model.HotelId);
+        var getResult = await sut.GetAsync(model.Id);
 
         // Assert
         Assert.Equal("key", upsertResult);
 
         Assert.NotNull(getResult);
         Assert.Equal("key", getResult.HotelId);
+        Assert.Equal("key", getResult.Id);
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
@@ -290,18 +293,21 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     {
         // Arrange
         var model = new BsonVectorStoreTestModel { HotelId = "key", HotelName = "Test Name" };
+        var model = new BsonVectorStoreTestModel { Id = "key", HotelName = "Test Name" };
 
         var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<BsonVectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
         var upsertResult = await sut.UpsertAsync(model);
         var getResult = await sut.GetAsync(model.HotelId);
+        var getResult = await sut.GetAsync(model.Id);
 
         // Assert
         Assert.Equal("key", upsertResult);
 
         Assert.NotNull(getResult);
         Assert.Equal("key", getResult.HotelId);
+        Assert.Equal("key", getResult.Id);
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
@@ -421,6 +427,9 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     #region private
 
     private AzureCosmosDBMongoDBHotel CreateTestHotel(string hotelId, ReadOnlyMemory<float>? embedding = null)
+    #region private
+
+    private AzureCosmosDBMongoDBHotel CreateTestHotel(string hotelId)
     {
         return new AzureCosmosDBMongoDBHotel
         {
@@ -432,6 +441,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
+            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
         };
     }
 
@@ -446,6 +456,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     {
         [VectorStoreRecordKey]
         public string? HotelId { get; set; }
+        public string? Id { get; set; }
 
         [VectorStoreRecordData(StoragePropertyName = "hotel_name")]
         public string? HotelName { get; set; }
@@ -465,6 +476,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         [BsonId]
         [VectorStoreRecordKey]
         public string? HotelId { get; set; }
+        public string? Id { get; set; }
 
         [BsonElement("hotel_name")]
         [VectorStoreRecordData]

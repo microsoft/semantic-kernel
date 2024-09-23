@@ -59,7 +59,11 @@
   </ItemGroup>
 
   <ItemGroup>
+<<<<<<< main
     <None Remove="Resources\*" />
+=======
+    <None Remove="Resources\travelinfo.txt" />
+>>>>>>> ms/features/bugbash-prep
   </ItemGroup>
 
 </Project>

@@ -38,8 +38,19 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         await InvokeAgentAsync("What is the special drink?");
         await InvokeAgentAsync("Thank you");
 
+<<<<<<< main
         // Display the entire chat history.
         WriteChatHistory(chat);
+=======
+        // Display the chat history.
+        Console.WriteLine("================================");
+        Console.WriteLine("CHAT HISTORY");
+        Console.WriteLine("================================");
+        foreach (ChatMessageContent message in chat)
+        {
+            this.WriteAgentChatMessage(message);
+        }
+>>>>>>> ms/features/bugbash-prep
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
@@ -91,6 +102,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
+<<<<<<< main
             ChatMessageContent message = new(AuthorRole.User, input);
             chat.AddChatMessage(message);
             this.WriteAgentChatMessage(message);
@@ -99,6 +111,9 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             {
                 this.WriteAgentChatMessage(response);
             }
+=======
+            this.WriteAgentChatMessage(history[index - 1]);
+>>>>>>> ms/features/bugbash-prep
         }
     }
 
@@ -133,6 +148,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
+<<<<<<< main
             chat.Add(message);
             this.WriteAgentChatMessage(message);
 
@@ -161,10 +177,19 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
                 {
                     this.WriteAgentChatMessage(chat[index]);
                 }
+=======
+            chat.AddChatMessage(message);
+            this.WriteAgentChatMessage(message);
+
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
+            {
+                this.WriteAgentChatMessage(response);
+>>>>>>> ms/features/bugbash-prep
             }
         }
     }
 
+<<<<<<< main
     [Fact]
     public async Task UseAutoFunctionInvocationFilterWithStreamingAgentChatAsync()
     {
@@ -229,6 +254,8 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         }
     }
 
+=======
+>>>>>>> ms/features/bugbash-prep
     private Kernel CreateKernelWithFilter()
     {
         IKernelBuilder builder = Kernel.CreateBuilder();

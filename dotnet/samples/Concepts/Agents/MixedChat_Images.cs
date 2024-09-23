@@ -29,15 +29,25 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agents
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< main
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
+=======
+                kernel: new(),
+                provider,
+                new(this.Model)
+>>>>>>> ms/features/bugbash-prep
                 {
                     Instructions = AnalystInstructions,
                     Name = AnalystName,
                     EnableCodeInterpreter = true,
                     Metadata = AssistantSampleMetadata,
+<<<<<<< main
                 },
                 kernel: new Kernel());
+=======
+                });
+>>>>>>> ms/features/bugbash-prep
 
         ChatCompletionAgent summaryAgent =
             new()

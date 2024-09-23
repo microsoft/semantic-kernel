@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -380,6 +380,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         string hotelId,
         string? hotelName = null,
         ReadOnlyMemory<float>? embedding = null)
+    #region private
+
+    private AzureCosmosDBNoSQLHotel CreateTestHotel(string hotelId, string? hotelName = null)
     {
         return new AzureCosmosDBNoSQLHotel
         {
@@ -391,6 +394,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
+            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
         };
     }
 
