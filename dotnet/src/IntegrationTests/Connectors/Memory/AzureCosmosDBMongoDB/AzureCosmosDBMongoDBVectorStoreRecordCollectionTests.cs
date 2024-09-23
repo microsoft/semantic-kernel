@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -86,6 +87,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal(record.ParkingIncluded, getResult.ParkingIncluded);
         Assert.Equal(record.Tags.ToArray(), getResult.Tags.ToArray());
         Assert.Equal(record.Description, getResult.Description);
+        Assert.Equal(record.Timestamp.ToUniversalTime(), getResult.Timestamp.ToUniversalTime());
 
         if (includeVectors)
         {
@@ -337,6 +339,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
             ParkingIncluded = true,
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
+            Timestamp = new DateTime(2024, 09, 23, 15, 32, 33),
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
         };
     }

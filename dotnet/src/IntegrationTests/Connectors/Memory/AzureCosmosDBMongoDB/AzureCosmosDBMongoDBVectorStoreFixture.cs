@@ -106,6 +106,10 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         [VectorStoreRecordData]
         public string Description { get; set; }
 
+        /// <summary>A datetime metadata field.</summary>
+        [VectorStoreRecordData]
+        public DateTime Timestamp { get; set; }
+
         /// <summary>A vector field.</summary>
         [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }

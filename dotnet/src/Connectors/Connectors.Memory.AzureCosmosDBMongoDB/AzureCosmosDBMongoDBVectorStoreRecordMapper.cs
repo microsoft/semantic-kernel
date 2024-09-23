@@ -35,6 +35,8 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
         typeof(double?),
         typeof(decimal),
         typeof(decimal?),
+        typeof(DateTime),
+        typeof(DateTime?),
     ];
 
     /// <summary>A set of types that vectors on the provided model may have.</summary>
