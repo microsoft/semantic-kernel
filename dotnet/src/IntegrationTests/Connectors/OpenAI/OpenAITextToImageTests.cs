@@ -3,6 +3,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToImage;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -59,5 +60,27 @@ public sealed class OpenAITextToImageTests
         // Assert
         Assert.NotNull(result);
         Assert.NotEmpty(result);
+    }
+
+    [Fact]
+    public async Task OpenAITextToImageDalle3GetImagesTestAsync()
+    {
+        // Arrange
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAITextToImage").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: "dall-e-3")
+            .Build();
+
+        var service = kernel.GetRequiredService<ITextToImageService>();
+
+        // Act
+        var result = await service.GetImageContentsAsync("The sun rises in the east and sets in the west.", new OpenAITextToImageExecutionSettings { Size = (1024, 1024) });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotEmpty(result);
+        Assert.NotEmpty(result[0].Uri!.ToString()); 
     }
 }
