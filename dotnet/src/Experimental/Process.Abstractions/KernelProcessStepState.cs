@@ -6,7 +6,6 @@ namespace Microsoft.SemanticKernel;
 /// Represents the state of an individual step in a process.
 /// </summary>
 public class KernelProcessStepState
-
 {
     /// <summary>
     /// The identifier of the Step which is required to be unique within an instance of a Process.
@@ -19,16 +18,38 @@ public class KernelProcessStepState
     /// when the Step is added to a Process, the name will be derived from the steps .NET type.
     /// </summary>
     public string? Name { get; init; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelProcessStepState"/> class.
+    /// </summary>
+    /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
+    /// <param name="name">The name of the associated <see cref="KernelProcessStep"/></param>
+    public KernelProcessStepState(string? id = null, string? name = null)
+    {
+        this.Id = id;
+        this.Name = name;
+    }
 }
 
 /// <summary>
 /// Represents the state of an individual step in a process that includes a user-defined state object.
 /// </summary>
 /// <typeparam name="TState">The type of the user-defined state.</typeparam>
-public sealed class ProcessStepState<TState> : KernelProcessStepState where TState : class, new()
+public sealed class KernelProcessStepState<TState> : KernelProcessStepState where TState : class, new()
 {
     /// <summary>
     /// The user-defined state object associated with the Step.
     /// </summary>
-    public TState? State { get; internal set; }
+    public TState? State { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelProcessStepState"/> class.
+    /// </summary>
+    /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
+    /// <param name="name">The name of the associated <see cref="KernelProcessStep"/></param>
+    public KernelProcessStepState(string? id = null, string? name = null)
+    {
+        this.Id = id;
+        this.Name = name;
+    }
 }
