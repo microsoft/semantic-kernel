@@ -62,9 +62,9 @@ def mock_tool_calls_message() -> ChatMessageContent:
         inner_content=Message(
             id="test_message_id",
             content=[
-                TextBlock(text="<thinking>Thinking...</thinking>", type="text"),
+                TextBlock(text="<thinking></thinking>", type="text"),
                 ToolUseBlock(
-                    id="test_tool_use_blocks=",
+                    id="test_tool_use_blocks",
                     input={"input": 3, "amount": 3},
                     name="math-Add",
                     type="tool_use",
@@ -100,7 +100,7 @@ def mock_tool_calls_message() -> ChatMessageContent:
                 ai_model_id=None,
                 metadata={},
                 content_type="text",
-                text="<thinking>\nThinking...</thinking>",
+                text="<thinking></thinking>",
                 encoding=None,
             ),
         ],
@@ -261,16 +261,16 @@ def mock_streaming_chat_message_content() -> StreamingChatMessageContent:
         choice_index=0,
         inner_content=[
             RawContentBlockDeltaEvent(
-                delta=TextDelta(text="<thinking>\nThe", type="text_delta"), index=0, type="content_block_delta"
+                delta=TextDelta(text="<thinking>", type="text_delta"), index=0, type="content_block_delta"
             ),
             RawContentBlockDeltaEvent(
-                delta=TextDelta(text="\n</thinking>", type="text_delta"), index=0, type="content_block_delta"
+                delta=TextDelta(text="</thinking>", type="text_delta"), index=0, type="content_block_delta"
             ),
             ContentBlockStopEvent(
                 index=1,
                 type="content_block_stop",
                 content_block=ToolUseBlock(
-                    id="toolu_01X6AyrjWwnKQMDc7Ukf6ygV",
+                    id="tool_id",
                     input={"input": 3, "amount": 3},
                     name="math-Add",
                     type="tool_use",
@@ -301,7 +301,7 @@ def mock_streaming_chat_message_content() -> StreamingChatMessageContent:
                 ai_model_id=None,
                 metadata={},
                 content_type=ContentTypes.FUNCTION_CALL_CONTENT,
-                id="toolu_01X6AyrjWwnKQMDc7Ukf6ygV",
+                id="tool_id",
                 index=0,
                 name="math-Add",
                 function_name="Add",
@@ -806,14 +806,14 @@ async def test_prepare_chat_history_for_request_with_tool_message_streaming(
     chat_history.add_message(mock_streaming_chat_message_content)
     chat_history.add_message(mock_tool_call_result_message)
 
-    chat_completion_client = AnthropicChatCompletion(
+    chat_completion = AnthropicChatCompletion(
         ai_model_id="test_model_id",
         service_id="test",
         api_key="",
         async_client=mock_anthropic_client_completion_stream,
     )
 
-    remaining_messages, system_message_content = chat_completion_client._prepare_chat_history_for_request(
+    remaining_messages, system_message_content = chat_completion._prepare_chat_history_for_request(
         chat_history,
         role_key="role",
         content_key="content",
@@ -847,14 +847,14 @@ async def test_send_chat_stream_request_tool_calls(
     messages_mock.stream.return_value = mock_streaming_tool_calls_message
     client.messages = messages_mock
 
-    chat_completion_client = AnthropicChatCompletion(
+    chat_completion = AnthropicChatCompletion(
         ai_model_id="test_model_id",
         service_id="test",
         api_key="",
         async_client=client,
     )
 
-    response = chat_completion_client._send_chat_stream_request(settings)
+    response = chat_completion._send_chat_stream_request(settings)
     async for message in response:
         assert message is not None
 
@@ -865,3 +865,17 @@ def test_client_base_url(mock_anthropic_client_completion: MagicMock):
     )
 
     assert chat_completion_base.service_url() is not None
+
+
+def test_chat_completion_reset_settings(
+    mock_anthropic_client_completion: MagicMock,
+):
+    chat_completion = AnthropicChatCompletion(
+        ai_model_id="test_model_id", service_id="test", api_key="", async_client=mock_anthropic_client_completion
+    )
+
+    settings = AnthropicChatPromptExecutionSettings(tools=[{"name": "test"}], tool_choice={"type": "any"})
+    chat_completion._reset_function_choice_settings(settings)
+
+    assert settings.tools is None
+    assert settings.tool_choice is None

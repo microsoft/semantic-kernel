@@ -222,7 +222,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 if not stream:
                     if not message.inner_content:
                         raise ServiceInvalidResponseError(
-                            "Message with finish reason TOOL_CALLS must have inner_content"
+                            "Expected a message with an Anthropic Message as inner content."
                         )
 
                     remaining_messages.append({
