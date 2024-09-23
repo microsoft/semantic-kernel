@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel;
@@ -16,9 +17,11 @@ internal sealed class EmptyServiceProvider : IServiceProvider, IKeyedServiceProv
     public static IServiceProvider Instance { get; } = new EmptyServiceProvider();
 
     /// <inheritdoc/>
+    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.EmptyServiceProvider.GetEmpty(Type)")]
     public object? GetService(Type serviceType) => s_results.GetOrAdd(serviceType, GetEmpty);
 
     /// <inheritdoc/>
+    [RequiresDynamicCode("Calls Microsoft.SemanticKernel.EmptyServiceProvider.GetEmpty(Type)")]
     public object? GetKeyedService(Type serviceType, object? serviceKey) => s_results.GetOrAdd(serviceType, GetEmpty);
 
     /// <inheritdoc/>
@@ -27,6 +30,7 @@ internal sealed class EmptyServiceProvider : IServiceProvider, IKeyedServiceProv
             $"No service for type '{serviceType}' has been registered." :
             $"No service for type '{serviceType}' and service key '{serviceKey}' has been registered.");
 
+    [RequiresDynamicCode("Calls System.Array.CreateInstance(Type, Int32)")]
     private static object? GetEmpty(Type serviceType)
     {
         if (serviceType.IsConstructedGenericType &&

@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.SemanticKernel;
 
@@ -40,7 +41,29 @@ public sealed class FunctionCallContentBuilder
     /// Builds a list of <see cref="FunctionCallContent"/> out of function call updates tracked by the <see cref="Append"/> method.
     /// </summary>
     /// <returns>A list of <see cref="FunctionCallContent"/> objects.</returns>
+    [RequiresUnreferencedCode("Uses reflection to deserialize function arguments, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to deserialize function arguments, making it incompatible with AOT scenarios.")]
     public IReadOnlyList<FunctionCallContent> Build()
+    {
+        return this.BuildInternal(jsonSerializerOptions: null);
+    }
+
+    /// <summary>
+    /// Builds a list of <see cref="FunctionCallContent"/> out of function call updates tracked by the <see cref="Append"/> method.
+    /// </summary>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for deserializing function arguments.</param>
+    /// <returns>A list of <see cref="FunctionCallContent"/> objects.</returns>
+    public IReadOnlyList<FunctionCallContent> Build(JsonSerializerOptions jsonSerializerOptions)
+    {
+        return this.BuildInternal(jsonSerializerOptions: jsonSerializerOptions);
+    }
+
+    /// <summary>
+    /// Builds a list of <see cref="FunctionCallContent"/> out of function call updates tracked by the <see cref="Append"/> method.
+    /// </summary>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for deserializing function arguments.</param>
+    /// <returns>A list of <see cref="FunctionCallContent"/> objects.</returns>
+    private FunctionCallContent[] BuildInternal(JsonSerializerOptions? jsonSerializerOptions)
     {
         FunctionCallContent[]? functionCalls = null;
 
@@ -62,7 +85,7 @@ public sealed class FunctionCallContentBuilder
                     functionName = functionFullyQualifiedName.Name;
                 }
 
-                (KernelArguments? arguments, Exception? exception) = this.GetFunctionArguments(functionCallIndexAndId.Key);
+                (KernelArguments? arguments, Exception? exception) = this.GetFunctionArguments(functionCallIndexAndId.Key, jsonSerializerOptions);
 
                 functionCalls[i] = new FunctionCallContent(
                     functionName: functionName,
@@ -82,8 +105,9 @@ public sealed class FunctionCallContentBuilder
     /// Gets function arguments for a given function call index.
     /// </summary>
     /// <param name="functionCallIndex">The function call index to get the function arguments for.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for deserializing function arguments.</param>
     /// <returns>A tuple containing the KernelArguments and an Exception if any.</returns>
-    private (KernelArguments? Arguments, Exception? Exception) GetFunctionArguments(int functionCallIndex)
+    private (KernelArguments? Arguments, Exception? Exception) GetFunctionArguments(int functionCallIndex, JsonSerializerOptions? jsonSerializerOptions = null)
     {
         if (this._functionArgumentBuildersByIndex is null ||
             !this._functionArgumentBuildersByIndex.TryGetValue(functionCallIndex, out StringBuilder? functionArgumentsBuilder))
@@ -101,7 +125,20 @@ public sealed class FunctionCallContentBuilder
         KernelArguments? arguments = null;
         try
         {
-            arguments = JsonSerializer.Deserialize<KernelArguments>(argumentsString);
+            if (jsonSerializerOptions is not null)
+            {
+                var typeInfo = (JsonTypeInfo<KernelArguments>)jsonSerializerOptions.GetTypeInfo(typeof(KernelArguments));
+                arguments = JsonSerializer.Deserialize<KernelArguments>(argumentsString, typeInfo);
+            }
+            else
+            {
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+                arguments = JsonSerializer.Deserialize<KernelArguments>(argumentsString);
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+            }
+
             if (arguments is { Count: > 0 })
             {
                 var names = arguments.Names.ToArray();

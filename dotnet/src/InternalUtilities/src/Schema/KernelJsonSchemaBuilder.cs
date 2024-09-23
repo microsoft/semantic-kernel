@@ -29,9 +29,16 @@ internal static class KernelJsonSchemaBuilder
         TreatNullObliviousAsNonNullable = true,
     };
 
+    [RequiresUnreferencedCode("Uses reflection to generate JSON schema.")]
+    [RequiresDynamicCode("Uses reflection to generate JSON schema.")]
+    public static KernelJsonSchema Build(Type type, string? description = null, JsonSchemaMapperConfiguration? configuration = null)
+    {
+        return Build(type, s_options, description, configuration);
+    }
+
     public static KernelJsonSchema Build(
-        JsonSerializerOptions? options,
         Type type,
+        JsonSerializerOptions? options,
         string? description = null,
         JsonSchemaMapperConfiguration? configuration = null)
     {
@@ -61,8 +68,12 @@ internal static class KernelJsonSchemaBuilder
     {
         JsonSerializerOptions options = new()
         {
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
             Converters = { new JsonStringEnumConverter() },
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
         };
         options.MakeReadOnly();
         return options;
