@@ -1,0 +1,7 @@
+{
+  "name": "NodeKernelSyntaxExamples",
+  "type": "module",
+  "dependencies": {
+    "node-api-dotnet": "^0.4.4"
+  }
+}
