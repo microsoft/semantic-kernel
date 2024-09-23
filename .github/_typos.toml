@@ -17,6 +17,7 @@ extend-exclude = [
     "*response.json",
     "test_content.txt",
     "google_what_is_the_semantic_kernel.json",
+    "what-is-semantic-kernel.json",
     "serializedChatHistoryV1_15_1.json",
     "MultipleFunctionsVsParameters.cs"
 ]
