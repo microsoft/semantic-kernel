@@ -147,7 +147,7 @@ def trace_streaming_chat_completion(model_provider: str) -> Callable:
                 kwargs.get("settings") if kwargs.get("settings") is not None else args[2]
             )
 
-            all_messages: dict[int, list[ChatMessageContent]] = {}
+            all_messages: dict[int, list[StreamingChatMessageContent]] = {}
 
             with use_span(
                 _start_completion_activity(
@@ -261,7 +261,7 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
             prompt: str = kwargs.get("prompt") if kwargs.get("prompt") is not None else args[1]
             settings: "PromptExecutionSettings" = kwargs["settings"] if kwargs.get("settings") is not None else args[2]
 
-            all_text_contents: dict[int, list["TextContent"]] = {}
+            all_text_contents: dict[int, list["StreamingTextContent"]] = {}
 
             with use_span(
                 _start_completion_activity(

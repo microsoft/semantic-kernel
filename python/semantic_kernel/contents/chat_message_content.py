@@ -21,7 +21,6 @@ from semantic_kernel.contents.const import (
     TEXT_CONTENT_TAG,
     ContentTypes,
 )
-from semantic_kernel.contents.content_concatenation_mixin import ContentConcatenationMixin
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -30,7 +29,6 @@ from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
-from semantic_kernel.exceptions import ContentAdditionException
 from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 TAG_CONTENT_MAP = {
@@ -49,7 +47,7 @@ ITEM_TYPES = (
 logger = logging.getLogger(__name__)
 
 
-class ChatMessageContent(ContentConcatenationMixin, KernelContent):
+class ChatMessageContent(KernelContent):
     """This is the class for chat message response content.
 
     All Chat Completion Services should return an instance of this class as response.
@@ -74,7 +72,6 @@ class ChatMessageContent(ContentConcatenationMixin, KernelContent):
     role: AuthorRole
     name: str | None = None
     items: list[Annotated[ITEM_TYPES, Field(..., discriminator=DISCRIMINATOR_FIELD)]] = Field(default_factory=list)
-    choice_index: int | None = None
     encoding: str | None = None
     finish_reason: FinishReason | None = None
 
@@ -85,7 +82,6 @@ class ChatMessageContent(ContentConcatenationMixin, KernelContent):
         items: list[ITEM_TYPES],
         name: str | None = None,
         inner_content: Any | None = None,
-        choice_index: int | None = None,
         encoding: str | None = None,
         finish_reason: FinishReason | None = None,
         ai_model_id: str | None = None,
@@ -100,7 +96,6 @@ class ChatMessageContent(ContentConcatenationMixin, KernelContent):
         content: str,
         name: str | None = None,
         inner_content: Any | None = None,
-        choice_index: int | None = None,
         encoding: str | None = None,
         finish_reason: FinishReason | None = None,
         ai_model_id: str | None = None,
@@ -114,7 +109,6 @@ class ChatMessageContent(ContentConcatenationMixin, KernelContent):
         items: list[ITEM_TYPES] | None = None,
         content: str | None = None,
         inner_content: Any | None = None,
-        choice_index: int | None = None,
         name: str | None = None,
         encoding: str | None = None,
         finish_reason: FinishReason | None = None,
@@ -132,7 +126,6 @@ class ChatMessageContent(ContentConcatenationMixin, KernelContent):
             inner_content: Optional[Any] - The inner content of the response,
                 this should hold all the information from the response so even
                 when not creating a subclass a developer can leverage the full thing.
-            choice_index: Optional[int] - The index of the choice if multiple choices are available.
             name: Optional[str] - The name of the response.
             encoding: Optional[str] - The encoding of the text.
             finish_reason: Optional[FinishReason] - The reason the response was finished.
@@ -163,8 +156,6 @@ class ChatMessageContent(ContentConcatenationMixin, KernelContent):
             kwargs["items"] = items
         if inner_content:
             kwargs["inner_content"] = inner_content
-        if choice_index is not None:
-            kwargs["choice_index"] = choice_index
         if metadata:
             kwargs["metadata"] = metadata
         if ai_model_id:
@@ -220,13 +211,11 @@ class ChatMessageContent(ContentConcatenationMixin, KernelContent):
         """
         root = Element(self.tag)
         for field in self.model_fields_set:
-            if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id", "choice_index"]:
+            if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id"]:
                 continue
             value = getattr(self, field)
             if isinstance(value, Enum):
                 value = value.value
-            if isinstance(value, int):
-                value = str(value)
             root.set(field, value)
         for index, item in enumerate(self.items):
             root.insert(index, item.to_element())
@@ -261,7 +250,13 @@ class ChatMessageContent(ContentConcatenationMixin, KernelContent):
             kwargs["content"] = "".join(item.text for item in items)  # type: ignore
         else:
             kwargs["items"] = items
-
+        if "choice_index" in kwargs and cls is ChatMessageContent:
+            logger.info(
+                "Seems like you are trying to create a StreamingChatMessageContent, "
+                "use StreamingChatMessageContent.from_element instead, ignoring that field "
+                "and creating a ChatMessageContent instance."
+            )
+            kwargs.pop("choice_index")
         return cls(**kwargs)
 
     def to_prompt(self) -> str:
@@ -308,40 +303,3 @@ class ChatMessageContent(ContentConcatenationMixin, KernelContent):
     def __hash__(self) -> int:
         """Return the hash of the chat message content."""
         return hash((self.tag, self.role, self.content, self.encoding, self.finish_reason, *self.items))
-
-    def __bytes__(self) -> bytes:
-        """Return the content of the response encoded in the encoding."""
-        return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
-
-    def __add__(self, other: "ChatMessageContent") -> "ChatMessageContent":
-        """When combining two ChatMessageContent instances, the content fields are combined.
-
-        The addition should follow these rules:
-            1. The inner_content of the two will be combined. If they are not lists, they will be converted to lists.
-            2. ai_model_id should be the same.
-            3. encoding should be the same.
-            4. role should be the same.
-            5. choice_index should be the same.
-            6. Metadata will be combined.
-        """
-        if not isinstance(other, ChatMessageContent):
-            raise ContentAdditionException(f"Cannot add other type to ChatMessageContent, type supplied: {type(other)}")
-        if self.choice_index != other.choice_index:
-            raise ContentAdditionException("Cannot add ChatMessageContent with different choice_index")
-        if self.ai_model_id != other.ai_model_id:
-            raise ContentAdditionException("Cannot add ChatMessageContent from different ai_model_id")
-        if self.encoding != other.encoding:
-            raise ContentAdditionException("Cannot add ChatMessageContent with different encoding")
-        if self.role and other.role and self.role != other.role:
-            raise ContentAdditionException("Cannot add ChatMessageContent with different role")
-
-        return ChatMessageContent(
-            role=self.role,
-            items=self._merge_items_lists(other.items),
-            choice_index=self.choice_index,
-            inner_content=self._merge_inner_contents(other.inner_content),
-            ai_model_id=self.ai_model_id,
-            metadata=self.metadata | other.metadata,
-            encoding=self.encoding,
-            finish_reason=self.finish_reason or other.finish_reason,
-        )
