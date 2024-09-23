@@ -29,6 +29,24 @@ public sealed class VectorSearchFilter
     public IEnumerable<FilterClause> FilterClauses => this._filterClauses;
 
     /// <summary>
+    /// Create an instance of <see cref="VectorSearchFilter"/>
+    /// </summary>
+    public VectorSearchFilter()
+    {
+    }
+
+    /// <summary>
+    /// Create an instance of <see cref="VectorSearchFilter"/> from an instance of <see cref="TextSearchFilter"/>
+    /// </summary>
+    /// <param name="textSearchFilter">The <see cref="TextSearchResult"/> instance to use</param>
+    public VectorSearchFilter(TextSearchFilter textSearchFilter)
+    {
+        Verify.NotNull(textSearchFilter, nameof(textSearchFilter));
+
+        this._filterClauses.AddRange(textSearchFilter.FilterClauses);
+    }
+
+    /// <summary>
     /// Add an equal to clause to the filter options.
     /// </summary>
     /// <param name="field">Name of the field.</param>

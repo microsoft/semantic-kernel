@@ -124,6 +124,47 @@ public class VectorStoreTextSearchTests
         Assert.Equal(2, results.Count);
     }
 
+    [Fact]
+    public async Task CanFilterGetSearchResultsWithVectorizedSearchAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchFromVectorizedSearchAsync();
+        TextSearchFilter evenFilter = new();
+        evenFilter.Equality("Tag", "Even");
+        TextSearchFilter oddFilter = new();
+        oddFilter.Equality("Tag", "Odd");
+
+        // Act.
+        KernelSearchResults<object> evenSearchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new()
+        {
+            Count = 2,
+            Offset = 0,
+            Filter = evenFilter
+        });
+        var evenResults = await ToListAsync(evenSearchResults.Results);
+        KernelSearchResults<object> oddSearchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new()
+        {
+            Count = 2,
+            Offset = 0,
+            Filter = oddFilter
+        });
+        var oddResults = await ToListAsync(oddSearchResults.Results);
+
+        Assert.Equal(2, evenResults.Count);
+        var result1 = evenResults[0] as DataModel;
+        Assert.Equal("Even", result1?.Tag);
+        var result2 = evenResults[1] as DataModel;
+        Assert.Equal("Even", result2?.Tag);
+
+        Assert.Equal(2, oddResults.Count);
+        result1 = oddResults[0] as DataModel;
+        Assert.Equal("Odd", result1?.Tag);
+        result2 = oddResults[1] as DataModel;
+        Assert.Equal("Odd", result2?.Tag);
+    }
+
+    #region private
+
     /// <summary>
     /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorizedSearch{TRecord}"/>.
     /// </summary>
@@ -185,6 +226,7 @@ public class VectorStoreTextSearchTests
             {
                 Key = Guid.NewGuid(),
                 Text = $"Record {i}",
+                Tag = i % 2 == 0 ? "Even" : "Odd",
                 Embedding = await embeddingService.GenerateEmbeddingAsync($"Record {i}")
             };
             await recordCollection.UpsertAsync(dataModel);
@@ -274,7 +316,12 @@ public class VectorStoreTextSearchTests
         [VectorStoreRecordData]
         public required string Text { get; init; }
 
+        [VectorStoreRecordData(IsFilterable = true)]
+        public required string Tag { get; init; }
+
         [VectorStoreRecordVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
+
+    #endregion
 }
