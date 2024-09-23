@@ -1,9 +1,6 @@
 [project]
 name = "semantic-kernel"
-<<<<<<< main
 version = "1.8.0"
-=======
->>>>>>> ms/features/bugbash-prep
 description = "Semantic Kernel Python SDK"
 authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com"}]
 readme = "pip/README.md"
@@ -16,10 +13,7 @@ urls.source = "https://github.com/microsoft/semantic-kernel/tree/main/python"
 urls.release_notes = "https://github.com/microsoft/semantic-kernel/releases?q=tag%3Apython-1&expanded=true"
 urls.issues = "https://github.com/microsoft/semantic-kernel/issues"
 classifiers = [
-<<<<<<< main
   "License :: OSI Approved :: MIT License",
-=======
->>>>>>> ms/features/bugbash-prep
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
@@ -35,7 +29,6 @@ dependencies = [
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
 
-<<<<<<< main
 # openai connector
 openai = ">=1.0"
 aiofiles = "^23.1.0"
@@ -54,7 +47,6 @@ openapi_core = ">=0.18,<0.20"
 
     "prance ~= 23.6.21.0",
 
-=======
     # embeddings
     "numpy ~= 1.25.0; python_version < '3.12'",
     "numpy ~= 1.26.0; python_version >= '3.12'",
@@ -71,7 +63,6 @@ openapi_core = ">=0.18,<0.20"
 
     "prance ~= 23.6.21.0",
 
->>>>>>> ms/features/bugbash-prep
     # templating
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
@@ -79,7 +70,6 @@ openapi_core = ">=0.18,<0.20"
 ]
 
 ### Optional dependencies
-<<<<<<< main
 # azure
 azure-ai-inference = {version = "^1.0.0b1", allow-prereleases = true, optional = true}
 azure-search-documents = {version = "11.6.0b4", allow-prereleases = true, optional = true}
@@ -95,11 +85,8 @@ google-generativeai = { version = ">=0.1", markers = "python_version >= '3.9'", 
 # hugging face
 transformers = { version = "^4.28.1", extras=['torch'], optional = true}
 sentence-transformers = { version = "^2.2.2", optional = true}
-<<<<<<< main
 torch = { version = "^2.2.2", optional = true}
-=======
 torch = { version = "^2.2.0", optional = true}
->>>>>>> origin/PR
 qdrant-client = { version = '^1.9', optional = true}
 chromadb = { version = ">=0.4.13,<0.6.0", optional = true}
 pymilvus = { version = ">=2.3,<2.4.4", optional = true}
@@ -119,11 +106,9 @@ ollama = { version = "^0.2.1", optional = true}
 # anthropic
 anthropic = { version = "^0.32.0", optional = true }
 # pinecone
-<<<<<<< main
 pinecone-client = { version = "^5.0.0", optional = true}
 # postgres
 psycopg = { version="^3.2.1", extras=["binary","pool"], optional = true}
-=======
 pinecone-client = { version = ">=3.0.0", optional = true}
 # postgres
 psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
@@ -131,7 +116,6 @@ psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
 pinecone-client = { version = ">=3.0.0", optional = true}
 # postgres
 psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
->>>>>>> origin/PR
 redis = { version = ">=4.6,<6.0", optional = true}
 azure-search-documents = {version = "11.6.0b4", allow-prereleases = true, optional = true}
 azure-core = { version = "^1.28.0", optional = true}
@@ -175,7 +159,6 @@ ollama = "^0.2.1"
 google-cloud-aiplatform = "^1.60.0"
 anthropic = "^0.32.0"
 google-generativeai = "^0.7.2"
-<<<<<<< main
 transformers = { version = "^4.28.1", extras=['torch']}
 sentence-transformers = { version = "^2.2.2"}
 torch = {version = "2.2.2"}
@@ -184,11 +167,9 @@ qdrant-client = '^1.9'
 # redis
 redis = { version = "^5.0.7", extras=['hiredis']}
 pandas = {version = "^2.2.2"}
-=======
 transformers = { version = "^4.28.1", extras=["torch"]}
 sentence-transformers = "^2.2.2"
 torch = "^2.2.0"
->>>>>>> origin/PR
 
 [tool.poetry.group.tests]
 optional = true
@@ -223,10 +204,7 @@ azure-core = "^1.28.0"
 [tool.poetry.group.usearch.dependencies]
 usearch = "1.1.1"
 pyarrow = ">=12.0.1,<16.0.0"
-<<<<<<< main
 
-=======
->>>>>>> origin/PR
 [tool.poetry.group.tests.dependencies]
 # azure
 azure-ai-inference = {version = "^1.0.0b1", allow-prereleases = true}
@@ -242,7 +220,6 @@ google-cloud-aiplatform = "^1.60.0"
 google-generativeai = "^0.7.2"
 google-generativeai = { version = ">=0.1,<0.4" }
 # hugging face
-<<<<<<< main
 # milvus
 pymilvus = ">=2.3,<2.4.6"
 milvus = { version = ">=2.3,<2.3.8", markers = 'sys_platform != "win32"'}
@@ -258,7 +235,6 @@ motor = "^3.3.2"
 pinecone-client = "^5.0.0"
 # postgres
 psycopg = { version="^3.1.9", extras=["binary","pool"]}
-=======
 transformers = { version = "^4.28.1", extras=["torch"]}
 sentence-transformers = "^2.2.2"
 # milvus
@@ -280,7 +256,6 @@ mistralai = "^0.4.1"
 ollama = "^0.2.1"
 # mongodb
 motor = "^3.3.2"
->>>>>>> origin/PR
 redis = ">=4.6,<6.0"
 azure-search-documents = {version = "11.6.0b4", allow-prereleases = true}
 azure-core = "^1.28.0"
@@ -309,9 +284,7 @@ hugging_face = ["transformers", "sentence-transformers", "torch"]
 milvus = ["pymilvus", "milvus"]
 mistralai = ["mistralai"]
 ollama = ["ollama"]
-<<<<<<< main
 anthropic = ["anthropic"]
-=======
 all = ["google-generativeai", "transformers", "sentence-transformers", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
 
 azure = ["azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "msgraph-sdk"]
@@ -333,7 +306,6 @@ chromadb = ["chromadb"]
 google = ["google-generativeai"]
 hugging_face = ["transformers", "sentence-transformers"]
 milvus = ["pymilvus", "milvus"]
->>>>>>> origin/PR
 mongo = ["motor"]
 notebooks = ["ipykernel"]
 pinecone = ["pinecone-client"]
@@ -348,9 +320,6 @@ notebooks = ["ipykernel"]
 all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel"]
 [tool.pytest.ini_options]
 addopts = "-ra -q -r fEX -n logical --dist loadfile --dist worksteal"
-<<<<<<< main
-=======
->>>>>>> ms/features/bugbash-prep
 [project.optional-dependencies]
 azure = [
     "azure-ai-inference >= 1.0.0b3",
@@ -369,13 +338,12 @@ hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers ~= 2.2",
     "torch == 2.4.1"
+    "sentence-transformers >= 2.2,< 4.0",
+    "torch == 2.2.2"
 ]
 mongo = [
-<<<<<<< main
     "motor >= 3.3.2,< 3.6.0"
-=======
     "motor ~= 3.3.2"
->>>>>>> ms/features/bugbash-prep
 ]
 notebooks = [
     "ipykernel ~= 6.29"
@@ -416,10 +384,7 @@ weaviate = [
 pandas = [
     "pandas ~= 2.2"
 ]
-<<<<<<< main
 bing = []
-=======
->>>>>>> ms/features/bugbash-prep
 
 [tool.uv]
 prerelease = "if-necessary-or-explicit"
@@ -444,8 +409,6 @@ environments = [
 
 [tool.pytest.ini_options]
 addopts = "-ra -q -r fEX"
-=======
->>>>>>> origin/PR
 
 [tool.ruff]
 line-length = 120
@@ -503,7 +466,6 @@ exclude_dirs = ["tests"]
 
 [tool.flit.module]
 name = "semantic_kernel"
-<<<<<<< main
 
 [build-system]
 requires = ["flit-core >= 3.9,<4.0"]
@@ -534,10 +496,8 @@ profile = "black"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-=======
 
 [build-system]
 requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
 
->>>>>>> ms/features/bugbash-prep
