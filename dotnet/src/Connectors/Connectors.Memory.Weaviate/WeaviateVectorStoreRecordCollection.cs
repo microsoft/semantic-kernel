@@ -104,6 +104,15 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <summary>The vector properties of the current storage model.</summary>
     private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
 
+    /// <summary>First vector property for the collections that this class is used with.</summary>
+    private readonly VectorStoreRecordVectorProperty? _firstVectorProperty;
+
+    /// <summary>Collection of storage names for data properties of the current storage model.</summary>
+    private readonly List<string> _dataPropertyStorageNames;
+
+    /// <summary>Collection of storage names for vector properties of the current storage model.</summary>
+    private readonly List<string> _vectorPropertyStorageNames;
+
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, JsonNode> _mapper;
 
@@ -156,6 +165,14 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         this._keyProperty = properties.KeyProperty;
         this._dataProperties = properties.DataProperties;
         this._vectorProperties = properties.VectorProperties;
+
+        if (this._vectorProperties.Count > 0)
+        {
+            this._firstVectorProperty = this._vectorProperties[0];
+        }
+
+        this._dataPropertyStorageNames = this._dataProperties.Select(l => this._storagePropertyNames[l.DataModelPropertyName]).ToList();
+        this._vectorPropertyStorageNames = this._vectorProperties.Select(l => this._storagePropertyNames[l.DataModelPropertyName]).ToList();
 
         // Assign mapper.
         this._mapper = this._options.JsonNodeCustomMapper ??
@@ -350,9 +367,77 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
+        TVector vector,
+        VectorSearchOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        const string OperationName = "VectorSearch";
+
+        Verify.NotNull(vector);
+
+        var vectorType = vector.GetType();
+
+        if (!s_supportedVectorTypes.Contains(vectorType))
+        {
+            throw new NotSupportedException(
+                $"The provided vector type {vectorType.FullName} is not supported by the Azure CosmosDB NoSQL connector. " +
+                $"Supported types are: {string.Join(", ", s_supportedVectorTypes.Select(l => l.FullName))}");
+        }
+
+        var searchOptions = options ?? VectorSearchOptions.Default;
+        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorFieldName);
+
+        if (vectorProperty is null)
+        {
+            throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
+        }
+
+        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
+        var fields = this._dataPropertyStorageNames;
+
+        var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildSearchQuery(
+            vector,
+            this.CollectionName,
+            vectorPropertyName,
+            this._keyProperty.DataModelPropertyName,
+            s_jsonSerializerOptions,
+            searchOptions,
+            this._storagePropertyNames,
+            this._vectorPropertyStorageNames,
+            this._dataPropertyStorageNames);
+
+        using var request = new WeaviateVectorSearchRequest(query).Build();
+
+        var (responseModel, content) = await this.ExecuteRequestWithResponseContentAsync<WeaviateVectorSearchResponse>(request, cancellationToken).ConfigureAwait(false);
+
+        var collectionResults = responseModel?.Data?.GetOperation?[this.CollectionName];
+
+        if (collectionResults is null)
+        {
+            throw new VectorStoreOperationException($"Error occurred during vector search. Response: {content}")
+            {
+                VectorStoreType = DatabaseName,
+                CollectionName = this.CollectionName,
+                OperationName = OperationName
+            };
+        }
+
+        foreach (var result in collectionResults)
+        {
+            if (result is not null)
+            {
+                var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result);
+
+                var record = VectorStoreErrorHandler.RunModelConversion(
+                    DatabaseName,
+                    this.CollectionName,
+                    OperationName,
+                    () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = searchOptions.IncludeVectors }));
+
+                yield return new VectorSearchResult<TRecord>(record, score);
+            }
+        }
     }
 
     #region private
@@ -369,13 +454,22 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         return this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken);
     }
 
-    private async Task<TResponse?> ExecuteRequestAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
+    private async Task<(TResponse?, string)> ExecuteRequestWithResponseContentAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var response = await this.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
-        return JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
+        var responseModel = JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
+
+        return (responseModel, responseContent);
+    }
+
+    private async Task<TResponse?> ExecuteRequestAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        var (model, _) = await this.ExecuteRequestWithResponseContentAsync<TResponse>(request, cancellationToken).ConfigureAwait(false);
+
+        return model;
     }
 
     private async Task<TResponse?> ExecuteRequestWithNotFoundHandlingAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -405,6 +499,33 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 OperationName = operationName
             };
         }
+    }
+
+    /// <summary>
+    /// Get vector property to use for a search by using the storage name for the field name from options
+    /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
+    /// </summary>
+    /// <param name="vectorFieldName">The vector field name.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
+    private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? vectorFieldName)
+    {
+        // If vector property name is provided in options, try to find it in schema or throw an exception.
+        if (!string.IsNullOrWhiteSpace(vectorFieldName))
+        {
+            // Check vector properties by data model property name.
+            var vectorProperty = this._vectorProperties
+                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
+
+            if (vectorProperty is not null)
+            {
+                return vectorProperty;
+            }
+
+            throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{vectorFieldName}'.");
+        }
+
+        // If vector property is not provided in options, return first vector property from schema.
+        return this._firstVectorProperty;
     }
 
     #endregion
