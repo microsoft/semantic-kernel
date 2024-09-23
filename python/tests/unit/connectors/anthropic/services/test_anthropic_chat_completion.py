@@ -60,11 +60,11 @@ from semantic_kernel.kernel import Kernel
 def mock_tool_calls_message() -> ChatMessageContent:
     return ChatMessageContent(
         inner_content=Message(
-            id="msg_01TvbKnrfWc4WwdmHTx9BXyP",
+            id="test_message_id",
             content=[
                 TextBlock(text="<thinking>Thinking...</thinking>", type="text"),
                 ToolUseBlock(
-                    id="toolu_01BWBe5vXBHLwct4LQ1W4k1h",
+                    id="test_tool_use_blocks=",
                     input={"input": 3, "amount": 3},
                     name="math-Add",
                     type="tool_use",
@@ -78,7 +78,7 @@ def mock_tool_calls_message() -> ChatMessageContent:
             usage=Usage(input_tokens=1720, output_tokens=194),
         ),
         ai_model_id="claude-3-opus-20240229",
-        metadata={"id": "msg_01TvbKnrfWc4WwdmHTx9BXyP", "usage": Usage(input_tokens=1720, output_tokens=194)},
+        metadata={},
         content_type="message",
         role=AuthorRole.ASSISTANT,
         name=None,
@@ -88,7 +88,7 @@ def mock_tool_calls_message() -> ChatMessageContent:
                 ai_model_id=None,
                 metadata={},
                 content_type=ContentTypes.FUNCTION_CALL_CONTENT,
-                id="toolu_01BWBe5vXBHLwct4LQ1W4k1h",
+                id="test_function_call_content",
                 index=1,
                 name="math-Add",
                 function_name="Add",
@@ -472,7 +472,6 @@ mock_message_function_call = ChatMessageContent(
         )
     ],
 )
-
 
 @pytest.mark.parametrize(
     "function_choice_behavior,model_responses,expected_result",

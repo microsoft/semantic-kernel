@@ -31,6 +31,7 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -156,7 +157,6 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 
         messages, parsed_system_message = self._prepare_chat_history_for_request(chat_history, stream=True)
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
-
         settings.messages = messages
         if settings.system is None and parsed_system_message is not None:
             settings.system = parsed_system_message
@@ -164,7 +164,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         response = self._send_chat_stream_request(settings)
         if not isinstance(response, AsyncGenerator):
             raise Exception("Expected an AsyncGenerator response.")
-
+        
         async for message in response:
             yield message
 
@@ -209,12 +209,20 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                         content_key: message.inner_content.content,
                     })
                 else:
-                    content = [TextBlock(text=message.items[0].text, type="text")]
+                    content = [
+                        TextBlock(
+                            text=message.items[0].text,
+                            type="text"
+                        )
+                    ]
 
                     # for remaining items, add them to the content
                     for item in message.items[1:]:
                         tool_use = ToolUseBlock(
-                            id=item.id, input=json.loads(item.arguments), name=item.name, type="tool_use"
+                            id=item.id,
+                            input=json.loads(item.arguments),
+                            name=item.name,
+                            type="tool_use"
                         )
 
                         content.append(tool_use)
@@ -256,7 +264,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     # endregion
 
     def _create_chat_message_content(
-        self, response: Message, content_block: TextBlock | ToolUseBlock, response_metadata: dict[str, Any]
+        self,
+        response: Message,
+        content_block: TextBlock | ToolUseBlock,
+        response_metadata: dict[str, Any]
     ) -> "ChatMessageContent":
         """Create a chat message content object."""
         items: list[ITEM_TYPES] = self._get_tool_calls_from_message(response)
@@ -316,14 +327,26 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         self,
         function_choice_configuration: FunctionCallChoiceConfiguration,
         settings: "PromptExecutionSettings",
-        type: str,
+        type: "FunctionChoiceType",
     ) -> None:
         """Update the settings from a FunctionChoiceConfiguration."""
-        if function_choice_configuration.available_functions and hasattr(settings, "tools"):
+        if (
+            function_choice_configuration.available_functions
+            and hasattr(settings, "tools")
+        ):
             settings.tools = [
                 self.kernel_function_metadata_to_function_call_format_anthropic(f)
                 for f in function_choice_configuration.available_functions
             ]
+
+            settings.tool_choice = { "type" : type }
+
+            if (
+                settings.function_choice_behavior
+                and settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED
+            ):
+                settings.tool_choice = { "type": "any" }
+
 
     def kernel_function_metadata_to_function_call_format_anthropic(
         self,
@@ -350,7 +373,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         """Send the chat request."""
         try:
             kwargs = settings.model_dump(
-                exclude={"service_id", "extension_data", "messages"},
+                exclude={
+                    "service_id",
+                    "extension_data",
+                    "messages"
+                },
                 exclude_none=True,
                 by_alias=True,
             )
@@ -367,7 +394,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             response_metadata["usage"] = response.usage
 
         return [
-            self._create_chat_message_content(response, content_block, response_metadata)
+            self._create_chat_message_content(response, content_block, response_metadata) 
             for content_block in response.content
         ]
 
@@ -392,10 +419,9 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                     if isinstance(stream_event, RawMessageStartEvent):
                         metadata["usage"]["input_tokens"] = stream_event.message.usage.input_tokens
                         metadata["id"] = stream_event.message.id
-                    elif isinstance(stream_event, (TextEvent, RawMessageDeltaEvent)) or (
-                        isinstance(stream_event, ContentBlockStopEvent)
-                        and stream_event.content_block.type == "tool_use"
-                    ):
+                    elif isinstance(stream_event, (TextEvent, RawMessageDeltaEvent)) or \
+                        (isinstance(stream_event, ContentBlockStopEvent) and
+                         stream_event.content_block.type == "tool_use"):
                         yield [self._create_streaming_chat_message_content(stream_event, metadata)]
         except Exception as ex:
             raise ServiceResponseException(
@@ -419,3 +445,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 )
 
         return tool_calls
+
+    @override
+    def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
+        if hasattr(settings, "tool_choice"):
+            settings.tool_choice = None
+        if hasattr(settings, "tools"):
+            settings.tools = None

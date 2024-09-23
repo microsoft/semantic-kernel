@@ -30,11 +30,9 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
     tools: list[dict[str, Any]] | None = Field(
         None,
         max_length=64,
-        description=(
-            "Do not set this manually. It is set by the service based on the function choice configuration."
-        ),
+        description=("Do not set this manually. It is set by the service based on the function choice configuration."),
     )
-    tool_choice: str | None = Field(
+    tool_choice: dict[str, str] | None = Field(
         None,
         description="Do not set this manually. It is set by the service based on the function choice configuration.",
     )
