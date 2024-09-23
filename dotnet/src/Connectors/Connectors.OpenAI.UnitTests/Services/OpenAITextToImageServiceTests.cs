@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TextToImage;
 using Moq;
 using OpenAI.Images;
 using Xunit;
@@ -64,7 +65,9 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         Assert.Equal(modelId, sut.Attributes["ModelId"]);
 
         // Act 
+#pragma warning disable CS0618 // Type or member is obsolete
         var result = await sut.GenerateImageAsync("description", width, height);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // Assert
         Assert.Equal("https://image-url/", result);

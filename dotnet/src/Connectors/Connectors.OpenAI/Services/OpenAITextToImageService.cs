@@ -46,13 +46,4 @@ public class OpenAITextToImageService : ITextToImageService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
         => this._client.GetImageContentsAsync(input, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public Task<string> GenerateImageAsync(
-        string description,
-        int width,
-        int height,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-        => this._client.GenerateImageAsync(this._client.ModelId, description, width, height, cancellationToken);
 }

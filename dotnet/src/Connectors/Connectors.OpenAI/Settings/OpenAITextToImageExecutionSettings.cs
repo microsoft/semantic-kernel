@@ -20,6 +20,7 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     public OpenAITextToImageExecutionSettings()
     {
     }
+
     /// <summary>
     /// Optional width and height of the generated image.
     /// </summary>
@@ -38,6 +39,7 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// The quality of the image that will be generated. Defaults to "standard"
     /// "hd" or "high" creates images with finer details and greater consistency. This param is only supported for dall-e-3.
     /// </summary>
+    [JsonPropertyName("quality")]
     public string? Quality
     {
         get => this._quality;
@@ -55,6 +57,7 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// Natural causes the model to produce more natural, less hyper-real looking images.
     /// This param is only supported for dall-e-3.
     /// </summary>
+    [JsonPropertyName("style")]
     public string? Style
     {
         get => this._style;
@@ -74,6 +77,7 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// <item>Base64 = "b64_json" or "bytes".</item>
     /// </list>
     /// </summary>
+    [JsonPropertyName("response_format")]
     public object? ResponseFormat
     {
         get => this._responseFormat;
@@ -87,6 +91,7 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
     /// </summary>
+    [JsonPropertyName("user")]
     public string? EndUserId
     {
         get => this._endUserId;
@@ -137,12 +142,42 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
+        var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAITextToImageExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+        if (openAIExecutionSettings.ExtensionData?.TryGetValue("width", out var width) ?? false)
+        {
+            openAIExecutionSettings.Width = ((JsonElement)width).GetInt32();
+        }
+        if (openAIExecutionSettings.ExtensionData?.TryGetValue("height", out var height) ?? false)
+        {
+            openAIExecutionSettings.Height = ((JsonElement)height).GetInt32();
+        }
 
-        var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAITextToImageExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
         return openAIExecutionSettings!;
     }
 
     #region private ================================================================================
+
+    [JsonPropertyName("width")]
+    internal int? Width
+    {
+        get => this.Size?.Width;
+        set
+        {
+            if (!value.HasValue) { return; }
+            this.Size = (value.Value, this.Size?.Height ?? 0);
+        }
+    }
+
+    [JsonPropertyName("height")]
+    internal int? Height
+    {
+        get => this.Size?.Height;
+        set
+        {
+            if (!value.HasValue) { return; }
+            this.Size = (this.Size?.Width ?? 0, value.Value);
+        }
+    }
 
     private (int Width, int Height)? _size;
     private string? _quality;

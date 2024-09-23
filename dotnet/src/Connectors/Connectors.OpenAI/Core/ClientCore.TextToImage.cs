@@ -79,9 +79,7 @@ internal partial class ClientCore
             EndUserId = imageSettings.EndUserId,
         };
 
-        var targetModel = string.IsNullOrEmpty(imageSettings.ModelId)
-            ? "dall-e-2" // Defaults to the DALL-E 2 server-side - https://platform.openai.com/docs/api-reference/images/create#images-create-model.
-            : imageSettings.ModelId;
+        var targetModel = this.GetModelId(imageSettings.ModelId);
 
         ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client!.GetImageClient(targetModel).GenerateImageAsync(input.Text, imageGenerationOptions, cancellationToken)).ConfigureAwait(false);
         var generatedImage = response.Value;
@@ -98,6 +96,10 @@ internal partial class ClientCore
 
         return result;
     }
+
+    protected virtual string GetModelId(string? settingsModelId)
+        // Defaults to the DALL-E 2 server-side - https://platform.openai.com/docs/api-reference/images/create#images-create-model.
+        => string.IsNullOrEmpty(settingsModelId) ? "dall-e-2" : settingsModelId!;
 
     private static GeneratedImageSize? GetGeneratedImageSize((int Width, int Height)? size)
         => size is null

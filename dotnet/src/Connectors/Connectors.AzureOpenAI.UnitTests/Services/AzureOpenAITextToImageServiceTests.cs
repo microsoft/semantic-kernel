@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TextToImage;
 using Moq;
 using OpenAI.Images;
 
@@ -74,7 +75,9 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         var sut = new AzureOpenAITextToImageService("deployment", "https://api-host", "api-key", modelId, this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
 
         // Act 
+#pragma warning disable CS0618 // Type or member is obsolete
         var result = await sut.GenerateImageAsync("description", width, height);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // Assert
         Assert.Equal("https://image-url/", result);
@@ -83,7 +86,7 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         Assert.NotNull(request);
         Assert.Equal("description", request["prompt"]?.ToString());
         Assert.Equal("deployment", request["model"]?.ToString());
-        Assert.Equal("url", request["response_format"]?.ToString());
+        Assert.Null(request["response_format"]);
         Assert.Equal($"{width}x{height}", request["size"]?.ToString());
     }
 
