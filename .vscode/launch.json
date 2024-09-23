@@ -28,4 +28,66 @@
             "processId": "${command:azureFunctions.pickProcess}"
         }
     ]
+  "program": "",
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "RobotCode: Run All",
+      "type": "robotcode",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "target": "."
+      "name": "C#: Concept Samples",
+      "type": "clr",
+      "request": "launch",
+      "preLaunchTask": "build (Concepts)",
+      "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
+      "console": "internalConsole"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Launch",
+      "program": "${workspaceFolder}/path/to/your/program",
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "PowerShell: Binary Module Pester Tests",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "Invoke-Pester",
+      "createTemporaryIntegratedConsole": true,
+      "attachDotnetDebugger": true
+    },
+    {
+      "name": "C#: Concept Samples",
+          "type": "lldb",
+          "request": "launch",
+          "preLaunchTask": "build (Concepts)",
+          "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
+          "args": [],
+          "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
+          "console": "internalConsole"
+    },
+    {
+      "name": ".NET Core Attach",
+      "type": "lldb",
+      "request": "attach"
+    },
+    {
+      "name": "C#: HuggingFaceImageToText Demo",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/dotnet/samples/Demos/bin/Debug/net6.0/HuggingFaceImageToText.dll"
+    },
+    {
+      "name": "C#: GettingStarted Samples",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/dotnet/samples/GettingStarted/bin/Debug/net6.0/GettingStarted.dll"
+    }
+  ]
 }
