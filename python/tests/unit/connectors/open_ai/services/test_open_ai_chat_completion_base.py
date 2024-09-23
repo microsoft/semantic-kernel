@@ -5,8 +5,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from openai import AsyncStream
-from openai.lib.streaming.chat._completions import AsyncChatCompletionStreamManager
-from openai.resources.beta.chat.completions import AsyncCompletions as StructuredOutputAsyncCompletions
 from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompletions
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from openai.types.chat.chat_completion import Choice
@@ -66,36 +64,6 @@ def mock_streaming_chat_completion_response() -> AsyncStream[ChatCompletionChunk
     stream = MagicMock(spec=AsyncStream)
     stream.__aiter__.return_value = [content]
     return stream
-
-
-@pytest.fixture
-def mock_structured_output_streaming_chat_completion_response() -> (
-    AsyncChatCompletionStreamManager[ChatCompletionChunk]
-):
-    # Set up a mock ChatCompletionChunk
-    content = ChatCompletionChunk(
-        id="test_id",
-        choices=[ChunkChoice(index=0, delta=ChunkChoiceDelta(content="test", role="assistant"), finish_reason="stop")],
-        created=0,
-        model="test",
-        object="chat.completion.chunk",
-    )
-
-    # Create a mock AsyncChatCompletionStreamManager
-    stream_manager = AsyncMock()
-
-    # Mock async iteration to yield the content
-    async def mock_aiter():
-        yield content
-
-    # Mock __aiter__ for async iteration
-    stream_manager.__aiter__ = AsyncMock(return_value=mock_aiter())
-
-    # Ensure it works with "async with"
-    stream_manager.__aenter__.return_value = stream_manager
-    stream_manager.__aexit__.return_value = False  # Mock the exit behavior
-
-    return stream_manager
 
 
 # region Chat Message Content
@@ -355,6 +323,32 @@ async def test_cmc_no_fcc_in_response(
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_cmc_structured_output_no_fcc(
+    mock_create,
+    kernel: Kernel,
+    chat_history: ChatHistory,
+    mock_chat_completion_response: ChatCompletion,
+    openai_unit_test_env,
+):
+    mock_create.return_value = mock_chat_completion_response
+    chat_history.add_user_message("hello world")
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+
+    # Define a mock response format
+    class Test:
+        name: str
+
+    complete_prompt_execution_settings.response_format = Test
+
+    openai_chat_completion = OpenAIChatCompletion()
+    await openai_chat_completion.get_chat_message_contents(
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+    )
+    mock_create.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_run_out_of_auto_invoke_loop(
     mock_create: MagicMock,
     kernel: Kernel,
@@ -421,65 +415,6 @@ async def test_scmc_prompt_execution_settings(
         stream=True,
         messages=openai_chat_completion._prepare_chat_history_for_request(chat_history),
     )
-
-
-# @pytest.mark.asyncio
-# @patch.object(StructuredOutputAsyncCompletions, "stream", new_callable=AsyncMock)
-# async def test_structured_output_streaming_prompt_execution_settings(
-#     mock_create,
-#     kernel: Kernel,
-#     chat_history: ChatHistory,
-#     mock_structured_output_streaming_chat_completion_response: AsyncChatCompletionStreamManager[ChatCompletionChunk],
-#     openai_unit_test_env,
-# ):
-#     mock_create.return_value.__aiter__.return_value = mock_structured_output_streaming_chat_completion_response
-#     chat_history.add_user_message("hello world")
-#     complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
-
-#     class Test:
-#         name: str
-
-#     complete_prompt_execution_settings.response_format = Test
-
-#     openai_chat_completion = OpenAIChatCompletion()
-#     async for msg in openai_chat_completion.get_streaming_chat_message_contents(
-#         chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
-#     ):
-#         assert isinstance(msg[0], StreamingChatMessageContent)
-
-
-@pytest.mark.asyncio
-@patch.object(StructuredOutputAsyncCompletions, "stream", new_callable=AsyncMock)
-async def test_structured_output_streaming_prompt_execution_settings(
-    mock_stream,
-    kernel: Kernel,
-    chat_history: ChatHistory,
-    mock_structured_output_streaming_chat_completion_response: AsyncChatCompletionStreamManager[ChatCompletionChunk],
-    openai_unit_test_env,
-):
-    # Mock the streaming behavior
-    mock_stream.return_value.__aiter__.return_value = mock_structured_output_streaming_chat_completion_response
-
-    # Add a user message to the chat history
-    chat_history.add_user_message("hello world")
-
-    # Set up the prompt execution settings
-    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
-
-    # Define a mock response format
-    class Test:
-        name: str
-
-    complete_prompt_execution_settings.response_format = Test
-
-    # Initialize OpenAIChatCompletion and simulate the stream
-    openai_chat_completion = OpenAIChatCompletion()
-
-    # Async loop to capture streamed messages
-    async for msg in openai_chat_completion.get_streaming_chat_message_contents(
-        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
-    ):
-        assert isinstance(msg[0], StreamingChatMessageContent)
 
 
 @pytest.mark.asyncio
@@ -578,6 +513,55 @@ async def test_scmc_singular(
     orig_chat_history = deepcopy(chat_history)
     complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
 
+    openai_chat_completion = OpenAIChatCompletion()
+    async for msg in openai_chat_completion.get_streaming_chat_message_content(
+        chat_history=chat_history,
+        settings=complete_prompt_execution_settings,
+        kernel=kernel,
+        arguments=KernelArguments(),
+    ):
+        assert isinstance(msg, StreamingChatMessageContent)
+    mock_create.assert_awaited_once_with(
+        model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
+        stream=True,
+        messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+    )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_scmc_structured_output_no_fcc(
+    mock_create,
+    kernel: Kernel,
+    chat_history: ChatHistory,
+    openai_unit_test_env,
+):
+    content1 = ChatCompletionChunk(
+        id="test_id",
+        choices=[],
+        created=0,
+        model="test",
+        object="chat.completion.chunk",
+    )
+    content2 = ChatCompletionChunk(
+        id="test_id",
+        choices=[ChunkChoice(index=0, delta=ChunkChoiceDelta(content="test", role="assistant"), finish_reason="stop")],
+        created=0,
+        model="test",
+        object="chat.completion.chunk",
+    )
+    stream = MagicMock(spec=AsyncStream)
+    stream.__aiter__.return_value = [content1, content2]
+    mock_create.return_value = stream
+    chat_history.add_user_message("hello world")
+    orig_chat_history = deepcopy(chat_history)
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+
+    # Define a mock response format
+    class Test:
+        name: str
+
+    complete_prompt_execution_settings.response_format = Test
     openai_chat_completion = OpenAIChatCompletion()
     async for msg in openai_chat_completion.get_streaming_chat_message_content(
         chat_history=chat_history,

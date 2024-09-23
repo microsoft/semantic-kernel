@@ -5,13 +5,14 @@ from abc import ABC
 from typing import Any
 
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
-from openai.lib.streaming.chat._completions import AsyncChatCompletionStreamManager
+from openai.lib._parsing._completions import type_to_response_format_param
 from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from pydantic import BaseModel
 
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIChatPromptExecutionSettings,
     OpenAIEmbeddingPromptExecutionSettings,
     OpenAIPromptExecutionSettings,
 )
@@ -36,23 +37,18 @@ class OpenAIHandler(KernelBaseModel, ABC):
     async def _send_request(
         self,
         request_settings: OpenAIPromptExecutionSettings,
-    ) -> (
-        ChatCompletion
-        | Completion
-        | AsyncStream[ChatCompletionChunk]
-        | AsyncStream[Completion]
-        | AsyncChatCompletionStreamManager
-    ):
+    ) -> ChatCompletion | Completion | AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]:
         """Execute the appropriate call to OpenAI models."""
         try:
+            settings = request_settings.prepare_settings_dict()
             if self.ai_model_type == OpenAIModelTypes.CHAT:
-                if (
-                    hasattr(request_settings, "structured_json_response")
-                    and hasattr(request_settings, "response_format")
-                    and request_settings.structured_json_response
+                assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
+                if getattr(request_settings, "structured_json_response", False) and getattr(
+                    request_settings, "response_format", None
                 ):
-                    settings = request_settings.prepare_settings_dict()
-                    if not issubclass(request_settings.response_format, BaseModel):
+                    if issubclass(request_settings.response_format, BaseModel):
+                        settings["response_format"] = type_to_response_format_param(request_settings.response_format)
+                    else:
                         generated_schema = KernelJsonSchemaBuilder.build(
                             parameter_type=request_settings.response_format, structured_output=True
                         )
@@ -60,13 +56,9 @@ class OpenAIHandler(KernelBaseModel, ABC):
                         settings["response_format"] = generate_structured_output_response_format_schema(
                             name=request_settings.response_format.__name__, schema=generated_schema
                         )
-                    if settings.pop("stream", None):
-                        return self.client.beta.chat.completions.stream(**settings)
-                    response = await self.client.beta.chat.completions.parse(**settings)
-                else:
-                    response = await self.client.chat.completions.create(**request_settings.prepare_settings_dict())
+                response = await self.client.chat.completions.create(**settings)
             else:
-                response = await self.client.completions.create(**request_settings.prepare_settings_dict())
+                response = await self.client.completions.create(**settings)
             self.store_usage(response)
             return response
         except BadRequestError as ex:
