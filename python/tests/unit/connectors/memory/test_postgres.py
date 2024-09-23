@@ -198,17 +198,17 @@ async def test_upsert_records(vector_store: PostgresStore, mock_cursor: Mock) ->
         'ON CONFLICT ("id") DO UPDATE SET "embedding" = EXCLUDED."embedding", "data" = EXCLUDED."data"'
     )
 
-    assert values[0] == (1, [1.0, 2.0, 3.0], {"key": "value1"})
-    assert values[1] == (2, [4.0, 5.0, 6.0], {"key": "value2"})
-    assert values[2] == (3, [5.0, 6.0, 1.0], {"key": "value3"})
+    assert values[0] == (1, [1.0, 2.0, 3.0], '{"key": "value1"}')
+    assert values[1] == (2, [4.0, 5.0, 6.0], '{"key": "value2"}')
+    assert values[2] == (3, [5.0, 6.0, 1.0], '{"key": "value3"}')
 
 
 @mark.asyncio
 async def test_get_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     mock_cursor.fetchall.return_value = [
-        (1, [1.0, 2.0, 3.0], {"key": "value1"}),
-        (2, [4.0, 5.0, 6.0], {"key": "value2"}),
-        (3, [5.0, 6.0, 1.0], {"key": "value3"}),
+        (1, "[1.0, 2.0, 3.0]", {"key": "value1"}),
+        (2, "[4.0, 5.0, 6.0]", {"key": "value2"}),
+        (3, "[5.0, 6.0, 1.0]", {"key": "value3"}),
     ]
 
     collection = vector_store.get_collection("test_collection", SimpleDataModel)
