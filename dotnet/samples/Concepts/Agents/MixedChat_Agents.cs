@@ -46,14 +46,14 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 
         OpenAIAssistantAgent agentWriter =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
                 clientProvider: this.GetClientProvider(),
-                definition: new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Instructions = CopyWriterInstructions,
                     Name = CopyWriterName,
                     Metadata = AssistantSampleMetadata,
-                });
+                },
+                kernel: new Kernel());
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
