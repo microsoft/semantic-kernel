@@ -5,6 +5,10 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+/// <summary>
+/// Vector search request.
+/// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql"/>.
+/// </summary>
 internal sealed class WeaviateVectorSearchRequest(string query)
 {
     private const string ApiRoute = "graphql";

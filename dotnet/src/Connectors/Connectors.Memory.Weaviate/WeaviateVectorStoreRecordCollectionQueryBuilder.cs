@@ -13,6 +13,10 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </summary>
 internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
 {
+    /// <summary>
+    /// Builds Weaviate search query.
+    /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/get"/>.
+    /// </summary>
     public static string BuildSearchQuery<TVector>(
         TVector vector,
         string collectionName,
@@ -62,6 +66,10 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
 
     #region private
 
+    /// <summary>
+    /// Builds filter for Weaviate search query.
+    /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/filters"/>.
+    /// </summary>
     private static string BuildFilter(
         VectorSearchFilter? vectorSearchFilter,
         JsonSerializerOptions jsonSerializerOptions,
@@ -129,6 +137,10 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         return $$"""where: { operator: And, operands: [{{string.Join(", ", operands)}}] }""";
     }
 
+    /// <summary>
+    /// Gets filter value type.
+    /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/filters#filter-structure"/>.
+    /// </summary>
     private static string GetFilterValueType(Type valueType)
     {
         return valueType switch

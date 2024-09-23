@@ -164,7 +164,6 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
     public void BuildSearchQueryWithInvalidFilterValueThrowsException()
     {
         // Arrange
-
         var searchOptions = new VectorSearchOptions
         {
             Offset = 2,
@@ -190,7 +189,6 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
     public void BuildSearchQueryWithNonExistentPropertyInFilterThrowsException()
     {
         // Arrange
-
         var searchOptions = new VectorSearchOptions
         {
             Offset = 2,
