@@ -106,13 +106,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
         if (!this.GetFunctionFromSkillCollection(context.Skills!, fBlock, out ISKFunction? function))
         {
             var errorMsg = $"Function `{fBlock.Content}` not found";
-<<<<<<< main
             this.Log.LogError(errorMsg);
             throw new TemplateException(TemplateException.ErrorCodes.FunctionNotFound, errorMsg);
-=======
             this.Logger.LogError(errorMsg);
             throw new SKException(errorMsg);
->>>>>>> ms/feature-error-handling
+            this.Logger.LogError(errorMsg);
+            throw new SKException(errorMsg);
         }
 
         ContextVariables variablesClone = context.Variables.Clone();
@@ -137,15 +136,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         if (result.ErrorOccurred)
         {
-<<<<<<< main
             var errorMsg = $"Function `{fBlock.Content}` execution failed. {result.LastException?.GetType().FullName}: {result.LastErrorDescription}";
             this.Log.LogError(errorMsg);
             throw new TemplateException(TemplateException.ErrorCodes.RuntimeError, errorMsg, result.LastException);
-=======
             var errorMsg = $"Function `{fBlock.Content}` execution failed. {contextClone.LastException?.GetType().FullName}: {contextClone.LastException?.Message}";
             this.Logger.LogError(errorMsg);
             throw new SKException(errorMsg, contextClone.LastException);
->>>>>>> ms/feature-error-handling
         }
 
         return result.Result;

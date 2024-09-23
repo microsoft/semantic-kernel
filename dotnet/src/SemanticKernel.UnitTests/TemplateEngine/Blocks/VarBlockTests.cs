@@ -1,14 +1,11 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
-<<<<<<< main
 using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
-=======
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
->>>>>>> ms/feature-error-handling
 using Xunit;
 
 namespace SemanticKernel.UnitTests.TemplateEngine;
@@ -120,11 +117,9 @@ public class VarBlockTests
         var target = new VarBlock(" $ ");
 
         // Act + Assert
-<<<<<<< main
         Assert.Throws<KernelException>(() => target.Render(arguments));
-=======
         Assert.Throws<SKException>(() => target.Render(variables));
->>>>>>> ms/feature-error-handling
+        Assert.Throws<SKException>(() => target.Render(variables));
     }
 
     [Theory]

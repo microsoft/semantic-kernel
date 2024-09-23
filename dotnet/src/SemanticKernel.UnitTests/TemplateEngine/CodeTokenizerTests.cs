@@ -1,10 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
-<<<<<<< main
 using Microsoft.SemanticKernel;
-=======
 using Microsoft.SemanticKernel.Diagnostics;
->>>>>>> ms/feature-error-handling
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
@@ -174,7 +172,6 @@ public class CodeTokenizerTests
         var template = "func name='f\\'oo'";
 
         // Act
-<<<<<<< main
         var blocks = this._target.Tokenize(template);
 
         // Assert
@@ -223,9 +220,14 @@ public class CodeTokenizerTests
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => this._target.Tokenize(template));
         Assert.Equal("A function named argument must contain a name and value separated by a '=' character.", exception.Message);
-=======
         Assert.Throws<SKException>(() => this._target.Tokenize(template1));
         Assert.Throws<SKException>(() => this._target.Tokenize(template2));
->>>>>>> ms/feature-error-handling
+    [Theory]
+    [InlineData(@"call 'f\\'xy'")]
+    [InlineData(@"call 'f\\'x")]
+    public void ItThrowsWhenSeparatorsAreMissing(string template)
+    {
+        // Act & Assert
+        Assert.Throws<SKException>(() => this._target.Tokenize(template));
     }
 }
