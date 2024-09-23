@@ -103,7 +103,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         if (this._vectorProperties.Count > 0)
         {
-            this._firstVectorProperty = this._vectorProperties.First();
+            this._firstVectorProperty = this._vectorProperties[0];
         }
 
         this._mapper = this._options.BsonDocumentCustomMapper ??
@@ -491,23 +491,23 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// Get vector property to use for a search by using the storage name for the field name from options
     /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
     /// </summary>
-    /// <param name="optionsVectorFieldName">The vector field name provided via options.</param>
+    /// <param name="vectorFieldName">The vector field name.</param>
     /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? optionsVectorFieldName)
+    private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? vectorFieldName)
     {
         // If vector property name is provided in options, try to find it in schema or throw an exception.
-        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
+        if (!string.IsNullOrWhiteSpace(vectorFieldName))
         {
             // Check vector properties by data model property name.
             var vectorProperty = this._vectorProperties
-                .FirstOrDefault(l => l.DataModelPropertyName.Equals(optionsVectorFieldName, StringComparison.Ordinal));
+                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
 
             if (vectorProperty is not null)
             {
                 return vectorProperty;
             }
 
-            throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{optionsVectorFieldName}'.");
+            throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{vectorFieldName}'.");
         }
 
         // If vector property is not provided in options, return first vector property from schema.

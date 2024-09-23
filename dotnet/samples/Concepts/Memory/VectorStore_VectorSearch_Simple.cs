@@ -15,7 +15,7 @@ namespace Memory;
 /// 3. Ingest some data into the vector store.
 /// 4. Search the vector store with various text and filtering options.
 /// </summary>
-public class VectorSearch_Simple(ITestOutputHelper output) : BaseTest(output)
+public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task ExampleAsync()
@@ -45,12 +45,10 @@ public class VectorSearch_Simple(ITestOutputHelper output) : BaseTest(output)
         var upsertedKeysTasks = glossaryEntries.Select(x => collection.UpsertAsync(x));
         var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
 
-        var vectorSearch = collection as IVectorizedSearch<Glossary>;
-
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var searchResult = await vectorSearch!.VectorizedSearchAsync(searchVector, new() { Limit = 1 }).ToListAsync();
+        var searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Limit = 1 }).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Result: " + searchResult.First().Record.Definition);
@@ -59,7 +57,7 @@ public class VectorSearch_Simple(ITestOutputHelper output) : BaseTest(output)
         // Search the collection using a vector search.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        searchResult = await vectorSearch!.VectorizedSearchAsync(searchVector, new() { Limit = 1 }).ToListAsync();
+        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Limit = 1 }).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Result: " + searchResult.First().Record.Definition);
@@ -69,7 +67,7 @@ public class VectorSearch_Simple(ITestOutputHelper output) : BaseTest(output)
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
         var filter = new VectorSearchFilter().EqualTo(nameof(Glossary.Category), "External Definitions");
-        searchResult = await vectorSearch!.VectorizedSearchAsync(searchVector, new() { Limit = 3, Filter = filter }).ToListAsync();
+        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Limit = 3, Filter = filter }).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Number of results: " + searchResult.Count);
