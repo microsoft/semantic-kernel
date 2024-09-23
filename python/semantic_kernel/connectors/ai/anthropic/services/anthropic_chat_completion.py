@@ -211,23 +211,23 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                         content_key: message.inner_content.content,
                     })
                 else:
-                    content = [
-                        TextBlock(
-                            text=message.items[0].text,
-                            type="text"
-                        )
-                    ]
-
+                    content = []
                     # for remaining items, add them to the content
-                    for item in message.items[1:]:
-                        tool_use = ToolUseBlock(
-                            id=item.id,
-                            input=json.loads(item.arguments),
-                            name=item.name,
-                            type="tool_use"
-                        )
-
-                        content.append(tool_use)
+                    for item in message.items:
+                        if isinstance(item, TextContent):
+                            content.append(
+                                TextBlock(
+                                    text=item.text,
+                                    type="text"
+                                )
+                            )
+                        else:
+                            content.append(ToolUseBlock(
+                                id=item.id,
+                                input=json.loads(item.arguments),
+                                name=item.name,
+                                type="tool_use"
+                            ))
 
                     remaining_messages.append({
                         role_key: AuthorRole.ASSISTANT,
@@ -335,12 +335,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         if (
             function_choice_configuration.available_functions
             and hasattr(settings, "tools")
+            and type != FunctionChoiceType.NONE
         ):
             settings.tools = [
                 self.kernel_function_metadata_to_function_call_format_anthropic(f)
                 for f in function_choice_configuration.available_functions
             ]
-            
+
             if (
                 (settings.function_choice_behavior
                 and settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED)
@@ -349,10 +350,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 settings.tool_choice = {"type": "any"}
             elif type == FunctionChoiceType.AUTO:
                 settings.tool_choice = {"type": type.value}
-            else:
-                raise ValueError(
-                    f"AnthropicChatCompletion does not support the {type} function choice type."
-                )
+
 
     def kernel_function_metadata_to_function_call_format_anthropic(
         self,
@@ -413,12 +411,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 exclude={
                     "service_id",
                     "extension_data",
+                    "messages"
                 },
                 exclude_none=True,
                 by_alias=True,
             )
 
-            async with self.async_client.messages.stream(**kwargs) as stream:
+            async with self.async_client.messages.stream(messages=settings.messages, **kwargs) as stream:
                 metadata: dict[str, Any] = {"usage": {}, "id": None}
 
                 async for stream_event in stream:
