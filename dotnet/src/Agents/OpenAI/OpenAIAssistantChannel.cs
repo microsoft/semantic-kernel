@@ -14,7 +14,6 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     : AgentChannel<OpenAIAssistantAgent>
 {
     private readonly AssistantClient _client = client;
-<<<<<<< main
     private const string FunctionDelimiter = "-";
 
     private static readonly HashSet<RunStatus> s_pollingStatuses =
@@ -32,8 +31,6 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
         ];
 
     private readonly AssistantsClient _client = client;
-=======
->>>>>>> ms/features/bugbash-prep
     private readonly string _threadId = threadId;
 
     /// <inheritdoc/>
@@ -186,11 +183,8 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     {
         agent.ThrowIfDeleted();
 
-<<<<<<< main
         return AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
-=======
         return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
->>>>>>> ms/features/bugbash-prep
     }
 
     /// <inheritdoc/>
@@ -725,4 +719,5 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     /// <inheritdoc/>
     protected override Task ResetAsync(CancellationToken cancellationToken = default) =>
         this._client.DeleteThreadAsync(this._threadId, cancellationToken);
+    protected override string Serialize() => this._threadId;
 }

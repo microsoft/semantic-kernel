@@ -33,7 +33,7 @@ public sealed class AgentGroupChat : AgentChat
     /// <summary>
     /// The agents participating in the chat.
     /// </summary>
-    public IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
+    public override IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
 
     /// <summary>
     /// Add a <see cref="Agent"/> to the chat.
@@ -62,6 +62,8 @@ public sealed class AgentGroupChat : AgentChat
         this.EnsureCompletionStatus();
 
         this.Logger.LogAgentGroupChatInvokingAgents(nameof(InvokeAsync), this.Agents);
+
+        bool isComplete = false;
 
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
@@ -107,14 +109,22 @@ public sealed class AgentGroupChat : AgentChat
             // Invoke agent and process messages along with termination
             await foreach (var message in this.InvokeStreamingAsync(agent, cancellationToken).ConfigureAwait(false))
             {
+                if (message.Role == AuthorRole.Assistant)
+                {
+                    var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken);
+                    isComplete = await task.ConfigureAwait(false);
+                }
+
                 yield return message;
             }
 
-            if (this.IsComplete)
+            if (isComplete)
             {
                 break;
             }
         }
+
+        this.IsComplete = isComplete;
 
         this.Logger.LogAgentGroupChatYield(nameof(InvokeAsync), this.IsComplete);
     }
@@ -137,19 +147,13 @@ public sealed class AgentGroupChat : AgentChat
         this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id);
 
 <<<<<<< main
-=======
-<<<<<<< main
->>>>>>> origin/main
         if (isJoining)
         {
             this.Add(agent);
         }
-<<<<<<< main
         this.AddAgent(agent);
 =======
-=======
         this.AddAgent(agent);
->>>>>>> upstream/main
 >>>>>>> origin/main
 
         await foreach (ChatMessageContent message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))

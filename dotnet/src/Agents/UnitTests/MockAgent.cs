@@ -1,6 +1,7 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -36,5 +37,31 @@ internal class MockAgent : ChatHistoryKernelAgent
     {
         this.InvokeCount++;
         return this.Response.Select(m => new StreamingChatMessageContent(m.Role, m.Content)).ToAsyncEnumerable();
+    }
+
+    /// <inheritdoc/>
+    protected internal override IEnumerable<string> GetChannelKeys()
+    {
+        yield return typeof(ChatHistoryChannel).FullName!;
+    }
+
+    /// <inheritdoc/>
+    protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
+    {
+        ChatHistoryChannel channel =
+            new()
+            {
+                Logger = this.LoggerFactory.CreateLogger<ChatHistoryChannel>()
+            };
+
+        return Task.FromResult<AgentChannel>(channel);
+    }
+
+    protected internal override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
+    {
+        ChatHistory history =
+            JsonSerializer.Deserialize<ChatHistory>(channelState) ??
+            throw new KernelException("Unable to restore channel: invalid state.");
+        return Task.FromResult<AgentChannel>(new ChatHistoryChannel(history));
     }
 }

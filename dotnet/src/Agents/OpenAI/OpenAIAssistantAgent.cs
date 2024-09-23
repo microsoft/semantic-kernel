@@ -1,10 +1,7 @@
-<<<<<<< main
 // Copyright (c) Microsoft. All rights reserved.
 using System.ClientModel;
 using System;
-=======
-﻿// Copyright (c) Microsoft. All rights reserved.
->>>>>>> ms/features/bugbash-prep
+// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,10 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
-<<<<<<< main
 using Microsoft.SemanticKernel.ChatCompletion;
-=======
->>>>>>> ms/features/bugbash-prep
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Files;
@@ -35,10 +29,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     public const string CodeInterpreterMetadataKey = "code";
 
     internal const string OptionsMetadataKey = "__run_options";
-<<<<<<< main
     internal const string TemplateMetadataKey = "__template_format";
-=======
->>>>>>> ms/features/bugbash-prep
 
     private readonly OpenAIClientProvider _provider;
     private readonly Assistant _assistant;
@@ -51,7 +42,6 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     public OpenAIAssistantDefinition Definition { get; private init; }
 
     /// <summary>
-<<<<<<< main
     /// Set when the assistant has been deleted via <see cref="DeleteAsync(CancellationToken)"/>.
     /// An assistant removed by other means will result in an exception when invoked.
     /// </summary>
@@ -64,7 +54,6 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
     /// <summary>
     /// Expose predefined tools for run-processing.
-=======
     /// The assistant definition.
     /// </summary>
     public OpenAIAssistantDefinition Definition { get; private init; }
@@ -77,12 +66,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
     /// <summary>
     /// Defines polling behavior for run processing
->>>>>>> ms/features/bugbash-prep
     /// </summary>
     public RunPollingOptions PollingOptions { get; } = new();
 
     /// <summary>
-<<<<<<< main
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
     /// <param name="clientProvider">OpenAI client provider for accessing the API service.</param>
@@ -130,19 +117,14 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 Template = template,
             };
     }
-=======
     /// Expose predefined tools for run-processing.
     /// </summary>
     internal IReadOnlyList<ToolDefinition> Tools => this._assistant.Tools;
->>>>>>> ms/features/bugbash-prep
 
     /// <summary>
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
-<<<<<<< main
-=======
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
->>>>>>> ms/features/bugbash-prep
     /// <param name="clientProvider">OpenAI client provider for accessing the API service.</param>
     /// <param name="definition">The assistant definition.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -150,10 +132,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
     public static async Task<OpenAIAssistantAgent> CreateAsync(
-<<<<<<< main
-=======
         Kernel kernel,
->>>>>>> ms/features/bugbash-prep
         OpenAIClientProvider clientProvider,
         OpenAIAssistantDefinition definition,
         Kernel kernel,
@@ -169,12 +148,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         AssistantClient client = CreateClient(clientProvider);
 
         // Create the assistant
-<<<<<<< main
         AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantCreationOptions();
         AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantOptions();
-=======
         AssistantCreationOptions assistantCreationOptions = CreateAssistantCreationOptions(definition);
->>>>>>> ms/features/bugbash-prep
         Assistant model = await client.CreateAssistantAsync(definition.ModelId, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
@@ -201,10 +177,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Query and enumerate assistant definitions
         await foreach (var page in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = ListOrder.NewestFirst }, cancellationToken).ConfigureAwait(false))
-<<<<<<< main
         await foreach (PageResult<Assistant> page in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = ListOrder.NewestFirst }, cancellationToken).ConfigureAwait(false))
-=======
->>>>>>> ms/features/bugbash-prep
         {
             foreach (Assistant model in page.Values)
             {
@@ -216,12 +189,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Retrieve a <see cref="OpenAIAssistantAgent"/> by identifier.
     /// </summary>
-<<<<<<< main
     /// <param name="clientProvider">Configuration for accessing the API service.</param>
-=======
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="provider">Configuration for accessing the API service.</param>
->>>>>>> ms/features/bugbash-prep
     /// <param name="id">The agent identifier</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="defaultArguments">Optional default arguments, including any <see cref="PromptExecutionSettings"/>.</param>
@@ -229,12 +199,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
     public static async Task<OpenAIAssistantAgent> RetrieveAsync(
-<<<<<<< main
         OpenAIClientProvider clientProvider,
-=======
         Kernel kernel,
         OpenAIClientProvider provider,
->>>>>>> ms/features/bugbash-prep
         string id,
         Kernel kernel,
         KernelArguments? defaultArguments = null,
@@ -247,11 +214,8 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         Verify.NotNullOrWhiteSpace(id, nameof(id));
 
         // Create the client
-<<<<<<< main
         AssistantClient client = CreateClient(clientProvider);
-=======
         AssistantClient client = CreateClient(provider);
->>>>>>> ms/features/bugbash-prep
 
         // Retrieve the assistant
         Assistant model = await client.GetAssistantAsync(id, cancellationToken).ConfigureAwait(false);
@@ -264,11 +228,8 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Instantiate the agent
         return
-<<<<<<< main
             new OpenAIAssistantAgent(model, clientProvider, client)
-=======
             new OpenAIAssistantAgent(model, provider, client)
->>>>>>> ms/features/bugbash-prep
             {
                 Kernel = kernel,
                 Arguments = defaultArguments,
@@ -538,6 +499,19 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
     internal Task<string?> GetInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken) =>
         this.FormatInstructionsAsync(kernel, arguments, cancellationToken);
+    /// <inheritdoc/>
+    protected override async Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
+    {
+        string threadId = channelState;
+
+        this.Logger.LogOpenAIAssistantAgentRestoringChannel(nameof(RestoreChannelAsync), nameof(OpenAIAssistantChannel), threadId);
+
+        AssistantThread thread = await this._client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+
+        this.Logger.LogOpenAIAssistantAgentRestoredChannel(nameof(RestoreChannelAsync), nameof(OpenAIAssistantChannel), threadId);
+
+        return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgent"/> class.
@@ -561,10 +535,8 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     }
 
     private static OpenAIAssistantDefinition CreateAssistantDefinition(Assistant model)
-<<<<<<< main
     {
         OpenAIAssistantExecutionOptions? options = null;
-=======
     {
         OpenAIAssistantExecutionOptions? options = null;
 
@@ -625,11 +597,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             string optionsJson = JsonSerializer.Serialize(definition.ExecutionOptions);
             assistantCreationOptions.Metadata[OptionsMetadataKey] = optionsJson;
         }
->>>>>>> ms/features/bugbash-prep
 
         if (model.Metadata.TryGetValue(OptionsMetadataKey, out string? optionsJson))
         {
-<<<<<<< main
             options = JsonSerializer.Deserialize<OpenAIAssistantExecutionOptions>(optionsJson);
         }
 
@@ -658,7 +628,6 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     private static AssistantClient CreateClient(OpenAIClientProvider config)
     {
         return config.Client.GetAssistantClient();
-=======
             assistantCreationOptions.Tools.Add(ToolDefinition.CreateCodeInterpreter());
         }
 
@@ -684,6 +653,5 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         {
             yield return key;
         }
->>>>>>> ms/features/bugbash-prep
     }
 }
