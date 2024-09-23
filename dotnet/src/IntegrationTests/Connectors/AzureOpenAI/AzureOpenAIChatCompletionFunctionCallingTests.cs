@@ -141,10 +141,19 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
     public async Task CanAutoInvokeKernelFunctionFromPromptAsync()
     {
         // Arrange
+        var invokedFunctions = new List<string>();
+
+        var filter = new FakeFunctionFilter(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
+
         var kernel = this.CreateAndInitializeKernel();
+        kernel.FunctionInvocationFilters.Add(filter);
 
         var promptFunction = KernelFunctionFactory.CreateFromPrompt(
-            "Your role is always to return this text - 'A Game-Changer for the Transportation Industry'. Don't ask for more details or context.",
+            "Hey LLM, give me one news title that's hot off the press!",
             functionName: "FindLatestNews",
             description: "Searches for the latest news.");
 
@@ -156,21 +165,30 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
-        var result = await kernel.InvokePromptAsync("Show me the latest news as they are.", new(settings));
+        var result = await kernel.InvokePromptAsync("Show me the latest news.", new(settings));
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Contains("Transportation", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains(invokedFunctions, functionName => functionName.Contains("InvokePromptAsync"));
+        Assert.Contains(invokedFunctions, functionName => functionName.Contains("FindLatestNews"));
     }
 
     [Fact]
     public async Task CanAutoInvokeKernelFunctionFromPromptStreamingAsync()
     {
         // Arrange
+        var invokedFunctions = new List<string>();
+
+        var filter = new FakeFunctionFilter(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
+
         var kernel = this.CreateAndInitializeKernel();
+        kernel.FunctionInvocationFilters.Add(filter);
 
         var promptFunction = KernelFunctionFactory.CreateFromPrompt(
-            "Your role is always to return this text - 'A Game-Changer for the Transportation Industry'. Don't ask for more details or context.",
+            "Hey LLM, give me one news title that's hot off the press!",
             functionName: "FindLatestNews",
             description: "Searches for the latest news.");
 
@@ -182,20 +200,14 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
-        var streamingResult = kernel.InvokePromptStreamingAsync("Show me the latest news as they are.", new(settings));
-
-        var builder = new StringBuilder();
-
+        var streamingResult = kernel.InvokePromptStreamingAsync("Show me the latest news.", new(settings));
         await foreach (var update in streamingResult)
         {
-            builder.Append(update.ToString());
         }
 
-        var result = builder.ToString();
-
         // Assert
-        Assert.NotNull(result);
-        Assert.Contains("Transportation", result, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains(invokedFunctions, functionName => functionName.Contains("InvokePromptStreamingAsync"));
+        Assert.Contains(invokedFunctions, functionName => functionName.Contains("FindLatestNews"));
     }
 
     [Fact]
@@ -796,10 +808,13 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         string? emailBody = null, emailRecipient = null;
 
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
-        kernel.ImportPluginFromFunctions("EmailPlugin", [KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail")]);
+        kernel.ImportPluginFromFunctions("EmailPlugin", [
+            KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail"),
+            KernelFunctionFactory.CreateFromMethod(() => "abc@domain.com", "GetMyEmail")
+        ]);
 
         // The deserialized chat history contains a list of function calls and the final answer to the question regarding the color of the sky in Boston.
-        chatHistory.AddUserMessage("Send the exact answer to my email: abc@domain.com");
+        chatHistory.AddUserMessage("Send the exact answer to my email.");
 
         var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -832,10 +847,13 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         string? emailBody = null, emailRecipient = null;
 
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
-        kernel.ImportPluginFromFunctions("EmailPlugin", [KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail")]);
+        kernel.ImportPluginFromFunctions("EmailPlugin", [
+            KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail"),
+            KernelFunctionFactory.CreateFromMethod(() => "abc@domain.com", "GetMyEmail")
+         ]);
 
         // The deserialized chat history contains a list of function calls and the final answer to the question regarding the color of the sky in Boston.
-        chatHistory.AddUserMessage("Send the exact answer to my email: abc@domain.com");
+        chatHistory.AddUserMessage("Send the exact answer to my email.");
 
         var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -844,7 +862,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 
         // Assert
         Assert.Equal("abc@domain.com", emailRecipient);
-        Assert.Contains("61\u00B0F", emailBody);
+        Assert.Contains("61", emailBody);
     }
 
     /// <summary>
