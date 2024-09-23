@@ -63,10 +63,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         // Verify.
         Verify.NotNullOrWhiteSpace(collectionName);
-        Verify.True(
-            !(typeof(TRecord).IsGenericType && typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>) && options?.VectorStoreRecordDefinition is null),
-            $"A {nameof(VectorStoreRecordDefinition)} must be provided when using {nameof(VectorStoreGenericDataModel<string>)}.",
-            nameof(options));
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._collectionName = collectionName;
