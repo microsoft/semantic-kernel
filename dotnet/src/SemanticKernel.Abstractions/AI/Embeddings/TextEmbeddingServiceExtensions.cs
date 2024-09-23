@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -24,6 +24,7 @@ public static class TextEmbeddingServiceExtensions
         string? serviceId = null)
             => services.GetService<ITextEmbeddingGeneration>(serviceId)
                 ?? throw new SKException("Text embedding service not available");
+                ?? throw new SKException("Text embedding service not found");
 
     /// <summary>
     /// Returns true if a <see cref="ITextEmbeddingGeneration"/> exist with the specified ID.

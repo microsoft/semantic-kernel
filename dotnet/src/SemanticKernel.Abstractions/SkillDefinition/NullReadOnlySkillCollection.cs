@@ -11,28 +11,33 @@ internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
 {
     public static readonly NullReadOnlySkillCollection Instance = new();
 
+    /// <inheritdoc/>
     public ISKFunction GetFunction(string functionName)
     {
         return ThrowFunctionNotAvailable(functionName);
     }
 
+    /// <inheritdoc/>
     public ISKFunction GetFunction(string skillName, string functionName)
     {
         return ThrowFunctionNotAvailable(skillName, functionName);
     }
 
+    /// <inheritdoc/>
     public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
     {
         availableFunction = null;
         return false;
     }
 
+    /// <inheritdoc/>
     public bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
     {
         availableFunction = null;
         return false;
     }
 
+    /// <inheritdoc/>
     public FunctionsView GetFunctionsView(bool includeSemantic = true, bool includeNative = true)
     {
         return new();

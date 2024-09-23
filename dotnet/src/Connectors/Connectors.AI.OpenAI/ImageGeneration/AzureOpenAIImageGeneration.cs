@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Linq;
@@ -104,7 +104,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         var operationId = await this.StartImageGenerationAsync(description, width, height, cancellationToken).ConfigureAwait(false);
         var result = await this.GetImageGenerationResultAsync(operationId, cancellationToken).ConfigureAwait(false);
 
-        if (result.Result == null)
+        if (result.Result is null)
         {
             throw new SKException("Azure Image Generation null response");
         }
@@ -168,6 +168,31 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             if (this._maxRetryCount == retryCount)
             {
                 throw new SKException("Reached maximum retry attempts");
+                if (this._maxRetryCount == retryCount)
+                {
+                    throw new AIException(AIException.ErrorCodes.RequestTimeout, "Reached maximum retry attempts");
+                }
+
+                using var response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
+                var responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var result = this.JsonDeserialize<AzureImageGenerationResponse>(responseJson);
+
+                if (result.Status.Equals(AzureImageOperationStatus.Succeeded, StringComparison.OrdinalIgnoreCase))
+                {
+                    return result;
+                }
+                else if (this.IsFailedOrCancelled(result.Status))
+                {
+                    throw new SKException($"Azure OpenAI image generation {result.Status}");
+                }
+
+                if (response.Headers.TryGetValues("retry-after", out var afterValues) && long.TryParse(afterValues.FirstOrDefault(), out var after))
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(after), cancellationToken).ConfigureAwait(false);
+                }
+
+                // increase retry count
+                retryCount++;
             }
 
             using var response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);

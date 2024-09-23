@@ -6,13 +6,10 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-<<<<<<< main
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
-=======
->>>>>>> ms/feature-error-handling
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
@@ -285,9 +282,10 @@ public sealed class Kernel : IKernel, IDisposable
         }
 
         throw new NotSupportedException("The kernel service collection doesn't support the type " + typeof(T).FullName);
+        throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
 =======
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
->>>>>>> ms/feature-error-handling
+>>>>>>> ms/feature-error-handling-part-4
     }
 
     /// <summary>

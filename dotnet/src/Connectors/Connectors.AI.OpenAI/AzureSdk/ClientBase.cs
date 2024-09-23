@@ -66,7 +66,7 @@ public abstract class ClientBase
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
             () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-        if (response == null)
+        if (response is null)
         {
             throw new SKException("Text completions null response");
         }
@@ -126,7 +126,7 @@ public abstract class ClientBase
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
                 () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-            if (response == null)
+            if (response is null)
             {
                 throw new SKException("Text embedding null response");
             }
@@ -165,7 +165,7 @@ public abstract class ClientBase
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
             () => this.Client.GetChatCompletionsAsync(this.ModelId, chatOptions, cancellationToken)).ConfigureAwait(false);
 
-        if (response == null)
+        if (response is null)
         {
             throw new SKException("Chat completions null response");
         }

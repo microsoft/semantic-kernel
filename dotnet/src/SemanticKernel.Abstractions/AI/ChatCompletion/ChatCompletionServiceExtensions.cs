@@ -1,16 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
-<<<<<<< main
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-=======
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
->>>>>>> ms/feature-error-handling
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -22,7 +19,6 @@ public static class ChatCompletionServiceExtensions
     /// <summary>
     /// Get chat multiple chat message content choices for the prompt and settings.
     /// </summary>
-<<<<<<< main
     /// <remarks>
     /// This should be used when the settings request for more than one choice.
     /// </remarks>
@@ -69,7 +65,6 @@ public static class ChatCompletionServiceExtensions
         CancellationToken cancellationToken = default)
         => (await chatCompletionService.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
             .Single();
-=======
     /// <param name="services">The service provider.</param>
     /// <param name="serviceId">Optional identifier of the desired service.</param>
     /// <returns>The completion service id matching the given id or the default.</returns>
@@ -78,7 +73,9 @@ public static class ChatCompletionServiceExtensions
         this IAIServiceProvider services,
         string? serviceId = null) => services.GetService<IChatCompletion>(serviceId)
             ?? throw new SKException("Chat completion service not found");
->>>>>>> ms/feature-error-handling
+<<<<<<< main
+=======
+>>>>>>> ms/feature-error-handling-part-4
 
     /// <summary>
     /// Get a single chat message content for the chat history and settings provided.
