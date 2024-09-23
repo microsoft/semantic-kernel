@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.IO;
 using System.Reflection;
@@ -17,6 +17,10 @@ internal static class EmbeddedResource
 
         using Stream? resource = assembly.GetManifestResourceStream($"{s_namespace}." + name);
         if (resource == null) { throw new SKException($"[{s_namespace}] {name} resource not found"); }
+        if (assembly is null) { throw new SKException($"[{s_namespace}] {name} assembly not found"); }
+
+        using Stream? resource = assembly.GetManifestResourceStream($"{s_namespace}." + name);
+        if (resource is null) { throw new SKException($"[{s_namespace}] {name} resource not found"); }
 
         using var reader = new StreamReader(resource);
         return reader.ReadToEnd();

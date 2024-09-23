@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Threading;
@@ -79,6 +79,7 @@ public sealed class ActionPlannerTests
 
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
+        await Assert.ThrowsAsync<SKException>(() => planner.CreatePlanAsync("goal"));
     }
 
     [Fact]
