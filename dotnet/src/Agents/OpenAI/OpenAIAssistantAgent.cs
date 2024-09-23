@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
-<<<<<<< main
 using System.ClientModel;
-=======
 using System;
->>>>>>> origin/PR
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -66,6 +63,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="capabilities">Defines the assistant's capabilities.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="defaultArguments">Optional default arguments, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="defaultArguments">Required arguments that provide default template parameters, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="templateConfig">Prompt template configuration</param>
     /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -94,6 +92,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Create the assistant
         AssistantCreationOptions assistantCreationOptions = templateConfig.CreateAssistantCreationOptions(capabilities);
+        AssistantCreationOptions assistantCreationOptions = templateConfig.CreateAssistantOptions(capabilities);
         Assistant model = await client.CreateAssistantAsync(capabilities.ModelId, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
@@ -132,6 +131,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Create the assistant
         AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantCreationOptions();
+        AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantOptions();
         Assistant model = await client.CreateAssistantAsync(definition.ModelId, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent

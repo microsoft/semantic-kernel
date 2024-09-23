@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -14,7 +14,7 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
 {
     private readonly static (string Input, string? Style)[] s_inputs =
         [
-            (Input: "Home cooking is the great.", Style: null),
+            (Input: "Home cooking is great.", Style: null),
             (Input: "Talk about world peace.", Style: "iambic pentameter"),
             (Input: "Say something about doing your best.", Style: "e. e. cummings"),
             (Input: "What do you think about having fun?", Style: "old school rap")
@@ -23,7 +23,7 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
     [Fact]
     public async Task InvokeAgentWithInstructionsTemplateAsync()
     {
-        // Instruction based template always proceseed by KernelPromptTemplateFactory
+        // Instruction based template always processed by KernelPromptTemplateFactory
         ChatCompletionAgent agent =
             new()
             {
