@@ -384,6 +384,7 @@ weaviate = [
 pandas = [
     "pandas ~= 2.2"
 ]
+bing = []
 
 [tool.uv]
 prerelease = "if-necessary-or-explicit"

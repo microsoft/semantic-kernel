@@ -59,5 +59,6 @@
         "SEMANTICKERNEL",
         "OTEL",
         "mistralai"
+        "vectorizable"
     ]
 }

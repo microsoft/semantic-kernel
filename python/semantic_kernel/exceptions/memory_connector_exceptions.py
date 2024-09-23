@@ -32,6 +32,12 @@ class VectorStoreModelValidationError(VectorStoreModelException):
     """An error occurred while validating the vector store model."""
 
 
+class VectorStoreSearchError(MemoryConnectorException):
+    """An error occurred while searching the vector store model."""
+
+    pass
+
+
 __all__ = [
     "MemoryConnectorException",
     "MemoryConnectorInitializationError",
@@ -40,4 +46,5 @@ __all__ = [
     "VectorStoreModelException",
     "VectorStoreModelSerializationException",
     "VectorStoreModelValidationError",
+    "VectorStoreSearchError",
 ]
