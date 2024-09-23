@@ -409,13 +409,13 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         using var request = new WeaviateVectorSearchRequest(query).Build();
 
-        var response = await this.ExecuteRequestAsync<WeaviateVectorSearchResponse>(request, cancellationToken).ConfigureAwait(false);
+        var (responseModel, content) = await this.ExecuteRequestWithResponseContentAsync<WeaviateVectorSearchResponse>(request, cancellationToken).ConfigureAwait(false);
 
-        var collectionResults = response?.Data?.GetOperation?[this.CollectionName];
+        var collectionResults = responseModel?.Data?.GetOperation?[this.CollectionName];
 
         if (collectionResults is null)
         {
-            throw new VectorStoreOperationException("Error occurred during vector search.")
+            throw new VectorStoreOperationException($"Error occurred during vector search. Response: {content}")
             {
                 VectorStoreType = DatabaseName,
                 CollectionName = this.CollectionName,
@@ -454,13 +454,22 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         return this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken);
     }
 
-    private async Task<TResponse?> ExecuteRequestAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
+    private async Task<(TResponse?, string)> ExecuteRequestWithResponseContentAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var response = await this.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
-        return JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
+        var responseModel = JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
+
+        return (responseModel, responseContent);
+    }
+
+    private async Task<TResponse?> ExecuteRequestAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        var (model, _) = await this.ExecuteRequestWithResponseContentAsync<TResponse>(request, cancellationToken).ConfigureAwait(false);
+
+        return model;
     }
 
     private async Task<TResponse?> ExecuteRequestWithNotFoundHandlingAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
