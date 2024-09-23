@@ -387,6 +387,7 @@ async def test_scmc_prompt_execution_settings(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
+        stream_options={"include_usage": True},
         messages=openai_chat_completion._prepare_chat_history_for_request(chat_history),
     )
 
@@ -454,6 +455,7 @@ async def test_scmc(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
+        stream_options={"include_usage": True},
         messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
     )
 
@@ -498,6 +500,7 @@ async def test_scmc_singular(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
+        stream_options={"include_usage": True},
         messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
     )
 
@@ -533,6 +536,7 @@ async def test_scmc_function_call_behavior(
         mock_create.assert_awaited_once_with(
             model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
             stream=True,
+            stream_options={"include_usage": True},
             messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
         )
 
@@ -568,6 +572,7 @@ async def test_scmc_function_choice_behavior(
         mock_create.assert_awaited_once_with(
             model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
             stream=True,
+            stream_options={"include_usage": True},
             messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
         )
 
@@ -638,6 +643,7 @@ async def test_scmc_no_fcc_in_response(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
+        stream_options={"include_usage": True},
         messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
     )
 

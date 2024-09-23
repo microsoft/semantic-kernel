@@ -1,9 +1,9 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: { proposed }
+status: { accepted }
 contact: { Tao Chen }
 date: { 2024-09-18 }
-deciders: {}
+deciders: { Tao Chen }
 consulted: { Eduard van Valkenburg, Evan Mattson }
 informed: { Eduard van Valkenburg, Evan Mattson, Ben Thomas }
 ---
@@ -91,7 +91,7 @@ This is a simpler solution compared to Proposal 1, and it is more in line with w
 
 ### Risks
 
-This is potentially a breaking change since the `choice_index` field is currently required.
+This is potentially a breaking change since the `choice_index` field is currently required. This approach also makes streaming content concatenation more complex since the choice index will need to be handled differently when it is `None`.
 
 ## Proposal 3
 
@@ -128,7 +128,7 @@ class ChatMessageContent(KernelContent):
 
 ### Risks
 
-We are unifying the returned data structure for streaming and non-streaming chat messages, which may lead to confusion for developers initially, especially if they are not aware of the deprecation of the `StreamingChatMessageContent` class, or they came from SK .Net. It may also create a sharper learning curve if developers started with Python but later move to .Net for production.
+We are unifying the returned data structure for streaming and non-streaming chat messages, which may lead to confusion for developers initially, especially if they are not aware of the deprecation of the `StreamingChatMessageContent` class, or they came from SK .Net. It may also create a sharper learning curve if developers started with Python but later move to .Net for production. This approach also introduces breaking changes to our AI connectors as the returned data type will be different.
 
 > We will also need to update the `StreamingTextContent` and `TextContent` in a similar way too for this proposal.
 
@@ -164,3 +164,7 @@ This approach separates the concerns of the `ChatMessageContent` class and the c
 Same as [Proposal 3](#proposal-3).
 
 ## Decision Outcome
+
+To minimax the impact on customers and the existing codebase, we will go with [Proposal 1](#proposal-1) to handle the token usage information in the OpenAI streaming responses. This proposal is backward compatible and aligns with the current data structure for non-streaming responses. We will also ensure that the metadata is merged correctly when two `StreamingChatMessageContent` instances are concatenated. This approach also makes sure the token usage information will be associated to all choices in the streaming response.
+
+[Proposal 3](#proposal-3) and [Proposal 4](#proposal-4) are still valid but perhaps premature at this stage as most services still return objects of different types for streaming and non-streaming responses. We will keep them in mind for future refactoring efforts.

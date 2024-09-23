@@ -787,5 +787,6 @@ async def test_cmc_streaming(
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         stream=True,
+        stream_options={"include_usage": True},
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
     )
