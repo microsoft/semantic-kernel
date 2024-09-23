@@ -108,6 +108,8 @@
     "Partitioner",
     "Prompty",
     "SKEXP"
+    "autogen",
+    "Partitioner"
   ],
   "[java]": {
     "editor.formatOnSave": false,
