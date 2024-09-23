@@ -15,14 +15,14 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
 
     [Fact]
-    public async Task UseStreamingChatCompletionAgentAsync()
+    public async Task UseStreamingAssistantAgentAsync()
     {
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Instructions = ParrotInstructions,
                     Name = ParrotName,
@@ -42,7 +42,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
     }
 
     [Fact]
-    public async Task UseStreamingChatCompletionAgentWithPluginAsync()
+    public async Task UseStreamingAssistantAgentWithPluginAsync()
     {
         const string MenuInstructions = "Answer questions about the menu.";
 
@@ -51,7 +51,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Instructions = MenuInstructions,
                     Name = "Host",

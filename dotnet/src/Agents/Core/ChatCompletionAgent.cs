@@ -13,11 +13,35 @@ namespace Microsoft.SemanticKernel.Agents;
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
 /// <remarks>
-/// NOTE: Enable OpenAIPromptExecutionSettings.FunctionChoiceBehavior for agent plugins.
-/// (<see cref="ChatHistoryKernelAgent.Arguments"/>)
+/// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins.
+/// (<see cref="KernelAgent.Arguments"/>)
 /// </remarks>
 public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
+    /// </summary>
+    public ChatCompletionAgent() { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class from
+    /// a <see cref="PromptTemplateConfig"/>.
+    /// </summary>
+    /// <param name="templateConfig">Prompt template configuration</param>
+    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent</param>
+    /// <remarks>
+    /// When 'templateFactory' parameter is not provided, the default <see cref="KernelPromptTemplateFactory"/> is used.
+    /// </remarks>
+    public ChatCompletionAgent(
+        PromptTemplateConfig templateConfig,
+        IPromptTemplateFactory? templateFactory = null)
+    {
+        this.Name = templateConfig.Name;
+        this.Description = templateConfig.Description;
+        this.Instructions = templateConfig.Template;
+        this.Template = templateFactory?.Create(templateConfig);
+    }
+
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
@@ -30,7 +54,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
-        ChatHistory chat = this.SetupAgentChatHistory(history);
+        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
 
         int messageCount = chat.Count;
 
@@ -75,7 +99,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
-        ChatHistory chat = this.SetupAgentChatHistory(history);
+        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
 
         int messageCount = chat.Count;
 
@@ -133,13 +157,19 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         return (chatCompletionService, executionSettings);
     }
 
-    private ChatHistory SetupAgentChatHistory(IReadOnlyList<ChatMessageContent> history)
+    private async Task<ChatHistory> SetupAgentChatHistoryAsync(
+        IReadOnlyList<ChatMessageContent> history,
+        KernelArguments? arguments,
+        Kernel kernel,
+        CancellationToken cancellationToken)
     {
         ChatHistory chat = [];
 
-        if (!string.IsNullOrWhiteSpace(this.Instructions))
+        string? instructions = await this.FormatInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        if (!string.IsNullOrWhiteSpace(instructions))
         {
-            chat.Add(new ChatMessageContent(AuthorRole.System, this.Instructions) { AuthorName = this.Name });
+            chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { AuthorName = this.Name });
         }
 
         chat.AddRange(history);
