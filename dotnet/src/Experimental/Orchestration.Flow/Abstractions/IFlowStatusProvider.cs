@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
