@@ -86,7 +86,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         [
             kernel.CreateFunctionFromMethod((WeatherParameters parameters) =>
             {
-                if (parameters.City.Name == "Dublin" && (parameters.City.Country == "Ireland" || parameters.City.Country == "IE"))
+                if (parameters.City.Name.Equals("Dublin", StringComparison.OrdinalIgnoreCase) &&
+                (parameters.City.Country.Equals("Ireland", StringComparison.OrdinalIgnoreCase) || parameters.City.Country.Equals("IE", StringComparison.OrdinalIgnoreCase)))
                 {
                     return Task.FromResult(42.8); // 42.8 Fahrenheit.
                 }
