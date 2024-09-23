@@ -35,7 +35,7 @@ class KernelJsonSchemaBuilder:
 
     @classmethod
     def build(
-        cls, parameter_type: type | str, description: str | None = None, structured_output: bool = False
+        cls, parameter_type: type | str | Any, description: str | None = None, structured_output: bool = False
     ) -> dict[str, Any]:
         """Builds the JSON schema for a given parameter type and description.
 
@@ -64,7 +64,7 @@ class KernelJsonSchemaBuilder:
 
     @classmethod
     def build_model_schema(
-        cls, model: type, description: str | None = None, structured_output: bool = False
+        cls, model: type | KernelBaseModel, description: str | None = None, structured_output: bool = False
     ) -> dict[str, Any]:
         """Builds the JSON schema for a given model and description.
 
