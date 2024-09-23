@@ -68,6 +68,29 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
         Yields:
             streaming_chat_message_contents (list[StreamingChatMessageContent]): The streaming chat message contents.
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, AsyncIterable, Dict, List, Optional
+
+from semantic_kernel.contents import ChatMessageContent
+from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.contents import StreamingChatMessageContent
+    from semantic_kernel.contents.chat_history import ChatHistory
+
+
+class ChatCompletionClientBase(AIServiceClientBase, ABC):
+    def get_chat_message_content_class(self) -> type[ChatMessageContent]:
+        """Get the chat message content types used by a class, default is ChatMessageContent."""
+        return ChatMessageContent
+
+    @abstractmethod
+    async def complete_chat(
+        self,
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+    ) -> List["ChatMessageContent"]:
         """
         raise NotImplementedError("The _inner_get_streaming_chat_message_contents method is not implemented.")
         # Below is needed for mypy: https://mypy.readthedocs.io/en/stable/more_types.html#asynchronous-iterators
@@ -91,6 +114,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 rendered into messages from system, user, assistant and tools.
             settings (PromptExecutionSettings): Settings for the request.
             **kwargs (Any): The optional arguments.
+        Arguments:
+            chat_history {ChatHistory} -- A list of chats in a chat_history object, that can be
+                rendered into messages from system, user, assistant and tools.
+            settings {PromptExecutionSettings} -- Settings for the request.
 
         Returns:
             A list of chat message contents representing the response(s) from the LLM.
@@ -185,6 +212,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
         Returns:
             A string representing the response from the LLM.
+    ) -> AsyncIterable[List["StreamingChatMessageContent"]]:
         """
         results = await self.get_chat_message_contents(
             chat_history=chat_history, settings=settings, **kwargs
@@ -207,6 +235,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 set of chat_history, from system, user, assistant and function.
             settings (PromptExecutionSettings): Settings for the request.
             kwargs (Dict[str, Any]): The optional arguments.
+        Arguments:
+            chat_history {ChatHistory} -- A list of chat chat_history, that can be rendered into a
+                set of chat_history, from system, user, assistant and function.
+            settings {PromptExecutionSettings} -- Settings for the request.
 
         Yields:
             A stream representing the response(s) from the LLM.
@@ -331,6 +363,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
     # endregion
 
     # region internal handlers
+        pass
 
     def _prepare_chat_history_for_request(
         self,
@@ -393,3 +426,11 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         return
 
     # endregion
+    ) -> List[Dict[str, Optional[str]]]:
+        """
+        Prepare the chat history for a request, allowing customization of the key names for role/author,
+        and optionally overriding the role.
+        """
+        return [
+            message.model_dump(exclude_none=True, exclude=["metadata", "encoding"]) for message in chat_history.messages
+        ]

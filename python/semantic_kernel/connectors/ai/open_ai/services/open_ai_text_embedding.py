@@ -3,6 +3,7 @@
 import logging
 from collections.abc import Mapping
 from typing import Any, TypeVar
+from typing import Dict, Mapping, Optional, overload
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -41,6 +42,9 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        ai_model_id: str,
+        async_client: AsyncOpenAI,
+        service_id: Optional[str] = None,
     ) -> None:
         """Initializes a new instance of the OpenAITextCompletion class.
 
@@ -53,6 +57,30 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             org_id (str | None): The optional org ID to use. If provided will override,
                 the env vars or .env file value.
             default_headers (Mapping[str,str] | None): The default headers mapping of string keys to
+            async_client {AsyncOpenAI} -- An existing client to use.
+        """
+
+    def __init__(
+        self,
+        ai_model_id: str,
+        api_key: Optional[str] = None,
+        org_id: Optional[str] = None,
+        service_id: Optional[str] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+        async_client: Optional[AsyncOpenAI] = None,
+    ) -> None:
+        """
+        Initializes a new instance of the OpenAITextCompletion class.
+
+        Arguments:
+            ai_model_id {str} -- OpenAI model name, see
+                https://platform.openai.com/docs/models
+            api_key {str} -- OpenAI API key, see
+                https://platform.openai.com/account/api-keys
+            org_id {Optional[str]} -- OpenAI organization ID.
+                This is usually optional unless your
+                account belongs to multiple organizations.
+            default_headers {Optional[Mapping[str,str]]}: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as
@@ -84,6 +112,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             ),
             ai_model_type=OpenAIModelTypes.EMBEDDING,
             org_id=openai_settings.org_id,
+            org_id=org_id,
             service_id=service_id,
             default_headers=default_headers,
             client=async_client,
@@ -103,4 +132,5 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             service_id=settings.get("service_id"),
             default_headers=settings.get("default_headers", {}),
             env_file_path=settings.get("env_file_path"),
+            default_headers=settings.get("default_headers"),
         )

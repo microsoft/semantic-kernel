@@ -11,6 +11,13 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import (
         PromptExecutionSettings,
     )
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, AsyncIterable, List
+
+from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents import StreamingTextContent, TextContent
 
 
@@ -32,6 +39,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 
         Returns:
             list[TextContent]: A string or list of strings representing the response(s) from the LLM.
+    ) -> List["TextContent"]:
         """
         raise NotImplementedError("The _inner_get_text_contents method is not implemented.")
 
@@ -45,6 +53,9 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Args:
             prompt (str): The prompt to send to the LLM.
             settings (PromptExecutionSettings): Settings for the request.
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {PromptExecutionSettings} -- Settings for the request.
 
         Yields:
             list[StreamingTextContent]: A stream representing the response(s) from the LLM.
@@ -71,6 +82,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 
         Returns:
             list[TextContent]: A string or list of strings representing the response(s) from the LLM.
+    ) -> AsyncIterable[List["StreamingTextContent"]]:
         """
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
@@ -105,6 +117,9 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Args:
             prompt (str): The prompt to send to the LLM.
             settings (PromptExecutionSettings): Settings for the request.
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {PromptExecutionSettings} -- Settings for the request.
 
         Yields:
             list[StreamingTextContent]: A stream representing the response(s) from the LLM.
