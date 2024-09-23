@@ -499,7 +499,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         Assert.Equal(4.5f, record.HotelRating);
         Assert.True(record.ParkingIncluded);
         Assert.Equal(["t1", "t2"], record.Tags);
-        Assert.Equal(new DateTime(2024, 8, 28, 10, 11, 12), record.Timestamp);
+        Assert.Equal(new DateTimeOffset(new(2024, 8, 28, 10, 11, 12)), record.Timestamp);
 
         if (includeVectors)
         {
