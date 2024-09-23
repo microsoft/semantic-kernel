@@ -3,7 +3,7 @@
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// A serializable representation of a specic parameter of a specific function of a specific Step.
+/// A serializable representation of a specific parameter of a specific function of a specific Step.
 /// </summary>
 public record KernelProcessFunctionTarget
 {

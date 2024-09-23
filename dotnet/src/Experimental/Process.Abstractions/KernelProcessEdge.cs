@@ -10,12 +10,12 @@ public sealed class KernelProcessEdge
     /// <summary>
     /// The unique identifier of the source Step.
     /// </summary>
-    public string SourceStepId { get; init; }
+    public string SourceStepId { get; }
 
     /// <summary>
     /// The collection of <see cref="KernelProcessFunctionTarget"/>s that are the output of the source Step.
     /// </summary>
-    public KernelProcessFunctionTarget OutputTarget { get; init; }
+    public KernelProcessFunctionTarget OutputTarget { get; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="KernelProcessEdge"/> class.

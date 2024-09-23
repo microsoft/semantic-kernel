@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides step related functionality for Kernel Functions running in a step.
 /// </summary>
-public class KernelProcessStepContext
+public sealed class KernelProcessStepContext
 {
     private readonly KernelProcessMessageChannel _stepMessageChannel;
 

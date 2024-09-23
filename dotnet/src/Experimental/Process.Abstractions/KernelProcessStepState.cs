@@ -10,15 +10,15 @@ public class KernelProcessStepState
 {
     /// <summary>
     /// The identifier of the Step which is required to be unique within an instance of a Process.
-    /// This may not be null until a process containing this step has been invoked.
+    /// This may be null until a process containing this step has been invoked.
     /// </summary>
-    public string? Id { get; set; }
+    public string? Id { get; init; }
 
     /// <summary>
     /// The name of the Step. This is itended to be human readable and is not required to be unique. If not set
     /// when the Step is added to a Process, the name will be derived from the steps .NET type.
     /// </summary>
-    public string? Name { get; set; }
+    public string? Name { get; init; }
 }
 
 /// <summary>
@@ -30,5 +30,5 @@ public sealed class ProcessStepState<TState> : KernelProcessStepState where TSta
     /// <summary>
     /// The user-defined state object associated with the Step.
     /// </summary>
-    public TState? State { get; set; }
+    public TState? State { get; internal set; }
 }
