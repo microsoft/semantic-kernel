@@ -34,6 +34,8 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -191,7 +193,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             A tuple containing the prepared chat history and the first SYSTEM message content.
         """
         system_message_content = None
-        remaining_messages = []
+        remaining_messages: list[dict[str, Any]] = []
         system_message_found = False
         for message in chat_history.messages:
             # Skip system messages after the first one is found
@@ -209,16 +211,23 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 
                 # add the tool result to the most recent message
                 tool_results_message = remaining_messages[-1]
-                tool_results_message["content"].append({
-                    "type": "tool_result",
-                    "tool_use_id": message.items[0].id,
-                    content_key: str(message.items[0].result),
-                })
+                for item in message.items:
+                    if isinstance(item, FunctionResultContent):
+                        tool_results_message["content"].append({
+                            "type": "tool_result",
+                            "tool_use_id": item.id,
+                            content_key: str(item.result),
+                        })
             elif message.finish_reason == SemanticKernelFinishReason.TOOL_CALLS:
                 if not stream:
+                    if not message.inner_content:
+                        raise ServiceInvalidResponseError(
+                            "Message with finish reason TOOL_CALLS must have inner_content"
+                        )
+
                     remaining_messages.append({
                         role_key: AuthorRole.ASSISTANT,
-                        content_key: message.inner_content.content,
+                        content_key: [content_block.to_dict() for content_block in message.inner_content.content],
                     })
                 else:
                     content: list[TextBlock | ToolUseBlock] = []
@@ -226,14 +235,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                     for item in message.items:
                         if isinstance(item, TextContent):
                             content.append(TextBlock(text=item.text, type="text"))
-                        else:
+                        elif isinstance(item, FunctionCallContent):
+                            item_arguments = (
+                                item.arguments if not isinstance(item.arguments, str) else json.loads(item.arguments)
+                            )
+
                             content.append(
-                                ToolUseBlock(
-                                    id=item.id, 
-                                    input=json.loads(item.arguments),
-                                    name=item.name,
-                                    type="tool_use"
-                                )
+                                ToolUseBlock(id=item.id, input=item_arguments, name=item.name, type="tool_use")
                             )
 
                     remaining_messages.append({
@@ -247,7 +255,6 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                     content_key: getattr(message, content_key),
                 })
 
-
         return remaining_messages, system_message_content
 
     # endregion
@@ -256,7 +263,8 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         self, response: Message, content_block: TextBlock | ToolUseBlock, response_metadata: dict[str, Any]
     ) -> "ChatMessageContent":
         """Create a chat message content object."""
-        items: list[ITEM_TYPES] = self._get_tool_calls_from_message(response)
+        items: list[ITEM_TYPES] = []
+        items += self._get_tool_calls_from_message(response)
 
         if isinstance(content_block, TextBlock):
             items.append(TextContent(text=content_block.text))
@@ -280,12 +288,16 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         metadata: dict[str, Any] = {},
     ) -> StreamingChatMessageContent:
         """Create a streaming chat message content object from a content block."""
-        items: list[FunctionCallContent | StreamingTextContent] = []
+        items: list[STREAMING_ITEM_TYPES] = []
         finish_reason = None
 
         if isinstance(stream_event, TextEvent):
             items.append(StreamingTextContent(choice_index=0, text=stream_event.text))
-        elif isinstance(stream_event, ContentBlockStopEvent):
+        elif (
+            isinstance(stream_event, ContentBlockStopEvent)
+            and hasattr(stream_event, "content_block")
+            and stream_event.content_block.type == "tool_use"
+        ):
             tool_use_block = stream_event.content_block
             items.append(
                 FunctionCallContent(
@@ -296,7 +308,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 )
             )
         elif isinstance(stream_event, RawMessageDeltaEvent):
-            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[stream_event.delta.stop_reason]
+            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[str(stream_event.delta.stop_reason)]
             metadata["usage"]["output_tokens"] = stream_event.usage.output_tokens
 
         return StreamingChatMessageContent(
@@ -319,6 +331,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         if (
             function_choice_configuration.available_functions
             and hasattr(settings, "tools")
+            and hasattr(settings, "tool_choice")
             and type != FunctionChoiceType.NONE
         ):
             settings.tools = [
@@ -358,13 +371,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     async def _send_chat_request(self, settings: AnthropicChatPromptExecutionSettings) -> list["ChatMessageContent"]:
         """Send the chat request."""
         try:
-            kwargs = settings.model_dump(
-                exclude={"service_id", "extension_data", "messages"},
-                exclude_none=True,
-                by_alias=True,
-            )
-
-            response = await self.async_client.messages.create(messages=settings.messages, **kwargs)
+            response = await self.async_client.messages.create(**settings.prepare_settings_dict())
         except Exception as ex:
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the request",
@@ -385,15 +392,8 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], None]:
         """Send the chat stream request."""
         try:
-            kwargs = settings.model_dump(
-                exclude={"service_id", "extension_data", "messages"},
-                exclude_none=True,
-                by_alias=True,
-            )
-
-            async with self.async_client.messages.stream(messages=settings.messages, **kwargs) as stream:
+            async with self.async_client.messages.stream(**settings.prepare_settings_dict()) as stream:
                 metadata: dict[str, Any] = {"usage": {}, "id": None}
-
                 async for stream_event in stream:
                     if isinstance(stream_event, RawMessageStartEvent):
                         metadata["usage"]["input_tokens"] = stream_event.message.usage.input_tokens
@@ -409,9 +409,9 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 ex,
             ) from ex
 
-    def _get_tool_calls_from_message(self, message) -> list[FunctionCallContent]:
+    def _get_tool_calls_from_message(self, message: Message) -> list[FunctionCallContent]:
         """Get tool calls from a content blocks."""
-        tool_calls = []
+        tool_calls: list[FunctionCallContent] = []
 
         for idx, content_block in enumerate(message.content):
             if isinstance(content_block, ToolUseBlock):
@@ -420,7 +420,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                         id=content_block.id,
                         index=idx,
                         name=content_block.name,
-                        arguments=content_block.input,
+                        arguments=getattr(content_block, "input", None),
                     )
                 )
 
