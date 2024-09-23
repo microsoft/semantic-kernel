@@ -1,4 +1,3 @@
-# THIS BRANCH IS NO LONGER IN USE, PLEASE REFER TO THE [java-development](https://github.com/your-repo/your-project/tree/java-development) BRANCH FOR THE LATEST UPDATES.
 
 # Semantic Kernel for Java
 
@@ -6,14 +5,19 @@ Semantic Kernel (SK) is a lightweight foundation that lets you easily mix conven
 Semantic Kernel (SK) is a lightweight SDK that lets you easily mix conventional programming languages with the latest in
 Large Language Model (LLM) AI "prompts" with templating, chaining, and planning capabilities out-of-the-box.
 
-To learn more about Microsoft Semantic Kernel, visit
+# Get Started with Semantic Kernel for Java ⚡
+
+## Overview
+
+Semantic Kernel is a lightweight foundation that lets you easily mix conventional programming languages with the latest in
+Large Language Model (LLM) AI "prompts" with templating, chaining, and planning capabilities out-of-the-box. To learn more about Microsoft Semantic Kernel, visit
 the [Microsoft Semantic Kernel documentation](https://learn.microsoft.com/en-us/semantic-kernel/whatissk).
 
 The Microsoft Semantic Kernel for Java is a library that implements the key concepts and foundations of Microsoft Semantic Kernel. It is designed
 to be used in Java applications in both client (desktop, mobile, CLIs) and server environments in an idiomatic way, and to be easily integrated with other Java libraries
+
 The Semantic Kernel for Java is an SDK that implements the key concepts of the Semantic Kernel in Java. It is designed
-to be used in Java applications and services in an idiomatic way, and to be easily integrated with other Java libraries
-and frameworks.
+to be used in Java applications and services in an idiomatic way, and to be easily integrated with other Java libraries and frameworks.
 
 ## Quickstart
 
@@ -24,25 +28,28 @@ To get an idea of how to use the Semantic Kernel for Java, you can check
 the [syntax-examples](samples/semantickernel-concepts/semantickernel-syntax-examples/src/main/java/com/microsoft/semantickernel/samples/syntaxexamples) folder for
 examples of common AI-enabled scenarios.
 
-## Get started
+## OpenAI / Azure OpenAI API keys
 
 To run the LLM prompts and semantic functions in this kernel, make sure you have
 an [Open AI API Key](https://platform.openai.com/)
-<<<<<<< main
-<<<<<<< main
-=======
->>>>>>> main
->>>>>>> origin/111
->>>>>>> origin/111
-=======
-<<<<<<< 111
->>>>>>> origin/main-auto-tune
->>>>>>> main
->>>>>>> origin/111
-=======
->>>>>>> origin/Bryan
->>>>>>> origin/io
 or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/).
+
+## Using the Semantic Kernel for Java
+
+The library is organized in a set of dependencies published to Maven Central. For a list of the Maven dependencies and how to use each of them, see [PACKAGES.md](PACKAGES.md).
+
+Alternatively, check the `samples` folder for examples of common AI-enabled scenarios implemented with Semantic Kernel for Java.
+
+## Documentation
+
+The documentation is hosted on the Microsoft Learn platform. Visit [learn.microsoft.com/semantic-kernel/overview/?tabs=Java](https://learn.microsoft.com/semantic-kernel/overview/?tabs=Java).
+
+## Discord community
+
+Join the [Microsoft Semantic Kernel Discord community](https://aka.ms/java-sk-discord) to discuss the Semantic Kernel
+and get help from the community. We have a `#java` channel for Java-specific questions.
+
+## Contributing
 
 ### Requirements
 
@@ -57,6 +64,7 @@ To build the Semantic Kernel, you will need:
 
 - **Required**:
    - [OpenJDK 17](https://microsoft.com/openjdk/) or newer
+  - [JDK 17](https://microsoft.com/openjdk/) or newer
 
 ### Build the Semantic Kernel
 
@@ -68,27 +76,11 @@ To build the Semantic Kernel, you will need:
    git clone -b experimental-java https://github.com/microsoft/semantic-kernel/
 3. Build the Semantic Kernel
 
-        git clone -b java-v1 https://github.com/microsoft/semantic-kernel/
+        git clone -b java-development https://github.com/microsoft/semantic-kernel/
 
-<<<<<<< main
 2. Build the project with the Maven Wrapper
-<<<<<<< main
-<<<<<<< main
-=======
->>>>>>> main
->>>>>>> origin/111
->>>>>>> origin/111
-=======
-<<<<<<< 111
->>>>>>> origin/main-auto-tune
->>>>>>> main
->>>>>>> origin/111
-=======
->>>>>>> origin/Bryan
->>>>>>> origin/io
-=======
+
 4. Build the project with the Maven Wrapper
->>>>>>> origin/Bryan-Roe/issue389
 
         cd semantic-kernel/java
         ./mvnw install
@@ -121,41 +113,16 @@ will need to set the following environment variable:
 
 If you are using Azure OpenAI, you will also need to set the following environment variables:
 
-<<<<<<< main
-<<<<<<< main
-=======
-<<<<<<< 111
->>>>>>> origin/io
-<<<<<<< HEAD
 - `AZURE_OPENAI_ENDPOINT` - the Azure OpenAI endpoint found in **Keys \* Endpoint** section of the Azure OpenAI service.
 - `AZURE_OPENAI_API_KEY` - the Azure OpenAI API key found in **Keys \* Endpoint** section of the Azure OpenAI service.
-=======
-<<<<<<< main
-<<<<<<< main
 - `AZURE_OPENAI_ENDPOINT` - the Azure OpenAI endpoint found in **Keys * Endpoint** section of the Azure OpenAI service.
 - `AZURE_OPENAI_API_KEY` - the Azure OpenAI API key found in **Keys * Endpoint** section of the Azure OpenAI service.
-=======
-=======
->>>>>>> origin/Bryan
 - `AZURE_OPENAI_ENDPOINT` - the Azure OpenAI endpoint found in **Keys * Endpoint** section of the Azure OpenAI service.
 - `AZURE_OPENAI_API_KEY` - the Azure OpenAI API key found in **Keys * Endpoint** section of the Azure OpenAI service.
-<<<<<<< 111
->>>>>>> origin/io
-=======
 - `AZURE_OPENAI_API_KEY` - the Azure OpoenAI API key found in **Keys * Endpoint** section of the Azure OpenAI service.
->>>>>>> main
->>>>>>> origin/111
-<<<<<<< main
->>>>>>> origin/111
-=======
-=======
 
->>>>>>> origin/Bryan
->>>>>>> origin/io
-=======
 - `AZURE_OPENAI_ENDPOINT` - the Azure OpenAI endpoint found in __Keys * Endpoint__ section of the Azure OpenAI service.
 - `AZURE_OPENAI_API_KEY` - the Azure OpenAI API key found in __Keys * Endpoint__ section of the Azure OpenAI service.
->>>>>>> origin/Bryan-Roe/issue389
 - `AZURE_OPENAI_DEPLOYMENT_NAME` - the custom name you chose for your deployment when you deployed a model. It can be
 - `CLIENT_ENDPOINT` - the Azure OpenAI endpoint found in __Keys * Endpoint__ section of the Azure OpenAI service.
 - `AZURE_CLIENT_KEY` - the Azure OpenAI API key found in __Keys * Endpoint__ section of the Azure OpenAI service.
@@ -191,8 +158,7 @@ Also ensure that:
 
 Once your proposal is ready, submit a pull request to the `java-development` branch. The pull request will be reviewed by the
 Once your proposal is ready, submit a pull request to the `main` branch. The pull request will be reviewed by the
-Once your proposal is ready, submit a pull request to the `java-v1` branch. The pull request will be reviewed by the
-project maintainers.
+Once your proposal is ready, submit a pull request to the `java-v1` branch. The pull request will be reviewed by the project maintainers.
 
 Make sure your pull request has an objective title and a clear description explaining the problem and solution.
 
@@ -203,31 +169,10 @@ This project is licensed under the [MIT License](../LICENSE).
 ## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_CONDUCT.md).
-<<<<<<< main
-<<<<<<< HEAD
-=======
-=======
-=======
-<<<<<<< 111
-<<<<<<< HEAD
-=======
-=======
-=======
->>>>>>> origin/Bryan
->>>>>>> origin/io
 The Semantic Kernel for Java code has moved
 to [semantic-kernel-java](https://github.com/microsoft/semantic-kernel-java), please make code changes and submit issues
 to that repository. This move is purely to ease the development. The various Semantic Kernel languages are all still
 aligned in their development.
 
 Project coordination is still performed within this [Project Board](https://github.com/orgs/microsoft/projects/866).
-<<<<<<< main
->>>>>>> origin/111
->>>>>>> origin/111
-=======
-<<<<<<< 111
->>>>>>> upstream/main
->>>>>>> origin/111
-=======
->>>>>>> origin/Bryan
->>>>>>> origin/io
+This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_CONDUCT.md).
