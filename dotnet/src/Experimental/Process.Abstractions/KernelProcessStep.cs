@@ -24,7 +24,7 @@ public class KernelProcessStepBase
     /// <summary>
     /// A read-only collection of event Ids that this Step can emit.
     /// </summary>
-    protected IReadOnlyCollection<string> EventIds => this._outputEdges.Keys.ToList().AsReadOnly();
+    protected IReadOnlyCollection<string> EventIds => this._outputEdges.Keys.ToArray();
 
     /// <summary>
     /// Retrieves the output edges for a given event Id. Returns an empty list if the event Id is not found.
@@ -38,7 +38,7 @@ public class KernelProcessStepBase
             return edges.AsReadOnly();
         }
 
-        return new List<KernelProcessEdge>().AsReadOnly();
+        return [];
     }
 
     /// <summary>

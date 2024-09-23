@@ -12,7 +12,7 @@ public sealed class KernelProcess : KernelProcessStep<KernelProcessState>
     /// <summary>
     /// The collection of Steps in the Process.
     /// </summary>
-    public IList<KernelProcessStepBase> Steps { get; private init; }
+    public IList<KernelProcessStepBase> Steps { get; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="KernelProcess"/> class.
