@@ -29,9 +29,9 @@ from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic
 from semantic_kernel.connectors.ai.anthropic.settings.anthropic_settings import AnthropicSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -39,7 +39,11 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
+from semantic_kernel.exceptions.service_exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidResponseError,
+    ServiceResponseException,
+)
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
@@ -136,9 +140,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         assert isinstance(settings, AnthropicChatPromptExecutionSettings)  # nosec
 
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
-        messages, parsed_system_message = self._prepare_chat_history_for_request(chat_history)
-        settings.messages = messages
-
+        settings.messages, parsed_system_message = self._prepare_chat_history_for_request(chat_history)
         if settings.system is None and parsed_system_message is not None:
             settings.system = parsed_system_message
 
@@ -163,8 +165,8 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 
         response = self._send_chat_stream_request(settings)
         if not isinstance(response, AsyncGenerator):
-            raise Exception("Expected an AsyncGenerator response.")
-        
+            raise ServiceInvalidResponseError("Expected an AsyncGenerator response.")
+
         async for message in response:
             yield message
 
@@ -338,15 +340,19 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 self.kernel_function_metadata_to_function_call_format_anthropic(f)
                 for f in function_choice_configuration.available_functions
             ]
-
-            settings.tool_choice = { "type" : type }
-
+            
             if (
-                settings.function_choice_behavior
-                and settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED
+                (settings.function_choice_behavior
+                and settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED)
+                or type == FunctionChoiceType.REQUIRED
             ):
-                settings.tool_choice = { "type": "any" }
-
+                settings.tool_choice = {"type": "any"}
+            elif type == FunctionChoiceType.AUTO:
+                settings.tool_choice = {"type": type.value}
+            else:
+                raise ValueError(
+                    f"AnthropicChatCompletion does not support the {type} function choice type."
+                )
 
     def kernel_function_metadata_to_function_call_format_anthropic(
         self,
@@ -394,7 +400,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             response_metadata["usage"] = response.usage
 
         return [
-            self._create_chat_message_content(response, content_block, response_metadata) 
+            self._create_chat_message_content(response, content_block, response_metadata)
             for content_block in response.content
         ]
 

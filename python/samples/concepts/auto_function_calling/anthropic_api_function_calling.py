@@ -35,11 +35,12 @@ you will return a full answer to me as soon as possible.
 
 # This concept example shows how to handle both streaming and non-streaming responses
 # To toggle the behavior, set the following flag accordingly:
-stream = True
+stream = False
 
 kernel = Kernel()
 
-# Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
+# Note: the underlying model needs to support function calling.
+# https://docs.anthropic.com/en/docs/build-with-claude/tool-use#choosing-a-model
 kernel.add_service(AnthropicChatCompletion(service_id="chat", ai_model_id="claude-3-opus-20240229"))
 
 plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
@@ -88,7 +89,7 @@ execution_settings = AnthropicChatPromptExecutionSettings(
 
 history = ChatHistory()
 
-# history.add_system_message(system_message)
+history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
@@ -172,7 +173,6 @@ async def chat() -> bool:
     if stream:
         result = await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
-        print(arguments)
         result = await kernel.invoke(chat_function, arguments=arguments)
 
         # If tools are used, and auto invoke tool calls is False, the response will be of type

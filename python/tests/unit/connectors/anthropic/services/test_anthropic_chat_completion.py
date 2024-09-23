@@ -473,6 +473,7 @@ mock_message_function_call = ChatMessageContent(
     ],
 )
 
+
 @pytest.mark.parametrize(
     "function_choice_behavior,model_responses,expected_result",
     [
