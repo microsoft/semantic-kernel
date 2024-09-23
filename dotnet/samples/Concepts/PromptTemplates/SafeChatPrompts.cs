@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel;
 
-namespace ChatPrompts;
+namespace PromptTemplates;
 
 public sealed class SafeChatPrompts : BaseTest, IDisposable
 {

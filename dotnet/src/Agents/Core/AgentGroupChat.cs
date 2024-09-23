@@ -178,6 +178,31 @@ public sealed class AgentGroupChat : AgentChat
     }
 
     /// <summary>
+    /// Convenience method to create a <see cref="KernelFunction"/> for a given strategy without HTML encoding the specified parameters.
+    /// </summary>
+    /// <param name="template">The prompt template string that defines the prompt.</param>
+    /// <param name="templateFactory">
+    /// On optional <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="template"/>.
+    /// The default factory will be used when none is provided.
+    /// </param>
+    /// <param name="safeParameterNames">The parameter names to exclude from being HTML encoded.</param>
+    /// <returns>A <see cref="KernelFunction"/> created via <see cref="KernelFunctionFactory"/> using the specified template.</returns>
+    /// <remarks>
+    /// This is particularly targeted to easily avoid encoding the history used by <see cref="KernelFunctionSelectionStrategy"/>
+    /// or <see cref="KernelFunctionTerminationStrategy"/>.
+    /// </remarks>
+    public static KernelFunction CreatePromptFunctionForStrategy(string template, IPromptTemplateFactory? templateFactory = null, params string[] safeParameterNames)
+    {
+        PromptTemplateConfig config =
+            new(template)
+            {
+                InputVariables = safeParameterNames.Select(parameterName => new InputVariable { Name = parameterName, AllowDangerouslySetContent = true }).ToList()
+            };
+
+        return KernelFunctionFactory.CreateFromPrompt(config, promptTemplateFactory: templateFactory);
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AgentGroupChat"/> class.
     /// </summary>
     /// <param name="agents">The agents initially participating in the chat.</param>
