@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -66,7 +66,6 @@ public class ChromaMemoryStore : IMemoryStore
     {
         Verify.NotNullOrWhiteSpace(collectionName);
 
-<<<<<<< main
         try
         {
             await this._chromaClient.DeleteCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
@@ -75,10 +74,12 @@ public class ChromaMemoryStore : IMemoryStore
         {
             this._logger.LogError("Cannot delete non-existent collection {0}", collectionName);
             throw new KernelException($"Cannot delete non-existent collection {collectionName}", e);
+        catch (SKException e) when (CollectionDoesNotExistException(e, collectionName))
+        {
+            this._logger.LogError("Cannot delete non-existent collection {0}", collectionName);
+            throw new SKException($"Cannot delete non-existent collection {collectionName}", e);
         }
-=======
         await this._chromaClient.DeleteCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
->>>>>>> ms/feature-error-handling
     }
 
     /// <inheritdoc />
@@ -238,11 +239,9 @@ public class ChromaMemoryStore : IMemoryStore
     {
         return
             await this.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false) ??
-<<<<<<< main
             throw new KernelException($"Collection {collectionName} does not exist");
-=======
             throw new SKException($"Collection {collectionName} does not exist");
->>>>>>> ms/feature-error-handling
+            throw new SKException($"Collection {collectionName} does not exist");
     }
 
     private async Task<ChromaCollectionModel?> GetCollectionAsync(string collectionName, CancellationToken cancellationToken)
@@ -251,11 +250,9 @@ public class ChromaMemoryStore : IMemoryStore
         {
             return await this._chromaClient.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-<<<<<<< main
         catch (HttpOperationException e) when (VerifyCollectionDoesNotExistMessage(e.ResponseContent, collectionName))
-=======
         catch (HttpOperationException e) when (e.ResponseContent?.Contains(string.Format(CultureInfo.InvariantCulture, CollectionDoesNotExistErrorFormat, collectionName)) ?? false)
->>>>>>> ms/feature-error-handling
+        catch (SKException e) when (CollectionDoesNotExistException(e, collectionName))
         {
             this._logger.LogDebug("Collection {0} does not exist", collectionName);
 
@@ -315,13 +312,10 @@ public class ChromaMemoryStore : IMemoryStore
         var serializedMetadata = metadatas is not null ? JsonSerializer.Serialize(metadatas[recordIndex], JsonOptionsCache.Default) : string.Empty;
 
         return
-<<<<<<< main
             JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, JsonOptionsCache.Default) ??
             throw new KernelException("Unable to deserialize memory record metadata.");
-=======
             JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, this._jsonSerializerOptions) ??
             throw new SKException("Unable to deserialize memory record metadata.");
->>>>>>> ms/feature-error-handling
     }
 
     private ReadOnlyMemory<float> GetEmbeddingForMemoryRecord(List<float[]>? embeddings, int recordIndex)
@@ -349,6 +343,11 @@ public class ChromaMemoryStore : IMemoryStore
     private static bool VerifyCollectionDoesNotExistMessage(string? responseContent, string collectionName)
     {
         return responseContent?.Contains(string.Format(CultureInfo.InvariantCulture, "Collection {0} does not exist", collectionName)) ?? false;
+    /// <param name="exception">Chroma exception.</param>
+    /// <param name="collectionName">Collection name.</param>
+    private static bool CollectionDoesNotExistException(Exception exception, string collectionName)
+    {
+        return exception?.Message?.Contains(string.Format(CultureInfo.InvariantCulture, "Collection {0} does not exist", collectionName)) ?? false;
     }
 
     #endregion

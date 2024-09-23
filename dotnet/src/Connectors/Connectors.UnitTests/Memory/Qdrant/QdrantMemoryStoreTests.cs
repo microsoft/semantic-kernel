@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -151,6 +151,7 @@ public class QdrantMemoryStoreTests
 
         // Assert
         await Assert.ThrowsAsync<HttpOperationException>(() => vectorStore.UpsertAsync("test_collection", memoryRecord));
+        await Assert.ThrowsAsync<SKException>(() => vectorStore.UpsertAsync("test_collection", memoryRecord));
     }
 
     [Fact]

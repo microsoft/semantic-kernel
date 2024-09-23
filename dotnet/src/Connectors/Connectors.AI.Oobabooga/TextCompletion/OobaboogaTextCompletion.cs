@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Concurrent;
@@ -221,6 +221,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             if (completionResponse is null)
             {
                 throw new SKException("Unexpected response from Oobabooga API");
+                throw new SKException($"Unexpected response from Oobabooga API: {body}");
             }
 
             return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
