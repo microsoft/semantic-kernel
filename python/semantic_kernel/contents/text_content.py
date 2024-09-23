@@ -7,13 +7,14 @@ from xml.etree.ElementTree import Element  # nosec
 from pydantic import Field
 
 from semantic_kernel.contents.const import TEXT_CONTENT_TAG, ContentTypes
+from semantic_kernel.contents.content_concatenation_mixin import ContentConcatenationMixin
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
+from semantic_kernel.exceptions.content_exceptions import ContentAdditionException, ContentInitializationError
 
 _T = TypeVar("_T", bound="TextContent")
 
 
-class TextContent(KernelContent):
+class TextContent(ContentConcatenationMixin, KernelContent):
     """This represents text response content.
 
     Args:
@@ -32,6 +33,7 @@ class TextContent(KernelContent):
     content_type: Literal[ContentTypes.TEXT_CONTENT] = Field(TEXT_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = TEXT_CONTENT_TAG
     text: str
+    choice_index: int | None = None
     encoding: str | None = None
 
     def __str__(self) -> str:
@@ -61,3 +63,33 @@ class TextContent(KernelContent):
     def __hash__(self) -> int:
         """Return the hash of the text content."""
         return hash((self.tag, self.text, self.encoding))
+
+    def __bytes__(self) -> bytes:
+        """Return the content of the response encoded in the encoding."""
+        return self.text.encode(self.encoding if self.encoding else "utf-8") if self.text else b""
+
+    def __add__(self, other: "TextContent") -> "TextContent":
+        """When combining two TextContent instances, the text fields are combined.
+
+        The addition should follow these rules:
+            1. The inner_content of the two will be combined. If they are not lists, they will be converted to lists.
+            2. ai_model_id should be the same.
+            3. encoding should be the same.
+            4. choice_index should be the same.
+            5. Metadata will be combined.
+        """
+        if isinstance(other, TextContent) and self.choice_index != other.choice_index:
+            raise ContentAdditionException("Cannot add TextContent with different choice_index")
+        if self.ai_model_id != other.ai_model_id:
+            raise ContentAdditionException("Cannot add TextContent from different ai_model_id")
+        if self.encoding != other.encoding:
+            raise ContentAdditionException("Cannot add TextContent with different encoding")
+
+        return TextContent(
+            choice_index=self.choice_index,
+            inner_content=self._merge_inner_contents(other.inner_content),
+            ai_model_id=self.ai_model_id,
+            metadata=self.metadata | other.metadata,
+            text=(self.text or "") + (other.text or ""),
+            encoding=self.encoding,
+        )

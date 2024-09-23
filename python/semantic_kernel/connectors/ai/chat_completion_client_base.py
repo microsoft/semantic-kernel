@@ -257,7 +257,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         with use_span(self._start_auto_function_invocation_activity(kernel, settings), end_on_exit=True) as _:
             for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
                 # Hold the messages, if there are more than one response, it will not be used, so we flatten
-                all_messages: list["StreamingChatMessageContent"] = []
+                all_messages: list["ChatMessageContent"] = []
                 function_call_returned = False
                 async for messages in self._inner_get_streaming_chat_message_contents(chat_history, settings):
                     for msg in messages:
@@ -273,7 +273,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 # There is one FunctionCallContent response stream in the messages, combining now to create
                 # the full completion depending on the prompt, the message may contain both function call
                 # content and others
-                full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
+                full_completion: ChatMessageContent = reduce(lambda x, y: x + y, all_messages)
                 function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
                 chat_history.add_message(message=full_completion)
 

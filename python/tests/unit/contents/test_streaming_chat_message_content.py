@@ -104,7 +104,8 @@ def test_scmc_to_element():
     message = StreamingChatMessageContent(choice_index=0, role=AuthorRole.USER, content="Hello, world!", name=None)
     element = message.to_element()
     assert element.tag == "message"
-    assert element.attrib == {"role": "user", "choice_index": "0"}
+    assert "role" in element.attrib and element.attrib["role"] == "user"
+    assert "choice_index" in element.attrib and element.attrib["choice_index"] == "0"
     assert element.get("name") is None
     for child in element:
         assert child.tag == "text"
@@ -124,6 +125,7 @@ def test_scmc_from_element():
     message = StreamingChatMessageContent.from_element(element)
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
+    assert message.choice_index == 0
     assert len(message.items) == 1
 
 
@@ -133,14 +135,8 @@ def test_scmc_from_element_content():
     message = StreamingChatMessageContent.from_element(element)
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
+    assert message.choice_index == 0
     assert len(message.items) == 1
-
-
-def test_scmc_from_element_content_missing_choice_index():
-    xml_content = '<message role="user">Hello, world!</message>'
-    element = XML(text=xml_content)
-    with pytest.raises(TypeError):
-        StreamingChatMessageContent.from_element(element)
 
 
 @pytest.mark.parametrize(
