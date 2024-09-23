@@ -37,8 +37,13 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0060 | Planners |
 | SKEXP0070 | AI connectors |
 | SKEXP0080 | Processes |
+<<<<<<< main
 >>>>>>>+ms/feature-proc
 | Advanced Semantic Kernel features |
+=======
+| SKEXP0100 | Advanced Semantic Kernel features |
+| SKEXP0110 | Semantic Kernel Agents |
+>>>>>>> 6964254
 
 ## Experimental Features Tracking
 

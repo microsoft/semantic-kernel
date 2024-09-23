@@ -991,7 +991,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIModelRouter", "samples\De
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Ollama.UnitTests", "src\Connectors\Connectors.Ollama.UnitTests\Connectors.Ollama.UnitTests.csproj", "{924DB138-1223-4C99-B6E6-0938A3FA14EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureCosmosDBNoSQL.UnitTests", "src\Connectors\Connectors.AzureCosmosDBNoSQL.UnitTests\Connectors.AzureCosmosDBNoSQL.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
 EndProject
@@ -25143,12 +25143,30 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "process", "process", "{0D8C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.Abstractions", "src\Experimental\Process.Abstractions\Process.Abstractions.csproj", "{EE3CCD38-0F10-45F3-8B4E-2A1B31DCEF5F}"
 EndProject
+<<<<<<< main
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.Core", "src\Experimental\Process.Core\Process.Core.csproj", "{685853FD-F1FD-4B8E-A050-3404B8215C8E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.LocalRuntime", "src\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj", "{27AF60D6-86F5-4591-A700-4F8C93F41B11}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.UnitTests", "src\Experimental\Process.UnitTests\Process.UnitTests.csproj", "{21A32285-8443-4A75-B2E8-27E6090EC562}"
 >>>>>>> ms/feature-processes
+=======
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureAIInference", "src\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj", "{063044B2-A901-43C5-BFDF-5E4E71C7BC33}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureAIInference.UnitTests", "src\Connectors\Connectors.AzureAIInference.UnitTests\Connectors.AzureAIInference.UnitTests.csproj", "{E0D45DDB-6D32-40FC-AC79-E1F342C4F513}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnnxSimpleRAG", "samples\Demos\OnnxSimpleRAG\OnnxSimpleRAG.csproj", "{8972254B-B8F0-4119-953B-378E3BACA59A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "process", "process", "{0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.Abstractions", "src\Experimental\Process.Abstractions\Process.Abstractions.csproj", "{EE3CCD38-0F10-45F3-8B4E-2A1B31DCEF5F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.Core", "src\Experimental\Process.Core\Process.Core.csproj", "{685853FD-F1FD-4B8E-A050-3404B8215C8E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.LocalRuntime", "src\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj", "{27AF60D6-86F5-4591-A700-4F8C93F41B11}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.UnitTests", "src\Experimental\Process.UnitTests\Process.UnitTests.csproj", "{21A32285-8443-4A75-B2E8-27E6090EC562}"
+>>>>>>> 6964254
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25775,6 +25793,7 @@ Global
 		{E7E60E1D-1A44-4DE9-A44D-D5052E809DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E7E60E1D-1A44-4DE9-A44D-D5052E809DDD}.Release|Any CPU.Build.0 = Release|Any CPU
 <<<<<<< main
+<<<<<<< main
 		{924DB138-1223-4C99-B6E6-0938A3FA14EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{924DB138-1223-4C99-B6E6-0938A3FA14EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{924DB138-1223-4C99-B6E6-0938A3FA14EF}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -25839,6 +25858,8 @@ Global
 >>>>>>> Stashed changes
 =======
 >>>>>>> ms/feature-processes
+=======
+>>>>>>> 6964254
 		{2918478E-BC86-4D53-9D01-9C318F80C14F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2918478E-BC86-4D53-9D01-9C318F80C14F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2918478E-BC86-4D53-9D01-9C318F80C14F}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -25860,6 +25881,7 @@ Global
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Release|Any CPU.Build.0 = Release|Any CPU
 <<<<<<< main
+<<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< main
 >>>>>>> upstream/main
@@ -25873,6 +25895,8 @@ Global
 >>>>>>> Stashed changes
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> 6964254
 		{924DB138-1223-4C99-B6E6-0938A3FA14EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{924DB138-1223-4C99-B6E6-0938A3FA14EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{924DB138-1223-4C99-B6E6-0938A3FA14EF}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -25885,7 +25909,10 @@ Global
 		{38374C62-0263-4FE8-A18C-70FC8132912B}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{38374C62-0263-4FE8-A18C-70FC8132912B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38374C62-0263-4FE8-A18C-70FC8132912B}.Release|Any CPU.Build.0 = Release|Any CPU
+<<<<<<< main
 >>>>>>> ms/feature-processes
+=======
+>>>>>>> 6964254
 		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -25966,6 +25993,7 @@ Global
 		{8CF06B22-50F3-4F71-A002-622DB49DF0F5}.Release|Any CPU.Build.0 = Release|Any CPU
 <<<<<<< main
 <<<<<<< main
+<<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
@@ -26007,6 +26035,8 @@ Global
 >>>>>>> Stashed changes
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> 6964254
 		{E8FC97B0-B417-4A90-993C-B8AA9223B058}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E8FC97B0-B417-4A90-993C-B8AA9223B058}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8FC97B0-B417-4A90-993C-B8AA9223B058}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -26055,7 +26085,10 @@ Global
 		{21A32285-8443-4A75-B2E8-27E6090EC562}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{21A32285-8443-4A75-B2E8-27E6090EC562}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21A32285-8443-4A75-B2E8-27E6090EC562}.Release|Any CPU.Build.0 = Release|Any CPU
+<<<<<<< main
 >>>>>>> ms/feature-processes
+=======
+>>>>>>> 6964254
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -26275,6 +26308,7 @@ Global
 <<<<<<< Updated upstream
 =======
 		{E7E60E1D-1A44-4DE9-A44D-D5052E809DDD} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
+<<<<<<< main
 		{924DB138-1223-4C99-B6E6-0938A3FA14EF} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 >>>>>>> Stashed changes
 =======
@@ -26305,6 +26339,8 @@ Global
 		{38374C62-0263-4FE8-A18C-70FC8132912B} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 =======
 >>>>>>> ms/feature-processes
+=======
+>>>>>>> 6964254
 		{2918478E-BC86-4D53-9D01-9C318F80C14F} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{924DB138-1223-4C99-B6E6-0938A3FA14EF} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
@@ -26372,6 +26408,7 @@ Global
 		{8CF06B22-50F3-4F71-A002-622DB49DF0F5} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 <<<<<<< main
 <<<<<<< main
+<<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -26411,6 +26448,8 @@ Global
 >>>>>>> main-upstream
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> 6964254
 		{F58468D3-D635-4774-98B1-E1B5DE90A7FF} = {C7299F56-3A55-471E-B10E-B1FBE101C625}
 		{E8FC97B0-B417-4A90-993C-B8AA9223B058} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{063044B2-A901-43C5-BFDF-5E4E71C7BC33} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
@@ -26421,7 +26460,10 @@ Global
 		{685853FD-F1FD-4B8E-A050-3404B8215C8E} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{27AF60D6-86F5-4591-A700-4F8C93F41B11} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{21A32285-8443-4A75-B2E8-27E6090EC562} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
+<<<<<<< main
 >>>>>>> ms/feature-processes
+=======
+>>>>>>> 6964254
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
