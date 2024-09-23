@@ -364,6 +364,21 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         }
     }
 
+    private static string GetFilterValueType(Type valueType)
+    {
+        return valueType switch
+        {
+            Type t when t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) ||
+                        t == typeof(int?) || t == typeof(long?) || t == typeof(short?) || t == typeof(byte?) => "valueInt",
+            Type t when t == typeof(bool) || t == typeof(bool?) => "valueBoolean",
+            Type t when t == typeof(string) || t == typeof(Guid) || t == typeof(Guid?) => "valueText",
+            Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) ||
+                        t == typeof(float?) || t == typeof(double?) || t == typeof(decimal?) => "valueNumber",
+            Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => "valueDate",
+            _ => throw new NotSupportedException($"Unsupported value type {valueType.FullName} in filter.")
+        };
+    }
+
     /// <inheritdoc />
     public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
@@ -398,7 +413,65 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             $"vectors {{ {string.Join(" ", this._vectorProperties.Select(l => this._storagePropertyNames[l.DataModelPropertyName]))} }}" :
             string.Empty;
 
-        var vectorArray = JsonSerializer.Serialize(vector);
+        var filter = string.Empty;
+
+        if (searchOptions.Filter is not null)
+        {
+            var operands = new List<string>();
+
+            foreach (var filterClause in searchOptions.Filter.FilterClauses)
+            {
+                string filterValueType;
+                string propertyName;
+                object propertyValue;
+                string filterOperator;
+
+                if (filterClause is EqualToFilterClause equalToFilterClause)
+                {
+                    filterValueType = GetFilterValueType(equalToFilterClause.Value.GetType());
+                    propertyName = equalToFilterClause.FieldName;
+                    propertyValue = JsonSerializer.Serialize(equalToFilterClause.Value, s_jsonSerializerOptions);
+                    filterOperator = "Equal";
+                }
+                else if (filterClause is AnyTagEqualToFilterClause anyTagEqualToFilterClause)
+                {
+                    filterValueType = GetFilterValueType(anyTagEqualToFilterClause.Value.GetType());
+                    propertyName = anyTagEqualToFilterClause.FieldName;
+                    propertyValue = JsonSerializer.Serialize(new string[] { anyTagEqualToFilterClause.Value }, s_jsonSerializerOptions);
+                    filterOperator = "ContainsAny";
+                }
+                else
+                {
+                    throw new NotSupportedException(
+                        $"Unsupported filter clause type '{filterClause.GetType().Name}'. " +
+                        $"Supported filter clause types are: {string.Join(", ", [
+                            nameof(EqualToFilterClause),
+                            nameof(AnyTagEqualToFilterClause)])}");
+                }
+
+                string? storagePropertyName;
+
+                if (propertyName.Equals(this._keyProperty.DataModelPropertyName, StringComparison.Ordinal))
+                {
+                    storagePropertyName = WeaviateConstants.ReservedKeyPropertyName;
+                }
+                else if (!this._storagePropertyNames.TryGetValue(propertyName, out storagePropertyName))
+                {
+                    throw new InvalidOperationException($"Property name '{propertyName}' provided as part of the filter clause is not a valid property name.");
+                }
+
+                var operand = $$"""{ path: ["{{storagePropertyName}}"], operator: {{filterOperator}}, {{filterValueType}}: {{propertyValue}} }""";
+
+                operands.Add(operand);
+            }
+
+            if (operands.Count > 0)
+            {
+                filter = $$"""where: { operator: And, operands: [{{string.Join(", \n", operands)}}] }""";
+            }
+        }
+
+        var vectorArray = JsonSerializer.Serialize(vector, s_jsonSerializerOptions);
 
         string graphqlQuery = $$"""
         {
@@ -406,6 +479,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             {{this.CollectionName}} (
               limit: {{searchOptions.Limit}}
               offset: {{searchOptions.Offset}}
+              {{filter}}
               nearVector: {
                 targetVectors: ["{{vectorPropertyName}}"]
                 vector: {{vectorArray}}
@@ -426,7 +500,17 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         var response = await this.ExecuteRequestAsync<WeaviateVectorSearchResponse>(request, cancellationToken).ConfigureAwait(false);
 
-        var collectionResults = response?.Data?.GetOperation?[this.CollectionName] ?? [];
+        var collectionResults = response?.Data?.GetOperation?[this.CollectionName];
+
+        if (collectionResults is null)
+        {
+            throw new VectorStoreOperationException("Error occurred during vector search.")
+            {
+                VectorStoreType = DatabaseName,
+                CollectionName = this.CollectionName,
+                OperationName = OperationName
+            };
+        }
 
         foreach (var result in collectionResults)
         {

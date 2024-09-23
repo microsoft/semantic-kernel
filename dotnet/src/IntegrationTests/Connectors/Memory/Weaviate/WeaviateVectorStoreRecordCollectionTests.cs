@@ -277,6 +277,121 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.DoesNotContain("22222222-2222-2222-2222-222222222222", ids);
     }
 
+    [Theory]
+    [MemberData(nameof(VectorizedSearchWithFilterData))]
+    public async Task VectorizedSearchReturnsValidResultsWithFilterAsync(VectorSearchFilter filter, List<string> expectedIds)
+    {
+        // Arrange
+        var hotel1 = this.CreateTestHotel(hotelId: new Guid("11111111-1111-1111-1111-111111111111"), embedding: new[] { 30f, 31f, 32f, 33f });
+        var hotel2 = this.CreateTestHotel(hotelId: new Guid("22222222-2222-2222-2222-222222222222"), embedding: new[] { 31f, 32f, 33f, 34f });
+        var hotel3 = this.CreateTestHotel(hotelId: new Guid("33333333-3333-3333-3333-333333333333"), embedding: new[] { 20f, 20f, 20f, 20f });
+        var hotel4 = this.CreateTestHotel(hotelId: new Guid("44444444-4444-4444-4444-444444444444"), embedding: new[] { -1000f, -1000f, -1000f, -1000f });
+
+        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(fixture.HttpClient!, "VectorSearchWithFilter");
+
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+
+        // Act
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        {
+            Filter = filter,
+            Limit = 4,
+        }).ToListAsync();
+
+        // Assert
+        var actualIds = searchResults.Select(l => l.Record.HotelId.ToString()).ToList();
+
+        Assert.Equal(expectedIds, actualIds);
+    }
+
+    [Theory]
+    [MemberData(nameof(VectorizedSearchWithFilterAndDifferentDataTypesData))]
+    public async Task VectorizedSearchReturnsValidResultsWithFilterAndDifferentDataTypesAsync(VectorSearchFilter filter)
+    {
+        // Arrange
+        var expectedId = "55555555-5555-5555-5555-555555555555";
+
+        var hotel1 = this.CreateTestHotel(hotelId: new Guid("11111111-1111-1111-1111-111111111111"), embedding: new[] { 30f, 31f, 32f, 33f });
+        var hotel2 = this.CreateTestHotel(hotelId: new Guid("22222222-2222-2222-2222-222222222222"), embedding: new[] { 31f, 32f, 33f, 34f });
+        var hotel3 = this.CreateTestHotel(hotelId: new Guid("33333333-3333-3333-3333-333333333333"), embedding: new[] { 20f, 20f, 20f, 20f });
+        var hotel4 = this.CreateTestHotel(hotelId: new Guid("44444444-4444-4444-4444-444444444444"), embedding: new[] { -1000f, -1000f, -1000f, -1000f });
+
+        var hotel5 = new WeaviateHotel
+        {
+            HotelId = new Guid("55555555-5555-5555-5555-555555555555"),
+            HotelName = "Test hotel name",
+            HotelCode = 88,
+            HotelRating = 7.9f,
+            ParkingIncluded = false,
+            Tags = { "tag1", "tag2" },
+            Description = "Hotel description",
+            DescriptionEmbedding = new[] { 40f, 40f, 40f, 40f },
+            Timestamp = new DateTime(2024, 9, 22, 15, 59, 42)
+        };
+
+        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(fixture.HttpClient!, "VectorSearchWithFilterAndDataTypes");
+
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        await sut.UpsertBatchAsync([hotel4, hotel2, hotel5, hotel3, hotel1]).ToListAsync();
+
+        // Act
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([40f, 40f, 40f, 40f]), new()
+        {
+            Filter = filter,
+            Limit = 4,
+        }).ToListAsync();
+
+        // Assert
+
+        var actualIds = searchResults.Select(l => l.Record.HotelId.ToString()).ToList();
+
+        Assert.Single(actualIds);
+
+        Assert.Equal(expectedId, actualIds[0]);
+    }
+
+    public static TheoryData<VectorSearchFilter, List<string>> VectorizedSearchWithFilterData => new()
+    {
+        {
+            new VectorSearchFilter().EqualTo(nameof(WeaviateHotel.HotelName), "My Hotel 22222222-2222-2222-2222-222222222222"),
+            ["22222222-2222-2222-2222-222222222222"]
+        },
+        {
+            new VectorSearchFilter().AnyTagEqualTo(nameof(WeaviateHotel.Tags), "t2"),
+            [
+                "11111111-1111-1111-1111-111111111111",
+                "22222222-2222-2222-2222-222222222222",
+                "33333333-3333-3333-3333-333333333333",
+                "44444444-4444-4444-4444-444444444444"
+            ]
+        },
+        {
+            new VectorSearchFilter()
+                .EqualTo(nameof(WeaviateHotel.HotelName), "My Hotel 22222222-2222-2222-2222-222222222222")
+                .AnyTagEqualTo(nameof(WeaviateHotel.Tags), "t2"),
+            ["22222222-2222-2222-2222-222222222222"]
+        },
+        {
+            new VectorSearchFilter()
+                .EqualTo(nameof(WeaviateHotel.HotelName), "non-existent-hotel")
+                .AnyTagEqualTo(nameof(WeaviateHotel.Tags), "non-existent-tag"),
+            []
+        }
+    };
+
+    public static TheoryData<VectorSearchFilter> VectorizedSearchWithFilterAndDifferentDataTypesData => new()
+    {
+        { new VectorSearchFilter().EqualTo(nameof(WeaviateHotel.HotelId), new Guid("55555555-5555-5555-5555-555555555555")) },
+        { new VectorSearchFilter().EqualTo(nameof(WeaviateHotel.HotelName), "Test hotel name") },
+        { new VectorSearchFilter().EqualTo(nameof(WeaviateHotel.HotelCode), 88) },
+        { new VectorSearchFilter().EqualTo(nameof(WeaviateHotel.HotelRating), 7.9f) },
+        { new VectorSearchFilter().EqualTo(nameof(WeaviateHotel.ParkingIncluded), false) },
+        { new VectorSearchFilter().EqualTo(nameof(WeaviateHotel.Timestamp), new DateTimeOffset(new DateTime(2024, 9, 22, 15, 59, 42))) }
+    };
+
     #region private
 
     private WeaviateHotel CreateTestHotel(
