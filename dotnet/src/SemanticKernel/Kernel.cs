@@ -14,6 +14,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -158,7 +159,7 @@ public sealed class Kernel : IKernel, IDisposable
         => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
 
     /// <inheritdoc/>
-    public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
+    public Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
         var context = new SKContext(
             variables
@@ -203,6 +204,8 @@ public sealed class Kernel : IKernel, IDisposable
         }
 
         return context;
+        Plan plan = new Plan(pipeline);
+        return plan.InvokeAsync(context);
     }
 
     /// <inheritdoc/>
@@ -241,7 +244,6 @@ public sealed class Kernel : IKernel, IDisposable
             return (T)service;
         }
 
-<<<<<<< main
         if (typeof(T) == typeof(IEmbeddingGeneration<string, float>))
         {
             name ??= this.Config.DefaultServiceId;
@@ -283,9 +285,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         throw new NotSupportedException("The kernel service collection doesn't support the type " + typeof(T).FullName);
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
-=======
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
->>>>>>> ms/feature-error-handling-part-4
     }
 
     /// <summary>
