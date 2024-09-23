@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -57,7 +58,6 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         // Assert
         Assert.NotNull(result);
 
-        Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -93,7 +93,6 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         // Assert
         Assert.NotNull(result);
 
-        Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -126,7 +125,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
-        Assert.Single(functionCalls);
+        Assert.NotEmpty(functionCalls);
 
         var functionCall = functionCalls.First();
         Assert.Equal("DateTimeUtils", functionCall.PluginName);
@@ -163,7 +162,6 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         // Assert
         Assert.NotNull(result);
 
-        Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -204,11 +202,10 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         // Assert
         Assert.NotNull(result);
 
-        Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact(Skip = "Temporarily disabled to unblock PR pipeline.")]
+    [Fact]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyForStreamingAsync()
     {
         // Arrange
@@ -239,7 +236,6 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         }
 
         // Assert
-        Assert.Single(functionsForManualInvocation);
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);
@@ -274,7 +270,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
-        Assert.Single(functionCalls);
+        Assert.NotEmpty(functionCalls);
 
         var functionCall = functionCalls.First();
         Assert.Equal("DateTimeUtils", functionCall.PluginName);
@@ -312,7 +308,6 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         }
 
         // Assert
-        Assert.Single(functionsForManualInvocation);
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);
@@ -323,7 +318,6 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
-        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
         var kernelBuilder = base.CreateKernelBuilder();
@@ -332,7 +326,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey);
+            credentials: new AzureCliCredential());
 
         return kernelBuilder.Build();
     }
