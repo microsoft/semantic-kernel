@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -68,6 +68,9 @@ public sealed class QdrantVectorStore : IVectorStore
         var recordCollection = new QdrantVectorStoreRecordCollection<TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition });
         var castRecordCollection = recordCollection as IVectorStoreRecordCollection<TKey, TRecord>;
         return castRecordCollection!;
+        var directlyCreatedStore = new QdrantVectorStoreRecordCollection<TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition });
+        var castCreatedStore = directlyCreatedStore as IVectorStoreRecordCollection<TKey, TRecord>;
+        return castCreatedStore!;
     }
 
     /// <inheritdoc />

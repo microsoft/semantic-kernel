@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -23,6 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IVectorizableTextSearch<TRecord>
+public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TRecord : class
 {
@@ -440,6 +441,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
 
         // Use the user provided mapper.
         if (this._mapper is not null)
+        if (this._options.JsonObjectCustomMapper is not null)
         {
             var jsonObject = await this.RunOperationAsync(
                 OperationName,
@@ -455,6 +457,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
                 this._collectionName,
                 OperationName,
                 () => this._mapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
+                () => this._options.JsonObjectCustomMapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
         }
 
         // Use the built in Azure AI Search mapper.
@@ -521,12 +524,14 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
 
         // Use the user provided mapper.
         if (this._mapper is not null)
+        if (this._options.JsonObjectCustomMapper is not null)
         {
             var jsonObjects = VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,
                 this._collectionName,
                 OperationName,
                 () => records.Select(this._mapper!.MapFromDataToStorageModel));
+                () => records.Select(this._options.JsonObjectCustomMapper!.MapFromDataToStorageModel));
 
             return this.RunOperationAsync(
                 OperationName,

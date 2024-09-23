@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using Azure;
@@ -12,6 +12,11 @@ using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
+using Azure.Search.Documents.Indexes;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Data;
+
+namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
 /// Extension methods to register Azure AI Search <see cref="IVectorStore"/> instances on an <see cref="IServiceCollection"/>.
@@ -75,6 +80,9 @@ public static class AzureAISearchServiceCollectionExtensions
                 var searchIndexClient = new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
 
                 // Construct the vector store.
+                var searchIndexClient = new SearchIndexClient(endpoint, tokenCredential);
+                var selectedOptions = options ?? sp.GetService<AzureAISearchVectorStoreOptions>();
+
                 return new AzureAISearchVectorStore(
                     searchIndexClient,
                     selectedOptions);
@@ -114,6 +122,9 @@ public static class AzureAISearchServiceCollectionExtensions
                 var searchIndexClient = new SearchIndexClient(endpoint, credential, searchClientOptions);
 
                 // Construct the vector store.
+                var searchIndexClient = new SearchIndexClient(endpoint, credential);
+                var selectedOptions = options ?? sp.GetService<AzureAISearchVectorStoreOptions>();
+
                 return new AzureAISearchVectorStore(
                     searchIndexClient,
                     selectedOptions);

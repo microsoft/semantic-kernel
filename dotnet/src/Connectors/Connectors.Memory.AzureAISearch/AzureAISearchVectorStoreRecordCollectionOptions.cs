@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -35,6 +35,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionOptions<TRecord>
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure AI Search record.
     /// Note that when using the default mapper and you are constructing your own <see cref="SearchIndexClient"/>, you will need
     /// to provide the same set of <see cref="System.Text.Json.JsonSerializerOptions"/> both here and when constructing the <see cref="SearchIndexClient"/>.
+    /// Note that when using the default mapper, you will need to provide the same set of <see cref="System.Text.Json.JsonSerializerOptions"/> both here and when constructing the <see cref="SearchIndexClient"/>.
     /// </summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; init; } = null;
 }

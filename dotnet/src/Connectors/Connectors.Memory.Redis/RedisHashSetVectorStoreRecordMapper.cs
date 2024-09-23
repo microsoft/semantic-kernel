@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -92,6 +92,11 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
                 else if (value is ReadOnlyMemory<double> rod)
                 {
                     hashEntries.Add(new HashEntry(storageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(rod)));
+                    hashEntries.Add(new HashEntry(storageName, ConvertVectorToBytes(rom)));
+                }
+                else if (value is ReadOnlyMemory<double> rod)
+                {
+                    hashEntries.Add(new HashEntry(storageName, ConvertVectorToBytes(rod)));
                 }
             }
         }
@@ -155,5 +160,15 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         jsonObject.Add(this._keyFieldJsonPropertyName, storageModel.Key);
 
         return JsonSerializer.Deserialize<TConsumerDataModel>(jsonObject)!;
+    }
+
+    private static byte[] ConvertVectorToBytes(ReadOnlyMemory<float> vector)
+    {
+        return MemoryMarshal.AsBytes(vector.Span).ToArray();
+    }
+
+    private static byte[] ConvertVectorToBytes(ReadOnlyMemory<double> vector)
+    {
+        return MemoryMarshal.AsBytes(vector.Span).ToArray();
     }
 }

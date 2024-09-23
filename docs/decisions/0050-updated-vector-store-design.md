@@ -5,6 +5,13 @@ date: 2024-06-05T00:00:00Z
 deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, westey-m, matthewbolanos, eavanvalkenburg
 informed: null
 status: proposed
+# These are optional elements. Feel free to remove any of them.
+status: proposed
+contact: westey-m
+date: 2024-06-05
+deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, westey-m, matthewbolanos, eavanvalkenburg
+consulted: stephentoub, dluc, ajcvickers, roji
+informed: 
 ---
 
 # Updated Memory Connector Design
@@ -20,6 +27,7 @@ The current abstractions are experimental and the purpose of this ADR is to prog
 1. The `IMemoryStore` interface has four responsibilities with different cardinalities. Some are schema aware and others schema agnostic.
 2. The `IMemoryStore` interface only supports a fixed schema for data storage, retrieval and search, which limits its usability by customers with existing data sets.
 3. The `IMemoryStore` implementations are opinionated around key encoding / decoding and collection name sanitization, which limits its usability by customers with existing data sets.
+2. The `IMemoryStore` implementations are opinionated around key encoding / decoding and collection name sanitization, which limits its usability by customers with existing data sets.
 
 Responsibilities:
 
@@ -33,6 +41,9 @@ Responsibilities:
 ### Memory Store Today
 
 ```cs {"id":"01J6KNYVCY4JYVGVXYC2NW8XGF"}
+
+### Memory Store Today
+```cs
 interface IMemoryStore
 {
     // Collection / Index Management
@@ -80,6 +91,11 @@ interface IMemoryStore
 
 ### Non-functional requirements for new connectors
 
+    1. The AzureAISearch connector encodes keys before storing and decodes them after retrieval since keys in Azure AI Search supports a limited set of characters.
+    2. The AzureAISearch connector sanitizes collection names before using them, since Azure AI Search supports a limited set of characters.
+    3. The Redis connector prepends the collection name on to the front of keys before storing records and also registers the collection name as a prefix for records to be indexed by the index.
+
+### Non-functional requirements for new connectors
 1. Ensure all connectors are throwing the same exceptions consistently with data about the request made provided in a consistent manner.
 2. Add consistent telemetry for all connectors.
 3. As far as possible integration tests should be runnable on build server.
@@ -89,6 +105,7 @@ interface IMemoryStore
 The separation between collection/index management and record management.
 
 ```mermaid {"id":"01J6KNYVCY4JYVGVXYC5S2KSDC"}
+```mermaid
 ---
 title: SK Collection/Index and record management
 ---
@@ -155,6 +172,7 @@ classDiagram
 How to use your own schema with core sk functionality.
 
 ```mermaid {"id":"01J6KNYVCY4JYVGVXYC9HJGESP"}
+```mermaid
 ---
 title: Chat History Break Glass
 ---
@@ -260,6 +278,10 @@ A comparison of the different ways in which stores implement storage capabilitie
 |Keys of removed records|Y||N3|N||N||||N3|
 |Retrieval field selection for gets|Y||Y4|P2||N||Y|Y|Y|
 |Include/Exclude Embeddings for gets|P1|Y|Y4,1|Y||N||P1|Y|N|
+|Keys of upserted records|Y|Y|N<sup>3</sup>|N<sup>3</sup>||N<sup>3</sup>||||Y|
+|Keys of removed records|Y||N<sup>3</sup>|N||N||||N<sup>3</sup>|
+|Retrieval field selection for gets|Y||Y<sup>4<sup>|P<sup>2</sup>||N||Y|Y|Y|
+|Include/Exclude Embeddings for gets|P<sup>1</sup>|Y|Y<sup>4,1<sup>|Y||N||P<sup>1</sup>|Y|N|
 |Failure reasons when batch partially fails|Y|Y|Y|N||N|||||
 |Is Key separate from data|N|Y|Y|Y||Y||N|Y|N|
 |Can Generate Ids|N|Y|N|N||Y||Y|N|Y|
@@ -272,6 +294,11 @@ Footnotes:
 - 2 Supports broad categories of fields only.
 - 3 Id is required in request, so can be returned if needed.
 - 4 No strong typed support when specifying field list.
+- P = Partial Support
+- <sup>1</sup> Only if you have the schema, to select the appropriate fields.
+- <sup>2</sup> Supports broad categories of fields only.
+- <sup>3</sup> Id is required in request, so can be returned if needed.
+- <sup>4</sup> No strong typed support when specifying field list.
 
 ### Vector Store Cross Store support - Fields, types and indexing
 
@@ -287,6 +314,9 @@ Footnotes:
 
 Footnotes:
 
+|Supported index types|[Exhaustive KNN (FLAT) / HNSW](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#algorithms-used-in-vector-search)|[HNSW / Flat / Dynamic](https://weaviate.io/developers/weaviate/config-refs/schema/vector-index)|[HNSW / FLAT](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/#create-a-vector-field)|[HNSW not configurable](https://cookbook.chromadb.dev/core/concepts/#vector-index-hnsw-index)||[PGA](https://www.pinecone.io/blog/hnsw-not-enough/)||[HNSW / IVFFlat](https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing)|[HNSW for dense](https://qdrant.tech/documentation/concepts/indexing/#vector-index)|<p>[In Memory: FLAT / IVF_FLAT / IVF_SQ8 / IVF_PQ / HNSW / SCANN](https://milvus.io/docs/index.md)</p><p>[On Disk: DiskANN](https://milvus.io/docs/disk_index.md)</p><p>[GPU: GPU_CAGRA / GPU_IVF_FLAT / GPU_IVF_PQ / GPU_BRUTE_FORCE](https://milvus.io/docs/gpu_index.md)</p>|
+
+Footnotes:
 - HNSW = Hierarchical Navigable Small World (HNSW performs an [approximate nearest neighbor (ANN)](https://learn.microsoft.com/en-us/azure/search/vector-search-overview#approximate-nearest-neighbors) search)
 - KNN = k-nearest neighbors (performs a brute-force search that scans the entire vector space)
 - IVFFlat = Inverted File with Flat Compression (This index type uses approximate nearest neighbor search (ANNS) to provide fast searches)
@@ -337,6 +367,7 @@ should be filterable. Requiring users to switch to new attributes later will be 
 Here is what the attributes would look like, plus a sample use case.
 
 ```cs {"id":"01J6KNYVCY4JYVGVXYCCRDJ3M6"}
+```cs
 sealed class VectorStoreRecordKeyAttribute : Attribute
 {
 }
@@ -359,6 +390,7 @@ public record HotelInfo(
 Here is what the configuration objects would look like.
 
 ```cs {"id":"01J6KNYVCY4JYVGVXYCFWSF191"}
+```cs
 abstract class VectorStoreRecordProperty(string propertyName);
 
 sealed class VectorStoreRecordKeyProperty(string propertyName): Field(propertyName)
@@ -405,6 +437,9 @@ From GitHub Issue:
 - Alignment with other patterns in the SK
 - - Design must allow Memory Plugins to be easily instantiated with any connector
 
+- API surface must be easy to use and intuitive
+- Alignment with other patterns in the SK
+- - Design must allow Memory Plugins to be easily instantiated with any connector
 - Design must support all Kernel content types
 - Design must allow for database specific configuration
 - All NFR's to be production ready are implemented (see Roadmap for more detail)
@@ -428,6 +463,7 @@ From GitHub Issue:
 #### Option 1 - Combined collection and record management
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WFB1HC7P"}
+```cs
 interface IVectorRecordStore<TRecord>
 {
     Task CreateCollectionAsync(CollectionCreateConfig collectionConfig, CancellationToken cancellationToken = default);
@@ -459,6 +495,7 @@ class RedisVectorRecordStore<TRecord>(
 #### Option 2 - Separated collection and record management with opinionated create implementations
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WFECBYXX"}
+```cs
 
 interface IVectorCollectionStore
 {
@@ -495,6 +532,7 @@ class AzureAISearchVectorRecordStore<TRecord>(): IVectorRecordStore<TRecord>;
 Vector store same as option 2 so not repeated for brevity.
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WK6ZWG7V"}
+```cs
 
 interface IVectorCollectionCreate
 {
@@ -529,6 +567,9 @@ class WeaviateVectorCollectionNonSchema: IVectorCollectionNonSchema;
 Variation on option 3.
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WN5F22RP"}
+Variation on option 3. 
+
+```cs
 
 interface IVectorCollectionCreate
 {
@@ -573,6 +614,7 @@ class ContosoProductsVectorCollectionStore(AzureAISearchVectorCollectionNonSchem
 Same as option 3 / 4, plus:
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WQHYA5JH"}
+```cs
 
 interface IVectorStore : IVectorCollectionStore, IVectorRecordStore
 {    
@@ -590,6 +632,8 @@ internal class VectorStore<TRecord>(IVectorCollectionCreate create, IVectorColle
 `IVectorStore` acts as a factory for `IVectorStoreCollection`, and any schema agnostic multi-collection operations are kept on `IVectorStore`.
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WRTQ90MR"}
+
+```cs
 public interface IVectorStore
 {
     IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null);
@@ -616,6 +660,7 @@ public interface IVectorStoreCollection<TKey, TRecord>
 }
 ```
 
+
 #### Decision Outcome
 
 Option 1 is problematic on its own, since we have to allow consumers to create custom implementations of collection create for break glass scenarios. With
@@ -639,6 +684,7 @@ Chosen option: 6
 - Can pass a single object around for both collection and record access.
 
 ### Question 2: Collection name and key value normalization in store, decorator or via injection.
+###  Question 2: Collection name and key value normalization in store, decorator or via injection.
 
 #### Option 1 - Normalization in main record store
 
@@ -646,6 +692,7 @@ Chosen option: 6
 - Cons: The normalization needs to vary separately from the record store, so this will not work
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WSTXTE8J"}
+```cs
     public class AzureAISearchVectorStoreCollection<TRecord> : IVectorStoreCollection<TRecord>
     {
         ...
@@ -673,6 +720,7 @@ Chosen option: 6
 - Cons: Hard to have a generic implementation that can work with any model, without either changing the data in the provided object on upsert or doing cloning in an expensive way.
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WWC69E14"}
+```cs
     new KeyNormalizingAISearchVectorStoreCollection<MyModel>(
         "keyField",
          new AzureAISearchVectorStoreCollection<MyModel>(...));
@@ -686,6 +734,7 @@ Chosen option: 6
 - Cons: Harder to package matching encoders/decoders together.
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4X082PG2T"}
+```cs
 public class AzureAISearchVectorStoreCollection<TRecord>(StoreOptions options);
 
 public class StoreOptions
@@ -718,6 +767,11 @@ provide their own encoding / decoding behavior.
 #### Option 1 - Collection name as method param
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4X0AS93AK"}
+###  Question 3: Collection name as method param or via constructor or either
+
+#### Option 1 - Collection name as method param
+
+```cs
 public class MyVectorStoreCollection()
 {
     public async Task<TRecord?> GetAsync(string collectionName, string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
@@ -727,6 +781,7 @@ public class MyVectorStoreCollection()
 #### Option 2 - Collection name via constructor
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4X2Q35Q8T"}
+```cs
 public class MyVectorStoreCollection(string defaultCollectionName)
 {
     public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
@@ -736,6 +791,7 @@ public class MyVectorStoreCollection(string defaultCollectionName)
 #### Option 3 - Collection name via either
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4X49J2YYF"}
+```cs
 public class MyVectorStoreCollection(string defaultCollectionName)
 {
     public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
@@ -756,6 +812,7 @@ Chosen option 2. None of the other options work with the decision outcome of Que
 #### Option 1 - Take a string and convert to a type that was specified on the constructor
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4X7KJHDJE"}
+```cs
 public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
 {
     var convertedKey = this.keyType switch
@@ -774,6 +831,7 @@ public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = def
 #### Option 2 - Take an object and cast to a type that was specified on the constructor.
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XBBSPY5G"}
+```cs
 public async Task<TRecord?> GetAsync(object key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
 {
     var convertedKey = this.keyType switch
@@ -798,6 +856,7 @@ public async Task<TRecord?> GetAsync(object key, GetRecordOptions? options = def
 #### Option 3 - Multiple overloads where we convert where possible, throw when not possible.
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XERGV650"}
+```cs
 public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
 {
     var convertedKey = this.keyType switch
@@ -833,6 +892,7 @@ public async Task<TRecord?> GetAsync(GUID key, GetRecordOptions? options = defau
 #### Option 4 - Add key type as generic to interface
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XG6A8C1R"}
+```cs
 interface IVectorRecordStore<TRecord, TKey>
 {
     Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
@@ -862,6 +922,7 @@ each implementation to hardcode allowed key types if the vector db only supports
 #### Option 1 - VectorDB
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XGZN2GZ8"}
+```cs
 interface IVectorDBRecordService {}
 interface IVectorDBCollectionUpdateService {}
 interface IVectorDBCollectionCreateService {}
@@ -870,6 +931,7 @@ interface IVectorDBCollectionCreateService {}
 #### Option 2 - Memory
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XJBJSY5F"}
+```cs
 interface IMemoryRecordService {}
 interface IMemoryCollectionUpdateService {}
 interface IMemoryCollectionCreateService {}
@@ -878,6 +940,7 @@ interface IMemoryCollectionCreateService {}
 ### Option 3 - VectorStore
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XJBRSPT9"}
+```cs
 interface IVectorRecordStore<TRecord> {}
 interface IVectorCollectionNonSchema {}
 interface IVectorCollectionCreate {}
@@ -888,6 +951,7 @@ interface IVectorStore<TRecord> {}: IVectorCollectionStore, IVectorRecordStore<T
 ### Option 4 - VectorStore + VectorStoreCollection
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XN3RR95N"}
+```cs
 interface IVectorStore
 {
     IVectorStoreCollection GetCollection()
@@ -910,6 +974,7 @@ Option 4 also matches our design as chosen in question 1.
 ### DI Framework: .net 8 Keyed Services
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XNSHH0K0"}
+```cs
 class CacheEntryModel(string prompt, string result, ReadOnlyMemory<float> promptEmbedding);
 
 class SemanticTextMemory(IVectorStore configuredVectorStore, VectorStoreRecordDefinition? vectorStoreRecordDefinition): ISemanticTextMemory
@@ -975,6 +1040,7 @@ builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>
 10. Add model and mappers for legacy SK MemoryStore interface, so that consumers using this has an upgrade path to the new memory storage stack.
 11. Add model and mappers for popular loader systems, like Kernel Memory or LlamaIndex.
 12. Explore adding first party implementations for common scenarios, e.g. semantic caching. Specfics TBD.
+11. Explore adding first party implementations for common scenarios, e.g. semantic caching. Specfics TBD.
 
 ### Cross Cutting Requirements
 
@@ -999,3 +1065,14 @@ Need the following for all features:
    - How to implement your own collection create implementation for break glass scenario.
    - How to implement your own mapper.
    - How to upgrade from the current storage system to the new one.
+  - Usage scenario for collection and record management using custom model and configured collection creation.
+  - A simple consumption example like semantic caching, specfics TBD.
+  - Adding your own collection creation implementation.
+  - Adding your own custom model mapper.
+- Documentation, including:
+  - How to create models and annotate/describe them to use with the storage system.
+  - How to define configuration for creating collections using common create implementation.
+  - How to use record and collection management apis.
+  - How to implement your own collection create implementation for break glass scenario.
+  - How to implement your own mapper.
+  - How to upgrade from the current storage system to the new one.

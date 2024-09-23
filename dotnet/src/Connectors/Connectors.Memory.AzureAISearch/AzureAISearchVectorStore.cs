@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -66,6 +66,8 @@ public sealed class AzureAISearchVectorStore : IVectorStore
             }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
         return recordCollection!;
+        var directlyCreatedStore = new AzureAISearchVectorStoreRecordCollection<TRecord>(this._searchIndexClient, name, new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+        return directlyCreatedStore!;
     }
 
     /// <inheritdoc />

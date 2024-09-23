@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -81,6 +81,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 
     /// <summary>An array of the names of all the properties that are part of the Redis payload, i.e. all properties except the key property.</summary>
     private readonly string[] _dataAndVectorStoragePropertyNames;
+    /// <summary>An array of the names of all the data properties that are part of the Redis payload, i.e. all properties except the key and vector properties.</summary>
+    private readonly RedisValue[] _dataStoragePropertyNames;
 
     /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it to json for data and vector properties.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames = new();
@@ -136,6 +138,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         {
             this._firstVectorPropertyName = this._storagePropertyNames[properties.VectorProperties.First().DataModelPropertyName];
         }
+            .Select(RedisValue.Unbox)
+            .ToArray();
 
         // Assign Mapper.
         if (this._options.HashEntriesCustomMapper is not null)
@@ -151,6 +155,10 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         else
         {
             // Default Mapper.
+            this._mapper = this._options.HashEntriesCustomMapper;
+        }
+        else
+        {
             this._mapper = new RedisHashSetVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, this._storagePropertyNames);
         }
     }
@@ -186,6 +194,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     {
         // Map the record definition to a schema.
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._vectorStoreRecordDefinition.Properties, this._storagePropertyNames, useDollarPrefix: false);
+        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._vectorStoreRecordDefinition.Properties, this._storagePropertyNames);
 
         // Create the index creation params.
         // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
@@ -233,6 +242,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         else
         {
             var fieldKeys = this._dataStoragePropertyNameRedisValues;
+            var fieldKeys = this._dataStoragePropertyNames;
             var retrievedValues = await this.RunOperationAsync(
                 operationName,
                 () => this._database.HashGetAsync(maybePrefixedKey, fieldKeys)).ConfigureAwait(false);

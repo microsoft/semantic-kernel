@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -686,6 +686,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
 
         [JsonPropertyName("storage_data1")]
         [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData]
         public string Data1 { get; set; } = string.Empty;
 
         [VectorStoreRecordData]

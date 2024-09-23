@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -6,6 +6,10 @@ using Microsoft.SemanticKernel.Data;
 using Sdk = Pinecone;
 
 namespace Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Data;
+using Sdk = Pinecone;
+
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Extension methods to register Pinecone <see cref="IVectorStore"/> instances on an <see cref="IServiceCollection"/>.
