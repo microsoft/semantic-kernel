@@ -193,17 +193,27 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         system_message_content = None
         remaining_messages = []
         system_message_found = False
-        idx = 0
-        while idx < len(chat_history.messages):
-            message = chat_history.messages[idx]
-
+        for message in chat_history.messages:
             # Skip system messages after the first one is found
             if message.role == AuthorRole.SYSTEM:
                 if not system_message_found:
                     system_message_content = message.content
                     system_message_found = True
+            elif message.role == AuthorRole.TOOL:
+                # if tool result message isn't the most recent message, add it to the remaining messages
+                if not remaining_messages or remaining_messages[-1][role_key] != AuthorRole.USER:
+                    remaining_messages.append({
+                        role_key: AuthorRole.USER,
+                        content_key: [],
+                    })
 
-                idx += 1
+                # add the tool result to the most recent message
+                tool_results_message = remaining_messages[-1]
+                tool_results_message["content"].append({
+                    "type": "tool_result",
+                    "tool_use_id": message.items[0].id,
+                    content_key: str(message.items[0].result),
+                })
             elif message.finish_reason == SemanticKernelFinishReason.TOOL_CALLS:
                 if not stream:
                     remaining_messages.append({
@@ -211,47 +221,25 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                         content_key: message.inner_content.content,
                     })
                 else:
-                    content = []
+                    content: list[TextBlock | ToolUseBlock] = []
                     # for remaining items, add them to the content
                     for item in message.items:
                         if isinstance(item, TextContent):
+                            content.append(TextBlock(text=item.text, type="text"))
+                        else:
                             content.append(
-                                TextBlock(
-                                    text=item.text,
-                                    type="text"
+                                ToolUseBlock(
+                                    id=item.id, 
+                                    input=json.loads(item.arguments),
+                                    name=item.name,
+                                    type="tool_use"
                                 )
                             )
-                        else:
-                            content.append(ToolUseBlock(
-                                id=item.id,
-                                input=json.loads(item.arguments),
-                                name=item.name,
-                                type="tool_use"
-                            ))
 
                     remaining_messages.append({
                         role_key: AuthorRole.ASSISTANT,
                         content_key: content,
                     })
-
-                idx += 1
-                tool_results_message = {
-                    role_key: AuthorRole.USER,
-                    content_key: [],
-                }
-
-                # Add the tool results
-                while idx < len(chat_history.messages) and chat_history.messages[idx].role == AuthorRole.TOOL:
-                    tool_result = chat_history.messages[idx]
-                    tool_results_message["content"].append({
-                        "type": "tool_result",
-                        "tool_use_id": tool_result.items[0].id,
-                        content_key: str(tool_result.items[0].result),
-                    })
-
-                    idx += 1
-
-                remaining_messages.append(tool_results_message)
             else:
                 # The API requires only role and content keys for the remaining messages
                 remaining_messages.append({
@@ -259,17 +247,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                     content_key: getattr(message, content_key),
                 })
 
-                idx += 1
 
         return remaining_messages, system_message_content
 
     # endregion
 
     def _create_chat_message_content(
-        self,
-        response: Message,
-        content_block: TextBlock | ToolUseBlock,
-        response_metadata: dict[str, Any]
+        self, response: Message, content_block: TextBlock | ToolUseBlock, response_metadata: dict[str, Any]
     ) -> "ChatMessageContent":
         """Create a chat message content object."""
         items: list[ITEM_TYPES] = self._get_tool_calls_from_message(response)
@@ -343,14 +327,12 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             ]
 
             if (
-                (settings.function_choice_behavior
-                and settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED)
-                or type == FunctionChoiceType.REQUIRED
-            ):
+                settings.function_choice_behavior
+                and settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED
+            ) or type == FunctionChoiceType.REQUIRED:
                 settings.tool_choice = {"type": "any"}
             elif type == FunctionChoiceType.AUTO:
                 settings.tool_choice = {"type": type.value}
-
 
     def kernel_function_metadata_to_function_call_format_anthropic(
         self,
@@ -377,11 +359,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         """Send the chat request."""
         try:
             kwargs = settings.model_dump(
-                exclude={
-                    "service_id",
-                    "extension_data",
-                    "messages"
-                },
+                exclude={"service_id", "extension_data", "messages"},
                 exclude_none=True,
                 by_alias=True,
             )
@@ -408,11 +386,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         """Send the chat stream request."""
         try:
             kwargs = settings.model_dump(
-                exclude={
-                    "service_id",
-                    "extension_data",
-                    "messages"
-                },
+                exclude={"service_id", "extension_data", "messages"},
                 exclude_none=True,
                 by_alias=True,
             )
@@ -424,9 +398,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                     if isinstance(stream_event, RawMessageStartEvent):
                         metadata["usage"]["input_tokens"] = stream_event.message.usage.input_tokens
                         metadata["id"] = stream_event.message.id
-                    elif isinstance(stream_event, (TextEvent, RawMessageDeltaEvent)) or \
-                        (isinstance(stream_event, ContentBlockStopEvent) and
-                         stream_event.content_block.type == "tool_use"):
+                    elif isinstance(stream_event, (TextEvent, RawMessageDeltaEvent)) or (
+                        isinstance(stream_event, ContentBlockStopEvent)
+                        and stream_event.content_block.type == "tool_use"
+                    ):
                         yield [self._create_streaming_chat_message_content(stream_event, metadata)]
         except Exception as ex:
             raise ServiceResponseException(
