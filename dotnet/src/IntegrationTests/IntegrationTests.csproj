@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0005,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0110</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0110</NoWarn>
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
@@ -66,27 +66,17 @@
     <PackageReference Include="Testcontainers.Milvus" />
   </ItemGroup>
   <ItemGroup>
-<<<<<<< main
-<<<<<<< main
     <ProjectReference Include="..\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-=======
     <ProjectReference Include="..\Connectors\Connectors.AssemblyAI\Connectors.AssemblyAI.csproj" />
->>>>>>> origin/PR
-=======
-    <ProjectReference Include="..\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
->>>>>>> ms/feature-memory-service
     <ProjectReference Include="..\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Google\Connectors.Google.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
-<<<<<<< main
     <ProjectReference Include="..\Connectors\Connectors.Ollama\Connectors.Ollama.csproj" />
-=======
->>>>>>> ms/feature-memory-service
     <ProjectReference Include="..\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />

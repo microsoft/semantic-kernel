@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -28,6 +28,7 @@ public class AudioContent : BinaryContent
 
     /// <summary>
     /// The audio data.
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
     [JsonConstructor]
     public AudioContent()
