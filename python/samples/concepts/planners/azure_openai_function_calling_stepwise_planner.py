@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import os
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -17,6 +18,12 @@ async def main():
             service_id=service_id,
         ),
     )
+
+    plugin_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        "resources",
+    )
+    kernel.add_plugin(parent_directory=plugin_path, plugin_name="email_plugin")
 
     kernel.add_plugin(MathPlugin(), "MathPlugin")
     kernel.add_plugin(TimePlugin(), "TimePlugin")
