@@ -110,6 +110,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <summary>Collection of storage names for data properties of the current storage model.</summary>
     private readonly List<string> _dataPropertyStorageNames;
 
+    /// <summary>Collection of storage names for vector properties of the current storage model.</summary>
+    private readonly List<string> _vectorPropertyStorageNames;
+
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, JsonNode> _mapper;
 
@@ -168,9 +171,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             this._firstVectorProperty = this._vectorProperties[0];
         }
 
-        this._dataPropertyStorageNames = this._dataProperties
-            .Select(l => this._storagePropertyNames[l.DataModelPropertyName])
-            .ToList();
+        this._dataPropertyStorageNames = this._dataProperties.Select(l => this._storagePropertyNames[l.DataModelPropertyName]).ToList();
+        this._vectorPropertyStorageNames = this._vectorProperties.Select(l => this._storagePropertyNames[l.DataModelPropertyName]).ToList();
 
         // Assign mapper.
         this._mapper = this._options.JsonNodeCustomMapper ??
@@ -364,21 +366,6 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         }
     }
 
-    private static string GetFilterValueType(Type valueType)
-    {
-        return valueType switch
-        {
-            Type t when t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) ||
-                        t == typeof(int?) || t == typeof(long?) || t == typeof(short?) || t == typeof(byte?) => "valueInt",
-            Type t when t == typeof(bool) || t == typeof(bool?) => "valueBoolean",
-            Type t when t == typeof(string) || t == typeof(Guid) || t == typeof(Guid?) => "valueText",
-            Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) ||
-                        t == typeof(float?) || t == typeof(double?) || t == typeof(decimal?) => "valueNumber",
-            Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => "valueDate",
-            _ => throw new NotSupportedException($"Unsupported value type {valueType.FullName} in filter.")
-        };
-    }
-
     /// <inheritdoc />
     public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
@@ -409,94 +396,18 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
         var fields = this._dataPropertyStorageNames;
 
-        var vectorsQuery = searchOptions.IncludeVectors ?
-            $"vectors {{ {string.Join(" ", this._vectorProperties.Select(l => this._storagePropertyNames[l.DataModelPropertyName]))} }}" :
-            string.Empty;
+        var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildSearchQuery(
+            vector,
+            this.CollectionName,
+            vectorPropertyName,
+            this._keyProperty.DataModelPropertyName,
+            s_jsonSerializerOptions,
+            searchOptions,
+            this._storagePropertyNames,
+            this._vectorPropertyStorageNames,
+            this._dataPropertyStorageNames);
 
-        var filter = string.Empty;
-
-        if (searchOptions.Filter is not null)
-        {
-            var operands = new List<string>();
-
-            foreach (var filterClause in searchOptions.Filter.FilterClauses)
-            {
-                string filterValueType;
-                string propertyName;
-                object propertyValue;
-                string filterOperator;
-
-                if (filterClause is EqualToFilterClause equalToFilterClause)
-                {
-                    filterValueType = GetFilterValueType(equalToFilterClause.Value.GetType());
-                    propertyName = equalToFilterClause.FieldName;
-                    propertyValue = JsonSerializer.Serialize(equalToFilterClause.Value, s_jsonSerializerOptions);
-                    filterOperator = "Equal";
-                }
-                else if (filterClause is AnyTagEqualToFilterClause anyTagEqualToFilterClause)
-                {
-                    filterValueType = GetFilterValueType(anyTagEqualToFilterClause.Value.GetType());
-                    propertyName = anyTagEqualToFilterClause.FieldName;
-                    propertyValue = JsonSerializer.Serialize(new string[] { anyTagEqualToFilterClause.Value }, s_jsonSerializerOptions);
-                    filterOperator = "ContainsAny";
-                }
-                else
-                {
-                    throw new NotSupportedException(
-                        $"Unsupported filter clause type '{filterClause.GetType().Name}'. " +
-                        $"Supported filter clause types are: {string.Join(", ", [
-                            nameof(EqualToFilterClause),
-                            nameof(AnyTagEqualToFilterClause)])}");
-                }
-
-                string? storagePropertyName;
-
-                if (propertyName.Equals(this._keyProperty.DataModelPropertyName, StringComparison.Ordinal))
-                {
-                    storagePropertyName = WeaviateConstants.ReservedKeyPropertyName;
-                }
-                else if (!this._storagePropertyNames.TryGetValue(propertyName, out storagePropertyName))
-                {
-                    throw new InvalidOperationException($"Property name '{propertyName}' provided as part of the filter clause is not a valid property name.");
-                }
-
-                var operand = $$"""{ path: ["{{storagePropertyName}}"], operator: {{filterOperator}}, {{filterValueType}}: {{propertyValue}} }""";
-
-                operands.Add(operand);
-            }
-
-            if (operands.Count > 0)
-            {
-                filter = $$"""where: { operator: And, operands: [{{string.Join(", \n", operands)}}] }""";
-            }
-        }
-
-        var vectorArray = JsonSerializer.Serialize(vector, s_jsonSerializerOptions);
-
-        string graphqlQuery = $$"""
-        {
-          Get {
-            {{this.CollectionName}} (
-              limit: {{searchOptions.Limit}}
-              offset: {{searchOptions.Offset}}
-              {{filter}}
-              nearVector: {
-                targetVectors: ["{{vectorPropertyName}}"]
-                vector: {{vectorArray}}
-              }
-            ) {
-              {{string.Join(" ", fields)}}
-              {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
-                {{WeaviateConstants.ReservedKeyPropertyName}}
-                {{WeaviateConstants.ScorePropertyName}}
-                {{vectorsQuery}}
-              }
-            }
-          }
-        }
-        """;
-
-        using var request = new WeaviateVectorSearchRequest(graphqlQuery).Build();
+        using var request = new WeaviateVectorSearchRequest(query).Build();
 
         var response = await this.ExecuteRequestAsync<WeaviateVectorSearchResponse>(request, cancellationToken).ConfigureAwait(false);
 
@@ -516,19 +427,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         {
             if (result is not null)
             {
-                var additionalProperties = result[WeaviateConstants.AdditionalPropertiesPropertyName];
-
-                var score = additionalProperties?[WeaviateConstants.ScorePropertyName]?.GetValue<double>();
-
-                var id = additionalProperties?[WeaviateConstants.ReservedKeyPropertyName];
-                var vectors = additionalProperties?[WeaviateConstants.ReservedVectorPropertyName];
-
-                var storageModel = new JsonObject
-                {
-                    { WeaviateConstants.ReservedKeyPropertyName, id?.DeepClone() },
-                    { WeaviateConstants.ReservedDataPropertyName, result?.DeepClone() },
-                    { WeaviateConstants.ReservedVectorPropertyName, vectors?.DeepClone() },
-                };
+                var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result);
 
                 var record = VectorStoreErrorHandler.RunModelConversion(
                     DatabaseName,
