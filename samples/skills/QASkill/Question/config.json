@@ -1,8 +1,6 @@
 {
-  "schema": 1,
-  "type": "completion",
   "description": "Answer any question",
-  "completion": {
+  "default_settings": {
     "max_tokens": 100,
     "temperature": 0.0,
     "top_p": 0.0,

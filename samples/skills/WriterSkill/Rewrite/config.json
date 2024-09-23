@@ -1,8 +1,6 @@
 {
-  "schema": 1,
-  "type": "completion",
   "description": "Automatically generate compact notes for any text or text document",
-  "completion": {
+  "default_settings": {
     "max_tokens": 256,
     "temperature": 0.0,
     "top_p": 0.0,

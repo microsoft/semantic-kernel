@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -16,6 +18,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -325,15 +328,22 @@ public sealed class Kernel : IKernel, IDisposable
         }
 
         ISKFunction func = SKFunction.FromSemanticConfig(this, skillName, functionName, functionConfig, this._log);
+        ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig, this._log);
 
         // Connect the function to the current kernel skill collection, in case the function
         // is invoked manually without a context and without a way to find other functions.
         //func.SetDefaultSkillCollection(this.Skills);
 
-        func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
+        var recommendedService = this.GetRecommendedService(functionConfig.PromptTemplateConfig);
+
+        var serviceId = recommendedService?.ModelId ?? null;
+        var serviceSettings = recommendedService?.Settings ?? functionConfig.PromptTemplateConfig.DefaultSettings;
+
+        func.SetAIConfiguration(serviceSettings);
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
         //func.SetAIService(() => this.GetService<ITextCompletion>());
+        func.SetAIService(() => this.GetService<ITextCompletion>(serviceId));
 
         return func;
     }
@@ -369,6 +379,13 @@ public sealed class Kernel : IKernel, IDisposable
         log.LogTrace("Methods imported {0}", result.Count);
 
         return result;
+    }
+
+    private PromptTemplateConfig.ServiceConfig GetRecommendedService(PromptTemplateConfig config)
+    {
+        return config.Services
+            .OrderBy(s => s.Order)
+            .FirstOrDefault(s => !string.IsNullOrEmpty(s.ModelId) && this.Config.TextCompletionServices.ContainsKey(s.ModelId));
     }
 
     #endregion

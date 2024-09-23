@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -94,7 +95,7 @@ public Plan(string? originalPlan)
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+    public JsonObject ServiceSettings { get; private set; } = new();
 
     #endregion ISKFunction implementation
 
@@ -377,6 +378,7 @@ public Plan(string? originalPlan)
         IReadOnlySkillCollection? skills = null,
         ISemanticTextMemory? memory = null,
         ILogger? logger = null,
+    public Task<SKContext> InvokeAsync(string input, SKContext? context = null, JsonObject? settings = null, ILogger? log = null,
         CancellationToken cancellationToken = default)
     {
         // context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
@@ -388,7 +390,7 @@ public Plan(string? originalPlan)
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+    public async Task<SKContext> InvokeAsync(SKContext? context = null, JsonObject? settings = null, ILogger? log = null,
         CancellationToken cancellationToken = default)
         SKContext context = new(
             this.State,
@@ -459,6 +461,23 @@ public Plan(string? originalPlan)
 
     /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+    {
+        return this.Function is null
+            ? throw new NotImplementedException()
+            : this.Function.SetDefaultSkillCollection(skills);
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        return this.Function is null
+            ? throw new NotImplementedException()
+            : this.Function.SetAIService(serviceFactory);
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetAIConfiguration(JsonObject settings)
     {
         return this.Function is null
             ? throw new NotImplementedException()
@@ -673,7 +692,7 @@ public Plan(string? originalPlan)
         this.SkillName = function.SkillName;
         this.Description = function.Description;
         this.IsSemantic = function.IsSemantic;
-        this.RequestSettings = function.RequestSettings;
+        this.ServiceSettings = function.ServiceSettings;
     }
 
     private ISKFunction? Function { get; set; } = null;

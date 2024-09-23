@@ -1,8 +1,6 @@
 {
-  "schema": 1,
-  "type": "completion",
   "description": "Generate a list of synopsis for a novel or novella with sub-chapters",
-  "completion": {
+  "default_settings": {
     "max_tokens": 250,
     "temperature": 0.0,
     "top_p": 0.0,

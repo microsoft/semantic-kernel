@@ -1,8 +1,6 @@
 {
-  "schema": 1,
   "description": "A chat bot that plays a persona or role",
-  "type": "completion",
-  "completion": {
+  "default_settings": {
     "max_tokens": 150,
     "temperature": 0.9,
     "top_p": 0.0,
@@ -16,4 +14,6 @@
   "default_backends": [
     "text-davinci-003"
   ]
+    "stop_sequences": ["Human:", "AI:"]
+  }
 }

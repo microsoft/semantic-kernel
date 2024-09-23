@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Security;
@@ -56,37 +57,38 @@ public sealed class SKFunctionTests1
 
     [Fact]
     public void ItAllowsToUpdateRequestSettings()
+    public void ItAllowsToUpdateServiceSettings()
     {
         // Arrange
         var templateConfig = new PromptTemplateConfig();
         var functionConfig = new SemanticFunctionConfig(templateConfig, this._promptTemplate.Object);
         var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
-        var settings = new CompleteRequestSettings
+        var settings = new JsonObject
         {
-            Temperature = 0.9,
-            MaxTokens = 2001,
+            ["temperature"] = 0.9,
+            ["max_tokens"] = 2001,
         };
 
         // Act
-        skFunction.RequestSettings.Temperature = 1.3;
-        skFunction.RequestSettings.MaxTokens = 130;
+        skFunction.ServiceSettings["temperature"] = 1.3;
+        skFunction.ServiceSettings["max_tokens"] = 130;
 
         // Assert
-        Assert.Equal(1.3, skFunction.RequestSettings.Temperature);
-        Assert.Equal(130, skFunction.RequestSettings.MaxTokens);
+        Assert.Equal(1.3, skFunction.ServiceSettings["temperature"]?.GetValue<double>());
+        Assert.Equal(130, skFunction.ServiceSettings["max_tokens"]?.GetValue<int>());
 
         // Act
-        skFunction.RequestSettings.Temperature = 0.7;
+        skFunction.ServiceSettings["temperature"] = 0.7;
 
         // Assert
-        Assert.Equal(0.7, skFunction.RequestSettings.Temperature);
+        Assert.Equal(0.7, skFunction.ServiceSettings["temperature"]?.GetValue<double>());
 
         // Act
         skFunction.SetAIConfiguration(settings);
 
         // Assert
-        Assert.Equal(settings.Temperature, skFunction.RequestSettings.Temperature);
-        Assert.Equal(settings.MaxTokens, skFunction.RequestSettings.MaxTokens);
+        Assert.Equal(settings["temperature"], skFunction.ServiceSettings["temperature"]);
+        Assert.Equal(settings["max_tokens"], skFunction.ServiceSettings["max_tokens"]);
     }
 
     [Fact]

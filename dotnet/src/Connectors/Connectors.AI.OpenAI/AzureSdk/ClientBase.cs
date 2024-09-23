@@ -12,8 +12,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Models;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 
@@ -56,7 +56,7 @@ public abstract class ClientBase
     private protected async Task<IReadOnlyList<ITextResult>> InternalGetTextResultsAsync(
     private protected async Task<IReadOnlyList<ITextCompletionResult>> InternalGetTextResultsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        CompletionRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(requestSettings);
@@ -92,7 +92,7 @@ public abstract class ClientBase
     private protected async IAsyncEnumerable<TextStreamingResult> InternalGetTextStreamingResultsAsync(
     private protected async IAsyncEnumerable<TextCompletionStreamingResult> InternalGetTextStreamingResultsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        CompletionRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(requestSettings);
@@ -231,6 +231,7 @@ public abstract class ClientBase
     private protected async Task<IReadOnlyList<ITextCompletionResult>> InternalGetChatResultsAsTextAsync(
         string text,
         CompleteRequestSettings? textSettings,
+        CompletionRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
         textSettings ??= new();
@@ -250,6 +251,8 @@ public abstract class ClientBase
         string text,
         CompleteRequestSettings? textSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CompletionRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
     {
         ChatHistory chat = PrepareChatHistory(text, textSettings, out ChatRequestSettings chatSettings);
 
@@ -261,6 +264,7 @@ public abstract class ClientBase
     }
 
     private static OpenAIChatHistory PrepareChatHistory(string text, CompleteRequestSettings? requestSettings, out ChatRequestSettings settings)
+    private static ChatHistory PrepareChatHistory(string text, CompletionRequestSettings requestSettings, out ChatRequestSettings settings)
     {
         requestSettings ??= new();
         var chat = InternalCreateNewChat(requestSettings.ChatSystemPrompt);
@@ -278,7 +282,7 @@ public abstract class ClientBase
         return chat;
     }
 
-    private static CompletionsOptions CreateCompletionsOptions(string text, CompleteRequestSettings requestSettings)
+    private static CompletionsOptions CreateCompletionsOptions(string text, CompletionRequestSettings requestSettings)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {

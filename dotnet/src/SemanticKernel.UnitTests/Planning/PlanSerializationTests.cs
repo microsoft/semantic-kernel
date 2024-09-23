@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -98,6 +99,8 @@ public sealed class PlanSerializationTests
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, JsonObject, ILogger, CancellationToken?>((c, s, l, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
         mockFunction
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null))
@@ -139,6 +142,8 @@ public sealed class PlanSerializationTests
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, JsonObject, ILogger, CancellationToken?>((c, s, l, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
         mockFunction
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null))
@@ -180,6 +185,8 @@ public sealed class PlanSerializationTests
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, JsonObject, ILogger, CancellationToken?>((c, s, l, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
         mockFunction
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null))
@@ -221,6 +228,8 @@ public sealed class PlanSerializationTests
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, JsonObject, ILogger, CancellationToken?>((c, s, l, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
         mockFunction
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null))
@@ -261,6 +270,8 @@ public sealed class PlanSerializationTests
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, JsonObject, ILogger, CancellationToken?>((c, s, l, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
         mockFunction
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null))
@@ -300,6 +311,8 @@ public sealed class PlanSerializationTests
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, JsonObject, ILogger, CancellationToken?>((c, s, l, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
         mockFunction
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null))
@@ -363,6 +376,8 @@ public sealed class PlanSerializationTests
         mockFunction
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null))
             .Callback<SKContext, ITextCompletion, CompleteRequestSettings>((c, tc, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, JsonObject, ILogger, CancellationToken?>((c, s, l, ct) =>
             {
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
@@ -437,6 +452,8 @@ public sealed class PlanSerializationTests
         mockFunction
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null))
             .Callback<SKContext, ITextCompletion, CompleteRequestSettings>((c, tc, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, JsonObject, ILogger, CancellationToken?>((c, s, l, ct) =>
             {
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
@@ -523,6 +540,8 @@ public sealed class PlanSerializationTests
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, JsonObject, ILogger, CancellationToken?>((c, s, l, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
         mockFunction
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null))
