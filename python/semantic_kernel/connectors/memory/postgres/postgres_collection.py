@@ -5,7 +5,11 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, TypeVar
 
-from semantic_kernel.connectors.memory.postgres.utils import convert_row_to_dict, python_type_to_postgres
+from semantic_kernel.connectors.memory.postgres.utils import (
+    convert_dict_to_row,
+    convert_row_to_dict,
+    python_type_to_postgres,
+)
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -81,26 +85,25 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
                 for i in range(0, len(records), MAX_KEYS_PER_BATCH):
                     record_batch = records[i : i + MAX_KEYS_PER_BATCH]
 
+                    fields = list(self.data_model_definition.fields.items())
+
+                    row_values = [convert_dict_to_row(record, fields) for record in record_batch]
+
                     # Execute the INSERT statement for each batch
                     cur.executemany(
                         sql.SQL("INSERT INTO {}.{} ({}) VALUES ({}) ON CONFLICT ({}) DO UPDATE SET {}").format(
                             sql.Identifier(self.db_schema),
                             sql.Identifier(self.collection_name),
-                            sql.SQL(", ").join(
-                                sql.Identifier(field.name) for field in self.data_model_definition.fields.values()
-                            ),
-                            sql.SQL(", ").join(sql.Placeholder() * len(self.data_model_definition.fields)),
+                            sql.SQL(", ").join(sql.Identifier(field.name) for _, field in fields),
+                            sql.SQL(", ").join(sql.Placeholder() * len(fields)),
                             sql.Identifier(self.data_model_definition.key_field.name),
                             sql.SQL(", ").join(
                                 sql.SQL("{field} = EXCLUDED.{field}").format(field=sql.Identifier(field.name))
-                                for field in self.data_model_definition.fields.values()
+                                for _, field in fields
                                 if field.name != self.data_model_definition.key_field.name
                             ),
                         ),
-                        [
-                            tuple(record.get(field.name) for field in self.data_model_definition.fields.values())
-                            for record in record_batch
-                        ],
+                        row_values,
                     )
                     keys.extend(record.get(self.data_model_definition.key_field.name) for record in record_batch)
             # Commit transaction after all batches succeed
@@ -137,8 +140,6 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
                 rows = cur.fetchall()
                 if not rows:
                     return None
-                if len(rows) == 1:
-                    return convert_row_to_dict(rows[0], fields)
                 return [convert_row_to_dict(row, fields) for row in rows]
 
         except DatabaseError as error:
@@ -153,23 +154,20 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
             **kwargs: Additional arguments.
         """
         try:
-            with self.connection_pool.connection() as conn, conn.transaction():
-                with conn.cursor() as cur:
-                    # Split the keys into batches
-                    for i in range(0, len(keys), MAX_KEYS_PER_BATCH):
-                        key_batch = keys[i : i + MAX_KEYS_PER_BATCH]
+            with self.connection_pool.connection() as conn, conn.transaction(), conn.cursor() as cur:
+                # Split the keys into batches
+                for i in range(0, len(keys), MAX_KEYS_PER_BATCH):
+                    key_batch = keys[i : i + MAX_KEYS_PER_BATCH]
 
-                        # Execute the DELETE statement for each batch
-                        cur.execute(
-                            sql.SQL("DELETE FROM {}.{} WHERE {} IN ({})").format(
-                                sql.Identifier(self.db_schema),
-                                sql.Identifier(self.collection_name),
-                                sql.Identifier(self.data_model_definition.key_field.name),
-                                sql.SQL(", ").join(sql.Literal(key) for key in key_batch),
-                            )
+                    # Execute the DELETE statement for each batch
+                    cur.execute(
+                        sql.SQL("DELETE FROM {}.{} WHERE {} IN ({})").format(
+                            sql.Identifier(self.db_schema),
+                            sql.Identifier(self.collection_name),
+                            sql.Identifier(self.data_model_definition.key_field.name),
+                            sql.SQL(", ").join(sql.Literal(key) for key in key_batch),
                         )
-                # Commit transaction after all batches succeed
-                conn.commit()
+                    )
         except DatabaseError as error:
             # Rollback happens automatically if an exception occurs within the transaction block
             raise MemoryConnectorException(f"Error deleting records: {error}") from error

@@ -2,12 +2,13 @@
 
 import asyncio
 import contextlib
+import json
 import re
 from typing import Any
 
 from psycopg_pool import ConnectionPool
 
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordField
+from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordField, VectorStoreRecordVectorField
 
 
 class ConnectionPoolWrapper(ConnectionPool):
@@ -39,7 +40,7 @@ def python_type_to_postgres(python_type_str: str) -> str | None:
         "bytes": "BYTEA",
         "NoneType": "NULL",
     }
-    print(python_type_str)
+
     # Regular expression to detect lists, e.g., "List[str]" or "List[int]"
     list_pattern = re.compile(r"(?i)List\[(.*)\]")
 
@@ -55,7 +56,6 @@ def python_type_to_postgres(python_type_str: str) -> str | None:
     if python_type_str in type_mapping:
         return type_mapping[python_type_str]
 
-    # If the type is not found, default to TEXT
     return None
 
 
@@ -71,4 +71,33 @@ def convert_row_to_dict(row: tuple[Any, ...], fields: list[tuple[str, VectorStor
     Returns:
         A dictionary representation of the row.
     """
-    return {field_name: value for (field_name, _), value in zip(fields, row)}
+
+    def _convert(v: Any | None, field: VectorStoreRecordField) -> Any | None:
+        if v is None:
+            return None
+        if isinstance(field, VectorStoreRecordVectorField):
+            # psycopg returns vector as a string
+            return json.loads(v)
+        return v
+
+    return {field_name: _convert(value, field) for (field_name, field), value in zip(fields, row)}
+
+
+def convert_dict_to_row(record: dict[str, Any], fields: list[tuple[str, VectorStoreRecordField]]) -> tuple[Any, ...]:
+    """Convert a dictionary to a row for a PostgreSQL query.
+
+    Args:
+        record: A dictionary representing a record.
+        fields: A list of tuples, where each tuple contains the field name and field definition.
+
+    Returns:
+        A tuple representing the record.
+    """
+
+    def _convert(v: Any | None) -> Any | None:
+        if isinstance(v, dict):
+            # psycopg requires serializing dicts as strings.
+            return json.dumps(v)
+        return v
+
+    return tuple(_convert(record.get(field.name)) for _, field in fields)
