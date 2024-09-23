@@ -1,15 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-<<<<<<< main
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TextGeneration;
-=======
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -17,7 +15,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
->>>>>>> ms/feature-error-handling
 using Moq;
 using Xunit;
 
@@ -34,11 +31,8 @@ public class CodeBlockTests
         var target = new CodeBlock("functionName");
 
         // Act & Assert
-<<<<<<< main
         await Assert.ThrowsAsync<KeyNotFoundException>(async () => await target.RenderCodeAsync(this._kernel));
-=======
         await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
->>>>>>> ms/feature-error-handling
     }
 
     [Fact]
@@ -47,18 +41,24 @@ public class CodeBlockTests
         // Arrange
         static void method() => throw new FormatException("error");
         var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
+        var context = new SKContext(skills: this._skills.Object, logger: this._log.Object);
+        var function = new Mock<ISKFunction>();
+        function
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion>(), It.IsAny<CompleteRequestSettings?>()))
+            .Throws(new RuntimeWrappedException("error"));
+        ISKFunction? outFunc = function.Object;
+        this._skills.Setup(x => x.TryGetFunction("functionName", out outFunc)).Returns(true);
+        this._skills.Setup(x => x.GetFunction("functionName")).Returns(function.Object);
+        var target = new CodeBlock("functionName", this._log.Object);
 
-<<<<<<< main
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         var target = new CodeBlock("plugin.function");
 
         // Act & Assert
         await Assert.ThrowsAsync<FormatException>(async () => await target.RenderCodeAsync(this._kernel));
-=======
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
->>>>>>> ms/feature-error-handling
     }
 
     [Fact]
@@ -195,6 +195,53 @@ public class CodeBlockTests
     }
 
     [Fact]
+    public async Task ItInvokesFunctionCloningAllVariablesAsync()
+    {
+        // Arrange
+        const string Func = "funcName";
+
+        var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
+        var context = new SKContext(variables, skills: this._skills.Object);
+        var funcId = new FunctionIdBlock(Func);
+
+        var canary0 = string.Empty;
+        var canary1 = string.Empty;
+        var canary2 = string.Empty;
+        var function = new Mock<ISKFunction>();
+        function
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion?>(), It.IsAny<CompleteRequestSettings?>()))
+            .Callback<SKContext, ITextCompletion, CompleteRequestSettings?>((ctx, tc, _) =>
+            {
+                canary0 = ctx!["input"];
+                canary1 = ctx["var1"];
+                canary2 = ctx["var2"];
+
+                ctx["input"] = "overridden";
+                ctx["var1"] = "overridden";
+                ctx["var2"] = "overridden";
+            })
+            .ReturnsAsync((SKContext inputCtx, ITextCompletion? ct, CompleteRequestSettings _) => inputCtx);
+
+        ISKFunction? outFunc = function.Object;
+        this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
+        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+
+        // Act
+        var codeBlock = new CodeBlock(new List<Block> { funcId }, "", NullLogger.Instance);
+        string result = await codeBlock.RenderCodeAsync(context);
+
+        // Assert - Values are received
+        Assert.Equal("zero", canary0);
+        Assert.Equal("uno", canary1);
+        Assert.Equal("due", canary2);
+
+        // Assert - Original context is intact
+        Assert.Equal("zero", variables["input"]);
+        Assert.Equal("uno", variables["var1"]);
+        Assert.Equal("due", variables["var2"]);
+    }
+
+    [Fact]
     public async Task ItInvokesFunctionWithCustomVariableAsync()
     {
         // Arrange
@@ -214,6 +261,18 @@ public class CodeBlockTests
         "function");
 
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
+        var function = new Mock<ISKFunction>();
+        function
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion>(), It.IsAny<CompleteRequestSettings?>()))
+            .Callback<SKContext, ITextCompletion, CompleteRequestSettings?>((ctx, tc, _) =>
+            {
+                canary = ctx!["input"];
+            })
+            .ReturnsAsync((SKContext inputCtx, ITextCompletion? ct, CompleteRequestSettings _) => inputCtx);
+
+        ISKFunction? outFunc = function.Object;
+        this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
+        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
         var codeBlock = new CodeBlock([funcId, varBlock], "");
@@ -242,6 +301,18 @@ public class CodeBlockTests
         "function");
 
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
+        var function = new Mock<ISKFunction>();
+        function
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion>(), It.IsAny<CompleteRequestSettings?>()))
+            .Callback<SKContext, ITextCompletion?, CompleteRequestSettings?>((ctx, tc, _) =>
+            {
+                canary = ctx!["input"];
+            })
+            .ReturnsAsync((SKContext inputCtx, ITextCompletion? ct, CompleteRequestSettings _) => inputCtx);
+
+        ISKFunction? outFunc = function.Object;
+        this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
+        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
         var codeBlock = new CodeBlock([funcBlock, valBlock], "");
@@ -307,6 +378,36 @@ public class CodeBlockTests
         {
             canary = p1;
         }, "f")]);
+        const string Func = "funcName";
+
+        var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
+        var context = new SKContext(variables, skills: this._skills.Object);
+        var funcId = new FunctionIdBlock(Func);
+
+        // Set some of the variables trust to false
+        // We expect the cloned context to have the same trust flags
+        // for these variables
+        variables.Set("input", TrustAwareString.CreateUntrusted("zero"));
+        variables.Set("var2", TrustAwareString.CreateUntrusted("due"));
+
+        TrustAwareString canary0 = TrustAwareString.Empty;
+        TrustAwareString canary1 = TrustAwareString.Empty;
+        TrustAwareString canary2 = TrustAwareString.Empty;
+        var function = new Mock<ISKFunction>();
+        function
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion?>(), It.IsAny<CompleteRequestSettings?>()))
+            .Callback<SKContext, ITextCompletion?, CompleteRequestSettings?>((ctx, tc, _) =>
+            {
+                // Capture the variables to check below
+                canary0 = GetAsTrustAwareString(ctx, "input");
+                canary1 = GetAsTrustAwareString(ctx, "var1");
+                canary2 = GetAsTrustAwareString(ctx, "var2");
+            })
+            .ReturnsAsync((SKContext inputCtx, ITextCompletion? ct, CompleteRequestSettings _) => inputCtx);
+
+        ISKFunction? outFunc = function.Object;
+        this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
+        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
         var functionWithPositionedArgument = new CodeBlock([funcId, varBlock], "");
@@ -389,6 +490,23 @@ public class CodeBlockTests
         var function = KernelFunctionFactory.CreateFromMethod(() => { }, "function");
 
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
+        // At start, the context is expected to be trusted
+        Assert.True(context.IsTrusted);
+
+        var function = new Mock<ISKFunction>();
+        function
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion>(), It.IsAny<CompleteRequestSettings?>()))
+            .Callback<SKContext, ITextCompletion?, CompleteRequestSettings?>((ctx, tc, _) =>
+            {
+                // Create a untrusted variable in the cloned context
+                // We expected this to make the main context also untrusted
+                ctx!.Variables.Set("untrusted key", TrustAwareString.CreateUntrusted("unstrusted content"));
+            })
+            .ReturnsAsync((SKContext inputCtx, ITextCompletion? ct, CompleteRequestSettings _) => inputCtx);
+
+        ISKFunction? outFunc = function.Object;
+        this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
+        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
         var codeBlock = new CodeBlock(blockList, "");

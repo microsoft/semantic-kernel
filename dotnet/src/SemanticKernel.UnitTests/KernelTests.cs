@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -88,6 +88,10 @@ public class KernelTests
     {
         // Arrange
         var kernel = new Kernel();
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        kernel.Config.AddTextCompletionService(factory.Object);
 
         // Act - Assert no exception occurs
         kernel.ImportPluginFromType<MyPlugin>();
@@ -112,6 +116,7 @@ public class KernelTests
 
         // Act
         var result = await kernel.InvokeAsync(function);
+        SKContext result = await kernel.RunAsync(null, skill["ReadSkillCollectionAsync"]);
 
         // Assert
         Assert.Equal(1, functionInvocations);
@@ -147,6 +152,11 @@ public class KernelTests
         var kernel = new Kernel();
         int functionInvocations = 0;
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
+        var aiService = new Mock<ITextCompletion>();
+
+        var kernel = Kernel.Builder
+            .WithAIService<ITextCompletion>("x", aiService.Object)
+            .Build();
 
         var handlerInvocations = 0;
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -159,6 +169,7 @@ public class KernelTests
         IAsyncEnumerable<StreamingKernelContent> enumerable = kernel.InvokeStreamingAsync<StreamingKernelContent>(function);
         IAsyncEnumerator<StreamingKernelContent> enumerator = enumerable.GetAsyncEnumerator();
         var e = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
+        SKContext result = await kernel.RunAsync("x", skill["ReadSkillCollectionAsync"]);
 
         // Assert
         Assert.Equal(1, handlerInvocations);
@@ -190,6 +201,7 @@ public class KernelTests
         IAsyncEnumerable<StreamingKernelContent> enumerable = kernel.InvokeStreamingAsync<StreamingKernelContent>(functions["GetAnyValue"]);
         IAsyncEnumerator<StreamingKernelContent> enumerator = enumerable.GetAsyncEnumerator();
         var e = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
+        SKContext result = await kernel.RunAsync(null, cts.Token, skill["GetAnyValue"]);
 
         // Assert
         Assert.Equal(0, invoked);
@@ -213,6 +225,7 @@ public class KernelTests
         await foreach (var chunk in kernel.InvokeStreamingAsync(function))
         {
         }
+        SKContext result = await kernel.RunAsync("fake-model", cts.Token, kernel.Func("mySk", "GetAnyValue"));
 
         // Assert
         Assert.Equal(1, functionInvocations);

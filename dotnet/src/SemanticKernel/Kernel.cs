@@ -112,7 +112,7 @@ public sealed class Kernel : IKernel, IDisposable
         Dictionary<string, ISKFunction> skill = this.ImportSkill(skillInstance, skillName, this._log);
         foreach (KeyValuePair<string, ISKFunction> f in skill)
         {
-            f.Value.SetDefaultSkillCollection(this.Skills);
+            //f.Value.SetDefaultSkillCollection(this.Skills);
             this._skillCollection.AddFunction(f.Value);
         }
 
@@ -126,7 +126,7 @@ public sealed class Kernel : IKernel, IDisposable
         Verify.ValidSkillName(skillName);
         Verify.NotNull(customFunction);
 
-        customFunction.SetDefaultSkillCollection(this.Skills);
+        //customFunction.SetDefaultSkillCollection(this.Skills);
         this._skillCollection.AddFunction(customFunction);
 
         return customFunction;
@@ -139,27 +139,28 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(), pipeline);
+    public Task<SKContext> RunAsync(string? model = null, params ISKFunction[] pipeline)
+        => this.RunAsync(new ContextVariables(), model, pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(string input, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(input), pipeline);
+    public Task<SKContext> RunAsync(string input, string? model = null, params ISKFunction[] pipeline)
+        => this.RunAsync(new ContextVariables(input), model, pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(ContextVariables variables, params ISKFunction[] pipeline)
-        => this.RunAsync(variables, CancellationToken.None, pipeline);
+    public Task<SKContext> RunAsync(ContextVariables variables, string? model = null, params ISKFunction[] pipeline)
+        => this.RunAsync(variables, model, CancellationToken.None, pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(CancellationToken cancellationToken, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(), cancellationToken, pipeline);
+    public Task<SKContext> RunAsync(string? model = null, CancellationToken cancellationToken = default, params ISKFunction[] pipeline)
+        => this.RunAsync(new ContextVariables(), model, cancellationToken, pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(string input, CancellationToken cancellationToken, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
+    public Task<SKContext> RunAsync(string input, string? model = null, CancellationToken cancellationToken = default, params ISKFunction[] pipeline)
+        => this.RunAsync(new ContextVariables(input), model, cancellationToken, pipeline);
 
     /// <inheritdoc/>
     public Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
+    public async Task<SKContext> RunAsync(ContextVariables variables, string? model = null, CancellationToken cancellationToken = default, params ISKFunction[] pipeline)
     {
         var context = new SKContext(
             variables
@@ -168,6 +169,8 @@ public sealed class Kernel : IKernel, IDisposable
             // this._log,
             // cancellationToken
         );
+
+        var aiService = this._aiServiceProvider.GetService<ITextCompletion>(model);
 
         int pipelineStepCount = -1;
         foreach (ISKFunction f in pipeline)
@@ -185,7 +188,7 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 context.CancellationToken.ThrowIfCancellationRequested();
-                context = await f.InvokeAsync(context).ConfigureAwait(false);
+                context = await f.InvokeAsync(context, aiService).ConfigureAwait(false);
 
                 if (context.ErrorOccurred)
                 {
@@ -223,6 +226,9 @@ public sealed class Kernel : IKernel, IDisposable
             // this._skillCollection.ReadOnlySkillCollection,
             // this._log
         );
+            memory: this._memory,
+            logger: this.Log,
+            cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -322,12 +328,12 @@ public sealed class Kernel : IKernel, IDisposable
 
         // Connect the function to the current kernel skill collection, in case the function
         // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultSkillCollection(this.Skills);
+        //func.SetDefaultSkillCollection(this.Skills);
 
         func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>());
+        //func.SetAIService(() => this.GetService<ITextCompletion>());
 
         return func;
     }

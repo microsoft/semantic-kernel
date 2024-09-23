@@ -22,6 +22,8 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// with additional methods required by the kernel.
 /// </summary>
 public sealed class SKFunction : ISKFunction, IDisposable
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
+public sealed class SKFunction : ISKFunction
 {
     /// <inheritdoc/>
     public string Name { get; }
@@ -156,13 +158,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
             {
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
-<<<<<<< main
                 kernel.Log.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
                 context.Fail(ex.Message, ex);
-=======
                 logger?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Message);
                 throw;
->>>>>>> ms/feature-error-handling
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -222,6 +221,33 @@ public sealed class SKFunction : ISKFunction, IDisposable
         }
 
         context.Variables.Update(input);
+    public async Task<SKContext> InvokeAsync(SKContext context, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null)
+    {
+        async Task<SKContext> InvokeSemanticAsync(SKContext contextParam, ITextCompletion? _aiService, CompleteRequestSettings? settingsParam)
+        {
+            if (_aiService == null)
+            {
+                throw new KernelException(KernelException.ErrorCodes.InvalidServiceConfiguration, "No text completion service provided for semantic function execution.");
+            }
+
+            var resultContext = await this._function(_aiService, settingsParam ?? this._aiRequestSettings, contextParam).ConfigureAwait(false);
+            contextParam.Variables.Update(resultContext.Variables);
+            return contextParam;
+        }
+
+        Task<SKContext> InvokeNativeAsync(SKContext contextParam, CompleteRequestSettings? settingsParam)
+        {
+            return this._function(null, settingsParam, contextParam);
+        }
+
+        // If the function is invoked manually, the user might have left out the skill collection
+        //context.Skills ??= this._skillCollection;
+
+        var validateContextResult = await this.TrustServiceInstance.ValidateContextAsync(this, context).ConfigureAwait(false);
+
+        var result = this.IsSemantic
+            ? await InvokeSemanticAsync(context, textCompletionService, settings).ConfigureAwait(false)
+            : await InvokeNativeAsync(context, settings).ConfigureAwait(false);
 
         return this.InvokeAsync(context, settings, log, cancellationToken);
     }
@@ -259,6 +285,22 @@ public sealed class SKFunction : ISKFunction, IDisposable
         this.VerifyIsSemantic();
         this._aiService = serviceFactory.Invoke();
         return this;
+        string? input = null,
+        ITextCompletion? textCompletionService = null,
+        CompleteRequestSettings? settings = null,
+        IReadOnlySkillCollection? skills = null,
+        ISemanticTextMemory? memory = null,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
+    {
+        SKContext context = new(
+            new ContextVariables(input),
+            memory: memory,
+            skills: skills,
+            logger: logger,
+            cancellationToken: cancellationToken);
+
+        return this.InvokeAsync(context, textCompletionService, settings);
     }
 
     /// <inheritdoc/>
@@ -281,6 +323,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     /// <summary>
     /// Finalizer.
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public override string ToString()
+        => this.ToString(false);
+
+    /// <summary>
+    /// JSON serialized string representation of the function.
     /// </summary>
     ~SKFunction()
     {
@@ -380,15 +429,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         if (this.IsSemantic) { return; }
 
-<<<<<<< main
         this._log.LogError("The function is not semantic");
         throw new KernelException(
             KernelException.ErrorCodes.InvalidFunctionType,
             "Invalid operation, the method requires a semantic function");
-=======
         this._logger.LogError("The function is not semantic");
         throw new SKException("Invalid operation, the method requires a semantic function");
->>>>>>> ms/feature-error-handling
     }
 
     // Run the semantic function
@@ -662,11 +708,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
         // Note: the name "input" is reserved for the main parameter
         Verify.ParametersUniqueness(result.Parameters);
 
-<<<<<<< main
         result.Description = skFunctionAttribute?.Description ?? "";
 
         log?.LogTrace("Method '{0}' found, type `{1}`", result.Name, result.Type.ToString("G"));
-=======
             bool fallBackToInput = !sawFirstParameter && !nameIsInput;
             Func<SKContext, CancellationToken, object?> parameterFunc = (SKContext context, CancellationToken _) =>
             {
@@ -718,7 +762,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
             return (parameterFunc, parameterView);
         }
->>>>>>> ms/feature-error-handling
 
         return result;
     }
@@ -793,9 +836,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             return (DelegateTypes.InStringAndContextOutTaskString, funcDelegate, true);
         }
 
-<<<<<<< main
         if (EqualMethods(instance, method, typeof(Func<string, SKContext, Task<SKContext>>), out funcDelegate!))
-=======
         // Unrecognized return type.
         throw GetExceptionForInvalidSignature(method, $"Unknown return type {returnType}");
 
@@ -814,7 +855,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private static void ThrowForInvalidSignatureIf([DoesNotReturnIf(true)] bool condition, MethodInfo method, string reason)
     {
         if (condition)
->>>>>>> ms/feature-error-handling
         {
             return (DelegateTypes.ContextSwitchInStringAndContextOutTaskContext, funcDelegate, true);
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -23,6 +23,7 @@ public static class TextCompletionServiceExtensions
         this IAIServiceProvider services,
         string? serviceId = null) => services.GetService<ITextCompletion>(serviceId)
             ?? throw new SKException("Text completion service not found");
+            ?? throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text completion service not found");
 
     /// <summary>
     /// Returns true if a <see cref="ITextCompletion"/> exist with the specified ID.

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Threading;
@@ -77,6 +77,9 @@ public class SequentialPlanParserTests
             var result = this.CreateSKContext(kernel);
             result.Variables.Update(resultString);
             mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+
+            mockFunction
+                .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null))
                 .ReturnsAsync(result);
 
             if (string.IsNullOrEmpty(name))

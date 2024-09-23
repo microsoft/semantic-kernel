@@ -256,13 +256,16 @@ public Plan(string? originalPlan)
     /// <param name="kernel">The kernel instance to use for executing the plan.</param>
     /// <param name="variables">The variables to use for the execution of the plan.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <param name="textCompletionService">Text completion service</param>
+    /// <param name="settings">AI service settings</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the execution of the plan.</param>
     /// <returns>A task representing the asynchronous execution of the plan's next step.</returns>
     /// <remarks>
     /// This method executes the next step in the plan using the specified kernel instance and context variables.
     /// The context variables contain the necessary information for executing the plan, such as the skills, and logger.
     /// The method returns a task representing the asynchronous execution of the plan's next step.
     /// </remarks>
-    public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+    public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
     {
         var context = new SKContext(
             variables,
@@ -277,6 +280,9 @@ public Plan(string? originalPlan)
             // cancellationToken
         );
         return this.InvokeNextStepAsync(context);
+            kernel.Log,
+            cancellationToken);
+        return this.InvokeNextStepAsync(context, textCompletionService, settings);
     }
 
     /// <summary>
@@ -287,6 +293,11 @@ public Plan(string? originalPlan)
     /// <returns>The updated plan</returns>
     /// <exception cref="SKException">If an error occurs while running the plan</exception>
     public async Task<Plan> InvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
+    /// <param name="textCompletionService">Text completion service</param>
+    /// <param name="settings">AI service settings</param>
+    /// <returns>The updated plan</returns>
+    /// <exception cref="KernelException">If an error occurs while running the plan</exception>
+    public async Task<Plan> InvokeNextStepAsync(SKContext context, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null)
     {
         if (this.HasNextStep)
         {
@@ -359,6 +370,13 @@ public Plan(string? originalPlan)
     public async Task<SKContext> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
+    public Task<SKContext> InvokeAsync(
+        string? input = null,
+        ITextCompletion? textCompletionService = null,
+        CompleteRequestSettings? settings = null,
+        IReadOnlySkillCollection? skills = null,
+        ISemanticTextMemory? memory = null,
+        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
         // context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
@@ -372,6 +390,21 @@ public Plan(string? originalPlan)
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
         CancellationToken cancellationToken = default)
+        SKContext context = new(
+            this.State,
+            memory: memory,
+            skills: skills,
+            logger: logger,
+            cancellationToken: cancellationToken);
+
+        return this.InvokeAsync(context, textCompletionService, settings);
+    }
+
+    /// <inheritdoc/>
+    public async Task<SKContext> InvokeAsync(
+        SKContext context,
+        ITextCompletion? textCompletionService = null,
+        CompleteRequestSettings? settings = null)
     {
         // context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancellationToken);
         context ??= new SKContext(this.State);
@@ -383,6 +416,7 @@ public Plan(string? originalPlan)
                 .WithInstrumentation(context.LoggerFactory)
                 .InvokeAsync(context, settings, cancellationToken)
                 .ConfigureAwait(false);
+            var result = await this.Function.InvokeAsync(context, textCompletionService, settings).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -414,28 +448,13 @@ public Plan(string? originalPlan)
                     functionContext.Fail(e.Message, e);
                     return functionContext;
                 }
+                await this.InvokeNextStepAsync(functionContext, textCompletionService, settings).ConfigureAwait(false);
 
                 this.UpdateContextWithOutputs(context);
             }
         }
 
         return context;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
-    {
-        return this.Function is null
-            ? throw new NotImplementedException()
-            : this.Function.SetDefaultSkillCollection(skills);
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        return this.Function is null
-            ? throw new NotImplementedException()
-            : this.Function.SetAIService(serviceFactory);
     }
 
     /// <inheritdoc/>
