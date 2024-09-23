@@ -22,7 +22,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         VectorSearchOptions searchOptions,
         Dictionary<string, string> storagePropertyNames,
         List<string> vectorPropertyStorageNames,
-        List<string> fields)
+        List<string> dataPropertyStorageNames)
     {
         var vectorsQuery = searchOptions.IncludeVectors ?
             $"vectors {{ {string.Join(" ", vectorPropertyStorageNames)} }}" :
@@ -48,7 +48,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
                 vector: {{vectorArray}}
               }
             ) {
-              {{string.Join(" ", fields)}}
+              {{string.Join(" ", dataPropertyStorageNames)}}
               {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
                 {{WeaviateConstants.ReservedKeyPropertyName}}
                 {{WeaviateConstants.ScorePropertyName}}
