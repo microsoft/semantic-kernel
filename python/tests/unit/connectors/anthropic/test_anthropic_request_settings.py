@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-import pytest
 
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
