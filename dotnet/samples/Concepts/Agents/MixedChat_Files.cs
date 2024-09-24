@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -34,24 +34,22 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agents
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
-<<<<<<< main
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
-=======
                 kernel: new(),
                 provider,
                 new(this.Model)
->>>>>>> ms/features/bugbash-prep
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     EnableCodeInterpreter = true,
                     CodeInterpreterFileIds = [uploadFile.Id], // Associate uploaded file with assistant code-interpreter
                     Metadata = AssistantSampleMetadata,
-<<<<<<< main
                 },
                 kernel: new Kernel());
-=======
                 });
->>>>>>> ms/features/bugbash-prep
+                },
+                kernel: new Kernel());
 
         ChatCompletionAgent summaryAgent =
             new()

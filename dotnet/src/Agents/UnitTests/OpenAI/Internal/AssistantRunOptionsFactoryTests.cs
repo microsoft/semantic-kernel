@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
@@ -23,7 +23,6 @@ public class AssistantRunOptionsFactoryTests
             new("gpt-anything")
             {
                 Temperature = 0.5F,
-<<<<<<< HEAD
                 ExecutionOptions =
                     new()
                     {
@@ -40,7 +39,6 @@ public class AssistantRunOptionsFactoryTests
         Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
         Assert.Equal("test", options.AdditionalInstructions);
-=======
             };
 
         // Act
@@ -50,7 +48,6 @@ public class AssistantRunOptionsFactoryTests
         Assert.NotNull(options);
         Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
         Assert.Empty(options.Metadata);
     }
 
@@ -74,18 +71,20 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-<<<<<<< HEAD
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, "test", invocationOptions);
 
         // Assert
         Assert.NotNull(options);
         Assert.Equal("test", options.InstructionsOverride);
-=======
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
 
         // Assert
         Assert.NotNull(options);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, "test", invocationOptions);
+
+        // Assert
+        Assert.NotNull(options);
+        Assert.Equal("test", options.InstructionsOverride);
         Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
     }
@@ -104,10 +103,7 @@ public class AssistantRunOptionsFactoryTests
                 ExecutionOptions =
                     new()
                     {
-<<<<<<< HEAD
                         AdditionalInstructions = "test1",
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
                         TruncationMessageCount = 5,
                     },
             };
@@ -115,30 +111,22 @@ public class AssistantRunOptionsFactoryTests
         OpenAIAssistantInvocationOptions invocationOptions =
             new()
             {
-<<<<<<< HEAD
                 AdditionalInstructions = "test2",
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
                 Temperature = 0.9F,
                 TruncationMessageCount = 8,
                 EnableJsonResponse = true,
             };
 
         // Act
-<<<<<<< HEAD
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
-=======
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
 
         // Assert
         Assert.NotNull(options);
         Assert.Equal(0.9F, options.Temperature);
         Assert.Equal(8, options.TruncationStrategy.LastMessages);
-<<<<<<< HEAD
         Assert.Equal("test2", options.AdditionalInstructions);
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
         Assert.Equal(AssistantResponseFormat.JsonObject, options.ResponseFormat);
         Assert.Null(options.NucleusSamplingFactor);
     }
@@ -172,11 +160,9 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-<<<<<<< HEAD
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
-=======
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
 
         // Assert
         Assert.Equal(2, options.Metadata.Count);

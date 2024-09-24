@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -25,7 +25,6 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agents
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
-<<<<<<< main
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
                 {
@@ -33,15 +32,15 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
                     Instructions = AgentInstructions,
                 },
                 kernel: new Kernel());
-=======
                 kernel: new(),
                 provider,
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Name = nameof(OpenAIAssistantAgent),
                     Instructions = AgentInstructions,
                 });
->>>>>>> ms/features/bugbash-prep
+                },
+                kernel: new Kernel());
 
         ChatCompletionAgent chatAgent =
             new()

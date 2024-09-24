@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -16,7 +16,6 @@ public class Step10_AssistantTool_CodeInterpreter(ITestOutputHelper output) : Ba
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-<<<<<<< HEAD
                 clientProvider: this.GetClientProvider(),
                 definition: new(this.Model)
                 {
@@ -24,15 +23,16 @@ public class Step10_AssistantTool_CodeInterpreter(ITestOutputHelper output) : Ba
                     Metadata = AssistantSampleMetadata,
                 },
                 kernel: new Kernel());
-=======
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
-                new(this.Model)
+                definition: new(this.Model)
                 {
                     EnableCodeInterpreter = true,
                     Metadata = AssistantSampleMetadata,
                 });
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+                },
+                kernel: new Kernel());
 
         // Create a thread for the agent conversation.
         string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });

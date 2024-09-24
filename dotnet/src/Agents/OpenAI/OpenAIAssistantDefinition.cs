@@ -1,8 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-<<<<<<< main
-=======
+// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
->>>>>>> ms/features/bugbash-prep
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
@@ -13,28 +10,22 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 {
     /// <summary>
-<<<<<<< main
-=======
     /// Identifies the AI model targeted by the agent.
     /// </summary>
     public string ModelId { get; }
 
     /// <summary>
->>>>>>> ms/features/bugbash-prep
     /// The description of the assistant.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Description { get; init; }
 
     /// <summary>
-<<<<<<< main
-=======
     /// The assistant's unique id.  (Ignored on create.)
     /// </summary>
     public string Id { get; init; } = string.Empty;
 
     /// <summary>
->>>>>>> ms/features/bugbash-prep
     /// The system instructions for the assistant to use.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -47,7 +38,6 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     public string? Name { get; init; }
 
     /// <summary>
-<<<<<<< main
     /// Provide the captured template format for the assistant if needed for agent retrieval.
     /// (<see cref="OpenAIAssistantAgent.RetrieveAsync"/>)
     /// </summary>
@@ -66,7 +56,6 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
             return templateFormat;
         }
     }
-=======
     /// Optional file-ids made available to the code_interpreter tool, if enabled.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -89,17 +78,14 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool EnableJsonResponse { get; init; }
->>>>>>> ms/features/bugbash-prep
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantDefinition"/> class.
     /// </summary>
-<<<<<<< main
     /// <param name="modelId">The targeted model</param>
     [JsonConstructor]
     public OpenAIAssistantDefinition(string modelId)
         : base(modelId) { }
-=======
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 
@@ -108,29 +94,24 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? Temperature { get; init; }
-
-    /// <summary>
-    /// An alternative to sampling with temperature, called nucleus sampling, where the model
-    /// considers the results of the tokens with top_p probability mass.
-    /// So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+    /// Provide the captured template format for the assistant if needed for agent retrieval.
+    /// (<see cref="OpenAIAssistantAgent.RetrieveAsync"/>)
     /// </summary>
-    /// <remarks>
-    /// Recommended to set this or temperature but not both.
-    /// </remarks>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public float? TopP { get; init; }
+    [JsonIgnore]
+    public string? TemplateFactoryFormat
+    {
+        get
+        {
+            if (this.Metadata == null)
+            {
+                return null;
+            }
 
-    /// <summary>
-    /// Requires file-search if specified.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? VectorStoreId { get; init; }
+            this.Metadata.TryGetValue(OpenAIAssistantAgent.TemplateMetadataKey, out string? templateFormat);
 
-    /// <summary>
-    /// Default execution options for each agent invocation.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public OpenAIAssistantExecutionOptions? ExecutionOptions { get; init; }
+            return templateFormat;
+        }
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantDefinition"/> class.
@@ -143,5 +124,5 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 
         this.ModelId = modelId;
     }
->>>>>>> ms/features/bugbash-prep
+        : base(modelId) { }
 }

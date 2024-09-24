@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -23,21 +23,21 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
         OpenAIClientProvider provider = this.GetClientProvider();
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-<<<<<<< HEAD
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Metadata = AssistantSampleMetadata,
                 },
                 kernel: new Kernel());
-=======
                 kernel: new(),
                 provider,
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Metadata = AssistantSampleMetadata,
                 });
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+                },
+                kernel: new Kernel());
 
         // Upload an image
         await using Stream imageStream = EmbeddedResource.ReadStream("cat.jpg")!;

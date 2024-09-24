@@ -1,11 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-<<<<<<< HEAD
 using Resources;
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+6d73513a859ab2d05e01db3bc1d405827799e34b
+using Resources;
 
 namespace GettingStarted;
 
@@ -21,11 +20,11 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
     [Fact]
     public async Task UseSingleChatCompletionAgentAsync()
     {
-<<<<<<< HEAD
         Kernel kernel = this.CreateKernelWithChatCompletion();
 
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+        Kernel kernel = this.CreateKernelWithChatCompletion();
+
         // Define the agent
         ChatCompletionAgent agent =
             new()
@@ -58,7 +57,6 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
             }
         }
     }
-<<<<<<< HEAD
 
     [Fact]
     public async Task UseTemplateForChatCompletionAgentAsync()
@@ -104,6 +102,5 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
             }
         }
     }
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
 }

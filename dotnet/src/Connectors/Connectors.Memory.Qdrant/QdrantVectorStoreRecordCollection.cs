@@ -85,6 +85,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         // Verify.
         Verify.NotNull(qdrantClient);
         Verify.NotNullOrWhiteSpace(collectionName);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.PointStructCustomMapper is not null, s_supportedKeyTypes);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._qdrantClient = qdrantClient;

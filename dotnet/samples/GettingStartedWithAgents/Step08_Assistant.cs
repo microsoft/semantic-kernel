@@ -1,13 +1,12 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-<<<<<<< HEAD
 using Resources;
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+6d73513a859ab2d05e01db3bc1d405827799e34b
+using Resources;
 
 namespace GettingStarted;
 
@@ -26,24 +25,24 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-<<<<<<< HEAD
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
-=======
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 new(this.Model)
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+                clientProvider: this.GetClientProvider(),
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Instructions = HostInstructions,
                     Name = HostName,
                     Metadata = AssistantSampleMetadata,
-<<<<<<< HEAD
                 },
                 kernel: new Kernel());
-=======
                 });
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+                },
+                kernel: new Kernel());
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -80,7 +79,6 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         }
     }
 
-<<<<<<< HEAD
     [Fact]
     public async Task UseTemplateForAssistantAgentAsync()
     {
@@ -136,8 +134,7 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         }
     }
 
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
     private sealed class MenuPlugin
     {
         [KernelFunction, Description("Provides a list of specials from the menu.")]

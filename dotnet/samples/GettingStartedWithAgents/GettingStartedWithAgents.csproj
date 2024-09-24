@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>GettingStartedWithAgents</AssemblyName>
@@ -61,9 +61,10 @@
   <ItemGroup>
 <<<<<<< main
     <None Remove="Resources\*" />
-=======
     <None Remove="Resources\travelinfo.txt" />
->>>>>>> ms/features/bugbash-prep
+=======
+    <None Remove="Resources\*" />
+>>>>>>> ms/main
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -58,11 +58,10 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
                 {
                     Instructions = TutorInstructions,
                     Name = TutorName,
-<<<<<<< HEAD
                     Kernel = sp.GetRequiredService<Kernel>().Clone(),
-=======
                     Kernel = sp.GetRequiredService<Kernel>(),
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+                    Kernel = sp.GetRequiredService<Kernel>().Clone(),
                 });
 
         // Create a service provider for resolving registered services
@@ -73,15 +72,10 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
         AgentClient agentClient = serviceProvider.GetRequiredService<AgentClient>();
 
         // Execute the agent-client
-<<<<<<< HEAD
-<<<<<<< HEAD
         await WriteAgentResponse("The sunset is very colorful.");
-=======
         await WriteAgentResponse("The sunset is nice.");
->>>>>>> main
-=======
         await WriteAgentResponse("The sunset is very colorful.");
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
         await WriteAgentResponse("The sunset is setting over the mountains.");
         await WriteAgentResponse("The sunset is setting over the mountains and filled the sky with a deep red flame, setting the clouds ablaze.");
 

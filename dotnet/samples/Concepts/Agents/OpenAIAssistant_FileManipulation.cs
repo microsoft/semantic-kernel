@@ -1,12 +1,6 @@
-<<<<<<< main
-﻿// Copyright (c) Microsoft. All rights reserved.
-<<<<<<< main
-=======
+
 // Copyright (c) Microsoft. All rights reserved.
 using System.Text;
->>>>>>> origin/PR
-=======
->>>>>>> ms/features/bugbash-prep
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -38,24 +32,22 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-<<<<<<< main
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
-=======
                 kernel: new(),
                 provider,
                 new(this.Model)
->>>>>>> ms/features/bugbash-prep
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     EnableCodeInterpreter = true,
                     CodeInterpreterFileIds = [uploadFile.Id],
                     Metadata = AssistantSampleMetadata,
-<<<<<<< main
                 },
                 kernel: new Kernel());
-=======
                 });
->>>>>>> ms/features/bugbash-prep
+                },
+                kernel: new Kernel());
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();
@@ -83,11 +75,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 
             await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
-<<<<<<< main
-<<<<<<< main
                 this.WriteAgentChatMessage(response);
                 await this.DownloadResponseContentAsync(fileClient, response);
-=======
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
 
                 foreach (AnnotationContent annotation in content.Items.OfType<AnnotationContent>())
@@ -102,11 +91,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
                     byte[] byteContent = fileContent.Data?.ToArray() ?? [];
                     Console.WriteLine(Encoding.Default.GetString(byteContent));
                 }
->>>>>>> origin/PR
-=======
                 this.WriteAgentChatMessage(response);
                 await this.DownloadResponseContentAsync(fileClient, response);
->>>>>>> ms/features/bugbash-prep
             }
         }
     }

@@ -124,7 +124,53 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
+    /// <param name="clientProvider">OpenAI client provider for accessing the API service.</param>
+    /// <param name="capabilities">Defines the assistant's capabilities.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="defaultArguments">Required arguments that provide default template parameters, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="templateConfig">Prompt template configuration</param>
+    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
+    public async static Task<OpenAIAssistantAgent> CreateFromTemplateAsync(
+        OpenAIClientProvider clientProvider,
+        OpenAIAssistantCapabilities capabilities,
+        Kernel kernel,
+        KernelArguments defaultArguments,
+        PromptTemplateConfig templateConfig,
+        IPromptTemplateFactory? templateFactory = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Validate input
+        Verify.NotNull(kernel, nameof(kernel));
+        Verify.NotNull(defaultArguments, nameof(defaultArguments));
+        Verify.NotNull(clientProvider, nameof(clientProvider));
+        Verify.NotNull(capabilities, nameof(capabilities));
+        Verify.NotNull(templateConfig, nameof(templateConfig));
+
+        // Ensure template is valid (avoid failure after posting assistant creation)
+        IPromptTemplate? template = templateFactory?.Create(templateConfig);
+
+        // Create the client
+        AssistantClient client = CreateClient(clientProvider);
+
+        // Create the assistant
+        AssistantCreationOptions assistantCreationOptions = templateConfig.CreateAssistantOptions(capabilities);
+        Assistant model = await client.CreateAssistantAsync(capabilities.ModelId, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
+
+        // Instantiate the agent
+        return
+            new OpenAIAssistantAgent(model, clientProvider, client)
+            {
+                Kernel = kernel,
+                Arguments = defaultArguments,
+                Template = template,
+            };
+    }
+
+    /// <summary>
+    /// Define a new <see cref="OpenAIAssistantAgent"/>.
+    /// </summary>
     /// <param name="clientProvider">OpenAI client provider for accessing the API service.</param>
     /// <param name="definition">The assistant definition.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -132,7 +178,6 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
     public static async Task<OpenAIAssistantAgent> CreateAsync(
-        Kernel kernel,
         OpenAIClientProvider clientProvider,
         OpenAIAssistantDefinition definition,
         Kernel kernel,
@@ -151,6 +196,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantCreationOptions();
         AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantOptions();
         AssistantCreationOptions assistantCreationOptions = CreateAssistantCreationOptions(definition);
+        AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantOptions();
         Assistant model = await client.CreateAssistantAsync(definition.ModelId, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
@@ -378,7 +424,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <returns>Asynchronous enumeration of response messages.</returns>
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
@@ -642,16 +688,5 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     private static AssistantClient CreateClient(OpenAIClientProvider config)
     {
         return config.Client.GetAssistantClient();
-    }
-
-    private static IEnumerable<string> DefineChannelKeys(OpenAIClientProvider config)
-    {
-        // Distinguish from other channel types.
-        yield return typeof(AgentChannel<OpenAIAssistantAgent>).FullName!;
-
-        foreach (string key in config.ConfigurationKeys)
-        {
-            yield return key;
-        }
     }
 }

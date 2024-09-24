@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using OpenAI.Assistants;
 
@@ -16,25 +16,22 @@ internal static class AssistantRunOptionsFactory
     /// Produce <see cref="RunCreationOptions"/> by reconciling <see cref="OpenAIAssistantDefinition"/> and <see cref="OpenAIAssistantInvocationOptions"/>.
     /// </summary>
     /// <param name="definition">The assistant definition</param>
-<<<<<<< HEAD
     /// <param name="overrideInstructions">Instructions to use for the run</param>
     /// <param name="invocationOptions">The run specific options</param>
     public static RunCreationOptions GenerateOptions(OpenAIAssistantDefinition definition, string? overrideInstructions, OpenAIAssistantInvocationOptions? invocationOptions)
-=======
     /// <param name="invocationOptions">The run specific options</param>
     public static RunCreationOptions GenerateOptions(OpenAIAssistantDefinition definition, OpenAIAssistantInvocationOptions? invocationOptions)
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+    /// <param name="overrideInstructions">Instructions to use for the run</param>
+    /// <param name="invocationOptions">The run specific options</param>
+    public static RunCreationOptions GenerateOptions(OpenAIAssistantDefinition definition, string? overrideInstructions, OpenAIAssistantInvocationOptions? invocationOptions)
     {
         int? truncationMessageCount = ResolveExecutionSetting(invocationOptions?.TruncationMessageCount, definition.ExecutionOptions?.TruncationMessageCount);
 
         RunCreationOptions options =
             new()
             {
-<<<<<<< HEAD
                 AdditionalInstructions = invocationOptions?.AdditionalInstructions ?? definition.ExecutionOptions?.AdditionalInstructions,
                 InstructionsOverride = overrideInstructions,
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
                 MaxCompletionTokens = ResolveExecutionSetting(invocationOptions?.MaxCompletionTokens, definition.ExecutionOptions?.MaxCompletionTokens),
                 MaxPromptTokens = ResolveExecutionSetting(invocationOptions?.MaxPromptTokens, definition.ExecutionOptions?.MaxPromptTokens),
                 ModelOverride = invocationOptions?.ModelName,

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -62,10 +62,7 @@ public class OpenAIAssistantDefinitionTests
                 ExecutionOptions =
                     new()
                     {
-<<<<<<< main
                         AdditionalInstructions = "test instructions",
-=======
->>>>>>> ms/features/bugbash-prep
                         MaxCompletionTokens = 1000,
                         MaxPromptTokens = 1000,
                         ParallelToolCallsEnabled = false,
@@ -87,10 +84,7 @@ public class OpenAIAssistantDefinitionTests
         Assert.Equal(2, definition.Temperature);
         Assert.Equal(0, definition.TopP);
         Assert.NotNull(definition.ExecutionOptions);
-<<<<<<< main
         Assert.Equal("test instructions", definition.ExecutionOptions.AdditionalInstructions);
-=======
->>>>>>> ms/features/bugbash-prep
         Assert.Equal(1000, definition.ExecutionOptions.MaxCompletionTokens);
         Assert.Equal(1000, definition.ExecutionOptions.MaxPromptTokens);
         Assert.Equal(12, definition.ExecutionOptions.TruncationMessageCount);
@@ -128,7 +122,7 @@ public class OpenAIAssistantDefinitionTests
     }
 
 =======
->>>>>>> ms/features/bugbash-prep
+>>>>>>> ms/main
     private static void ValidateSerialization(OpenAIAssistantDefinition source)
     {
         string json = JsonSerializer.Serialize(source);

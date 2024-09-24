@@ -1,13 +1,12 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Net.Http;
 using Azure.Core;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Moq;
-<<<<<<< HEAD
 using OpenAI;
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+6d73513a859ab2d05e01db3bc1d405827799e34b
+using OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
@@ -21,15 +20,16 @@ public class OpenAIClientProviderTests
     /// Verify that provisioning of client for Azure OpenAI.
     /// </summary>
     [Fact]
-<<<<<<< HEAD
     public void VerifyOpenAIClientProviderTargetAzureByKey()
     {
         // Act
-=======
     public void VerifyOpenAIClientFactoryTargetAzureByKey()
     {
         // Arrange
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+    public void VerifyOpenAIClientProviderTargetAzureByKey()
+    {
+        // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI("key", new Uri("https://localhost"));
 
         // Assert
@@ -40,19 +40,23 @@ public class OpenAIClientProviderTests
     /// Verify that provisioning of client for Azure OpenAI.
     /// </summary>
     [Fact]
-<<<<<<< HEAD
     public void VerifyOpenAIClientProviderTargetAzureByCredential()
     {
         // Arrange
         Mock<TokenCredential> mockCredential = new();
 
         // Act
-=======
     public void VerifyOpenAIClientFactoryTargetAzureByCredential()
     {
         // Arrange
         Mock<TokenCredential> mockCredential = new();
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+    public void VerifyOpenAIClientProviderTargetAzureByCredential()
+    {
+        // Arrange
+        Mock<TokenCredential> mockCredential = new();
+
+        // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI(mockCredential.Object, new Uri("https://localhost"));
 
         // Assert
@@ -65,15 +69,16 @@ public class OpenAIClientProviderTests
     [Theory]
     [InlineData(null)]
     [InlineData("http://myproxy:9819")]
-<<<<<<< HEAD
     public void VerifyOpenAIClientProviderTargetOpenAINoKey(string? endpoint)
     {
         // Act
-=======
     public void VerifyOpenAIClientFactoryTargetOpenAINoKey(string? endpoint)
     {
         // Arrange
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+    public void VerifyOpenAIClientProviderTargetOpenAINoKey(string? endpoint)
+    {
+        // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(endpoint != null ? new Uri(endpoint) : null);
 
         // Assert
@@ -86,15 +91,16 @@ public class OpenAIClientProviderTests
     [Theory]
     [InlineData("key", null)]
     [InlineData("key", "http://myproxy:9819")]
-<<<<<<< HEAD
     public void VerifyOpenAIClientProviderTargetOpenAIByKey(string key, string? endpoint)
     {
         // Act
-=======
     public void VerifyOpenAIClientFactoryTargetOpenAIByKey(string key, string? endpoint)
     {
         // Arrange
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+    public void VerifyOpenAIClientProviderTargetOpenAIByKey(string key, string? endpoint)
+    {
+        // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(key, endpoint != null ? new Uri(endpoint) : null);
 
         // Assert
@@ -105,24 +111,27 @@ public class OpenAIClientProviderTests
     /// Verify that the factory can create a client with http proxy.
     /// </summary>
     [Fact]
-<<<<<<< HEAD
     public void VerifyOpenAIClientProviderWithHttpClient()
     {
         // Arrange
         using HttpClient httpClient = new() { BaseAddress = new Uri("http://myproxy:9819") };
 
         // Act
-=======
     public void VerifyOpenAIClientFactoryWithHttpClient()
     {
         // Arrange
         using HttpClient httpClient = new() { BaseAddress = new Uri("http://myproxy:9819") };
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+    public void VerifyOpenAIClientProviderWithHttpClient()
+    {
+        // Arrange
+        using HttpClient httpClient = new() { BaseAddress = new Uri("http://myproxy:9819") };
+
+        // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(httpClient: httpClient);
 
         // Assert
         Assert.NotNull(provider.Client);
-<<<<<<< HEAD
 
         // Arrange
         using HttpClient httpClientWithHeaders = new() { BaseAddress = new Uri("http://myproxy:9819") };
@@ -167,7 +176,6 @@ public class OpenAIClientProviderTests
         // Assert
         Assert.NotNull(provider.Client);
         Assert.Equal(mockClient.Object, provider.Client);
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
     }
 }

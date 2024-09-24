@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
@@ -93,9 +93,10 @@ public sealed class OpenAIClientProvider
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);
 <<<<<<< HEAD
         return new(new OpenAIClient(apiKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
-=======
         return new(new OpenAIClient(apiKey ?? SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+=======
+        return new(new OpenAIClient(apiKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
+>>>>>>> ms/main
     }
 
     /// <summary>

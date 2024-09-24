@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -20,7 +20,6 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
         OpenAIClientProvider provider = this.GetClientProvider();
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-<<<<<<< HEAD
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
                 {
@@ -28,15 +27,16 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
                     Metadata = AssistantSampleMetadata,
                 },
                 kernel: new Kernel());
-=======
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     EnableFileSearch = true,
                     Metadata = AssistantSampleMetadata,
                 });
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+                },
+                kernel: new Kernel());
 
         // Upload file - Using a table of fictional employees.
         FileClient fileClient = provider.Client.GetFileClient();
@@ -72,15 +72,10 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
         finally
         {
             await agent.DeleteThreadAsync(threadId);
-<<<<<<< HEAD
-<<<<<<< HEAD
             await agent.DeleteAsync(CancellationToken.None);
-=======
             await agent.DeleteAsync();
->>>>>>> main
-=======
             await agent.DeleteAsync(CancellationToken.None);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
             await vectorStoreClient.DeleteVectorStoreAsync(vectorStore);
             await fileClient.DeleteFileAsync(fileInfo.Id);
         }
