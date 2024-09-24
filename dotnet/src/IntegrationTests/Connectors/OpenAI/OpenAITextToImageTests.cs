@@ -83,6 +83,6 @@ public sealed class OpenAITextToImageTests
         // Assert
         Assert.NotNull(result);
         Assert.NotEmpty(result);
-        Assert.NotEmpty(result[0].Uri!.ToString()); 
+        Assert.NotEmpty(result[0].Uri!.ToString());
     }
 }
