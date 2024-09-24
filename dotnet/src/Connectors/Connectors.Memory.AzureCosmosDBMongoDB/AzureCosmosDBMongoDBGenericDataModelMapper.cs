@@ -92,7 +92,7 @@ internal sealed class AzureCosmosDBMongoDBGenericDataModelMapper : IVectorStoreR
                     continue;
                 }
 
-                dataProperties.Add(dataProperty.DataModelPropertyName, GetDataPropertyValue(property.PropertyType, dataValue));
+                dataProperties.Add(dataProperty.DataModelPropertyName, GetDataPropertyValue(property.DataModelPropertyName, property.PropertyType, dataValue));
             }
             else if (property is VectorStoreRecordVectorProperty vectorProperty && options.IncludeVectors)
             {
@@ -101,7 +101,7 @@ internal sealed class AzureCosmosDBMongoDBGenericDataModelMapper : IVectorStoreR
                     continue;
                 }
 
-                vectorProperties.Add(vectorProperty.DataModelPropertyName, GetVectorPropertyValue(property.PropertyType, vectorValue));
+                vectorProperties.Add(vectorProperty.DataModelPropertyName, GetVectorPropertyValue(property.DataModelPropertyName, property.PropertyType, vectorValue));
             }
         }
 
@@ -115,7 +115,7 @@ internal sealed class AzureCosmosDBMongoDBGenericDataModelMapper : IVectorStoreR
 
     #region private
 
-    private static object? GetDataPropertyValue(Type propertyType, BsonValue value)
+    private static object? GetDataPropertyValue(string propertyName, Type propertyType, BsonValue value)
     {
         if (value.IsBsonNull)
         {
@@ -140,12 +140,12 @@ internal sealed class AzureCosmosDBMongoDBGenericDataModelMapper : IVectorStoreR
             Type t when t == typeof(DateTime) => value.ToUniversalTime(),
             Type t when t == typeof(DateTime?) => value.ToNullableUniversalTime(),
             Type t when typeof(IEnumerable).IsAssignableFrom(t) => value.AsBsonArray.Select(
-                item => GetDataPropertyValue(VectorStoreRecordPropertyReader.GetCollectionElementType(t), item)),
-            _ => throw new NotSupportedException($"Mapping for type {propertyType.FullName} is not supported in generic data model.")
+                item => GetDataPropertyValue(propertyName, VectorStoreRecordPropertyReader.GetCollectionElementType(t), item)),
+            _ => throw new NotSupportedException($"Mapping for property {propertyName} with type {propertyType.FullName} is not supported in generic data model.")
         };
     }
 
-    private static object? GetVectorPropertyValue(Type propertyType, BsonValue value)
+    private static object? GetVectorPropertyValue(string propertyName, Type propertyType, BsonValue value)
     {
         if (value.IsBsonNull)
         {
@@ -158,7 +158,7 @@ internal sealed class AzureCosmosDBMongoDBGenericDataModelMapper : IVectorStoreR
                 new ReadOnlyMemory<float>(value.AsBsonArray.Select(item => (float)item.AsDouble).ToArray()),
             Type t when t == typeof(ReadOnlyMemory<double>) || t == typeof(ReadOnlyMemory<double>?) =>
                 new ReadOnlyMemory<double>(value.AsBsonArray.Select(item => item.AsDouble).ToArray()),
-            _ => throw new NotSupportedException($"Mapping for type {propertyType.FullName} is not supported in generic data model.")
+            _ => throw new NotSupportedException($"Mapping for property {propertyName} with type {propertyType.FullName} is not supported in generic data model.")
         };
     }
 
