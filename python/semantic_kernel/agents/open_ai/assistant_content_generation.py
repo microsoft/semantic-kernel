@@ -4,7 +4,10 @@ from typing import TYPE_CHECKING, Any
 
 from openai import AsyncOpenAI
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
+from openai.types.beta.threads.image_file_delta_block import ImageFileDeltaBlock
+from openai.types.beta.threads.message_delta_event import MessageDeltaEvent
 from openai.types.beta.threads.text_content_block import TextContentBlock
+from openai.types.beta.threads.text_delta_block import TextDeltaBlock
 
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -12,6 +15,10 @@ from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
@@ -109,6 +116,43 @@ def generate_message_content(assistant_name: str, message: "Message") -> ChatMes
     return content
 
 
+def generate_streaming_message_content(
+    assistant_name: str, message_delta_event: "MessageDeltaEvent"
+) -> StreamingChatMessageContent:
+    """Generate streaming message content from a MessageDeltaEvent."""
+    delta = message_delta_event.delta
+
+    # Determine the role
+    role = AuthorRole(delta.role) if delta.role is not None else AuthorRole("assistant")
+
+    items: list[StreamingTextContent | StreamingAnnotationContent | StreamingFileReferenceContent] = []
+
+    # Process each content block in the delta
+    for delta_block in delta.content or []:
+        if delta_block.type == "text":
+            assert isinstance(delta_block, TextDeltaBlock)  # nosec
+            text_value = delta_block.text.value or ""
+            items.append(
+                StreamingTextContent(
+                    text=text_value,
+                    choice_index=delta_block.index,
+                )
+            )
+            # Process annotations if any
+            for annotation in delta_block.text.annotations or []:
+                items.append(generate_streaming_annotation_content(annotation))
+        elif delta_block.type == "image_file":
+            assert isinstance(delta_block, ImageFileDeltaBlock)  # nosec
+            file_id = delta_block.image_file.file_id or ""
+            items.append(
+                StreamingFileReferenceContent(
+                    file_id=file_id,
+                )
+            )
+
+    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0)
+
+
 def generate_function_call_content(agent_name: str, fccs: list[FunctionCallContent]) -> ChatMessageContent:
     """Generate function call content.
 
@@ -191,6 +235,22 @@ def generate_annotation_content(annotation: "Annotation") -> AnnotationContent:
         file_id = annotation.file_citation.file_id
 
     return AnnotationContent(
+        file_id=file_id,
+        quote=annotation.text,
+        start_index=annotation.start_index,
+        end_index=annotation.end_index,
+    )
+
+
+def generate_streaming_annotation_content(annotation: "Annotation") -> StreamingAnnotationContent:
+    """Generate streaming annotation content."""
+    file_id = None
+    if hasattr(annotation, "file_path"):
+        file_id = annotation.file_path.file_id
+    elif hasattr(annotation, "file_citation"):
+        file_id = annotation.file_citation.file_id
+
+    return StreamingAnnotationContent(
         file_id=file_id,
         quote=annotation.text,
         start_index=annotation.start_index,

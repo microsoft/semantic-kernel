@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent, OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -13,13 +13,10 @@ from semantic_kernel.kernel import Kernel
 # assistant and leverage the assistant's file search functionality. #
 #####################################################################
 
-AGENT_NAME = "ChartMaker"
-AGENT_INSTRUCTIONS = "Create charts as requested without explanation."
+AGENT_NAME = "JokeTeller"
+AGENT_INSTRUCTIONS = "Tell me a funny joke about the topic at hand."
 
-# Note: you may toggle this to switch between AzureOpenAI and OpenAI
-use_azure_openai = False
-
-streaming = True
+streaming = False
 
 
 # A helper method to invoke the agent with the user input
@@ -57,49 +54,22 @@ async def main():
     service_id = "agent"
 
     # Create the agent configuration
-    if use_azure_openai:
-        agent = await AzureAssistantAgent.create(
-            kernel=kernel,
-            service_id=service_id,
-            name=AGENT_NAME,
-            instructions=AGENT_INSTRUCTIONS,
-            enable_code_interpreter=True,
-        )
-    else:
-        agent = await OpenAIAssistantAgent.create(
-            kernel=kernel,
-            service_id=service_id,
-            name=AGENT_NAME,
-            instructions=AGENT_INSTRUCTIONS,
-            enable_code_interpreter=True,
-        )
+    agent = await OpenAIAssistantAgent.create(
+        kernel=kernel,
+        service_id=service_id,
+        name=AGENT_NAME,
+        instructions=AGENT_INSTRUCTIONS,
+        enable_code_interpreter=True,
+    )
 
     # Define a thread and invoke the agent with the user input
     thread_id = await agent.create_thread()
 
-    try:
-        await invoke_agent(
-            agent,
-            thread_id=thread_id,
-            input="""
-                Display this data using a bar-chart:
+    agent_id = agent.assistant.id
 
-                Banding  Brown Pink Yellow  Sum
-                X00000   339   433     126  898
-                X00300    48   421     222  691
-                X12345    16   395     352  763
-                Others    23   373     156  552
-                Sum      426  1622     856 2904
-                """,
-        )
-        await invoke_agent(
-            agent,
-            thread_id=thread_id,
-            input="Can you regenerate this same chart using the category names as the bar colors?",
-        )
-    finally:
-        await agent.delete_thread(thread_id)
-        await agent.delete()
+    second_agent = await OpenAIAssistantAgent.retrieve(id=agent_id, kernel=kernel)
+
+    await invoke_agent(second_agent, thread_id=thread_id, input="Tell me a joke about dinosaurs.")
 
 
 if __name__ == "__main__":

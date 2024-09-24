@@ -23,6 +23,7 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_function_call_content,
     generate_function_result_content,
     generate_message_content,
+    generate_streaming_message_content,
     get_function_call_contents,
     get_message_contents,
 )
@@ -722,8 +723,12 @@ class OpenAIAssistantBase(Agent):
             run = await self._poll_run_status(run=run, thread_id=thread_id)
 
             if run.status in self.error_message_states:
+                error_message = ""
+                if hasattr(run, "last_error"):
+                    error_message = run.last_error.message
                 raise AgentInvokeException(
-                    f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}`"
+                    f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}` "
+                    f"with error: {error_message}"
                 )
 
             # Check if function calling required
@@ -783,6 +788,149 @@ class OpenAIAssistantBase(Agent):
                             message_count += 1
                             yield True, content
                 processed_step_ids.add(completed_step.id)
+
+    async def invoke_stream(
+        self,
+        thread_id: str,
+        *,
+        ai_model_id: str | None = None,
+        enable_code_interpreter: bool | None = False,
+        enable_file_search: bool | None = False,
+        enable_json_response: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        metadata: dict[str, str] | None = {},
+        **kwargs: Any,
+    ) -> AsyncIterable[ChatMessageContent]:
+        """Invoke the chat assistant with streaming."""
+        async for is_visible, content in self._invoke_internal_stream(
+            thread_id=thread_id,
+            ai_model_id=ai_model_id,
+            enable_code_interpreter=enable_code_interpreter,
+            enable_file_search=enable_file_search,
+            enable_json_response=enable_json_response,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            parallel_tool_calls_enabled=parallel_tool_calls_enabled,
+            truncation_message_count=truncation_message_count,
+            temperature=temperature,
+            top_p=top_p,
+            metadata=metadata,
+            **kwargs,
+        ):
+            if is_visible:
+                yield content
+
+    async def _invoke_internal_stream(
+        self,
+        thread_id: str,
+        *,
+        ai_model_id: str | None = None,
+        enable_code_interpreter: bool | None = False,
+        enable_file_search: bool | None = False,
+        enable_json_response: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        metadata: dict[str, str] | None = {},
+        **kwargs: Any,
+    ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
+        """Internal invoke method with streaming."""
+        if not self.assistant:
+            raise AgentInitializationException("The assistant has not been created.")
+
+        if self._is_deleted:
+            raise AgentInitializationException("The assistant has been deleted.")
+
+        tools = self._get_tools()
+
+        run_options = self._generate_options(
+            ai_model_id=ai_model_id,
+            enable_code_interpreter=enable_code_interpreter,
+            enable_file_search=enable_file_search,
+            enable_json_response=enable_json_response,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            parallel_tool_calls_enabled=parallel_tool_calls_enabled,
+            truncation_message_count=truncation_message_count,
+            temperature=temperature,
+            top_p=top_p,
+            metadata=metadata,
+            **kwargs,
+        )
+
+        # Filter out None values to avoid passing them as kwargs
+        run_options = {k: v for k, v in run_options.items() if v is not None}
+
+        stream = self.client.beta.threads.runs.stream(
+            assistant_id=self.assistant.id,
+            thread_id=thread_id,
+            instructions=self.assistant.instructions,
+            tools=tools,  # type: ignore
+            **run_options,
+        )
+
+        function_steps: dict[str, FunctionCallContent] = {}
+
+        while True:
+            async with stream as response_stream:
+                async for event in response_stream:
+                    if event.event == "thread.run.created":
+                        run = event.data
+                        logger.info(f"Run created with ID: {run.id}")
+                    elif event.event == "thread.run.in_progress":
+                        run = event.data
+                        logger.info(f"Run in progress with ID: {run.id}")
+                    elif event.event == "thread.message.delta":
+                        content = generate_streaming_message_content(self.name, event.data)
+                        yield True, content
+                    elif event.event == "thread.run.requires_action":
+                        run = event.data
+                        function_call_content, tool_outputs = await self._handle_requires_action(run, function_steps)
+                        if function_call_content:
+                            yield False, function_call_content
+
+                            stream = self.client.beta.threads.runs.submit_tool_outputs_stream(
+                                run_id=run.id,
+                                thread_id=thread_id,
+                                tool_outputs=tool_outputs,
+                            )
+                            break
+                    elif event.event == "thread.run.completed":
+                        run = event.data
+                        logger.info(f"Run completed with ID: {run.id}")
+                        return
+                    elif event.event.startswith("thread.run.") and event.event.endswith("failed"):
+                        run = event.data
+                        error_message = ""
+                        if hasattr(run, "last_error"):
+                            error_message = run.last_error.message
+                        raise AgentInvokeException(
+                            f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}` "
+                            f"with error: {error_message}"
+                        )
+                else:
+                    # If the inner loop completes without encountering a 'break', exit the outer loop
+                    break
+
+    async def _handle_requires_action(self, run: Run, function_steps: dict[str, FunctionCallContent]):
+        fccs = get_function_call_contents(run, function_steps)
+        if fccs:
+            function_call_content = generate_function_call_content(agent_name=self.name, fccs=fccs)
+
+            chat_history = ChatHistory()
+            _ = await self._invoke_function_calls(fccs=fccs, chat_history=chat_history)
+
+            tool_outputs = self._format_tool_outputs(fccs, chat_history)
+            return function_call_content, tool_outputs
+        return None, None
 
     # endregion
 

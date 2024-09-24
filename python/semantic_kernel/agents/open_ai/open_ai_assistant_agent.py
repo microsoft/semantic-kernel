@@ -397,6 +397,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             )
         assistant = await client.beta.assistants.retrieve(id)
         assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+        assistant_definition.update({"assistant": assistant})
         return OpenAIAssistantAgent(kernel=kernel, **assistant_definition)
 
     # endregion
