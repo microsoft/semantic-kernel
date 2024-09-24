@@ -16,13 +16,13 @@ internal static class AzureCosmosDBMongoDBConstants
     /// <summary>Reserved key property name in data model.</summary>
     internal const string DataModelReservedKeyPropertyName = "Id";
 
-    /// <summary>A set of types that a key on the provided model may have.</summary>
+    /// <summary>A <see cref="HashSet{Type}"/> containing the supported key types.</summary>
     internal static readonly HashSet<Type> SupportedKeyTypes =
     [
         typeof(string)
     ];
 
-    /// <summary>A set of types that data properties on the provided model may have.</summary>
+    /// <summary>A <see cref="HashSet{Type}"/> containing the supported data property types.</summary>
     internal static readonly HashSet<Type> SupportedDataTypes =
     [
         typeof(bool),
@@ -42,7 +42,7 @@ internal static class AzureCosmosDBMongoDBConstants
         typeof(DateTime?),
     ];
 
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
+    /// <summary>A <see cref="HashSet{Type}"/> containing the supported vector types.</summary>
     internal static readonly HashSet<Type> SupportedVectorTypes =
     [
         typeof(ReadOnlyMemory<float>),

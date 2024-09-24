@@ -10,7 +10,7 @@ using MongoDB.Bson;
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 /// <summary>
-/// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored in Azure CosmosDB MongoDB.
+/// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Azure CosmosDB MongoDB.
 /// </summary>
 internal sealed class AzureCosmosDBMongoDBGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, BsonDocument>
 {
