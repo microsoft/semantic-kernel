@@ -22,18 +22,18 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 internal static class AssistantThreadActions
 {
     private static readonly HashSet<RunStatus> s_pollingStatuses =
-        [
-            RunStatus.Queued,
-            RunStatus.InProgress,
-            RunStatus.Cancelling,
-        ];
+    [
+        RunStatus.Queued,
+        RunStatus.InProgress,
+        RunStatus.Cancelling,
+    ];
 
     private static readonly HashSet<RunStatus> s_terminalStatuses =
-        [
-            RunStatus.Expired,
-            RunStatus.Failed,
-            RunStatus.Cancelled,
-        ];
+    [
+        RunStatus.Expired,
+        RunStatus.Failed,
+        RunStatus.Cancelled,
+    ];
 
     /// <summary>
     /// Create a new assistant thread.
@@ -111,31 +111,26 @@ internal static class AssistantThreadActions
     {
         Dictionary<string, string?> agentNames = []; // Cache agent names by their identifier
 
-        await foreach (PageResult<ThreadMessage> page in client.GetMessagesAsync(threadId, new() { Order = ListOrder.NewestFirst }, cancellationToken).ConfigureAwait(false))
+        await foreach (var message in client.GetMessagesAsync(threadId, new() { Order = MessageCollectionOrder.Descending }, cancellationToken).ConfigureAwait(false))
         {
-            foreach (ThreadMessage message in page.Values)
+            string? assistantName = null;
+            if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
+                !agentNames.TryGetValue(message.AssistantId, out assistantName))
             {
-                AuthorRole role = new(message.Role.ToString());
-
-                string? assistantName = null;
-                if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
-                    !agentNames.TryGetValue(message.AssistantId, out assistantName))
+                Assistant assistant = await client.GetAssistantAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
+                if (!string.IsNullOrWhiteSpace(assistant.Name))
                 {
-                    Assistant assistant = await client.GetAssistantAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
-                    if (!string.IsNullOrWhiteSpace(assistant.Name))
-                    {
-                        agentNames.Add(assistant.Id, assistant.Name);
-                    }
+                    agentNames.Add(assistant.Id, assistant.Name);
                 }
+            }
 
-                assistantName ??= message.AssistantId;
+            assistantName ??= message.AssistantId;
 
-                ChatMessageContent content = GenerateMessageContent(assistantName, message);
+            ChatMessageContent content = GenerateMessageContent(assistantName, message);
 
-                if (content.Items.Count > 0)
-                {
-                    yield return content;
-                }
+            if (content.Items.Count > 0)
+            {
+                yield return content;
             }
         }
     }
@@ -459,10 +454,10 @@ internal static class AssistantThreadActions
     {
         List<RunStep> steps = [];
 
-        await foreach (PageResult<RunStep> page in client.GetRunStepsAsync(run).ConfigureAwait(false))
+        await foreach (var step in client.GetRunStepsAsync(run).ConfigureAwait(false))
         {
-            steps.AddRange(page.Values);
-        };
+            steps.Add(step);
+        }
 
         return steps;
     }

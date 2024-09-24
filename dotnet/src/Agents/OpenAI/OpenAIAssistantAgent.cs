@@ -153,12 +153,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         AssistantClient client = CreateClient(provider);
 
         // Query and enumerate assistant definitions
-        await foreach (PageResult<Assistant> page in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = ListOrder.NewestFirst }, cancellationToken).ConfigureAwait(false))
+        await foreach (var model in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = AssistantCollectionOrder.Descending }, cancellationToken).ConfigureAwait(false))
         {
-            foreach (Assistant model in page.Values)
-            {
-                yield return CreateAssistantDefinition(model);
-            }
+            yield return CreateAssistantDefinition(model);
         }
     }
 
@@ -193,9 +190,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Ensure template is valid (avoid failure after posting assistant creation)
         IPromptTemplate? template =
-            !string.IsNullOrWhiteSpace(model.Instructions) ?
-                templateFactory?.Create(new PromptTemplateConfig(model.Instructions!)) :
-                null;
+            !string.IsNullOrWhiteSpace(model.Instructions) ? templateFactory?.Create(new PromptTemplateConfig(model.Instructions!)) : null;
 
         // Instantiate the agent
         return
@@ -237,7 +232,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         // Validate input
         Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
 
-        return await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+        return (await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false)).Value.Deleted;
     }
 
     /// <summary>
@@ -297,7 +292,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     {
         if (!this.IsDeleted)
         {
-            this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value;
+            this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value.Deleted;
         }
 
         return this.IsDeleted;
@@ -319,7 +314,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         KernelArguments? arguments = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-            => this.InvokeAsync(threadId, options: null, arguments, kernel, cancellationToken);
+        => this.InvokeAsync(threadId, options: null, arguments, kernel, cancellationToken);
 
     /// <summary>
     /// Invoke the assistant on the specified thread.
@@ -372,7 +367,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         Kernel? kernel = null,
         ChatHistory? messages = null,
         CancellationToken cancellationToken = default)
-            => this.InvokeStreamingAsync(threadId, options: null, arguments, kernel, messages, cancellationToken);
+        => this.InvokeStreamingAsync(threadId, options: null, arguments, kernel, messages, cancellationToken);
 
     /// <summary>
     /// Invoke the assistant on the specified thread with streaming response.

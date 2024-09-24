@@ -293,7 +293,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             {
                 Console.WriteLine($"   Image uri: {contentUpdate.ImageUri}");
                 Console.WriteLine($"   Image media type: {contentUpdate.ImageBytesMediaType}");
-                Console.WriteLine($"   Image detail: {contentUpdate.ImageDetail}");
+                Console.WriteLine($"   Image detail: {contentUpdate.ImageDetailLevel}");
                 Console.WriteLine($"   Image bytes: {contentUpdate.ImageBytes}");
                 Console.WriteLine("   =======");
             }
@@ -345,9 +345,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         /// The last message in the chunk is a <see cref="ChatDoneResponseStream"/> type with additional metadata.
         if (streamChunk.Usage is not null)
         {
-            Console.WriteLine($"Usage input tokens: {streamChunk.Usage.InputTokens}");
-            Console.WriteLine($"Usage output tokens: {streamChunk.Usage.OutputTokens}");
-            Console.WriteLine($"Usage total tokens: {streamChunk.Usage.TotalTokens}");
+            Console.WriteLine($"Usage input tokens: {streamChunk.Usage.InputTokenCount}");
+            Console.WriteLine($"Usage output tokens: {streamChunk.Usage.OutputTokenCount}");
+            Console.WriteLine($"Usage total tokens: {streamChunk.Usage.TotalTokenCount}");
         }
         Console.WriteLine("------------------------");
     }

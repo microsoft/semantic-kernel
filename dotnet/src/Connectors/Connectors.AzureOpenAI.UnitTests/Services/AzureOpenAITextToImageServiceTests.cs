@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
@@ -51,7 +52,7 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
 
         // Case #3
-        sut = new AzureOpenAITextToImageService("deployment", new AzureOpenAIClient(new Uri("https://api-host/"), "api-key"), "model", loggerFactory: this._mockLoggerFactory.Object);
+        sut = new AzureOpenAITextToImageService("deployment", new AzureOpenAIClient(new Uri("https://api-host/"), new ApiKeyCredential("api-key")), "model", loggerFactory: this._mockLoggerFactory.Object);
         Assert.Equal("deployment", sut.Attributes[AzureClientCore.DeploymentNameKey]);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
     }

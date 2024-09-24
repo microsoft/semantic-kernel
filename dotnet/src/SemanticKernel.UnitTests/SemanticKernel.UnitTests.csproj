@@ -28,7 +28,6 @@
     <PackageReference Include="System.Threading.Tasks.Extensions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="System.Memory.Data" />
-    <PackageReference Include="System.ClientModel" />
   </ItemGroup>
 
   <ItemGroup>

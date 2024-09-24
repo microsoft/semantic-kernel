@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,7 +32,7 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
+        var client = new AzureOpenAIClient(new Uri("http://localhost"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(client);
@@ -67,7 +68,7 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
+        var client = new AzureOpenAIClient(new Uri("http://localhost"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -121,7 +122,7 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
+        var client = new AzureOpenAIClient(new Uri("http://localhost"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -155,7 +156,7 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(new Uri("https://endpoint"), "key");
+        var client = new AzureOpenAIClient(new Uri("http://endpoint"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);

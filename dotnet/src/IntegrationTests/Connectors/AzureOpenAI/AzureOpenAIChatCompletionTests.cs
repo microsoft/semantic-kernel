@@ -210,7 +210,7 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
         // Act
         var result = await kernel.InvokePromptAsync("Hi, can you help me today?", new(settings));
 
-        var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityInfo>;
+        var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityDetails>;
 
         // Assert
         Assert.NotNull(logProbabilityInfo);

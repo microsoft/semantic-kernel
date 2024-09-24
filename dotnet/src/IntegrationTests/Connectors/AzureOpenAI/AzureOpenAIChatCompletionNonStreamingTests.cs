@@ -79,7 +79,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.Equal("Stop", finishReason);
 
         Assert.True(result.Metadata.TryGetValue("ContentTokenLogProbabilities", out object? logProbabilityInfo));
-        Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
+        Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityDetails>)!);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.Equal("Stop", finishReason);
 
         Assert.True(result.Metadata.TryGetValue("ContentTokenLogProbabilities", out object? logProbabilityInfo));
-        Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
+        Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityDetails>)!);
     }
 
     #region internals
