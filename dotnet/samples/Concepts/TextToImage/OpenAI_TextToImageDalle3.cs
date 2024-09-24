@@ -13,7 +13,7 @@ namespace TextToImage;
 public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task OpenAIDallEAsync()
+    public async Task OpenAIDallE2Async()
     {
         Console.WriteLine("======== OpenAI DALL-E 2 Text To Image ========");
 
@@ -25,8 +25,8 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
         ITextToImageService dallE = kernel.GetRequiredService<ITextToImageService>();
 
         var imageDescription = "A cute baby sea otter";
-        var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);
-
+        var images = await dallE.GetImageContentsAsync(imageDescription, new OpenAITextToImageExecutionSettings { Size = (256, 256) });
+        var image = images[0].Uri!.ToString();
         Console.WriteLine(imageDescription);
         Console.WriteLine("Image URL: " + image);
 
@@ -52,7 +52,8 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
 
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
+        images = await dallE.GetImageContentsAsync(reply.Content!, new OpenAITextToImageExecutionSettings { Size = (256, 256) });
+        image = images[0].Uri!.ToString();
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -62,7 +63,8 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
+        images = await dallE.GetImageContentsAsync(reply.Content!, new OpenAITextToImageExecutionSettings { Size = (256, 256) });
+        image = images[0].Uri!.ToString();
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -127,12 +129,12 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
         var images = await dallE.GetImageContentsAsync(imageDescription, new OpenAITextToImageExecutionSettings { Size = (1024, 1024) });
 
         Console.WriteLine(imageDescription);
-        Console.WriteLine("Image URL: " + images[0].Uri!.ToString());
+        Console.WriteLine("Image URL: " + images[0].Uri!);
 
         /* Output:
 
         A cute baby sea otter
-        Image URL: https://dalleproduse.blob.core.windows.net/private/images/....
+        Image URL: https://oaidalleapiprodscus.blob.core.windows.net/private/org-/....
 
         */
 
