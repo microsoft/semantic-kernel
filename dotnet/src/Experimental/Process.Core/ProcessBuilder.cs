@@ -127,11 +127,11 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     }
 
     /// <summary>
-    /// Provides an instance of <see cref="ProcessEdgeBuilder"/> for defining an edge to a
+    /// Provides an instance of <see cref="ProcessStepEdgeBuilder"/> for defining an edge to a
     /// step inside the process for a given external event.
     /// </summary>
     /// <param name="eventId">The Id of the external event.</param>
-    /// <returns>An instance of <see cref="ProcessEdgeBuilder"/></returns>
+    /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/></returns>
     public ProcessStepEdgeBuilder OnExternalEvent(string eventId)
     {
         return new ProcessStepEdgeBuilder(this, eventId);

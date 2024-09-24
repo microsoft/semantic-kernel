@@ -10,14 +10,14 @@ namespace Microsoft.SemanticKernel.Tests;
 /// </summary>
 public class ProcessTypeExtensionsTests
 {
-    private class TestState { }
+    private sealed class TestState { }
     private class TestStep : KernelProcessStep<TestState> { }
-    private class DerivedTestStep : TestStep { }
-    private class NonStep { }
-    private class NonGenericStep : KernelProcessStep { }
+    private sealed class DerivedTestStep : TestStep { }
+    private sealed class NonStep { }
+    private sealed class NonGenericStep : KernelProcessStep { }
 
     /// <summary>
-    /// Verfiy that TryGetSubtypeOfStatefulStep returns true and the correct type when the type is a direct subtype of KernelProcessStep.
+    /// Verify that TryGetSubtypeOfStatefulStep returns true and the correct type when the type is a direct subtype of KernelProcessStep.
     /// </summary>
     [Fact]
     public void TryGetSubtypeOfStatefulStepDirectSubtypeReturnsTrue()
@@ -35,7 +35,7 @@ public class ProcessTypeExtensionsTests
     }
 
     /// <summary>
-    /// Verfiy that TryGetSubtypeOfStatefulStep returns true and the correct type when the type is a subtype of a subtype of KernelProcessStep.
+    /// Verify that TryGetSubtypeOfStatefulStep returns true and the correct type when the type is a subtype of a subtype of KernelProcessStep.
     /// </summary>
     [Fact]
     public void TryGetSubtypeOfStatefulStepInheritedSubtypeReturnsTrue()

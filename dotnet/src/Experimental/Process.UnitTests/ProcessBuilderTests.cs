@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using Xunit;
 
 namespace Microsoft.SemanticKernel.UnitTests;
 
@@ -100,7 +102,7 @@ public class ProcessBuilderTests
     /// <summary>
     /// A class that represents a step for testing.
     /// </summary>
-    private class TestStep : KernelProcessStep<TestState>
+    private sealed class TestStep : KernelProcessStep<TestState>
     {
         /// <summary>
         /// The name of the step.
@@ -119,7 +121,7 @@ public class ProcessBuilderTests
     /// <summary>
     /// A class that represents a state for testing.
     /// </summary>
-    private class TestState
+    private sealed class TestState
     {
     }
 }
