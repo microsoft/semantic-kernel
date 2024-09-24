@@ -1,13 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+/* Unmerged change from project 'Connectors.OpenAI(netstandard2.0)'
+Before:
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Threading.Tasks;
+After:
+using System.Text.Json.Serialization;
+*/
 
+/* Unmerged change from project 'Connectors.OpenAI(netstandard2.0)'
+Removed:
+using System.Threading.Tasks;
+*/
 namespace Microsoft.SemanticKernel.Connectors.OpenAI.Core;
 /*internal class OpenAITextToImageExecutionSettingsConverter : JsonConverter<OpenAITextToImageExecutionSettings>
 {
