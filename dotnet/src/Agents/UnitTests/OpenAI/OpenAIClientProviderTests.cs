@@ -4,6 +4,7 @@ using System.Net.Http;
 using Azure.Core;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Moq;
+using OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
@@ -17,9 +18,9 @@ public class OpenAIClientProviderTests
     /// Verify that provisioning of client for Azure OpenAI.
     /// </summary>
     [Fact]
-    public void VerifyOpenAIClientFactoryTargetAzureByKey()
+    public void VerifyOpenAIClientProviderTargetAzureByKey()
     {
-        // Arrange
+        // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI("key", new Uri("https://localhost"));
 
         // Assert
@@ -30,10 +31,12 @@ public class OpenAIClientProviderTests
     /// Verify that provisioning of client for Azure OpenAI.
     /// </summary>
     [Fact]
-    public void VerifyOpenAIClientFactoryTargetAzureByCredential()
+    public void VerifyOpenAIClientProviderTargetAzureByCredential()
     {
         // Arrange
         Mock<TokenCredential> mockCredential = new();
+
+        // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI(mockCredential.Object, new Uri("https://localhost"));
 
         // Assert
@@ -46,9 +49,9 @@ public class OpenAIClientProviderTests
     [Theory]
     [InlineData(null)]
     [InlineData("http://myproxy:9819")]
-    public void VerifyOpenAIClientFactoryTargetOpenAINoKey(string? endpoint)
+    public void VerifyOpenAIClientProviderTargetOpenAINoKey(string? endpoint)
     {
-        // Arrange
+        // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(endpoint != null ? new Uri(endpoint) : null);
 
         // Assert
@@ -61,9 +64,9 @@ public class OpenAIClientProviderTests
     [Theory]
     [InlineData("key", null)]
     [InlineData("key", "http://myproxy:9819")]
-    public void VerifyOpenAIClientFactoryTargetOpenAIByKey(string key, string? endpoint)
+    public void VerifyOpenAIClientProviderTargetOpenAIByKey(string key, string? endpoint)
     {
-        // Arrange
+        // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(key, endpoint != null ? new Uri(endpoint) : null);
 
         // Assert
@@ -74,13 +77,59 @@ public class OpenAIClientProviderTests
     /// Verify that the factory can create a client with http proxy.
     /// </summary>
     [Fact]
-    public void VerifyOpenAIClientFactoryWithHttpClient()
+    public void VerifyOpenAIClientProviderWithHttpClient()
     {
         // Arrange
         using HttpClient httpClient = new() { BaseAddress = new Uri("http://myproxy:9819") };
+
+        // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(httpClient: httpClient);
 
         // Assert
         Assert.NotNull(provider.Client);
+
+        // Arrange
+        using HttpClient httpClientWithHeaders = new() { BaseAddress = new Uri("http://myproxy:9819") };
+        httpClient.DefaultRequestHeaders.Add("X-Test", "Test");
+
+        // Act
+        OpenAIClientProvider providerWithHeaders = OpenAIClientProvider.ForOpenAI(httpClient: httpClient);
+
+        // Assert
+        Assert.NotNull(providerWithHeaders.Client);
+
+        Assert.NotEqual(provider.ConfigurationKeys.Count, providerWithHeaders.ConfigurationKeys.Count);
+    }
+
+    /// <summary>
+    /// Verify that the factory can create a client with http proxy.
+    /// </summary>
+    [Fact]
+    public void VerifyOpenAIClientProviderWithHttpClientHeaders()
+    {
+        // Arrange
+        using HttpClient httpClient = new() { BaseAddress = new Uri("http://myproxy:9819") };
+        httpClient.DefaultRequestHeaders.Add("X-Test", "Test");
+
+        // Act
+        OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(httpClient: httpClient);
+
+        // Assert
+        Assert.NotNull(provider.Client);
+    }
+
+    /// <summary>
+    /// Verify that the factory can accept an client that already exists.
+    /// </summary>
+    [Fact]
+    public void VerifyOpenAIClientProviderFromClient()
+    {
+        // Arrange
+        Mock<OpenAIClient> mockClient = new();
+        OpenAIClientProvider provider = OpenAIClientProvider.FromClient(mockClient.Object);
+
+        // Assert
+        Assert.NotNull(provider.Client);
+        Assert.Equal(mockClient.Object, provider.Client);
     }
 }

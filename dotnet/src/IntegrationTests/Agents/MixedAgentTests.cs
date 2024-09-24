@@ -93,12 +93,12 @@ public sealed class MixedAgentTests
         // Assistant doesn't need plug-in since it has access to the shared function result.
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu."
-                });
+                },
+                new Kernel());
 
         // Act & Assert
         try

@@ -98,6 +98,28 @@ public class OpenAIAssistantDefinitionTests
         ValidateSerialization(definition);
     }
 
+    /// <summary>
+    /// Verify TemplateFactoryFormat.
+    /// </summary>
+    [Fact]
+    public void VerifyOpenAIAssistantDefinitionTemplateFactoryFormat()
+    {
+        // Arrange
+        OpenAIAssistantDefinition definition = new("testmodel");
+
+        // Assert
+        Assert.Null(definition.TemplateFactoryFormat);
+
+        // Act
+        definition = new("testmodel")
+        {
+            Metadata = new Dictionary<string, string>() { { OpenAIAssistantAgent.TemplateMetadataKey, "testformat" } }
+        };
+
+        // Assert
+        Assert.Equal("testformat", definition.TemplateFactoryFormat);
+    }
+
     private static void ValidateSerialization(OpenAIAssistantDefinition source)
     {
         string json = JsonSerializer.Serialize(source);

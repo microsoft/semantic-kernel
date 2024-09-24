@@ -254,6 +254,41 @@ public class VectorStoreRecordPropertyReaderTests
         Assert.Equal("Data properties must be one of the supported types: System.Int32, System.Single. Type of the property 'Data' is System.String.", ex2.Message);
     }
 
+    [Theory]
+    [InlineData(typeof(SinglePropsModel), false, new Type[] { typeof(string) }, false)]
+    [InlineData(typeof(VectorStoreGenericDataModel<string>), false, new Type[] { typeof(string), typeof(ulong) }, false)]
+    [InlineData(typeof(VectorStoreGenericDataModel<int>), true, new Type[] { typeof(string), typeof(ulong) }, false)]
+    [InlineData(typeof(VectorStoreGenericDataModel<int>), false, new Type[] { typeof(string), typeof(ulong) }, true)]
+    public void VerifyGenericDataModelKeyTypeThrowsOnlyForUnsupportedKeyTypeWithoutCustomMapper(Type recordType, bool customMapperSupplied, IEnumerable<Type> allowedKeyTypes, bool shouldThrow)
+    {
+        if (shouldThrow)
+        {
+            var ex = Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(recordType, customMapperSupplied, allowedKeyTypes));
+            Assert.Equal("The key type 'System.Int32' of data model 'VectorStoreGenericDataModel' is not supported by the default mappers. Only the following key types are supported: System.String, System.UInt64. Please provide your own mapper to map to your chosen key type.", ex.Message);
+        }
+        else
+        {
+            VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(recordType, customMapperSupplied, allowedKeyTypes);
+        }
+    }
+
+    [Theory]
+    [InlineData(typeof(SinglePropsModel), false, false)]
+    [InlineData(typeof(VectorStoreGenericDataModel<string>), true, false)]
+    [InlineData(typeof(VectorStoreGenericDataModel<string>), false, true)]
+    public void VerifyGenericDataModelDefinitionSuppliedThrowsOnlyForMissingDefinition(Type recordType, bool definitionSupplied, bool shouldThrow)
+    {
+        if (shouldThrow)
+        {
+            var ex = Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(recordType, definitionSupplied));
+            Assert.Equal("A VectorStoreRecordDefinition must be provided when using 'VectorStoreGenericDataModel'.", ex.Message);
+        }
+        else
+        {
+            VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(recordType, definitionSupplied);
+        }
+    }
+
     [Fact]
     public void VerifyStoragePropertyNameMapChecksStorageNameAndFallsBackToPropertyName()
     {
