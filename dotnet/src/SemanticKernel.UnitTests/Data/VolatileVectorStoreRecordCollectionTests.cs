@@ -424,7 +424,7 @@ public class VolatileVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
-            new VectorSearchOptions { IncludeVectors = true, Limit = 10, Offset = 10 },
+            new VectorSearchOptions { IncludeVectors = true, Top = 10, Skip = 10 },
             this._testCancellationToken).ToListAsync();
 
         // Assert
@@ -498,7 +498,7 @@ public class VolatileVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 1, 1, 1]),
-            new VectorSearchOptions { IncludeVectors = true, VectorFieldName = "Vector" },
+            new VectorSearchOptions { IncludeVectors = true, VectorPropertyName = "Vector" },
             this._testCancellationToken).ToListAsync();
 
         // Assert

@@ -383,8 +383,8 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
             vector,
             new VectorSearchOptions
             {
-                Limit = 3,
-                Offset = 2
+                Top = 3,
+                Skip = 2
             }).ToListAsync();
 
         // Assert
@@ -413,7 +413,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
             new VectorSearchOptions
             {
                 IncludeVectors = includeVectors,
-                Limit = 1
+                Top = 1
             }).ToListAsync();
 
         // Assert

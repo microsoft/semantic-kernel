@@ -373,8 +373,8 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         // Act
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
-            Limit = 2,
-            Offset = 2
+            Top = 2,
+            Skip = 2
         }).ToListAsync();
 
         // Assert

@@ -50,8 +50,8 @@ public class VectorStore_VectorSearch_Paging(ITestOutputHelper output) : BaseTes
                 searchVector,
                 new()
                 {
-                    Limit = 10,
-                    Offset = page * 10
+                    Top = 10,
+                    Skip = page * 10
                 }).ToListAsync();
 
             // Print the results.

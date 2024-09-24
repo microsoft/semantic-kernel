@@ -464,8 +464,8 @@ public class RedisJsonVectorStoreRecordCollectionTests
             {
                 IncludeVectors = true,
                 Filter = filter,
-                Limit = 5,
-                Offset = 2
+                Top = 5,
+                Skip = 2
             }).ToListAsync();
 
         // Assert.

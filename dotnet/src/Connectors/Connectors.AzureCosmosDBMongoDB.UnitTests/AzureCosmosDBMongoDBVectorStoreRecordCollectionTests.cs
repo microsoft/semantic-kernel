@@ -622,8 +622,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         // Act
         var result = await sut.VectorizedSearchAsync(vector, new()
         {
-            VectorFieldName = vectorPropertyName,
-            Limit = actualLimit,
+            VectorPropertyName = vectorPropertyName,
+            Top = actualLimit,
         }).FirstOrDefaultAsync();
 
         // Assert
@@ -646,7 +646,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             this._mockMongoDatabase.Object,
             "collection");
 
-        var options = new VectorSearchOptions { VectorFieldName = "non-existent-property" };
+        var options = new VectorSearchOptions { VectorPropertyName = "non-existent-property" };
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), options).FirstOrDefaultAsync());

@@ -31,6 +31,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>Property name to be used for search document value.</summary>
     private const string DocumentPropertyName = "document";
 
+    /// <summary>The default options for vector search.</summary>
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
 
@@ -282,8 +285,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
                     typeof(ReadOnlyMemory<double>).FullName])}")
         };
 
-        var searchOptions = options ?? VectorSearchOptions.Default;
-        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorFieldName);
+        var searchOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
 
         if (vectorProperty is null)
         {
@@ -298,7 +301,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         // Constructing a query to fetch "offset + limit" total items
         // to perform offset logic locally, since offset parameter is not part of API. 
-        var itemsAmount = searchOptions.Offset + searchOptions.Limit;
+        var itemsAmount = searchOptions.Skip + searchOptions.Top;
 
         var searchQuery = vectorProperty.IndexKind switch
         {
@@ -334,7 +337,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         {
             foreach (var response in cursor.Current)
             {
-                if (offsetCounter >= searchOptions.Offset)
+                if (offsetCounter >= searchOptions.Skip)
                 {
                     var score = response[ScorePropertyName].AsDouble;
                     var record = VectorStoreErrorHandler.RunModelConversion(

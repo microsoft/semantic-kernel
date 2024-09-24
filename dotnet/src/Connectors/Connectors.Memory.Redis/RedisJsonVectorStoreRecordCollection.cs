@@ -44,6 +44,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         typeof(ReadOnlyMemory<double>?)
     ];
 
+    /// <summary>The default options for vector search.</summary>
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+
     /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
 
@@ -389,7 +392,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
 
-        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+        var internalOptions = options ?? s_defaultVectorSearchOptions;
 
         // Build query & search.
         byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "JSON");

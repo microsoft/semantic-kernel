@@ -44,8 +44,8 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         {
           Get {
             {{collectionName}} (
-              limit: {{searchOptions.Limit}}
-              offset: {{searchOptions.Offset}}
+              limit: {{searchOptions.Top}}
+              offset: {{searchOptions.Skip}}
               {{filter}}
               nearVector: {
                 targetVectors: ["{{vectorPropertyName}}"]

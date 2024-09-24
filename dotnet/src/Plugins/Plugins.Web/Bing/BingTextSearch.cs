@@ -120,8 +120,8 @@ public sealed class BingTextSearch : ITextSearch
     /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
     private async Task<HttpResponseMessage> SendGetRequestAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken = default)
     {
-        var count = searchOptions.Count;
-        var offset = searchOptions.Offset;
+        var count = searchOptions.Top;
+        var offset = searchOptions.Skip;
 
         if (count is <= 0 or > 50)
         {
@@ -278,7 +278,7 @@ public sealed class BingTextSearch : ITextSearch
             }
         }
 
-        fullQuery.Append($"&count={searchOptions.Count}&offset={searchOptions.Offset}{queryParams}");
+        fullQuery.Append($"&count={searchOptions.Top}&offset={searchOptions.Skip}{queryParams}");
 
         return fullQuery.ToString();
     }

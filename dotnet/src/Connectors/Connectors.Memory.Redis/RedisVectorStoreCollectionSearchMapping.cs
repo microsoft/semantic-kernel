@@ -53,15 +53,15 @@ internal static class RedisVectorStoreCollectionSearchMapping
     public static Query BuildQuery(byte[] vectorBytes, VectorSearchOptions options, Dictionary<string, string> storagePropertyNames, string firstVectorPropertyName, string[]? selectFields)
     {
         // Resolve options.
-        var vectorPropertyName = ResolveVectorFieldName(options.VectorFieldName, storagePropertyNames, firstVectorPropertyName);
+        var vectorPropertyName = ResolveVectorFieldName(options.VectorPropertyName, storagePropertyNames, firstVectorPropertyName);
 
         // Build search query.
-        var redisLimit = options.Limit + options.Offset;
+        var redisLimit = options.Top + options.Skip;
         var filter = RedisVectorStoreCollectionSearchMapping.BuildFilter(options.Filter, storagePropertyNames);
         var query = new Query($"{filter}=>[KNN {redisLimit} @{vectorPropertyName} $embedding AS vector_score]")
             .AddParam("embedding", vectorBytes)
             .SetSortBy("vector_score")
-            .Limit(options.Offset, redisLimit)
+            .Limit(options.Skip, redisLimit)
             .SetWithScores(true)
             .Dialect(2);
 

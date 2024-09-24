@@ -29,6 +29,9 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         typeof(Guid)
     ];
 
+    /// <summary>The default options for vector search.</summary>
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "Qdrant";
 
@@ -463,7 +466,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
             throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Qdrant connector.");
         }
 
-        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+        var internalOptions = options ?? s_defaultVectorSearchOptions;
 
         // Build filter object.
         var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._storagePropertyNames);
@@ -472,7 +475,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         string? vectorName = null;
         if (this._options.HasNamedVectors)
         {
-            vectorName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
+            vectorName = this.ResolveVectorFieldName(internalOptions.VectorPropertyName);
         }
 
         // Specify whether to include vectors in the search results.
@@ -492,8 +495,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                 query: query,
                 usingVector: vectorName,
                 filter: filter,
-                limit: (ulong)internalOptions.Limit,
-                offset: (ulong)internalOptions.Offset,
+                limit: (ulong)internalOptions.Top,
+                offset: (ulong)internalOptions.Skip,
                 vectorsSelector: vectorsSelector,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
 

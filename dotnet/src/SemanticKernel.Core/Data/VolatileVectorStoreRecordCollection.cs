@@ -30,6 +30,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         typeof(ReadOnlyMemory<float>?),
     ];
 
+    /// <summary>The default options for vector search.</summary>
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+
     /// <summary>Internal storage for all of the record collections.</summary>
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollections;
 
@@ -228,12 +231,12 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         // Resolve options and get requested vector property or first as default.
-        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+        var internalOptions = options ?? s_defaultVectorSearchOptions;
 
-        var vectorPropertyName = string.IsNullOrWhiteSpace(internalOptions.VectorFieldName) ? this._firstVectorPropertyName : internalOptions.VectorFieldName;
+        var vectorPropertyName = string.IsNullOrWhiteSpace(internalOptions.VectorPropertyName) ? this._firstVectorPropertyName : internalOptions.VectorPropertyName;
         if (!this._vectorProperties.TryGetValue(vectorPropertyName!, out var vectorProperty))
         {
-            throw new InvalidOperationException($"The collection does not have a vector field named '{internalOptions.VectorFieldName}', so vector search is not possible.");
+            throw new InvalidOperationException($"The collection does not have a vector field named '{internalOptions.VectorPropertyName}', so vector search is not possible.");
         }
 
         // Filter records using the provided filter before doing the vector comparison.
@@ -259,7 +262,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
             nonNullResults.OrderByDescending(x => x.score) :
             nonNullResults.OrderBy(x => x.score);
 
-        foreach (var scoredResult in sortedScoredResults.Skip(internalOptions.Offset).Take(internalOptions.Limit))
+        foreach (var scoredResult in sortedScoredResults.Skip(internalOptions.Skip).Take(internalOptions.Top))
         {
             yield return new VectorSearchResult<TRecord>((TRecord)scoredResult.record, scoredResult.score);
         }
