@@ -4,7 +4,7 @@
 namespace System.Diagnostics.CodeAnalysis;
 
 /// <summary>
-/// Polyfill for the RequiresDynamicCodeAttribute not available in .NET Standard 2.0.
+/// Polyfill for the RequiresUnreferencedCodeAttribute not available in .NET Standard 2.0.
 /// Indicates that the specified method requires dynamic access to code that is not referenced
 /// statically, for example through <see cref="Reflection"/>.
 /// </summary>

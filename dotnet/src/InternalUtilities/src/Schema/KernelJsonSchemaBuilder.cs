@@ -29,8 +29,8 @@ internal static class KernelJsonSchemaBuilder
         TreatNullObliviousAsNonNullable = true,
     };
 
-    [RequiresUnreferencedCode("Uses reflection to generate JSON schema.")]
-    [RequiresDynamicCode("Uses reflection to generate JSON schema.")]
+    [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     public static KernelJsonSchema Build(Type type, string? description = null, JsonSchemaMapperConfiguration? configuration = null)
     {
         return Build(type, s_options, description, configuration);
@@ -38,14 +38,13 @@ internal static class KernelJsonSchemaBuilder
 
     public static KernelJsonSchema Build(
         Type type,
-        JsonSerializerOptions? options,
+        JsonSerializerOptions options,
         string? description = null,
         JsonSchemaMapperConfiguration? configuration = null)
     {
-        var serializerOptions = options ?? s_options;
         var mapperConfiguration = configuration ?? s_config;
 
-        JsonNode jsonSchema = serializerOptions.GetJsonSchema(type, mapperConfiguration);
+        JsonNode jsonSchema = options.GetJsonSchema(type, mapperConfiguration);
         Debug.Assert(jsonSchema.GetValueKind() is JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True);
 
         if (jsonSchema is not JsonObject jsonObj)
@@ -61,7 +60,7 @@ internal static class KernelJsonSchemaBuilder
             jsonObj["description"] = description;
         }
 
-        return KernelJsonSchema.Parse(jsonObj.ToJsonString(serializerOptions));
+        return KernelJsonSchema.Parse(jsonObj.ToJsonString(options));
     }
 
     private static JsonSerializerOptions CreateDefaultOptions()

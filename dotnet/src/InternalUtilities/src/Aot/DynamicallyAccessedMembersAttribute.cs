@@ -4,7 +4,7 @@
 namespace System.Diagnostics.CodeAnalysis;
 
 /// <summary>
-/// Polyfill for the RequiresDynamicCodeAttribute not available in .NET Standard 2.0.
+/// Polyfill for the DynamicallyAccessedMembersAttribute not available in .NET Standard 2.0.
 /// Indicates that certain members on a specified <see cref="Type"/> are accessed dynamically,
 /// for example through <see cref="System.Reflection"/>.
 /// </summary>

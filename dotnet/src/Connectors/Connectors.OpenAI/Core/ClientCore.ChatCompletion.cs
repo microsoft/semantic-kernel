@@ -558,7 +558,7 @@ internal partial class ClientCore
             Nullable.GetUnderlyingType(formatObjectType)! :
             formatObjectType;
 
-        var schema = KernelJsonSchemaBuilder.Build(type, options: null, configuration: s_jsonSchemaMapperConfiguration);
+        var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
         return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, strictSchemaEnabled: true);

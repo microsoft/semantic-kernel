@@ -107,7 +107,6 @@ internal static partial class KernelFunctionLogMessages
             logLevel: LogLevel.Trace,   // Sensitive data, logging as trace, disabled by default
             eventId: 0,
             "Function result: {ResultValue}");
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
     [RequiresUnreferencedCode("Uses reflection to serialize function result, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to serialize the function result, making it incompatible with AOT scenarios.")]
     public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue)
