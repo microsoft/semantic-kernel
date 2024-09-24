@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// A serializable representation of a Process.
 /// </summary>
-public sealed class KernelProcess : KernelProcessStepInfo
+public sealed record KernelProcess : KernelProcessStepInfo
 {
     /// <summary>
     /// The collection of Steps in the Process.
@@ -19,8 +19,8 @@ public sealed class KernelProcess : KernelProcessStepInfo
     /// </summary>
     /// <param name="name">The human friendly name of the Process.</param>
     /// <param name="steps">The steps of the process.</param>
-    public KernelProcess(string name, IList<KernelProcessStepInfo> steps)
-        : base(typeof(KernelProcess), new KernelProcessState() { Name = name }, [])
+    public KernelProcess(string name, IList<KernelProcessStepInfo> steps, Dictionary<string, List<KernelProcessEdge>>? edges = null)
+        : base(typeof(KernelProcess), new KernelProcessState() { Name = name }, edges ?? [])
     {
         Verify.NotNull(steps);
         Verify.NotNullOrWhiteSpace(name);

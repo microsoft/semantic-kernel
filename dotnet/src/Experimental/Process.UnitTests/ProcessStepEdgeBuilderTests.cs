@@ -44,7 +44,7 @@ public class ProcessStepEdgeBuilderTests
         builder.SendEventTo(outputTarget);
 
         // Assert
-        Assert.Equal(outputTarget, builder.OutputTarget); // Assuming GetOutputTarget() is a method to access _outputTarget
+        Assert.Equal(outputTarget, builder.Target); // Assuming GetOutputTarget() is a method to access _outputTarget
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public class ProcessStepEdgeBuilderTests
         builder.StopProcess();
 
         // Assert
-        Assert.Equal(EndStep.Instance, builder.OutputTarget?.Step);
+        Assert.Equal(EndStep.Instance, builder.Target?.Step);
     }
 
     /// <summary>
