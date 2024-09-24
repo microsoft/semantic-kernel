@@ -260,14 +260,15 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     # endregion
 
     def _create_chat_message_content(
-        self, response: Message, content_block: TextBlock | ToolUseBlock, response_metadata: dict[str, Any]
+        self, response: Message, response_metadata: dict[str, Any]
     ) -> "ChatMessageContent":
         """Create a chat message content object."""
         items: list[ITEM_TYPES] = []
         items += self._get_tool_calls_from_message(response)
 
-        if isinstance(content_block, TextBlock):
-            items.append(TextContent(text=content_block.text))
+        for content_block in response.content:
+            if isinstance(content_block, TextBlock):
+                items.append(TextContent(text=content_block.text))
 
         finish_reason = None
         if response.stop_reason:
@@ -384,10 +385,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         if hasattr(response, "usage") and response.usage is not None:
             response_metadata["usage"] = response.usage
 
-        return [
-            self._create_chat_message_content(response, content_block, response_metadata)
-            for content_block in response.content
-        ]
+        return [self._create_chat_message_content(response, response_metadata)]
 
     async def _send_chat_stream_request(
         self, settings: AnthropicChatPromptExecutionSettings
