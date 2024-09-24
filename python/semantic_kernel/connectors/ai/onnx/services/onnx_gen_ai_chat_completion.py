@@ -84,7 +84,6 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             chat_history (ChatHistory): A list of chats in a chat_history object, that can be
                 rendered into messages from system, user, assistant and tools.
             settings (PromptExecutionSettings): Settings for the request.
-            **kwargs (Any): The optional arguments.
 
         Returns:
             A list of chat message contents representing the response(s) from the LLM.
@@ -111,7 +110,6 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             chat_history (ChatHistory): A list of chat chat_history, that can be rendered into a
                 set of chat_history, from system, user, assistant and function.
             settings (PromptExecutionSettings): Settings for the request.
-            kwargs (Dict[str, Any]): The optional arguments.
 
         Yields:
             A stream representing the response(s) from the LLM.
