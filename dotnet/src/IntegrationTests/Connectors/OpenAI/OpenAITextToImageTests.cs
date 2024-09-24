@@ -8,6 +8,8 @@ using Microsoft.SemanticKernel.TextToImage;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 public sealed class OpenAITextToImageTests
 {
