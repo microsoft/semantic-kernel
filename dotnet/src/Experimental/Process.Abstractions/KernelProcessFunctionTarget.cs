@@ -17,6 +17,7 @@ public record KernelProcessFunctionTarget
 
         this.StepId = stepId;
         this.FunctionName = functionName;
+        this.ParameterName = parameterName;
     }
 
     /// <summary>
