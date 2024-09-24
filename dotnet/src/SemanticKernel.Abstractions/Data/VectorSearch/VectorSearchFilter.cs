@@ -36,14 +36,14 @@ public sealed class VectorSearchFilter
     }
 
     /// <summary>
-    /// Create an instance of <see cref="VectorSearchFilter"/> from an instance of <see cref="TextSearchFilter"/>
+    /// Create an instance of <see cref="VectorSearchFilter"/> with the provided <see cref="FilterClause"/>s.
+    /// <param name="filterClauses">The <see cref="FilterClause"/> instances to use</param>
     /// </summary>
-    /// <param name="textSearchFilter">The <see cref="TextSearchResult"/> instance to use</param>
-    public VectorSearchFilter(TextSearchFilter textSearchFilter)
+    internal VectorSearchFilter(IEnumerable<FilterClause> filterClauses)
     {
-        Verify.NotNull(textSearchFilter, nameof(textSearchFilter));
+        Verify.NotNull(filterClauses, nameof(filterClauses));
 
-        this._filterClauses.AddRange(textSearchFilter.FilterClauses);
+        this._filterClauses.AddRange(filterClauses);
     }
 
     /// <summary>
