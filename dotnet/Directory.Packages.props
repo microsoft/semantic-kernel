@@ -140,7 +140,7 @@
     </PackageReference>
     <!-- OnnxRuntimeGenAI -->
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.4.0" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.3.0" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.4.0" />
 	  <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.4.0"/>
   </ItemGroup>
 </Project>
