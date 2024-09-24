@@ -28,6 +28,10 @@ kernel.add_service(OnnxGenAITextCompletion(ai_model_id=service_id))
 
 settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
 
+# Phi3 Model is using chat templates to generate responses
+# With the Chat Template the model understands
+# the context and roles of the conversation better
+# https://huggingface.co/microsoft/Phi-3-mini-4k-instruct#chat-format
 chat_function = kernel.add_function(
     plugin_name="ChatBot",
     function_name="Chat",

@@ -51,9 +51,8 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         """Initializes a new instance of the OnnxGenAITextCompletion class.
 
         Args:
+            template (ONNXTemplate): The chat template configuration.
             ai_model_path (str): Local path to the ONNX model Folder.
-            template (ONNXTemplate): The template configuration.
-                The template can either be a jinja template or a complete prompt template config.
             ai_model_id (str, optional): The ID of the AI model. Defaults to None.
             env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables.

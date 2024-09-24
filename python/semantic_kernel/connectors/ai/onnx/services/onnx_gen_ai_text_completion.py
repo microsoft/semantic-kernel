@@ -63,7 +63,7 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
         )
 
     @override
-    async def get_text_contents(
+    async def _inner_get_text_contents(
         self,
         prompt: str,
         settings: PromptExecutionSettings,
@@ -93,7 +93,7 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
         ]
 
     @override
-    async def get_streaming_text_contents(
+    async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
         settings: PromptExecutionSettings,

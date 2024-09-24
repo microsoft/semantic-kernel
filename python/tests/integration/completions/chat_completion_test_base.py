@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import os
 import sys
 from functools import reduce
 from typing import Annotated, Any
@@ -10,7 +11,6 @@ from azure.ai.inference.aio import ChatCompletionsClient
 from azure.identity import DefaultAzureCredential
 from openai import AsyncAzureOpenAI
 
-from semantic_kernel.connectors.ai.anthropic import AnthropicChatCompletion
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceChatPromptExecutionSettings,
 )
@@ -47,7 +47,6 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
-from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -60,44 +59,44 @@ else:
 
 mistral_ai_setup: bool = False
 try:
-    MistralAIChatCompletion()
-    mistral_ai_setup = True
-except ServiceInitializationError:
+    if os.environ["MISTRALAI_API_KEY"]:
+        mistral_ai_setup = True
+except KeyError:
     mistral_ai_setup = False
 
 ollama_setup: bool = False
 try:
-    OllamaChatCompletion()
-    ollama_setup = True
-except ServiceInitializationError:
+    if os.environ["OLLAMA_MODEL"]:
+        ollama_setup = True
+except KeyError:
     ollama_setup = False
 
 google_ai_setup: bool = False
 try:
-    GoogleAIChatCompletion()
-    google_ai_setup = True
-except ServiceInitializationError:
+    if os.environ["GOOGLE_AI_API_KEY"]:
+        google_ai_setup = True
+except KeyError:
     google_ai_setup = False
 
 vertex_ai_setup: bool = False
 try:
-    VertexAIChatCompletion()
-    vertex_ai_setup = True
-except ServiceInitializationError:
+    if os.environ["VERTEX_AI_PROJECT_ID"]:
+        vertex_ai_setup = True
+except KeyError:
     vertex_ai_setup = False
 
 anthropic_setup: bool = False
 try:
-    AnthropicChatCompletion()
-    anthropic_setup = True
-except ServiceInitializationError:
+    if os.environ["ANTHROPIC_API_KEY"]:
+        anthropic_setup = True
+except KeyError:
     anthropic_setup = False
 
 onnx_setup: bool = False
 try:
-    OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3)
-    onnx_setup = True
-except ServiceInitializationError:
+    if os.environ["ONNX_GEN_AI_FOLDER"]:
+        onnx_setup = True
+except KeyError:
     onnx_setup = False
 
 

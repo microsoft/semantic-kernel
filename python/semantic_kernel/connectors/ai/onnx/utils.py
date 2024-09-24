@@ -13,12 +13,15 @@ class ONNXTemplate(str, Enum):
         PHI3V (str): Represents the "phi3v" ONNX model template.
         GEMMA (str): Represents the "gemma" ONNX model template.
         LLAMA (str): Represents the "llama" ONNX model template.
+        NONE (str):  Can be choosen if no Template should be used.
+
     """
 
     PHI3 = "phi3"
     PHI3V = "phi3v"
     GEMMA = "gemma"
     LLAMA = "llama"
+    NONE = "none"
 
 
 def apply_template(history: ChatHistory, template: ONNXTemplate) -> str:
@@ -39,6 +42,7 @@ def apply_template(history: ChatHistory, template: ONNXTemplate) -> str:
         ONNXTemplate.GEMMA: gemma_template,
         ONNXTemplate.LLAMA: llama_template,
         ONNXTemplate.PHI3V: phi3v_template,
+        ONNXTemplate.NONE: lambda text: text,
     }
 
     try:
