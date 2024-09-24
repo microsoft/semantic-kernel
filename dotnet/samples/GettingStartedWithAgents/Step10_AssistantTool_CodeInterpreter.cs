@@ -16,13 +16,13 @@ public class Step10_AssistantTool_CodeInterpreter(ITestOutputHelper output) : Ba
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
                 clientProvider: this.GetClientProvider(),
-                new(this.Model)
+                definition: new(this.Model)
                 {
                     EnableCodeInterpreter = true,
                     Metadata = AssistantSampleMetadata,
-                });
+                },
+                kernel: new Kernel());
 
         // Create a thread for the agent conversation.
         string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });

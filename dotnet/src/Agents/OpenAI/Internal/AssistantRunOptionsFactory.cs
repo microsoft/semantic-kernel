@@ -16,8 +16,9 @@ internal static class AssistantRunOptionsFactory
     /// Produce <see cref="RunCreationOptions"/> by reconciling <see cref="OpenAIAssistantDefinition"/> and <see cref="OpenAIAssistantInvocationOptions"/>.
     /// </summary>
     /// <param name="definition">The assistant definition</param>
+    /// <param name="overrideInstructions">Instructions to use for the run</param>
     /// <param name="invocationOptions">The run specific options</param>
-    public static RunCreationOptions GenerateOptions(OpenAIAssistantDefinition definition, OpenAIAssistantInvocationOptions? invocationOptions)
+    public static RunCreationOptions GenerateOptions(OpenAIAssistantDefinition definition, string? overrideInstructions, OpenAIAssistantInvocationOptions? invocationOptions)
     {
         int? truncationMessageCount = ResolveExecutionSetting(invocationOptions?.TruncationMessageCount, definition.ExecutionOptions?.TruncationMessageCount);
 
@@ -25,6 +26,7 @@ internal static class AssistantRunOptionsFactory
             new()
             {
                 AdditionalInstructions = invocationOptions?.AdditionalInstructions ?? definition.ExecutionOptions?.AdditionalInstructions,
+                InstructionsOverride = overrideInstructions,
                 MaxCompletionTokens = ResolveExecutionSetting(invocationOptions?.MaxCompletionTokens, definition.ExecutionOptions?.MaxCompletionTokens),
                 MaxPromptTokens = ResolveExecutionSetting(invocationOptions?.MaxPromptTokens, definition.ExecutionOptions?.MaxPromptTokens),
                 ModelOverride = invocationOptions?.ModelName,
