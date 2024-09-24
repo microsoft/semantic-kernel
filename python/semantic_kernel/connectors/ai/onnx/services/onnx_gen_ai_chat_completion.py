@@ -112,7 +112,6 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             chat_history (ChatHistory): A list of chat chat_history, that can be rendered into a
                 set of chat_history, from system, user, assistant and function.
             settings (PromptExecutionSettings): Settings for the request.
-            kwargs (Dict[str, Any]): The optional arguments.
 
         Yields:
             A stream representing the response(s) from the LLM.
