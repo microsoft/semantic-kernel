@@ -7,19 +7,19 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// EndStep is a special purpose step that is used to trigger a process to stop. It is the last step in a process.
 /// </summary>
-public sealed class EndStep : ProcessStepBuilder
+internal sealed class EndStep : ProcessStepBuilder
 {
     private const string EndStepValue = "END";
 
     /// <summary>
     /// The name of the end step.
     /// </summary>
-    public static readonly string EndStepName = EndStepValue;
+    public const string EndStepName = EndStepValue;
 
     /// <summary>
     /// The event ID for stopping a process.
     /// </summary>
-    public static readonly string EndStepId = EndStepValue;
+    public const string EndStepId = EndStepValue;
 
     /// <summary>
     /// The static instance of the <see cref="EndStep"/> class.
@@ -40,7 +40,7 @@ public sealed class EndStep : ProcessStepBuilder
         return eventId;
     }
 
-    internal override Dictionary<string, KernelFunctionMetadata> GetFuctionMetadataMap()
+    internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
     {
         // The end step has no functions.
         return [];

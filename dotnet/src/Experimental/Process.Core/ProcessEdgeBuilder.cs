@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides functionality for incrementally defining a process edge.
 /// </summary>
-public class ProcessEdgeBuilder
+public sealed class ProcessEdgeBuilder
 {
     private readonly ProcessBuilder _source;
     private readonly string _eventId;

@@ -128,8 +128,11 @@ public class ProcessStepEdgeBuilderTests
     /// <summary>
     /// A class that represents a step for testing.
     /// </summary>
-    public class TestStep : KernelProcessStep<TestState>
+    private class TestStep : KernelProcessStep<TestState>
     {
+        /// <summary>
+        /// The name of the step.
+        /// </summary>
         public static string Name => "TestStep";
 
         /// <summary>
@@ -144,7 +147,7 @@ public class ProcessStepEdgeBuilderTests
     /// <summary>
     /// A class that represents a state for testing.
     /// </summary>
-    public class TestState
+    private class TestState
     {
     }
 }

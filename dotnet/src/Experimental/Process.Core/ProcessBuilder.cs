@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides functionality for incrementally defining a process.
 /// </summary>
-public class ProcessBuilder : ProcessStepBuilder
+public sealed class ProcessBuilder : ProcessStepBuilder
 {
     private readonly List<ProcessStepBuilder> _steps;
     private readonly List<ProcessStepBuilder> _entrySteps;
@@ -34,7 +34,7 @@ public class ProcessBuilder : ProcessStepBuilder
             {
                 targets.Add(step.ResolveFunctionTarget(functionName, parameterName));
             }
-            catch (InvalidOperationException)
+            catch (KernelException)
             {
                 // If the function is not found on the source step, then we can ignore it.
             }
@@ -69,11 +69,11 @@ public class ProcessBuilder : ProcessStepBuilder
     }
 
     /// <inheritdoc/>
-    internal override Dictionary<string, KernelFunctionMetadata> GetFuctionMetadataMap()
+    internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
     {
         // The process has no kernel functions of its own, but it does expose the functions from its entry steps.
         // Merge the function metadata map from each of the entry steps.
-        return this._entrySteps.SelectMany(step => step.GetFuctionMetadataMap())
+        return this._entrySteps.SelectMany(step => step.GetFunctionMetadataMap())
                                .ToDictionary(pair => pair.Key, pair => pair.Value);
     }
 

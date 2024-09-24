@@ -95,7 +95,7 @@ public abstract class ProcessStepBuilder
 
         if (this.FunctionsDict.Count == 0)
         {
-            throw new InvalidOperationException($"The target step {this.Name} has no functions.");
+            throw new KernelException($"The target step {this.Name} has no functions.");
         }
 
         // If the function name is null or whitespace, then there can only one function on the step
@@ -103,7 +103,7 @@ public abstract class ProcessStepBuilder
         {
             if (this.FunctionsDict.Count > 1)
             {
-                throw new InvalidOperationException("The target step has more than one function, so a function name must be provided.");
+                throw new KernelException("The target step has more than one function, so a function name must be provided.");
             }
 
             verifiedFunctionName = this.FunctionsDict.Keys.First();
@@ -112,7 +112,7 @@ public abstract class ProcessStepBuilder
         // Verify that the target function exists
         if (!this.FunctionsDict.TryGetValue(verifiedFunctionName!, out var kernelFunctionMetadata) || kernelFunctionMetadata is null)
         {
-            throw new InvalidOperationException($"The function {functionName} does not exist on step {this.Name}");
+            throw new KernelException($"The function {functionName} does not exist on step {this.Name}");
         }
 
         // If the parameter name is null or whitespace, then the function must have 0 or 1 parameters
@@ -122,7 +122,7 @@ public abstract class ProcessStepBuilder
 
             if (undeterminedParameters.Count > 1)
             {
-                throw new InvalidOperationException($"The function {functionName} on step {this.Name} has more than one parameter, so a parameter name must be provided.");
+                throw new KernelException($"The function {functionName} on step {this.Name} has more than one parameter, so a parameter name must be provided.");
             }
 
             // We can infer the parameter name from the function metadata
@@ -153,7 +153,7 @@ public abstract class ProcessStepBuilder
     /// Loads a mapping of function names to the associated functions metadata.
     /// </summary>
     /// <returns>A <see cref="Dictionary{TKey, TValue}"/> where TKey is <see cref="string"/> and TValue is <see cref="KernelFunctionMetadata"/></returns>
-    internal abstract Dictionary<string, KernelFunctionMetadata> GetFuctionMetadataMap();
+    internal abstract Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessStepBuilder"/> class.
@@ -185,7 +185,7 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
         : base(name ?? typeof(TStep).Name)
     {
         this._eventNamespace = $"{this.Name}_{this.Id}";
-        this.FunctionsDict = this.GetFuctionMetadataMap();
+        this.FunctionsDict = this.GetFunctionMetadataMap();
     }
 
     /// <summary>
@@ -196,7 +196,7 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
     {
         KernelProcessStepState? stateObject = null;
 
-        if (TryGetSubtypeOfStatefulStep(typeof(TStep), out Type? genericStepType) && genericStepType is not null)
+        if (typeof(TStep).TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
         {
             // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
             // and create an instance of the corresponding KernelProcessStepState<>.
@@ -232,34 +232,10 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
     }
 
     /// <inheritdoc/>
-    internal override Dictionary<string, KernelFunctionMetadata> GetFuctionMetadataMap()
+    internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
     {
         // TODO: Should not have to create a new instance of the step to get the functions metadata.
         var functions = KernelPluginFactory.CreateFromType<TStep>();
         return functions.ToDictionary(f => f.Name, f => f.Metadata);
-    }
-
-    /// <summary>
-    /// Attempts to find an instance of <![CDATA['KernelProcessStep<>']]> within the provided types hierarchy.
-    /// </summary>
-    /// <param name="type">The type to examine.</param>
-    /// <param name="genericStateType">The matching type if found, otherwise null.</param>
-    /// <returns>True if a match is found, false otherwise.</returns>
-    private static bool TryGetSubtypeOfStatefulStep(Type? type, out Type? genericStateType)
-    {
-        var genericType = typeof(KernelProcessStep<>);
-        while (type != null && type != typeof(object))
-        {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == genericType)
-            {
-                genericStateType = type;
-                return true;
-            }
-
-            type = type.BaseType;
-        }
-
-        genericStateType = null;
-        return false;
     }
 }

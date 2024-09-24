@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -90,7 +89,7 @@ public class ProcessStepBuilderTests
         var stepBuilder = new TestProcessStepBuilder("TestStep");
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => stepBuilder.ResolveFunctionTarget(null, null));
+        Assert.Throws<KernelException>(() => stepBuilder.ResolveFunctionTarget(null, null));
     }
 
     /// <summary>
@@ -156,7 +155,7 @@ public class ProcessStepBuilderTests
         };
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => stepBuilder.ResolveFunctionTarget("TestFunction", null));
+        Assert.Throws<KernelException>(() => stepBuilder.ResolveFunctionTarget("TestFunction", null));
     }
 
     /// <summary>
@@ -204,13 +203,13 @@ public class ProcessStepBuilderTests
         };
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => stepBuilder.ResolveFunctionTarget(null, null));
+        Assert.Throws<KernelException>(() => stepBuilder.ResolveFunctionTarget(null, null));
     }
 
     /// <summary>
     /// A test implementation of <see cref="ProcessStepBuilder"/> for testing purposes.
     /// </summary>
-    private class TestProcessStepBuilder : ProcessStepBuilder
+    private sealed class TestProcessStepBuilder : ProcessStepBuilder
     {
         public TestProcessStepBuilder(string name) : base(name) { }
 
@@ -224,7 +223,7 @@ public class ProcessStepBuilderTests
             return $"TestScope.{eventId}";
         }
 
-        internal override Dictionary<string, KernelFunctionMetadata> GetFuctionMetadataMap()
+        internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
         {
             return new Dictionary<string, KernelFunctionMetadata>();
         }
