@@ -344,7 +344,9 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 and settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED
             ) or type == FunctionChoiceType.REQUIRED:
                 settings.tool_choice = {"type": "any"}
-            elif type == FunctionChoiceType.AUTO:
+            elif (
+                settings.function_choice_behavior and settings.function_choice_behavior.type_ == FunctionChoiceType.AUTO
+            ) or type == FunctionChoiceType.AUTO:
                 settings.tool_choice = {"type": type.value}
 
     def kernel_function_metadata_to_function_call_format_anthropic(
