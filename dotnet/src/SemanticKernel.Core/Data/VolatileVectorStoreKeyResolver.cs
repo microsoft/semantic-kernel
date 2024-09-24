@@ -10,4 +10,6 @@ namespace Microsoft.SemanticKernel.Data;
 /// <param name="record">The record to look up the key for.</param>
 /// <returns>The record key.</returns>
 [Experimental("SKEXP0001")]
-public delegate object? VolatileVectorStoreKeyResolver(object record);
+public delegate TKey? VolatileVectorStoreKeyResolver<TKey, TRecord>(TRecord record)
+    where TKey : notnull
+    where TRecord : class;

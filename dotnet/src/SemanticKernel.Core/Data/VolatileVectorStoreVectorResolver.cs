@@ -11,4 +11,5 @@ namespace Microsoft.SemanticKernel.Data;
 /// <param name="record">The record that contains the vector to look up.</param>
 /// <returns>The named vector from the record.</returns>
 [Experimental("SKEXP0001")]
-public delegate object? VolatileVectorStoreVectorResolver(string vectorName, object record);
+public delegate object? VolatileVectorStoreVectorResolver<TRecord>(string vectorName, TRecord record)
+    where TRecord : class;
