@@ -46,8 +46,8 @@ public sealed class KernelParameterMetadata
     /// <summary>Initializes a <see cref="KernelParameterMetadata"/> as a copy of another <see cref="KernelParameterMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
     /// <remarks>This creates a shallow clone of <paramref name="metadata"/>.</remarks>
-    [RequiresUnreferencedCode("May use reflection to generate schema, making it incompatible with AOT scenarios.")]
-    [RequiresDynamicCode("May use reflection to generate schema, making it incompatible with AOT scenarios.")]
+    [RequiresUnreferencedCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
     public KernelParameterMetadata(KernelParameterMetadata metadata)
     {
         Verify.NotNull(metadata);
@@ -138,11 +138,9 @@ public sealed class KernelParameterMetadata
     /// <summary>Gets a JSON Schema describing the parameter's type.</summary>
     public KernelJsonSchema? Schema
     {
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+        [RequiresUnreferencedCode("Uses reflection if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
+        [RequiresDynamicCode("Uses reflection if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
         get => (this._schema ??= InferSchema(this.ParameterType, this.DefaultValue, this.Description, this._jsonSerializerOptions)).Schema;
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
         init => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
     }
 
@@ -151,8 +149,8 @@ public sealed class KernelParameterMetadata
     /// <param name="defaultValue">The parameter's default value, if any.</param>
     /// <param name="description">The parameter description. If null, it won't be included in the schema.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
-    [RequiresUnreferencedCode("May use reflection to generate schema, making it incompatible with AOT scenarios.")]
-    [RequiresDynamicCode("May use reflection to generate schema, making it incompatible with AOT scenarios.")]
+    [RequiresUnreferencedCode("Uses reflection if no JSOs are provided, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection if no JSOs are provided, making it incompatible with AOT scenarios.")]
     internal static InitializedSchema InferSchema(Type? parameterType, object? defaultValue, string? description, JsonSerializerOptions? jsonSerializerOptions)
     {
         KernelJsonSchema? schema = null;

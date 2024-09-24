@@ -73,6 +73,8 @@ public sealed class PromptTemplateConfig
     /// <returns>The deserialized <see cref="PromptTemplateConfig"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="json"/> is an invalid JSON representation of a <see cref="PromptTemplateConfig"/>.</exception>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT safe.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
     public static PromptTemplateConfig FromJson(string json, JsonSerializerOptions jsonSerializerOptions)
     {
         return FromJsonInternal(json, jsonSerializerOptions);
@@ -317,6 +319,8 @@ public sealed class PromptTemplateConfig
     /// <returns>The deserialized <see cref="PromptTemplateConfig"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="json"/> is an invalid JSON representation of a <see cref="PromptTemplateConfig"/>.</exception>
+    [RequiresUnreferencedCode("Uses reflection for deserialization if no JSOs are provided, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection for deserialization if no JSOs are provided, making it incompatible with AOT scenarios.")]
     private static PromptTemplateConfig FromJsonInternal(string json, JsonSerializerOptions? jsonSerializerOptions)
     {
         Verify.NotNullOrWhiteSpace(json);
@@ -332,11 +336,7 @@ public sealed class PromptTemplateConfig
             }
             else
             {
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
                 config = JsonSerializer.Deserialize<PromptTemplateConfig>(json);
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
             }
 
             if (config is null)

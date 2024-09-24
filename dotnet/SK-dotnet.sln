@@ -113,6 +113,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics"
 		src\InternalUtilities\src\Diagnostics\IsExternalInit.cs = src\InternalUtilities\src\Diagnostics\IsExternalInit.cs
 		src\InternalUtilities\src\Diagnostics\NullableAttributes.cs = src\InternalUtilities\src\Diagnostics\NullableAttributes.cs
 		src\InternalUtilities\src\Diagnostics\Verify.cs = src\InternalUtilities\src\Diagnostics\Verify.cs
+		src\InternalUtilities\src\Diagnostics\DynamicallyAccessedMembersAttribute.cs = src\InternalUtilities\src\Diagnostics\DynamicallyAccessedMembersAttribute.cs
+		src\InternalUtilities\src\Diagnostics\RequiresDynamicCodeAttribute.cs = src\InternalUtilities\src\Diagnostics\RequiresDynamicCodeAttribute.cs
+		src\InternalUtilities\src\Diagnostics\RequiresUnreferencedCodeAttribute.cs = src\InternalUtilities\src\Diagnostics\RequiresUnreferencedCodeAttribute.cs
+		src\InternalUtilities\src\Diagnostics\UnconditionalSuppressMessageAttribute.cs = src\InternalUtilities\src\Diagnostics\UnconditionalSuppressMessageAttribute.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{B00AD427-0047-4850-BEF9-BA8237EA9D8B}"
@@ -136,13 +140,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{3CDE10
 		src\InternalUtilities\src\System\InternalTypeConverter.cs = src\InternalUtilities\src\System\InternalTypeConverter.cs
 		src\InternalUtilities\src\System\NonNullCollection.cs = src\InternalUtilities\src\System\NonNullCollection.cs
 		src\InternalUtilities\src\System\TypeConverterFactory.cs = src\InternalUtilities\src\System\TypeConverterFactory.cs
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Aot", "Aot", "{8E5CB0F5-1203-43C5-B37F-7B5D00E381A7}"
-	ProjectSection(SolutionItems) = preProject
-		src\InternalUtilities\src\aot\DynamicallyAccessedMembersAttribute.cs = src\InternalUtilities\src\aot\DynamicallyAccessedMembersAttribute.cs
-		src\InternalUtilities\src\aot\RequiresDynamicCodeAttribute.cs = src\InternalUtilities\src\aot\RequiresDynamicCodeAttribute.cs
-		src\InternalUtilities\src\aot\RequiresUnreferencedCodeAttribute.cs = src\InternalUtilities\src\aot\RequiresUnreferencedCodeAttribute.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Type", "Type", "{E85EA4D0-BB7E-4DFD-882F-A76EB8C0B8FF}"
@@ -221,6 +218,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Text", "Text", "{EB2C141A-AE5F-4080-8790-13EB16323CEF}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\Text\JsonOptionsCache.cs = src\InternalUtilities\src\Text\JsonOptionsCache.cs
+		src\InternalUtilities\src\Text\ReadOnlyMemoryConverter.cs = src\InternalUtilities\src\Text\ReadOnlyMemoryConverter.cs
 		src\InternalUtilities\src\Text\SseData.cs = src\InternalUtilities\src\Text\SseData.cs
 		src\InternalUtilities\src\Text\SseJsonParser.cs = src\InternalUtilities\src\Text\SseJsonParser.cs
 		src\InternalUtilities\src\Text\SseLine.cs = src\InternalUtilities\src\Text\SseLine.cs
@@ -831,18 +829,6 @@ Global
 		{38374C62-0263-4FE8-A18C-70FC8132912B}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{38374C62-0263-4FE8-A18C-70FC8132912B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38374C62-0263-4FE8-A18C-70FC8132912B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
-		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Publish|Any CPU.Build.0 = Debug|Any CPU
-		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{36DDC119-C030-407E-AC51-A877E9E0F660}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{36DDC119-C030-407E-AC51-A877E9E0F660}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{36DDC119-C030-407E-AC51-A877E9E0F660}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
-		{36DDC119-C030-407E-AC51-A877E9E0F660}.Publish|Any CPU.Build.0 = Debug|Any CPU
-		{36DDC119-C030-407E-AC51-A877E9E0F660}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{36DDC119-C030-407E-AC51-A877E9E0F660}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2918478E-BC86-4D53-9D01-9C318F80C14F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2918478E-BC86-4D53-9D01-9C318F80C14F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2918478E-BC86-4D53-9D01-9C318F80C14F}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -855,6 +841,18 @@ Global
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{385A8FE5-87E2-4458-AE09-35E10BD2E67F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36DDC119-C030-407E-AC51-A877E9E0F660}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36DDC119-C030-407E-AC51-A877E9E0F660}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36DDC119-C030-407E-AC51-A877E9E0F660}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{36DDC119-C030-407E-AC51-A877E9E0F660}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{36DDC119-C030-407E-AC51-A877E9E0F660}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36DDC119-C030-407E-AC51-A877E9E0F660}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7AAD7388-307D-41FB-B80A-EF9E3A4E31F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7AAD7388-307D-41FB-B80A-EF9E3A4E31F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7AAD7388-307D-41FB-B80A-EF9E3A4E31F0}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
@@ -935,7 +933,6 @@ Global
 		{1C19D805-3573-4477-BF07-40180FCDE1BD} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{3CDE10B2-AE8F-4FC4-8D55-92D4AD32E144} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{E85EA4D0-BB7E-4DFD-882F-A76EB8C0B8FF} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
-		{8E5CB0F5-1203-43C5-B37F-7B5D00E381A7} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1} = {D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}
 		{E07608CC-D710-4655-BB9E-D22CF3CDD193} = {24503383-A8C4-4255-9998-28D70FE8E99A}
 		{D6D598DF-C17C-46F4-B2B9-CDE82E2DE132} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
@@ -1003,6 +1000,8 @@ Global
 		{E7E60E1D-1A44-4DE9-A44D-D5052E809DDD} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{924DB138-1223-4C99-B6E6-0938A3FA14EF} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{38374C62-0263-4FE8-A18C-70FC8132912B} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
+		{2918478E-BC86-4D53-9D01-9C318F80C14F} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{E06818E3-00A5-41AC-97ED-9491070CDEA1} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{385A8FE5-87E2-4458-AE09-35E10BD2E67F} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{36DDC119-C030-407E-AC51-A877E9E0F660} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{7AAD7388-307D-41FB-B80A-EF9E3A4E31F0} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
@@ -1010,6 +1009,8 @@ Global
 		{063044B2-A901-43C5-BFDF-5E4E71C7BC33} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{E0D45DDB-6D32-40FC-AC79-E1F342C4F513} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{8972254B-B8F0-4119-953B-378E3BACA59A} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
+		{F58468D3-D635-4774-98B1-E1B5DE90A7FF} = {C7299F56-3A55-471E-B10E-B1FBE101C625}
+		{E8FC97B0-B417-4A90-993C-B8AA9223B058} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

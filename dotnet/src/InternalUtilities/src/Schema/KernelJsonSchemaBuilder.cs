@@ -63,16 +63,14 @@ internal static class KernelJsonSchemaBuilder
         return KernelJsonSchema.Parse(jsonObj.ToJsonString(options));
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is only used by an AOT-incompatible Build method overload that is annotated with the corresponding attributes itself.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is only used by an AOT-incompatible Build method overload that is annotated with the corresponding attributes itself.")]
     private static JsonSerializerOptions CreateDefaultOptions()
     {
         JsonSerializerOptions options = new()
         {
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
             Converters = { new JsonStringEnumConverter() },
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
         };
         options.MakeReadOnly();
         return options;
