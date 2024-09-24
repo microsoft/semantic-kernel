@@ -136,6 +136,13 @@ async def test_upsert_get_and_delete(simple_collection: VectorStoreRecordCollect
     assert result.embedding == record.embedding
     assert result.data == record.data
 
+    # Check that the table has an index
+    connection_pool = simple_collection.connection_pool
+    with connection_pool.connection() as conn, conn.cursor() as cur:
+        cur.execute("SELECT indexname FROM pg_indexes WHERE tablename = %s", (simple_collection.collection_name,))
+        index_names = [index[0] for index in cur.fetchall()]
+        assert any("embedding_idx" in index_name for index_name in index_names)
+
     await simple_collection.delete(1)
     result_after_delete = await simple_collection.get(1)
     assert result_after_delete is None

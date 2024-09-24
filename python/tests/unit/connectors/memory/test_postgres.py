@@ -137,13 +137,24 @@ async def test_create_collection_simple_model(vector_store: PostgresStore, mock_
     collection = vector_store.get_collection("test_collection", SimpleDataModel)
     await collection.create_collection()
 
-    assert mock_cursor.execute.call_count == 1
-    execute_args, _ = mock_cursor.execute.call_args
+    # 2 calls, once for the table creation and once for the index creation
+    assert mock_cursor.execute.call_count == 2
+
+    # Check the table creation statement
+    execute_args, _ = mock_cursor.execute.call_args_list[0]
     statement = execute_args[0]
     statement_str = statement.as_string()
-
     assert statement_str == (
         'CREATE TABLE "public"."test_collection" ("id" INTEGER PRIMARY KEY, "embedding" VECTOR(1536), "data" JSONB)'
+    )
+
+    # Check the index creation statement
+    execute_args, _ = mock_cursor.execute.call_args_list[1]
+    statement = execute_args[0]
+    statement_str = statement.as_string()
+    assert statement_str == (
+        'CREATE INDEX "test_collection_embedding_idx" ON "public"."test_collection" '
+        'USING hnsw ("embedding" vector_cosine_ops)'
     )
 
 

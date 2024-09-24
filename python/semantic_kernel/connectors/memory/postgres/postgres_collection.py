@@ -8,8 +8,10 @@ from typing import Any, ClassVar, TypeVar
 from semantic_kernel.connectors.memory.postgres.utils import (
     convert_dict_to_row,
     convert_row_to_dict,
+    get_vector_index_ops_str,
     python_type_to_postgres,
 )
+from semantic_kernel.data.const import IndexKind
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -192,8 +194,10 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
     async def create_collection(self, **kwargs: Any) -> None:
         """Create a PostgreSQL table based on a dictionary of VectorStoreRecordField.
 
-        :param table_name: Name of the table to be created
-        :param fields: A dictionary where keys are column names and values are VectorStoreRecordField instances
+        Args:
+            table_name: Name of the table to be created
+            fields: A dictionary where keys are column names and values are VectorStoreRecordField instances
+            **kwargs: Additional arguments
         """
         column_definitions = []
         table_name = self.collection_name
@@ -206,6 +210,8 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
             property_type = python_type_to_postgres(field.property_type) or field.property_type.upper()
 
             # For Vector fields with dimensions, use pgvector's VECTOR type
+            # Note that other vector types are supported in pgvector (e.g. halfvec),
+            # but would need to be created outside of this method.
             if isinstance(field, VectorStoreRecordVectorField) and field.dimensions:
                 column_definitions.append(
                     sql.SQL("{} VECTOR({})").format(sql.Identifier(field_name), sql.Literal(field.dimensions))
@@ -221,22 +227,70 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
 
         columns_str = sql.SQL(", ").join(column_definitions)
 
-        # Create the final CREATE TABLE statement
         create_table_query = sql.SQL("CREATE TABLE {}.{} ({})").format(
             sql.Identifier(self.db_schema), sql.Identifier(table_name), columns_str
         )
 
         try:
-            # Establish the database connection using psycopg3
             with self.connection_pool.connection() as conn, conn.cursor() as cur:
-                # Execute the CREATE TABLE query
                 cur.execute(create_table_query)
                 conn.commit()
 
             logger.info(f"Postgres table '{table_name}' created successfully.")
 
+            # If the vector field defines an index, apply it
+            for vector_field in self.data_model_definition.vector_fields:
+                if vector_field.index_kind:
+                    await self._create_index(table_name, vector_field)
+
         except DatabaseError as error:
             raise MemoryConnectorException(f"Error creating table: {error}") from error
+
+    async def _create_index(self, table_name: str, vector_field: VectorStoreRecordVectorField) -> None:
+        """Create an index on a column in the table.
+
+        Args:
+            table_name: The name of the table.
+            vector_field: The vector field definition that the index is based on.
+        """
+        column_name = vector_field.name
+        index_name = f"{table_name}_{column_name}_idx"
+
+        # Only support creating HNSW indexes through the vector store
+        if vector_field.index_kind != IndexKind.HNSW:
+            raise MemoryConnectorException(
+                f"Unsupported index kind: {vector_field.index_kind}. "
+                "If you need to create an index of this type, please do so manually. "
+                "Only HNSW indexes are supported through the vector store."
+            )
+
+        # Require the distance function to be set for HNSW indexes
+        if not vector_field.distance_function:
+            raise MemoryConnectorException(
+                "Distance function must be set for HNSW indexes. "
+                "Please set the distance function in the vector field definition."
+            )
+
+        ops_str = get_vector_index_ops_str(vector_field.distance_function)
+
+        try:
+            with self.connection_pool.connection() as conn, conn.cursor() as cur:
+                cur.execute(
+                    sql.SQL("CREATE INDEX {} ON {}.{} USING {} ({} {})").format(
+                        sql.Identifier(index_name),
+                        sql.Identifier(self.db_schema),
+                        sql.Identifier(table_name),
+                        sql.SQL(vector_field.index_kind),
+                        sql.Identifier(column_name),
+                        sql.SQL(ops_str),
+                    )
+                )
+                conn.commit()
+
+            logger.info(f"Index '{index_name}' created successfully on column '{column_name}'.")
+
+        except DatabaseError as error:
+            raise MemoryConnectorException(f"Error creating index: {error}") from error
 
     @override
     async def does_collection_exist(self, **kwargs: Any) -> bool:

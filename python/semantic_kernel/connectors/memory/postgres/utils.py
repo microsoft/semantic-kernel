@@ -8,6 +8,7 @@ from typing import Any
 
 from psycopg_pool import ConnectionPool
 
+from semantic_kernel.data.const import DistanceFunction
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordField, VectorStoreRecordVectorField
 
 
@@ -101,3 +102,28 @@ def convert_dict_to_row(record: dict[str, Any], fields: list[tuple[str, VectorSt
         return v
 
     return tuple(_convert(record.get(field.name)) for _, field in fields)
+
+
+def get_vector_index_ops_str(distance_function: DistanceFunction) -> str:
+    """Get the PostgreSQL ops string for creating an index for a given distance function.
+
+    Args:
+        distance_function: The distance function the index is created for.
+
+    Returns:
+        The PostgreSQL ops string for the given distance function.
+
+    Examples:
+        >>> get_vector_index_ops_str(DistanceFunction.COSINE)
+        'vector_cosine_ops'
+    """
+    if distance_function == DistanceFunction.COSINE:
+        return "vector_cosine_ops"
+    if distance_function == DistanceFunction.DOT_PROD:
+        return "vector_ip_ops"
+    if distance_function == DistanceFunction.EUCLIDEAN:
+        return "vector_l2_ops"
+    if distance_function == DistanceFunction.MANHATTAN:
+        return "vector_l1_ops"
+
+    raise ValueError(f"Unsupported distance function: {distance_function}")
