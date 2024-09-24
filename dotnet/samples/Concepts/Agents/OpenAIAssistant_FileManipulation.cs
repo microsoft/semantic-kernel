@@ -29,14 +29,14 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
                 provider,
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     EnableCodeInterpreter = true,
                     CodeInterpreterFileIds = [uploadFile.Id],
                     Metadata = AssistantSampleMetadata,
-                });
+                },
+                kernel: new Kernel());
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();

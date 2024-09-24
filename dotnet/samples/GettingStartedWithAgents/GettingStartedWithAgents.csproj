@@ -44,6 +44,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,7 +59,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Resources\travelinfo.txt" />
+    <None Remove="Resources\*" />
   </ItemGroup>
 
 </Project>
