@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel;
 [ExcludeFromCodeCoverage]
 internal static class KernelJsonSchemaBuilder
 {
-    private static readonly JsonSerializerOptions s_options = CreateDefaultOptions();
+    private static JsonSerializerOptions? s_options;
     private static readonly JsonSchemaMapperConfiguration s_config = new()
     {
         IncludeSchemaVersion = false,
@@ -33,7 +33,7 @@ internal static class KernelJsonSchemaBuilder
     [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     public static KernelJsonSchema Build(Type type, string? description = null, JsonSchemaMapperConfiguration? configuration = null)
     {
-        return Build(type, s_options, description, configuration);
+        return Build(type, GetDefaultOptions(), description, configuration);
     }
 
     public static KernelJsonSchema Build(
@@ -63,16 +63,21 @@ internal static class KernelJsonSchemaBuilder
         return KernelJsonSchema.Parse(jsonObj.ToJsonString(options));
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is only used by an AOT-incompatible Build method overload that is annotated with the corresponding attributes itself.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is only used by an AOT-incompatible Build method overload that is annotated with the corresponding attributes itself.")]
-    private static JsonSerializerOptions CreateDefaultOptions()
+    [RequiresUnreferencedCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
+    private static JsonSerializerOptions GetDefaultOptions()
     {
-        JsonSerializerOptions options = new()
+        if (s_options is null)
         {
-            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-            Converters = { new JsonStringEnumConverter() },
-        };
-        options.MakeReadOnly();
-        return options;
+            JsonSerializerOptions options = new()
+            {
+                TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+                Converters = { new JsonStringEnumConverter() },
+            };
+            options.MakeReadOnly();
+            s_options = options;
+        }
+
+        return s_options;
     }
 }
