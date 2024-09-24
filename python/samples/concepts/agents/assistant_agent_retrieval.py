@@ -14,7 +14,7 @@ from semantic_kernel.kernel import Kernel
 #####################################################################
 
 AGENT_NAME = "JokeTeller"
-AGENT_INSTRUCTIONS = "You are a funny commedian who loves telling G-rated jokes."
+AGENT_INSTRUCTIONS = "You are a funny comedian who loves telling G-rated jokes."
 
 # Note: you may toggle this to switch between AzureOpenAI and OpenAI
 use_azure_openai = False
