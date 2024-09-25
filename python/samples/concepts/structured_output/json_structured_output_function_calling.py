@@ -30,7 +30,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 #    Azure AD user.
 # - flip the `use_azure_openai` flag to `True`
 ###################################################################
-use_azure_openai = False
+use_azure_openai = True
 
 system_message = """
 You are a helpful math tutor. Guide the user through the solution step by step.
