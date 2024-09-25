@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <!-- Default properties inherited by all projects. Projects can override. -->
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
@@ -13,11 +13,8 @@
 
   <PropertyGroup>
     <!-- In "main" branch this flag should be always "false". -->
-<<<<<<< main
     <IsReleaseCandidate>false</IsReleaseCandidate>
-=======
     <IsReleaseCandidate>true</IsReleaseCandidate>
->>>>>>> ms/features/bugbash-prep
   </PropertyGroup>
   
   <PropertyGroup>

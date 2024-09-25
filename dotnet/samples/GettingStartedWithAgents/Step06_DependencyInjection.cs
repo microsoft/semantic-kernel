@@ -60,7 +60,6 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
                     Name = TutorName,
                     Kernel = sp.GetRequiredService<Kernel>().Clone(),
                     Kernel = sp.GetRequiredService<Kernel>(),
- 6d73513a859ab2d05e01db3bc1d405827799e34b
                     Kernel = sp.GetRequiredService<Kernel>().Clone(),
                 });
 
