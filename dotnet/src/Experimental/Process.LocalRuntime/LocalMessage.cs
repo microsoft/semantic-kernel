@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Process;
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a local message used in the local runtime.
 /// </summary>

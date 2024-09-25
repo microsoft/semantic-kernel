@@ -2,7 +2,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Process;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides context and actions on a process that is running locally.

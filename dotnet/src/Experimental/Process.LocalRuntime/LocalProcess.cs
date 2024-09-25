@@ -7,13 +7,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Process;
+namespace Microsoft.SemanticKernel;
+
 internal sealed class LocalProcess : LocalStep
 {
-    private readonly List<KernelProcessStepInfo> _stepsInfos;
-    private readonly List<LocalStep> _steps;
-    private readonly KernelProcess _process;
-    private readonly Kernel _kernel;
+    internal readonly List<KernelProcessStepInfo> _stepsInfos;
+    internal readonly List<LocalStep> _steps;
+    internal readonly KernelProcess _process;
+    internal readonly Kernel _kernel;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LocalProcess"/> class.

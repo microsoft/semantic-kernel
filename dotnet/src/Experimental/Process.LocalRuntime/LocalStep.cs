@@ -9,13 +9,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.Process;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents a step in a process that is running in-process.
 /// </summary>
 internal class LocalStep : KernelProcessMessageChannel
 {
+    /// <summary>
+    /// The generic state type for a process step.
+    /// </summary>
+    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
     private Dictionary<string, Dictionary<string, object?>?>? _inputs;
     private Dictionary<string, Dictionary<string, object?>?>? _initialInputs;
     private ILogger? _logger;
@@ -72,7 +76,7 @@ internal class LocalStep : KernelProcessMessageChannel
         KernelProcessStepState? stateObject = null;
         Type? stateType = null;
 
-        if (stepInfo.InnerStepType.TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
+        if (TryGetSubtypeOfStatefulStep(stepInfo.InnerStepType, out Type? genericStepType) && genericStepType is not null)
         {
             // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
             // and create an instance of the corresponding KernelProcessStepState<>.
@@ -242,5 +246,29 @@ internal class LocalStep : KernelProcessMessageChannel
         }
 
         return inputs;
+    }
+
+    /// <summary>
+    /// Attempts to find an instance of <![CDATA['KernelProcessStep<>']]> within the provided types hierarchy.
+    /// </summary>
+    /// <param name="type">The type to examine.</param>
+    /// <param name="genericStateType">The matching type if found, otherwise null.</param>
+    /// <returns>True if a match is found, false otherwise.</returns>
+    /// TODO: Move this to a share process utilities project.
+    public static bool TryGetSubtypeOfStatefulStep(Type? type, out Type? genericStateType)
+    {
+        while (type != null && type != typeof(object))
+        {
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == s_genericType)
+            {
+                genericStateType = type;
+                return true;
+            }
+
+            type = type.BaseType;
+        }
+
+        genericStateType = null;
+        return false;
     }
 }
