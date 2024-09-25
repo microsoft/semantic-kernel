@@ -90,7 +90,7 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
         // When the creditScoreCheck step results in Approval, the information gets to the fraudDetection step to kickstart this step
         customerCreditCheckStep
             .OnEvent(AccountOpeningEvents.CreditScoreCheckApproved)
-            .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: "FraudDetectionCheck", parameterName: "previousCheckSucceded"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: "FraudDetectionCheck", parameterName: "previousCheckSucceeded"));
 
         // When the fraudDetectionCheck step fails, the information gets to the mailService step to notify the user about the state of the application and the reasons
         fraudDetectionCheckStep
@@ -100,7 +100,7 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
         // When the fraudDetectionCheck step passes, the information gets to core system record creation step to kickstart this step
         fraudDetectionCheckStep
             .OnEvent(AccountOpeningEvents.FraudDetectionCheckPassed)
-            .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: "CreateNewAccount", parameterName: "previousCheckSucceded"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: "CreateNewAccount", parameterName: "previousCheckSucceeded"));
 
         // When the coreSystemRecordCreation step successfully creates a new accountId, it will trigger the creation of a new marketing entry through the marketingRecordCreation step
         coreSystemRecordCreationStep
@@ -256,7 +256,7 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
         GUIDANCE:
         - If there are missing details, give the user a useful message that will help fill up the remaining fields.
         - Your goal is to help guide the user to provide the missing details on the current form.
-        - Encourage the user to provide the remaning details with examples if necessary.
+        - Encourage the user to provide the remainingdetails with examples if necessary.
         - Fields with value 'Unanswered' need to be answered by the user.
         - For date fields, confirm with the user first if the date format is not clear. Example 02/03 03/02 could be March 2nd or February 3rd.
         """;
@@ -303,7 +303,7 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
         }
 
         [KernelFunction("NewAccountProcessUserInfo")]
-        public async Task CompleteNewCustumerFormAsync(KernelProcessStepContext context, string userMessage, Kernel _kernel)
+        public async Task CompleteNewCustomerFormAsync(KernelProcessStepContext context, string userMessage, Kernel _kernel)
         {
             // Keeping track of all user interactions
             _state?.conversation.Add(new ChatMessageContent { Role = AuthorRole.User, Content = userMessage });
@@ -447,7 +447,7 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
     public class FraudDetectionStep : KernelProcessStep
     {
         [KernelFunction("FraudDetectionCheck")]
-        public async Task FraudDetectionCheckAsync(KernelProcessStepContext context, bool previousCheckSucceded, NewCustomerForm customerDetails, Kernel _kernel)
+        public async Task FraudDetectionCheckAsync(KernelProcessStepContext context, bool previousCheckSucceeded, NewCustomerForm customerDetails, Kernel _kernel)
         {
             // Placeholder for a call to API to validate user details for fraud detection
             if (customerDetails.UserId == "123-456-7890")
@@ -516,11 +516,11 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
     public class NewAccountStep : KernelProcessStep
     {
         [KernelFunction("CreateNewAccount")]
-        public async Task CreateNewAccountAsync(KernelProcessStepContext context, bool previousCheckSucceded, NewCustomerForm customerDetails, List<ChatMessageContent> interactionTranscript, Kernel _kernel)
+        public async Task CreateNewAccountAsync(KernelProcessStepContext context, bool previousCheckSucceeded, NewCustomerForm customerDetails, List<ChatMessageContent> interactionTranscript, Kernel _kernel)
         {
             // Placeholder for a call to API to create new account for user
             var accountId = new Guid();
-            AccountDetails accuntDetails = new()
+            AccountDetails accountDetails = new()
             {
                 UserDateOfBirth = customerDetails.UserDateOfBirth,
                 UserFirstName = customerDetails.UserFirstName,
@@ -558,7 +558,7 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
             await context.EmitEventAsync(new()
             {
                 Id = AccountOpeningEvents.NewAccountDetailsReady,
-                Data = accuntDetails,
+                Data = accountDetails,
             });
         }
     }
