@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -551,13 +551,12 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         var settings = new OpenAIPromptExecutionSettings() { ChatSystemPrompt = SystemMessage };
 
-<<<<<<< HEAD
         using var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(ChatCompletionResponse) };
         this._messageHandlerStub.ResponseToReturn = response;
-=======
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+        using var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(ChatCompletionResponse) };
+        this._messageHandlerStub.ResponseToReturn = response;
 
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage(Prompt);
@@ -1035,7 +1034,6 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("rainy", functionResult.GetProperty("content").GetString());
     }
 
-<<<<<<< HEAD
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -1353,8 +1351,6 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.False(optionsJson.TryGetProperty("tool_choice", out var _));
     }
 
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
     public void Dispose()
     {
         this._httpClient.Dispose();
@@ -1416,7 +1412,6 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
           }
         }
         """;
-<<<<<<< HEAD
 
 #pragma warning disable CS8618, CA1812
     private sealed class MathReasoning
@@ -1440,6 +1435,4 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         public int? NumericProperty { get; set; }
     }
 #pragma warning restore CS8618, CA1812
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 }

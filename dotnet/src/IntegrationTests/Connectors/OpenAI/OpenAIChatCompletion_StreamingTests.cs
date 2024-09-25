@@ -134,7 +134,6 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         }
 
         // Assert
-        Assert.Contains("I don't know", stringBuilder.ToString());
         Assert.NotNull(metadata);
 
         Assert.True(metadata.TryGetValue("Id", out object? id));

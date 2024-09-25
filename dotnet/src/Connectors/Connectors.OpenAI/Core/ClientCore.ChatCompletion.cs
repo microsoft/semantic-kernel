@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-// Copyright (c) Microsoft. All rights reserved.
-=======
-﻿// Copyright (c) Microsoft. All rights reserved.
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
+﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.ClientModel;
 using System.Collections.Generic;
@@ -15,10 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-<<<<<<< HEAD
 using JsonSchemaMapper;
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -34,7 +27,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
-<<<<<<< HEAD
     /// <summary>
     /// <see cref="JsonSchemaMapperConfiguration"/> for JSON schema format for structured outputs.
     /// </summary>
@@ -48,10 +40,9 @@ internal partial class ClientCore
 
     protected const string ModelProvider = "openai";
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
-=======
     protected const string ModelProvider = "openai";
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke);
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -74,12 +65,9 @@ internal partial class ClientCore
     /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
     protected static readonly ChatTool s_nonInvocableFunctionTool = ChatTool.CreateFunctionTool("NonInvocableTool");
 
-<<<<<<< HEAD
-=======
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     protected static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
 
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
     /// </summary>
@@ -120,10 +108,7 @@ internal partial class ClientCore
             { nameof(completions.CreatedAt), completions.CreatedAt },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
-<<<<<<< HEAD
             { nameof(completions.Refusal), completions.Refusal },
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completions.FinishReason), completions.FinishReason.ToString() },
@@ -138,10 +123,7 @@ internal partial class ClientCore
             { nameof(completionUpdate.Id), completionUpdate.Id },
             { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },
             { nameof(completionUpdate.SystemFingerprint), completionUpdate.SystemFingerprint },
-<<<<<<< HEAD
             { nameof(completionUpdate.RefusalUpdate), completionUpdate.RefusalUpdate },
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completionUpdate.FinishReason), completionUpdate.FinishReason?.ToString() },
@@ -152,40 +134,27 @@ internal partial class ClientCore
     /// Generate a new chat message
     /// </summary>
     /// <param name="targetModel">Model identifier</param>
-<<<<<<< HEAD
     /// <param name="chatHistory">Chat history</param>
-=======
     /// <param name="chat">Chat history</param>
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
     /// <param name="executionSettings">Execution settings for the completion API.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Generated chat message in string format</returns>
     internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
         string targetModel,
-<<<<<<< HEAD
         ChatHistory chatHistory,
-=======
         ChatHistory chat,
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
         CancellationToken cancellationToken = default)
     {
-<<<<<<< HEAD
         Verify.NotNull(chatHistory);
-=======
         Verify.NotNull(chat);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
-
         if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
-<<<<<<< HEAD
                 JsonSerializer.Serialize(chatHistory),
-=======
                 JsonSerializer.Serialize(chat),
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
                 JsonSerializer.Serialize(executionSettings));
         }
 
@@ -196,28 +165,22 @@ internal partial class ClientCore
 
         for (int requestIndex = 0; ; requestIndex++)
         {
-<<<<<<< HEAD
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
 
             var functionCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, functionCallingConfig, kernel);
-=======
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
 
             var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
             // Make the request.
             OpenAIChatCompletion? chatCompletion = null;
             OpenAIChatMessageContent chatMessageContent;
-<<<<<<< HEAD
             using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
-=======
             using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
             {
                 try
                 {
@@ -243,17 +206,13 @@ internal partial class ClientCore
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokens, chatCompletion.Usage.OutputTokens);
             }
 
-<<<<<<< HEAD
             // If we don't want to attempt to invoke any functions or there is nothing to call, just return the result.
             if (!functionCallingConfig.AutoInvoke || chatCompletion.ToolCalls.Count == 0)
-=======
             // If we don't want to attempt to invoke any functions, just return the result.
             if (!toolCallingConfig.AutoInvoke)
             {
                 return [chatMessageContent];
             }
-
-            Debug.Assert(kernel is not null);
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
@@ -261,12 +220,10 @@ internal partial class ClientCore
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
             if (chatCompletion.ToolCalls.Count == 0)
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
             {
                 return [chatMessageContent];
             }
 
-<<<<<<< HEAD
             // Process function calls by invoking the functions and adding the results to the chat history.
             // Each function call will trigger auto-function-invocation filters, which can terminate the process.
             // In such cases, we'll return the last message in the chat history.
@@ -284,7 +241,6 @@ internal partial class ClientCore
 
             // Process non-function tool calls.
             this.ProcessNonFunctionToolCalls(chatCompletion.ToolCalls, chatHistory);
-=======
             if (this.Logger.IsEnabled(LogLevel.Debug))
             {
                 this.Logger.LogDebug("Tool requests: {Requests}", chatCompletion.ToolCalls.Count);
@@ -398,35 +354,25 @@ internal partial class ClientCore
                     return [chat.Last()];
                 }
             }
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
         }
     }
 
     internal async IAsyncEnumerable<OpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
         string targetModel,
-<<<<<<< HEAD
         ChatHistory chatHistory,
-=======
         ChatHistory chat,
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-<<<<<<< HEAD
         Verify.NotNull(chatHistory);
-=======
         Verify.NotNull(chat);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
         if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
-<<<<<<< HEAD
                 JsonSerializer.Serialize(chatHistory),
-=======
                 JsonSerializer.Serialize(chat),
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
                 JsonSerializer.Serialize(executionSettings));
         }
 
@@ -441,19 +387,16 @@ internal partial class ClientCore
 
         for (int requestIndex = 0; ; requestIndex++)
         {
-<<<<<<< HEAD
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
 
             var toolCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, toolCallingConfig, kernel);
-=======
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
 
             var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
             // Reset state
             contentBuilder?.Clear();
@@ -469,11 +412,8 @@ internal partial class ClientCore
             ChatToolCall[]? toolCalls = null;
             FunctionCallContent[]? functionCallContents = null;
 
-<<<<<<< HEAD
             using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
-=======
             using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
             {
                 // Make the request.
                 AsyncCollectionResult<StreamingChatCompletionUpdate> response;
@@ -524,7 +464,6 @@ internal partial class ClientCore
                             }
 
                             OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
-<<<<<<< HEAD
                             try
                             {
                                 foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
@@ -541,13 +480,10 @@ internal partial class ClientCore
                                 // Temporary workaround for OpenAI SDK Bug here: https://github.com/openai/openai-dotnet/issues/198
                                 // TODO: Remove this try-catch block once the bug is fixed.
                             }
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
                         }
 
                         var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, targetModel, metadata);
 
-<<<<<<< HEAD
                         if (openAIStreamingChatMessageContent.ToolCallUpdates is not null)
                         {
                             foreach (var functionCallUpdate in openAIStreamingChatMessageContent.ToolCallUpdates!)
@@ -568,26 +504,28 @@ internal partial class ClientCore
                                     functionCallIndex: functionCallUpdate.Index));
                             }
                         }
-=======
                         foreach (var functionCallUpdate in chatCompletionUpdate.ToolCallUpdates)
+                        if (openAIStreamingChatMessageContent.ToolCallUpdates is not null)
                         {
-                            // Using the code below to distinguish and skip non - function call related updates.
-                            // The Kind property of updates can't be reliably used because it's only initialized for the first update.
-                            if (string.IsNullOrEmpty(functionCallUpdate.Id) &&
-                                string.IsNullOrEmpty(functionCallUpdate.FunctionName) &&
-                                string.IsNullOrEmpty(functionCallUpdate.FunctionArgumentsUpdate))
+                            foreach (var functionCallUpdate in openAIStreamingChatMessageContent.ToolCallUpdates!)
                             {
-                                continue;
-                            }
+                                // Using the code below to distinguish and skip non - function call related updates.
+                                // The Kind property of updates can't be reliably used because it's only initialized for the first update.
+                                if (string.IsNullOrEmpty(functionCallUpdate.Id) &&
+                                    string.IsNullOrEmpty(functionCallUpdate.FunctionName) &&
+                                    string.IsNullOrEmpty(functionCallUpdate.FunctionArgumentsUpdate))
+                                {
+                                    continue;
+                                }
 
-                            openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
-                                callId: functionCallUpdate.Id,
-                                name: functionCallUpdate.FunctionName,
-                                arguments: functionCallUpdate.FunctionArgumentsUpdate,
-                                functionCallIndex: functionCallUpdate.Index));
+                                openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
+                                    callId: functionCallUpdate.Id,
+                                    name: functionCallUpdate.FunctionName,
+                                    arguments: functionCallUpdate.FunctionArgumentsUpdate,
+                                    functionCallIndex: functionCallUpdate.Index));
+                            }
                         }
 
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
                         streamedContents?.Add(openAIStreamingChatMessageContent);
                         yield return openAIStreamingChatMessageContent;
                     }
@@ -619,7 +557,6 @@ internal partial class ClientCore
             // Get any response content that was streamed.
             string content = contentBuilder?.ToString() ?? string.Empty;
 
-<<<<<<< HEAD
             var chatMessageContent = this.CreateChatMessageContent(streamedRole ?? default, content, toolCalls, functionCallContents, metadata, streamedName);
 
             // Process function calls by invoking the functions and adding the results to the chat history.
@@ -640,7 +577,6 @@ internal partial class ClientCore
 
             // Process non-function tool calls.
             this.ProcessNonFunctionToolCalls(toolCalls, chatHistory);
-=======
             // Log the requests
             if (this.Logger.IsEnabled(LogLevel.Trace))
             {
@@ -757,7 +693,6 @@ internal partial class ClientCore
                     yield break;
                 }
             }
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
         }
     }
 
@@ -824,7 +759,6 @@ internal partial class ClientCore
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
-<<<<<<< HEAD
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -838,12 +772,23 @@ internal partial class ClientCore
             options.ToolChoice = toolCallingConfig.Choice;
         }
 
-=======
             ResponseFormat = GetResponseFormat(executionSettings) ?? ChatResponseFormat.Text,
             ToolChoice = toolCallingConfig.Choice,
         };
 
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+        };
+
+        var responseFormat = GetResponseFormat(executionSettings);
+        if (responseFormat is not null)
+        {
+            options.ResponseFormat = responseFormat;
+        }
+
+        if (toolCallingConfig.Choice is not null)
+        {
+            options.ToolChoice = toolCallingConfig.Choice;
+        }
+
         if (toolCallingConfig.Tools is { Count: > 0 } tools)
         {
             options.Tools.AddRange(tools);
@@ -908,17 +853,13 @@ internal partial class ClientCore
                     }
                 }
                 break;
-<<<<<<< HEAD
             case Type formatObjectType:
                 return GetJsonSchemaResponseFormat(formatObjectType);
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
         }
 
         return null;
     }
 
-<<<<<<< HEAD
     /// <summary>
     /// Gets instance of <see cref="ChatResponseFormat"/> object for JSON schema format for structured outputs.
     /// </summary>
@@ -941,7 +882,6 @@ internal partial class ClientCore
         {
             if (tools[i].Kind == ChatToolKind.Function &&
                 string.Equals(tools[i].FunctionName, FunctionName.ToFullyQualifiedName(functionCallContent.FunctionName, functionCallContent.PluginName, OpenAIFunction.NameSeparator), StringComparison.OrdinalIgnoreCase))
-=======
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
     private static bool IsRequestableTool(ChatCompletionOptions options, OpenAIFunctionToolCall ftc)
     {
@@ -950,7 +890,6 @@ internal partial class ClientCore
         {
             if (tools[i].Kind == ChatToolKind.Function &&
                 string.Equals(tools[i].FunctionName, ftc.FullyQualifiedName, StringComparison.OrdinalIgnoreCase))
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
             {
                 return true;
             }
@@ -997,21 +936,15 @@ internal partial class ClientCore
 
         foreach (var message in chatHistory)
         {
-<<<<<<< HEAD
             messages.AddRange(CreateRequestMessages(message));
-=======
             messages.AddRange(CreateRequestMessages(message, executionSettings.ToolCallBehavior));
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
         }
 
         return messages;
     }
 
-<<<<<<< HEAD
     private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message)
-=======
     private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
     {
         if (message.Role == AuthorRole.System)
         {
@@ -1046,11 +979,8 @@ internal partial class ClientCore
                     continue;
                 }
 
-<<<<<<< HEAD
                 var stringResult = FunctionCalling.FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty);
-=======
                 var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
                 toolMessages.Add(new ToolChatMessage(resultContent.CallId, stringResult ?? string.Empty));
             }
@@ -1243,8 +1173,6 @@ internal partial class ClientCore
         return result;
     }
 
-<<<<<<< HEAD
-=======
     private static void AddResponseMessage(ChatHistory chat, string? result, string? errorMessage, ChatToolCall toolCall, ILogger logger)
     {
         // Log any error
@@ -1270,7 +1198,6 @@ internal partial class ClientCore
         chat.Add(message);
     }
 
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
     private static void ValidateMaxTokens(int? maxTokens)
     {
         if (maxTokens.HasValue && maxTokens < 1)
@@ -1303,7 +1230,6 @@ internal partial class ClientCore
         s_totalTokensCounter.Add(usage.TotalTokens);
     }
 
-<<<<<<< HEAD
     private ToolCallingConfig GetFunctionCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory, int requestIndex)
     {
         // If neither behavior is specified, we just return default configuration with no tool and no choice
@@ -1443,7 +1369,6 @@ internal partial class ClientCore
 
             chatHistory.Add(message);
         }
-=======
     /// <summary>
     /// Processes the function result.
     /// </summary>
@@ -1515,7 +1440,7 @@ internal partial class ClientCore
     {
         if (executionSettings.ToolCallBehavior is null)
         {
-            return new ToolCallingConfig(Tools: [s_nonInvocableFunctionTool], Choice: ChatToolChoice.None, AutoInvoke: false);
+            return new ToolCallingConfig(Tools: null, Choice: null, AutoInvoke: false);
         }
 
         if (requestIndex >= executionSettings.ToolCallBehavior.MaximumUseAttempts)
@@ -1549,6 +1474,5 @@ internal partial class ClientCore
             Tools: tools ?? [s_nonInvocableFunctionTool],
             Choice: choice ?? ChatToolChoice.None,
             AutoInvoke: autoInvoke);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
     }
 }

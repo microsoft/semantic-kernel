@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
 using Azure.AI.OpenAI;
@@ -59,17 +59,24 @@ internal partial class AzureClientCore
         if (toolCallingConfig.Choice is not null)
         {
             options.ToolChoice = toolCallingConfig.Choice;
-=======
             ResponseFormat = GetResponseFormat(azureSettings) ?? ChatResponseFormat.Text,
             ToolChoice = toolCallingConfig.Choice
+=======
         };
 
-        if (azureSettings.AzureChatDataSource is not null)
+        var responseFormat = GetResponseFormat(executionSettings);
+        if (responseFormat is not null)
         {
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             options.AddDataSource(azureSettings.AzureChatDataSource);
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+            options.ResponseFormat = responseFormat;
+        }
+
+        if (toolCallingConfig.Choice is not null)
+        {
+            options.ToolChoice = toolCallingConfig.Choice;
         }
 
         if (toolCallingConfig.Tools is { Count: > 0 } tools)
@@ -86,7 +93,7 @@ internal partial class AzureClientCore
         }
 
 =======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> ms/prevent-null-assignment
         if (executionSettings.TokenSelectionBiases is not null)
         {
             foreach (var keyValue in executionSettings.TokenSelectionBiases)

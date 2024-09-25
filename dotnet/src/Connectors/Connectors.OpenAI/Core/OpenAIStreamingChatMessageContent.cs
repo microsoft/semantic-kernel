@@ -1,11 +1,10 @@
-<<<<<<< HEAD
+
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
-=======
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -39,11 +38,9 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         string modelId,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(
-<<<<<<< HEAD
             null,
-=======
             chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+            null,
             null,
             chatUpdate,
             choiceIndex,
@@ -51,7 +48,6 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             Encoding.UTF8,
             metadata)
     {
-<<<<<<< HEAD
         try
         {
             this.FinishReason = chatUpdate.FinishReason;
@@ -77,11 +73,11 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             // Temporary workaround for OpenAI SDK Bug here: https://github.com/openai/openai-dotnet/issues/198
             // TODO: Remove this try-catch block once the bug is fixed.
         }
-=======
         this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
         this.FinishReason = chatUpdate.FinishReason;
         this.Items = CreateContentItems(chatUpdate.ContentUpdate);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+            // TODO: Remove this try-catch block once the bug is fixed.
+        }
     }
 
     /// <summary>
