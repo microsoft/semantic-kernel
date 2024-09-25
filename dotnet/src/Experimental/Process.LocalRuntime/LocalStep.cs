@@ -41,7 +41,7 @@ internal class LocalStep : KernelProcessMessageChannel
     /// </summary>
     /// <param name="name">Required. The name of the step.</param>
     /// <param name="id">Required. The unique Id of the step.</param>
-    /// <param name="kernel">Required. An istance of <see cref="Kernel"/>.</param>
+    /// <param name="kernel">Required. An instance of <see cref="Kernel"/>.</param>
     /// <param name="parentProcessId">Optional. The Id of the parent process if one exists.</param>
     /// <param name="loggerFactory">An instance of <see cref="LoggerFactory"/> used to create loggers.</param>
     public LocalStep(string name, string id, Kernel kernel, string? parentProcessId = null, ILoggerFactory? loggerFactory = null)

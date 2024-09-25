@@ -215,7 +215,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         }
         catch (Exception ex)
         {
-            this._logger?.LogError("An error occurred while runing the process: {ErrorMessage}.", ex.Message);
+            this._logger?.LogError("An error occurred while running the process: {ErrorMessage}.", ex.Message);
             throw;
         }
         finally
