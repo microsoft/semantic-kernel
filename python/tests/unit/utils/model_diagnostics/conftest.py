@@ -53,29 +53,31 @@ class MockChatCompletion(ChatCompletionClientBase):
     MODEL_PROVIDER_NAME: ClassVar[str] = "mock"
 
     @override
-    async def get_chat_message_contents(
+    async def _inner_get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Any,
     ) -> list["ChatMessageContent"]:
         return []
 
     @override
-    async def get_streaming_chat_message_contents(
+    async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Any,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         yield []
+
+    @override
+    def service_url(self) -> str | None:
+        return "http://mock-service-url"
 
 
 class MockTextCompletion(TextCompletionClientBase):
     MODEL_PROVIDER_NAME: ClassVar[str] = "mock"
 
     @override
-    async def get_text_contents(
+    async def _inner_get_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
@@ -83,9 +85,14 @@ class MockTextCompletion(TextCompletionClientBase):
         return []
 
     @override
-    async def get_streaming_text_contents(
+    async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
         yield []
+
+    @override
+    def service_url(self) -> str | None:
+        # Returning None to test the case where the service URL is not available
+        return None

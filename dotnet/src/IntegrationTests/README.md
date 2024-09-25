@@ -3,15 +3,28 @@
 ## Requirements
 
 1. **Azure OpenAI**: go to the [Azure OpenAI Quickstart](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart)
-   and deploy an instance of Azure OpenAI, deploy a model like "gpt-35-turbo-instruct" find your Endpoint and API key.
-2. **OpenAI**: go to [OpenAI](https://platform.openai.com) to register and procure your API key.
-3. **HuggingFace API key**: see https://huggingface.co/docs/huggingface_hub/guides/inference for details.
-4. **Azure Bing Web Search API**: go to [Bing Web Search API](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
+    1. Deploy the following models:
+        1. `dall-e-3` DALL-E 3 generates images  and is used in Text to Image tests.
+        1. `tts` TTS is a model that converts text to natural sounding speech and is used in Text to Audio tests.
+        1. `whisper` The Whisper models are trained for speech recognition and translation tasks and is used in Audio to Text tests.
+        1. `text-embedding-ada-002` Text Embedding Ada 002 is used in Text Embedding tests.
+        1. `gpt-35-turbo-instruct` GPT-3.5 Turbo Instruct is used in inference tests.
+        1. `gpt-4o` GPT-4o is used in chat completion tests.
+    1. Assign users who are running the integration tests the following roles: `Cognitive Services OpenAI Contributor` and `Cognitive Services OpenAI User`
+    1. Users must [Authenticate to Azure using Azure CLI](https://learn.microsoft.com/en-us/cli/azure/authenticate-azure-cli)
+1. **OpenAI**: go to [OpenAI](https://platform.openai.com) to register and procure your API key.
+1. **HuggingFace API key**: see https://huggingface.co/docs/huggingface_hub/guides/inference for details.
+1. **Azure Bing Web Search API**: go to [Bing Web Search API](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
    and select `Try Now` to get started.
-5. **Postgres**: start a postgres with the [pgvector](https://github.com/pgvector/pgvector) extension installed. You can easily do it using the docker image [ankane/pgvector](https://hub.docker.com/r/ankane/pgvector).
-6. **Weaviate**: go to `IntegrationTests/Connectors/Weaviate` where `docker-compose.yml` is located and run `docker-compose up --build`. 
+1. **Postgres**: start a postgres with the [pgvector](https://github.com/pgvector/pgvector) extension installed. You can easily do it using the docker image [ankane/pgvector](https://hub.docker.com/r/ankane/pgvector).
+1. **Weaviate**: go to `IntegrationTests/Connectors/Weaviate` where `docker-compose.yml` is located and run `docker-compose up --build`. 
 
 ## Setup
+
+> [!IMPORTANT]  
+> To run integration tests that depend on Azure OpenAI, you must have the Azure OpenAI models deployed and have the necessary permissions to access them.
+> These test authenticate using [AzureCliCredential](https://learn.microsoft.com/en-us/dotnet/api/azure.identity.azureclicredential?view=azure-dotnet).
+> Users must [Authenticate to Azure using Azure CLI](https://learn.microsoft.com/en-us/cli/azure/authenticate-azure-cli).
 
 ### Option 1: Use Secret Manager
 
@@ -38,31 +51,30 @@ dotnet user-secrets set "OpenAITextToImage:ServiceId" "dall-e-3"
 dotnet user-secrets set "OpenAITextToImage:ModelId" "dall-e-3"
 dotnet user-secrets set "OpenAITextToImage:ApiKey" "..."
 
+dotnet user-secrets set "AzureAIInference:ServiceId" "azure-ai-inference"
+dotnet user-secrets set "AzureAIInference:ApiKey" "..."
+dotnet user-secrets set "AzureAIInference:Endpoint" "https://contoso.models.ai.azure.com/"
+
 dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-gpt-35-turbo-instruct"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "gpt-35-turbo-instruct"
 dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "gpt-4"
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://contoso.openai.azure.com/"
-dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
 
 dotnet user-secrets set "AzureOpenAIEmbeddings:ServiceId" "azure-text-embedding-ada-002"
 dotnet user-secrets set "AzureOpenAIEmbeddings:DeploymentName" "text-embedding-ada-002"
 dotnet user-secrets set "AzureOpenAIEmbeddings:Endpoint" "https://contoso.openai.azure.com/"
-dotnet user-secrets set "AzureOpenAIEmbeddings:ApiKey" "..."
 
 dotnet user-secrets set "AzureOpenAIAudioToText:ServiceId" "azure-audio-to-text"
 dotnet user-secrets set "AzureOpenAIAudioToText:DeploymentName" "whisper-1"
 dotnet user-secrets set "AzureOpenAIAudioToText:Endpoint" "https://contoso.openai.azure.com/"
-dotnet user-secrets set "AzureOpenAIAudioToText:ApiKey" "..."
 
 dotnet user-secrets set "AzureOpenAITextToAudio:ServiceId" "azure-text-to-audio"
 dotnet user-secrets set "AzureOpenAITextToAudio:DeploymentName" "tts-1"
 dotnet user-secrets set "AzureOpenAITextToAudio:Endpoint" "https://contoso.openai.azure.com/"
-dotnet user-secrets set "AzureOpenAITextToAudio:ApiKey" "..."
 
 dotnet user-secrets set "AzureOpenAITextToImage:ServiceId" "azure-text-to-image"
 dotnet user-secrets set "AzureOpenAITextToImage:DeploymentName" "dall-e-3"
 dotnet user-secrets set "AzureOpenAITextToImage:Endpoint" "https://contoso.openai.azure.com/"
-dotnet user-secrets set "AzureOpenAITextToImage:ApiKey" "..."
 
 dotnet user-secrets set "MistralAI:ChatModel" "mistral-large-latest"
 dotnet user-secrets set "MistralAI:EmbeddingModel" "mistral-embed"

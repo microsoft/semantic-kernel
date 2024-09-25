@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.ClientModel;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,6 +57,7 @@ internal static class AssistantThreadActions
                 ThreadInitializationMessage threadMessage = new(
                     role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Assistant,
                     content: AssistantMessageFactory.GetMessageContents(message));
+
                 createOptions.InitialMessages.Add(threadMessage);
             }
         }
@@ -111,7 +113,7 @@ internal static class AssistantThreadActions
 
         await foreach (PageResult<ThreadMessage> page in client.GetMessagesAsync(threadId, new() { Order = ListOrder.NewestFirst }, cancellationToken).ConfigureAwait(false))
         {
-            foreach (var message in page.Values)
+            foreach (ThreadMessage message in page.Values)
             {
                 AuthorRole role = new(message.Role.ToString());
 
@@ -152,9 +154,6 @@ internal static class AssistantThreadActions
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    /// <remarks>
-    /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
-    /// </remarks>
     public static async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         OpenAIAssistantAgent agent,
         AssistantClient client,
@@ -174,7 +173,9 @@ internal static class AssistantThreadActions
 
         ToolDefinition[]? tools = [.. agent.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
 
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, invocationOptions);
+        string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, instructions, invocationOptions);
 
         options.ToolsOverride.AddRange(tools);
 
@@ -184,7 +185,7 @@ internal static class AssistantThreadActions
 
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
-        Dictionary<string, FunctionCallContent> functionSteps = [];
+        Dictionary<string, FunctionResultContent> functionSteps = [];
 
         do
         {
@@ -197,11 +198,7 @@ internal static class AssistantThreadActions
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
 
-            List<RunStep> steps = [];
-            await foreach (var page in client.GetRunStepsAsync(run).ConfigureAwait(false))
-            {
-                steps.AddRange(page.Values);
-            };
+            IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run).ConfigureAwait(false);
 
             // Is tool action required?
             if (run.Status == RunStatus.RequiresAction)
@@ -209,17 +206,23 @@ internal static class AssistantThreadActions
                 logger.LogOpenAIAssistantProcessingRunSteps(nameof(InvokeAsync), run.Id, threadId);
 
                 // Execute functions in parallel and post results at once.
-                FunctionCallContent[] activeFunctionSteps = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
-                if (activeFunctionSteps.Length > 0)
+                FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
+                if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
-                    yield return (IsVisible: false, Message: GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps));
+                    yield return (IsVisible: false, Message: GenerateFunctionCallContent(agent.GetName(), functionCalls));
 
                     // Invoke functions for each tool-step
-                    IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
+                    IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, functionCalls, cancellationToken);
 
                     // Block for function results
                     FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
+
+                    // Capture function-call for message processing
+                    foreach (FunctionResultContent functionCall in functionResults)
+                    {
+                        functionSteps.Add(functionCall.CallId!, functionCall);
+                    }
 
                     // Process tool output
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
@@ -227,7 +230,7 @@ internal static class AssistantThreadActions
                     await client.SubmitToolOutputsToRunAsync(threadId, run.Id, toolOutputs, cancellationToken).ConfigureAwait(false);
                 }
 
-                logger.LogOpenAIAssistantProcessedRunSteps(nameof(InvokeAsync), activeFunctionSteps.Length, run.Id, threadId);
+                logger.LogOpenAIAssistantProcessedRunSteps(nameof(InvokeAsync), functionCalls.Length, run.Id, threadId);
             }
 
             // Enumerate completed messages
@@ -257,8 +260,8 @@ internal static class AssistantThreadActions
                         // Process function result content
                         else if (toolCall.ToolKind == RunStepToolCallKind.Function)
                         {
-                            FunctionCallContent functionStep = functionSteps[toolCall.ToolCallId]; // Function step always captured on invocation
-                            content = GenerateFunctionResultContent(agent.GetName(), functionStep, toolCall.FunctionOutput);
+                            FunctionResultContent functionStep = functionSteps[toolCall.ToolCallId]; // Function step always captured on invocation
+                            content = GenerateFunctionResultContent(agent.GetName(), [functionStep]);
                         }
 
                         if (content is not null)
@@ -272,7 +275,7 @@ internal static class AssistantThreadActions
                 else if (completedStep.Type == RunStepType.MessageCreation)
                 {
                     // Retrieve the message
-                    ThreadMessage? message = await RetrieveMessageAsync(completedStep.Details.CreatedMessageId, cancellationToken).ConfigureAwait(false);
+                    ThreadMessage? message = await RetrieveMessageAsync(client, threadId, completedStep.Details.CreatedMessageId, agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
 
                     if (message is not null)
                     {
@@ -324,66 +327,144 @@ internal static class AssistantThreadActions
 
             logger.LogOpenAIAssistantPolledRunStatus(nameof(PollRunStatusAsync), run.Status, run.Id, threadId);
         }
+    }
 
-        // Local function to capture kernel function state for further processing (participates in method closure).
-        IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
+    /// <summary>
+    /// Invoke the assistant on the specified thread using streaming.
+    /// </summary>
+    /// <param name="agent">The assistant agent to interact with the thread.</param>
+    /// <param name="client">The assistant client</param>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="messages">The receiver for the completed messages generated</param>
+    /// <param name="invocationOptions">Options to utilize for the invocation</param>
+    /// <param name="logger">The logger to utilize (might be agent or channel scoped)</param>
+    /// <param name="kernel">The <see cref="Kernel"/> plugins and other state.</param>
+    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
+    /// </remarks>
+    public static async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+        OpenAIAssistantAgent agent,
+        AssistantClient client,
+        string threadId,
+        IList<ChatMessageContent>? messages,
+        OpenAIAssistantInvocationOptions? invocationOptions,
+        ILogger logger,
+        Kernel kernel,
+        KernelArguments? arguments,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (agent.IsDeleted)
         {
-            if (step.Status == RunStepStatus.InProgress && step.Type == RunStepType.ToolCalls)
-            {
-                foreach (RunStepToolCall toolCall in step.Details.ToolCalls)
-                {
-                    var nameParts = FunctionName.Parse(toolCall.FunctionName);
+            throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {agent.Id}.");
+        }
 
-                    KernelArguments functionArguments = [];
-                    if (!string.IsNullOrWhiteSpace(toolCall.FunctionArguments))
+        logger.LogOpenAIAssistantCreatingRun(nameof(InvokeAsync), threadId);
+
+        ToolDefinition[]? tools = [.. agent.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
+
+        string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, instructions, invocationOptions);
+
+        options.ToolsOverride.AddRange(tools);
+
+        // Evaluate status and process steps and messages, as encountered.
+        HashSet<string> processedStepIds = [];
+        HashSet<string> messageIds = [];
+
+        ThreadRun? run = null;
+        IAsyncEnumerable<StreamingUpdate> asyncUpdates = client.CreateRunStreamingAsync(threadId, agent.Id, options, cancellationToken);
+        do
+        {
+            messageIds.Clear();
+
+            await foreach (StreamingUpdate update in asyncUpdates.ConfigureAwait(false))
+            {
+                if (update is RunUpdate runUpdate)
+                {
+                    run = runUpdate.Value;
+
+                    logger.LogOpenAIAssistantCreatedRun(nameof(InvokeAsync), run.Id, threadId);
+                }
+                else if (update is MessageContentUpdate contentUpdate)
+                {
+                    messageIds.Add(contentUpdate.MessageId);
+                    yield return GenerateStreamingMessageContent(agent.GetName(), contentUpdate);
+                }
+            }
+
+            if (run == null)
+            {
+                throw new KernelException($"Agent Failure - Run not created for thread: ${threadId}");
+            }
+
+            // Is in terminal state?
+            if (s_terminalStatuses.Contains(run.Status))
+            {
+                throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
+            }
+
+            if (run.Status == RunStatus.RequiresAction)
+            {
+                IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run).ConfigureAwait(false);
+
+                // Execute functions in parallel and post results at once.
+                FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
+                if (functionCalls.Length > 0)
+                {
+                    // Emit function-call content
+                    messages?.Add(GenerateFunctionCallContent(agent.GetName(), functionCalls));
+
+                    // Invoke functions for each tool-step
+                    IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, functionCalls, cancellationToken);
+
+                    // Block for function results
+                    FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
+
+                    // Process tool output
+                    ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
+                    asyncUpdates = client.SubmitToolOutputsToRunStreamingAsync(run, toolOutputs);
+
+                    messages?.Add(GenerateFunctionResultContent(agent.GetName(), functionResults));
+                }
+            }
+
+            if (messageIds.Count > 0)
+            {
+                logger.LogOpenAIAssistantProcessingRunMessages(nameof(InvokeAsync), run!.Id, threadId);
+
+                foreach (string messageId in messageIds)
+                {
+                    ThreadMessage? message = await RetrieveMessageAsync(client, threadId, messageId, agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
+
+                    if (message != null)
                     {
-                        Dictionary<string, object> arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(toolCall.FunctionArguments)!;
-                        foreach (var argumentKvp in arguments)
-                        {
-                            functionArguments[argumentKvp.Key] = argumentKvp.Value.ToString();
-                        }
+                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message);
+                        messages?.Add(content);
                     }
-
-                    var content = new FunctionCallContent(nameParts.Name, nameParts.PluginName, toolCall.ToolCallId, functionArguments);
-
-                    functionSteps.Add(toolCall.ToolCallId, content);
-
-                    yield return content;
                 }
+
+                logger.LogOpenAIAssistantProcessedRunMessages(nameof(InvokeAsync), messageIds.Count, run!.Id, threadId);
             }
         }
+        while (run?.Status != RunStatus.Completed);
 
-        async Task<ThreadMessage?> RetrieveMessageAsync(string messageId, CancellationToken cancellationToken)
+        logger.LogOpenAIAssistantCompletedRun(nameof(InvokeAsync), run?.Id ?? "Failed", threadId);
+    }
+
+    private static async Task<IReadOnlyList<RunStep>> GetRunStepsAsync(AssistantClient client, ThreadRun run)
+    {
+        List<RunStep> steps = [];
+
+        await foreach (PageResult<RunStep> page in client.GetRunStepsAsync(run).ConfigureAwait(false))
         {
-            ThreadMessage? message = null;
+            steps.AddRange(page.Values);
+        };
 
-            bool retry = false;
-            int count = 0;
-            do
-            {
-                try
-                {
-                    message = await client.GetMessageAsync(threadId, messageId, cancellationToken).ConfigureAwait(false);
-                }
-                catch (RequestFailedException exception)
-                {
-                    // Step has provided the message-id.  Retry on of NotFound/404 exists.
-                    // Extremely rarely there might be a synchronization issue between the
-                    // assistant response and message-service.
-                    retry = exception.Status == (int)HttpStatusCode.NotFound && count < 3;
-                }
-
-                if (retry)
-                {
-                    await Task.Delay(agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
-                }
-
-                ++count;
-            }
-            while (retry);
-
-            return message;
-        }
+        return steps;
     }
 
     private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message)
@@ -418,6 +499,38 @@ internal static class AssistantThreadActions
         return content;
     }
 
+    private static StreamingChatMessageContent GenerateStreamingMessageContent(string? assistantName, MessageContentUpdate update)
+    {
+        StreamingChatMessageContent content =
+            new(AuthorRole.Assistant, content: null)
+            {
+                AuthorName = assistantName,
+            };
+
+        // Process text content
+        if (!string.IsNullOrEmpty(update.Text))
+        {
+            content.Items.Add(new StreamingTextContent(update.Text));
+        }
+        // Process image content
+        else if (update.ImageFileId != null)
+        {
+            content.Items.Add(new StreamingFileReferenceContent(update.ImageFileId));
+        }
+        // Process annotations
+        else if (update.TextAnnotation != null)
+        {
+            content.Items.Add(GenerateStreamingAnnotationContent(update.TextAnnotation));
+        }
+
+        if (update.Role.HasValue && update.Role.Value != MessageRole.User)
+        {
+            content.Role = new(update.Role.Value.ToString());
+        }
+
+        return content;
+    }
+
     private static AnnotationContent GenerateAnnotationContent(TextAnnotation annotation)
     {
         string? fileId = null;
@@ -432,11 +545,33 @@ internal static class AssistantThreadActions
         }
 
         return
-            new()
+            new(annotation.TextToReplace)
             {
                 Quote = annotation.TextToReplace,
                 StartIndex = annotation.StartIndex,
                 EndIndex = annotation.EndIndex,
+                FileId = fileId,
+            };
+    }
+
+    private static StreamingAnnotationContent GenerateStreamingAnnotationContent(TextAnnotationUpdate annotation)
+    {
+        string? fileId = null;
+
+        if (!string.IsNullOrEmpty(annotation.OutputFileId))
+        {
+            fileId = annotation.OutputFileId;
+        }
+        else if (!string.IsNullOrEmpty(annotation.InputFileId))
+        {
+            fileId = annotation.InputFileId;
+        }
+
+        return
+            new(annotation.TextToReplace)
+            {
+                StartIndex = annotation.StartIndex ?? 0,
+                EndIndex = annotation.EndIndex ?? 0,
                 FileId = fileId,
             };
     }
@@ -455,45 +590,85 @@ internal static class AssistantThreadActions
             };
     }
 
-    private static ChatMessageContent GenerateFunctionCallContent(string agentName, FunctionCallContent[] functionSteps)
+    private static IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
+    {
+        if (step.Status == RunStepStatus.InProgress && step.Type == RunStepType.ToolCalls)
+        {
+            foreach (RunStepToolCall toolCall in step.Details.ToolCalls)
+            {
+                (FunctionName nameParts, KernelArguments functionArguments) = ParseFunctionCall(toolCall.FunctionName, toolCall.FunctionArguments);
+
+                FunctionCallContent content = new(nameParts.Name, nameParts.PluginName, toolCall.ToolCallId, functionArguments);
+
+                yield return content;
+            }
+        }
+    }
+
+    private static (FunctionName functionName, KernelArguments arguments) ParseFunctionCall(string functionName, string? functionArguments)
+    {
+        FunctionName nameParts = FunctionName.Parse(functionName);
+
+        KernelArguments arguments = [];
+
+        if (!string.IsNullOrWhiteSpace(functionArguments))
+        {
+            foreach (var argumentKvp in JsonSerializer.Deserialize<Dictionary<string, object>>(functionArguments!)!)
+            {
+                arguments[argumentKvp.Key] = argumentKvp.Value.ToString();
+            }
+        }
+
+        return (nameParts, arguments);
+    }
+
+    private static ChatMessageContent GenerateFunctionCallContent(string agentName, IList<FunctionCallContent> functionCalls)
     {
         ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
         {
             AuthorName = agentName
         };
 
-        functionCallContent.Items.AddRange(functionSteps);
+        functionCallContent.Items.AddRange(functionCalls);
 
         return functionCallContent;
     }
 
-    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionCallContent functionStep, string result)
+    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionResultContent[] functionResults)
     {
-        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
+        ChatMessageContent functionResultContent = new(AuthorRole.Tool, content: null)
         {
             AuthorName = agentName
         };
 
-        functionCallContent.Items.Add(
-            new FunctionResultContent(
-                functionStep.FunctionName,
-                functionStep.PluginName,
-                functionStep.Id,
-                result));
+        foreach (FunctionResultContent functionResult in functionResults)
+        {
+            functionResultContent.Items.Add(
+                new FunctionResultContent(
+                    functionResult.FunctionName,
+                    functionResult.PluginName,
+                    functionResult.CallId,
+                    functionResult.Result));
+        }
 
-        return functionCallContent;
+        return functionResultContent;
     }
 
-    private static Task<FunctionResultContent>[] ExecuteFunctionSteps(OpenAIAssistantAgent agent, FunctionCallContent[] functionSteps, CancellationToken cancellationToken)
+    private static Task<FunctionResultContent>[] ExecuteFunctionSteps(OpenAIAssistantAgent agent, FunctionCallContent[] functionCalls, CancellationToken cancellationToken)
     {
-        Task<FunctionResultContent>[] functionTasks = new Task<FunctionResultContent>[functionSteps.Length];
+        Task<FunctionResultContent>[] functionTasks = new Task<FunctionResultContent>[functionCalls.Length];
 
-        for (int index = 0; index < functionSteps.Length; ++index)
+        for (int index = 0; index < functionCalls.Length; ++index)
         {
-            functionTasks[index] = functionSteps[index].InvokeAsync(agent.Kernel, cancellationToken);
+            functionTasks[index] = ExecuteFunctionStep(agent, functionCalls[index], cancellationToken);
         }
 
         return functionTasks;
+    }
+
+    private static Task<FunctionResultContent> ExecuteFunctionStep(OpenAIAssistantAgent agent, FunctionCallContent functionCall, CancellationToken cancellationToken)
+    {
+        return functionCall.InvokeAsync(agent.Kernel, cancellationToken);
     }
 
     private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
@@ -515,5 +690,37 @@ internal static class AssistantThreadActions
         }
 
         return toolOutputs;
+    }
+
+    private static async Task<ThreadMessage?> RetrieveMessageAsync(AssistantClient client, string threadId, string messageId, TimeSpan syncDelay, CancellationToken cancellationToken)
+    {
+        ThreadMessage? message = null;
+
+        bool retry = false;
+        int count = 0;
+        do
+        {
+            try
+            {
+                message = await client.GetMessageAsync(threadId, messageId, cancellationToken).ConfigureAwait(false);
+            }
+            catch (RequestFailedException exception)
+            {
+                // Step has provided the message-id.  Retry on of NotFound/404 exists.
+                // Extremely rarely there might be a synchronization issue between the
+                // assistant response and message-service.
+                retry = exception.Status == (int)HttpStatusCode.NotFound && count < 3;
+            }
+
+            if (retry)
+            {
+                await Task.Delay(syncDelay, cancellationToken).ConfigureAwait(false);
+            }
+
+            ++count;
+        }
+        while (retry);
+
+        return message;
     }
 }

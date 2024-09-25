@@ -29,8 +29,8 @@ dependencies = [
     "defusedxml ~= 0.7",
 
     # embeddings
-    "numpy ~= 1.25.0; python_version < '3.12'",
-    "numpy ~= 1.26.0; python_version >= '3.12'",
+    "numpy >= 1.25.0; python_version < '3.12'",
+    "numpy >= 1.26.0; python_version >= '3.12'",
 
     # openai connector
     "openai ~= 1.0",
@@ -41,7 +41,6 @@ dependencies = [
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
     "opentelemetry-sdk ~= 1.24",
-
     "prance ~= 23.6.21.0",
 
     # templating
@@ -67,11 +66,11 @@ google = [
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
-    "sentence-transformers ~= 2.2",
+    "sentence-transformers >= 2.2,< 4.0",
     "torch == 2.2.2"
 ]
 mongo = [
-    "motor ~= 3.3.2"
+    "motor >= 3.3.2,< 3.7.0"
 ]
 notebooks = [
     "ipykernel ~= 6.29"
@@ -81,7 +80,7 @@ milvus = [
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
-    "mistralai ~= 0.4"
+    "mistralai >= 0.4,< 2.0"
 ]
 ollama = [
     "ollama ~= 0.2"

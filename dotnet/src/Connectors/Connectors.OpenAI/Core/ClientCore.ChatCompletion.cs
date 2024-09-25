@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using JsonSchemaMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -26,8 +27,19 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
+    /// <summary>
+    /// <see cref="JsonSchemaMapperConfiguration"/> for JSON schema format for structured outputs.
+    /// </summary>
+    private static readonly JsonSchemaMapperConfiguration s_jsonSchemaMapperConfiguration = new()
+    {
+        IncludeSchemaVersion = false,
+        IncludeTypeInEnums = true,
+        TreatNullObliviousAsNonNullable = true,
+        TransformSchemaNode = OpenAIJsonSchemaTransformer.Transform
+    };
+
     protected const string ModelProvider = "openai";
-    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke);
+    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -49,9 +61,6 @@ internal partial class ClientCore
 
     /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
     protected static readonly ChatTool s_nonInvocableFunctionTool = ChatTool.CreateFunctionTool("NonInvocableTool");
-
-    /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
-    protected static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
@@ -93,6 +102,7 @@ internal partial class ClientCore
             { nameof(completions.CreatedAt), completions.CreatedAt },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
+            { nameof(completions.Refusal), completions.Refusal },
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completions.FinishReason), completions.FinishReason.ToString() },
@@ -107,6 +117,7 @@ internal partial class ClientCore
             { nameof(completionUpdate.Id), completionUpdate.Id },
             { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },
             { nameof(completionUpdate.SystemFingerprint), completionUpdate.SystemFingerprint },
+            { nameof(completionUpdate.RefusalUpdate), completionUpdate.RefusalUpdate },
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completionUpdate.FinishReason), completionUpdate.FinishReason?.ToString() },
@@ -117,24 +128,24 @@ internal partial class ClientCore
     /// Generate a new chat message
     /// </summary>
     /// <param name="targetModel">Model identifier</param>
-    /// <param name="chat">Chat history</param>
+    /// <param name="chatHistory">Chat history</param>
     /// <param name="executionSettings">Execution settings for the completion API.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Generated chat message in string format</returns>
     internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
         string targetModel,
-        ChatHistory chat,
+        ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(chat);
+        Verify.NotNull(chatHistory);
 
         if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
-                JsonSerializer.Serialize(chat),
+                JsonSerializer.Serialize(chatHistory),
                 JsonSerializer.Serialize(executionSettings));
         }
 
@@ -145,16 +156,16 @@ internal partial class ClientCore
 
         for (int requestIndex = 0; ; requestIndex++)
         {
-            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
+            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
 
-            var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, requestIndex);
+            var functionCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
-            var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
+            var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, functionCallingConfig, kernel);
 
             // Make the request.
             OpenAIChatCompletion? chatCompletion = null;
             OpenAIChatMessageContent chatMessageContent;
-            using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
+            using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
             {
                 try
                 {
@@ -180,151 +191,45 @@ internal partial class ClientCore
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokens, chatCompletion.Usage.OutputTokens);
             }
 
-            // If we don't want to attempt to invoke any functions, just return the result.
-            if (!toolCallingConfig.AutoInvoke)
+            // If we don't want to attempt to invoke any functions or there is nothing to call, just return the result.
+            if (!functionCallingConfig.AutoInvoke || chatCompletion.ToolCalls.Count == 0)
             {
                 return [chatMessageContent];
             }
 
-            // Get our single result and extract the function call information. If this isn't a function call, or if it is
-            // but we're unable to find the function or extract the relevant information, just return the single result.
-            // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
-            // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
-            // is specified.
-            if (chatCompletion.ToolCalls.Count == 0)
+            // Process function calls by invoking the functions and adding the results to the chat history.
+            // Each function call will trigger auto-function-invocation filters, which can terminate the process.
+            // In such cases, we'll return the last message in the chat history.
+            var lastMessage = await this.FunctionCallsProcessor.ProcessFunctionCallsAsync(
+                chatMessageContent,
+                chatHistory,
+                requestIndex,
+                (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
+                kernel,
+                cancellationToken).ConfigureAwait(false);
+            if (lastMessage != null)
             {
-                return [chatMessageContent];
+                return [lastMessage];
             }
 
-            if (this.Logger.IsEnabled(LogLevel.Debug))
-            {
-                this.Logger.LogDebug("Tool requests: {Requests}", chatCompletion.ToolCalls.Count);
-            }
-            if (this.Logger.IsEnabled(LogLevel.Trace))
-            {
-                this.Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", chatCompletion.ToolCalls.OfType<ChatToolCall>().Select(ftc => $"{ftc.FunctionName}({ftc.FunctionArguments})")));
-            }
-
-            // Add the result message to the caller's chat history;
-            // this is required for the service to understand the tool call responses.
-            chat.Add(chatMessageContent);
-
-            // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
-            // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
-            for (int toolCallIndex = 0; toolCallIndex < chatMessageContent.ToolCalls.Count; toolCallIndex++)
-            {
-                ChatToolCall functionToolCall = chatMessageContent.ToolCalls[toolCallIndex];
-
-                // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
-                if (functionToolCall.Kind != ChatToolCallKind.Function)
-                {
-                    AddResponseMessage(chat, result: null, "Error: Tool call was not a function call.", functionToolCall, this.Logger);
-                    continue;
-                }
-
-                // Parse the function call arguments.
-                OpenAIFunctionToolCall? openAIFunctionToolCall;
-                try
-                {
-                    openAIFunctionToolCall = new(functionToolCall);
-                }
-                catch (JsonException)
-                {
-                    AddResponseMessage(chat, result: null, "Error: Function call arguments were invalid JSON.", functionToolCall, this.Logger);
-                    continue;
-                }
-
-                // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
-                // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
-                // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
-                if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
-                    !IsRequestableTool(chatOptions, openAIFunctionToolCall))
-                {
-                    AddResponseMessage(chat, result: null, "Error: Function call request for a function that wasn't defined.", functionToolCall, this.Logger);
-                    continue;
-                }
-
-                // Find the function in the kernel and populate the arguments.
-                if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
-                {
-                    AddResponseMessage(chat, result: null, "Error: Requested function could not be found.", functionToolCall, this.Logger);
-                    continue;
-                }
-
-                // Now, invoke the function, and add the resulting tool call message to the chat options.
-                FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat, chatMessageContent)
-                {
-                    Arguments = functionArgs,
-                    RequestSequenceIndex = requestIndex,
-                    FunctionSequenceIndex = toolCallIndex,
-                    FunctionCount = chatMessageContent.ToolCalls.Count
-                };
-
-                s_inflightAutoInvokes.Value++;
-                try
-                {
-                    invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
-                    {
-                        // Check if filter requested termination.
-                        if (context.Terminate)
-                        {
-                            return;
-                        }
-
-                        // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
-                        // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
-                        // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                        context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).ConfigureAwait(false);
-                    }).ConfigureAwait(false);
-                }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
-                {
-                    AddResponseMessage(chat, null, $"Error: Exception while invoking function. {e.Message}", functionToolCall, this.Logger);
-                    continue;
-                }
-                finally
-                {
-                    s_inflightAutoInvokes.Value--;
-                }
-
-                // Apply any changes from the auto function invocation filters context to final result.
-                functionResult = invocationContext.Result;
-
-                object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
-                var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
-
-                AddResponseMessage(chat, stringResult, errorMessage: null, functionToolCall, this.Logger);
-
-                // If filter requested termination, returning latest function result.
-                if (invocationContext.Terminate)
-                {
-                    if (this.Logger.IsEnabled(LogLevel.Debug))
-                    {
-                        this.Logger.LogDebug("Filter requested termination of automatic function invocation.");
-                    }
-
-                    return [chat.Last()];
-                }
-            }
+            // Process non-function tool calls.
+            this.ProcessNonFunctionToolCalls(chatCompletion.ToolCalls, chatHistory);
         }
     }
 
     internal async IAsyncEnumerable<OpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
         string targetModel,
-        ChatHistory chat,
+        ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(chat);
+        Verify.NotNull(chatHistory);
 
         if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
-                JsonSerializer.Serialize(chat),
+                JsonSerializer.Serialize(chatHistory),
                 JsonSerializer.Serialize(executionSettings));
         }
 
@@ -339,11 +244,11 @@ internal partial class ClientCore
 
         for (int requestIndex = 0; ; requestIndex++)
         {
-            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
+            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
 
-            var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, requestIndex);
+            var toolCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
-            var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
+            var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, toolCallingConfig, kernel);
 
             // Reset state
             contentBuilder?.Clear();
@@ -359,7 +264,7 @@ internal partial class ClientCore
             ChatToolCall[]? toolCalls = null;
             FunctionCallContent[]? functionCallContents = null;
 
-            using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
+            using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
             {
                 // Make the request.
                 AsyncCollectionResult<StreamingChatCompletionUpdate> response;
@@ -401,15 +306,22 @@ internal partial class ClientCore
                         // If we're intending to invoke function calls, we need to consume that function call information.
                         if (toolCallingConfig.AutoInvoke)
                         {
-                            foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
+                            try
                             {
-                                if (contentPart.Kind == ChatMessageContentPartKind.Text)
+                                foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
                                 {
-                                    (contentBuilder ??= new()).Append(contentPart.Text);
+                                    if (contentPart.Kind == ChatMessageContentPartKind.Text)
+                                    {
+                                        (contentBuilder ??= new()).Append(contentPart.Text);
+                                    }
                                 }
+                                OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                             }
-
-                            OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+                            catch (NullReferenceException)
+                            {
+                                // Temporary workaround for OpenAI SDK Bug here: https://github.com/openai/openai-dotnet/issues/198
+                                // TODO: Remove this try-catch block once the bug is fixed.
+                            }
                         }
 
                         var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, targetModel, metadata);
@@ -465,122 +377,26 @@ internal partial class ClientCore
             // Get any response content that was streamed.
             string content = contentBuilder?.ToString() ?? string.Empty;
 
-            // Log the requests
-            if (this.Logger.IsEnabled(LogLevel.Trace))
-            {
-                this.Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", toolCalls.Select(fcr => $"{fcr.FunctionName}({fcr.FunctionName})")));
-            }
-            else if (this.Logger.IsEnabled(LogLevel.Debug))
-            {
-                this.Logger.LogDebug("Function call requests: {Requests}", toolCalls.Length);
-            }
-
-            // Add the result message to the caller's chat history; this is required for the service to understand the tool call responses.
             var chatMessageContent = this.CreateChatMessageContent(streamedRole ?? default, content, toolCalls, functionCallContents, metadata, streamedName);
-            chat.Add(chatMessageContent);
 
-            // Respond to each tooling request.
-            for (int toolCallIndex = 0; toolCallIndex < toolCalls.Length; toolCallIndex++)
+            // Process function calls by invoking the functions and adding the results to the chat history.
+            // Each function call will trigger auto-function-invocation filters, which can terminate the process.
+            // In such cases, we'll return the last message in the chat history.  
+            var lastMessage = await this.FunctionCallsProcessor.ProcessFunctionCallsAsync(
+                chatMessageContent,
+                chatHistory,
+                requestIndex,
+                (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
+                kernel,
+                cancellationToken).ConfigureAwait(false);
+            if (lastMessage != null)
             {
-                ChatToolCall toolCall = toolCalls[toolCallIndex];
-
-                // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
-                if (string.IsNullOrEmpty(toolCall.FunctionName))
-                {
-                    AddResponseMessage(chat, result: null, "Error: Tool call was not a function call.", toolCall, this.Logger);
-                    continue;
-                }
-
-                // Parse the function call arguments.
-                OpenAIFunctionToolCall? openAIFunctionToolCall;
-                try
-                {
-                    openAIFunctionToolCall = new(toolCall);
-                }
-                catch (JsonException)
-                {
-                    AddResponseMessage(chat, result: null, "Error: Function call arguments were invalid JSON.", toolCall, this.Logger);
-                    continue;
-                }
-
-                // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
-                // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
-                // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
-                if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
-                    !IsRequestableTool(chatOptions, openAIFunctionToolCall))
-                {
-                    AddResponseMessage(chat, result: null, "Error: Function call request for a function that wasn't defined.", toolCall, this.Logger);
-                    continue;
-                }
-
-                // Find the function in the kernel and populate the arguments.
-                if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
-                {
-                    AddResponseMessage(chat, result: null, "Error: Requested function could not be found.", toolCall, this.Logger);
-                    continue;
-                }
-
-                // Now, invoke the function, and add the resulting tool call message to the chat options.
-                FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat, chatMessageContent)
-                {
-                    Arguments = functionArgs,
-                    RequestSequenceIndex = requestIndex,
-                    FunctionSequenceIndex = toolCallIndex,
-                    FunctionCount = toolCalls.Length
-                };
-
-                s_inflightAutoInvokes.Value++;
-                try
-                {
-                    invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
-                    {
-                        // Check if filter requested termination.
-                        if (context.Terminate)
-                        {
-                            return;
-                        }
-
-                        // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
-                        // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
-                        // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                        context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).ConfigureAwait(false);
-                    }).ConfigureAwait(false);
-                }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
-                {
-                    AddResponseMessage(chat, result: null, $"Error: Exception while invoking function. {e.Message}", toolCall, this.Logger);
-                    continue;
-                }
-                finally
-                {
-                    s_inflightAutoInvokes.Value--;
-                }
-
-                // Apply any changes from the auto function invocation filters context to final result.
-                functionResult = invocationContext.Result;
-
-                object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
-                var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
-
-                AddResponseMessage(chat, stringResult, errorMessage: null, toolCall, this.Logger);
-
-                // If filter requested termination, returning latest function result and breaking request iteration loop.
-                if (invocationContext.Terminate)
-                {
-                    if (this.Logger.IsEnabled(LogLevel.Debug))
-                    {
-                        this.Logger.LogDebug("Filter requested termination of automatic function invocation.");
-                    }
-
-                    var lastChatMessage = chat.Last();
-
-                    yield return new OpenAIStreamingChatMessageContent(lastChatMessage.Role, lastChatMessage.Content);
-                    yield break;
-                }
+                yield return new OpenAIStreamingChatMessageContent(lastMessage.Role, lastMessage.Content);
+                yield break;
             }
+
+            // Process non-function tool calls.
+            this.ProcessNonFunctionToolCalls(toolCalls, chatHistory);
         }
     }
 
@@ -643,7 +459,9 @@ internal partial class ClientCore
             TopP = (float?)executionSettings.TopP,
             FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
             PresencePenalty = (float?)executionSettings.PresencePenalty,
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             Seed = executionSettings.Seed,
+#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
@@ -724,19 +542,35 @@ internal partial class ClientCore
                     }
                 }
                 break;
+            case Type formatObjectType:
+                return GetJsonSchemaResponseFormat(formatObjectType);
         }
 
         return null;
     }
 
-    /// <summary>Checks if a tool call is for a function that was defined.</summary>
-    private static bool IsRequestableTool(ChatCompletionOptions options, OpenAIFunctionToolCall ftc)
+    /// <summary>
+    /// Gets instance of <see cref="ChatResponseFormat"/> object for JSON schema format for structured outputs.
+    /// </summary>
+    private static ChatResponseFormat GetJsonSchemaResponseFormat(Type formatObjectType)
     {
-        IList<ChatTool> tools = options.Tools;
+        var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ?
+            Nullable.GetUnderlyingType(formatObjectType)! :
+            formatObjectType;
+
+        var schema = KernelJsonSchemaBuilder.Build(options: null, type, configuration: s_jsonSchemaMapperConfiguration);
+        var schemaBinaryData = BinaryData.FromString(schema.ToString());
+
+        return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, strictSchemaEnabled: true);
+    }
+
+    /// <summary>Checks if a tool call is for a function that was defined.</summary>
+    private static bool IsRequestableTool(IList<ChatTool> tools, FunctionCallContent functionCallContent)
+    {
         for (int i = 0; i < tools.Count; i++)
         {
             if (tools[i].Kind == ChatToolKind.Function &&
-                string.Equals(tools[i].FunctionName, ftc.FullyQualifiedName, StringComparison.OrdinalIgnoreCase))
+                string.Equals(tools[i].FunctionName, FunctionName.ToFullyQualifiedName(functionCallContent.FunctionName, functionCallContent.PluginName, OpenAIFunction.NameSeparator), StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -783,13 +617,13 @@ internal partial class ClientCore
 
         foreach (var message in chatHistory)
         {
-            messages.AddRange(CreateRequestMessages(message, executionSettings.ToolCallBehavior));
+            messages.AddRange(CreateRequestMessages(message));
         }
 
         return messages;
     }
 
-    private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
+    private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message)
     {
         if (message.Role == AuthorRole.System)
         {
@@ -824,7 +658,7 @@ internal partial class ClientCore
                     continue;
                 }
 
-                var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
+                var stringResult = FunctionCalling.FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty);
 
                 toolMessages.Add(new ToolChatMessage(resultContent.CallId, stringResult ?? string.Empty));
             }
@@ -1017,31 +851,6 @@ internal partial class ClientCore
         return result;
     }
 
-    private static void AddResponseMessage(ChatHistory chat, string? result, string? errorMessage, ChatToolCall toolCall, ILogger logger)
-    {
-        // Log any error
-        if (errorMessage is not null && logger.IsEnabled(LogLevel.Debug))
-        {
-            Debug.Assert(result is null);
-            logger.LogDebug("Failed to handle tool request ({ToolId}). {Error}", toolCall.Id, errorMessage);
-        }
-
-        result ??= errorMessage ?? string.Empty;
-
-        // Add the tool response message to the chat history.
-        var message = new ChatMessageContent(role: AuthorRole.Tool, content: result, metadata: new Dictionary<string, object?> { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } });
-
-        if (toolCall.Kind == ChatToolCallKind.Function)
-        {
-            // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
-            // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
-            var functionName = FunctionName.Parse(toolCall.FunctionName, OpenAIFunction.NameSeparator);
-            message.Items.Add(new FunctionResultContent(functionName.Name, functionName.PluginName, toolCall.Id, result));
-        }
-
-        chat.Add(message);
-    }
-
     private static void ValidateMaxTokens(int? maxTokens)
     {
         if (maxTokens.HasValue && maxTokens < 1)
@@ -1074,110 +883,144 @@ internal partial class ClientCore
         s_totalTokensCounter.Add(usage.TotalTokens);
     }
 
-    /// <summary>
-    /// Processes the function result.
-    /// </summary>
-    /// <param name="functionResult">The result of the function call.</param>
-    /// <param name="toolCallBehavior">The ToolCallBehavior object containing optional settings like JsonSerializerOptions.TypeInfoResolver.</param>
-    /// <returns>A string representation of the function result.</returns>
-    private static string? ProcessFunctionResult(object functionResult, ToolCallBehavior? toolCallBehavior)
+    private ToolCallingConfig GetFunctionCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory, int requestIndex)
     {
-        if (functionResult is string stringResult)
+        // If neither behavior is specified, we just return default configuration with no tool and no choice
+        if (executionSettings.FunctionChoiceBehavior is null && executionSettings.ToolCallBehavior is null)
         {
-            return stringResult;
+            return new ToolCallingConfig(Tools: null, Choice: null, AutoInvoke: false, AllowAnyRequestedKernelFunction: false, Options: null);
         }
 
-        // This is an optimization to use ChatMessageContent content directly  
-        // without unnecessary serialization of the whole message content class.  
-        if (functionResult is ChatMessageContent chatMessageContent)
+        // If both behaviors are specified, we can't handle that.
+        if (executionSettings.FunctionChoiceBehavior is not null && executionSettings.ToolCallBehavior is not null)
         {
-            return chatMessageContent.ToString();
+            throw new ArgumentException($"{nameof(executionSettings.ToolCallBehavior)} and {nameof(executionSettings.FunctionChoiceBehavior)} cannot be used together.");
         }
 
-        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,  
-        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
-        // For more details about the polymorphic serialization, see the article at:  
-        // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
-#pragma warning disable CS0618 // Type or member is obsolete
-        return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
-#pragma warning restore CS0618 // Type or member is obsolete
-    }
+        IList<ChatTool>? tools = null;
+        ChatToolChoice? choice = null;
+        bool autoInvoke = false;
+        bool allowAnyRequestedKernelFunction = false;
+        FunctionChoiceBehaviorOptions? options = null;
 
-    /// <summary>
-    /// Executes auto function invocation filters and/or function itself.
-    /// This method can be moved to <see cref="Kernel"/> when auto function invocation logic will be extracted to common place.
-    /// </summary>
-    private static async Task<AutoFunctionInvocationContext> OnAutoFunctionInvocationAsync(
-        Kernel kernel,
-        AutoFunctionInvocationContext context,
-        Func<AutoFunctionInvocationContext, Task> functionCallCallback)
-    {
-        await InvokeFilterOrFunctionAsync(kernel.AutoFunctionInvocationFilters, functionCallCallback, context).ConfigureAwait(false);
-
-        return context;
-    }
-
-    /// <summary>
-    /// This method will execute auto function invocation filters and function recursively.
-    /// If there are no registered filters, just function will be executed.
-    /// If there are registered filters, filter on <paramref name="index"/> position will be executed.
-    /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or function if there are no remaining filters to execute.
-    /// Function will be always executed as last step after all filters.
-    /// </summary>
-    private static async Task InvokeFilterOrFunctionAsync(
-        IList<IAutoFunctionInvocationFilter>? autoFunctionInvocationFilters,
-        Func<AutoFunctionInvocationContext, Task> functionCallCallback,
-        AutoFunctionInvocationContext context,
-        int index = 0)
-    {
-        if (autoFunctionInvocationFilters is { Count: > 0 } && index < autoFunctionInvocationFilters.Count)
+        // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
+        if (executionSettings.FunctionChoiceBehavior is { } functionChoiceBehavior)
         {
-            await autoFunctionInvocationFilters[index].OnAutoFunctionInvocationAsync(context,
-                (context) => InvokeFilterOrFunctionAsync(autoFunctionInvocationFilters, functionCallCallback, context, index + 1)).ConfigureAwait(false);
+            (tools, choice, autoInvoke, options) = this.ConfigureFunctionCalling(kernel, requestIndex, functionChoiceBehavior, chatHistory);
         }
-        else
+        // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
+        else if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
         {
-            await functionCallCallback(context).ConfigureAwait(false);
-        }
-    }
+            (tools, choice, autoInvoke, int maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction) = this.ConfigureFunctionCalling(kernel, requestIndex, toolCallBehavior);
 
-    private ToolCallingConfig GetToolCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, int requestIndex)
-    {
-        if (executionSettings.ToolCallBehavior is null)
-        {
-            return new ToolCallingConfig(Tools: null, Choice: null, AutoInvoke: false);
-        }
-
-        if (requestIndex >= executionSettings.ToolCallBehavior.MaximumUseAttempts)
-        {
-            // Don't add any tools as we've reached the maximum attempts limit.
-            if (this.Logger!.IsEnabled(LogLevel.Debug))
+            // Disable auto invocation if we've exceeded the allowed limit.
+            if (requestIndex >= maximumAutoInvokeAttempts)
             {
-                this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", executionSettings.ToolCallBehavior!.MaximumUseAttempts);
+                autoInvoke = false;
+                if (this.Logger!.IsEnabled(LogLevel.Debug))
+                {
+                    this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", maximumAutoInvokeAttempts);
+                }
             }
-
-            return new ToolCallingConfig(Tools: [s_nonInvocableFunctionTool], Choice: ChatToolChoice.None, AutoInvoke: false);
-        }
-
-        var (tools, choice) = executionSettings.ToolCallBehavior.ConfigureOptions(kernel);
-
-        bool autoInvoke = kernel is not null &&
-            executionSettings.ToolCallBehavior.MaximumAutoInvokeAttempts > 0 &&
-            s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
-
-        // Disable auto invocation if we've exceeded the allowed limit.
-        if (requestIndex >= executionSettings.ToolCallBehavior.MaximumAutoInvokeAttempts)
-        {
-            autoInvoke = false;
-            if (this.Logger!.IsEnabled(LogLevel.Debug))
+            // Disable auto invocation if we've exceeded the allowed limit of in-flight auto-invokes.
+            else if (FunctionCalling.FunctionCallsProcessor.s_inflightAutoInvokes.Value >= MaxInflightAutoInvokes)
             {
-                this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", executionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
+                autoInvoke = false;
             }
         }
 
         return new ToolCallingConfig(
             Tools: tools ?? [s_nonInvocableFunctionTool],
             Choice: choice ?? ChatToolChoice.None,
-            AutoInvoke: autoInvoke);
+            AutoInvoke: autoInvoke,
+            AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction,
+            Options: options);
+    }
+
+    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int MaximumAutoInvokeAttempts, bool AllowAnyRequestedKernelFunction) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, ToolCallBehavior toolCallBehavior)
+    {
+        IList<ChatTool>? tools = null;
+        ChatToolChoice? choice = null;
+        bool autoInvoke = kernel is not null && toolCallBehavior.MaximumAutoInvokeAttempts > 0;
+        bool allowAnyRequestedKernelFunction = toolCallBehavior.AllowAnyRequestedKernelFunction;
+        int maximumAutoInvokeAttempts = toolCallBehavior.MaximumAutoInvokeAttempts;
+
+        if (requestIndex >= toolCallBehavior.MaximumUseAttempts)
+        {
+            // Don't add any tools as we've reached the maximum attempts limit.
+            if (this.Logger!.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger.LogDebug("Maximum use ({MaximumUse}) reached.", toolCallBehavior.MaximumUseAttempts);
+            }
+        }
+        else
+        {
+            (tools, choice) = toolCallBehavior.ConfigureOptions(kernel);
+        }
+
+        return new(tools, choice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction);
+    }
+
+    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, FunctionChoiceBehaviorOptions? Options) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior, ChatHistory chatHistory)
+    {
+        FunctionChoiceBehaviorConfiguration? config = this.FunctionCallsProcessor.GetConfiguration(functionChoiceBehavior, chatHistory, requestIndex, kernel);
+
+        IList<ChatTool>? tools = null;
+        ChatToolChoice? toolChoice = null;
+        bool autoInvoke = config?.AutoInvoke ?? false;
+
+        if (config?.Functions is { Count: > 0 } functions)
+        {
+            if (config.Choice == FunctionChoice.Auto)
+            {
+                toolChoice = ChatToolChoice.Auto;
+            }
+            else if (config.Choice == FunctionChoice.Required)
+            {
+                toolChoice = ChatToolChoice.Required;
+            }
+            else if (config.Choice == FunctionChoice.None)
+            {
+                toolChoice = ChatToolChoice.None;
+            }
+            else
+            {
+                throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");
+            }
+
+            tools = [];
+
+            foreach (var function in functions)
+            {
+                tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition());
+            }
+        }
+
+        return new(tools, toolChoice, autoInvoke, config?.Options);
+    }
+
+    /// <summary>
+    /// Processes non-function tool calls.
+    /// </summary>
+    /// <param name="toolCalls">All tool calls requested by AI model.</param>
+    /// <param name="chatHistory">The chat history.</param>
+    private void ProcessNonFunctionToolCalls(IEnumerable<ChatToolCall> toolCalls, ChatHistory chatHistory)
+    {
+        var nonFunctionToolCalls = toolCalls.Where(toolCall => toolCall.Kind != ChatToolCallKind.Function);
+
+        const string ErrorMessage = "Error: Tool call was not a function call.";
+
+        foreach (var toolCall in nonFunctionToolCalls)
+        {
+            if (this.Logger!.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger!.LogDebug("Failed to handle tool request ({ToolId}). {Error}", toolCall.Id, ErrorMessage);
+            }
+
+            // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
+            var message = new ChatMessageContent(role: AuthorRole.Tool, content: ErrorMessage, metadata: new Dictionary<string, object?> { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } });
+
+            chatHistory.Add(message);
+        }
     }
 }

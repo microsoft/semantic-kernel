@@ -77,6 +77,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     /// <summary>Optional configuration options for this class.</summary>
     private readonly AzureAISearchVectorStoreRecordCollectionOptions<TRecord> _options;
 
+    /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
+    private readonly IVectorStoreRecordMapper<TRecord, JsonObject>? _mapper;
+
     /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 
@@ -102,6 +105,8 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         // Verify.
         Verify.NotNull(searchIndexClient);
         Verify.NotNullOrWhiteSpace(collectionName);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.JsonObjectCustomMapper is not null, s_supportedKeyTypes);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._searchIndexClient = searchIndexClient;
@@ -125,6 +130,19 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
             .Concat([properties.KeyProperty])
             .Select(x => this._storagePropertyNames[x.DataModelPropertyName])
             .ToList();
+
+        // Resolve mapper.
+        // First, if someone has provided a custom mapper, use that.
+        // If they didn't provide a custom mapper, and the record type is the generic data model, use the built in mapper for that.
+        // Otherwise, don't set the mapper, and we'll default to just using Azure AI Search's built in json serialization and deserialization.
+        if (this._options.JsonObjectCustomMapper is not null)
+        {
+            this._mapper = this._options.JsonObjectCustomMapper;
+        }
+        else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
+        {
+            this._mapper = new AzureAISearchGenericDataModelMapper(this._vectorStoreRecordDefinition) as IVectorStoreRecordMapper<TRecord, JsonObject>;
+        }
     }
 
     /// <inheritdoc />
@@ -316,7 +334,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         const string OperationName = "GetDocument";
 
         // Use the user provided mapper.
-        if (this._options.JsonObjectCustomMapper is not null)
+        if (this._mapper is not null)
         {
             var jsonObject = await this.RunOperationAsync(
                 OperationName,
@@ -331,7 +349,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
                 DatabaseName,
                 this._collectionName,
                 OperationName,
-                () => this._options.JsonObjectCustomMapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
+                () => this._mapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
         }
 
         // Use the built in Azure AI Search mapper.
@@ -355,13 +373,13 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         const string OperationName = "UploadDocuments";
 
         // Use the user provided mapper.
-        if (this._options.JsonObjectCustomMapper is not null)
+        if (this._mapper is not null)
         {
             var jsonObjects = VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,
                 this._collectionName,
                 OperationName,
-                () => records.Select(this._options.JsonObjectCustomMapper!.MapFromDataToStorageModel));
+                () => records.Select(this._mapper!.MapFromDataToStorageModel));
 
             return this.RunOperationAsync(
                 OperationName,

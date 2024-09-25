@@ -94,6 +94,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         // Verify.
         Verify.NotNull(database);
         Verify.NotNullOrWhiteSpace(collectionName);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.HashEntriesCustomMapper is not null, s_supportedKeyTypes);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._database = database;
@@ -118,10 +120,17 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         // Assign Mapper.
         if (this._options.HashEntriesCustomMapper is not null)
         {
+            // Custom Mapper.
             this._mapper = this._options.HashEntriesCustomMapper;
+        }
+        else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
+        {
+            // Generic data model mapper.
+            this._mapper = (IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)>)new RedisHashSetGenericDataModelMapper(this._vectorStoreRecordDefinition);
         }
         else
         {
+            // Default Mapper.
             this._mapper = new RedisHashSetVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, this._storagePropertyNames);
         }
     }
