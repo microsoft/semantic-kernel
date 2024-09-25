@@ -111,7 +111,7 @@ on our Learn site. Each sample comes with a completed C# and Python project that
 
 1. 📖 [Getting Started](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide)
 1. 🔌 [Detailed Samples](https://learn.microsoft.com/en-us/semantic-kernel/get-started/detailed-samples)
-1. 💡 [Concepts](https://learn.microsoft.com/en-us/semantic-kernel/concepts/agents)
+1. 💡 [Concepts](https://learn.microsoft.com/en-us/semantic-kernel/concepts/kernel)
 
 Finally, refer to our API references for more details on the C# and Python APIs:
 
@@ -136,7 +136,7 @@ in a different direction, but also to consider the impact on the larger ecosyste
 To learn more and get started:
 
 - Read the [documentation](https://aka.ms/sk/learn)
-- Learn how to [contribute](https://learn.microsoft.com/en-us/semantic-kernel/get-started/contributing) to the project
+- Learn how to [contribute](https://learn.microsoft.com/en-us/semantic-kernel/support/contributing) to the project
 - Ask questions in the [GitHub discussions](https://github.com/microsoft/semantic-kernel/discussions)
 - Ask questions in the [Discord community](https://aka.ms/SKDiscord)
 
