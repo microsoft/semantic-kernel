@@ -299,8 +299,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             searchOptions.Filter,
             this._storagePropertyNames);
 
-        // Constructing a query to fetch "offset + limit" total items
-        // to perform offset logic locally, since offset parameter is not part of API. 
+        // Constructing a query to fetch "skip + top" total items
+        // to perform skip logic locally, since skip option is not part of API. 
         var itemsAmount = searchOptions.Skip + searchOptions.Top;
 
         var searchQuery = vectorProperty.IndexKind switch
@@ -331,13 +331,13 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        var offsetCounter = 0;
+        var skipCounter = 0;
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
         {
             foreach (var response in cursor.Current)
             {
-                if (offsetCounter >= searchOptions.Skip)
+                if (skipCounter >= searchOptions.Skip)
                 {
                     var score = response[ScorePropertyName].AsDouble;
                     var record = VectorStoreErrorHandler.RunModelConversion(
@@ -349,7 +349,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
                     yield return new VectorSearchResult<TRecord>(record, score);
                 }
 
-                offsetCounter++;
+                skipCounter++;
             }
         }
     }

@@ -578,8 +578,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
     public async Task VectorizedSearchUsesValidQueryAsync(
         string? vectorPropertyName,
         string expectedVectorPropertyName,
-        int actualLimit,
-        int expectedLimit)
+        int actualTop,
+        int expectedTop)
     {
         // Arrange
         var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
@@ -594,7 +594,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
                         {
                             { "vector", BsonArray.Create(vector.ToArray()) },
                             { "path", expectedVectorPropertyName },
-                            { "k", expectedLimit },
+                            { "k", expectedTop },
                         }
                     },
                     { "returnStoredSource", true }
@@ -623,7 +623,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         var result = await sut.VectorizedSearchAsync(vector, new()
         {
             VectorPropertyName = vectorPropertyName,
-            Top = actualLimit,
+            Top = actualTop,
         }).FirstOrDefaultAsync();
 
         // Assert

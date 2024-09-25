@@ -341,7 +341,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItCanSearchWithFloat32VectorAndLimitOffsetAsync()
+    public async Task ItCanSearchWithFloat32VectorAndTopSkipAsync()
     {
         // Arrange
         var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };

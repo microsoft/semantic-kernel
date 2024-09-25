@@ -365,7 +365,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItCanSearchWithFloat32VectorAndLimitOffsetAsync()
+    public async Task ItCanSearchWithFloat32VectorAndTopSkipAsync()
     {
         // Arrange
         var options = new RedisJsonVectorStoreRecordCollectionOptions<BasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };

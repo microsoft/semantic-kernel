@@ -120,10 +120,7 @@ public sealed class BingTextSearch : ITextSearch
     /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
     private async Task<HttpResponseMessage> SendGetRequestAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken = default)
     {
-        var count = searchOptions.Top;
-        var offset = searchOptions.Skip;
-
-        if (count is <= 0 or > 50)
+        if (searchOptions.Top is <= 0 or > 50)
         {
             throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions, $"{nameof(searchOptions)} count value must be greater than 0 and have a maximum value of 50.");
         }
