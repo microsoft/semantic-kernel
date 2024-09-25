@@ -8,3 +8,8 @@ from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSetti
 from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
 
 __all__ = ["QdrantCollection", "QdrantMemoryStore", "QdrantSettings", "QdrantStore"]
+from semantic_kernel.connectors.memory.qdrant.qdrant_memory_store import (
+    QdrantMemoryStore,
+)
+
+__all__ = ["QdrantMemoryStore"]

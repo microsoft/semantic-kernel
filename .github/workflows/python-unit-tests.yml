@@ -91,7 +91,6 @@ jobs:
           key: uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/uv.lock') }}
       - name: Install the project
         run: uv sync --all-extras --dev
-<<<<<<< main
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
       - name: Install dependencies
@@ -99,8 +98,7 @@ jobs:
           python -m pip install poetry pytest
           cd python
           poetry install --without chromadb --without hugging_face --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
-=======
->>>>>>> ms/features/bugbash-prep
+          poetry install --without chromadb --without hugging_face --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant
       - name: Test with pytest
         run: uv run pytest -q --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt      
       - name: Upload coverage
