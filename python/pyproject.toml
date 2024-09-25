@@ -71,7 +71,7 @@ hugging_face = [
     "torch == 2.2.2"
 ]
 mongo = [
-    "motor ~= 3.3.2"
+    "motor >= 3.3.2,< 3.7.0"
 ]
 notebooks = [
     "ipykernel ~= 6.29"
