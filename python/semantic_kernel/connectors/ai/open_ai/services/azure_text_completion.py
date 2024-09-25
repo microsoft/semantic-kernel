@@ -83,8 +83,10 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 token_endpoint=azure_openai_settings.token_endpoint
             )
 
-        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise ServiceInitializationError("Please provide either api_key, ad_token or ad_token_provider")
+        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider and not async_client:
+            raise ServiceInitializationError(
+                "Please provide either api_key, ad_token, ad_token_provider, or a custom client."
+            )
 
         super().__init__(
             deployment_name=azure_openai_settings.text_deployment_name,
