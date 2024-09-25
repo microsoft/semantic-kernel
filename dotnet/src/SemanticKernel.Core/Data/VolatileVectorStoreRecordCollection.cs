@@ -1,11 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +23,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     where TKey : notnull
     where TRecord : class
 {
-<<<<<<< HEAD
     /// <summary>A set of types that vectors on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedVectorTypes =
     [
@@ -37,69 +35,56 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <summary>The data type of each collection, to enforce a single type per collection.</summary>
     private readonly ConcurrentDictionary<string, Type> _internalCollectionTypes;
-=======
     /// <summary>Internal storage for the record collection.</summary>
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollection;
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly VolatileVectorStoreRecordCollectionOptions _options;
+    private readonly VolatileVectorStoreRecordCollectionOptions<TKey, TRecord> _options;
 
     /// <summary>The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</summary>
     private readonly string _collectionName;
 
-<<<<<<< HEAD
     /// <summary>A dictionary of vector properties on the provided model, keyed by the property name.</summary>
     private readonly Dictionary<string, VectorStoreRecordVectorProperty> _vectorProperties;
 
-    /// <summary>A dictionary of vector property info objects on the provided model, keyed by the property name.</summary>
-    private readonly Dictionary<string, PropertyInfo> _vectorPropertiesInfo;
+    /// <summary>The name of the first vector field for the collections that this class is used with.</summary>
+    private readonly string? _firstVectorPropertyName = null;
+
+    /// <summary>An function to look up vectors from the records.</summary>
+    private readonly VolatileVectorStoreVectorResolver<TRecord> _vectorResolver;
+
+    /// <summary>An function to look up keys from the records.</summary>
+    private readonly VolatileVectorStoreKeyResolver<TKey, TRecord> _keyResolver;
 
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
 
-    /// <summary>The first vector field for the collections that this class is used with.</summary>
-    private readonly PropertyInfo? _firstVectorPropertyInfo = null;
-
-=======
-    /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
-    private readonly PropertyInfo _keyPropertyInfo;
-
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
     /// <summary>
     /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> class.
     /// </summary>
     /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public VolatileVectorStoreRecordCollection(string collectionName, VolatileVectorStoreRecordCollectionOptions? options = default)
+    public VolatileVectorStoreRecordCollection(string collectionName, VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default)
     {
         // Verify.
         Verify.NotNullOrWhiteSpace(collectionName);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._collectionName = collectionName;
-<<<<<<< HEAD
         this._internalCollections = new();
         this._internalCollectionTypes = new();
-        this._options = options ?? new VolatileVectorStoreRecordCollectionOptions();
+        this._options = options ?? new VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>();
         var vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
 
         // Validate property types.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
         this._vectorProperties = properties.VectorProperties.ToDictionary(x => x.DataModelPropertyName);
-        this._vectorPropertiesInfo = properties.VectorProperties
-            .Select(x => x.DataModelPropertyName)
-            .Select(x => typeof(TRecord).GetProperty(x) ?? throw new ArgumentException($"Vector property {x} not found on {typeof(TRecord).Name}"))
-            .ToDictionary(x => x.Name);
-
-        this._keyPropertyInfo = typeof(TRecord).GetProperty(properties.KeyProperty.DataModelPropertyName) ?? throw new ArgumentException($"Key property {properties.KeyProperty.DataModelPropertyName} not found on {typeof(TRecord).Name}");
         if (properties.VectorProperties.Count > 0)
         {
-            var firstVectorPropertyName = properties.VectorProperties.First().DataModelPropertyName;
-            this._firstVectorPropertyInfo = this._vectorPropertiesInfo[firstVectorPropertyName];
+            this._firstVectorPropertyName = properties.VectorProperties.First().DataModelPropertyName;
         }
-=======
         this._internalCollection = new();
         this._options = options ?? new VolatileVectorStoreRecordCollectionOptions();
         var vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
@@ -112,13 +97,15 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         this._keyPropertyInfo = typeof(TRecord).GetProperty(keyProperty.DataModelPropertyName) ?? throw new ArgumentException($"Key property {keyProperty.DataModelPropertyName} not found on {typeof(TRecord).Name}");
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+
+        // Assign resolvers.
+        this._vectorResolver = CreateVectorResolver(this._options.VectorResolver, this._vectorProperties);
+        this._keyResolver = CreateKeyResolver(this._options.KeyResolver, properties.KeyProperty);
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> class.
     /// </summary>
-<<<<<<< HEAD
     /// <param name="internalCollection">Internal storage for the record collection.</param>
     /// <param name="internalCollectionTypes">The data type of each collection, to enforce a single type per collection.</param>
     /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
@@ -127,12 +114,11 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         ConcurrentDictionary<string, ConcurrentDictionary<object, object>> internalCollection,
         ConcurrentDictionary<string, Type> internalCollectionTypes,
         string collectionName,
-        VolatileVectorStoreRecordCollectionOptions? options = default)
+        VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default)
         : this(collectionName, options)
     {
         this._internalCollections = internalCollection;
         this._internalCollectionTypes = internalCollectionTypes;
-=======
     /// <param name="internalCollection">Allows passing in the dictionary used for storage, for testing purposes.</param>
     /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
@@ -140,7 +126,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         : this(collectionName, options)
     {
         this._internalCollection = internalCollection;
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
     }
 
     /// <inheritdoc />
@@ -149,26 +134,20 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-<<<<<<< HEAD
         return this._internalCollections.ContainsKey(this._collectionName) ? Task.FromResult(true) : Task.FromResult(false);
-=======
         return this._internalCollection.ContainsKey(this._collectionName) ? Task.FromResult(true) : Task.FromResult(false);
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
     }
 
     /// <inheritdoc />
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-<<<<<<< HEAD
         if (!this._internalCollections.ContainsKey(this._collectionName))
         {
             this._internalCollections.TryAdd(this._collectionName, new ConcurrentDictionary<object, object>());
             this._internalCollectionTypes.TryAdd(this._collectionName, typeof(TRecord));
         }
 
-=======
         this._internalCollection.TryAdd(this._collectionName, new ConcurrentDictionary<object, object>());
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
         return Task.CompletedTask;
     }
 
@@ -184,11 +163,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-<<<<<<< HEAD
         this._internalCollections.TryRemove(this._collectionName, out _);
-=======
-        this._internalCollection.TryRemove(this._collectionName, out _);
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+        this._internalCollection.TryRemove(this._collectionName, out _)
         return Task.CompletedTask;
     }
 
@@ -246,7 +222,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         var collectionDictionary = this.GetCollectionDictionary();
 
-        var key = (TKey)this._keyPropertyInfo.GetValue(record)!;
+        var key = (TKey)this._keyResolver(record)!;
         collectionDictionary.AddOrUpdate(key!, record, (key, currentValue) => record);
 
         return Task.FromResult(key!);
@@ -261,7 +237,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
     }
 
-<<<<<<< HEAD
     /// <inheritdoc />
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously - Need to satisfy the interface which returns IAsyncEnumerable
     public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -269,7 +244,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         Verify.NotNull(vector);
 
-        if (this._firstVectorPropertyInfo is null)
+        if (this._firstVectorPropertyName is null)
         {
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
@@ -281,20 +256,12 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         // Resolve options and get requested vector property or first as default.
         var internalOptions = options ?? Data.VectorSearchOptions.Default;
-        PropertyInfo? vectorPropertyInfo;
-        if (internalOptions.VectorFieldName is not null)
-        {
-            if (!this._vectorPropertiesInfo.TryGetValue(internalOptions.VectorFieldName, out vectorPropertyInfo))
-            {
-                throw new InvalidOperationException($"The collection does not have a vector field named '{internalOptions.VectorFieldName}', so vector search is not possible.");
-            }
-        }
-        else
-        {
-            vectorPropertyInfo = this._firstVectorPropertyInfo;
-        }
 
-        var vectorProperty = this._vectorProperties[vectorPropertyInfo.Name];
+        var vectorPropertyName = string.IsNullOrWhiteSpace(internalOptions.VectorFieldName) ? this._firstVectorPropertyName : internalOptions.VectorFieldName;
+        if (!this._vectorProperties.TryGetValue(vectorPropertyName!, out var vectorProperty))
+        {
+            throw new InvalidOperationException($"The collection does not have a vector field named '{internalOptions.VectorFieldName}', so vector search is not possible.");
+        }
 
         // Filter records using the provided filter before doing the vector comparison.
         var filteredRecords = VolatileVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.Filter, this.GetCollectionDictionary().Values);
@@ -302,15 +269,15 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Compare each vector in the filtered results with the provided vector.
         var results = filteredRecords.Select<object, (object record, float score)?>((record) =>
         {
-            var dbVector = (ReadOnlyMemory<float>?)vectorPropertyInfo.GetValue(record);
-            if (dbVector is not null)
+            var vectorObject = this._vectorResolver(vectorPropertyName!, (TRecord)record);
+            if (vectorObject is not ReadOnlyMemory<float> dbVector)
             {
-                var score = VolatileVectorStoreCollectionSearchMapping.CompareVectors(floatVector.Span, dbVector.Value.Span, vectorProperty.DistanceFunction);
-                var convertedscore = VolatileVectorStoreCollectionSearchMapping.ConvertScore(score, vectorProperty.DistanceFunction);
-                return (record, convertedscore);
+                return null;
             }
 
-            return null;
+            var score = VolatileVectorStoreCollectionSearchMapping.CompareVectors(floatVector.Span, dbVector.Span, vectorProperty.DistanceFunction);
+            var convertedscore = VolatileVectorStoreCollectionSearchMapping.ConvertScore(score, vectorProperty.DistanceFunction);
+            return (record, convertedscore);
         });
 
         // Get the non-null results, sort them appropriately for the selected distance function and return the requested page.
@@ -325,25 +292,102 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
     }
 
-=======
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
     /// <summary>
     /// Get the collection dictionary from the internal storage, throws if it does not exist.
     /// </summary>
     /// <returns>The retrieved collection dictionary.</returns>
-<<<<<<< HEAD
     internal ConcurrentDictionary<object, object> GetCollectionDictionary()
     {
         if (!this._internalCollections.TryGetValue(this._collectionName, out var collectionDictionary))
-=======
     private ConcurrentDictionary<object, object> GetCollectionDictionary()
     {
         if (!this._internalCollection.TryGetValue(this._collectionName, out var collectionDictionary))
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
         {
             throw new VectorStoreOperationException($"Call to vector store failed. Collection '{this._collectionName}' does not exist.");
         }
 
         return collectionDictionary;
+    }
+
+    /// <summary>
+    /// Pick / create a vector resolver that will read a vector from a record in the store based on the vector name.
+    /// 1. If an override resolver is provided, use that.
+    /// 2. If the record type is <see cref="VectorStoreGenericDataModel{TKey}"/> create a resolver that looks up the vector in its <see cref="VectorStoreGenericDataModel{TKey}.Vectors"/> dictionary.
+    /// 3. Otherwise, create a resolver that assumes the vector is a property directly on the record and use the record definition to determine the name.
+    /// </summary>
+    /// <param name="overrideVectorResolver">The override vector resolver if one was provided.</param>
+    /// <param name="vectorProperties">A dictionary of vector properties from the record definition.</param>
+    /// <returns>The <see cref="VolatileVectorStoreVectorResolver{TRecord}"/>.</returns>
+    private static VolatileVectorStoreVectorResolver<TRecord> CreateVectorResolver(VolatileVectorStoreVectorResolver<TRecord>? overrideVectorResolver, Dictionary<string, VectorStoreRecordVectorProperty> vectorProperties)
+    {
+        // Custom resolver.
+        if (overrideVectorResolver is not null)
+        {
+            return overrideVectorResolver;
+        }
+
+        // Generic data model resolver.
+        if (typeof(TRecord).IsGenericType && typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>))
+        {
+            return (vectorName, record) =>
+            {
+                var genericDataModelRecord = record as VectorStoreGenericDataModel<TKey>;
+                var vectorsDictionary = genericDataModelRecord!.Vectors;
+                if (vectorsDictionary != null && vectorsDictionary.TryGetValue(vectorName, out var vector))
+                {
+                    return vector;
+                }
+
+                throw new InvalidOperationException($"The collection does not have a vector field named '{vectorName}', so vector search is not possible.");
+            };
+        }
+
+        // Default resolver.
+        var vectorPropertiesInfo = vectorProperties.Values
+            .Select(x => x.DataModelPropertyName)
+            .Select(x => typeof(TRecord).GetProperty(x) ?? throw new ArgumentException($"Vector property '{x}' was not found on {typeof(TRecord).Name}"))
+            .ToDictionary(x => x.Name);
+
+        return (vectorName, record) =>
+        {
+            if (vectorPropertiesInfo.TryGetValue(vectorName, out var vectorPropertyInfo))
+            {
+                return vectorPropertyInfo.GetValue(record);
+            }
+
+            throw new InvalidOperationException($"The collection does not have a vector field named '{vectorName}', so vector search is not possible.");
+        };
+    }
+
+    /// <summary>
+    /// Pick / create a key resolver that will read a key from a record in the store.
+    /// 1. If an override resolver is provided, use that.
+    /// 2. If the record type is <see cref="VectorStoreGenericDataModel{TKey}"/> create a resolver that reads the Key property from it.
+    /// 3. Otherwise, create a resolver that assumes the key is a property directly on the record and use the record definition to determine the name.
+    /// </summary>
+    /// <param name="overrideKeyResolver">The override key resolver if one was provided.</param>
+    /// <param name="keyProperty">They key property from the record definition.</param>
+    /// <returns>The <see cref="VolatileVectorStoreKeyResolver{TKey, TRecord}"/>.</returns>
+    private static VolatileVectorStoreKeyResolver<TKey, TRecord> CreateKeyResolver(VolatileVectorStoreKeyResolver<TKey, TRecord>? overrideKeyResolver, VectorStoreRecordKeyProperty keyProperty)
+    {
+        // Custom resolver.
+        if (overrideKeyResolver is not null)
+        {
+            return overrideKeyResolver;
+        }
+
+        // Generic data model resolver.
+        if (typeof(TRecord).IsGenericType && typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>))
+        {
+            return (record) =>
+            {
+                var genericDataModelRecord = record as VectorStoreGenericDataModel<TKey>;
+                return genericDataModelRecord!.Key;
+            };
+        }
+
+        // Default resolver.
+        var keyPropertyInfo = typeof(TRecord).GetProperty(keyProperty.DataModelPropertyName) ?? throw new ArgumentException($"Key property {keyProperty.DataModelPropertyName} not found on {typeof(TRecord).Name}");
+        return (record) => (TKey)keyPropertyInfo.GetValue(record)!;
     }
 }
