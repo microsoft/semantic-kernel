@@ -155,6 +155,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         items.extend(self._get_function_call_from_chat_choice(choice))
         if choice.message.content:
             items.append(TextContent(text=choice.message.content))
+        elif hasattr(choice.message, "refusal") and choice.message.refusal:
+            items.append(TextContent(text=choice.message.refusal))
 
         return ChatMessageContent(
             inner_content=response,

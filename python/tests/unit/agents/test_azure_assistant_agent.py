@@ -239,7 +239,7 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
         mock_client_instance.beta = MagicMock()
         mock_client_instance.beta.assistants = MagicMock()
 
-        mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=AsyncMock())
+        mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=AsyncMock(spec=Assistant))
 
         OpenAIAssistantBase._create_open_ai_assistant_definition = MagicMock(
             return_value={
