@@ -503,7 +503,6 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
         public string Email { get; set; }
     }
 
-
     public class UserInteractionDetails
     {
         public Guid AccountId { get; set; }
