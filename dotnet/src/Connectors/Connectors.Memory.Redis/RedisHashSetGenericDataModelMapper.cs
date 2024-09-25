@@ -10,7 +10,7 @@ using StackExchange.Redis;
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
-/// A mapper that maps between the generic semantic kernel data model and the model that the data is stored in in Redis when using hash sets.
+/// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Redis when using hash sets.
 /// </summary>
 internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, (string Key, HashEntry[] HashEntries)>
 {
