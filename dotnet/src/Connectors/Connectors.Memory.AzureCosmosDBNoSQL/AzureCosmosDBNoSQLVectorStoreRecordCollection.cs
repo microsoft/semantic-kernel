@@ -31,31 +31,32 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "AzureCosmosDBNoSQL";
 
-    /// <summary>A set of types that a key on the provided model may have.</summary>
+    /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes =
     [
-        typeof(string)
+        typeof(string),
+        typeof(AzureCosmosDBNoSQLCompositeKey)
     ];
 
-    /// <summary>A set of types that data properties on the provided model may have.</summary>
+    /// <summary>A <see cref="HashSet{T}"/> of types that data properties on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedDataTypes =
     [
+        typeof(bool),
+        typeof(bool?),
         typeof(string),
         typeof(int),
-        typeof(long),
-        typeof(double),
-        typeof(float),
-        typeof(bool),
-        typeof(DateTimeOffset),
         typeof(int?),
+        typeof(long),
         typeof(long?),
-        typeof(double?),
+        typeof(float),
         typeof(float?),
-        typeof(bool?),
+        typeof(double),
+        typeof(double?),
+        typeof(DateTimeOffset),
         typeof(DateTimeOffset?),
     ];
 
-    /// <summary>A set of types that vector properties on the provided model may have, based on <see cref="VectorDataType"/> enumeration.</summary>
+    /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have, based on <see cref="VectorDataType"/> enumeration.</summary>
     private static readonly HashSet<Type> s_supportedVectorTypes =
     [
         // Float16
