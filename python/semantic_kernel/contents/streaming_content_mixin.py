@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import copy
 import logging
 import sys
 from abc import ABC, abstractmethod
@@ -37,7 +36,9 @@ class StreamingContentMixin(KernelBaseModel, ABC):
         if not hasattr(self, "items"):
             raise ContentAdditionException(f"Cannot merge items for this instance of type: {type(self)}")
 
-        new_items_list = copy.deepcopy(self.items)
+        # Create a copy of the items list to avoid modifying the original instance.
+        # Note that the items are not copied, only the list is.
+        new_items_list = self.items.copy()
 
         if new_items_list or other_items:
             for other_item in other_items:
@@ -61,9 +62,13 @@ class StreamingContentMixin(KernelBaseModel, ABC):
         if not hasattr(self, "inner_content"):
             raise ContentAdditionException(f"Cannot merge inner content for this instance of type: {type(self)}")
 
-        new_inner_contents_list = copy.deepcopy(self.inner_content)
-        if not isinstance(new_inner_contents_list, list):
-            new_inner_contents_list = [new_inner_contents_list] if new_inner_contents_list else []
+        # Create a copy of the inner content list to avoid modifying the original instance.
+        # Note that the inner content is not copied, only the list is.
+        # If the inner content is not a list, it is converted to a list.
+        if isinstance(self.inner_content, list):
+            new_inner_contents_list = self.inner_content.copy()
+        else:
+            new_inner_contents_list = [self.inner_content]
 
         other_inner_content = (
             other_inner_content
