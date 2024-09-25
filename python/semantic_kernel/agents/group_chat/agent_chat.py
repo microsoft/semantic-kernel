@@ -163,7 +163,7 @@ class AgentChat(KernelBaseModel):
         logger.info(f"Invoking agent {agent.name}")
         try:
             channel: AgentChannel = await self._get_or_create_channel(agent)
-            messages: list[ChatMessageContent] = []
+            messages: list[StreamingChatMessageContent] = []
 
             async for is_visible, message in channel.invoke_stream(agent, messages):
                 messages.append(message)
