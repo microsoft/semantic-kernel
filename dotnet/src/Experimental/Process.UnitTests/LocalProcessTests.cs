@@ -63,11 +63,11 @@ public class LocalProcessTests
     /// Validates that the <see cref="LocalProcess"/> assigns and Id to the process if one is not already set.
     /// </summary>
     [Fact]
-    public void ProcessWithAssignedIdIsNotOverwritenId()
+    public void ProcessWithAssignedIdIsNotOverwrittenId()
     {
         // Arrange
         var mockKernel = new Kernel();
-        var processState = new KernelProcessState { Id = "AlreadSet", Name = "TestProcess" };
+        var processState = new KernelProcessState { Id = "AlreadySet", Name = "TestProcess" };
         var mockKernelProcess = new KernelProcess(processState,
         [
             new(typeof(TestStep), new KernelProcessState { Name = "Step1", Id = "1" }, []),
@@ -79,7 +79,7 @@ public class LocalProcessTests
 
         // Assert
         Assert.NotEmpty(localProcess.Id);
-        Assert.Equal("AlreadSet", localProcess.Id);
+        Assert.Equal("AlreadySet", localProcess.Id);
     }
 
     /// <summary>

@@ -276,7 +276,7 @@ internal class LocalStep : KernelProcessMessageChannel
     }
 
     /// <summary>
-    /// Examines the KernelFunctiosn for the step and creates a dictionary of input channels.
+    /// Examines the KernelFunction for the step and creates a dictionary of input channels.
     /// Some types such as KernelProcessStepContext are special and need to be injected into
     /// the function parameter. Those objects are instantiated at this point.
     /// </summary>
