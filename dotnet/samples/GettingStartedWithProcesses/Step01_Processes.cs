@@ -115,16 +115,24 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
         [KernelFunction("GetChatResponse")]
         public async Task GetChatResponseAsync(KernelProcessStepContext context, string userMessage, Kernel _kernel)
         {
-            _state!.ChatMessages.Add(new(AuthorRole.User, userMessage));
-            IChatCompletionService chatService = _kernel.Services.GetRequiredService<IChatCompletionService>();
-            ChatMessageContent response = await chatService.GetChatMessageContentAsync(_state.ChatMessages);
-            if (response != null)
+            try
             {
-                _state.ChatMessages.Add(response!);
-            }
+                _state!.ChatMessages.Add(new(AuthorRole.User, userMessage));
+                IChatCompletionService chatService = _kernel.Services.GetRequiredService<IChatCompletionService>();
+                ChatMessageContent response = await chatService.GetChatMessageContentAsync(_state.ChatMessages).ConfigureAwait(false);
+                if (response != null)
+                {
+                    _state.ChatMessages.Add(response!);
+                }
 
-            // emit event: assistantResponse
-            await context.EmitEventAsync(new KernelProcessEvent { Id = ChatBotEvents.AssistantResponseGenerated, Data = response });
+                // emit event: assistantResponse
+                await context.EmitEventAsync(new KernelProcessEvent { Id = ChatBotEvents.AssistantResponseGenerated, Data = response });
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 

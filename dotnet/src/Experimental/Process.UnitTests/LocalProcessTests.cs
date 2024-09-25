@@ -20,17 +20,17 @@ public class LocalProcessTests
     {
         // Arrange
         var processState = new KernelProcessState { Name = "TestProcess", Id = "123" };
-        var mockKernelProcess = new KernelProcess(processState.Id, new List<KernelProcessStepInfo>
-        {
+        var mockKernelProcess = new KernelProcess(processState.Id,
+        [
             new(typeof(TestStep), new KernelProcessState { Name = "Step1", Id = "1" }, []),
             new(typeof(TestStep), new KernelProcessState { Name = "Step2", Id = "2" }, []),
-        }, []);
+        ], []);
 
         var mockKernel = new Kernel();
         var localProcess = new LocalProcess(mockKernelProcess, mockKernel, loggerFactory: null);
 
         // Act
-        await localProcess.ExecuteAsync();
+        await localProcess.StartAsync();
 
         // Assert
         Assert.Equal(2, localProcess._steps.Count);

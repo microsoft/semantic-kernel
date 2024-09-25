@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
@@ -7,11 +8,10 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides context and actions on a process that is running locally.
 /// </summary>
-public class LocalKernelProcessContext
+public sealed class LocalKernelProcessContext : IDisposable
 {
     private readonly string _processId;
     private readonly LocalProcess _localProcess;
-    private Task? _processTask;
     private readonly Kernel _kernel;
 
     internal LocalKernelProcessContext(KernelProcess process, Kernel kernel)
@@ -30,8 +30,28 @@ public class LocalKernelProcessContext
         this._processId = this._localProcess.Id;
     }
 
-    internal void Start(KernelProcessEvent initialEvent, Kernel? kernel = null)
+    internal async Task StartWithEventAsync(KernelProcessEvent? initialEvent, Kernel? kernel = null)
     {
-        this._processTask = this._localProcess.ExecuteAsync(kernel, initialEvent, 100);
+        await this._localProcess.LoadAsync().ConfigureAwait(false);
+        await this._localProcess.RunOnceAsync(initialEvent).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Sends a message to the process.
+    /// </summary>
+    /// <param name="processEvent">The event to sent to the process.</param>
+    /// <returns>A <see cref="Task"/></returns>
+    public async Task SendEventAsync(KernelProcessEvent? processEvent) =>
+        await this._localProcess.SendMessageAsync(processEvent).ConfigureAwait(false);
+
+    /// <summary>
+    /// Stops the process.
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
+    public async Task StopAsync() => await this._localProcess.StopAsync().ConfigureAwait(false);
+
+    /// <summary>
+    /// Disposes of the resources used by the process.
+    /// </summary>
+    public void Dispose() => this._localProcess?.Dispose();
 }
