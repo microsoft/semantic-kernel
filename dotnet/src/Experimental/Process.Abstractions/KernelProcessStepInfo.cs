@@ -11,6 +11,8 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public record KernelProcessStepInfo
 {
+    private KernelProcessStepState _state;
+
     /// <summary>
     /// A mapping of output edges from the Step using the .
     /// </summary>
@@ -24,7 +26,15 @@ public record KernelProcessStepInfo
     /// <summary>
     /// The state of the Step.
     /// </summary>
-    public KernelProcessStepState State { get; init; }
+    public KernelProcessStepState State
+    {
+        get => this._state;
+        init
+        {
+            Verify.NotNull(value);
+            this._state = value;
+        }
+    }
 
     /// <summary>
     /// A read-only dictionary of output edges from the Step.
@@ -43,6 +53,6 @@ public record KernelProcessStepInfo
 
         this.InnerStepType = innerStepType;
         this._outputEdges = edges;
-        this.State = state;
+        this._state = state;
     }
 }

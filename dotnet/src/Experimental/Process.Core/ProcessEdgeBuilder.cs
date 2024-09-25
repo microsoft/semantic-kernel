@@ -17,7 +17,7 @@ public sealed class ProcessEdgeBuilder
     /// <summary>
     /// The source step of the edge.
     /// </summary>
-    internal ProcessStepBuilder Source { get; init; }
+    internal ProcessStepBuilder Source { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessEdgeBuilder"/> class.
