@@ -20,11 +20,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="SemanticKernel.Agents.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Process.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Threading" />
+    <PackageReference Include="System.Threading.Channels" />
   </ItemGroup>
 
 </Project>
