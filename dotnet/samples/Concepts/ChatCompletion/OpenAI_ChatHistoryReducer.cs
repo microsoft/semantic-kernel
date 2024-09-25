@@ -51,7 +51,7 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
     }
 
     [Fact]
-    public async Task ShowHowToReduceChatHistoryAsync()
+    public async Task ShowHowToReduceChatHistoryToLastMessageAsync()
     {
         Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
@@ -59,7 +59,7 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         OpenAIChatCompletionService openAiChatService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatService = openAiChatService.WithChatHistoryReducer(ChatHistoryReducerAsync);
+        IChatCompletionService chatService = openAiChatService.WithChatHistoryReducer(ChatHistoryLastMessageReducerAsync);
 
         var chatHistory = new ChatHistory("You are a librarian and expert on books about cities");
 
@@ -90,7 +90,7 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
     }
 
     [Fact]
-    public async Task ShowHowToReduceChatHistoryStreamingAsync()
+    public async Task ShowHowToReduceChatHistoryToLastMessageStreamingAsync()
     {
         Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
@@ -98,7 +98,7 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         OpenAIChatCompletionService openAiChatService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatService = openAiChatService.WithChatHistoryReducer(ChatHistoryReducerAsync);
+        IChatCompletionService chatService = openAiChatService.WithChatHistoryReducer(ChatHistoryLastMessageReducerAsync);
 
         var chatHistory = new ChatHistory("You are a librarian and expert on books about cities");
 
@@ -133,16 +133,90 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         Console.WriteLine($"Total Token Count: {totalTokenCount}");
     }
 
+    [Fact]
+    public async Task ShowHowToReduceChatHistoryToMaxTokensAsync()
+    {
+        Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
+        Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
+
+        OpenAIChatCompletionService openAiChatService = new(
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
+        IChatCompletionService chatService = openAiChatService.WithChatHistoryReducer(ChatHistoryMaxTokensReducerAsync);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessageWithTokenCount("You are an expert on the best restaurants in the world. Keep responses short.");
+
+        string[] userMessages = [
+            "Recommend restaurants in Seattle",
+            "What is the best Italian restaurant?",
+            "What is the best Korean restaurant?",
+            "Recommend restaurants in Dublin",
+            "What is the best Indian restaurant?",
+            "What is the best Japanese restaurant?",
+        ];
+
+        int totalTokenCount = 0;
+        foreach (var userMessage in userMessages)
+        {
+            chatHistory.AddUserMessageWithTokenCount(userMessage);
+            Console.WriteLine($"\n>>> User:\n{userMessage}");
+
+            var response = await chatService.GetChatMessageContentAsync(chatHistory);
+            chatHistory.AddAssistantMessageWithTokenCount(response.Content!);
+            Console.WriteLine($"\n>>> Assistant:\n{response.Content!}");
+
+            if (response.InnerContent is OpenAI.Chat.ChatCompletion chatCompletion)
+            {
+                totalTokenCount += chatCompletion.Usage?.TotalTokens ?? 0;
+            }
+        }
+
+        // Example total token usage is approximately: 3000
+        Console.WriteLine($"Total Token Count: {totalTokenCount}");
+    }
+
     #region private
+    private const int MaxTokenCount = 100;
+
     /// <summary>
-    /// ChatHistoryReducer function that just preserves the system message and the last message.
+    /// ChatHistoryReducer function that just preserves the system message and the last n messages.
     /// </summary>
-    private static async Task<ChatHistory?> ChatHistoryReducerAsync(ChatHistory chatHistory, CancellationToken cancellationToken)
+    private static async Task<ChatHistory?> ChatHistoryLastMessageReducerAsync(ChatHistory chatHistory, CancellationToken cancellationToken)
     {
         var firstMessage = chatHistory.FirstOrDefault();
-        ChatHistory? reducedChatHistory = (firstMessage?.Role == AuthorRole.System) ? new(firstMessage?.Content!) : new();
+        ChatHistory reducedChatHistory = (firstMessage?.Role == AuthorRole.System) ? new(firstMessage?.Content!) : new();
         reducedChatHistory.Add(chatHistory[^1]);
-        return reducedChatHistory ?? chatHistory;
+        return reducedChatHistory;
+    }
+
+    /// <summary>
+    /// ChatHistoryReducer function that just preserves the system message and the last n messages.
+    /// </summary>
+    private static async Task<ChatHistory?> ChatHistoryMaxTokensReducerAsync(ChatHistory chatHistory, CancellationToken cancellationToken)
+    {
+        ChatHistory reducedChatHistory = new();
+        var totalTokenCount = 0;
+        var insertIndex = 0;
+        var firstMessage = chatHistory.FirstOrDefault();
+        if (firstMessage?.Role == AuthorRole.System)
+        {
+            reducedChatHistory.Add(firstMessage);
+            totalTokenCount += (int)(firstMessage.Metadata?["TokenCount"] ?? 0);
+            insertIndex = 1;
+        }
+        // Add the remaining messages that fit within the token limit
+        for (int i = chatHistory.Count - 1; i >= 1; i--)
+        {
+            var tokenCount = (int)(chatHistory[i].Metadata?["TokenCount"] ?? 0);
+            if (tokenCount + totalTokenCount > MaxTokenCount)
+            {
+                break;
+            }
+            reducedChatHistory.Insert(insertIndex, chatHistory[i]);
+            totalTokenCount += tokenCount;
+        }
+        return reducedChatHistory;
     }
     #endregion
 }
