@@ -9,7 +9,8 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <LangVersion>12</LangVersion>
-    <NoWarn>$(NoWarn);CA2007,CA1812,CA1861,CA1063,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0110;OPENAI001</NoWarn>
+    <NoWarn>
+      $(NoWarn);CA2007,CA1812,CA1861,CA1063,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0080,SKEXP0110;OPENAI001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +26,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
+    <ProjectReference Include="..\Process.Core\Process.Core.csproj" />
   </ItemGroup>
 
 </Project>
