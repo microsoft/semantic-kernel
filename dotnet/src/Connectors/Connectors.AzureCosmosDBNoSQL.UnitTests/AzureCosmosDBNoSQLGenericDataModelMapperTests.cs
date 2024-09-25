@@ -51,7 +51,9 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
     };
 
     private static readonly Dictionary<string, string> s_storagePropertyNames =
-        s_vectorStoreRecordDefinition.Properties.ToDictionary(k => k.DataModelPropertyName, v => v.DataModelPropertyName);
+        s_vectorStoreRecordDefinition.Properties.ToDictionary(
+            k => k.DataModelPropertyName,
+            v => v is VectorStoreRecordKeyProperty ? "id" : v.DataModelPropertyName);
 
 #if NET5_0_OR_GREATER
     private static readonly Half[] s_halfVector = [(Half)1.0f, (Half)2.0f, (Half)3.0f];
@@ -110,7 +112,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
 
         // Assert
-        Assert.Equal("key", (string?)storageModel["Key"]);
+        Assert.Equal("key", (string?)storageModel["id"]);
         Assert.Equal(true, (bool?)storageModel["BoolDataProp"]);
         Assert.Equal(false, (bool?)storageModel["NullableBoolDataProp"]);
         Assert.Equal("string", (string?)storageModel["StringDataProp"]);
@@ -190,7 +192,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
 
         var storageModel = new JsonObject
         {
-            ["Key"] = "key",
+            ["id"] = "key",
             ["BoolDataProp"] = true,
             ["NullableBoolDataProp"] = false,
             ["StringDataProp"] = "string",
@@ -265,7 +267,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
 
         var storageModel = new JsonObject
         {
-            ["Key"] = "key",
+            ["id"] = "key",
             ["StringDataProp"] = null,
             ["NullableIntDataProp"] = null,
             ["NullableFloatVector"] = null
@@ -326,7 +328,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
 
         // Assert
-        Assert.Equal("key", (string?)storageModel["Key"]);
+        Assert.Equal("key", (string?)storageModel["id"]);
         Assert.False(storageModel.ContainsKey("StringDataProp"));
         Assert.False(storageModel.ContainsKey("FloatVector"));
     }
@@ -347,7 +349,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
 
         var storageModel = new JsonObject
         {
-            ["Key"] = "key"
+            ["id"] = "key"
         };
 
         var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(

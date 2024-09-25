@@ -34,8 +34,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes =
     [
-        typeof(string),
-        typeof(AzureCosmosDBNoSQLCompositeKey)
+        typeof(string)
     ];
 
     /// <summary>A <see cref="HashSet{T}"/> of types that data properties on the provided model may have.</summary>
@@ -122,6 +121,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         // Verify.
         Verify.NotNull(database);
         Verify.NotNullOrWhiteSpace(collectionName);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.JsonObjectCustomMapper is not null, s_supportedKeyTypes);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._database = database;
@@ -141,11 +142,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), jsonSerializerOptions);
 
         // Assign mapper.
-        this._mapper = this._options.JsonObjectCustomMapper ??
-            new AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(
-                this._storagePropertyNames[this._keyProperty.DataModelPropertyName],
-                this._storagePropertyNames,
-                jsonSerializerOptions);
+        this._mapper = this.InitializeMapper(jsonSerializerOptions);
 
         // Use Azure CosmosDB NoSQL reserved key property name as storage key property name.
         this._storagePropertyNames[this._keyProperty.DataModelPropertyName] = AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName;
@@ -652,6 +649,28 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Returns custom mapper, generic data model mapper or default record mapper.
+    /// </summary>
+    private IVectorStoreRecordMapper<TRecord, JsonObject> InitializeMapper(JsonSerializerOptions jsonSerializerOptions)
+    {
+        if (this._options.JsonObjectCustomMapper is not null)
+        {
+            return this._options.JsonObjectCustomMapper;
+        }
+
+        if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
+        {
+            var mapper = new AzureCosmosDBNoSQLGenericDataModelMapper(this._vectorStoreRecordDefinition, this._storagePropertyNames, jsonSerializerOptions);
+            return (mapper as IVectorStoreRecordMapper<TRecord, JsonObject>)!;
+        }
+
+        return new AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(
+            this._storagePropertyNames[this._keyProperty.DataModelPropertyName],
+            this._storagePropertyNames,
+            jsonSerializerOptions);
     }
 
     #endregion

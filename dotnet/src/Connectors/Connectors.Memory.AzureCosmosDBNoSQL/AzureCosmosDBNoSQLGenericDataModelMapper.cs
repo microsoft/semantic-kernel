@@ -52,7 +52,7 @@ internal sealed class AzureCosmosDBNoSQLGenericDataModelMapper : IVectorStoreRec
 
             if (property is VectorStoreRecordKeyProperty keyProperty)
             {
-                jsonObject[storagePropertyName] = dataModel.Key;
+                jsonObject[AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName] = dataModel.Key;
             }
             else if (property is VectorStoreRecordDataProperty dataProperty)
             {
@@ -93,7 +93,7 @@ internal sealed class AzureCosmosDBNoSQLGenericDataModelMapper : IVectorStoreRec
 
             if (property is VectorStoreRecordKeyProperty keyProperty)
             {
-                if (storageModel.TryGetPropertyValue(storagePropertyName, out var keyValue))
+                if (storageModel.TryGetPropertyValue(AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName, out var keyValue))
                 {
                     key = keyValue?.GetValue<string>();
                 }
