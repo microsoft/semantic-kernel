@@ -7,7 +7,6 @@ fit your needs & try out new scenarios!
 
 import asyncio
 
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from pydantic import BaseModel, Field
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -80,12 +79,12 @@ async def main() -> None:
 
     kernel = Kernel()
     service_id = "gc_main"
-    token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    token_endpoint = "https://cognitiveservices.azure.com/.default"
     chat_service = AzureChatCompletion(
         service_id=service_id,
         deployment_name="gpt-4o-2024-05-13",
         api_version="2024-05-01-preview",
-        ad_token_provider=token_provider,
+        token_endpoint=token_endpoint,
     )
     kernel.add_service(chat_service)
 

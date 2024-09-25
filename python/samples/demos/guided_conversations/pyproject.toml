@@ -9,8 +9,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
 
-azure-identity = "^1.17"
-semantic-kernel = "^1.8"
+azure-identity = "^1.18"
+semantic-kernel = { git = "https://github.com/microsoft/semantic-kernel.git", branch = "main", subdirectory = "python" }
 pydantic = "^2.8"
 python-dotenv = "^1.0"
 
