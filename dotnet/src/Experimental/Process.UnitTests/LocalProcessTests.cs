@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -27,7 +26,7 @@ public class LocalProcessTests
         ], []);
 
         var mockKernel = new Kernel();
-        var localProcess = new LocalProcess(mockKernelProcess, mockKernel, loggerFactory: null);
+        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel, loggerFactory: null);
 
         // Act
         await localProcess.StartAsync();
