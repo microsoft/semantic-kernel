@@ -8,7 +8,7 @@ namespace SemanticKernel.UnitTests.Utilities;
 public class KernelJsonSchemaBuilderTests
 {
     [Fact]
-    public void ItShouldBuildJsonSchemaForPublicMembersOfTypesThatCanRepresentOtherTypesWithDefaultValuesInConstructor()
+    public void ItShouldBuildJsonSchemaForTypesWithPublicMembersHavingTypesThatCanRepresentOtherTypesWithDefaultValuesInTheConstructor()
     {
         // Arrange & Act
         var schema = KernelJsonSchemaBuilder.Build(null, typeof(ClassWithDefaultValuesInConstructorForTypesThatCanRepresentOtherTypes));
