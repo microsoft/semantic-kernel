@@ -22,11 +22,12 @@ internal class LocalStep : KernelProcessMessageChannel
     private static readonly Type s_genericType = typeof(KernelProcessStep<>);
     private Dictionary<string, Dictionary<string, object?>?>? _inputs;
     private Dictionary<string, Dictionary<string, object?>?>? _initialInputs;
+    private bool _isInitialized;
     private ILogger? _logger;
 
-    private readonly Dictionary<string, KernelFunction> _functions;
+    private readonly Dictionary<string, KernelFunction> _functions = [];
     private readonly Kernel _kernel;
-    private readonly Queue<KernelProcessEvent> _eventQueue;
+    private readonly Queue<KernelProcessEvent> _eventQueue = new();
 
     protected readonly string? ParentProcessId;
     protected readonly ILoggerFactory? LoggerFactory;
@@ -35,6 +36,14 @@ internal class LocalStep : KernelProcessMessageChannel
     public readonly string Name;
     public readonly string Id;
 
+    /// <summary>
+    /// Represents a step in a process that is running in-process.
+    /// </summary>
+    /// <param name="name">Required. The name of the step.</param>
+    /// <param name="id">Required. The unique Id of the step.</param>
+    /// <param name="kernel">Required. An istance of <see cref="Kernel"/>.</param>
+    /// <param name="parentProcessId">Optional. The Id of the parent process if one exists.</param>
+    /// <param name="loggerFactory">An instance of <see cref="LoggerFactory"/> used to create loggers.</param>
     public LocalStep(string name, string id, Kernel kernel, string? parentProcessId = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(name);
@@ -45,27 +54,37 @@ internal class LocalStep : KernelProcessMessageChannel
         this.Id = id;
         this.ParentProcessId = parentProcessId;
         this.LoggerFactory = loggerFactory;
-
         this._kernel = kernel;
-        this._eventQueue = new();
-        this._functions = [];
     }
 
+    /// <summary>
+    /// Initializes the step with the provided step information.
+    /// </summary>
+    /// <param name="stepInfo">An instance of <see cref="KernelProcessStepInfo"/></param>
+    /// <returns>A <see cref="ValueTask"/></returns>
+    /// <exception cref="KernelException"></exception>
     public virtual async ValueTask InitializeAsync(KernelProcessStepInfo stepInfo)
     {
+        Verify.NotNull(stepInfo);
+
+        // Only initialize the step once
+        if (this._isInitialized)
+        {
+            return;
+        }
+
+        this._isInitialized = true;
         this._logger = this.LoggerFactory?.CreateLogger(stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
         this._outputEdges = stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
 
         // Instantiate an instance of the inner step object
         KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, stepInfo.InnerStepType);
-        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance);
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance, pluginName: stepInfo.State.Name!);
 
         // Load the kernel functions
         foreach (KernelFunction f in kernelPlugin)
         {
-            Verify.NotNull(f);
-            var cloned = f.Clone(stepInfo.State.Name!);
-            this._functions.Add(cloned.Name, cloned);
+            this._functions.Add(f.Name, f);
         }
 
         // Initialize the input channels
@@ -81,10 +100,16 @@ internal class LocalStep : KernelProcessMessageChannel
             // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
             // and create an instance of the corresponding KernelProcessStepState<>.
             var userStateType = genericStepType.GetGenericArguments()[0];
-            Verify.NotNull(userStateType);
+            if (userStateType is null)
+            {
+                throw new KernelException("The generic type argument for the KernelProcessStep subclass could not be determined.");
+            }
 
             stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
-            Verify.NotNull(stateType);
+            if (stateType is null)
+            {
+                throw new KernelException("The generic type argument for the KernelProcessStep subclass could not be determined.");
+            }
 
             stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Id, this.Name);
         }
@@ -95,22 +120,39 @@ internal class LocalStep : KernelProcessMessageChannel
             stateObject = new KernelProcessStepState(this.Id, this.Name);
         }
 
-        Verify.NotNull(stateObject);
+        if (stateObject is null)
+        {
+            throw new KernelException("The state object for the KernelProcessStep could not be created.");
+        }
+
         MethodInfo? methodInfo = stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.ActivateAsync), [stateType]);
-        Verify.NotNull(methodInfo);
+
+        if (methodInfo is null)
+        {
+            throw new KernelException("The ActivateAsync method for the KernelProcessStep could not be found.");
+        }
 
         methodInfo.Invoke(stepInstance, [stateObject]);
         await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Retrieves all events that have been sent to the step.
+    /// </summary>
+    /// <returns>An <see cref="IEnumerable{T}"/> where T is <see cref="KernelProcessEvent"/></returns>
     public IEnumerable<KernelProcessEvent> GetAllEvents()
     {
-        var allEvents = this._eventQueue.ToList();
+        var allEvents = this._eventQueue.ToArray();
         this._eventQueue.Clear();
         return allEvents;
     }
 
-    public List<KernelProcessEdge> GetEdgeForEvent(string eventId)
+    /// <summary>
+    /// Retrieves all edges that are associated with the provided event Id.
+    /// </summary>
+    /// <param name="eventId">The event Id of interest.</param>
+    /// <returns>A <see cref="IEnumerable{T}"/> where T is <see cref="KernelProcessEdge"/></returns>
+    public IEnumerable<KernelProcessEdge> GetEdgeForEvent(string eventId)
     {
         if (this._outputEdges is null)
         {
@@ -125,11 +167,17 @@ internal class LocalStep : KernelProcessMessageChannel
         return [];
     }
 
+    /// <summary>
+    /// Handles a message that has been sent to the step.
+    /// </summary>
+    /// <param name="message">The message.</param>
+    /// <returns>A <see cref="Task"/></returns>
+    /// <exception cref="KernelException"></exception>
     public async Task HandleMessageAsync(LocalMessage message)
     {
         if (this._functions is null || this._inputs is null || this._initialInputs is null)
         {
-            throw new InvalidOperationException("The step has not been initialized.");
+            throw new KernelException("The step has not been initialized.");
         }
 
         string messageLogParameters = string.Join(", ", message.Values.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
@@ -204,6 +252,11 @@ internal class LocalStep : KernelProcessMessageChannel
 #pragma warning restore CA1031 // Do not catch general exception types
     }
 
+    /// <summary>
+    /// Emits an event from the step.
+    /// </summary>
+    /// <param name="processEvent">The event to emit.</param>
+    /// <returns>A <see cref="ValueTask"/></returns>
     public override ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
         var scopedEvent = processEvent with { Id = this.StepScopedEventId(processEvent.Id!) };
@@ -255,7 +308,7 @@ internal class LocalStep : KernelProcessMessageChannel
     /// <param name="genericStateType">The matching type if found, otherwise null.</param>
     /// <returns>True if a match is found, false otherwise.</returns>
     /// TODO: Move this to a share process utilities project.
-    public static bool TryGetSubtypeOfStatefulStep(Type? type, out Type? genericStateType)
+    private static bool TryGetSubtypeOfStatefulStep(Type? type, out Type? genericStateType)
     {
         while (type != null && type != typeof(object))
         {

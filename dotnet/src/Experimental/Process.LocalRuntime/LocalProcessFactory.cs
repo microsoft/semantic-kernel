@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
 
@@ -18,11 +16,12 @@ public static class LocalKernelProcessFactory
     /// <param name="kernel">Required: An instance of <see cref="Kernel"/></param>
     /// <param name="initialEvent">Required: The initial event to start the process.</param>
     /// <returns>An instance of <see cref="KernelProcess"/> that can be used to interogate or stop the running process.</returns>
-    public static async Task<LocalKernelProcessContext> StartAsync(this KernelProcess process, Kernel kernel, KernelProcessEvent? initialEvent = null)
+    public static async Task<LocalKernelProcessContext> StartAsync(this KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent)
     {
         Verify.NotNull(process);
         Verify.NotNullOrWhiteSpace(process.State?.Name);
         Verify.NotNull(kernel);
+        Verify.NotNull(initialEvent);
 
         var processContext = new LocalKernelProcessContext(process, kernel);
         await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);

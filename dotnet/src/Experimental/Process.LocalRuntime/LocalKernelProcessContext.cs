@@ -10,7 +10,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class LocalKernelProcessContext : IDisposable
 {
-    private readonly string _processId;
     private readonly LocalProcess _localProcess;
     private readonly Kernel _kernel;
 
@@ -26,8 +25,6 @@ public sealed class LocalKernelProcessContext : IDisposable
             kernel: kernel,
             parentProcessId: null,
             loggerFactory: null);
-
-        this._processId = this._localProcess.Id;
     }
 
     internal async Task StartWithEventAsync(KernelProcessEvent? initialEvent, Kernel? kernel = null)
