@@ -449,8 +449,8 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             {
                 IncludeVectors = includeVectors,
                 Filter = filter,
-                Limit = 5,
-                Offset = 2
+                Top = 5,
+                Skip = 2
             }).ToListAsync();
 
         // Assert.

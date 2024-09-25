@@ -573,10 +573,10 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             new ReadOnlyMemory<float>(new float[4]),
             new()
             {
-                Limit = 5,
-                Offset = 3,
+                Top = 5,
+                Skip = 3,
                 Filter = filter,
-                VectorFieldName = nameof(MultiPropsModel.Vector1)
+                VectorPropertyName = nameof(MultiPropsModel.Vector1)
             },
             this._testCancellationToken).ToListAsync();
 
@@ -615,10 +615,10 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             "search string",
             new()
             {
-                Limit = 5,
-                Offset = 3,
+                Top = 5,
+                Skip = 3,
                 Filter = filter,
-                VectorFieldName = nameof(MultiPropsModel.Vector1)
+                VectorPropertyName = nameof(MultiPropsModel.Vector1)
             },
             this._testCancellationToken).ToListAsync();
 

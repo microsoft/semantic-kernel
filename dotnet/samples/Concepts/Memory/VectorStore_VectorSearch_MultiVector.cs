@@ -56,8 +56,8 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
         var searchResult = await collection.VectorizedSearchAsync(
             searchVector, new()
             {
-                Limit = 1,
-                VectorFieldName = nameof(Product.DescriptionEmbedding)
+                Top = 1,
+                VectorPropertyName = nameof(Product.DescriptionEmbedding)
             }).ToListAsync();
 
         WriteLine("Search string: " + searchString);
@@ -72,8 +72,8 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
             searchVector,
             new()
             {
-                Limit = 1,
-                VectorFieldName = nameof(Product.FeatureListEmbedding)
+                Top = 1,
+                VectorPropertyName = nameof(Product.FeatureListEmbedding)
             }).ToListAsync();
 
         WriteLine("Search string: " + searchString);

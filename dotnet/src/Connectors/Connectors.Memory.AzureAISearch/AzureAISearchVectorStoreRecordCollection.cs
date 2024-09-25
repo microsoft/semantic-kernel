@@ -65,6 +65,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         typeof(ReadOnlyMemory<float>?)
     ];
 
+    /// <summary>The default options for vector search.</summary>
+    private static readonly Data.VectorSearchOptions s_defaultVectorSearchOptions = new();
+
     /// <summary>Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</summary>
     private readonly SearchIndexClient _searchIndexClient;
 
@@ -350,20 +353,20 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         }
 
         // Resolve options.
-        var internalOptions = options ?? Data.VectorSearchOptions.Default;
-        string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
+        var internalOptions = options ?? s_defaultVectorSearchOptions;
+        string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorPropertyName);
 
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
-        vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Limit, Fields = { vectorFieldName } });
+        vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorFieldName } });
         var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._storagePropertyNames);
 
         // Build search options.
         var searchOptions = new SearchOptions
         {
             VectorSearch = new(),
-            Size = internalOptions.Limit,
-            Skip = internalOptions.Offset,
+            Size = internalOptions.Top,
+            Skip = internalOptions.Skip,
             Filter = filterString,
         };
         searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
@@ -388,20 +391,20 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         }
 
         // Resolve options.
-        var internalOptions = options ?? Data.VectorSearchOptions.Default;
-        string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
+        var internalOptions = options ?? s_defaultVectorSearchOptions;
+        string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorPropertyName);
 
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
-        vectorQueries.Add(new VectorizableTextQuery(searchText) { KNearestNeighborsCount = internalOptions.Limit, Fields = { vectorFieldName } });
+        vectorQueries.Add(new VectorizableTextQuery(searchText) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorFieldName } });
         var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._storagePropertyNames);
 
         // Build search options.
         var searchOptions = new SearchOptions
         {
             VectorSearch = new(),
-            Size = internalOptions.Limit,
-            Skip = internalOptions.Offset,
+            Size = internalOptions.Top,
+            Skip = internalOptions.Skip,
             Filter = filterString,
         };
         searchOptions.VectorSearch.Queries.AddRange(vectorQueries);

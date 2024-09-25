@@ -42,7 +42,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             .EqualTo("TestProperty2", "test-value-2")
             .AnyTagEqualTo("TestProperty3", "test-value-3");
 
-        var searchOptions = new VectorSearchOptions { Filter = filter, Offset = 5, Limit = 10 };
+        var searchOptions = new VectorSearchOptions { Filter = filter, Skip = 5, Top = 10 };
 
         // Act
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
@@ -85,7 +85,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
 
         var filter = new VectorSearchFilter().EqualTo("non-existent-property", "test-value-2");
 
-        var searchOptions = new VectorSearchOptions { Filter = filter, Offset = 5, Limit = 10 };
+        var searchOptions = new VectorSearchOptions { Filter = filter, Skip = 5, Top = 10 };
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() =>
@@ -106,7 +106,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         var vectorPropertyName = "test_property_1";
         var fields = this._storagePropertyNames.Values.ToList();
 
-        var searchOptions = new VectorSearchOptions { Offset = 5, Limit = 10 };
+        var searchOptions = new VectorSearchOptions { Skip = 5, Top = 10 };
 
         // Act
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
@@ -145,7 +145,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
 
         ((List<FilterClause>)filter.FilterClauses).Add(new UnsupportedFilterClause());
 
-        var searchOptions = new VectorSearchOptions { Filter = filter, Offset = 5, Limit = 10 };
+        var searchOptions = new VectorSearchOptions { Filter = filter, Skip = 5, Top = 10 };
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() =>

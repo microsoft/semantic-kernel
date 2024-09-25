@@ -53,7 +53,7 @@ public class VectorStoreTextSearchTests
         var sut = await CreateVectorStoreTextSearchFromVectorizedSearchAsync();
 
         // Act.
-        KernelSearchResults<string> searchResults = await sut.SearchAsync("What is the Semantic Kernel?", new() { Count = 2, Offset = 0 });
+        KernelSearchResults<string> searchResults = await sut.SearchAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
         var results = await ToListAsync(searchResults.Results);
 
         Assert.Equal(2, results.Count);
@@ -66,7 +66,7 @@ public class VectorStoreTextSearchTests
         var sut = await CreateVectorStoreTextSearchFromVectorizedSearchAsync();
 
         // Act.
-        KernelSearchResults<TextSearchResult> searchResults = await sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 2, Offset = 0 });
+        KernelSearchResults<TextSearchResult> searchResults = await sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
         var results = await ToListAsync(searchResults.Results);
 
         Assert.Equal(2, results.Count);
@@ -79,7 +79,7 @@ public class VectorStoreTextSearchTests
         var sut = await CreateVectorStoreTextSearchFromVectorizedSearchAsync();
 
         // Act.
-        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 2, Offset = 0 });
+        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
         var results = await ToListAsync(searchResults.Results);
 
         Assert.Equal(2, results.Count);
@@ -92,7 +92,7 @@ public class VectorStoreTextSearchTests
         var sut = await CreateVectorStoreTextSearchFromVectorizableTextSearchAsync();
 
         // Act.
-        KernelSearchResults<string> searchResults = await sut.SearchAsync("What is the Semantic Kernel?", new() { Count = 2, Offset = 0 });
+        KernelSearchResults<string> searchResults = await sut.SearchAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
         var results = await ToListAsync(searchResults.Results);
 
         Assert.Equal(2, results.Count);
@@ -105,7 +105,7 @@ public class VectorStoreTextSearchTests
         var sut = await CreateVectorStoreTextSearchFromVectorizableTextSearchAsync();
 
         // Act.
-        KernelSearchResults<TextSearchResult> searchResults = await sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 2, Offset = 0 });
+        KernelSearchResults<TextSearchResult> searchResults = await sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
         var results = await ToListAsync(searchResults.Results);
 
         Assert.Equal(2, results.Count);
@@ -118,7 +118,7 @@ public class VectorStoreTextSearchTests
         var sut = await CreateVectorStoreTextSearchFromVectorizableTextSearchAsync();
 
         // Act.
-        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 2, Offset = 0 });
+        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
         var results = await ToListAsync(searchResults.Results);
 
         Assert.Equal(2, results.Count);
@@ -137,15 +137,15 @@ public class VectorStoreTextSearchTests
         // Act.
         KernelSearchResults<object> evenSearchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new()
         {
-            Count = 2,
-            Offset = 0,
+            Top = 2,
+            Skip = 0,
             Filter = evenFilter
         });
         var evenResults = await ToListAsync(evenSearchResults.Results);
         KernelSearchResults<object> oddSearchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new()
         {
-            Count = 2,
-            Offset = 0,
+            Top = 2,
+            Skip = 0,
             Filter = oddFilter
         });
         var oddResults = await ToListAsync(oddSearchResults.Results);

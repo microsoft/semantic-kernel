@@ -305,8 +305,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         // Act
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
-            Limit = 2,
-            Offset = 2
+            Top = 2,
+            Skip = 2
         }).ToListAsync();
 
         // Assert
@@ -339,7 +339,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
             Filter = filter,
-            Limit = 4,
+            Top = 4,
         }).ToListAsync();
 
         // Assert

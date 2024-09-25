@@ -118,8 +118,8 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
         var vectorSearchOptions = new VectorSearchOptions
         {
             Filter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
-            Offset = searchOptions.Offset,
-            Limit = searchOptions.Count,
+            Skip = searchOptions.Skip,
+            Top = searchOptions.Top,
         };
 
         if (this._vectorizedSearch is not null)

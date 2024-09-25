@@ -365,7 +365,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItCanSearchWithFloat32VectorAndLimitOffsetAsync()
+    public async Task ItCanSearchWithFloat32VectorAndTopSkipAsync()
     {
         // Arrange
         var options = new RedisJsonVectorStoreRecordCollectionOptions<BasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
@@ -383,8 +383,8 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
             vector,
             new VectorSearchOptions
             {
-                Limit = 3,
-                Offset = 2
+                Top = 3,
+                Skip = 2
             }).ToListAsync();
 
         // Assert
@@ -413,7 +413,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
             new VectorSearchOptions
             {
                 IncludeVectors = includeVectors,
-                Limit = 1
+                Top = 1
             }).ToListAsync();
 
         // Assert

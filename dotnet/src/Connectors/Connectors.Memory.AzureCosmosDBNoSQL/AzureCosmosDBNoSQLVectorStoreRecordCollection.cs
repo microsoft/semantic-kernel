@@ -74,6 +74,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         typeof(ReadOnlyMemory<sbyte>?),
     ];
 
+    /// <summary>The default options for vector search.</summary>
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     private readonly Database _database;
 
@@ -393,8 +396,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
                 $"Supported types are: {string.Join(", ", s_supportedVectorTypes.Select(l => l.FullName))}");
         }
 
-        var searchOptions = options ?? VectorSearchOptions.Default;
-        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorFieldName);
+        var searchOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
 
         if (vectorProperty is null)
         {

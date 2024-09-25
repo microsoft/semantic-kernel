@@ -95,8 +95,8 @@ public static class TextSearchExtensions
 
             searchOptions ??= new()
             {
-                Count = GetArgumentValue(arguments, parameters, "count", 2),
-                Offset = GetArgumentValue(arguments, parameters, "skip", 0),
+                Top = GetArgumentValue(arguments, parameters, "count", 2),
+                Skip = GetArgumentValue(arguments, parameters, "skip", 0),
                 Filter = CreateBasicFilter(options, arguments)
             };
 
@@ -132,8 +132,8 @@ public static class TextSearchExtensions
 
             searchOptions ??= new()
             {
-                Count = GetArgumentValue(arguments, parameters, "count", 2),
-                Offset = GetArgumentValue(arguments, parameters, "skip", 0),
+                Top = GetArgumentValue(arguments, parameters, "count", 2),
+                Skip = GetArgumentValue(arguments, parameters, "skip", 0),
                 Filter = CreateBasicFilter(options, arguments)
             };
 
@@ -168,8 +168,8 @@ public static class TextSearchExtensions
 
             searchOptions ??= new()
             {
-                Count = GetArgumentValue(arguments, parameters, "count", 2),
-                Offset = GetArgumentValue(arguments, parameters, "skip", 0),
+                Top = GetArgumentValue(arguments, parameters, "count", 2),
+                Skip = GetArgumentValue(arguments, parameters, "skip", 0),
                 Filter = CreateBasicFilter(options, arguments)
             };
 
