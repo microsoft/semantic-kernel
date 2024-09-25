@@ -52,7 +52,7 @@ internal class LocalStep : KernelProcessMessageChannel
         this._logger = this.LoggerFactory?.CreateLogger(stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
         this._outputEdges = stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
 
-        // Instanciate an instance of the inner step object
+        // Instantiate an instance of the inner step object
         KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, stepInfo.InnerStepType);
         var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance);
 
@@ -149,19 +149,19 @@ internal class LocalStep : KernelProcessMessageChannel
         }
 
         // If we're still waiting for inputs on all of our functions then don't do anything.
-        List<string> invokableFunctions = this._inputs.Where(i => i.Value != null && i.Value.All(v => v.Value != null)).Select(i => i.Key).ToList();
+        List<string> invocableFunctions = this._inputs.Where(i => i.Value != null && i.Value.All(v => v.Value != null)).Select(i => i.Key).ToList();
         var missingKeys = this._inputs.Where(i => i.Value is null || i.Value.Any(v => v.Value is null));
 
-        if (invokableFunctions.Count == 0)
+        if (invocableFunctions.Count == 0)
         {
             string missingKeysLog() => string.Join(", ", missingKeys.Select(k => $"{k.Key}: {string.Join(", ", k.Value?.Where(v => v.Value == null).Select(v => v.Key) ?? [])}"));
-            this._logger?.LogDebug("No invokable functions, missing keys: {MissingKeys}", missingKeysLog());
+            this._logger?.LogDebug("No invocable functions, missing keys: {MissingKeys}", missingKeysLog());
             return;
         }
 
-        // A messsage can only target one function and should not result in a different function being invoked.
-        var targetFunction = invokableFunctions.FirstOrDefault((name) => name == message.FunctionName) ??
-            throw new InvalidOperationException($"A message targeting function '{message.FunctionName}' has resulted in a function named '{invokableFunctions.First()}' becoming invokable. Are the function names configured correctly?");
+        // A message can only target one function and should not result in a different function being invoked.
+        var targetFunction = invocableFunctions.FirstOrDefault((name) => name == message.FunctionName) ??
+            throw new InvalidOperationException($"A message targeting function '{message.FunctionName}' has resulted in a function named '{invocableFunctions.First()}' becoming invocable. Are the function names configured correctly?");
 
         this._logger?.LogDebug("Step with Id `{StepId}` received all required input for function [{TargetFunction}] and is executing.", this.Name, targetFunction);
 

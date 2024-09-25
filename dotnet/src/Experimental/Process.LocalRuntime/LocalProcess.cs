@@ -111,7 +111,7 @@ internal sealed class LocalProcess : LocalStep
                 // Get all of the messages that have been sent to the steps within the process and queue them up for processing.
                 foreach (var step in this._steps)
                 {
-                    this.EnqueueStepMessagesAsync(step, kernel, messageChannel);
+                    this.EnqueueStepMessagesAsync(step, localKernel, messageChannel);
                 }
 
                 // Complete the writing side, indicating no more messages in this superstep.
