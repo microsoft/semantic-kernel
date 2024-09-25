@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -25,15 +25,12 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "AzureCosmosDBMongoDB";
 
-<<<<<<< HEAD
     /// <summary>Property name to be used for search similarity score value.</summary>
     private const string ScorePropertyName = "similarityScore";
 
     /// <summary>Property name to be used for search document value.</summary>
     private const string DocumentPropertyName = "document";
 
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
 
@@ -58,15 +55,12 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>Collection of record vector properties.</summary>
     private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
 
-<<<<<<< HEAD
     /// <summary>Collection of record data properties.</summary>
     private readonly List<VectorStoreRecordDataProperty> _dataProperties;
 
     /// <summary>First vector property for the collections that this class is used with.</summary>
     private readonly VectorStoreRecordVectorProperty? _firstVectorProperty = null;
 
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
     /// <inheritdoc />
     public string CollectionName { get; }
 
@@ -84,6 +78,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         // Verify.
         Verify.NotNull(mongoDatabase);
         Verify.NotNullOrWhiteSpace(collectionName);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.BsonDocumentCustomMapper is not null, AzureCosmosDBMongoDBConstants.SupportedKeyTypes);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._mongoDatabase = mongoDatabase;
@@ -99,7 +95,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             requiresAtLeastOneVector: false);
 
         this._storagePropertyNames = GetStoragePropertyNames(properties, typeof(TRecord));
-<<<<<<< HEAD
 
         // Use Mongo reserved key property name as storage key property name
         this._storagePropertyNames[properties.KeyProperty.DataModelPropertyName] = AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName;
@@ -117,13 +112,12 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(
                 this._vectorStoreRecordDefinition,
                 properties.KeyProperty.DataModelPropertyName);
-=======
         this._vectorProperties = properties.VectorProperties;
         this._vectorStoragePropertyNames = this._vectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
 
         this._mapper = this._options.BsonDocumentCustomMapper ??
             new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, this._storagePropertyNames);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+        this._mapper = this.InitializeMapper(properties.KeyProperty);
     }
 
     /// <inheritdoc />
@@ -136,13 +130,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         await this.RunOperationAsync("CreateCollection",
             () => this._mongoDatabase.CreateCollectionAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-<<<<<<< HEAD
         await this.RunOperationAsync("CreateIndexes",
             () => this.CreateIndexesAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
-=======
         await this.RunOperationAsync("CreateIndex",
             () => this.CreateIndexAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
     }
 
     /// <inheritdoc />
@@ -183,6 +174,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         const string OperationName = "Find";
 
+        var includeVectors = options?.IncludeVectors ?? false;
+
         var record = await this.RunOperationAsync(OperationName, async () =>
         {
             using var cursor = await this
@@ -201,7 +194,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             DatabaseName,
             this.CollectionName,
             OperationName,
-            () => this._mapper.MapFromStorageToDataModel(record, new()));
+            () => this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors }));
     }
 
     /// <inheritdoc />
@@ -279,8 +272,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             }
         }
     }
-
-<<<<<<< HEAD
     /// <inheritdoc />
     public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
@@ -392,7 +383,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             this._dataProperties,
             this._storagePropertyNames,
             uniqueIndexes));
-=======
     #region private
 
     private async Task CreateIndexAsync(string collectionName, CancellationToken cancellationToken)
@@ -439,7 +429,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
             indexArray.Add(indexDocument);
         }
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
         if (indexArray.Count > 0)
         {
@@ -528,8 +517,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     }
 
     /// <summary>
-<<<<<<< HEAD
-=======
     /// More information about Azure CosmosDB for MongoDB index kinds here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search" />.
     /// </summary>
     private static string GetIndexKind(string? indexKind, string vectorPropertyName)
@@ -557,18 +544,14 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     }
 
     /// <summary>
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
     /// Gets storage property names taking into account BSON serialization attributes.
     /// </summary>
     private static Dictionary<string, string> GetStoragePropertyNames(
         (VectorStoreRecordKeyProperty KeyProperty, List<VectorStoreRecordDataProperty> DataProperties, List<VectorStoreRecordVectorProperty> VectorProperties) properties,
         Type dataModel)
     {
-<<<<<<< HEAD
         var storagePropertyNames = new Dictionary<string, string>();
-=======
         var storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
         var allProperties = new List<VectorStoreRecordProperty>([properties.KeyProperty])
             .Concat(properties.DataProperties)
@@ -577,26 +560,30 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         foreach (var property in allProperties)
         {
             var propertyInfo = dataModel.GetProperty(property.DataModelPropertyName);
+            string propertyName;
 
             if (propertyInfo != null)
             {
                 var bsonElementAttribute = propertyInfo.GetCustomAttribute<BsonElementAttribute>();
-<<<<<<< HEAD
 
                 storagePropertyNames[property.DataModelPropertyName] = bsonElementAttribute?.ElementName ?? property.DataModelPropertyName;
-=======
                 if (bsonElementAttribute is not null)
                 {
                     storagePropertyNames[property.DataModelPropertyName] = bsonElementAttribute.ElementName;
                 }
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+                propertyName = bsonElementAttribute?.ElementName ?? property.DataModelPropertyName;
             }
+            else
+            {
+                propertyName = property.DataModelPropertyName;
+            }
+
+            storagePropertyNames[property.DataModelPropertyName] = propertyName;
         }
 
         return storagePropertyNames;
     }
 
-<<<<<<< HEAD
     /// <summary>
     /// Get vector property to use for a search by using the storage name for the field name from options
     /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
@@ -624,7 +611,23 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         return this._firstVectorProperty;
     }
 
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+    /// <summary>
+    /// Returns custom mapper, generic data model mapper or default record mapper.
+    /// </summary>
+    private IVectorStoreRecordMapper<TRecord, BsonDocument> InitializeMapper(VectorStoreRecordKeyProperty keyProperty)
+    {
+        if (this._options.BsonDocumentCustomMapper is not null)
+        {
+            return this._options.BsonDocumentCustomMapper;
+        }
+
+        if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
+        {
+            return (new AzureCosmosDBMongoDBGenericDataModelMapper(this._vectorStoreRecordDefinition) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
+        }
+
+        return new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, keyProperty.DataModelPropertyName);
+    }
+
     #endregion
 }
