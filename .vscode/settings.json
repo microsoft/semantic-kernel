@@ -1,0 +1,37 @@
+{
+    "editor.wordWrap": "on",
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "*test*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "cmake.options.statusBarVisibility": "visible",
+    "azureFunctions.projectSubpath": "semantic-kernel/dotnet/samples/Demos/CreateChatGptPlugin/MathPlugin/azure-function",
+    "azureFunctions.deploySubpath": "semantic-kernel/dotnet/samples/Demos/CreateChatGptPlugin/MathPlugin/azure-function/bin/Release/net8.0/publish",
+    "azureFunctions.projectLanguage": "C#",
+    "azureFunctions.projectRuntime": "~4",
+    "debug.internalConsoleOptions": "neverOpen",
+    "azureFunctions.preDeployTask": "publish (functions)",
+    "cmake.sourceDirectory": "/home/user/app/ollama/llm/ext_server",
+    "github.gitProtocol": "ssh",
+    "github-actions.workflows.pinned.refresh.enabled": true,
+    "githubPullRequests.terminalLinksHandler": "vscode",
+    "github.autoPublish": true,
+    "github.customPullRequestDescription": "gitEditor",
+    "cobol-lsp.cpy-manager.copybook-file-encoding": "utf8",
+    "FSharp.fcs.transparentCompiler.enabled": true,
+    "FSharp.generateBinlog": true,
+    "git-graph.repository.commits.fetchAvatars": true,
+    "python.terminal.activateEnvironment": false,
+    "python.analysis.extraPaths": [
+        "/home/user/app/resources",
+        "/home/user/app/libraries"
+    ]
+}
