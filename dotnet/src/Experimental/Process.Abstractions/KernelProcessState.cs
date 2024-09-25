@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel;
 
@@ -6,5 +6,6 @@ namespace Microsoft.SemanticKernel;
 /// Represents the state of a process.
 /// </summary>
 public sealed class KernelProcessState : KernelProcessStepState
+public sealed record KernelProcessState : KernelProcessStepState
 {
 }

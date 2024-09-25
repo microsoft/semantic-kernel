@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using Xunit;
@@ -45,6 +45,7 @@ public class ProcessStepEdgeBuilderTests
 
         // Assert
         Assert.Equal(outputTarget, builder.OutputTarget); // Assuming GetOutputTarget() is a method to access _outputTarget
+        Assert.Equal(outputTarget, builder.Target); // Assuming GetOutputTarget() is a method to access _outputTarget
     }
 
     /// <summary>
@@ -83,6 +84,7 @@ public class ProcessStepEdgeBuilderTests
 
         // Assert
         Assert.Equal(EndStep.Instance, builder.OutputTarget?.Step);
+        Assert.Equal(EndStep.Instance, builder.Target?.Step);
     }
 
     /// <summary>

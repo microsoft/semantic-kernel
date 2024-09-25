@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 
@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 public sealed class ProcessStepEdgeBuilder
 {
     internal ProcessFunctionTargetBuilder? OutputTarget { get; private set; }
+    internal ProcessFunctionTargetBuilder? Target { get; set; }
 
     /// <summary>
     /// The event Id that the edge fires on.
@@ -44,6 +45,9 @@ public sealed class ProcessStepEdgeBuilder
         Verify.NotNull(this.OutputTarget);
 
         return new KernelProcessEdge(this.Source.Id, this.OutputTarget.Build());
+        Verify.NotNull(this.Target);
+
+        return new KernelProcessEdge(this.Source.Id, this.Target.Build());
     }
 
     /// <summary>
@@ -53,11 +57,13 @@ public sealed class ProcessStepEdgeBuilder
     public void SendEventTo(ProcessFunctionTargetBuilder outputTarget)
     {
         if (this.OutputTarget is not null)
+        if (this.Target is not null)
         {
             throw new InvalidOperationException("An output target has already been set.");
         }
 
         this.OutputTarget = outputTarget;
+        this.Target = outputTarget;
         this.Source.LinkTo(this.EventId, this);
     }
 
@@ -67,12 +73,14 @@ public sealed class ProcessStepEdgeBuilder
     public void StopProcess()
     {
         if (this.OutputTarget is not null)
+        if (this.Target is not null)
         {
             throw new InvalidOperationException("An output target has already been set.");
         }
 
         var outputTarget = new ProcessFunctionTargetBuilder(EndStep.Instance);
         this.OutputTarget = outputTarget;
+        this.Target = outputTarget;
         this.Source.LinkTo(EndStep.EndStepName, this);
     }
 }

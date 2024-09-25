@@ -6,7 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.AI.Inference" Version="1.0.0-beta.1" />
-    <PackageVersion Include="OpenAI" Version="2.0.0-beta.10" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.11.20" />
+    <PackageVersion Include="OpenAI" Version="2.0.0-beta.11" />
     <PackageVersion Include="System.ClientModel" Version="1.1.0-beta.7" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.0.0-beta.4" />
@@ -1079,6 +1080,6 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.3.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.4.0" />
-	  <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.4.0"/>
+    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.4.0" />
   </ItemGroup>
 </Project>

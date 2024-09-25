@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -135,6 +135,9 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public ProcessStepEdgeBuilder OnExternalEvent(string eventId)
     {
         return new ProcessStepEdgeBuilder(this, eventId);
+    public ProcessEdgeBuilder OnExternalEvent(string eventId)
+    {
+        return new ProcessEdgeBuilder(this, eventId);
     }
 
     /// <summary>
@@ -145,6 +148,14 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public KernelProcess Build()
     {
         var process = new KernelProcess(this.Name, this._steps.Select(step => step.BuildStep()).ToList());
+        // Build the edges first
+        var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
+
+        // Build the steps
+        var builtSteps = this._steps.Select(step => step.BuildStep()).ToList();
+
+        // Create the process
+        var process = new KernelProcess(this.Name, builtSteps, builtEdges);
         return process;
     }
 

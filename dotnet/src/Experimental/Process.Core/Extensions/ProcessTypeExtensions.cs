@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 
 namespace Microsoft.SemanticKernel;
+namespace Microsoft.SemanticKernel.Process;
 
 /// <summary>
 /// Provides extension methods for <see cref="Type"/> instances related to process steps.

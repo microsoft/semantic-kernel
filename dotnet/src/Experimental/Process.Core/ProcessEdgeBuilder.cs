@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel;
 
@@ -9,6 +9,17 @@ public sealed class ProcessEdgeBuilder
 {
     private readonly ProcessBuilder _source;
     private readonly string _eventId;
+    internal ProcessFunctionTargetBuilder? Target { get; set; }
+
+    /// <summary>
+    /// The event Id that the edge fires on.
+    /// </summary>
+    internal string EventId { get; }
+
+    /// <summary>
+    /// The source step of the edge.
+    /// </summary>
+    internal ProcessStepBuilder Source { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessEdgeBuilder"/> class.
@@ -19,6 +30,8 @@ public sealed class ProcessEdgeBuilder
     {
         this._source = source;
         this._eventId = eventId;
+        this.Source = source;
+        this.EventId = eventId;
     }
 
     /// <summary>
@@ -28,5 +41,10 @@ public sealed class ProcessEdgeBuilder
     public void SendEventTo(ProcessStepEdgeBuilder outputTarget)
     {
         this._source.LinkTo(this._eventId, outputTarget);
+    public void SendEventTo(ProcessFunctionTargetBuilder target)
+    {
+        this.Target = target;
+        ProcessStepEdgeBuilder edgeBuilder = new(this.Source, this.EventId) { Target = this.Target };
+        this.Source.LinkTo(this.EventId, edgeBuilder);
     }
 }

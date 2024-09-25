@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel;
 
@@ -6,6 +6,7 @@ namespace Microsoft.SemanticKernel;
 /// Represents the state of an individual step in a process.
 /// </summary>
 public class KernelProcessStepState
+public record KernelProcessStepState
 {
     /// <summary>
     /// The identifier of the Step which is required to be unique within an instance of a Process.
@@ -36,6 +37,7 @@ public class KernelProcessStepState
 /// </summary>
 /// <typeparam name="TState">The type of the user-defined state.</typeparam>
 public sealed class KernelProcessStepState<TState> : KernelProcessStepState where TState : class, new()
+public sealed record KernelProcessStepState<TState> : KernelProcessStepState where TState : class, new()
 {
     /// <summary>
     /// The user-defined state object associated with the Step.

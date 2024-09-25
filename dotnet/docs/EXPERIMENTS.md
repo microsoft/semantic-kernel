@@ -13,7 +13,6 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 
 ## Experimental Feature Codes
 
-<<<<<<< main
 | SKEXP​    | Experimental Features Category​​  |
 | --------- | --------------------------------- |
 | SKEXP0001 | Semantic Kernel core features     |
@@ -24,7 +23,6 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0060 | Planners                          |
 | SKEXP0070 | AI connectors                     |
 | SKEX| SKEXP​ | Experimental Features Category​​ |
-=======
 | SKEXP | Experimental Features Category |
 |-------|--------------------------------|
 | SKEXP0001 | Semantic Kernel core features |
@@ -36,8 +34,10 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0070 | AI connectors |
 | SKEXP0080 | Processes |
 <<<<<<< main
->>>>>>>+ms/feature-proc
+<<<<<<< main
 | Advanced Semantic Kernel features |
+=======
+>>>>>>> ms/main
 | SKEXP0100 | Advanced Semantic Kernel features |
 | SKEXP0110 | Semantic Kernel Agents |
 
