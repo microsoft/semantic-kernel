@@ -17,7 +17,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
     /// user input, interacts with the chat completion service, and demonstrates cycles
     /// in the process.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A <see cref="Task"/></returns>
     [Fact]
     public async Task UseSimpleProcessAsync()
     {
@@ -73,7 +73,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
         /// <summary>
         /// Prints an introduction message to the console.
         /// </summary>
-        [KernelFunction()]
+        [KernelFunction]
         public void PrintIntroMessage()
         {
             System.Console.WriteLine("Welcome to Processes in Semantic Kernel.\n");

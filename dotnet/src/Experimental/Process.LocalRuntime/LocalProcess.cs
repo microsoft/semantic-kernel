@@ -36,7 +36,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <param name="parentProcessId">Optional. The Id of the parent process if one exists, otherwise null.</param>
     /// <param name="loggerFactory">Optional. A <see cref="ILoggerFactory"/>.</param>
     public LocalProcess(KernelProcess process, Kernel kernel, string? parentProcessId = null, ILoggerFactory? loggerFactory = null)
-        : base(process.State.Name!, process.State.Id ?? Guid.NewGuid().ToString("n"), kernel, parentProcessId, loggerFactory)
+        : base(process, kernel, parentProcessId, loggerFactory)
     {
         Verify.NotNull(process);
         Verify.NotNull(process.Steps);
@@ -56,7 +56,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// Loads the process and initializes the steps. Once this is complete the process can be started.
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
-    public async Task LoadAsync()
+    public ValueTask LoadAsync()
     {
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
@@ -91,16 +91,16 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 Verify.NotNull(step.State?.Id);
 
                 localStep = new LocalStep(
-                    name: step.State.Name,
-                    id: step.State.Id,
+                    stepInfo: step,
                     kernel: this._kernel,
                     parentProcessId: this.Id,
                     loggerFactory: this.LoggerFactory);
             }
 
-            await localStep.InitializeAsync(step).ConfigureAwait(false);
             this._steps.Add(localStep);
         }
+
+        return default;
     }
 
     /// <summary>
