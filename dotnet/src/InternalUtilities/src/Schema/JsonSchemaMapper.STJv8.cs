@@ -74,6 +74,7 @@ internal
 
         if (hasDefaultValue)
         {
+            JsonSchema.EnsureMutable(ref paramSchema);
             paramSchema.DefaultValue = defaultValue;
             paramSchema.HasDefaultValue = true;
         }
@@ -243,7 +244,8 @@ internal
                 List<string>? required = null;
                 JsonSchema? additionalProperties = null;
 
-                if (typeInfo.UnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
+                JsonUnmappedMemberHandling effectiveUnmappedMemberHandling = typeInfo.UnmappedMemberHandling ?? typeInfo.Options.UnmappedMemberHandling;
+                if (effectiveUnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
                 {
                     // Disallow unspecified properties.
                     additionalProperties = JsonSchema.False;
@@ -328,6 +330,7 @@ internal
 
                     if (hasDefaultValue)
                     {
+                        JsonSchema.EnsureMutable(ref propertySchema);
                         propertySchema.DefaultValue = defaultValue;
                         propertySchema.HasDefaultValue = true;
                     }
