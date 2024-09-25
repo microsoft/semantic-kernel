@@ -165,6 +165,6 @@ Same as [Proposal 3](#proposal-3).
 
 ## Decision Outcome
 
-To minimax the impact on customers and the existing codebase, we will go with [Proposal 1](#proposal-1) to handle the token usage information in the OpenAI streaming responses. This proposal is backward compatible and aligns with the current data structure for non-streaming responses. We will also ensure that the metadata is merged correctly when two `StreamingChatMessageContent` instances are concatenated. This approach also makes sure the token usage information will be associated to all choices in the streaming response.
+To minimize the impact on customers and the existing codebase, we will go with [Proposal 1](#proposal-1) to handle the token usage information in the OpenAI streaming responses. This proposal is backward compatible and aligns with the current data structure for non-streaming responses. We will also ensure that the metadata is merged correctly when two `StreamingChatMessageContent` instances are concatenated. This approach also makes sure the token usage information will be associated to all choices in the streaming response.
 
 [Proposal 3](#proposal-3) and [Proposal 4](#proposal-4) are still valid but perhaps premature at this stage as most services still return objects of different types for streaming and non-streaming responses. We will keep them in mind for future refactoring efforts.
