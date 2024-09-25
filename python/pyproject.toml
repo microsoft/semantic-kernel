@@ -344,7 +344,7 @@ hugging_face = [
     "sentence-transformers ~= 2.2",
     "torch == 2.4.1"
     "sentence-transformers >= 2.2,< 4.0",
-    "torch == 2.2.2"
+    "torch == 2.4.1"
 ]
 mongo = [
     "motor >= 3.3.2,< 3.7.0"
