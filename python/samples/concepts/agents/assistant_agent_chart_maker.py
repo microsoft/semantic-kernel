@@ -4,6 +4,7 @@ import asyncio
 from semantic_kernel.agents.open_ai import AzureAssistantAgent, OpenAIAssistantAgent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
@@ -37,6 +38,11 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
                     print(f"# {message.role}: ", end="", flush=True)
                     first_chunk = False
                 print(message.content, end="", flush=True)
+
+            if len(message.items) > 0:
+                for item in message.items:
+                    if isinstance(item, StreamingFileReferenceContent):
+                        print(f"\n# {message.role} => {item.file_id}")
         print()
     else:
         async for message in agent.invoke(thread_id=thread_id):

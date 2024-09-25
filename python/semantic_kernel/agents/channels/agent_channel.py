@@ -9,6 +9,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
 
 @experimental_class
@@ -44,6 +45,23 @@ class AgentChannel(ABC):
 
         Returns:
             A async iterable of a bool, ChatMessageContent.
+        """
+        ...
+
+    @abstractmethod
+    def invoke_stream(
+        self,
+        agent: "Agent",
+        history: "list[StreamingChatMessageContent]",
+    ) -> AsyncIterable[tuple[bool, "StreamingChatMessageContent"]]:
+        """Perform a discrete incremental stream interaction between a single Agent and AgentChat.
+
+        Args:
+            agent: The agent to interact with.
+            history: The history of messages in the conversation.
+
+        Returns:
+            A async iterable of a bool, StreamingChatMessageContent.
         """
         ...
 

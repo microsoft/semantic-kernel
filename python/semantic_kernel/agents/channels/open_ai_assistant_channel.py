@@ -16,6 +16,7 @@ from openai import AsyncOpenAI
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.assistant_content_generation import create_chat_message, generate_message_content
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 
 if TYPE_CHECKING:
@@ -61,6 +62,27 @@ class OpenAIAssistantChannel(AgentChannel):
             raise AgentChatException("Agent is deleted.")
 
         async for is_visible, message in agent._invoke_internal(thread_id=self.thread_id):
+            yield is_visible, message
+
+    @override
+    async def invoke_stream(self, agent: "Agent") -> AsyncIterable[tuple[bool, "StreamingChatMessageContent"]]:
+        """Invoke the agent stream.
+
+        Args:
+            agent: The agent to invoke.
+
+        Yields:
+            tuple[bool, StreamingChatMessageContent]: The conversation messages.
+        """
+        from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
+
+        if not isinstance(agent, OpenAIAssistantBase):
+            raise AgentChatException(f"Agent is not of the expected type {type(OpenAIAssistantBase)}.")
+
+        if agent._is_deleted:
+            raise AgentChatException("Agent is deleted.")
+
+        async for is_visible, message in agent._invoke_internal_stream(thread_id=self.thread_id):
             yield is_visible, message
 
     @override
