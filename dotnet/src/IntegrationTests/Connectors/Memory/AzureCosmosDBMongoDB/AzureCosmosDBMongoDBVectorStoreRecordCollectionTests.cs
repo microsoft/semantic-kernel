@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -86,6 +87,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal(record.ParkingIncluded, getResult.ParkingIncluded);
         Assert.Equal(record.Tags.ToArray(), getResult.Tags.ToArray());
         Assert.Equal(record.Description, getResult.Description);
+        Assert.Equal(record.Timestamp.ToUniversalTime(), getResult.Timestamp.ToUniversalTime());
 
         if (includeVectors)
         {
@@ -324,6 +326,51 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
+    {
+        // Arrange
+        var options = new AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<string>>
+        {
+            VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
+        };
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<VectorStoreGenericDataModel<string>>(fixture.MongoDatabase, fixture.TestCollection, options);
+
+        // Act
+        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<string>("GenericMapper-1")
+        {
+            Data =
+            {
+                { "HotelName", "Generic Mapper Hotel" },
+                { "Description", "This is a generic mapper hotel" },
+                { "Tags", new string[] { "generic" } },
+                { "ParkingIncluded", false },
+                { "Timestamp", new DateTime(1970, 1, 18, 0, 0, 0).ToUniversalTime() },
+                { "HotelRating", 3.6f }
+            },
+            Vectors =
+            {
+                { "DescriptionEmbedding", new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]) }
+            }
+        });
+
+        var localGetResult = await sut.GetAsync("GenericMapper-1", new GetRecordOptions { IncludeVectors = true });
+
+        // Assert
+        Assert.NotNull(upsertResult);
+        Assert.Equal("GenericMapper-1", upsertResult);
+
+        Assert.NotNull(localGetResult);
+        Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
+        Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
+        Assert.Equal(new[] { "generic" }, localGetResult.Data["Tags"]);
+        Assert.False((bool?)localGetResult.Data["ParkingIncluded"]);
+        Assert.Equal(new DateTime(1970, 1, 18, 0, 0, 0).ToUniversalTime(), localGetResult.Data["Timestamp"]);
+        Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
+        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+    }
+
     #region private
 
     private AzureCosmosDBMongoDBHotel CreateTestHotel(string hotelId)
@@ -337,6 +384,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
             ParkingIncluded = true,
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
+            Timestamp = new DateTime(2024, 09, 23, 15, 32, 33),
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
         };
     }
