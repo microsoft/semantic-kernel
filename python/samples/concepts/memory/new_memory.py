@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
+import argparse
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Annotated
 from uuid import uuid4
@@ -9,7 +10,9 @@ import numpy as np
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings, OpenAITextEmbedding
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
+from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
 from semantic_kernel.connectors.memory.volatile import VolatileCollection
@@ -65,43 +68,45 @@ class MyDataModelList:
     ] = "content1"
 
 
-# configuration
-# specify which store (redis_json, redis_hash, qdrant, Azure AI Search or volatile) to use
-# and which model (vectors as list or as numpy arrays)
-store = "volatile"
 collection_name = "test"
 MyDataModel = MyDataModelArray
 
-stores: dict[str, VectorStoreRecordCollection] = {
-    "ai_search": AzureAISearchCollection[MyDataModel](
+stores: dict[str, Callable[[], VectorStoreRecordCollection]] = {
+    "ai_search": lambda: AzureAISearchCollection[MyDataModel](
         data_model_type=MyDataModel,
     ),
-    "redis_json": RedisJsonCollection[MyDataModel](
+    "postgres": lambda: PostgresCollection[str, MyDataModel](
+        data_model_type=MyDataModel,
+        collection_name=collection_name,
+    ),
+    "redis_json": lambda: RedisJsonCollection[MyDataModel](
         data_model_type=MyDataModel,
         collection_name=collection_name,
         prefix_collection_name_to_key_names=True,
     ),
-    "redis_hashset": RedisHashsetCollection[MyDataModel](
+    "redis_hashset": lambda: RedisHashsetCollection[MyDataModel](
         data_model_type=MyDataModel,
         collection_name=collection_name,
         prefix_collection_name_to_key_names=True,
     ),
-    "qdrant": QdrantCollection[MyDataModel](
+    "qdrant": lambda: QdrantCollection[MyDataModel](
         data_model_type=MyDataModel, collection_name=collection_name, prefer_grpc=True, named_vectors=False
     ),
-    "volatile": VolatileCollection[MyDataModel](
+    "volatile": lambda: VolatileCollection[MyDataModel](
         data_model_type=MyDataModel,
         collection_name=collection_name,
     ),
 }
 
 
-async def main():
+async def main(store: str, use_azureopenai: bool, embedding_model: str):
     kernel = Kernel()
     service_id = "embedding"
-    ai_model_id = "text-embedding-3-small"
-    kernel.add_service(OpenAITextEmbedding(service_id=service_id, ai_model_id=ai_model_id))
-    async with stores[store] as record_store:
+    if use_azureopenai:
+        kernel.add_service(AzureTextEmbedding(service_id=service_id, deployment_name=embedding_model))
+    else:
+        kernel.add_service(OpenAITextEmbedding(service_id=service_id, ai_model_id=embedding_model))
+    async with stores[store]() as record_store:
         await record_store.create_collection_if_not_exists()
 
         record1 = MyDataModel(content="My text", id="e6103c03-487f-4d7d-9c23-4723651c17f4")
@@ -127,4 +132,16 @@ async def main():
 if __name__ == "__main__":
     import asyncio
 
-    asyncio.run(main())
+    argparse.ArgumentParser()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--store", default="volatile", choices=stores.keys(), help="What store to use.")
+    # Option of whether to use OpenAI or Azure OpenAI.
+    parser.add_argument("--use_azureopenai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
+    # Model
+    parser.add_argument(
+        "--model", default="text-embedding-3-small", help="The model or deployment to use for embeddings."
+    )
+    args = parser.parse_args()
+
+    asyncio.run(main(store=args.store, use_azureopenai=args.use_azureopenai, embedding_model=args.model))
