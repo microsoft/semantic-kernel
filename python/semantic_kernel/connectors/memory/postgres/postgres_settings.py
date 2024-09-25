@@ -3,6 +3,7 @@
 from typing import ClassVar
 
 from psycopg.conninfo import conninfo_to_dict
+from psycopg_pool import AsyncConnectionPool
 from pydantic import SecretStr
 
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
@@ -33,7 +34,7 @@ class PostgresSettings(KernelBaseSettings):
 
     default_dimensionality: int = 100
 
-    def get_connection_args(self) -> dict[str, str]:
+    def get_connection_args(self) -> dict[str, str | int | None]:
         """Get connection arguments."""
         result = conninfo_to_dict(self.connection_string.get_secret_value()) if self.connection_string else {}
 
@@ -49,3 +50,14 @@ class PostgresSettings(KernelBaseSettings):
             result["password"] = self.password.get_secret_value()
 
         return result
+
+    async def create_connection_pool(self) -> AsyncConnectionPool:
+        """Creates a connection pool based off of settings."""
+        pool = AsyncConnectionPool(
+            min_size=self.min_pool,
+            max_size=self.max_pool,
+            open=False,
+            kwargs=self.get_connection_args(),
+        )
+        await pool.open()
+        return pool

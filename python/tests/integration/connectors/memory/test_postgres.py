@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import uuid
+from collections.abc import AsyncGenerator
 from typing import Annotated, Any
 
 import pandas as pd
@@ -9,6 +10,7 @@ import pytest_asyncio
 from pydantic import BaseModel
 
 from semantic_kernel.connectors.memory.postgres import PostgresStore
+from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection
 from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
@@ -28,7 +30,7 @@ try:
 except ImportError:
     psycopg_pool_installed = False
 
-pg_settings = PostgresSettings.create()
+pg_settings: PostgresSettings = PostgresSettings.create()
 connection_params_present = any(pg_settings.get_connection_args().values())
 
 pytestmark = pytest.mark.skipif(
@@ -77,9 +79,10 @@ def DataModelPandas(record) -> tuple:
     return definition, df
 
 
-@pytest.fixture(scope="function")
-def vector_store():
-    return PostgresStore()
+@pytest_asyncio.fixture(scope="function")
+async def vector_store() -> AsyncGenerator[PostgresStore, None]:
+    async with await pg_settings.create_connection_pool() as pool:
+        yield PostgresStore(connection_pool=pool)
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -89,19 +92,17 @@ async def simple_collection(vector_store: PostgresStore):
     collection = vector_store.get_collection(collection_id, SimpleDataModel)
     await collection.create_collection()
     yield collection
-    # await collection.delete_collection()
+    await collection.delete_collection()
 
 
-def test_create_store():
-    store = PostgresStore()
-    assert store.connection_pool is not None
+def test_create_store(vector_store):
+    assert vector_store.connection_pool is not None
 
 
 @pytest.mark.asyncio
-async def test_create_does_collection_exist_and_delete():
-    store = PostgresStore()
+async def test_create_does_collection_exist_and_delete(vector_store: PostgresStore):
     suffix = str(uuid.uuid4()).replace("-", "")[:8]
-    collection = store.get_collection(f"test_collection_{suffix}", SimpleDataModel)
+    collection = vector_store.get_collection(f"test_collection_{suffix}", SimpleDataModel)
 
     does_exist_1 = await collection.does_collection_exist()
     assert does_exist_1 is False
@@ -123,7 +124,7 @@ async def test_list_collection_names(vector_store, simple_collection):
 
 
 @pytest.mark.asyncio
-async def test_upsert_get_and_delete(simple_collection: VectorStoreRecordCollection):
+async def test_upsert_get_and_delete(simple_collection: PostgresCollection):
     record = SimpleDataModel(id=1, embedding=[1.1, 2.2, 3.3], data={"key": "value"})
 
     result_before_upsert = await simple_collection.get(1)
@@ -138,9 +139,10 @@ async def test_upsert_get_and_delete(simple_collection: VectorStoreRecordCollect
 
     # Check that the table has an index
     connection_pool = simple_collection.connection_pool
-    with connection_pool.connection() as conn, conn.cursor() as cur:
-        cur.execute("SELECT indexname FROM pg_indexes WHERE tablename = %s", (simple_collection.collection_name,))
-        index_names = [index[0] for index in cur.fetchall()]
+    async with connection_pool.connection() as conn, conn.cursor() as cur:
+        await cur.execute("SELECT indexname FROM pg_indexes WHERE tablename = %s", (simple_collection.collection_name,))
+        rows = await cur.fetchall()
+        index_names = [index[0] for index in rows]
         assert any("embedding_idx" in index_name for index_name in index_names)
 
     await simple_collection.delete(1)

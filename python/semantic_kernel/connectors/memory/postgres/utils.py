@@ -1,24 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
-import contextlib
 import json
 import re
 from typing import Any
 
-from psycopg_pool import ConnectionPool
+from psycopg_pool import AsyncConnectionPool
 
 from semantic_kernel.data.const import DistanceFunction
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordField, VectorStoreRecordVectorField
-
-
-class ConnectionPoolWrapper(ConnectionPool):
-    """Wrapper to make sure the connection is closed when the object is deleted."""
-
-    def __del__(self) -> None:
-        """Close connection, done when the object is deleted, used when SK creates a client."""
-        with contextlib.suppress(Exception):
-            asyncio.get_running_loop().create_task(self.close())
 
 
 def python_type_to_postgres(python_type_str: str) -> str | None:
@@ -127,3 +116,19 @@ def get_vector_index_ops_str(distance_function: DistanceFunction) -> str:
         return "vector_l1_ops"
 
     raise ValueError(f"Unsupported distance function: {distance_function}")
+
+
+async def ensure_open(connection_pool: AsyncConnectionPool) -> AsyncConnectionPool:
+    """Ensure the connection pool is open.
+
+    It is safe to call open on an already open connection pool.
+    Use this wrapper to ensure the connection pool is open before using it.
+
+    Args:
+        connection_pool: The connection pool to ensure is open.
+
+    Returns:
+        The connection pool, after ensuring it is open
+    """
+    await connection_pool.open()
+    return connection_pool

@@ -1,18 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from typing import Annotated, Any
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
-from psycopg import Connection, Cursor
-from psycopg_pool import ConnectionPool
+import pytest_asyncio
+from psycopg import AsyncConnection, AsyncCursor
+from psycopg_pool import AsyncConnectionPool
 from pytest import fixture, mark
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
 )
+from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.connectors.memory.postgres.postgres_store import PostgresStore
-from semantic_kernel.connectors.memory.postgres.utils import ConnectionPoolWrapper
+from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
 from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
@@ -23,30 +26,34 @@ from semantic_kernel.data.vector_store_record_fields import (
 
 @fixture(scope="function")
 def mock_cursor():
-    return MagicMock(spec=Cursor)
+    return AsyncMock(spec=AsyncCursor)
 
 
 @fixture(autouse=True)
 def mock_connection_pool(mock_cursor: Mock):
     with (
         patch(
-            f"{ConnectionPoolWrapper.__module__}.{ConnectionPoolWrapper.__qualname__}.connection"
+            f"{AsyncConnectionPool.__module__}.{AsyncConnectionPool.__qualname__}.connection",
         ) as mock_pool_connection,
-        patch(f"{ConnectionPoolWrapper.__module__}.{ConnectionPoolWrapper.__qualname__}.open") as mock_pool_open,
+        patch(
+            f"{AsyncConnectionPool.__module__}.{AsyncConnectionPool.__qualname__}.open",
+            new_callable=AsyncMock,
+        ) as mock_pool_open,
     ):
-        mock_conn = MagicMock(spec=Connection)
+        mock_conn = AsyncMock(spec=AsyncConnection)
 
-        mock_pool_connection.return_value.__enter__.return_value = mock_conn
-        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+        mock_pool_connection.return_value.__aenter__.return_value = mock_conn
+        mock_conn.cursor.return_value.__aenter__.return_value = mock_cursor
 
         mock_pool_open.return_value = None
 
         yield mock_pool_connection, mock_pool_open
 
 
-@fixture
-def vector_store(postgres_unit_test_env):
-    return PostgresStore(env_file_path="test.env")
+@pytest_asyncio.fixture
+async def vector_store() -> AsyncGenerator[PostgresStore, None]:
+    async with await PostgresSettings.create(env_file_path="test.env").create_connection_pool() as pool:
+        yield PostgresStore(connection_pool=pool)
 
 
 @vectorstoremodel
@@ -57,9 +64,9 @@ class SimpleDataModel:
         list[float],
         VectorStoreRecordVectorField(
             embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
-            index_kind="hnsw",
+            index_kind=IndexKind.HNSW,
             dimensions=1536,
-            distance_function="cosine",
+            distance_function=DistanceFunction.COSINE,
             property_type="float",
         ),
     ]
@@ -69,18 +76,17 @@ class SimpleDataModel:
     ]
 
 
-def test_vector_store_defaults(vector_store: PostgresStore) -> None:
+@mark.asyncio
+async def test_vector_store_defaults(vector_store: PostgresStore) -> None:
     assert vector_store.connection_pool is not None
-    assert vector_store.connection_pool.open.call_count == 1
-    with vector_store.connection_pool.connection() as conn:
+    async with vector_store.connection_pool.connection() as conn:
         assert isinstance(conn, Mock)
 
 
 def test_vector_store_with_connection_pool(vector_store: PostgresStore) -> None:
-    connection_pool = MagicMock(spec=ConnectionPool)
+    connection_pool = MagicMock(spec=AsyncConnectionPool)
     vector_store = PostgresStore(connection_pool=connection_pool)
     assert vector_store.connection_pool == connection_pool
-    assert vector_store.connection_pool.open.call_count == 0
 
 
 @mark.asyncio

@@ -5,6 +5,9 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, TypeVar
 
+from pydantic import PrivateAttr
+
+from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.connectors.memory.postgres.utils import (
     convert_dict_to_row,
     convert_row_to_dict,
@@ -12,6 +15,7 @@ from semantic_kernel.connectors.memory.postgres.utils import (
     python_type_to_postgres,
 )
 from semantic_kernel.data.const import IndexKind
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -20,9 +24,9 @@ else:
 
 from psycopg import sql
 from psycopg.errors import DatabaseError
-from psycopg_pool import ConnectionPool
+from psycopg_pool import AsyncConnectionPool
 
-from semantic_kernel.connectors.memory.postgres.constants import MAX_DIMENSIONALITY, MAX_KEYS_PER_BATCH
+from semantic_kernel.connectors.memory.postgres.constants import DEFAULT_SCHEMA, MAX_DIMENSIONALITY, MAX_KEYS_PER_BATCH
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordKeyField, VectorStoreRecordVectorField
 from semantic_kernel.exceptions.memory_connector_exceptions import (
@@ -42,10 +46,64 @@ logger: logging.Logger = logging.getLogger(__name__)
 class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
     """PostgreSQL collection implementation."""
 
-    connection_pool: ConnectionPool
-    db_schema: str
+    connection_pool: AsyncConnectionPool | None = None
+    db_schema: str = DEFAULT_SCHEMA
     supported_key_types: ClassVar[list[str] | None] = ["str", "int"]
     supported_vector_types: ClassVar[list[str] | None] = ["float"]
+
+    _handle_pool_close: bool = PrivateAttr(False)
+    """Whether the collection should handle closing the pool. True if the pool was created by the collection."""
+
+    _settings: PostgresSettings | None = PrivateAttr(None)
+    """The settings for creating a new connection pool."""
+
+    def __init__(
+        self,
+        collection_name: str,
+        data_model_type: type[TModel],
+        data_model_definition: VectorStoreRecordDefinition | None = None,
+        connection_pool: AsyncConnectionPool | None = None,
+        db_schema: str = DEFAULT_SCHEMA,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+    ):
+        """Initialize the collection.
+
+        Args:
+            collection_name: The name of the collection, which corresponds to the table name.
+            data_model_type (type[TModel]): The type of the data model.
+            data_model_definition: The data model definition.
+            connection_pool: The connection pool.
+            db_schema: The database schema.
+            env_file_path (str): Use the environment settings file as a fallback to environment variables.
+            env_file_encoding (str): The encoding of the environment settings file.
+        """
+        super().__init__(
+            collection_name=collection_name,
+            data_model_type=data_model_type,
+            data_model_definition=data_model_definition,
+            connection_pool=connection_pool,
+            db_schema=db_schema,
+        )
+
+        # If the connection pool was not provided, save settings for creating a new one.
+        if not connection_pool:
+            self._settings = PostgresSettings.create(env_file_path=env_file_path, env_file_encoding=env_file_encoding)
+
+    @override
+    async def __aenter__(self) -> "PostgresCollection":
+        # If the connection pool was not provided, create a new one.
+        if not self.connection_pool:
+            if not self._settings:
+                raise MemoryConnectorException("Settings for creating a connection pool are not available.")
+            self.connection_pool = await self._settings.create_connection_pool()
+            self._handle_pool_close = True
+        return self
+
+    @override
+    async def __aexit__(self, *args):
+        if self._handle_pool_close and self.connection_pool:
+            await self.connection_pool.close()
 
     @override
     def _validate_data_model(self) -> None:
@@ -80,9 +138,16 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
         Returns:
             The keys of the upserted records.
         """
+        if self.connection_pool is None:
+            raise MemoryConnectorException("Connection pool is not available, use the collection as a context manager.")
+
         keys = []
         try:
-            with self.connection_pool.connection() as conn, conn.transaction(), conn.cursor() as cur:
+            async with (
+                self.connection_pool.connection() as conn,
+                conn.transaction(),
+                conn.cursor() as cur,
+            ):
                 # Split the records into batches
                 for i in range(0, len(records), MAX_KEYS_PER_BATCH):
                     record_batch = records[i : i + MAX_KEYS_PER_BATCH]
@@ -92,7 +157,7 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
                     row_values = [convert_dict_to_row(record, fields) for record in record_batch]
 
                     # Execute the INSERT statement for each batch
-                    cur.executemany(
+                    await cur.executemany(
                         sql.SQL("INSERT INTO {}.{} ({}) VALUES ({}) ON CONFLICT ({}) DO UPDATE SET {}").format(
                             sql.Identifier(self.db_schema),
                             sql.Identifier(self.collection_name),
@@ -108,8 +173,7 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
                         row_values,
                     )
                     keys.extend(record.get(self.data_model_definition.key_field.name) for record in record_batch)
-            # Commit transaction after all batches succeed
-            conn.commit()
+
         except DatabaseError as error:
             # Rollback happens automatically if an exception occurs within the transaction block
             raise MemoryConnectorException(f"Error upserting records: {error}") from error
@@ -127,10 +191,13 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
         Returns:
             The records from the store, not deserialized.
         """
+        if self.connection_pool is None:
+            raise MemoryConnectorException("Connection pool is not available, use the collection as a context manager.")
+
         fields = [(field.name, field) for field in self.data_model_definition.fields.values()]
         try:
-            with self.connection_pool.connection() as conn, conn.cursor() as cur:
-                cur.execute(
+            async with self.connection_pool.connection() as conn, conn.cursor() as cur:
+                await cur.execute(
                     sql.SQL("SELECT {} FROM {}.{} WHERE {} IN ({})").format(
                         sql.SQL(", ").join(sql.Identifier(name) for (name, _) in fields),
                         sql.Identifier(self.db_schema),
@@ -139,7 +206,7 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
                         sql.SQL(", ").join(sql.Literal(key) for key in keys),
                     )
                 )
-                rows = cur.fetchall()
+                rows = await cur.fetchall()
                 if not rows:
                     return None
                 return [convert_row_to_dict(row, fields) for row in rows]
@@ -155,14 +222,21 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
             keys: The keys.
             **kwargs: Additional arguments.
         """
+        if self.connection_pool is None:
+            raise MemoryConnectorException("Connection pool is not available, use the collection as a context manager.")
+
         try:
-            with self.connection_pool.connection() as conn, conn.transaction(), conn.cursor() as cur:
+            async with (
+                self.connection_pool.connection() as conn,
+                conn.transaction(),
+                conn.cursor() as cur,
+            ):
                 # Split the keys into batches
                 for i in range(0, len(keys), MAX_KEYS_PER_BATCH):
                     key_batch = keys[i : i + MAX_KEYS_PER_BATCH]
 
                     # Execute the DELETE statement for each batch
-                    cur.execute(
+                    await cur.execute(
                         sql.SQL("DELETE FROM {}.{} WHERE {} IN ({})").format(
                             sql.Identifier(self.db_schema),
                             sql.Identifier(self.collection_name),
@@ -170,6 +244,7 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
                             sql.SQL(", ").join(sql.Literal(key) for key in key_batch),
                         )
                     )
+
         except DatabaseError as error:
             # Rollback happens automatically if an exception occurs within the transaction block
             raise MemoryConnectorException(f"Error deleting records: {error}") from error
@@ -199,6 +274,9 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
             fields: A dictionary where keys are column names and values are VectorStoreRecordField instances
             **kwargs: Additional arguments
         """
+        if self.connection_pool is None:
+            raise MemoryConnectorException("Connection pool is not available, use the collection as a context manager.")
+
         column_definitions = []
         table_name = self.collection_name
 
@@ -232,9 +310,9 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
         )
 
         try:
-            with self.connection_pool.connection() as conn, conn.cursor() as cur:
-                cur.execute(create_table_query)
-                conn.commit()
+            async with self.connection_pool.connection() as conn, conn.cursor() as cur:
+                await cur.execute(create_table_query)
+                await conn.commit()
 
             logger.info(f"Postgres table '{table_name}' created successfully.")
 
@@ -253,6 +331,9 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
             table_name: The name of the table.
             vector_field: The vector field definition that the index is based on.
         """
+        if self.connection_pool is None:
+            raise MemoryConnectorException("Connection pool is not available, use the collection as a context manager.")
+
         column_name = vector_field.name
         index_name = f"{table_name}_{column_name}_idx"
 
@@ -274,8 +355,8 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
         ops_str = get_vector_index_ops_str(vector_field.distance_function)
 
         try:
-            with self.connection_pool.connection() as conn, conn.cursor() as cur:
-                cur.execute(
+            async with self.connection_pool.connection() as conn, conn.cursor() as cur:
+                await cur.execute(
                     sql.SQL("CREATE INDEX {} ON {}.{} USING {} ({} {})").format(
                         sql.Identifier(index_name),
                         sql.Identifier(self.db_schema),
@@ -285,7 +366,7 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
                         sql.SQL(ops_str),
                     )
                 )
-                conn.commit()
+                await conn.commit()
 
             logger.info(f"Index '{index_name}' created successfully on column '{column_name}'.")
 
@@ -295,8 +376,11 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
     @override
     async def does_collection_exist(self, **kwargs: Any) -> bool:
         """Check if the collection exists."""
-        with self.connection_pool.connection() as conn, conn.cursor() as cur:
-            cur.execute(
+        if self.connection_pool is None:
+            raise MemoryConnectorException("Connection pool is not available, use the collection as a context manager.")
+
+        async with self.connection_pool.connection() as conn, conn.cursor() as cur:
+            await cur.execute(
                 """
                 SELECT table_name
                 FROM information_schema.tables
@@ -304,14 +388,19 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
                 """,
                 (self.db_schema, self.collection_name),
             )
-            return bool(cur.fetchone())
+            row = await cur.fetchone()
+            return bool(row)
 
     @override
     async def delete_collection(self, **kwargs: Any) -> None:
         """Delete the collection."""
-        with self.connection_pool.connection() as conn, conn.cursor() as cur:
-            cur.execute(
+        if self.connection_pool is None:
+            raise MemoryConnectorException("Connection pool is not available, use the collection as a context manager.")
+
+        async with self.connection_pool.connection() as conn, conn.cursor() as cur:
+            await cur.execute(
                 sql.SQL("DROP TABLE {scm}.{tbl} CASCADE").format(
                     scm=sql.Identifier(self.db_schema), tbl=sql.Identifier(self.collection_name)
                 ),
             )
+            await conn.commit()
