@@ -19,9 +19,10 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
+    private readonly Lazy<ValueTask> _initializeTask;
 
     internal readonly List<KernelProcessStepInfo> _stepsInfos;
-    internal readonly List<LocalStep> _steps;
+    internal readonly List<LocalStep> _steps = [];
     internal readonly KernelProcess _process;
     internal readonly Kernel _kernel;
 
@@ -43,9 +44,9 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         Verify.NotNull(kernel);
 
         this._stepsInfos = new List<KernelProcessStepInfo>(process.Steps);
-        this._steps = [];
         this._kernel = kernel;
         this._process = process;
+        this._initializeTask = new Lazy<ValueTask>(this.InitializeProcessAsync);
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
         this._joinableTaskContext = new JoinableTaskContext();
         this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
@@ -56,7 +57,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// Loads the process and initializes the steps. Once this is complete the process can be started.
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
-    public ValueTask LoadAsync()
+    public ValueTask InitializeProcessAsync()
     {
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
@@ -109,12 +110,14 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <param name="kernel">The <see cref="Kernel"/> instance to use within the running process.</param>
     /// <param name="keepAlive">Indicates if the process should wait for external events after it's finished processing.</param>
     /// <returns> <see cref="Task"/></returns>
-    public Task StartAsync(Kernel? kernel = null, bool keepAlive = true)
+    public async Task StartAsync(Kernel? kernel = null, bool keepAlive = true)
     {
+        // Lazy one-time initialization of the process before staring it.
+        await this._initializeTask.Value.ConfigureAwait(false);
+
         this._processCancelSource = new CancellationTokenSource();
         this._processTask = this._joinableTaskFactory.RunAsync(()
             => this.Internal_ExecuteAsync(kernel, keepAlive: keepAlive, cancellationToken: this._processCancelSource.Token));
-        return Task.CompletedTask;
     }
 
     public async Task RunOnceAsync(KernelProcessEvent? processEvent, Kernel? kernel = null)
@@ -171,12 +174,12 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             for (int superstep = 0; superstep < maxSupersteps; superstep++)
             {
                 // Check for external events
-                this.EnqueueExternalEventsAsync(messageChannel);
+                this.EnqueueExternalEvents(messageChannel);
 
                 // Get all of the messages that have been sent to the steps within the process and queue them up for processing.
                 foreach (var step in this._steps)
                 {
-                    this.EnqueueStepMessagesAsync(step, localKernel, messageChannel);
+                    this.EnqueueStepMessages(step, localKernel, messageChannel);
                 }
 
                 // Complete the writing side, indicating no more messages in this superstep.
@@ -231,7 +234,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         return;
     }
 
-    private void EnqueueExternalEventsAsync(Queue<LocalMessage> stepQueue)
+    private void EnqueueExternalEvents(Queue<LocalMessage> stepQueue)
     {
         while (this._externalEventChannel.Reader.TryRead(out var externalEvent))
         {
@@ -252,7 +255,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         }
     }
 
-    private void EnqueueStepMessagesAsync(LocalStep step, Kernel kernel, Queue<LocalMessage> messageChannel)
+    private void EnqueueStepMessages(LocalStep step, Kernel kernel, Queue<LocalMessage> messageChannel)
     {
         // Process all of the messages that have been sent to this step
         var allStepEvents = step.GetAllEvents();

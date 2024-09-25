@@ -56,7 +56,7 @@ internal class LocalStep : KernelProcessMessageChannel
         this.LoggerFactory = loggerFactory;
         this._kernel = kernel;
         this._stepInfo = stepInfo;
-        this._initializeTask = new Lazy<ValueTask>(this.InitializeAsync);
+        this._initializeTask = new Lazy<ValueTask>(this.InitializeStepAsync);
         this._logger = this.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
     }
@@ -66,7 +66,7 @@ internal class LocalStep : KernelProcessMessageChannel
     /// </summary>
     /// <returns>A <see cref="ValueTask"/></returns>
     /// <exception cref="KernelException"></exception>
-    internal virtual async ValueTask InitializeAsync()
+    internal virtual async ValueTask InitializeStepAsync()
     {
         // Instantiate an instance of the inner step object
         KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);

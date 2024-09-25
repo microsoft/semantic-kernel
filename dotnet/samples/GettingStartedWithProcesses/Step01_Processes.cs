@@ -35,7 +35,8 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
         var responseStep = process.AddStepFromType<ChatBotResponseStep>();
 
         // Define the behavior when the process receives an external event
-        process.OnExternalEvent(ChatBotEvents.StartProcess)
+        process
+            .OnExternalEvent(ChatBotEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(introStep));
 
         // When the intro is complete, notify the userInput step
