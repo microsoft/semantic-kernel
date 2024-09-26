@@ -107,6 +107,12 @@
       "ServiceId": "openai-gpt-4",
       "ModelId": "gpt-4",
       "ApiKey": ""
+    },
+    "AstraDB": {
+      "ApiEndpoint": "",
+      "AppToken": "",
+      "KeySpace": "default_keyspace",
+      "VectorSize": 1536
     }
   }
 }

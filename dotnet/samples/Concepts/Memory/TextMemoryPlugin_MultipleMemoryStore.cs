@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
+using Microsoft.SemanticKernel.Connectors.AstraDB;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
@@ -146,6 +147,12 @@ public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : Ba
     {
         var connectionString = new Kusto.Data.KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication();
         IMemoryStore store = new KustoMemoryStore(connectionString, "MyDatabase");
+        return store;
+    }
+
+    private IMemoryStore CreateSampleAstraDBMemoryStore()
+    {
+        IMemoryStore store = new AstraDBMemoryStore(TestConfiguration.AstraDB.ApiEndpoint, TestConfiguration.AstraDB.AppToken, TestConfiguration.AstraDB.KeySpace, TestConfiguration.AstraDB.VectorSize);
         return store;
     }
 
