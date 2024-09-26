@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// <param name="destinationId">The destination identifier of the message.</param>
 /// <param name="functionName">The name of the function associated with the message.</param>
 /// <param name="values">The dictionary of values associated with the message.</param>
-internal class LocalMessage(string sourceId, string destinationId, string functionName, Dictionary<string, object?> values)
+internal record LocalMessage(string sourceId, string destinationId, string functionName, Dictionary<string, object?> values)
 {
     /// <summary>
     /// Gets the source identifier of the message.
@@ -34,4 +34,14 @@ internal class LocalMessage(string sourceId, string destinationId, string functi
     /// Gets the dictionary of values associated with the message.
     /// </summary>
     public Dictionary<string, object?> Values { get; } = values;
+
+    /// <summary>
+    /// The Id of the target event. This may be null if the message is not targeting a sub-process.
+    /// </summary>
+    public string? TargetEventId { get; init; }
+
+    /// <summary>
+    /// The data associated with the target event. This may be null if the message is not targeting a sub-process.
+    /// </summary>
+    public object? TargetEventData { get; init; }
 }

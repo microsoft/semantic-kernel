@@ -218,11 +218,6 @@ public class ProcessStepBuilderTests
             return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.Name, this.Id), []);
         }
 
-        internal override string GetScopedEventId(string eventId)
-        {
-            return $"TestScope.{eventId}";
-        }
-
         internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
         {
             return new Dictionary<string, KernelFunctionMetadata>();
