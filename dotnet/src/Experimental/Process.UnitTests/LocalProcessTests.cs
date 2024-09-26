@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -18,11 +17,11 @@ public class LocalProcessTests
     public async Task ExecuteAsyncInitializesCorrectlyAsync()
     {
         // Arrange
-        var processState = new KernelProcessState { Name = "TestProcess", Id = "123" };
+        var processState = new KernelProcessState(name: "TestProcess", id: "123");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState { Name = "Step1", Id = "1" }, []),
-            new(typeof(TestStep), new KernelProcessState { Name = "Step2", Id = "2" }, []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
         ], []);
 
         var mockKernel = new Kernel();
@@ -45,11 +44,11 @@ public class LocalProcessTests
     {
         // Arrange
         var mockKernel = new Kernel();
-        var processState = new KernelProcessState { Name = "TestProcess" };
+        var processState = new KernelProcessState(name: "TestProcess");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState { Name = "Step1", Id = "1" }, []),
-            new(typeof(TestStep), new KernelProcessState { Name = "Step2", Id = "2" }, []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
         ], []);
 
         // Act
@@ -67,11 +66,11 @@ public class LocalProcessTests
     {
         // Arrange
         var mockKernel = new Kernel();
-        var processState = new KernelProcessState { Id = "AlreadySet", Name = "TestProcess" };
+        var processState = new KernelProcessState(name: "TestProcess", id: "AlreadySet");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState { Name = "Step1", Id = "1" }, []),
-            new(typeof(TestStep), new KernelProcessState { Name = "Step2", Id = "2" }, []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
         ], []);
 
         // Act
@@ -80,30 +79,6 @@ public class LocalProcessTests
         // Assert
         Assert.NotEmpty(localProcess.Id);
         Assert.Equal("AlreadySet", localProcess.Id);
-    }
-
-    /// <summary>
-    /// Validates that the <see cref="LocalProcess"/> assigns and Id to the process if one is not already set.
-    /// </summary>
-    [Fact]
-    public void ProcessWithMissingNameThrows()
-    {
-        // Arrange
-        var mockKernel = new Kernel();
-        var processState = new KernelProcessState();
-
-        Func<object?> creatProcessTask = (() =>
-        {
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-            return new KernelProcess(processState,
-            [
-                new(typeof(TestStep), new KernelProcessState { Name = "Step1", Id = "1" }, []),
-                new(typeof(TestStep), new KernelProcessState { Name = "Step2", Id = "2" }, []),
-            ], []);
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-        });
-
-        Assert.Throws<ArgumentNullException>(creatProcessTask);
     }
 
     /// <summary>
