@@ -215,7 +215,7 @@ public class ProcessStepBuilderTests
 
         internal override KernelProcessStepInfo BuildStep()
         {
-            return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.Id, this.Name), new Dictionary<string, List<KernelProcessEdge>>());
+            return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.Name, this.Id), []);
         }
 
         internal override string GetScopedEventId(string eventId)
