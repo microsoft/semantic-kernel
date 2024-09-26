@@ -25,7 +25,7 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     protected UserInputState? _state;
 
     /// <summary>
-    /// Method to be overriden by the user to populate with custom user messages
+    /// Method to be overridden by the user to populate with custom user messages
     /// </summary>
     public virtual void PopulateUserInputs()
     {
