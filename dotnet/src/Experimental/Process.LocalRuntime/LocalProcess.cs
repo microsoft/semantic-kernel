@@ -187,7 +187,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// </summary>
     /// <param name="kernel">An options override of the process level kernel.</param>
     /// <param name="maxSupersteps">The maximum number of supersteps that this process can execute. Defaults to 100.</param>
-    /// <param name="keepAlive">If true, the process will continue running after internal events have stopped. This allows the procces to wait for external events.</param>
+    /// <param name="keepAlive">If true, the process will continue running after internal events have stopped. This allows the process to wait for external events.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
     /// <returns></returns>
     private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
