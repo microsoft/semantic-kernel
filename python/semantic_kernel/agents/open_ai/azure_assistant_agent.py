@@ -379,7 +379,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         """
         assistants = await self.client.beta.assistants.list(order="desc")
         for assistant in assistants.data:
-            yield self._create_open_ai_assistant_definition(assistant)
+            yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
 
     @classmethod
     async def retrieve(
@@ -439,6 +439,6 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             )
         assistant = await client.beta.assistants.retrieve(id)
         assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
-        return AzureAssistantAgent(kernel=kernel, **assistant_definition)
+        return AzureAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
 
     # endregion

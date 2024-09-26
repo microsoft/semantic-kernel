@@ -11,7 +11,7 @@ using Qdrant.Client.Grpc;
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
-/// A mapper that maps between the generic semantic kernel data model and the model that the data is stored in in Qdrant.
+/// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Qdrant.
 /// </summary>
 internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<ulong>, PointStruct>, IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>
 {

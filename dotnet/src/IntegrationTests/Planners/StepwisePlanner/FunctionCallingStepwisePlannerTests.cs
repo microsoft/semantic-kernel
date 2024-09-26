@@ -75,7 +75,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
             .WithAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
+                credentials: new AzureCliCredential());
         if (useEmbeddings)
         {
             builder.WithAzureOpenAITextEmbeddingGeneration(
