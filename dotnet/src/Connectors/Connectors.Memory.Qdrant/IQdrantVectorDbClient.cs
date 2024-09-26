@@ -50,6 +50,14 @@ public interface IQdrantVectorDbClient
     public Task DeleteVectorByPayloadIdAsync(string collectionName, string metadataId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Delete multiple vector by its unique identifier in the metadata (Qdrant payload).
+    /// </summary>
+    /// <param name="collectionName">The name assigned to a collection of vectors.</param>
+    /// <param name="metadataIds">A list of unique ID stored in a Qdrant vector entry's metadata.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public Task DeleteVectorByPayloadIdsAsync(string collectionName, string[] metadataIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Upsert a group of vectors into a collection.
     /// </summary>
     /// <param name="collectionName">The name assigned to a collection of vectors.</param>
