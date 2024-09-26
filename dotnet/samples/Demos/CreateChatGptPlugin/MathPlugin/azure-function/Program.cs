@@ -57,7 +57,7 @@ var host = new HostBuilder()
             {
                 var appSettings = AppSettings.LoadSettings();
                 var builder = Kernel.CreateBuilder();
-                builder.Services.WithChatCompletionService(appSettings.Kernel);
+                builder.Services.WithChatCompletionService(appSettings.AIService);
                 builder.Services.AddLogging(loggingBuilder =>
                 {
                     loggingBuilder.AddFilter(level => true);
