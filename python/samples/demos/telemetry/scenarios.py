@@ -73,6 +73,7 @@ async def run_ai_service(stream: bool = False) -> None:
                         chat_history, PromptExecutionSettings()
                     ):
                         print(update[0].content, end="")
+                    print()
             elif isinstance(ai_service, TextCompletionClientBase):
                 if not stream:
                     completion = await ai_service.get_text_contents(
@@ -84,6 +85,7 @@ async def run_ai_service(stream: bool = False) -> None:
                         "Why is the sky blue?", PromptExecutionSettings()
                     ):
                         print(update[0].content, end="")
+                    print()
             else:
                 raise ValueError("AI service not recognized.")
         except Exception as e:
@@ -129,6 +131,7 @@ async def run_kernel_function(stream: bool = False) -> None:
                     ),
                 ):
                     print(update[0].content, end="")
+                print()
         except Exception as e:
             current_span.record_exception(e)
             print(f"Error running kernel plugin: {e}")
@@ -178,6 +181,7 @@ async def run_auto_function_invocation(stream: bool = False) -> None:
                     ),
                 ):
                     print(update[0].content, end="")
+                print()
         except Exception as e:
             current_span.record_exception(e)
             print(f"Error running auto function invocation: {e}")

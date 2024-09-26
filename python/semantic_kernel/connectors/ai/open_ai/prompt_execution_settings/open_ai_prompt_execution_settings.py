@@ -78,6 +78,10 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         description="Do not set this manually. It is set by the service based on the function choice configuration.",
     )
     structured_json_response: bool = Field(False, description="Do not set this manually. It is set by the service.")
+    stream_options: dict[str, Any] | None = Field(
+        None,
+        description="Additional options to pass when streaming is used. Do not set this manually.",
+    )
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
