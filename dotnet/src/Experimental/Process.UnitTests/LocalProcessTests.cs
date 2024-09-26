@@ -13,16 +13,15 @@ public class LocalProcessTests
     /// <summary>
     /// Validates that the <see cref="LocalProcess"/> constructor initializes the steps correctly.
     /// </summary>
-    /// <returns></returns>
-    [Fact(Skip = "Need to refactor test to not account for order of steps collection.")]
-    public async Task ExecuteAsyncExecutesStepsCorrectlyAsync()
+    [Fact]
+    public async Task ExecuteAsyncInitializesCorrectlyAsync()
     {
         // Arrange
-        var processState = new KernelProcessState { Name = "TestProcess", Id = "123" };
-        var mockKernelProcess = new KernelProcess(processState.Id,
+        var processState = new KernelProcessState(name: "TestProcess", id: "123");
+        var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState { Name = "Step1", Id = "1" }, []),
-            new(typeof(TestStep), new KernelProcessState { Name = "Step2", Id = "2" }, []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
         ], []);
 
         var mockKernel = new Kernel();
@@ -33,8 +32,53 @@ public class LocalProcessTests
 
         // Assert
         Assert.Equal(2, localProcess._steps.Count);
-        Assert.Equal("Step1", localProcess._steps[0].Name);
-        Assert.Equal("Step2", localProcess._steps[1].Name);
+        Assert.Contains(localProcess._steps, s => s.Name == "Step1");
+        Assert.Contains(localProcess._steps, s => s.Name == "Step2");
+    }
+
+    /// <summary>
+    /// Validates that the <see cref="LocalProcess"/> assigns and Id to the process if one is not already set.
+    /// </summary>
+    [Fact]
+    public void ProcessWithMissingIdIsAssignedAnId()
+    {
+        // Arrange
+        var mockKernel = new Kernel();
+        var processState = new KernelProcessState(name: "TestProcess");
+        var mockKernelProcess = new KernelProcess(processState,
+        [
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
+        ], []);
+
+        // Act
+        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel, loggerFactory: null);
+
+        // Assert
+        Assert.NotEmpty(localProcess.Id);
+    }
+
+    /// <summary>
+    /// Validates that the <see cref="LocalProcess"/> assigns and Id to the process if one is not already set.
+    /// </summary>
+    [Fact]
+    public void ProcessWithAssignedIdIsNotOverwrittenId()
+    {
+        // Arrange
+        var mockKernel = new Kernel();
+        var processState = new KernelProcessState(name: "TestProcess", id: "AlreadySet");
+        var mockKernelProcess = new KernelProcess(processState,
+        [
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
+        ], []);
+
+        // Act
+        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel, loggerFactory: null);
+
+        // Assert
+        Assert.NotEmpty(localProcess.Id);
+        Assert.Equal("AlreadySet", localProcess.Id);
     }
 
     /// <summary>

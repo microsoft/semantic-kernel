@@ -29,7 +29,6 @@ public sealed class LocalKernelProcessContext : IDisposable
 
     internal async Task StartWithEventAsync(KernelProcessEvent? initialEvent, Kernel? kernel = null)
     {
-        await this._localProcess.LoadAsync().ConfigureAwait(false);
         await this._localProcess.RunOnceAsync(initialEvent).ConfigureAwait(false);
     }
 
@@ -38,7 +37,7 @@ public sealed class LocalKernelProcessContext : IDisposable
     /// </summary>
     /// <param name="processEvent">The event to sent to the process.</param>
     /// <returns>A <see cref="Task"/></returns>
-    public async Task SendEventAsync(KernelProcessEvent? processEvent) =>
+    public async Task SendEventAsync(KernelProcessEvent processEvent) =>
         await this._localProcess.SendMessageAsync(processEvent).ConfigureAwait(false);
 
     /// <summary>

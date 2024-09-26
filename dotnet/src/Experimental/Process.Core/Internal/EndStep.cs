@@ -49,6 +49,6 @@ internal sealed class EndStep : ProcessStepBuilder
     internal override KernelProcessStepInfo BuildStep()
     {
         // The end step has no state.
-        return new KernelProcessStepInfo(typeof(KernelProcessStepState), new KernelProcessStepState(), []);
+        return new KernelProcessStepInfo(typeof(KernelProcessStepState), new KernelProcessStepState(EndStepName), []);
     }
 }
