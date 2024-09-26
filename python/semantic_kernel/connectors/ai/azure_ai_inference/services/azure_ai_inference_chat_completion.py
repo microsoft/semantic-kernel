@@ -21,6 +21,7 @@ from azure.ai.inference.models import (
     StreamingChatCompletionsUpdate,
 )
 from azure.core.credentials import AzureKeyCredential
+from azure.identity import DefaultAzureCredential
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.azure_ai_inference import (
@@ -34,6 +35,7 @@ from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -106,11 +108,24 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             except ValidationError as e:
                 raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
 
-            client = ChatCompletionsClient(
-                endpoint=str(azure_ai_inference_settings.endpoint),
-                credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
-                user_agent=SEMANTIC_KERNEL_USER_AGENT,
-            )
+            endpoint_to_use: str = str(azure_ai_inference_settings.endpoint)
+            if azure_ai_inference_settings.api_key is not None:
+                client = ChatCompletionsClient(
+                    endpoint=endpoint_to_use,
+                    credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
+                    user_agent=SEMANTIC_KERNEL_USER_AGENT,
+                )
+            else:
+                # Try to create the client with a DefaultAzureCredential
+                client = (
+                    ChatCompletionsClient(
+                        endpoint=endpoint_to_use,
+                        credential=DefaultAzureCredential(),
+                        credential_scopes=["https://cognitiveservices.azure.com/.default"],
+                        api_version=DEFAULT_AZURE_API_VERSION,
+                        user_agent=SEMANTIC_KERNEL_USER_AGENT,
+                    ),
+                )
 
         super().__init__(
             ai_model_id=ai_model_id,

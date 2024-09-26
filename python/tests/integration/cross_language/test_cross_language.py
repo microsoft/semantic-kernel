@@ -222,6 +222,7 @@ async def test_prompt_with_chat_roles(is_inline, is_streaming, template_format, 
 
     if is_streaming:
         expected_object["stream"] = True
+        expected_object["stream_options"] = {"include_usage": True}
 
     assert obtained_object == expected_object
 
@@ -281,6 +282,7 @@ async def test_prompt_with_complex_objects(is_inline, is_streaming, template_for
 
     if is_streaming:
         expected_object["stream"] = True
+        expected_object["stream_options"] = {"include_usage": True}
 
     assert obtained_object == expected_object
 
@@ -351,6 +353,7 @@ async def test_prompt_with_helper_functions(is_inline, is_streaming, template_fo
 
     if is_streaming:
         expected_object["stream"] = True
+        expected_object["stream_options"] = {"include_usage": True}
 
     assert obtained_object == expected_object
 
@@ -410,6 +413,7 @@ async def test_prompt_with_simple_variable(is_inline, is_streaming, template_for
 
     if is_streaming:
         expected_object["stream"] = True
+        expected_object["stream_options"] = {"include_usage": True}
 
     assert obtained_object == expected_object
 
@@ -468,6 +472,7 @@ async def test_simple_prompt(is_inline, is_streaming, template_format, prompt):
 
     if is_streaming:
         expected_object["stream"] = True
+        expected_object["stream_options"] = {"include_usage": True}
 
     assert obtained_object == expected_object
 
@@ -523,6 +528,7 @@ async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kern
 
     if is_streaming:
         expected_object["stream"] = True
+        expected_object["stream_options"] = {"include_usage": True}
 
     assert obtained_object == expected_object
 
