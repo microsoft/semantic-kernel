@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Microsoft.SemanticKernel.Data;
 using Xunit;
-using System.Linq;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 
 namespace SemanticKernel.Connectors.Weaviate.UnitTests;
 
