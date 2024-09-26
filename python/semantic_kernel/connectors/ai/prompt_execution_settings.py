@@ -105,6 +105,7 @@ class PromptExecutionSettings(KernelBaseModel):
             exclude={
                 "service_id",
                 "extension_data",
+                "structured_json_response",
             },
             exclude_none=True,
             by_alias=True,

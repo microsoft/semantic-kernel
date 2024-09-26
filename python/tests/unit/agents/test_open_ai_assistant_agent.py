@@ -19,7 +19,7 @@ from semantic_kernel.exceptions.agent_exceptions import AgentInitializationExcep
 from semantic_kernel.kernel import Kernel
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def openai_assistant_agent(kernel: Kernel, openai_unit_test_env):
     return OpenAIAssistantAgent(
         kernel=kernel,
@@ -35,7 +35,7 @@ def openai_assistant_agent(kernel: Kernel, openai_unit_test_env):
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def mock_assistant():
     return Assistant(
         created_at=123456789,
@@ -64,7 +64,7 @@ def mock_assistant():
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def mock_assistant_json():
     return Assistant(
         created_at=123456789,
@@ -135,11 +135,9 @@ async def test_create_agent(kernel: Kernel, openai_unit_test_env):
 
 
 @pytest.mark.asyncio
-<<<<<<< main
 async def test_create_agent_second_way(
     kernel: Kernel, mock_assistant, openai_unit_test_env
 ):
-=======
 async def test_create_agent_with_files(kernel: Kernel, openai_unit_test_env):
     mock_open_file = mock_open(read_data="file_content")
     with (
@@ -220,7 +218,6 @@ async def test_create_agent_with_search_files_not_found_raises_exception(kernel:
 
 @pytest.mark.asyncio
 async def test_create_agent_second_way(kernel: Kernel, mock_assistant, openai_unit_test_env):
->>>>>>> upstream/main
     agent = OpenAIAssistantAgent(
         kernel=kernel,
         ai_model_id="test_model_id",
@@ -263,13 +260,39 @@ async def test_create_agent_second_way(kernel: Kernel, mock_assistant, openai_un
 
 
 @pytest.mark.asyncio
-async def test_list_definitions(kernel: Kernel, mock_assistant, openai_unit_test_env):
+async def test_list_definitions(kernel: Kernel, openai_unit_test_env):
     agent = OpenAIAssistantAgent(
         kernel=kernel,
         service_id="test_service",
         name="test_name",
         instructions="test_instructions",
         id="test_id",
+    )
+
+    assistant = Assistant(
+        id="test_id",
+        created_at=123456789,
+        description="test_description",
+        instructions="test_instructions",
+        metadata={
+            "__run_options": {
+                "max_completion_tokens": 100,
+                "max_prompt_tokens": 50,
+                "parallel_tool_calls_enabled": True,
+                "truncation_message_count": 10,
+            }
+        },
+        model="test_model",
+        name="test_name",
+        object="assistant",
+        temperature=0.7,
+        tool_resources=ToolResources(
+            code_interpreter=ToolResourcesCodeInterpreter(code_interpreter_file_ids=["file1", "file2"]),
+            file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
+        ),
+        top_p=0.9,
+        response_format={"type": "json_object"},
+        tools=[{"type": "code_interpreter"}, {"type": "file_search"}],
     )
 
     with patch.object(
@@ -281,6 +304,7 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, openai_unit_test
         mock_client_instance.beta.assistants.list = AsyncMock(
             return_value=MagicMock(data=[mock_assistant])
         )
+        mock_client_instance.beta.assistants.list = AsyncMock(return_value=MagicMock(data=[assistant]))
 
         agent.client = mock_client_instance
 
@@ -319,14 +343,22 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, openai_unit_test
         }
 
 
+@pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
 @pytest.mark.asyncio
-async def test_retrieve_agent(kernel, openai_unit_test_env):
-    with patch.object(
-        OpenAIAssistantAgent, "_create_client", return_value=MagicMock(spec=AsyncOpenAI)
-    ) as mock_create_client:
-        mock_client_instance = mock_create_client.return_value
-        mock_client_instance.beta = MagicMock()
-        mock_client_instance.beta.assistants = MagicMock()
+async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_test_env):
+    with pytest.raises(AgentInitializationException, match="The OpenAI chat model ID is required."):
+        _ = await OpenAIAssistantAgent.retrieve(
+            id="test_id", api_key="test_api_key", kernel=kernel, env_file_path="test.env"
+        )
+
+
+@pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
+@pytest.mark.asyncio
+async def test_retrieve_agent_missing_api_key_throws(kernel, openai_unit_test_env):
+    with pytest.raises(
+        AgentInitializationException, match="The OpenAI API key is required, if a client is not provided."
+    ):
+        _ = await OpenAIAssistantAgent.retrieve(id="test_id", kernel=kernel, env_file_path="test.env")
 
         mock_client_instance.beta.assistants.retrieve = AsyncMock(
             return_value=AsyncMock()
@@ -340,6 +372,36 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
             id="test_id",
         )
         OpenAIAssistantBase._create_open_ai_assistant_definition = MagicMock(
+
+def test_open_ai_settings_create_throws(openai_unit_test_env):
+    with patch("semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings.OpenAISettings.create") as mock_create:
+        mock_create.side_effect = ValidationError.from_exception_data("test", line_errors=[], input_type="python")
+
+        with pytest.raises(AgentInitializationException, match="Failed to create OpenAI settings."):
+            OpenAIAssistantAgent(
+                service_id="test", api_key="test_api_key", org_id="test_org_id", ai_model_id="test_model_id"
+            )
+
+
+@pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
+def test_azure_openai_agent_create_missing_chat_model_id_throws(openai_unit_test_env):
+    with pytest.raises(AgentInitializationException, match="The OpenAI chat model ID is required."):
+        OpenAIAssistantAgent(service_id="test_service", env_file_path="test.env")
+
+
+@pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
+def test_azure_openai_agent_create_missing_api_key_throws(openai_unit_test_env):
+    with pytest.raises(
+        AgentInitializationException, match="The OpenAI API key is required, if a client is not provided."
+    ):
+        OpenAIAssistantAgent(env_file_path="test.env")
+
+
+def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_json, openai_unit_test_env):
+    with (
+        patch.object(
+            OpenAIAssistantBase,
+            "_create_open_ai_assistant_definition",
             return_value={
                 "ai_model_id": "test_model",
                 "description": "test_description",
@@ -365,12 +427,84 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
                 "max_prompt_tokens": 50,
                 "parallel_tool_calls_enabled": True,
                 "truncation_message_count": 10,
-            }
-        )
+            },
+        ) as mock_create_def,
+    ):
+        assert mock_create_def.return_value == {
+            "ai_model_id": "test_model",
+            "description": "test_description",
+            "id": "test_id",
+            "instructions": "test_instructions",
+            "name": "test_name",
+            "enable_code_interpreter": True,
+            "enable_file_search": True,
+            "enable_json_response": True,
+            "code_interpreter_file_ids": ["file1", "file2"],
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "vector_store_id": "vector_store1",
+            "metadata": {
+                "__run_options": {
+                    "max_completion_tokens": 100,
+                    "max_prompt_tokens": 50,
+                    "parallel_tool_calls_enabled": True,
+                    "truncation_message_count": 10,
+                }
+            },
+            "max_completion_tokens": 100,
+            "max_prompt_tokens": 50,
+            "parallel_tool_calls_enabled": True,
+            "truncation_message_count": 10,
+        }
 
         retrieved_agent = await agent.retrieve(
             id="test_id", api_key="test_api_key", kernel=kernel
         )
+
+@pytest.mark.asyncio
+async def test_retrieve_agent(kernel, openai_unit_test_env):
+    with (
+        patch.object(
+            OpenAIAssistantAgent, "_create_client", return_value=MagicMock(spec=AsyncOpenAI)
+        ) as mock_create_client,
+        patch.object(
+            OpenAIAssistantBase,
+            "_create_open_ai_assistant_definition",
+            return_value={
+                "ai_model_id": "test_model",
+                "description": "test_description",
+                "id": "test_id",
+                "instructions": "test_instructions",
+                "name": "test_name",
+                "enable_code_interpreter": True,
+                "enable_file_search": True,
+                "enable_json_response": True,
+                "code_interpreter_file_ids": ["file1", "file2"],
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "vector_store_id": "vector_store1",
+                "metadata": {
+                    "__run_options": {
+                        "max_completion_tokens": 100,
+                        "max_prompt_tokens": 50,
+                        "parallel_tool_calls_enabled": True,
+                        "truncation_message_count": 10,
+                    }
+                },
+                "max_completion_tokens": 100,
+                "max_prompt_tokens": 50,
+                "parallel_tool_calls_enabled": True,
+                "truncation_message_count": 10,
+            },
+        ) as mock_create_def,
+    ):
+        mock_client_instance = mock_create_client.return_value
+        mock_client_instance.beta = MagicMock()
+        mock_client_instance.beta.assistants = MagicMock()
+
+        mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=AsyncMock(spec=Assistant))
+
+        retrieved_agent = await OpenAIAssistantAgent.retrieve(id="test_id", api_key="test_api_key", kernel=kernel)
         assert retrieved_agent.model_dump(
             include={
                 "ai_model_id",
@@ -423,17 +557,14 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
 @pytest.mark.asyncio
-<<<<<<< main
 async def test_retrieve_agent_missing_chat_model_id_throws(
     kernel, openai_unit_test_env
 ):
     with pytest.raises(
         AgentInitializationError, match="The OpenAI chat model ID is required."
     ):
-=======
 async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_test_env):
     with pytest.raises(AgentInitializationException, match="The OpenAI chat model ID is required."):
->>>>>>> upstream/main
         _ = await OpenAIAssistantAgent.retrieve(
             id="test_id",
             api_key="test_api_key",
@@ -446,18 +577,15 @@ async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_t
 @pytest.mark.asyncio
 async def test_retrieve_agent_missing_api_key_throws(kernel, openai_unit_test_env):
     with pytest.raises(
-<<<<<<< main
         AgentInitializationError,
         match="The OpenAI API key is required, if a client is not provided.",
     ):
         _ = await OpenAIAssistantAgent.retrieve(
             id="test_id", kernel=kernel, env_file_path="test.env"
         )
-=======
         AgentInitializationException, match="The OpenAI API key is required, if a client is not provided."
     ):
         _ = await OpenAIAssistantAgent.retrieve(id="test_id", kernel=kernel, env_file_path="test.env")
->>>>>>> upstream/main
 
 
 def test_open_ai_settings_create_throws(openai_unit_test_env):
@@ -468,13 +596,10 @@ def test_open_ai_settings_create_throws(openai_unit_test_env):
             "test", line_errors=[], input_type="python"
         )
 
-<<<<<<< main
         with pytest.raises(
             AgentInitializationError, match="Failed to create OpenAI settings."
         ):
-=======
         with pytest.raises(AgentInitializationException, match="Failed to create OpenAI settings."):
->>>>>>> upstream/main
             OpenAIAssistantAgent(
                 service_id="test",
                 api_key="test_api_key",
@@ -485,25 +610,19 @@ def test_open_ai_settings_create_throws(openai_unit_test_env):
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
 def test_azure_openai_agent_create_missing_chat_model_id_throws(openai_unit_test_env):
-<<<<<<< main
     with pytest.raises(
         AgentInitializationError, match="The OpenAI chat model ID is required."
     ):
-=======
     with pytest.raises(AgentInitializationException, match="The OpenAI chat model ID is required."):
->>>>>>> upstream/main
         OpenAIAssistantAgent(service_id="test_service", env_file_path="test.env")
 
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
 def test_azure_openai_agent_create_missing_api_key_throws(openai_unit_test_env):
     with pytest.raises(
-<<<<<<< main
         AgentInitializationError,
         match="The OpenAI API key is required, if a client is not provided.",
-=======
         AgentInitializationException, match="The OpenAI API key is required, if a client is not provided."
->>>>>>> upstream/main
     ):
         OpenAIAssistantAgent(env_file_path="test.env")
 
@@ -586,3 +705,4 @@ def test_create_open_ai_assistant_definition_with_json_metadata(
         "parallel_tool_calls_enabled": True,
         "truncation_message_count": 10,
     }
+        mock_create_def.assert_called_once()

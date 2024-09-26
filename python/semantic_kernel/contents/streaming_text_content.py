@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-<<<<<<< HEAD
 
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.text_content import TextContent
@@ -8,7 +7,6 @@ from semantic_kernel.exceptions import ContentAdditionException
 
 class StreamingTextContent(StreamingContentMixin, TextContent):
     """This represents streaming text response content.
-=======
 from typing import Optional
 
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
@@ -19,7 +17,6 @@ class StreamingTextContent(StreamingKernelContent):
 
     All Text Completion Services should return a instance of this class as streaming response.
     Or they can implement their own subclass of this class and return an instance.
->>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 
     Args:
         choice_index: int - The index of the choice that generated this response.
@@ -37,7 +34,6 @@ class StreamingTextContent(StreamingKernelContent):
         __add__: Combines two StreamingTextContent instances.
     """
 
-<<<<<<< HEAD
     def __bytes__(self) -> bytes:
         """Return the content of the response encoded in the encoding."""
         return (
@@ -47,7 +43,6 @@ class StreamingTextContent(StreamingKernelContent):
         )
 
     def __add__(self, other: TextContent) -> "StreamingTextContent":
-=======
     text: Optional[str] = None
     encoding: Optional[str] = None
 
@@ -58,12 +53,15 @@ class StreamingTextContent(StreamingKernelContent):
         return self.text.encode(self.encoding if self.encoding else "utf-8") if self.text else b""
 
     def __add__(self, other: "StreamingTextContent") -> "StreamingTextContent":
->>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
         """When combining two StreamingTextContent instances, the text fields are combined.
 
-        The inner_content of the first one is used, choice_index, ai_model_id and encoding should be the same.
+        The addition should follow these rules:
+            1. The inner_content of the two will be combined. If they are not lists, they will be converted to lists.
+            2. ai_model_id should be the same.
+            3. encoding should be the same.
+            4. choice_index should be the same.
+            5. Metadata will be combined.
         """
-<<<<<<< HEAD
         if (
             isinstance(other, StreamingTextContent)
             and self.choice_index != other.choice_index
@@ -79,17 +77,20 @@ class StreamingTextContent(StreamingKernelContent):
             raise ContentAdditionException(
                 "Cannot add StreamingTextContent with different encoding"
             )
-=======
         if self.choice_index != other.choice_index:
             raise ValueError("Cannot add StreamingTextContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:
             raise ValueError("Cannot add StreamingTextContent from different ai_model_id")
         if self.encoding != other.encoding:
+<<<<<<< main
             raise ValueError("Cannot add StreamingTextContent with different encoding")
->>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+=======
+            raise ContentAdditionException("Cannot add StreamingTextContent with different encoding")
+
+>>>>>>> ms/main
         return StreamingTextContent(
             choice_index=self.choice_index,
-            inner_content=self.inner_content,
+            inner_content=self._merge_inner_contents(other.inner_content),
             ai_model_id=self.ai_model_id,
             metadata=self.metadata,
             text=(self.text or "") + (other.text or ""),

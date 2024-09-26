@@ -108,13 +108,10 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         )
 
         if not client and not openai_settings.api_key:
-<<<<<<< main
             raise AgentInitializationError(
                 "The OpenAI API key is required, if a client is not provided."
             )
-=======
             raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
->>>>>>> upstream/main
         if not openai_settings.chat_model_id:
             raise AgentInitializationException("The OpenAI chat model ID is required.")
 
@@ -351,13 +348,10 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-<<<<<<< main
             raise AgentInitializationError(
                 "Failed to create OpenAI settings.", ex
             ) from ex
-=======
             raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
->>>>>>> upstream/main
 
         return openai_settings
 
@@ -369,7 +363,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         """
         assistants = await self.client.beta.assistants.list(order="desc")
         for assistant in assistants.data:
-            yield self._create_open_ai_assistant_definition(assistant)
+            yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
 
     @classmethod
     async def retrieve(
@@ -409,13 +403,10 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             env_file_encoding=env_file_encoding,
         )
         if not client and not openai_settings.api_key:
-<<<<<<< main
             raise AgentInitializationError(
                 "The OpenAI API key is required, if a client is not provided."
             )
-=======
             raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
->>>>>>> upstream/main
         if not openai_settings.chat_model_id:
             raise AgentInitializationException("The OpenAI chat model ID is required.")
         if not client:
@@ -433,5 +424,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             assistant
         )
         return OpenAIAssistantAgent(kernel=kernel, **assistant_definition)
+        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+        return OpenAIAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
 
     # endregion

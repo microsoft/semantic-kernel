@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-<<<<<<< HEAD
 
 from enum import Enum
 from typing import Any, Union, overload
@@ -28,7 +27,6 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
 
     All Chat Completion Services should return an instance of this class as streaming response,
     where each part of the response as it is streamed is converted to an instance of this class,
-=======
 from typing import Optional
 
 from semantic_kernel.contents.chat_role import ChatRole
@@ -41,7 +39,6 @@ class StreamingChatMessageContent(StreamingKernelContent):
 
     All Chat Completion Services should return a instance of this class as streaming response,
     where each part of the response as it is streamed is converted to a instance of this class,
->>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
     the end-user will have to either do something directly or gather them and combine them into a
     new instance. A service can implement their own subclass of this class and return instances of that.
 
@@ -62,7 +59,6 @@ class StreamingChatMessageContent(StreamingKernelContent):
         __add__: Combines two StreamingChatMessageContent instances.
     """
 
-<<<<<<< HEAD
     @overload
     def __init__(
         self,
@@ -166,7 +162,6 @@ class StreamingChatMessageContent(StreamingKernelContent):
     def __add__(
         self, other: "StreamingChatMessageContent"
     ) -> "StreamingChatMessageContent":
-=======
     role: Optional[ChatRole] = ChatRole.ASSISTANT
     content: Optional[str] = None
     encoding: Optional[str] = None
@@ -179,13 +174,16 @@ class StreamingChatMessageContent(StreamingKernelContent):
         return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
 
     def __add__(self, other: "StreamingChatMessageContent") -> "StreamingChatMessageContent":
->>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
         """When combining two StreamingChatMessageContent instances, the content fields are combined.
 
-        The inner_content of the first one is used, ai_model_id and encoding should be the same,
-        if role is set, they should be the same.
+        The addition should follow these rules:
+            1. The inner_content of the two will be combined. If they are not lists, they will be converted to lists.
+            2. ai_model_id should be the same.
+            3. encoding should be the same.
+            4. role should be the same.
+            5. choice_index should be the same.
+            6. Metadata will be combined
         """
-<<<<<<< HEAD
         if not isinstance(other, StreamingChatMessageContent):
             raise ContentAdditionException(
                 f"Cannot add other type to StreamingChatMessageContent, type supplied: {type(other)}"
@@ -230,7 +228,6 @@ class StreamingChatMessageContent(StreamingKernelContent):
         return StreamingChatMessageContent(
             role=self.role,
             items=self.items,  # type: ignore
-=======
         if self.choice_index != other.choice_index:
             raise ValueError("Cannot add StreamingChatMessageContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:
@@ -240,12 +237,16 @@ class StreamingChatMessageContent(StreamingKernelContent):
         if self.role and other.role and self.role != other.role:
             raise ValueError("Cannot add StreamingChatMessageContent with different role")
         return StreamingChatMessageContent(
->>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+            raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
+
+        return StreamingChatMessageContent(
+            role=self.role,
+            items=self._merge_items_lists(other.items),
             choice_index=self.choice_index,
-            inner_content=self.inner_content,
+            inner_content=self._merge_inner_contents(other.inner_content),
             ai_model_id=self.ai_model_id,
             metadata=self.metadata,
-<<<<<<< HEAD
+            metadata=self.metadata | other.metadata,
             encoding=self.encoding,
             finish_reason=self.finish_reason or other.finish_reason,
         )
@@ -279,10 +280,9 @@ class StreamingChatMessageContent(StreamingKernelContent):
         for index, item in enumerate(self.items):
             root.insert(index, item.to_element())
         return root
-=======
             role=self.role,
             content=(self.content or "") + (other.content or ""),
             encoding=self.encoding,
             finish_reason=self.finish_reason or other.finish_reason,
         )
->>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+        

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-<<<<<<< main
 
 def test_empty_input():
     result = your_function("")
@@ -17,8 +16,6 @@ def test_empty_input():
 
 
 import os
-=======
->>>>>>> upstream/main
 import sys
 from functools import partial
 from typing import Any
@@ -26,7 +23,6 @@ from typing import Any
 import pytest
 
 from semantic_kernel import Kernel
-<<<<<<< main
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceChatPromptExecutionSettings,
 )
@@ -54,7 +50,6 @@ from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_s
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
-<<<<<<< main
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import (
     MistralAIChatCompletion,
 )
@@ -64,13 +59,11 @@ from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings impor
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import (
     OllamaChatCompletion,
 )
-=======
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
->>>>>>> origin/PR
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -93,12 +86,11 @@ from semantic_kernel.contents import ChatHistory, ChatMessageContent, TextConten
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
-=======
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import ChatMessageContent, TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
->>>>>>> upstream/main
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     anthropic_setup,
@@ -114,7 +106,6 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-<<<<<<< main
 mistral_ai_setup: bool = False
 try:
     if os.environ["MISTRALAI_API_KEY"] and os.environ["MISTRALAI_CHAT_MODEL_ID"]:
@@ -129,7 +120,6 @@ try:
 except KeyError:
     ollama_setup = False
 
-<<<<<<< main
 
 def setup(
     kernel: Kernel,
@@ -154,14 +144,11 @@ def history() -> ChatHistory:
 
 
 @pytest.fixture(scope="module")
-<<<<<<< main
 def services() -> (
     dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]
 ):
-=======
 def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]:
 def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]]:
->>>>>>> origin/PR
     azure_openai_settings = AzureOpenAISettings.create()
     endpoint = azure_openai_settings.endpoint
     deployment_name = azure_openai_settings.chat_deployment_name
@@ -204,18 +191,25 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
         "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
         "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
     }
-=======
 anthropic_setup: bool = False
 try:
     if os.environ["ANTHROPIC_API_KEY"] and os.environ["ANTHROPIC_CHAT_MODEL_ID"]:
         anthropic_setup = True
 except KeyError:
     anthropic_setup = False
->>>>>>> upstream/main
 
 
-=======
->>>>>>> upstream/main
+
+class Step(KernelBaseModel):
+    explanation: str
+    output: str
+
+
+class Reasoning(KernelBaseModel):
+    steps: list[Step]
+    final_answer: str
+
+
 pytestmark = pytest.mark.parametrize(
     "service_id, execution_settings_kwargs, inputs, kwargs",
     [
@@ -230,7 +224,6 @@ pytestmark = pytest.mark.parametrize(
                     role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
                 ),
             ],
-<<<<<<< main
             ["Hello", "well"],
             id="openai_text_input",
         ),
@@ -341,10 +334,18 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["1.2"],
             id="openai_tool_call_flow",
-=======
             {},
             id="openai_text_input",
->>>>>>> upstream/main
+        ),
+        pytest.param(
+            "openai",
+            {"response_format": Reasoning},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            {},
+            id="openai_json_schema_response_format",
         ),
         pytest.param(
             "azure",
@@ -357,7 +358,6 @@ pytestmark = pytest.mark.parametrize(
                     role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
                 ),
             ],
-<<<<<<< main
             ["Hello", "well"],
             id="azure_text_input",
         ),
@@ -408,12 +408,10 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "azure",
             {
-<<<<<<< main
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
                     filters={"excluded_plugins": ["chat"]}
                 )
             },
-=======
                 "function_call_behavior": FunctionCallBehavior.EnableFunctions(
                     auto_invoke=True, filters={"excluded_plugins": ["chat"]}
                 )
@@ -440,7 +438,6 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "azure",
             {"function_choice_behavior": FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["chat"]})},
->>>>>>> origin/PR
             [
                 ChatMessageContent(
                     role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
@@ -509,10 +506,8 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["1.2"],
             id="azure_tool_call_flow",
-=======
             {},
             id="azure_text_input",
->>>>>>> upstream/main
         ),
         pytest.param(
             "azure_custom_client",
@@ -539,7 +534,6 @@ pytestmark = pytest.mark.parametrize(
                     role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
                 ),
             ],
-<<<<<<< main
             ["Hello", "well"],
             id="azure_ai_inference_text_input",
         ),
@@ -657,10 +651,8 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["1.2"],
             id="azure_ai_inference_tool_call_flow",
-=======
             {},
             id="azure_ai_inference_text_input",
->>>>>>> upstream/main
         ),
         pytest.param(
             "mistral_ai",
@@ -696,7 +688,7 @@ pytestmark = pytest.mark.parametrize(
             ),
             id="ollama_text_input",
         ),
-         pytest.param(
+        pytest.param(
             "anthropic",
             {},
             [
@@ -708,7 +700,6 @@ pytestmark = pytest.mark.parametrize(
                 ),
             ],
             ["Hello", "well"],
-<<<<<<< main
             marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
             id="google_ai_text_input",
         ),
@@ -773,16 +764,13 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["348"],
             id="google_ai_tool_call_non_auto",
-=======
             marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
             id="anthropic_text_input",
->>>>>>> upstream/main
         ),
         pytest.param(
             "google_ai",
             {},
             [
-<<<<<<< main
                 [
                     ChatMessageContent(
                         role=AuthorRole.USER,
@@ -807,10 +795,8 @@ pytestmark = pytest.mark.parametrize(
                         ],
                     ),
                 ],
-=======
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
->>>>>>> upstream/main
             ],
             ["Hello", "well"],
             marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
@@ -831,7 +817,6 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_text_input",
         ),
-<<<<<<< main
         pytest.param(
             "vertex_ai",
             {
@@ -926,14 +911,11 @@ pytestmark = pytest.mark.parametrize(
             ["1.2"],
             id="vertex_ai_tool_call_flow",
         ),
-=======
->>>>>>> upstream/main
     ],
 )
 
 
 @pytest.mark.asyncio(scope="module")
-<<<<<<< main
 async def test_chat_completion(
     kernel: Kernel,
     service: str,
@@ -960,7 +942,6 @@ async def test_chat_completion(
                 stream=False,
             ),
             retries=5,
-=======
 class TestChatCompletion(ChatCompletionTestBase):
     """Test Chat Completions.
 
@@ -984,7 +965,6 @@ class TestChatCompletion(ChatCompletionTestBase):
             execution_settings_kwargs,
             inputs,
             False,
->>>>>>> upstream/main
         )
 
     @override
@@ -1032,7 +1012,6 @@ class TestChatCompletion(ChatCompletionTestBase):
         history = ChatHistory()
         for message in inputs:
             history.add_message(message)
-<<<<<<< main
         cmc = await retry(
             partial(
                 execute_invoke,
@@ -1044,8 +1023,6 @@ class TestChatCompletion(ChatCompletionTestBase):
             retries=5,
         )
         history.add_message(cmc)
-=======
->>>>>>> upstream/main
 
             cmc = await retry(
                 partial(
@@ -1060,14 +1037,10 @@ class TestChatCompletion(ChatCompletionTestBase):
             )
             history.add_message(cmc)
 
-<<<<<<< main
 async def execute_invoke(kernel: Kernel, history: ChatHistory, output: str, stream: bool) -> "ChatMessageContent":
-=======
-<<<<<<< main
 async def execute_invoke(
     kernel: Kernel, history: ChatHistory, output: str, stream: bool
 ) -> "ChatMessageContent":
->>>>>>> origin/main
     if stream:
         invocation = kernel.invoke_stream(
             function_name="chat", plugin_name="chat", chat_history=history
@@ -1094,11 +1067,9 @@ async def execute_invoke(
                 assert item.arguments
                 assert kernel.get_function_from_fully_qualified_function_name(item.name)
         return response
-<<<<<<< main
     with pytest.raises(AssertionError, match=f"Unexpected output: response: {invocation}, type: {type(invocation)}"):
         raise AssertionError(f"Unexpected output: response: {invocation}, type: {type(invocation)}")
         self.evaluate(history.messages, inputs=inputs)
-=======
     with pytest.raises(
         AssertionError,
         match=f"Unexpected output: response: {invocation}, type: {type(invocation)}",
@@ -1106,7 +1077,4 @@ async def execute_invoke(
         raise AssertionError(
             f"Unexpected output: response: {invocation}, type: {type(invocation)}"
         )
-=======
         self.evaluate(history.messages, inputs=inputs)
->>>>>>> upstream/main
->>>>>>> origin/main

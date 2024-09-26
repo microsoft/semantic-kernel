@@ -1,12 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
+
 import json
 import logging
-from collections.abc import Mapping
+import sys
+from collections.abc import AsyncGenerator, Mapping
 from copy import deepcopy
 from typing import Any, TypeVar
 from uuid import uuid4
 
-from openai import AsyncAzureOpenAI
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+from openai import AsyncAzureOpenAI, AsyncStream
 from openai.lib.azure import AsyncAzureADTokenProvider
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
@@ -28,13 +35,22 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
-<<<<<<< main
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import (
     AzureOpenAISettings,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import OpenAIChatCompletionBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
+from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -44,12 +60,12 @@ from semantic_kernel.contents.streaming_chat_message_content import (
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-=======
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.kernel_pydantic import HttpsUrl
->>>>>>> ms/small_fixes
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_streaming_chat_completion
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -65,7 +81,6 @@ class AzureChatCompletion(
 
     def __init__(
         self,
-<<<<<<< main
         service_id: str | None = None,
         api_key: str | None = None,
         deployment_name: str | None = None,
@@ -79,7 +94,6 @@ class AzureChatCompletion(
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
-=======
         deployment_name: str,
         base_url: Union[HttpsUrl, str],
         service_id: Optional[str] = None,
@@ -88,7 +102,6 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
->>>>>>> ms/small_fixes
     ) -> None:
         """Initialize an AzureChatCompletion service.
 
@@ -109,12 +122,9 @@ class AzureChatCompletion(
             token_endpoint (str | None): The token endpoint to request an Azure token. (Optional)
             default_headers (Mapping[str, str]): The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-<<<<<<< main
             async_client (AsyncAzureOpenAI | None): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to using env vars.
             env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
-=======
->>>>>>> ms/small_fixes
         """
         try:
             azure_openai_settings = AzureOpenAISettings.create(
@@ -132,7 +142,6 @@ class AzureChatCompletion(
                 f"Failed to validate settings: {exc}"
             ) from exc
 
-<<<<<<< main
         if not azure_openai_settings.chat_deployment_name:
             raise ServiceInitializationError("chat_deployment_name is required.")
 
@@ -175,7 +184,6 @@ class AzureChatCompletion(
                 if azure_openai_settings.api_key
                 else None
             ),
-=======
     @overload
     def __init__(
         self,
@@ -327,13 +335,48 @@ class AzureChatCompletion(
             api_version=api_version,
             service_id=service_id,
             api_key=api_key,
->>>>>>> ms/small_fixes
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.CHAT,
             client=async_client,
         )
+
+    @override
+    @trace_streaming_chat_completion(OpenAIChatCompletionBase.MODEL_PROVIDER_NAME)
+    async def _inner_get_streaming_chat_message_contents(
+        self,
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+    ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
+        """Override the base method.
+
+        This is because the latest Azure OpenAI API GA version doesn't support `stream_option`
+        yet and it will potentially result in errors if the option is included.
+        This method will be called instead of the base method.
+        TODO: Remove this method when the `stream_option` is supported by the Azure OpenAI API.
+        GitHub Issue: https://github.com/microsoft/semantic-kernel/issues/8996
+        """
+        if not isinstance(settings, OpenAIChatPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
+
+        settings.stream = True
+        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        settings.ai_model_id = settings.ai_model_id or self.ai_model_id
+
+        response = await self._send_request(request_settings=settings)
+        if not isinstance(response, AsyncStream):
+            raise ServiceInvalidResponseError("Expected an AsyncStream[ChatCompletionChunk] response.")
+        async for chunk in response:
+            if len(chunk.choices) == 0:
+                continue
+
+            assert isinstance(chunk, ChatCompletionChunk)  # nosec
+            chunk_metadata = self._get_metadata_from_streaming_chat_response(chunk)
+            yield [
+                self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
+            ]
 
     @classmethod
     def from_dict(cls, settings: dict[str, Any]) -> "AzureChatCompletion":
@@ -350,13 +393,10 @@ class AzureChatCompletion(
             deployment_name=settings.get("deployment_name"),
             endpoint=settings.get("endpoint"),
             base_url=settings.get("base_url"),
-<<<<<<< main
             api_version=settings.get("api_version"),
-=======
             api_version=settings.get("api_version", DEFAULT_AZURE_API_VERSION),
             service_id=settings.get("service_id"),
             api_key=settings.get("api_key"),
->>>>>>> ms/small_fixes
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),

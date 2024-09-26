@@ -1,25 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-<<<<<<< HEAD
 from typing import Any
 
 from pydantic import Field, model_validator
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
-=======
 
 from typing import Any, Optional
 
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
->>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 from semantic_kernel.utils.validation import FUNCTION_PARAM_NAME_REGEX
 
 
 class KernelParameterMetadata(KernelBaseModel):
-<<<<<<< HEAD
     """The kernel parameter metadata."""
 
     name: str | None = Field(..., pattern=FUNCTION_PARAM_NAME_REGEX)
@@ -49,16 +45,22 @@ class KernelParameterMetadata(KernelBaseModel):
     @classmethod
     def infer_schema(
         cls,
+<<<<<<< main
         type_object: type | None,
         parameter_type: str | None,
         default_value: Any,
         description: str | None,
+        type_object: type | None = None,
+        parameter_type: str | None = None,
+        default_value: Any | None = None,
+        description: str | None = None,
+        structured_output: bool = False,
     ) -> dict[str, Any] | None:
         """Infer the schema for the parameter metadata."""
         schema = None
 
         if type_object is not None:
-            schema = KernelJsonSchemaBuilder.build(type_object, description)
+            schema = KernelJsonSchemaBuilder.build(type_object, description, structured_output)
         elif parameter_type is not None:
             string_default = str(default_value) if default_value is not None else None
             if string_default and string_default.strip():

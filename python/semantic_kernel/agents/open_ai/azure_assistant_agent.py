@@ -123,13 +123,10 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             raise AgentInitializationError(
                 "Please provide either api_key, ad_token or ad_token_provider."
             )
-<<<<<<< Updated upstream
-=======
             raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
 
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
->>>>>>> Stashed changes
 
         client = self._create_client(
             api_key=(
@@ -390,11 +387,8 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             raise AgentInitializationError(
                 "Failed to create Azure OpenAI settings.", ex
             ) from ex
-<<<<<<< Updated upstream
             raise AgentInitializationException("Failed to create Azure OpenAI settings.", ex) from ex
-=======
             raise AgentInitializationException("Failed to create Azure OpenAI settings.", ex) from ex
->>>>>>> Stashed changes
 
         return azure_openai_settings
 
@@ -406,7 +400,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         """
         assistants = await self.client.beta.assistants.list(order="desc")
         for assistant in assistants.data:
-            yield self._create_open_ai_assistant_definition(assistant)
+            yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
 
     @classmethod
     async def retrieve(
@@ -458,15 +452,12 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             raise AgentInitializationError(
                 "Please provide either api_key, ad_token or ad_token_provider."
             )
-<<<<<<< Updated upstream
             raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
-=======
             raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
->>>>>>> Stashed changes
 
         if not client:
             client = AzureAssistantAgent._create_client(
@@ -482,5 +473,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             assistant
         )
         return AzureAssistantAgent(kernel=kernel, **assistant_definition)
+        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+        return AzureAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
 
     # endregion
