@@ -79,12 +79,10 @@ async def main() -> None:
 
     kernel = Kernel()
     service_id = "gc_main"
-    token_endpoint = "https://cognitiveservices.azure.com/.default"
     chat_service = AzureChatCompletion(
         service_id=service_id,
         deployment_name="gpt-4o-2024-05-13",
         api_version="2024-05-01-preview",
-        token_endpoint=token_endpoint,
     )
     kernel.add_service(chat_service)
 
