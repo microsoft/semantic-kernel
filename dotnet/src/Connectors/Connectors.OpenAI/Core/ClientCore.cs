@@ -195,7 +195,7 @@ internal partial class ClientCore
     {
         OpenAIClientOptions options = new()
         {
-            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+            ApplicationId = KernelSettings.UserAgent,
             Endpoint = endpoint
         };
 

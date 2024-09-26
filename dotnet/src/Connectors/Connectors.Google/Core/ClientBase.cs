@@ -87,7 +87,7 @@ internal abstract class ClientBase
     protected async Task<HttpRequestMessage> CreateHttpRequestAsync(object requestData, Uri endpoint)
     {
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
-        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        httpRequestMessage.Headers.Add("User-Agent", KernelSettings.UserAgent);
         httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientBase)));
 

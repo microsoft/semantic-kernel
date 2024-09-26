@@ -109,7 +109,7 @@ internal sealed class HuggingFaceClient
 
     internal void SetRequestHeaders(HttpRequestMessage request)
     {
-        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add("User-Agent", KernelSettings.UserAgent);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(this.GetType()));
         if (!string.IsNullOrEmpty(this.ApiKey))
         {

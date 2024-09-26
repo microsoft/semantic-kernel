@@ -774,7 +774,7 @@ internal sealed class MistralClient
 
     private void SetRequestHeaders(HttpRequestMessage request, string apiKey, bool stream)
     {
-        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add("User-Agent", KernelSettings.UserAgent);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(this.GetType()));
         request.Headers.Add("Accept", stream ? "text/event-stream" : "application/json");
         request.Headers.Add("Authorization", $"Bearer {apiKey}");

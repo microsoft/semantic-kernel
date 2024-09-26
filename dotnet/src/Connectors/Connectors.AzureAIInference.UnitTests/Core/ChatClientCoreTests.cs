@@ -11,6 +11,7 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
@@ -107,7 +108,7 @@ public sealed class ChatClientCoreTests
         Assert.Equal(HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ChatClientCore)), handler.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).FirstOrDefault());
 
         Assert.True(handler.RequestHeaders.Contains("User-Agent"));
-        Assert.Contains(HttpHeaderConstant.Values.UserAgent, handler.RequestHeaders.GetValues("User-Agent").FirstOrDefault());
+        Assert.Contains(KernelSettings.UserAgent, handler.RequestHeaders.GetValues("User-Agent").FirstOrDefault());
     }
 
     [Fact]
@@ -138,7 +139,7 @@ public sealed class ChatClientCoreTests
 
         // Assert
         Assert.False(handler.RequestHeaders!.Contains(HttpHeaderConstant.Names.SemanticKernelVersion));
-        Assert.DoesNotContain(HttpHeaderConstant.Values.UserAgent, handler.RequestHeaders.GetValues("User-Agent").FirstOrDefault());
+        Assert.DoesNotContain(KernelSettings.UserAgent, handler.RequestHeaders.GetValues("User-Agent").FirstOrDefault());
     }
 
     [Theory]

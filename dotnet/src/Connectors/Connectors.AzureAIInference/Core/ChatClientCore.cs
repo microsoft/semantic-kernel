@@ -367,7 +367,7 @@ internal sealed class ChatClientCore
             new(serviceVersion.Value) :
             new();
 
-        options.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
+        options.Diagnostics.ApplicationId = KernelSettings.UserAgent;
 
         options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ChatClientCore))), Azure.Core.HttpPipelinePosition.PerCall);
 

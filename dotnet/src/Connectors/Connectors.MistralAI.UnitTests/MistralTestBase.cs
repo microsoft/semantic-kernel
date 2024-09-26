@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 using Microsoft.SemanticKernel.Http;
 using Xunit;
@@ -53,7 +54,7 @@ public abstract class MistralTestBase : IDisposable
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var requestHeaders = new HttpRequestMessage().Headers;
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        requestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        requestHeaders.Add("User-Agent", KernelSettings.UserAgent);
         requestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(MistralClient)));
         requestHeaders.Add("Accept", stream ? "text/event-stream" : "application/json");
         requestHeaders.Add("Authorization", $"Bearer {key}");

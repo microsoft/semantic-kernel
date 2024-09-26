@@ -43,7 +43,7 @@ public abstract class ServiceBase
             // Client needs to be created to be able to inject Semantic Kernel headers
             var internalClient = HttpClientProvider.GetHttpClient();
             internalClient.BaseAddress = endpoint;
-            internalClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+            internalClient.DefaultRequestHeaders.Add("User-Agent", KernelSettings.UserAgent);
             internalClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(Kernel)));
 
             this._client = new(internalClient, model);

@@ -106,7 +106,7 @@ public sealed class OpenAIClientProvider
     {
         AzureOpenAIClientOptions options = new()
         {
-            ApplicationId = HttpHeaderConstant.Values.UserAgent
+            ApplicationId = KernelSettings.UserAgent
         };
 
         ConfigureClientOptions(httpClient, options);
@@ -118,7 +118,7 @@ public sealed class OpenAIClientProvider
     {
         OpenAIClientOptions options = new()
         {
-            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+            ApplicationId = KernelSettings.UserAgent,
             Endpoint = endpoint ?? httpClient?.BaseAddress,
         };
 

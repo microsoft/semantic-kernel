@@ -272,7 +272,7 @@ public sealed class OpenAIFileService
     private void AddRequestHeaders(HttpRequestMessage request)
     {
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
-        request.Headers.Add(HeaderNameUserAgent, HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add(HeaderNameUserAgent, KernelSettings.UserAgent);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIFileService)));
 
         if (!string.IsNullOrWhiteSpace(this._version))

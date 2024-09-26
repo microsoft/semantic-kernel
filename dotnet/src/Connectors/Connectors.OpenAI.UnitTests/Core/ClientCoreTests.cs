@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Linq;
 using System.Net.Http;
@@ -9,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
@@ -93,7 +93,7 @@ public partial class ClientCoreTests
         var pipelineMessage = clientCore.Client!.Pipeline.CreateMessage();
         pipelineMessage.Request.Method = "POST";
         pipelineMessage.Request.Uri = new Uri("http://localhost");
-        pipelineMessage.Request.Content = BinaryContent.Create(new BinaryData("test"));
+        pipelineMessage.Request.Content = System.ClientModel.BinaryContent.Create(new BinaryData("test"));
 
         // Assert
         await clientCore.Client.Pipeline.SendAsync(pipelineMessage);
@@ -122,7 +122,7 @@ public partial class ClientCoreTests
         var pipelineMessage = clientCore.Client!.Pipeline.CreateMessage();
         pipelineMessage.Request.Method = "POST";
         pipelineMessage.Request.Uri = new Uri("http://localhost");
-        pipelineMessage.Request.Content = BinaryContent.Create(new BinaryData("test"));
+        pipelineMessage.Request.Content = System.ClientModel.BinaryContent.Create(new BinaryData("test"));
 
         // Assert
         await clientCore.Client.Pipeline.SendAsync(pipelineMessage);
@@ -131,7 +131,7 @@ public partial class ClientCoreTests
         Assert.Equal(HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore)), handler.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).FirstOrDefault());
 
         Assert.True(handler.RequestHeaders.Contains("User-Agent"));
-        Assert.Contains(HttpHeaderConstant.Values.UserAgent, handler.RequestHeaders.GetValues("User-Agent").FirstOrDefault());
+        Assert.Contains(KernelSettings.UserAgent, handler.RequestHeaders.GetValues("User-Agent").FirstOrDefault());
     }
 
     [Fact]
@@ -156,13 +156,13 @@ public partial class ClientCoreTests
         var pipelineMessage = clientCore.Client!.Pipeline.CreateMessage();
         pipelineMessage.Request.Method = "POST";
         pipelineMessage.Request.Uri = new Uri("http://localhost");
-        pipelineMessage.Request.Content = BinaryContent.Create(new BinaryData("test"));
+        pipelineMessage.Request.Content = System.ClientModel.BinaryContent.Create(new BinaryData("test"));
 
         // Assert
         await clientCore.Client.Pipeline.SendAsync(pipelineMessage);
 
         Assert.False(handler.RequestHeaders!.Contains(HttpHeaderConstant.Names.SemanticKernelVersion));
-        Assert.DoesNotContain(HttpHeaderConstant.Values.UserAgent, handler.RequestHeaders.GetValues("User-Agent").FirstOrDefault());
+        Assert.DoesNotContain(KernelSettings.UserAgent, handler.RequestHeaders.GetValues("User-Agent").FirstOrDefault());
     }
 
     [Theory]

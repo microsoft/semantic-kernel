@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using Microsoft.SemanticKernel.Data;
-using Microsoft.SemanticKernel.Http;
 using MongoDB.Driver;
 using Moq;
 using Xunit;
@@ -50,6 +49,6 @@ public sealed class AzureCosmosDBMongoDBServiceCollectionExtensionsTests
         Assert.IsType<AzureCosmosDBMongoDBVectorStore>(vectorStore);
 
         var database = (IMongoDatabase)vectorStore.GetType().GetField("_mongoDatabase", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(vectorStore)!;
-        Assert.Equal(HttpHeaderConstant.Values.UserAgent, database.Client.Settings.ApplicationName);
+        Assert.Equal(KernelSettings.UserAgent, database.Client.Settings.ApplicationName);
     }
 }

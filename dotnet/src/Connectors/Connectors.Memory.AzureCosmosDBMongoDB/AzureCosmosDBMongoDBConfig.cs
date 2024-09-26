@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Http;
-
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 /// <summary>
@@ -18,7 +16,7 @@ public class AzureCosmosDBMongoDBConfig(int dimensions)
     /// <summary>
     /// Application name for the client for tracking and logging
     /// </summary>
-    public string ApplicationName { get; set; } = HttpHeaderConstant.Values.UserAgent;
+    public string ApplicationName { get; set; } = KernelSettings.UserAgent;
 
     /// <summary>
     /// Index name for the Mongo vCore DB. Default is "default_index".

@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -98,7 +97,7 @@ public class OpenApiFunctionExecutionParameters
         this.HttpClient = httpClient;
         this.AuthCallback = authCallback;
         this.ServerUrlOverride = serverUrlOverride;
-        this.UserAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
+        this.UserAgent = userAgent ?? KernelSettings.UserAgent;
         this.IgnoreNonCompliantErrors = ignoreNonCompliantErrors;
         this.EnableDynamicPayload = enableDynamicOperationPayload;
         this.EnablePayloadNamespacing = enablePayloadNamespacing;

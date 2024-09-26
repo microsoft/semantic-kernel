@@ -9,7 +9,6 @@ using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Data;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
 
@@ -66,7 +65,7 @@ public static class AzureAISearchServiceCollectionExtensions
 
                 // Build options for the Azure AI Search client and construct it.
                 var searchClientOptions = new SearchClientOptions();
-                searchClientOptions.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
+                searchClientOptions.Diagnostics.ApplicationId = KernelSettings.UserAgent;
                 if (selectedOptions?.JsonSerializerOptions != null)
                 {
                     searchClientOptions.Serializer = new JsonObjectSerializer(selectedOptions.JsonSerializerOptions);
@@ -105,7 +104,7 @@ public static class AzureAISearchServiceCollectionExtensions
 
                 // Build options for the Azure AI Search client and construct it.
                 var searchClientOptions = new SearchClientOptions();
-                searchClientOptions.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
+                searchClientOptions.Diagnostics.ApplicationId = KernelSettings.UserAgent;
                 if (selectedOptions?.JsonSerializerOptions != null)
                 {
                     searchClientOptions.Serializer = new JsonObjectSerializer(selectedOptions.JsonSerializerOptions);

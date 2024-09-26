@@ -5,7 +5,6 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Microsoft.SemanticKernel.Data;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
 
@@ -66,7 +65,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
             {
                 var cosmosClient = new CosmosClient(connectionString, new()
                 {
-                    ApplicationName = HttpHeaderConstant.Values.UserAgent,
+                    ApplicationName = KernelSettings.UserAgent,
                     UseSystemTextJsonSerializerWithOptions = options?.JsonSerializerOptions ?? JsonSerializerOptions.Default,
                 });
 

@@ -12,7 +12,6 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
@@ -52,7 +51,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                 connectionString,
                 new CosmosClientOptions
                 {
-                    ApplicationName = applicationName ?? HttpHeaderConstant.Values.UserAgent,
+                    ApplicationName = applicationName ?? KernelSettings.UserAgent,
                     UseSystemTextJsonSerializerWithOptions = JsonSerializerOptions.Default,
                 }),
             databaseName,
@@ -99,7 +98,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                 connectionString,
                 new CosmosClientOptions
                 {
-                    ApplicationName = applicationName ?? HttpHeaderConstant.Values.UserAgent,
+                    ApplicationName = applicationName ?? KernelSettings.UserAgent,
                     UseSystemTextJsonSerializerWithOptions = JsonSerializerOptions.Default,
                 }),
             databaseName,

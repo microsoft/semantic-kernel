@@ -234,7 +234,7 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
-        Assert.Equal(HttpHeaderConstant.Values.UserAgent, this._messageHandlerStub.RequestHeaders.UserAgent.ToString());
+        Assert.Equal(KernelSettings.UserAgent, this._messageHandlerStub.RequestHeaders.UserAgent.ToString());
     }
 
     [Fact]

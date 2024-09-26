@@ -17,9 +17,6 @@ internal static class HttpHeaderConstant
 
     public static class Values
     {
-        /// <summary>User agent string to use for all HTTP requests issued by Semantic Kernel.</summary>
-        public static string UserAgent => "Semantic-Kernel";
-
         /// <summary>
         /// Gets the version of the <see cref="System.Reflection.Assembly"/> in which the specific type is declared.
         /// </summary>

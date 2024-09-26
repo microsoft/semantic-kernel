@@ -112,7 +112,7 @@ internal sealed class RestApiOperationRunner
         HttpResponseContentReader? httpResponseContentReader = null)
     {
         this._httpClient = httpClient;
-        this._userAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
+        this._userAgent = userAgent ?? KernelSettings.UserAgent;
         this._enableDynamicPayload = enableDynamicPayload;
         this._enablePayloadNamespacing = enablePayloadNamespacing;
         this._httpResponseContentReader = httpResponseContentReader;
@@ -198,7 +198,7 @@ internal sealed class RestApiOperationRunner
 
         requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
             ? this._userAgent
-            : HttpHeaderConstant.Values.UserAgent);
+            : KernelSettings.UserAgent);
         requestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(RestApiOperationRunner)));
 
         if (headers is not null)

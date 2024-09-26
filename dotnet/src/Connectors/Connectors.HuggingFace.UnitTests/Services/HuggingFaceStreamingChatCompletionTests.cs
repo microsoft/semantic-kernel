@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
@@ -244,7 +245,7 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
-        Assert.Equal(HttpHeaderConstant.Values.UserAgent, this._messageHandlerStub.RequestHeaders.UserAgent.ToString());
+        Assert.Equal(KernelSettings.UserAgent, this._messageHandlerStub.RequestHeaders.UserAgent.ToString());
     }
 
     [Fact]

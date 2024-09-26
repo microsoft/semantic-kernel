@@ -11,7 +11,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 
@@ -124,7 +123,7 @@ public partial class SessionsPythonPlugin
 
     private async Task AddHeadersAsync(HttpClient httpClient)
     {
-        httpClient.DefaultRequestHeaders.Add("User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)");
+        httpClient.DefaultRequestHeaders.Add("User-Agent", $"{KernelSettings.UserAgent}/{s_assemblyVersion} (Language=dotnet)");
 
         if (this._authTokenProvider is not null)
         {

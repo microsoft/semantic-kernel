@@ -15,7 +15,6 @@ using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -426,7 +425,7 @@ public partial class AzureAISearchMemoryStore : IMemoryStore
         {
             Diagnostics =
             {
-                ApplicationId = HttpHeaderConstant.Values.UserAgent,
+                ApplicationId = KernelSettings.UserAgent,
             },
         };
     }
