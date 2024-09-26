@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
+import tracemalloc
 from typing import Annotated
 
 from semantic_kernel.agents.open_ai import AzureAssistantAgent, OpenAIAssistantAgent
@@ -7,6 +8,9 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
+
+tracemalloc.start()
+
 
 #####################################################################
 # The following sample demonstrates how to create an OpenAI         #

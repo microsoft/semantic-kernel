@@ -17,7 +17,6 @@ from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.exceptions import ServiceInvalidTypeError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -37,7 +36,7 @@ class ChatHistoryAgentProtocol(Protocol):
         ...
 
     @abstractmethod
-    def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["StreamingChatMessageContent"]:
+    def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["ChatMessageContent"]:
         """Invoke the chat history agent protocol in streaming mode."""
         ...
 
@@ -103,8 +102,8 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
     async def invoke_stream(
         self,
         agent: "Agent",
-        messages: list[StreamingChatMessageContent],
-    ) -> AsyncIterable[tuple[bool, StreamingChatMessageContent]]:
+        messages: list[ChatMessageContent],
+    ) -> AsyncIterable[ChatMessageContent]:
         """Perform a discrete incremental stream interaction between a single Agent and AgentChat.
 
         Args:
@@ -120,20 +119,10 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
                 f"Invalid channel binding for agent with id: `{id}` with name: ({type(agent).__name__})"
             )
 
-        message_count = len(self.messages)
-
         async for response_message in agent.invoke_stream(self):
-            yield response_message
-
-        for message_index in range(message_count, len(self.messages)):
-            messages.append(self.messages[message_index])
-
-    def _is_streaming_message_visible(self, message: StreamingChatMessageContent, message_queue_count: int) -> bool:
-        """Determine if a streaming message is visible to the user."""
-        return (
-            not any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in message.items)
-            or message_queue_count == 0
-        )
+            if response_message.content:
+                messages.append(response_message)
+                yield response_message
 
     def _is_message_visible(self, message: ChatMessageContent, message_queue_count: int) -> bool:
         """Determine if a message is visible to the user."""

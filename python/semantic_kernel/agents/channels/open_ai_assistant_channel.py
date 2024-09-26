@@ -65,11 +65,14 @@ class OpenAIAssistantChannel(AgentChannel):
             yield is_visible, message
 
     @override
-    async def invoke_stream(self, agent: "Agent") -> AsyncIterable[tuple[bool, "StreamingChatMessageContent"]]:
+    async def invoke_stream(
+        self, agent: "Agent", messages: list[ChatMessageContent]
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the agent stream.
 
         Args:
             agent: The agent to invoke.
+            messages: The conversation messages.
 
         Yields:
             tuple[bool, StreamingChatMessageContent]: The conversation messages.
@@ -82,8 +85,8 @@ class OpenAIAssistantChannel(AgentChannel):
         if agent._is_deleted:
             raise AgentChatException("Agent is deleted.")
 
-        async for is_visible, message in agent._invoke_internal_stream(thread_id=self.thread_id):
-            yield is_visible, message
+        async for message in agent._invoke_internal_stream(thread_id=self.thread_id, messages=messages):
+            yield message
 
     @override
     async def get_history(self) -> AsyncIterable["ChatMessageContent"]:

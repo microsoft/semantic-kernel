@@ -77,19 +77,15 @@ async def main():
         await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=input))
         print(f"# {AuthorRole.USER}: '{input}'")
 
-        first_chunk = True
         last_agent = None
         async for message in chat.invoke_stream():
             if message.content is not None:
-                if first_chunk:
-                    print(f"# {message.role}: ", end="", flush=True)
-                    first_chunk = False
                 if last_agent != message.name:
-                    first_chunk = True
                     print(f"\n# {message.name}: ", end="", flush=True)
                     last_agent = message.name
-                print(message.content, end="", flush=True)
+                print(f"{message.content}", end="", flush=True)
 
+        print()
         print(f"# IS COMPLETE: {chat.is_complete}")
     finally:
         await agent_writer.delete()

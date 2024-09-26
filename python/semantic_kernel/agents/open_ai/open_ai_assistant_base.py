@@ -28,7 +28,10 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     get_message_contents,
 )
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
-from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    kernel_function_metadata_to_function_call_format,
+    merge_function_results,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -807,7 +810,7 @@ class OpenAIAssistantBase(Agent):
         **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the chat assistant with streaming."""
-        async for is_visible, content in self._invoke_internal_stream(
+        async for content in self._invoke_internal_stream(
             thread_id=thread_id,
             ai_model_id=ai_model_id,
             enable_code_interpreter=enable_code_interpreter,
@@ -822,13 +825,13 @@ class OpenAIAssistantBase(Agent):
             metadata=metadata,
             **kwargs,
         ):
-            if is_visible:
-                yield content
+            yield content
 
     async def _invoke_internal_stream(
         self,
         thread_id: str,
         *,
+        messages: list[ChatMessageContent] | None = None,
         ai_model_id: str | None = None,
         enable_code_interpreter: bool | None = False,
         enable_file_search: bool | None = False,
@@ -841,7 +844,7 @@ class OpenAIAssistantBase(Agent):
         top_p: float | None = None,
         metadata: dict[str, str] | None = {},
         **kwargs: Any,
-    ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
+    ) -> AsyncIterable[ChatMessageContent]:
         """Internal invoke method with streaming."""
         if not self.assistant:
             raise AgentInitializationException("The assistant has not been created.")
@@ -890,12 +893,21 @@ class OpenAIAssistantBase(Agent):
                         logger.info(f"Run in progress with ID: {run.id}")
                     elif event.event == "thread.message.delta":
                         content = generate_streaming_message_content(self.name, event.data)
-                        yield True, content
+                        if messages is not None and content.items:
+                            messages.append(content)
+                        yield content
                     elif event.event == "thread.run.requires_action":
                         run = event.data
-                        function_call_content, tool_outputs = await self._handle_requires_action(run, function_steps)
+                        (
+                            function_call_content,
+                            function_result_content,
+                            tool_outputs,
+                        ) = await self._handle_requires_action(run, function_steps)
+                        if function_result_content and messages is not None:
+                            messages.append(function_result_content)
                         if function_call_content:
-                            yield False, function_call_content
+                            if messages is not None:
+                                messages.append(function_call_content)
 
                             stream = self.client.beta.threads.runs.submit_tool_outputs_stream(
                                 run_id=run.id,
@@ -920,7 +932,9 @@ class OpenAIAssistantBase(Agent):
                     # If the inner loop completes without encountering a 'break', exit the outer loop
                     break
 
-    async def _handle_requires_action(self, run: Run, function_steps: dict[str, FunctionCallContent]):
+    async def _handle_requires_action(
+        self, run: Run, function_steps: dict[str, FunctionCallContent]
+    ) -> tuple[ChatMessageContent, ChatMessageContent, list[dict[str, str]]] | tuple[None, None, None]:
         fccs = get_function_call_contents(run, function_steps)
         if fccs:
             function_call_content = generate_function_call_content(agent_name=self.name, fccs=fccs)
@@ -928,9 +942,11 @@ class OpenAIAssistantBase(Agent):
             chat_history = ChatHistory()
             _ = await self._invoke_function_calls(fccs=fccs, chat_history=chat_history)
 
+            function_result_content = merge_function_results(chat_history.messages)[0]
+
             tool_outputs = self._format_tool_outputs(fccs, chat_history)
-            return function_call_content, tool_outputs
-        return None, None
+            return function_call_content, function_result_content, tool_outputs
+        return None, None, None
 
     # endregion
 

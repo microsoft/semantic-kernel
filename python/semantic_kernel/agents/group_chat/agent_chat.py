@@ -163,13 +163,14 @@ class AgentChat(KernelBaseModel):
         logger.info(f"Invoking agent {agent.name}")
         try:
             channel: AgentChannel = await self._get_or_create_channel(agent)
-            messages: list[StreamingChatMessageContent] = []
+            messages: list[ChatMessageContent] = []
 
-            async for is_visible, message in channel.invoke_stream(agent, messages):
-                messages.append(message)
-                self.history.messages.append(message)
-                if is_visible:
-                    yield message
+            async for message in channel.invoke_stream(agent, messages):
+                yield message
+
+            for message in messages:
+                if message.content:
+                    self.history.messages.append(message)
 
             # Broadcast message to other channels (in parallel)
             # Note: Able to queue messages without synchronizing channels.
