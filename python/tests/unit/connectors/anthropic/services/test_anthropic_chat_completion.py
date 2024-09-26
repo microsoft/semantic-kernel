@@ -495,7 +495,6 @@ mock_message_function_call = ChatMessageContent(
             FunctionCallContent,
             id="required_none_invoke",
         ),
-        pytest.param(FunctionChoiceBehavior.NoneInvoke(), [[mock_message_text_content]], TextContent, id="none"),
     ],
 )
 @pytest.mark.asyncio

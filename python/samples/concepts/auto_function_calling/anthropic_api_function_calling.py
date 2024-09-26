@@ -59,7 +59,7 @@ chat_function = kernel.add_function(
 # function to use, if any.
 #
 # There are two ways to define the `function_choice_behavior` parameter:
-# 1. Using the type string as `"auto"`, `"required"`, or `"none"`. For example:
+# 1. Using the type string as `"auto"` or `"required"`. For example:
 #   configure `function_choice_behavior="auto"` parameter directly in the execution settings.
 # 2. Using the FunctionChoiceBehavior class. For example:
 #   `function_choice_behavior=FunctionChoiceBehavior.Auto()`.
@@ -77,8 +77,6 @@ chat_function = kernel.add_function(
 # The filters attribute allows you to specify either: `included_functions`, `excluded_functions`,
 #  `included_plugins`, or `excluded_plugins`.
 
-# Note: the number of responses for auto invoking tool calls is limited to 1.
-# If configured to be greater than one, this value will be overridden to 1.
 execution_settings = AnthropicChatPromptExecutionSettings(
     service_id="chat",
     max_tokens=2000,

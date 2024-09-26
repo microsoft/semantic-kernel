@@ -159,9 +159,8 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, AnthropicChatPromptExecutionSettings)  # nosec
 
-        messages, parsed_system_message = self._prepare_chat_history_for_request(chat_history, stream=True)
+        settings.messages, parsed_system_message = self._prepare_chat_history_for_request(chat_history, stream=True)
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
-        settings.messages = messages
         if settings.system is None and parsed_system_message is not None:
             settings.system = parsed_system_message
 
@@ -333,7 +332,6 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             function_choice_configuration.available_functions
             and hasattr(settings, "tools")
             and hasattr(settings, "tool_choice")
-            and type != FunctionChoiceType.NONE
         ):
             settings.tools = [
                 self.kernel_function_metadata_to_function_call_format_anthropic(f)
@@ -345,9 +343,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 and settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED
             ) or type == FunctionChoiceType.REQUIRED:
                 settings.tool_choice = {"type": "any"}
-            elif (
-                settings.function_choice_behavior and settings.function_choice_behavior.type_ == FunctionChoiceType.AUTO
-            ) or type == FunctionChoiceType.AUTO:
+            else:
                 settings.tool_choice = {"type": type.value}
 
     def kernel_function_metadata_to_function_call_format_anthropic(

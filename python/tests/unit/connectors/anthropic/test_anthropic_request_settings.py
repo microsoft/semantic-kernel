@@ -1,9 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import pytest
+
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 
 def test_default_anthropic_chat_prompt_execution_settings():
@@ -108,3 +112,18 @@ def test_create_options():
     assert options["temperature"] == 0.5
     assert options["top_p"] == 0.5
     assert options["max_tokens"] == 128
+
+
+def test_tool_choice_none():
+    with pytest.raises(ServiceInvalidExecutionSettingsError):
+        AnthropicChatPromptExecutionSettings(
+            service_id="test_service",
+            extension_data={
+                "temperature": 0.5,
+                "top_p": 0.5,
+                "max_tokens": 128,
+                "tool_choice": {"type": "none"},
+                "messages": [{"role": "system", "content": "Hello"}],
+            },
+            function_choice_behavior=FunctionChoiceBehavior.NoneInvoke(),
+        )
