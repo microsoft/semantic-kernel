@@ -43,9 +43,15 @@ internal class LocalStep : KernelProcessMessageChannel
     /// <param name="loggerFactory">An instance of <see cref="LoggerFactory"/> used to create loggers.</param>
     public LocalStep(KernelProcessStepInfo stepInfo, Kernel kernel, string? parentProcessId = null, ILoggerFactory? loggerFactory = null)
     {
+        // This special handling will be removed with the refactoring of KernelProcessState
+        if (string.IsNullOrEmpty(stepInfo.State.Id) && stepInfo is KernelProcess)
+        {
+            stepInfo = stepInfo with { State = stepInfo.State with { Id = Guid.NewGuid().ToString() } };
+        }
+
         Verify.NotNull(stepInfo);
         Verify.NotNull(kernel);
-        Verify.NotNullOrWhiteSpace(stepInfo.State.Id);
+        Verify.NotNull(stepInfo.State.Id);
 
         this.ParentProcessId = parentProcessId;
         this.LoggerFactory = loggerFactory;
@@ -250,13 +256,13 @@ internal class LocalStep : KernelProcessMessageChannel
                 throw new KernelException("The generic type argument for the KernelProcessStep subclass could not be determined.");
             }
 
-            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Id, this.Name);
+            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, this.Id);
         }
         else
         {
             // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
             stateType = typeof(KernelProcessStepState);
-            stateObject = new KernelProcessStepState(this.Id, this.Name);
+            stateObject = new KernelProcessStepState(this.Name, this.Id);
         }
 
         if (stateObject is null)
