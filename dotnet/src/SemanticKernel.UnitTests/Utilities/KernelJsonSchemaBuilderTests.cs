@@ -11,7 +11,7 @@ public class KernelJsonSchemaBuilderTests
     public void ItShouldBuildJsonSchemaForTypesWithPublicMembersHavingTypesThatCanRepresentOtherTypesWithDefaultValuesInTheConstructor()
     {
         // Arrange & Act
-        var schema = KernelJsonSchemaBuilder.Build(null, typeof(ClassWithDefaultValuesInConstructorForTypesThatCanRepresentOtherTypes));
+        var schema = KernelJsonSchemaBuilder.Build(typeof(ClassWithDefaultValuesInConstructorForTypesThatCanRepresentOtherTypes));
 
         // Assert
         Assert.NotNull(schema?.RootElement);
