@@ -140,7 +140,7 @@ async def main(scenario: Literal["ai_service", "kernel_function", "auto_function
     with tracer.start_as_current_span("main") as current_span:
         print(f"Trace ID: {format_trace_id(current_span.get_span_context().trace_id)}")
 
-        stream = False
+        stream = True
 
         # Scenarios where telemetry is collected in the SDK, from the most basic to the most complex.
         if scenario == "ai_service" or scenario == "all":
