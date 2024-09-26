@@ -3,6 +3,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Steps;
 
 namespace GettingStartedWithProcesses;
 
@@ -31,7 +32,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
         // Create a process that will interact with the chat completion service
         ProcessBuilder process = new("ChatBot");
         var introStep = process.AddStepFromType<IntroStep>();
-        var userInputStep = process.AddStepFromType<UserInputStep>();
+        var userInputStep = process.AddStepFromType<ChatUserInputStep>();
         var responseStep = process.AddStepFromType<ChatBotResponseStep>();
 
         // Define the behavior when the process receives an external event
@@ -83,52 +84,16 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
     /// <summary>
     /// A step that elicits user input.
     /// </summary>
-    private sealed class UserInputStep : KernelProcessStep<UserInputState>
+    private sealed class ChatUserInputStep : ScriptedUserInputStep
     {
-        /// <summary>
-        /// The state object for the user input step. This object holds the user inputs and the current input index.
-        /// </summary>
-        private UserInputState? _state;
-
-        /// <summary>
-        /// Activates the user input step by initializing the state object. This method is called when the process is started
-        /// and before any of the KernelFunctions are invoked.
-        /// </summary>
-        /// <param name="state">The state object for the step.</param>
-        /// <returns>A <see cref="ValueTask"/></returns>
-        public override ValueTask ActivateAsync(KernelProcessStepState<UserInputState> state)
+        public override void PopulateUserInputs()
         {
-            state.State ??= new();
-            _state = state.State;
-
-            _state.UserInputs.Add("Hello");
-            _state.UserInputs.Add("How are you?");
-            _state.UserInputs.Add("exit");
-
-            return ValueTask.CompletedTask;
-        }
-
-        /// <summary>
-        /// Gets the user input.
-        /// </summary>
-        /// <param name="context">An instance of <see cref="KernelProcessStepContext"/> which can be
-        /// used to emit events from within a KernelFunction.</param>
-        /// <returns>A <see cref="ValueTask"/></returns>
-        [KernelFunction("GetUserInput")]
-        public async ValueTask GetUserInputAsync(KernelProcessStepContext context)
-        {
-            var input = _state!.UserInputs[_state.CurrentInputIndex];
-            _state.CurrentInputIndex++;
-
-            if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
+            if (_state != null)
             {
-                // Emit the exit event
-                await context.EmitEventAsync(new() { Id = ChatBotEvents.Exit });
-                return;
+                _state.UserInputs.Add("Hello");
+                _state.UserInputs.Add("How are you?");
+                _state.UserInputs.Add("exit");
             }
-
-            // Emit the user input
-            await context.EmitEventAsync(new() { Id = ChatBotEvents.UserInputReceived, Data = input });
         }
     }
 
@@ -183,16 +148,6 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
     private sealed class ChatBotState
     {
         internal ChatHistory ChatMessages { get; set; } = new();
-    }
-
-    /// <summary>
-    /// The state object for the <see cref="UserInputStep"/>
-    /// </summary>
-    private sealed record UserInputState
-    {
-        public List<string> UserInputs { get; init; } = new();
-
-        public int CurrentInputIndex { get; set; } = 0;
     }
 
     /// <summary>
