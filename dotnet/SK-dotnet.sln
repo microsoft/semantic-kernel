@@ -108,15 +108,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics", "{29E7D971-1308-4171-9872-E8E4669A1134}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\Diagnostics\CompilerServicesAttributes.cs = src\InternalUtilities\src\Diagnostics\CompilerServicesAttributes.cs
+		src\InternalUtilities\src\Diagnostics\DynamicallyAccessedMembersAttribute.cs = src\InternalUtilities\src\Diagnostics\DynamicallyAccessedMembersAttribute.cs
 		src\InternalUtilities\src\Diagnostics\ExceptionExtensions.cs = src\InternalUtilities\src\Diagnostics\ExceptionExtensions.cs
 		src\InternalUtilities\src\Diagnostics\ExperimentalAttribute.cs = src\InternalUtilities\src\Diagnostics\ExperimentalAttribute.cs
 		src\InternalUtilities\src\Diagnostics\IsExternalInit.cs = src\InternalUtilities\src\Diagnostics\IsExternalInit.cs
 		src\InternalUtilities\src\Diagnostics\NullableAttributes.cs = src\InternalUtilities\src\Diagnostics\NullableAttributes.cs
-		src\InternalUtilities\src\Diagnostics\Verify.cs = src\InternalUtilities\src\Diagnostics\Verify.cs
-		src\InternalUtilities\src\Diagnostics\DynamicallyAccessedMembersAttribute.cs = src\InternalUtilities\src\Diagnostics\DynamicallyAccessedMembersAttribute.cs
 		src\InternalUtilities\src\Diagnostics\RequiresDynamicCodeAttribute.cs = src\InternalUtilities\src\Diagnostics\RequiresDynamicCodeAttribute.cs
 		src\InternalUtilities\src\Diagnostics\RequiresUnreferencedCodeAttribute.cs = src\InternalUtilities\src\Diagnostics\RequiresUnreferencedCodeAttribute.cs
 		src\InternalUtilities\src\Diagnostics\UnconditionalSuppressMessageAttribute.cs = src\InternalUtilities\src\Diagnostics\UnconditionalSuppressMessageAttribute.cs
+		src\InternalUtilities\src\Diagnostics\Verify.cs = src\InternalUtilities\src\Diagnostics\Verify.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{B00AD427-0047-4850-BEF9-BA8237EA9D8B}"
@@ -364,7 +364,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.LocalRuntime", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.UnitTests", "src\Experimental\Process.UnitTests\Process.UnitTests.csproj", "{21A32285-8443-4A75-B2E8-27E6090EC562}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GettingStartedWithProcesses", "samples\GettingStartedWithProcesses\GettingStartedWithProcesses.csproj", "{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GettingStartedWithProcesses", "samples\GettingStartedWithProcesses\GettingStartedWithProcesses.csproj", "{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aot", "aot", "{63A7D2E5-0219-489A-AC15-32D39BE658D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AotCompatibility.TestApp", "src\Aot\AotCompatibility.TestApp\AotCompatibility.TestApp.csproj", "{B3988299-39E5-4CC8-AC41-236BCFAC30CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -931,6 +935,12 @@ Global
 		{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3988299-39E5-4CC8-AC41-236BCFAC30CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3988299-39E5-4CC8-AC41-236BCFAC30CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3988299-39E5-4CC8-AC41-236BCFAC30CB}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{B3988299-39E5-4CC8-AC41-236BCFAC30CB}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{B3988299-39E5-4CC8-AC41-236BCFAC30CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3988299-39E5-4CC8-AC41-236BCFAC30CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1059,6 +1069,8 @@ Global
 		{27AF60D6-86F5-4591-A700-4F8C93F41B11} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{21A32285-8443-4A75-B2E8-27E6090EC562} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7} = {FA3720F1-C99A-49B2-9577-A940257098BF}
+		{63A7D2E5-0219-489A-AC15-32D39BE658D7} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
+		{B3988299-39E5-4CC8-AC41-236BCFAC30CB} = {63A7D2E5-0219-489A-AC15-32D39BE658D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
