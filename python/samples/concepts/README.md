@@ -22,6 +22,7 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | Search | Using search services information |
 | Service Selector | Shows how to create and use a custom service selector class. |
 | Setup | How to setup environment variables for Semantic Kernel |
+| Structured Output | How to leverage OpenAI's json_schema structured output functionality. |
 | TextGeneration | Using [`TextGeneration`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/text_completion_client_base.py) capable service with models  |
 
 # Configuring the Kernel

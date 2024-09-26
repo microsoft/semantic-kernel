@@ -81,6 +81,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         // Verify.
         Verify.NotNull(mongoDatabase);
         Verify.NotNullOrWhiteSpace(collectionName);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.BsonDocumentCustomMapper is not null, AzureCosmosDBMongoDBConstants.SupportedKeyTypes);
+        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._mongoDatabase = mongoDatabase;
@@ -109,10 +111,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             this._firstVectorProperty = this._vectorProperties[0];
         }
 
-        this._mapper = this._options.BsonDocumentCustomMapper ??
-            new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(
-                this._vectorStoreRecordDefinition,
-                properties.KeyProperty.DataModelPropertyName);
+        this._mapper = this.InitializeMapper(properties.KeyProperty);
     }
 
     /// <inheritdoc />
@@ -167,6 +166,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         const string OperationName = "Find";
 
+        var includeVectors = options?.IncludeVectors ?? false;
+
         var record = await this.RunOperationAsync(OperationName, async () =>
         {
             using var cursor = await this
@@ -185,7 +186,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             DatabaseName,
             this.CollectionName,
             OperationName,
-            () => this._mapper.MapFromStorageToDataModel(record, new()));
+            () => this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors }));
     }
 
     /// <inheritdoc />
@@ -478,13 +479,20 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         foreach (var property in allProperties)
         {
             var propertyInfo = dataModel.GetProperty(property.DataModelPropertyName);
+            string propertyName;
 
             if (propertyInfo != null)
             {
                 var bsonElementAttribute = propertyInfo.GetCustomAttribute<BsonElementAttribute>();
 
-                storagePropertyNames[property.DataModelPropertyName] = bsonElementAttribute?.ElementName ?? property.DataModelPropertyName;
+                propertyName = bsonElementAttribute?.ElementName ?? property.DataModelPropertyName;
             }
+            else
+            {
+                propertyName = property.DataModelPropertyName;
+            }
+
+            storagePropertyNames[property.DataModelPropertyName] = propertyName;
         }
 
         return storagePropertyNames;
@@ -515,6 +523,24 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         // If vector property is not provided in options, return first vector property from schema.
         return this._firstVectorProperty;
+    }
+
+    /// <summary>
+    /// Returns custom mapper, generic data model mapper or default record mapper.
+    /// </summary>
+    private IVectorStoreRecordMapper<TRecord, BsonDocument> InitializeMapper(VectorStoreRecordKeyProperty keyProperty)
+    {
+        if (this._options.BsonDocumentCustomMapper is not null)
+        {
+            return this._options.BsonDocumentCustomMapper;
+        }
+
+        if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
+        {
+            return (new AzureCosmosDBMongoDBGenericDataModelMapper(this._vectorStoreRecordDefinition) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
+        }
+
+        return new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, keyProperty.DataModelPropertyName);
     }
 
     #endregion
