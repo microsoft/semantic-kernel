@@ -18,7 +18,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
     /// user input, interacts with the chat completion service, and demonstrates cycles
     /// in the process.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A <see cref="Task"/></returns>
     [Fact]
     public async Task UseSimpleProcessAsync()
     {
@@ -36,7 +36,8 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
         var responseStep = process.AddStepFromType<ChatBotResponseStep>();
 
         // Define the behavior when the process receives an external event
-        process.OnExternalEvent(ChatBotEvents.StartProcess)
+        process
+            .OnExternalEvent(ChatBotEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(introStep));
 
         // When the intro is complete, notify the userInput step
@@ -74,7 +75,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
         /// <summary>
         /// Prints an introduction message to the console.
         /// </summary>
-        [KernelFunction()]
+        [KernelFunction]
         public void PrintIntroMessage()
         {
             System.Console.WriteLine("Welcome to Processes in Semantic Kernel.\n");
