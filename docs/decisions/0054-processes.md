@@ -1,6 +1,6 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
 contact: bentho
 date: September 20, 2024
 deciders: bentho, markwallace, estenori, crickman, eavanvalkenburg, evchaki
