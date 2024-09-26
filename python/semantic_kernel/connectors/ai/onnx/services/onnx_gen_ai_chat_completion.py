@@ -51,26 +51,27 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         """Initializes a new instance of the OnnxGenAITextCompletion class.
 
         Args:
-            template (ONNXTemplate): The chat template configuration.
-            ai_model_path (str): Local path to the ONNX model Folder.
-            ai_model_id (str, optional): The ID of the AI model. Defaults to None.
-            env_file_path (str | None): Use the environment settings file as a fallback
+            template : The chat template configuration.
+            ai_model_path : Local path to the ONNX model Folder.
+            ai_model_id : The ID of the AI model. Defaults to None.
+            env_file_path : Use the environment settings file as a fallback
                 to environment variables.
-            env_file_encoding (str | None): The encoding of the environment settings file.
+            env_file_encoding : The encoding of the environment settings file.
         """
         try:
             settings = OnnxGenAISettings.create(
                 folder=ai_model_path,
+                ai_model_id=ai_model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise ServiceInitializationError(f"Error creating OnnxGenAISettings: {e!s}") from e
+            raise ServiceInitializationError(f"Error creating OnnxGenAISettings: {e}") from e
 
-        if ai_model_id is None:
-            ai_model_id = settings.folder
+        if settings.ai_model_id is None:
+            settings.ai_model_id = settings.folder
 
-        super().__init__(ai_model_id=ai_model_id, ai_model_path=settings.folder, template=template)
+        super().__init__(ai_model_id=settings.ai_model_id, ai_model_path=settings.folder, template=template)
 
     @override
     async def _inner_get_chat_message_contents(
@@ -81,9 +82,9 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         """Create chat message contents, in the number specified by the settings.
 
         Args:
-            chat_history (ChatHistory): A list of chats in a chat_history object, that can be
+            chat_history : A list of chats in a chat_history object, that can be
                 rendered into messages from system, user, assistant and tools.
-            settings (PromptExecutionSettings): Settings for the request.
+            settings : Settings for the request.
 
         Returns:
             A list of chat message contents representing the response(s) from the LLM.
@@ -93,10 +94,8 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         assert isinstance(settings, OnnxGenAIPromptExecutionSettings)  # nosec
         prompt = self._prepare_chat_history_for_request(chat_history)
         images = self._get_images_from_history(chat_history)
-        new_tokens = ""
-        async for new_token in self._generate_next_token(prompt, settings, images):
-            new_tokens += new_token
-        return [self._create_chat_message_content(new_tokens)]
+        choices = await self._generate_next_token(prompt, settings, images)
+        return [self._create_chat_message_content(choice) for choice in choices]
 
     @override
     async def _inner_get_streaming_chat_message_contents(
@@ -107,9 +106,9 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         """Create streaming chat message contents, in the number specified by the settings.
 
         Args:
-            chat_history (ChatHistory): A list of chat chat_history, that can be rendered into a
+            chat_history : A list of chat chat_history, that can be rendered into a
                 set of chat_history, from system, user, assistant and function.
-            settings (PromptExecutionSettings): Settings for the request.
+            settings : Settings for the request.
 
         Yields:
             A stream representing the response(s) from the LLM.
@@ -119,25 +118,28 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         assert isinstance(settings, OnnxGenAIPromptExecutionSettings)  # nosec
         prompt = self._prepare_chat_history_for_request(chat_history)
         images = self._get_images_from_history(chat_history)
-        async for new_token in self._generate_next_token(prompt, settings, images):
-            yield [self._create_streaming_chat_message_content(new_token)]
+        async for chunk in self._generate_next_token_async(prompt, settings, images):
+            yield [
+                self._create_streaming_chat_message_content(choice_index, new_token)
+                for choice_index, new_token in enumerate(chunk)
+            ]
 
-    def _create_chat_message_content(self, model_output: str) -> ChatMessageContent:
+    def _create_chat_message_content(self, choice: str) -> ChatMessageContent:
         return ChatMessageContent(
             role=AuthorRole.ASSISTANT,
             items=[
                 TextContent(
-                    text=model_output,
+                    text=choice,
                     ai_model_id=self.ai_model_id,
                 )
             ],
         )
 
-    def _create_streaming_chat_message_content(self, new_token: str) -> StreamingChatMessageContent:
+    def _create_streaming_chat_message_content(self, choice_index: int, choice: str) -> StreamingChatMessageContent:
         return StreamingChatMessageContent(
             role=AuthorRole.ASSISTANT,
-            choice_index=0,
-            content=new_token,
+            choice_index=choice_index,
+            content=choice,
             ai_model_id=self.ai_model_id,
         )
 

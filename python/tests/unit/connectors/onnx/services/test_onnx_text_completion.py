@@ -46,10 +46,10 @@ def test_onnx_chat_completion_with_missing_ai_path(onnx_unit_test_env):
 @pytest.mark.asyncio
 async def test_onnx_text_completion(gen_ai_config, model, tokenizer):
     generator_mock = MagicMock()
-    generator_mock.__aiter__.return_value = ["H", "e", "l", "l", "o"]
+    generator_mock.__aiter__.return_value = [["H"], ["e"], ["l"], ["l"], ["o"]]
 
     text_completion = OnnxGenAITextCompletion(ai_model_path="test")
-    with patch.object(text_completion, "_generate_next_token", return_value=generator_mock):
+    with patch.object(text_completion, "_generate_next_token_async", return_value=generator_mock):
         completed_text: TextContent = await text_completion.get_text_content(
             prompt="test", settings=OnnxGenAIPromptExecutionSettings()
         )
@@ -63,11 +63,11 @@ async def test_onnx_text_completion(gen_ai_config, model, tokenizer):
 @pytest.mark.asyncio
 async def test_onnx_text_completion_streaming(gen_ai_config, model, tokenizer):
     generator_mock = MagicMock()
-    generator_mock.__aiter__.return_value = ["H", "e", "l", "l", "o"]
+    generator_mock.__aiter__.return_value = [["H"], ["e"], ["l"], ["l"], ["o"]]
 
     text_completion = OnnxGenAITextCompletion(ai_model_path="test")
     completed_text: str = ""
-    with patch.object(text_completion, "_generate_next_token", return_value=generator_mock):
+    with patch.object(text_completion, "_generate_next_token_async", return_value=generator_mock):
         async for chunk in text_completion.get_streaming_text_content(
             prompt="test", settings=OnnxGenAIPromptExecutionSettings()
         ):

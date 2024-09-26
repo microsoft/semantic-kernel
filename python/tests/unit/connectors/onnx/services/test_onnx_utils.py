@@ -21,7 +21,7 @@ def test_phi3v_template_with_text_and_image():
         "<|user|>\nUser text message<|end|>\n"
         "<|image_1|>\n"
         "<|assistant|>\nAssistant message<|end|>\n"
-        "<|assistant|>"
+        "<|assistant|>\n"
     )
 
     assert phi3v_template(history) == expected_output
@@ -30,7 +30,7 @@ def test_phi3v_template_with_text_and_image():
 def test_phi3_template_with_only_text():
     history = ChatHistory(messages=[{"role": AuthorRole.USER, "items": [TextContent(text="User text message")]}])
 
-    expected_output = "<|user|>\nUser text message<|end|>\n<|assistant|>"
+    expected_output = "<|user|>\nUser text message<|end|>\n<|assistant|>\n"
 
     assert phi3_template(history) == expected_output
 

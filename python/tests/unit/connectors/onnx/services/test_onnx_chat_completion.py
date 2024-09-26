@@ -80,7 +80,7 @@ def test_onnx_chat_completion_with_missing_ai_path(onnx_unit_test_env):
 @pytest.mark.asyncio
 async def test_onnx_chat_completion(gen_ai_config, model, tokenizer):
     generator_mock = MagicMock()
-    generator_mock.__aiter__.return_value = ["H", "e", "l", "l", "o"]
+    generator_mock.__aiter__.return_value = [["H"], ["e"], ["l"], ["l"], ["o"]]
 
     chat_completion = OnnxGenAIChatCompletion(
         template=ONNXTemplate.PHI3,
@@ -90,7 +90,7 @@ async def test_onnx_chat_completion(gen_ai_config, model, tokenizer):
     history.add_system_message("test")
     history.add_user_message("test")
 
-    with patch.object(chat_completion, "_generate_next_token", return_value=generator_mock):
+    with patch.object(chat_completion, "_generate_next_token_async", return_value=generator_mock):
         completed_text: ChatMessageContent = await chat_completion.get_chat_message_content(
             prompt="test", chat_history=history, settings=OnnxGenAIPromptExecutionSettings(), kernel=Kernel()
         )
@@ -104,7 +104,7 @@ async def test_onnx_chat_completion(gen_ai_config, model, tokenizer):
 @pytest.mark.asyncio
 async def test_onnx_chat_completion_streaming(gen_ai_config, model, tokenizer):
     generator_mock = MagicMock()
-    generator_mock.__aiter__.return_value = ["H", "e", "l", "l", "o"]
+    generator_mock.__aiter__.return_value = [["H"], ["e"], ["l"], ["l"], ["o"]]
 
     chat_completion = OnnxGenAIChatCompletion(
         template=ONNXTemplate.PHI3,
@@ -116,7 +116,7 @@ async def test_onnx_chat_completion_streaming(gen_ai_config, model, tokenizer):
 
     completed_text: str = ""
 
-    with patch.object(chat_completion, "_generate_next_token", return_value=generator_mock):
+    with patch.object(chat_completion, "_generate_next_token_async", return_value=generator_mock):
         async for chunk in chat_completion.get_streaming_chat_message_content(
             prompt="test", chat_history=history, settings=OnnxGenAIPromptExecutionSettings(), kernel=Kernel()
         ):

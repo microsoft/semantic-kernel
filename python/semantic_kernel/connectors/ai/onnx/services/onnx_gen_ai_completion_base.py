@@ -25,7 +25,7 @@ class OnnxGenAICompletionBase(KernelBaseModel):
         """Creates a new instance of the OnnxGenAICompletionBase class, loads model & tokenizer.
 
         Args:
-            ai_model_path (str): Path to Onnx Model.
+            ai_model_path : Path to Onnx Model.
             **kwargs: Additional keyword arguments.
 
         Raises:
@@ -42,8 +42,8 @@ class OnnxGenAICompletionBase(KernelBaseModel):
                 else:
                     tokenizer = OnnxRuntimeGenAi.Tokenizer(model)
                 tokenizer_stream = tokenizer.create_stream()
-        except Exception as e:
-            raise ServiceInitializationError(f"Failed to initialize OnnxTextCompletion service: {e}")
+        except Exception as ex:
+            raise ServiceInitializationError("Failed to initialize OnnxTextCompletion service", ex) from ex
 
         super().__init__(
             model=model,
@@ -70,12 +70,12 @@ class OnnxGenAICompletionBase(KernelBaseModel):
             params.set_inputs(input_tokens)
         return params
 
-    async def _generate_next_token(
+    async def _generate_next_token_async(
         self,
         prompt: str,
         settings: OnnxGenAIPromptExecutionSettings,
         image: ImageContent | None = None,
-    ) -> AsyncGenerator[str, Any]:
+    ) -> AsyncGenerator[list[str], Any]:
         try:
             params = self._prepare_input_params(prompt, settings, image)
             generator = OnnxRuntimeGenAi.Generator(self.model, params)
@@ -83,7 +83,23 @@ class OnnxGenAICompletionBase(KernelBaseModel):
             while not generator.is_done():
                 generator.compute_logits()
                 generator.generate_next_token()
-                new_token = self.tokenizer_stream.decode(generator.get_next_tokens()[0])
-                yield new_token
-        except Exception as e:
-            raise ServiceInvalidResponseError("Failed Inference with ONNX") from e
+                new_token_choices = [self.tokenizer_stream.decode(token) for token in generator.get_next_tokens()]
+                yield new_token_choices
+            del generator
+        except Exception as ex:
+            raise ServiceInvalidResponseError("Failed Inference with ONNX", ex) from ex
+
+    async def _generate_next_token(
+        self,
+        prompt: str,
+        settings: OnnxGenAIPromptExecutionSettings,
+        image: ImageContent | None = None,
+    ):
+        token_choices: list[str] = []
+        async for new_token_choice in self._generate_next_token_async(prompt, settings, image):
+            # zip only works if the lists are the same length
+            if len(token_choices) == 0:
+                token_choices = new_token_choice
+            else:
+                token_choices = [old_token + new_token for old_token, new_token in zip(token_choices, new_token_choice)]
+        return token_choices

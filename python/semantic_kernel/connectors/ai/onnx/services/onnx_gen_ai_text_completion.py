@@ -39,26 +39,27 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
         """Initializes a new instance of the OnnxGenAITextCompletion class.
 
         Args:
-            ai_model_path (str | None): Local path to the ONNX model Folder.
-            ai_model_id (str, optional): The ID of the AI model. Defaults to None.
-            env_file_path (str | None): Use the environment settings file as a fallback
+            ai_model_path : Local path to the ONNX model Folder.
+            ai_model_id : The ID of the AI model. Defaults to None.
+            env_file_path : Use the environment settings file as a fallback
                 to environment variables.
-            env_file_encoding (str | None): The encoding of the environment settings file.
+            env_file_encoding : The encoding of the environment settings file.
         """
         try:
             settings = OnnxGenAISettings.create(
                 folder=ai_model_path,
+                ai_model_id=ai_model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
             raise ServiceInitializationError(f"Invalid settings for OnnxGenAITextCompletion: {e}")
 
-        if ai_model_id is None:
-            ai_model_id = settings.folder
+        if settings.ai_model_id is None:
+            settings.ai_model_id = settings.folder
 
         super().__init__(
-            ai_model_id=ai_model_id,
+            ai_model_id=settings.ai_model_id,
             ai_model_path=settings.folder,
         )
 
@@ -71,8 +72,8 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
         Args:
-            prompt (str): The prompt to send to the LLM.
-            settings (OnnxGenAIPromptExecutionSettings): Settings for the request.
+            prompt : The prompt to send to the LLM.
+            settings : Settings for the request.
 
         Returns:
             List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
@@ -81,15 +82,13 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OnnxGenAIPromptExecutionSettings)  # nosec
 
-        new_tokens = ""
-        async for new_token in self._generate_next_token(prompt, settings):
-            new_tokens += new_token
-
+        choices = await self._generate_next_token(prompt, settings)
         return [
             TextContent(
-                text=new_tokens,
+                text=choice,
                 ai_model_id=self.ai_model_id,
             )
+            for choice in choices
         ]
 
     @override
@@ -103,8 +102,8 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
         Note that this method does not support multiple responses.
 
         Args:
-            prompt (str): Prompt to complete.
-            settings (OnnxGenAIPromptExecutionSettings): Request settings.
+            prompt : Prompt to complete.
+            settings : Request settings.
 
         Yields:
             List[StreamingTextContent]: List of StreamingTextContent objects.
@@ -113,11 +112,12 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OnnxGenAIPromptExecutionSettings)  # nosec
 
-        async for new_token in self._generate_next_token(prompt, settings):
+        async for token_choice in self._generate_next_token_async(prompt, settings):
             yield [
                 StreamingTextContent(
-                    choice_index=0, inner_content=new_token, text=new_token, ai_model_id=self.ai_model_id
+                    choice_index=index, inner_content=new_token, text=new_token, ai_model_id=self.ai_model_id
                 )
+                for index, new_token in enumerate(token_choice)
             ]
 
         return

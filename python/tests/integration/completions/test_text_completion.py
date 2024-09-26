@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import os
 import sys
 from functools import partial, reduce
 from typing import Any
@@ -37,37 +38,36 @@ else:
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.exceptions import ServiceInitializationError
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.integration.completions.test_utils import retry
 
 ollama_setup: bool = False
 try:
-    OllamaTextCompletion()
-    ollama_setup = True
-except ServiceInitializationError:
+    if os.environ["OLLAMA_MODEL"]:
+        ollama_setup = True
+except KeyError:
     ollama_setup = False
-
-onnx_setup: bool = False
-try:
-    OnnxGenAITextCompletion()
-    onnx_setup = True
-except ServiceInitializationError:
-    onnx_setup = False
 
 google_ai_setup: bool = False
 try:
-    GoogleAITextCompletion()
-    google_ai_setup = True
-except ServiceInitializationError:
+    if os.environ["GOOGLE_AI_API_KEY"]:
+        google_ai_setup = True
+except KeyError:
     google_ai_setup = False
 
 vertex_ai_setup: bool = False
 try:
-    VertexAITextCompletion()
-    vertex_ai_setup = True
-except ServiceInitializationError:
+    if os.environ["VERTEX_AI_PROJECT_ID"]:
+        vertex_ai_setup = True
+except KeyError:
     vertex_ai_setup = False
+
+anthropic_setup: bool = False
+try:
+    if os.environ["ONNX_GEN_AI_FOLDER"]:
+        onnx_setup = True
+except KeyError:
+    onnx_setup = False
 
 
 pytestmark = pytest.mark.parametrize(

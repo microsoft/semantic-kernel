@@ -63,7 +63,7 @@ def phi3_template(history: ChatHistory) -> str:
     phi3_input = ""
     for message in history.messages:
         phi3_input += f"<|{message.role.value}|>\n{message.content}<|end|>\n"
-    phi3_input += "<|assistant|>"
+    phi3_input += "<|assistant|>\n"
     return phi3_input
 
 
@@ -90,7 +90,7 @@ def phi3v_template(history: ChatHistory) -> str:
                     phi3v_input += "<|image_1|>\n"
         if message.role == AuthorRole.ASSISTANT:
             phi3v_input += f"<|assistant|>\n{message.content}<|end|>\n"
-    phi3v_input += "<|assistant|>"
+    phi3v_input += "<|assistant|>\n"
     return phi3v_input
 
 
