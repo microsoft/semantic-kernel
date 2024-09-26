@@ -47,6 +47,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     private static readonly HashSet<Type> s_supportedDataTypes =
     [
         typeof(string),
+        typeof(bool),
+        typeof(bool?),
         typeof(int),
         typeof(int?),
         typeof(long),
@@ -66,9 +68,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         typeof(DateTimeOffset),
         typeof(DateTimeOffset?),
         typeof(Guid),
-        typeof(Guid?),
-        typeof(bool),
-        typeof(bool?)
+        typeof(Guid?)
     ];
 
     /// <summary>Default JSON serializer options.</summary>
@@ -158,14 +158,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         this._vectorProperties = properties.VectorProperties;
 
         // Assign mapper.
-        this._mapper = this._options.JsonObjectCustomMapper ??
-            new WeaviateVectorStoreRecordMapper<TRecord>(
-                this.CollectionName,
-                this._keyProperty,
-                this._dataProperties,
-                this._vectorProperties,
-                this._storagePropertyNames,
-                s_jsonSerializerOptions);
+        this._mapper = this.InitializeMapper();
     }
 
     /// <inheritdoc />
@@ -399,6 +392,38 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 OperationName = operationName
             };
         }
+    }
+
+    /// <summary>
+    /// Returns custom mapper, generic data model mapper or default record mapper.
+    /// </summary>
+    private IVectorStoreRecordMapper<TRecord, JsonObject> InitializeMapper()
+    {
+        if (this._options.JsonObjectCustomMapper is not null)
+        {
+            return this._options.JsonObjectCustomMapper;
+        }
+
+        if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<Guid>))
+        {
+            var mapper = new WeaviateGenericDataModelMapper(
+                this.CollectionName,
+                this._keyProperty,
+                this._dataProperties,
+                this._vectorProperties,
+                this._storagePropertyNames,
+                s_jsonSerializerOptions);
+
+            return (mapper as IVectorStoreRecordMapper<TRecord, JsonObject>)!;
+        }
+
+        return new WeaviateVectorStoreRecordMapper<TRecord>(
+            this.CollectionName,
+            this._keyProperty,
+            this._dataProperties,
+            this._vectorProperties,
+            this._storagePropertyNames,
+            s_jsonSerializerOptions);
     }
 
     #endregion
