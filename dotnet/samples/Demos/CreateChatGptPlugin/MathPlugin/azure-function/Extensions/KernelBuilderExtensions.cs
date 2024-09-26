@@ -10,22 +10,22 @@ internal static class KernelBuilderExtensions
     /// Adds a chat completion service to the list. It can be either an OpenAI or Azure OpenAI backend service.
     /// </summary>
     /// <param name="kernelBuilder"></param>
-    /// <param name="kernelSettings"></param>
+    /// <param name="serviceSettings"></param>
     /// <exception cref="ArgumentException"></exception>
-    internal static IServiceCollection WithChatCompletionService(this IServiceCollection kernelBuilder, KernelSettings kernelSettings)
+    internal static IServiceCollection WithChatCompletionService(this IServiceCollection kernelBuilder, AIServiceSettings serviceSettings)
     {
-        switch (kernelSettings.ServiceType.ToUpperInvariant())
+        switch (serviceSettings.ServiceType.ToUpperInvariant())
         {
             case ServiceTypes.AzureOpenAI:
-                kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName: kernelSettings.DeploymentOrModelId, modelId: kernelSettings.DeploymentOrModelId, endpoint: kernelSettings.Endpoint, apiKey: kernelSettings.ApiKey, serviceId: kernelSettings.ServiceId);
+                kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName: serviceSettings.DeploymentOrModelId, modelId: serviceSettings.DeploymentOrModelId, endpoint: serviceSettings.Endpoint, apiKey: serviceSettings.ApiKey, serviceId: serviceSettings.ServiceId);
                 break;
 
             case ServiceTypes.OpenAI:
-                kernelBuilder.AddOpenAIChatCompletion(modelId: kernelSettings.DeploymentOrModelId, apiKey: kernelSettings.ApiKey, orgId: kernelSettings.OrgId, serviceId: kernelSettings.ServiceId);
+                kernelBuilder.AddOpenAIChatCompletion(modelId: serviceSettings.DeploymentOrModelId, apiKey: serviceSettings.ApiKey, orgId: serviceSettings.OrgId, serviceId: serviceSettings.ServiceId);
                 break;
 
             default:
-                throw new ArgumentException($"Invalid service type value: {kernelSettings.ServiceType}");
+                throw new ArgumentException($"Invalid service type value: {serviceSettings.ServiceType}");
         }
 
         return kernelBuilder;

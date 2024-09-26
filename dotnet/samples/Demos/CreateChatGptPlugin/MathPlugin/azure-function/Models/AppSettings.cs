@@ -10,8 +10,8 @@ public class AppSettings
 {
     public const string DefaultConfigFile = "appsettings.json";
 
-    public KernelSettings Kernel { get; set; }
-    public Pluginsettings AIPlugin { get; set; }
+    public AIServiceSettings AIService { get; set; }
+    public PluginSettings AIPlugin { get; set; }
 
     /// <summary>
     /// Load the kernel settings from settings.json if the file exists and if not attempt to use user secrets.
@@ -21,7 +21,7 @@ public class AppSettings
         try
         {
             var appSettings = FromFile(DefaultConfigFile);
-            appSettings.Kernel.ApiKey = GetApiKey();
+            appSettings.AIService.ApiKey = GetApiKey();
 
             return appSettings;
         }
