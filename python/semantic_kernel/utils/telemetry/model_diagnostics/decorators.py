@@ -33,7 +33,9 @@ MODEL_DIAGNOSTICS_SETTINGS = ModelDiagnosticSettings.create()
 
 # Operation names
 CHAT_COMPLETION_OPERATION = "chat.completions"
+CHAT_STREAMING_COMPLETION_OPERATION = "chat.streaming_completions"
 TEXT_COMPLETION_OPERATION = "text.completions"
+TEXT_STREAMING_COMPLETION_OPERATION = "text.streaming_completions"
 
 # Creates a tracer from the global tracer provider
 tracer = get_tracer(__name__)
@@ -151,7 +153,7 @@ def trace_streaming_chat_completion(model_provider: str) -> Callable:
 
             with use_span(
                 _start_completion_activity(
-                    CHAT_COMPLETION_OPERATION,
+                    CHAT_STREAMING_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
                     completion_service.service_url(),
@@ -265,7 +267,7 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
 
             with use_span(
                 _start_completion_activity(
-                    TEXT_COMPLETION_OPERATION,
+                    TEXT_STREAMING_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
                     completion_service.service_url(),

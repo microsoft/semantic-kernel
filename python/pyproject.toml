@@ -41,7 +41,6 @@ dependencies = [
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
     "opentelemetry-sdk ~= 1.24",
-
     "prance ~= 23.6.21.0",
 
     # templating
