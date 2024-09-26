@@ -30,6 +30,7 @@ public class NewAccountStep : KernelProcessStep
             UserId = customerDetails.UserId,
             UserPhoneNumber = customerDetails.UserPhoneNumber,
             UserState = customerDetails.UserState,
+            UserEmail = customerDetails.UserEmail,
             AccountId = accountId,
             AccountType = AccountType.PrimeABC,
         };

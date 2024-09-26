@@ -32,6 +32,13 @@ public class WelcomePacketStep : KernelProcessStep
                 Account Type: {accountDetails.AccountType}
 
                 Please keep this confidential for security purposes.
+
+                Here is the contact information we have in file:
+
+                Email: {accountDetails.UserEmail}
+                Phone: {accountDetails.UserPhoneNumber}
+
+                Thank you for opening an account with us!
                 """
         });
     }
