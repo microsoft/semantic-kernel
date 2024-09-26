@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Data;
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
-/// A mapper that maps between the generic semantic kernel data model and the model that the data is stored in in Redis when using JSON.
+/// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Redis when using JSON.
 /// </summary>
 internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, (string Key, JsonNode Node)>
 {

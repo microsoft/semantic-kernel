@@ -373,15 +373,7 @@ internal static class VectorStoreRecordPropertyReader
         // Check all collection scenarios and get stored type.
         if (supportedEnumerableTypes.Count > 0 && typeof(IEnumerable).IsAssignableFrom(propertyType))
         {
-            var typeToCheck = propertyType switch
-            {
-                IEnumerable => typeof(object),
-                var enumerableType when enumerableType.IsGenericType && enumerableType.GetGenericTypeDefinition() == typeof(IEnumerable<>) => enumerableType.GetGenericArguments()[0],
-                var arrayType when arrayType.IsArray => arrayType.GetElementType()!,
-                var interfaceType when interfaceType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type enumerableInterface =>
-                    enumerableInterface.GetGenericArguments()[0],
-                _ => propertyType
-            };
+            var typeToCheck = GetCollectionElementType(propertyType);
 
             if (!supportedEnumerableTypes.Contains(typeToCheck))
             {
@@ -584,5 +576,21 @@ internal static class VectorStoreRecordPropertyReader
         }
 
         return storagePropertyNameMap;
+    }
+
+    /// <summary>
+    /// Returns <see cref="Type"/> of collection elements.
+    /// </summary>
+    public static Type GetCollectionElementType(Type collectionType)
+    {
+        return collectionType switch
+        {
+            IEnumerable => typeof(object),
+            var enumerableType when enumerableType.IsGenericType && enumerableType.GetGenericTypeDefinition() == typeof(IEnumerable<>) => enumerableType.GetGenericArguments()[0],
+            var arrayType when arrayType.IsArray => arrayType.GetElementType()!,
+            var interfaceType when interfaceType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type enumerableInterface =>
+                enumerableInterface.GetGenericArguments()[0],
+            _ => collectionType
+        };
     }
 }

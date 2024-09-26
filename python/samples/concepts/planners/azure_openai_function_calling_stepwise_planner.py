@@ -20,8 +20,8 @@ async def main():
     )
 
     plugin_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
-        "resources", 
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        "resources",
     )
     kernel.add_plugin(parent_directory=plugin_path, plugin_name="email_plugin")
 
