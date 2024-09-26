@@ -115,7 +115,7 @@ def test_create_options():
 
 
 def test_tool_choice_none():
-    with pytest.raises(ServiceInvalidExecutionSettingsError):
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="Tool choice 'none' is not supported by Anthropic."):
         AnthropicChatPromptExecutionSettings(
             service_id="test_service",
             extension_data={
