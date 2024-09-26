@@ -85,7 +85,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the colelction.</param>
+    /// <param name="collectionName">The name of the collection.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
