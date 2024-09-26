@@ -756,7 +756,13 @@ internal partial class ClientCore
                 return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
             }
 
-            return [new AssistantChatMessage(toolCalls) { ParticipantName = message.AuthorName, Content = { message.Content } }];
+            var assistantMessage = new AssistantChatMessage(toolCalls) { ParticipantName = message.AuthorName };
+            if (message.Content is { } content)
+            {
+                assistantMessage.Content.Add(content);
+            }
+
+            return [assistantMessage];
         }
 
         throw new NotSupportedException($"Role {message.Role} is not supported.");
