@@ -20,9 +20,8 @@ public class DisplayAssistantMessageStep : KernelProcessStep
     public async ValueTask DisplayAssistantMessageAsync(KernelProcessStepContext context, string assistantMessage)
     {
         Console.ForegroundColor = ConsoleColor.Blue;
-        Console.Write("Assistant: ");
+        Console.WriteLine($"ASSISTANT: {assistantMessage}\n");
         Console.ResetColor();
-        Console.WriteLine(assistantMessage);
 
         // Emit the assistantMessageGenerated
         await context.EmitEventAsync(new() { Id = CommonEvents.AssistantResponseGenerated, Data = assistantMessage });

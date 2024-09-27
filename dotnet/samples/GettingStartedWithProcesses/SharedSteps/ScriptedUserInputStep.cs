@@ -61,9 +61,8 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
         _state.CurrentInputIndex++;
 
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.Write("User: ");
+        Console.WriteLine($"USER: {userMessage}");
         Console.ResetColor();
-        Console.WriteLine(userMessage);
 
         // Emit the user input
         await context.EmitEventAsync(new() { Id = CommonEvents.UserInputReceived, Data = userMessage });
