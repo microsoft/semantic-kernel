@@ -30,7 +30,7 @@ def mock_cursor():
 
 
 @fixture(autouse=True)
-def mock_connection_pool(mock_cursor: Mock, postgres_unit_test_env):
+def mock_connection_pool(mock_cursor: Mock):
     with (
         patch(
             f"{AsyncConnectionPool.__module__}.{AsyncConnectionPool.__qualname__}.connection",
@@ -51,7 +51,7 @@ def mock_connection_pool(mock_cursor: Mock, postgres_unit_test_env):
 
 
 @pytest_asyncio.fixture
-async def vector_store() -> AsyncGenerator[PostgresStore, None]:
+async def vector_store(postgres_unit_test_env) -> AsyncGenerator[PostgresStore, None]:
     async with await PostgresSettings.create(env_file_path="test.env").create_connection_pool() as pool:
         yield PostgresStore(connection_pool=pool)
 
