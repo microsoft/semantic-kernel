@@ -80,35 +80,23 @@ public abstract class BaseTest : TextWriter
         }
     }
 
-    /// <summary>
-    /// This method can be substituted by Console.WriteLine when used in Console apps.
-    /// </summary>
-    /// <param name="value">Target object to write</param>
+    /// <inheritdoc/>
     public override void WriteLine(object? value = null)
         => this.Output.WriteLine(value ?? string.Empty);
 
-    /// <summary>
-    /// This method can be substituted by Console.WriteLine when used in Console apps.
-    /// </summary>
-    /// <param name="format">Format string</param>
-    /// <param name="arg">Arguments</param>
+    /// <inheritdoc/>
     public override void WriteLine(string? format, params object?[] arg)
         => this.Output.WriteLine(format ?? string.Empty, arg);
 
-    /// <summary>
-    /// This method can be substituted by Console.WriteLine when used in Console apps.
-    /// </summary>
-    /// <param name="value">The message</param>
+    /// <inheritdoc/>
     public override void WriteLine(string? value)
         => this.Output.WriteLine(value ?? string.Empty);
 
-    /// <summary>
-    /// Current interface ITestOutputHelper does not have a Write method. This extension method adds it to make it analogous to Console.Write when used in Console apps.
-    /// </summary>
-    /// <param name="value">Target object to write</param>
+    /// <inheritdoc/>
     public override void Write(object? value = null)
         => this.Output.WriteLine(value ?? string.Empty);
 
+    /// <inheritdoc/>
     public override Encoding Encoding => Encoding.UTF8;
 
     /// <summary>
