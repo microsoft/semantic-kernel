@@ -258,32 +258,29 @@ def test_settings_connection_string() -> None:
     assert conn_info["password"] == "password"
 
 
-def test_settings_env_connection_string() -> None:
-    with patch.dict("os.environ", {"POSTGRES_CONNECTION_STRING": "postgresql://user:password@localhost:5432/dbname"}):
-        settings = PostgresSettings()
-        conn_info = settings.get_connection_args()
-        assert conn_info["host"] == "localhost"
-        assert conn_info["port"] == 5432
-        assert conn_info["dbname"] == "dbname"
-        assert conn_info["user"] == "user"
-        assert conn_info["password"] == "password"
+def test_settings_env_connection_string(monkeypatch) -> None:
+    monkeypatch.setenv("POSTGRES_CONNECTION_STRING", "postgresql://user:password@localhost:5432/dbname")
+
+    settings = PostgresSettings()
+    conn_info = settings.get_connection_args()
+    assert conn_info["host"] == "localhost"
+    assert conn_info["port"] == 5432
+    assert conn_info["dbname"] == "dbname"
+    assert conn_info["user"] == "user"
+    assert conn_info["password"] == "password"
 
 
-def test_settings_env_vars() -> None:
-    with patch.dict(
-        "os.environ",
-        {
-            "PGHOST": "localhost",
-            "PGPORT": "5432",
-            "PGDATABASE": "dbname",
-            "PGUSER": "user",
-            "PGPASSWORD": "password",
-        },
-    ):
-        settings = PostgresSettings()
-        conn_info = settings.get_connection_args()
-        assert conn_info["host"] == "localhost"
-        assert conn_info["port"] == 5432
-        assert conn_info["dbname"] == "dbname"
-        assert conn_info["user"] == "user"
-        assert conn_info["password"] == "password"
+def test_settings_env_vars(monkeypatch) -> None:
+    monkeypatch.setenv("PGHOST", "localhost")
+    monkeypatch.setenv("PGPORT", "5432")
+    monkeypatch.setenv("PGDATABASE", "dbname")
+    monkeypatch.setenv("PGUSER", "user")
+    monkeypatch.setenv("PGPASSWORD", "password")
+
+    settings = PostgresSettings()
+    conn_info = settings.get_connection_args()
+    assert conn_info["host"] == "localhost"
+    assert conn_info["port"] == 5432
+    assert conn_info["dbname"] == "dbname"
+    assert conn_info["user"] == "user"
+    assert conn_info["password"] == "password"
