@@ -3,7 +3,7 @@
 using Events;
 using Microsoft.SemanticKernel;
 
-namespace Steps;
+namespace SharedSteps;
 
 /// <summary>
 /// Step used in the Processes Samples:

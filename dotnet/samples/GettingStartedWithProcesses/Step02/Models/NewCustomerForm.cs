@@ -3,11 +3,11 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 
-namespace Models;
+namespace Step02.Models;
 
 /// <summary>
 /// Represents the data structure for a form capturing details of a new customer, including personal information and contact details.<br/>
-/// Model used in Step02_AccountOpening.cs samples
+/// Class used in <see cref="Step02_AccountOpening"/> samples
 /// </summary>
 public class NewCustomerForm
 {

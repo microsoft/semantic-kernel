@@ -2,9 +2,11 @@
 
 using Events;
 using Microsoft.SemanticKernel;
-using Steps;
+using SharedSteps;
+using Step02.Models;
+using Step02.Steps;
 
-namespace GettingStartedWithProcesses;
+namespace Step02;
 
 /// <summary>
 /// Demonstrate creation of <see cref="KernelProcess"/> and
@@ -28,7 +30,7 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
         var crmRecordStep = process.AddStepFromType<CRMRecordCreationStep>();
         var welcomePacketStep = process.AddStepFromType<WelcomePacketStep>();
 
-        process.OnExternalEvent(CommonEvents.StartProcess)
+        process.OnExternalEvent(AccountOpeningEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(newCustomerFormStep, CompleteNewCustomerFormStep.Functions.NewAccountWelcome));
 
         // When the welcome message is generated, send message to displayAssistantMessageStep
@@ -141,7 +143,7 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
     {
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputSuccessfulInteraction>();
-        var runningProcess = await LocalKernelProcessFactory.StartAsync(kernelProcess, kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = null });
+        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
     }
 
     private sealed class UserInputSuccessfulInteraction : ScriptedUserInputStep
@@ -167,7 +169,7 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
     {
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputCreditScoreFailureInteraction>();
-        var runningProcess = await LocalKernelProcessFactory.StartAsync(kernelProcess, kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = null });
+        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
     }
 
     private sealed class UserInputCreditScoreFailureInteraction : ScriptedUserInputStep
@@ -193,7 +195,7 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
     {
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputFraudFailureInteraction>();
-        var runningProcess = await LocalKernelProcessFactory.StartAsync(kernelProcess, kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = null });
+        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
     }
 
     private sealed class UserInputFraudFailureInteraction : ScriptedUserInputStep

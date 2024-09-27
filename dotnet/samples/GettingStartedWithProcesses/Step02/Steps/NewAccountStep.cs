@@ -1,14 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Events;
 using Microsoft.SemanticKernel;
-using Models;
+using Step02.Models;
 
-namespace Steps;
+namespace Step02.Steps;
 
 /// <summary>
-/// Step used in the Processes Samples:
-/// - Step_02_AccountOpening.cs
+/// Mock step that emulates the creation of a new account that triggers other services after a new account id creation
 /// </summary>
 public class NewAccountStep : KernelProcessStep
 {

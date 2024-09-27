@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Steps;
+using SharedSteps;
 
-namespace GettingStartedWithProcesses;
+namespace Step01;
 
 /// <summary>
 /// Demonstrate creation of <see cref="KernelProcess"/> and
@@ -52,7 +53,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
 
         // When the userInput step emits a user input event, send it to the assistantResponse step
         userInputStep
-            .OnEvent(ChatBotEvents.UserInputReceived)
+            .OnEvent(CommonEvents.UserInputReceived)
             .SendEventTo(new ProcessFunctionTargetBuilder(responseStep, parameterName: "userMessage"));
 
         // When the assistantResponse step emits a response, send it to the userInput step
@@ -103,6 +104,11 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private sealed class ChatBotResponseStep : KernelProcessStep<ChatBotState>
     {
+        public static class Functions
+        {
+            public const string GetChatResponse = nameof(GetChatResponse);
+        }
+
         /// <summary>
         /// The internal state object for the chat bot response step.
         /// </summary>
@@ -127,7 +133,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
         /// <param name="userMessage">The user message from a previous step.</param>
         /// <param name="_kernel">A <see cref="Kernel"/> instance.</param>
         /// <returns></returns>
-        [KernelFunction("GetChatResponse")]
+        [KernelFunction(Functions.GetChatResponse)]
         public async Task GetChatResponseAsync(KernelProcessStepContext context, string userMessage, Kernel _kernel)
         {
             _state!.ChatMessages.Add(new(AuthorRole.User, userMessage));
@@ -159,7 +165,6 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
     {
         public const string StartProcess = "startProcess";
         public const string IntroComplete = "introComplete";
-        public const string UserInputReceived = "userInputReceived";
         public const string AssistantResponseGenerated = "assistantResponseGenerated";
         public const string Exit = "exit";
     }

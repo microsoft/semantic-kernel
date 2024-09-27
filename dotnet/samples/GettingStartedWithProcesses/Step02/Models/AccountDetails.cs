@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Models;
+namespace Step02.Models;
 
 /// <summary>
 /// Represents the data structure for a form capturing details of a new customer, including personal information, contact details, account id and account type.<br/>
-/// Model used in Step02_AccountOpening.cs samples
+/// Class used in <see cref="Step02_AccountOpening"/> samples
 /// </summary>
 public class AccountDetails : NewCustomerForm
 {

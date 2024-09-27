@@ -2,13 +2,14 @@
 
 using Microsoft.SemanticKernel;
 
-namespace Models;
+namespace Step02.Models;
 
 /// <summary>
-/// Represents the details of interactions between a user and service, including a unique identifier for the account, a transcript of conversation with the user, and the type of user interaction.<br/>
-/// Model used in Step02_AccountOpening.cs samples
+/// Represents the details of interactions between a user and service, including a unique identifier for the account,
+/// a transcript of conversation with the user, and the type of user interaction.<br/>
+/// Class used in <see cref="Step02_AccountOpening"/> samples
 /// </summary>
-public class AccountUserInteractionDetails
+public record AccountUserInteractionDetails
 {
     public Guid AccountId { get; set; }
 

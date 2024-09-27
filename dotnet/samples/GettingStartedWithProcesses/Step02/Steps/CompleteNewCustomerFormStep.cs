@@ -3,21 +3,17 @@
 using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Models;
+using Step02.Models;
 
-namespace Steps;
+namespace Step02.Steps;
 
 /// <summary>
-/// Step that is helps the user fill up a new account form.
+/// Step that is helps the user fill up a new account form.<br/>
 /// Also provides a welcome message for the user.
-///
-/// Step used in the Processes Samples:
-/// - Step_02_AccountOpening.cs
 /// </summary>
 public class CompleteNewCustomerFormStep : KernelProcessStep<NewCustomerFormState>
 {

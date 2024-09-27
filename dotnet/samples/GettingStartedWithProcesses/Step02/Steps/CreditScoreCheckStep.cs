@@ -1,16 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Events;
 using Microsoft.SemanticKernel;
-using Models;
+using Step02.Models;
 
-namespace Steps;
+namespace Step02.Steps;
 
 /// <summary>
 /// Mock step that emulates User Credit Score check, based on the date of birth the score will be enough or insufficient
-///
-/// Step used in the Processes Samples:
-/// - Step_02_AccountOpening.cs
 /// </summary>
 public class CreditScoreCheckStep : KernelProcessStep
 {

@@ -3,7 +3,7 @@
 using Events;
 using Microsoft.SemanticKernel;
 
-namespace Steps;
+namespace SharedSteps;
 
 /// <summary>
 /// A step that elicits user input.
