@@ -1,0 +1,11 @@
+﻿# Editor Configs
+.idea/
+.vs/
+.vscode/settings.json
+
+# Build artifacts
+**/obj/
+**/bin/
+
+# Test Artifacts
+TestResults

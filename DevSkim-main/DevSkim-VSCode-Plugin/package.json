@@ -1,0 +1,329 @@
+{
+	"type": "module",
+	"name": "vscode-devskim",
+	"displayName": "DevSkim",
+	"description": "DevSkim Security Analyzer Plugin for IDEs. Find security mistakes as code is authored, and fix them with a mouse click.",
+	"author": "Microsoft Corporation",
+	"license": "MIT",
+	"version": "0.0.0-placeholder",
+	"publisher": "MS-CST-E",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Microsoft/devskim.git"
+	},
+	"capabilities": {
+		"virtualWorkspaces": {
+			"supported": "limited",
+			"description": "DevSkim has not been fully tested in virtual workspaces, but is functional."
+		}
+	},
+	"icon": "devskim.ico",
+	"galleryBanner": {
+		"color": "#999999",
+		"theme": "dark"
+	},
+	"engines": {
+		"vscode": "^1.63.0"
+	},
+	"bugs": {
+		"url": "https://github.com/Microsoft/DevSkim/issues"
+	},
+	"homepage": "https://github.com/Microsoft/DevSkim#readme",
+	"categories": [
+		"Linters"
+	],
+	"keywords": [
+		"Security"
+	],
+	"activationEvents": [
+		"onLanguage:bat",
+		"onLanguage:php",
+		"onLanguage:c",
+		"onLanguage:cpp",
+		"onLanguage:csharp",
+		"onLanguage:ruby",
+		"onLanguage:perl",
+		"onLanguage:perl6",
+		"onLanguage:javascriptreact",
+		"onLanguage:javascript",
+		"onLanguage:go",
+		"onLanguage:sql",
+		"onLanguage:rust",
+		"onLanguage:groovy",
+		"onLanguage:typescript",
+		"onLanguage:typescriptreact",
+		"onLanguage:jade",
+		"onLanguage:lua",
+		"onLanguage:swift",
+		"onLanguage:clojure",
+		"onLanguage:vb",
+		"onLanguage:shellscript",
+		"onLanguage:yaml",
+		"onLanguage:fsharp",
+		"onLanguage:objective-c",
+		"onLanguage:xml",
+		"onLanguage:r",
+		"onLanguage:java",
+		"onLanguage:powershell",
+		"onLanguage:coffeescript",
+		"onLanguage:plaintext",
+		"onLanguage:python",
+		"onLanguage:json"
+	],
+	"main": "./client/out/extension",
+	"contributes": {
+		"commands": [],
+		"configuration": [
+			{
+				"order": 10,
+				"id": "MS-CST-E.vscode-devskim.rules",
+				"title": "Rules",
+				"properties": {
+					"MS-CST-E.vscode-devskim.rules.enableCriticalSeverityRules": {
+						"order": 0,
+						"type": "boolean",
+						"default": true,
+						"description": "Turn on the rules with severity \"Critical\"."
+					},
+					"MS-CST-E.vscode-devskim.rules.enableImportantSeverityRules": {
+						"order": 1,
+						"type": "boolean",
+						"default": true,
+						"description": "Turn on the rules with severity \"Important\"."
+					},
+					"MS-CST-E.vscode-devskim.rules.enableModerateSeverityRules": {
+						"order": 2,
+						"type": "boolean",
+						"default": true,
+						"description": "Turn on the rules with severity \"Moderate\"."
+					},
+					"MS-CST-E.vscode-devskim.rules.enableBestPracticeSeverityRules": {
+						"order": 3,
+						"type": "boolean",
+						"default": false,
+						"description": "Turn on the rules of severity \"Best-Practice\". These rules either flag issues that are typically of a lower severity, or recommended practices that lead to more secure code, but aren't typically outright vulnerabilities."
+					},
+					"MS-CST-E.vscode-devskim.rules.enableManualReviewSeverityRules": {
+						"order": 4,
+						"type": "boolean",
+						"default": false,
+						"description": "Turn on the rules that flag things for manual review. These are typically scenarios that *could* be incredibly severe if tainted data can be inserted, but are often programmatically necessary (for example, dynamic code generation with \"eval\").  Since these rules tend to require further analysis upon flagging an issue, they disabled by default."
+					},
+					"MS-CST-E.vscode-devskim.rules.enableHighConfidenceRules": {
+						"order": 5,
+						"type": "boolean",
+						"default": true,
+						"description": "Turn on the rules of confidence \"High\"."
+					},
+					"MS-CST-E.vscode-devskim.rules.enableMediumConfidenceRules": {
+						"order": 6,
+						"type": "boolean",
+						"default": true,
+						"description": "Turn on the rules of confidence \"Medium\"."
+					},
+					"MS-CST-E.vscode-devskim.rules.enableLowConfidenceRules": {
+						"order": 7,
+						"type": "boolean",
+						"default": false,
+						"description": "Turn on the rules of confidence \"Low\"."
+					},
+					"MS-CST-E.vscode-devskim.rules.customRulesPaths": {
+						"order": 8,
+						"type": "array",
+						"default": [],
+						"description": "A list of local paths on disk to rules files or folders containing rule files, for DevSkim to use in analysis.",
+						"items": {
+							"type": "string"
+						}
+					},
+					"MS-CST-E.vscode-devskim.rules.customLanguagesPath": {
+						"order": 9,
+						"type": "string",
+						"default": "",
+						"description": "A local path to a custom language file for analysis. Also requires customCommentsPath to be set."
+					},
+					"MS-CST-E.vscode-devskim.rules.customCommentsPath": {
+						"order": 10,
+						"type": "string",
+						"default": "",
+						"description": "A local path to a custom comments file for analysis. Also requires customLanguagesPath to be set."
+					}
+				}
+			},
+			{
+				"order": 20,
+				"id": "MS-CST-E.vscode-devskim.suppressions",
+				"title": "Suppressions",
+				"properties": {
+					"MS-CST-E.vscode-devskim.suppressions.suppressionDurationInDays": {
+						"order": 0,
+						"type": "number",
+						"default": 30,
+						"description": "DevSkim allows for findings to be suppressed for a temporary period of time. The default is 30 days.  Set to 0 to disable temporary suppressions."
+					},
+					"MS-CST-E.vscode-devskim.suppressions.suppressionCommentStyle": {
+						"order": 1,
+						"type": "string",
+						"enum": [
+							"Line",
+							"Block"
+						],
+						"default": "Line",
+						"description": "When DevSkim inserts a suppression comment it defaults to using single line comments for every language that has them.  Setting this to block will instead use block comments for the languages that support them.  Block comments are suggested if regularly adding explanations for why a finding was suppressed"
+					},
+					"MS-CST-E.vscode-devskim.suppressions.manualReviewerName": {
+						"order": 2,
+						"type": "string",
+						"default": "",
+						"description": "If set, insert this name in inserted suppression comments."
+					}
+				}
+			},
+			{
+				"order": 30,
+				"id": "MS-CST-E.vscode-devskim.guidance",
+				"title": "Guidance",
+				"properties": {
+					"MS-CST-E.vscode-devskim.guidance.guidanceBaseURL": {
+						"order": 0,
+						"type": "string",
+						"default": "https://github.com/Microsoft/DevSkim/blob/main/guidance/",
+						"description": "Each finding has a guidance file that describes the issue and solutions in more detail.  By default, those files live on the DevSkim github repo however, with this setting, organizations can clone and customize that repo, and specify their own base URL for the guidance."
+					}
+				}
+			},
+			{
+				"order": 40,
+				"id": "MS-CST-E.vscode-devskim.ignores",
+				"title": "Ignores",
+				"properties": {
+					"MS-CST-E.vscode-devskim.ignores.ignoreFiles": {
+						"order": 0,
+						"type": "array",
+						"default": [],
+						"items": {
+							"type": "string"
+						},
+						"description": "Glob expressions to exclude files and folders from analysis."
+					},
+					"MS-CST-E.vscode-devskim.ignores.ignoreRulesList": {
+						"order": 1,
+						"type": "array",
+						"default": [],
+						"items": {
+							"type": "string"
+						},
+						"description": "DevSkim Rule IDs to ignore."
+					},
+					"MS-CST-E.vscode-devskim.ignores.ignoreDefaultRules": {
+						"order": 2,
+						"type": "boolean",
+						"default": false,
+						"description": "Disable all default DevSkim rules."
+					}
+				}
+			},
+			{
+				"order": 50,
+				"id": "MS-CST-E.vscode-devskim.findings",
+				"title": "Findings",
+				"properties": {
+					"MS-CST-E.vscode-devskim.findings.removeFindingsOnClose": {
+						"order": 0,
+						"type": "boolean",
+						"default": true,
+						"description": "By default, when a source file is closed the findings remain in the 'Problems' window.  Setting this value to true will cause findings to be removed from 'Problems' when the document is closed.  Note, setting this to true will cause findings that are listed when invoking the 'Scan all files in workspace' command to automatically clear away after a couple of minutes."
+					}
+				}
+			},
+			{
+				"order": 60,
+				"id": "MS-CST-E.vscode-devskim.triggers",
+				"title": "Triggers",
+				"properties": {
+					"MS-CST-E.vscode-devskim.triggers.scanOnOpen": {
+						"order": 0,
+						"type": "boolean",
+						"default": true,
+						"description": "Scan files on open."
+					},
+					"MS-CST-E.vscode-devskim.triggers.scanOnSave": {
+						"order": 1,
+						"type": "boolean",
+						"default": true,
+						"description": "Scan files on save."
+					},
+					"MS-CST-E.vscode-devskim.triggers.scanOnChange": {
+						"order": 2,
+						"type": "boolean",
+						"default": true,
+						"description": "Scan files on change."
+					}
+				}
+			},
+			{
+				"order": 70,
+				"id": "MS-CST-E.vscode-devskim.trace",
+				"title": "Trace",
+				"properties": {
+					"MS-CST-E.vscode-devskim.trace.server": {
+						"order": 0,
+						"scope": "window",
+						"type": "string",
+						"enum": [
+							"off",
+							"messages",
+							"verbose"
+						],
+						"default": "off",
+						"description": "Enables debug trace communications between VS Code and the language server."
+					}
+				}
+			}
+		]
+	},
+	"extensionDependencies": [
+		"ms-dotnettools.vscode-dotnet-runtime"
+	],
+	"scripts": {
+		"clean": "npm run clean:net && npm run clean:out && npm run clean:modules && npm run clean:vsix",
+		"clean:net": "npx --quiet -y rimraf devskimBinaries",
+		"clean:out": "npx --quiet -y rimraf --glob **/out && npx --quiet -y rimraf --glob **/tsconfig.tsbuildinfo",
+		"clean:modules": "npx --quiet -y rimraf --glob **/node_modules",
+		"clean:vsix": "npx --quiet -y rimraf --glob *.vsix",
+		"net-setup": "dotnet publish -c Debug -f net8.0 ../DevSkim-DotNet/Microsoft.DevSkim.LanguageServer -o devskimBinaries",
+		"net-setup:release": "dotnet publish -c Release -f net8.0 ../DevSkim-DotNet/Microsoft.DevSkim.LanguageServer -o devskimBinaries",
+		"setup": "npm install && npm run net-setup",
+		"setup:release": "npm install && npm run net-setup:release",
+		"reset": "npm run clean && npm run setup",
+		"compile": "tsc -b",
+		"build": "npm run setup && npm run compile",
+		"watch": "tsc -b -w",
+		"lint": "eslint ./client --ext .ts,.tsx",
+		"postinstall": "cd client && npm install && cd ..",
+		"vscode:prepublish": "npm run esbuild-base -- --minify",
+		"esbuild-base": "esbuild ./client/extension.ts --bundle --outfile=client/out/extension.js --external:vscode --format=cjs --platform=node",
+		"esbuild": "npm run esbuild-base -- --sourcemap",
+		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+		"pack-ext": "npm run pre-pack-clean && npm run setup:release && npm run set-version-and-pack",
+		"pack-ext:debug": "npm run pre-pack-clean && npm run setup && npm run set-version-and-pack",
+		"pre-pack-clean": "npm run clean:out && npm run clean:modules",
+		"set-version-and-pack": "npm run set-version && npm run do-pack && npm run reset-version",
+		"do-pack": "(npm run check-pre-release && npm run vsce-pack-pre) || npm run vsce-pack",
+		"set-version": "node ./scripts/setPackageVersion.js",
+		"reset-version": "node ./scripts/resetPackageVersion.js",
+		"check-pre-release": "node ./scripts/checkPreReleaseFlag.js",
+		"vsce-pack-pre": "vsce package --pre-release || echo 'Pre-Release build failed'",
+		"vsce-pack": "vsce package || echo 'Release build failed'"
+	},
+	"devDependencies": {
+		"@types/node": "^14.x",
+		"@typescript-eslint/eslint-plugin": "^5.10.1",
+		"@typescript-eslint/parser": "^5.10.1",
+		"esbuild": "^0.14.14",
+		"eslint": "^8.8.0",
+		"nerdbank-gitversioning": "^3.4.255",
+		"typescript": "^4.5.5",
+		"@vscode/vsce": "^2.18.0"
+	}
+}

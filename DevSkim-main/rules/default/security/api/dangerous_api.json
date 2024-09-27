@@ -1,0 +1,330 @@
+[
+    {
+        "name": "Banned C function detected",
+        "id": "DS154189",
+        "description": "These functions are historically error-prone and have been associated with a significant number of vulnerabilities. Most of these functions have safer alternatives, such as replacing 'strcpy' with 'strlcpy' or 'strcpy_s'.",
+        "recommendation": "",
+        "applies_to": [
+            "c",
+            "cpp",
+            "objective-c"
+        ],
+        "tags": [
+            "API.DangerousAPI.BannedFunction"
+        ],
+        "confidence": "high",
+        "severity": "moderate",
+        "rule_info": "DS154189.md",
+        "patterns": [
+            {
+                "pattern": "(sprintf|_getts|_getws|_snprintf|_sntprintf|_snwprintf|_stprintf|_tcsat|_tcscpy|_tcslen|_tcsncpy|_vsnprintf|_vsntprintf|_vsnwprintf|_vstprintf|alloca|asctime|atof|atoi|atoll|bsearch|ctime|fopen|fprintf|freopen|fscanf|fwprintf|fwscanf|getenv|getwd|gmtime|localtime|lstrcat|lstrcpy|mbsrtowcs|mbstowcs|memmove|mktemp|printf|qsort|rewind|scanf|setbuf|sscanf|strcatbuff|strerror|strtok|swprintf|swscanf|tmpnam|vfprintf|vfscanf|vfwscanf|vprintf|vscanf|vsnprintf|vsprintf|vsscanf|vswprintf|vswscanf|vwprintf|vwscanf|wcrtomb|wcrtombs|wcscat|wcscpy|wcslen|wcsncat|wcsncpy|wcsrtombs|wcstok|wctomb|wmemcpy|wmemmove|wnsprintf|wprintf|wscanf|wsprintf|wvnsprintf|wvsprintf)",
+                "type": "RegexWord",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "int main ()\n{\n  char buffer [50];\n  int n, a=5, b=3;\n  n=sprintf (buffer, \"%d plus %d is %d\", a, b, a+b);\\n  printf (\"[%s] is a string %d chars long\n\",buffer,n);\n  return 0;\n}"
+        ]
+    },
+    {
+        "name": "Banned C function detected (strcpy)",
+        "id": "DS185832",
+        "description": "strcpy is frequently dangerous, as it will cause a buffer overflow if the source is larger than the destination.",
+        "recommendation": "Use strcpy_s or strlcpy if possible. If no safe function is viable, strcpy/strncpy should be proceeded by conditional checks to verify that the source string will fit in the destination with a null termnator.",
+        "overrides": [
+            "DS154189"
+        ],
+        "applies_to": [
+            "c",
+            "cpp",
+            "objective-c"
+        ],
+        "tags": [
+            "API.DangerousAPI.BannedFunction"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS185832.md",
+        "patterns": [
+            {
+                "pattern": "\\bstrcpy\\s*\\(([^,]+),([^,]+?)\\)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to strcpy_s (Recommended for VC++)",
+                "type": "RegexReplace",
+                "replacement": "strcpy_s($1, <size of $1>, $2)",
+                "pattern": {
+                    "pattern": "\\bstrcpy\\s*\\(([^,]+),([^,]+?)\\)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            },
+            {
+                "name": "Change to strlcpy",
+                "type": "RegexReplace",
+                "replacement": "strlcpy($1, $2, <size of $1>)",
+                "pattern": {
+                    "pattern": "\\bstrcpy\\s*\\(([^,]+),([^,]+?)\\)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            }
+        ],
+        "must-match": [
+            "strcpy (str2,str1);",
+            "strcpy (str3,\"copy successful\");"
+        ],
+        "must-not-match": [
+            "strcpy_s(string);",
+            "strlcpy(string);"
+        ]
+    },
+    {
+        "name": "Banned C function detected (strncpy)",
+        "id": "DS111237",
+        "description": "strncpy is dangerous, as if the source contains 'n' or more characters, it will not null terminate the destination.",
+        "recommendation": "Use strcpy_s or strlcpy if possible. If no safe function is viable, strcpy/strncpy should be proceeded by conditional checks to verify tha that the source string will fit in the destination with a null termnator.",
+        "overrides": [
+            "DS154189"
+        ],
+        "applies_to": [
+            "c",
+            "cpp",
+            "objective-c"
+        ],
+        "tags": [
+            "API.DangerousAPI.BannedFunction"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS111237.md",
+        "patterns": [
+            {
+                "pattern": "\\bstrncpy\\s*\\(([^,]+),([^,]+),([^,]+?)\\)+",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to strcpy_s (Recommended for VC++)",
+                "type": "RegexReplace",
+                "replacement": "strcpy_s($1, $3, $2)",
+                "pattern": {
+                    "pattern": "\\bstrncpy\\s*\\(([^,]+),([^,]+),([^,]+?)\\)+",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            },
+            {
+                "name": "Change to strlcpy",
+                "type": "RegexReplace",
+                "replacement": "strlcpy($1, $2, $3)",
+                "pattern": {
+                    "pattern": "\\bstrncpy\\s*\\(([^,]+),([^,]+),([^,]+?)\\)+",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            }
+        ],
+        "must-match": [
+            "int main ()\\n{\\n  char str1[]= \"To be or not to be\";\\n  char str2[40];\\n  char str3[40];\\n \\n  strncpy ( str2, str1, sizeof(str2) );\\n\\n  return 0;\\n}"
+        ]
+    },
+    {
+        "name": "Banned C function detected (strcat)",
+        "id": "DS141863",
+        "description": "If the combination of strings is larger than the destination buffer, strcat will cbuffer overflow the destination buffer",
+        "recommendation": "Use strcat_s or strlcat if possible. strncat's size parameter excludes the null terminator, which leads to frequent mistakes",
+        "overrides": [
+            "DS154189"
+        ],
+        "applies_to": [
+            "c",
+            "cpp",
+            "objective-c"
+        ],
+        "tags": [
+            "API.DangerousAPI.BannedFunction"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS141863.md",
+        "patterns": [
+            {
+                "pattern": "\\bstrcat\\s*\\(([^,]+),([^,]+?)\\)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to strcat_s (Recommended for VC++)",
+                "type": "RegexReplace",
+                "replacement": "strcat_s($1, <size of $1>, $2)",
+                "pattern": {
+                    "pattern": "\\bstrcat\\s*\\(([^,]+),([^,]+?)\\)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            },
+            {
+                "name": "Change to strlcat",
+                "type": "RegexReplace",
+                "replacement": "strlcat($1, $2, <size of $1>)",
+                "pattern": {
+                    "pattern": "\\bstrcat\\s*\\(([^,]+),([^,]+?)\\)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            }
+        ],
+        "must-match": [
+            "int main ()\n{\n  char str[80];  \n  strcat (str,\"strings \");\n  return 0;\n}"
+        ]
+    },
+    {
+        "name": "Banned C function detected (strncat)",
+        "id": "DS108330",
+        "description": "strncat adds the null terminator at character 'n + 1', rather than at the nth character. this frequently leads to the null terminator being added in the memory adjacent to the destination buffer, rather than in the destination buffer.",
+        "recommendation": "Use strcat_s or strlcat if possible. ",
+        "overrides": [
+            "DS154189"
+        ],
+        "applies_to": [
+            "c",
+            "cpp",
+            "objective-c"
+        ],
+        "tags": [
+            "API.DangerousAPI.BannedFunction"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS108330.md",
+        "patterns": [
+            {
+                "pattern": "\\bstrncat\\s*\\(([^,]+),([^,]+),([^,]+?)\\)+",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to strcat_s (Recommended for VC++)",
+                "type": "RegexReplace",
+                "replacement": "strcat_s($1, $3, $2)",
+                "pattern": {
+                    "pattern": "\\bstrncat\\s*\\(([^,]+),([^,]+),([^,]+?)\\)+",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            },
+            {
+                "name": "Change to strlcat",
+                "type": "RegexReplace",
+                "replacement": "strlcat($1, $2, $3)",
+                "pattern": {
+                    "pattern": "\\bstrncat\\s*\\(([^,]+),([^,]+),([^,]+?)\\)+",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            }
+        ],
+        "must-match": [
+            "\\n=====\\nint main ()\\n{\\n  char str1[20];\\n  char str2[20];\\n  strncat (str1, str2, 6);\\n\\n  return 0;\\n}"
+        ]
+    },
+    {
+        "name": "Banned C function detected (gets)",
+        "id": "DS181021",
+        "description": "gets will read in as many bytes as are provided, regardless of the size of buffer recieving the bytes.  This allows for conditions that cause a buffer overlow in the destination buffer.",
+        "recommendation": "Use gets_s or fgets if possible. fgets has different behavior from gets (may include newline for example), so care should be taken if it is used.",
+        "overrides": [
+            "DS154189"
+        ],
+        "applies_to": [
+            "c",
+            "cpp",
+            "objective-c"
+        ],
+        "tags": [
+            "API.DangerousAPI.BannedFunction"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS181021.md",
+        "patterns": [
+            {
+                "pattern": "\\bgets\\s*\\(([^,\\)]+)\\)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to gets_s (Recommended for VC++)",
+                "type": "RegexReplace",
+                "replacement": "gets_s($1, <size of $1>)",
+                "pattern": {
+                    "pattern": "\\bgets\\s*\\(([^,\\)]+)\\)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            },
+            {
+                "name": "Change to fgets",
+                "type": "RegexReplace",
+                "replacement": "fgets($1, <size of $1>, stdin)",
+                "pattern": {
+                    "pattern": "\\bgets\\s*\\(([^,\\)]+)\\)",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            }
+        ],
+        "must-match": [
+            "gets(string);     // warning: unsafe (see fgets instead)"
+        ],
+        "must-not-match": [
+            "fgets(string);",
+            "gets_s(string);"
+        ]
+    }
+]

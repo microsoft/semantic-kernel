@@ -1,0 +1,93 @@
+#
+# This workflow runs the dotnet formatter on all c-sharp code.
+#
+
+name: dotnet-format
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["main", "feature*"]
+    paths:
+      - "dotnet/**"
+      - "samples/dotnet/**"
+      - "**.cs"
+      - "**.csproj"
+      - "**.editorconfig"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-format:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { dotnet: "8.0", configuration: Release, os: ubuntu-latest }
+
+    runs-on: ${{ matrix.os }}
+    env:
+      NUGET_CERT_REVOCATION_MODE: offline
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        if: github.event_name == 'pull_request'
+        uses: jitterbit/get-changed-files@v1
+        continue-on-error: true
+
+      - name: No C# files changed
+        id: no-csharp
+        if: github.event_name == 'pull_request' && steps.changed-files.outputs.added_modified == ''
+        run: echo "No C# files changed"
+
+      # This step will loop over the changed files and find the nearest .csproj file for each one, then store the unique csproj files in a variable
+      - name: Find csproj files
+        id: find-csproj
+        if: github.event_name != 'pull_request' || steps.changed-files.outputs.added_modified != '' || steps.changed-files.outcome == 'failure'
+        run: |
+          csproj_files=()
+          exclude_files=("Experimental.Orchestration.Flow.csproj" "Experimental.Orchestration.Flow.UnitTests.csproj" "Experimental.Orchestration.Flow.IntegrationTests.csproj")
+          if [[ ${{ steps.changed-files.outcome }} == 'success' ]]; then
+            for file in ${{ steps.changed-files.outputs.added_modified }}; do
+              echo "$file was changed"
+              dir="./$file"
+              while [[ $dir != "." && $dir != "/" && $dir != $GITHUB_WORKSPACE ]]; do
+                if find "$dir" -maxdepth 1 -name "*.csproj" -print -quit | grep -q .; then
+                  csproj_path="$(find "$dir" -maxdepth 1 -name "*.csproj" -print -quit)"
+                  if [[ ! "${exclude_files[@]}" =~ "${csproj_path##*/}" ]]; then
+                    csproj_files+=("$csproj_path")
+                  fi
+                  break
+                fi
+
+                dir=$(echo ${dir%/*})
+              done
+            done
+          else
+            # if the changed-files step failed, run dotnet on the whole sln instead of specific projects
+            csproj_files=$(find ./ -type f -name "*.sln" | tr '\n' ' ');
+          fi
+          csproj_files=($(printf "%s\n" "${csproj_files[@]}" | sort -u))
+          echo "Found ${#csproj_files[@]} unique csproj/sln files: ${csproj_files[*]}"
+          echo "::set-output name=csproj_files::${csproj_files[*]}"
+
+      - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
+        if: steps.find-csproj.outputs.csproj_files != ''
+        run: docker pull mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
+
+      # This step will run dotnet format on each of the unique csproj files and fail if any changes are made
+      - name: Run dotnet format
+        if: steps.find-csproj.outputs.csproj_files != ''
+        run: |
+          for csproj in ${{ steps.find-csproj.outputs.csproj_files }}; do
+            echo "Running dotnet format on $csproj"
+            docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet format $csproj --verify-no-changes --verbosity diagnostic"
+          done

@@ -1,0 +1,143 @@
+[
+  {
+    "name": "$_REQUEST should be avoided",
+    "id": "DS144886",
+    "description": "$_REQUEST combines POST, GET, and cookie values in one array, making it easy for an attacker to modify a POST or cookie value by instead putting it in a GET and sending the URL to the victim",
+    "recommendation": "Use $_POST, $_GET, $_COOKIE to scope to the expected delivery method for a value ",
+    "applies_to": [
+      "php"
+    ],
+    "tags": [
+      "Implementation.PHP"
+    ],
+    "confidence": "high",
+    "severity": "moderate",
+    "rule_info": "DS144886.md",
+    "patterns": [
+      {
+        "pattern": "\\$_REQUEST",
+        "type": "regex",
+        "scopes": [
+          "code"
+        ]
+      }
+    ],
+    "fix_its": [
+      {
+        "name": "Change to $_GET",
+        "type": "RegexReplace",
+        "replacement": "$$_GET",
+        "pattern": {
+          "pattern": "\\$_REQUEST",
+          "type": "regex",
+          "scopes": [
+            "code"
+          ],
+          "_comment": ""
+        }
+      },
+      {
+        "name": "Change to $_POST",
+        "type": "RegexReplace",
+        "replacement": "$$_POST",
+        "pattern": {
+          "pattern": "\\$_REQUEST",
+          "type": "regex",
+          "scopes": [
+            "code"
+          ],
+          "_comment": ""
+        }
+      },
+      {
+        "name": "Change to $_COOKIE",
+        "type": "RegexReplace",
+        "replacement": "$$_COOKIE",
+        "pattern": {
+          "pattern": "\\$_REQUEST",
+          "type": "regex",
+          "scopes": [
+            "code"
+          ],
+          "_comment": ""
+        }
+      }
+    ],
+    "must-match": [
+      "$var = $_REQUEST[\"var\"]"
+    ],
+    "must-not-match": [
+    ]
+  },
+  {
+    "name": "XSS: Do not echo unencoded GET/POST/COOKIE values",
+    "id": "DS163877",
+    "description": "When using $_GET/POST/COOKIE values via echo, failure to  encode the values will lead to Cross Site Scripting (XSS), where a malicious party can inject script into the webpage.",
+    "recommendation": "HTML Entity Encode (for content going into HTML) or URL Encode (for content going into JavaScript variables) the data",
+    "applies_to": [
+      "php"
+    ],
+    "tags": [
+      "Implementation.PHP"
+    ],
+    "confidence": "high",
+    "severity": "moderate",
+    "rule_info": "DS163877.md",
+    "patterns": [
+      {
+        "pattern": "\\becho.*(\\$_(POST|GET|REQUEST|COOKIE)\\[.*\\])",
+        "type": "regex",
+        "scopes": [
+          "code"
+        ]
+      }
+    ],
+    "conditions": [
+      {
+        "pattern": {
+          "pattern": "\\b(htmlentities|htmlspecialchars|rawurlencode|urlencode)\\s*\\(.*(\\$_(POST|GET|REQUEST|COOKIE)\\[.*\\]).*\\)",
+          "type": "regex",
+          "scopes": [
+            "code"
+          ],
+          "_comment": ""
+        },
+        "search_in": "finding-only",
+        "negate_finding": true
+      }
+    ],
+    "fix_its": [
+      {
+        "name": "HTML Entity encode the data",
+        "type": "RegexReplace",
+        "replacement": "htmlentities($1)",
+        "pattern": {
+          "pattern": "(\\$_(POST|GET|REQUEST|COOKIE)\\[.*\\])",
+          "type": "regex",
+          "scopes": [
+            "code"
+          ],
+          "_comment": ""
+        }
+      },
+      {
+        "name": "URL encode the data",
+        "type": "RegexReplace",
+        "replacement": "rawurlencode($1)",
+        "pattern": {
+          "pattern": "(\\$_(POST|GET|REQUEST|COOKIE)\\[.*\\])",
+          "type": "regex",
+          "scopes": [
+            "code"
+          ],
+          "_comment": ""
+        }
+      }
+    ],
+    "must-match": [
+      "echo($_POST[\"var\"]);"
+    ],
+    "must-not-match": [
+    ]
+  }
+]

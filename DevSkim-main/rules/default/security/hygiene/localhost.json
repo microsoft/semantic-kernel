@@ -1,0 +1,39 @@
+[
+    {
+        "name": "Do not leave debug code in production",
+        "id": "DS162092",
+        "description": "Accessing localhost could indicate debug code, or could hinder scaling.",
+        "recommendation": "",
+        "tags": [
+            "Hygiene.Network.AccessingLocalhost"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS162092.md",
+        "patterns": [
+            {
+                "pattern": "localhost",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "127.0.0.1",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "var host = \"localhost\";",
+            "var host = \"name-localhost\";",
+            "var host = \"127.0.0.1\"",
+            "HOST=localhost",
+            "HOST=127.0.0.1"
+        ],
+        "must-not-match": [
+        ]
+    }
+]

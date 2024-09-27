@@ -1,0 +1,39 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "/github/"
+    },
+    {
+      "pattern": "./actions"
+    },
+    {
+      "pattern": "./blob"
+    },
+    {
+      "pattern": "./issues"
+    },
+    {
+      "pattern": "./discussions"
+    },
+    {
+      "pattern": "./pulls"
+    },
+    {
+      "pattern": "^http://localhost"
+    },
+    {
+      "pattern": "^https://localhost"
+    },
+    {
+      "pattern": "^https://platform.openai.com"
+    },
+    {
+      "pattern": "^https://outlook.office.com/bookings"
+    }
+  ],
+  "timeout": "20s",
+  "retryOn429": true,
+  "retryCount": 3,
+  "fallbackRetryDelay": "30s",
+  "aliveStatusCodes": [200, 206, 429, 500, 503]
+}
