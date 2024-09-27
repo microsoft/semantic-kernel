@@ -687,7 +687,7 @@ internal partial class ClientCore
                         ImageContent imageContent => GetImageContentItem(imageContent),
                         _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
                     }))
-                    { ParticipantName = message.AuthorName }
+                { ParticipantName = message.AuthorName }
             ];
         }
 
