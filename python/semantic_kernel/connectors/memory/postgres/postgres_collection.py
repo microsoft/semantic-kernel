@@ -104,6 +104,9 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
     async def __aexit__(self, *args):
         if self._handle_pool_close and self.connection_pool:
             await self.connection_pool.close()
+            # If the pool was created by the collection, set it to None to enable reusing the collection.
+            if self._settings:
+                self.connection_pool = None
 
     @override
     def _validate_data_model(self) -> None:
