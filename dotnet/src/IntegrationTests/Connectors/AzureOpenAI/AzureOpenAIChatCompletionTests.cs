@@ -130,11 +130,11 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
         Assert.NotNull(usageObject);
 
         var jsonObject = JsonSerializer.SerializeToElement(usageObject);
-        Assert.True(jsonObject.TryGetProperty("InputTokens", out JsonElement promptTokensJson));
+        Assert.True(jsonObject.TryGetProperty("InputTokenCount", out JsonElement promptTokensJson));
         Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
         Assert.NotEqual(0, promptTokens);
 
-        Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
+        Assert.True(jsonObject.TryGetProperty("OutputTokenCount", out JsonElement completionTokensJson));
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
     }

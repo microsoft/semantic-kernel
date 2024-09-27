@@ -884,7 +884,7 @@ internal partial class ClientCore
         if (this.Logger!.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation(
-                "Prompt tokens: {InputTokens}. Completion tokens: {OutputTokens}. Total tokens: {TotalTokens}.",
+                "Prompt tokens: {InputTokenCount}. Completion tokens: {OutputTokenCount}. Total tokens: {TotalTokenCount}.",
                 usage.InputTokenCount, usage.OutputTokenCount, usage.TotalTokenCount);
         }
 
