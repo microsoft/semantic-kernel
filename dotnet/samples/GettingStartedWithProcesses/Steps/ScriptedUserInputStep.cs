@@ -16,7 +16,7 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
 {
     public static class Functions
     {
-        public const string GetUserInput = "GetUserInput";
+        public const string GetUserInput = nameof(GetUserInput);
     }
 
     /// <summary>

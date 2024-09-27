@@ -16,7 +16,7 @@ public class FraudDetectionStep : KernelProcessStep
 {
     public static class Functions
     {
-        public const string FraudDetectionCheck = "FraudDetectionCheck";
+        public const string FraudDetectionCheck = nameof(FraudDetectionCheck);
     }
 
     [KernelFunction(Functions.FraudDetectionCheck)]

@@ -13,7 +13,7 @@ public class DisplayAssistantMessageStep : KernelProcessStep
 {
     public static class Functions
     {
-        public const string DisplayAssistantMessage = "DisplayAssistantMessage";
+        public const string DisplayAssistantMessage = nameof(DisplayAssistantMessage);
     }
 
     [KernelFunction(Functions.DisplayAssistantMessage)]

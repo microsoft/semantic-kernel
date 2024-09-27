@@ -23,8 +23,8 @@ public class CompleteNewCustomerFormStep : KernelProcessStep<NewCustomerFormStat
 {
     public static class Functions
     {
-        public const string NewAccountProcessUserInfo = "NewAccountProcessUserInfo";
-        public const string NewAccountWelcome = "NewAccountWelcome";
+        public const string NewAccountProcessUserInfo = nameof(NewAccountProcessUserInfo);
+        public const string NewAccountWelcome = nameof(NewAccountWelcome);
     }
 
     internal NewCustomerFormState? _state;
@@ -99,7 +99,6 @@ public class CompleteNewCustomerFormStep : KernelProcessStep<NewCustomerFormStat
         {
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
             Temperature = 0.7,
-            ModelId = "gpt-4o",
             MaxTokens = 2048
         };
 

@@ -16,7 +16,7 @@ public class CreditScoreCheckStep : KernelProcessStep
 {
     public static class Functions
     {
-        public const string DetermineCreditScore = "DetermineCreditScore";
+        public const string DetermineCreditScore = nameof(DetermineCreditScore);
     }
 
     private const int MinCreditScore = 600;

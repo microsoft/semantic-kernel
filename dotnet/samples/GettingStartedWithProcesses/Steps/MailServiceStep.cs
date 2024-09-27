@@ -15,7 +15,7 @@ public class MailServiceStep : KernelProcessStep
 {
     public static class Functions
     {
-        public const string SendMailToUserWithDetails = "SendMailToUserWithDetails";
+        public const string SendMailToUserWithDetails = nameof(SendMailToUserWithDetails);
     }
 
     [KernelFunction(Functions.SendMailToUserWithDetails)]

@@ -14,7 +14,7 @@ public class NewMarketingEntryStep : KernelProcessStep
 {
     public static class Functions
     {
-        public const string CreateNewMarketingEntry = "CreateNewMarketingEntry";
+        public const string CreateNewMarketingEntry = nameof(CreateNewMarketingEntry);
     }
 
     [KernelFunction(Functions.CreateNewMarketingEntry)]

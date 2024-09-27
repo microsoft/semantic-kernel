@@ -14,7 +14,7 @@ public class CRMRecordCreationStep : KernelProcessStep
 {
     public static class Functions
     {
-        public const string CreateCRMEntry = "CreateCRMEntry";
+        public const string CreateCRMEntry = nameof(CreateCRMEntry);
     }
 
     [KernelFunction(Functions.CreateCRMEntry)]

@@ -14,7 +14,7 @@ public class NewAccountStep : KernelProcessStep
 {
     public static class Functions
     {
-        public const string CreateNewAccount = "CreateNewAccount";
+        public const string CreateNewAccount = nameof(CreateNewAccount);
     }
 
     [KernelFunction(Functions.CreateNewAccount)]

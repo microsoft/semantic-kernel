@@ -12,25 +12,25 @@ namespace Models;
 public class NewCustomerForm
 {
     [JsonPropertyName("userFirstName")]
-    public string UserFirstName { get; set; } = "";
+    public string UserFirstName { get; set; } = string.Empty;
 
     [JsonPropertyName("userLastName")]
-    public string UserLastName { get; set; } = "";
+    public string UserLastName { get; set; } = string.Empty;
 
     [JsonPropertyName("userDateOfBirth")]
-    public string UserDateOfBirth { get; set; } = "";
+    public string UserDateOfBirth { get; set; } = string.Empty;
 
     [JsonPropertyName("userState")]
-    public string UserState { get; set; } = "";
+    public string UserState { get; set; } = string.Empty;
 
     [JsonPropertyName("userPhoneNumber")]
-    public string UserPhoneNumber { get; set; } = "";
+    public string UserPhoneNumber { get; set; } = string.Empty;
 
     [JsonPropertyName("userId")]
-    public string UserId { get; set; } = "";
+    public string UserId { get; set; } = string.Empty;
 
     [JsonPropertyName("userEmail")]
-    public string UserEmail { get; set; } = "";
+    public string UserEmail { get; set; } = string.Empty;
 
     public NewCustomerForm CopyWithDefaultValues(string defaultStringValue = "Unanswered")
     {
