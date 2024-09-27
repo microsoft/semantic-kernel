@@ -30,7 +30,7 @@ def mock_cursor():
 
 
 @fixture(autouse=True)
-def mock_connection_pool(mock_cursor: Mock):
+def mock_connection_pool(mock_cursor: Mock, postgres_unit_test_env):
     with (
         patch(
             f"{AsyncConnectionPool.__module__}.{AsyncConnectionPool.__qualname__}.connection",
@@ -243,3 +243,47 @@ async def test_get_records(vector_store: PostgresStore, mock_cursor: Mock) -> No
     assert records[2].id == 3
     assert records[2].embedding == [5.0, 6.0, 1.0]
     assert records[2].data == {"key": "value3"}
+
+
+# Test settings
+
+
+def test_settings_connection_string() -> None:
+    settings = PostgresSettings(connection_string="postgresql://user:password@localhost:5432/dbname")
+    conn_info = settings.get_connection_args()
+    assert conn_info["host"] == "localhost"
+    assert conn_info["port"] == 5432
+    assert conn_info["dbname"] == "dbname"
+    assert conn_info["user"] == "user"
+    assert conn_info["password"] == "password"
+
+
+def test_settings_env_connection_string() -> None:
+    with patch.dict("os.environ", {"POSTGRES_CONNECTION_STRING": "postgresql://user:password@localhost:5432/dbname"}):
+        settings = PostgresSettings()
+        conn_info = settings.get_connection_args()
+        assert conn_info["host"] == "localhost"
+        assert conn_info["port"] == 5432
+        assert conn_info["dbname"] == "dbname"
+        assert conn_info["user"] == "user"
+        assert conn_info["password"] == "password"
+
+
+def test_settings_env_vars() -> None:
+    with patch.dict(
+        "os.environ",
+        {
+            "PGHOST": "localhost",
+            "PGPORT": "5432",
+            "PGDATABASE": "dbname",
+            "PGUSER": "user",
+            "PGPASSWORD": "password",
+        },
+    ):
+        settings = PostgresSettings()
+        conn_info = settings.get_connection_args()
+        assert conn_info["host"] == "localhost"
+        assert conn_info["port"] == 5432
+        assert conn_info["dbname"] == "dbname"
+        assert conn_info["user"] == "user"
+        assert conn_info["password"] == "password"

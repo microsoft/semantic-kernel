@@ -7,3 +7,11 @@ MAX_DIMENSIONALITY = 2000
 
 # Maximum number of keys that will be processed in a single batch statement
 MAX_KEYS_PER_BATCH = 1000
+
+# Environment Variables
+PGHOST_ENV_VAR = "PGHOST"
+PGPORT_ENV_VAR = "PGPORT"
+PGDATABASE_ENV_VAR = "PGDATABASE"
+PGUSER_ENV_VAR = "PGUSER"
+PGPASSWORD_ENV_VAR = "PGPASSWORD"
+PGSSL_MODE_ENV_VAR = "PGSSL_MODE"

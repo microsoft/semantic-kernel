@@ -4,8 +4,16 @@ from typing import ClassVar
 
 from psycopg.conninfo import conninfo_to_dict
 from psycopg_pool import AsyncConnectionPool
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 
+from semantic_kernel.connectors.memory.postgres.constants import (
+    PGDATABASE_ENV_VAR,
+    PGHOST_ENV_VAR,
+    PGPASSWORD_ENV_VAR,
+    PGPORT_ENV_VAR,
+    PGSSL_MODE_ENV_VAR,
+    PGUSER_ENV_VAR,
+)
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -22,12 +30,12 @@ class PostgresSettings(KernelBaseSettings):
     env_prefix: ClassVar[str] = "POSTGRES_"
 
     connection_string: SecretStr | None = None
-    host: str | None = None
-    port: int | None = None
-    dbname: str | None = None
-    user: str | None = None
-    password: SecretStr | None = None
-    sslmode: str | None = None
+    host: str | None = Field(None, alias=PGHOST_ENV_VAR)
+    port: int | None = Field(5432, alias=PGPORT_ENV_VAR)
+    dbname: str | None = Field(None, alias=PGDATABASE_ENV_VAR)
+    user: str | None = Field(None, alias=PGUSER_ENV_VAR)
+    password: SecretStr | None = Field(None, alias=PGPASSWORD_ENV_VAR)
+    sslmode: str | None = Field(None, alias=PGSSL_MODE_ENV_VAR)
 
     min_pool: int = 1
     max_pool: int = 5
@@ -43,11 +51,21 @@ class PostgresSettings(KernelBaseSettings):
         if self.port:
             result["port"] = self.port
         if self.dbname:
-            result["database"] = self.dbname
+            result["dbname"] = self.dbname
         if self.user:
             result["user"] = self.user
         if self.password:
             result["password"] = self.password.get_secret_value()
+
+        # Ensure required values
+        if "host" not in result:
+            raise ValueError("host is required. Please set PGHOST or connection_string.")
+        if "dbname" not in result:
+            raise ValueError("database is required. Please set PGDATABASE or connection_string.")
+        if "user" not in result:
+            raise ValueError("user is required. Please set PGUSER or connection_string.")
+        if "password" not in result:
+            raise ValueError("password is required. Please set PGPASSWORD or connection_string.")
 
         return result
 
