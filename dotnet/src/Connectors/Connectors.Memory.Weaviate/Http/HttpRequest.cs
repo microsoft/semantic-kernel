@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -14,7 +13,6 @@ internal static class HttpRequest
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { JsonOptionsCache.ReadOnlyMemoryConverter },
     };
 
     public static HttpRequestMessage CreateGetRequest(string url, object? payload = null)

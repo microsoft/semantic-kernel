@@ -67,8 +67,6 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
     {
         // Arrange
-        var test = JsonSerializer.Serialize(s_byteVector);
-
         var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
             s_vectorStoreRecordDefinition,
             s_storagePropertyNames,
