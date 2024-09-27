@@ -3,12 +3,17 @@
 import asyncio
 import logging
 
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents import ChatHistory
+from dotenv import load_dotenv
+
+import semantic_kernel as sk
+import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.INFO)
+
+load_dotenv()
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -19,10 +24,10 @@ effectively, but you tend to answer with long
 flowery prose.
 """
 
-kernel = Kernel()
+kernel = sk.Kernel()
 
 service_id = "chat-gpt"
-chat_service = AzureChatCompletion(
+chat_service = sk_oai.AzureChatCompletion(
     service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 )
 kernel.add_service(chat_service)
@@ -40,24 +45,28 @@ kernel.add_service(chat_service)
 
 ## The second method is useful when you are using a single service, and you want to have type checking on the request settings or when you are using multiple instances of the same type of service, for instance gpt-35-turbo and gpt-4, both in openai and both for chat.  # noqa: E501 E266
 ## 3. create the request settings from the kernel based on the registered service class: # noqa: E266
-req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+req_settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
-req_settings.auto_invoke_kernel_functions = True
 ## The third method is the most specific as the returned request settings class is the one that is registered for the service and has some fields already filled in, like the service_id and ai_model_id. # noqa: E501 E266
 
-
-chat_function = kernel.add_function(
-    prompt=system_message + """{{$chat_history}}{{$user_input}}""",
-    function_name="chat",
-    plugin_name="chat",
-    prompt_execution_settings=req_settings,
+prompt_template_config = sk.PromptTemplateConfig(
+    template=system_message
+    + """ Summarize the on-going chat history: {{$chat_history}} and respond to this statement: {{$request}}""",
+    name="chat",
+    input_variables=[
+        InputVariable(name="request", description="The user input", is_required=True),
+        InputVariable(name="chat_history", description="The history of the conversation", is_required=True),
+    ],
+    execution_settings=req_settings,
 )
 
 history = ChatHistory()
 history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+
+chat_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
 
 
 async def chat() -> bool:
@@ -78,7 +87,7 @@ async def chat() -> bool:
     if stream:
         answer = kernel.invoke_stream(
             chat_function,
-            user_input=user_input,
+            request=user_input,
             chat_history=history,
         )
         print("Mosscap:> ", end="")
@@ -88,7 +97,7 @@ async def chat() -> bool:
         return True
     answer = await kernel.invoke(
         chat_function,
-        user_input=user_input,
+        request=user_input,
         chat_history=history,
     )
     print(f"Mosscap:> {answer}")

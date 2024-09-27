@@ -7,13 +7,20 @@ using System.Text.Json.Serialization;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
+<<<<<<< HEAD
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+=======
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+#pragma warning restore IDE0130
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 
 /// <summary>
 /// Serializer for <see cref="Flow"/>
 /// </summary>
 public static class FlowSerializer
 {
+<<<<<<< HEAD
     /// <summary>Options for <see cref="DeserializeFromJson"/>.</summary>
     private static readonly JsonSerializerOptions s_deserializeOptions = new()
     {
@@ -21,6 +28,8 @@ public static class FlowSerializer
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     };
 
+=======
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
     /// <summary>
     /// Deserialize flow from yaml
     /// </summary>
@@ -44,8 +53,22 @@ public static class FlowSerializer
     /// <returns>the <see cref="Flow"/> instance</returns>
     public static Flow? DeserializeFromJson(string json)
     {
+<<<<<<< HEAD
         var flow = JsonSerializer.Deserialize<FlowModel>(json, s_deserializeOptions) ??
             throw new JsonException("Failed to deserialize flow");
+=======
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+        };
+
+        var flow = JsonSerializer.Deserialize<FlowModel>(json, options);
+        if (flow is null)
+        {
+            throw new JsonException("Failed to deserialize flow");
+        }
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 
         return UpCast(flow);
     }
@@ -89,11 +112,19 @@ public static class FlowSerializer
     {
         public string Goal { get; set; } = string.Empty;
 
+<<<<<<< HEAD
         public List<string> Requires { get; set; } = [];
 
         public List<string> Provides { get; set; } = [];
 
         public List<string> Passthrough { get; set; } = [];
+=======
+        public List<string> Requires { get; set; } = new();
+
+        public List<string> Provides { get; set; } = new();
+
+        public List<string> Passthrough { get; set; } = new();
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 
         public CompletionType CompletionType { get; set; } = CompletionType.Once;
 
@@ -101,15 +132,27 @@ public static class FlowSerializer
 
         public string? TransitionMessage { get; set; }
 
+<<<<<<< HEAD
         public List<string> Plugins { get; set; } = [];
+=======
+        public List<string> Plugins { get; set; } = new();
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 
         public string? FlowName { get; set; }
     }
 
-    private class FlowModel : FlowStepModel
+<<<<<<< HEAD
+    private sealed class FlowModel : FlowStepModel
     {
         public string Name { get; set; } = string.Empty;
 
         public List<FlowStepModel> Steps { get; set; } = [];
+=======
+    private class FlowModel : FlowStepModel
+    {
+        public string Name { get; set; } = string.Empty;
+
+        public List<FlowStepModel> Steps { get; set; } = new();
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
     }
 }

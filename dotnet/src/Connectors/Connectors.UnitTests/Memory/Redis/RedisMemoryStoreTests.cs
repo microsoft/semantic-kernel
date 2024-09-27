@@ -4,18 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Numerics.Tensors;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Redis;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+using Microsoft.SemanticKernel.Connectors.Memory.Redis;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Memory.Collections;
 using Moq;
-using NRedisStack;
 using StackExchange.Redis;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Redis;
+namespace SemanticKernel.Connectors.UnitTests.Memory.Redis;
 
 /// <summary>
 /// Unit tests of <see cref="RedisMemoryStore"/>.
@@ -28,21 +29,21 @@ public class RedisMemoryStoreTests
     public RedisMemoryStoreTests()
     {
         this._mockDatabase = new Mock<IDatabase>();
-        this._collections = [];
+        this._collections = new();
     }
 
     [Fact]
     public void ConnectionCanBeInitialized()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
     }
 
     [Fact]
     public async Task ItCanCreateAndGetCollectionAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         string collection = "test_collection";
         this.MockCreateIndex(collection);
 
@@ -59,7 +60,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanCheckIfCollectionExistsAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         string collection = "my_collection";
         this.MockCreateIndex(collection);
 
@@ -75,7 +76,7 @@ public class RedisMemoryStoreTests
     public async Task CollectionsCanBeDeletedAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         string collection = "test_collection";
         this.MockCreateIndex(collection, () =>
         {
@@ -94,24 +95,24 @@ public class RedisMemoryStoreTests
 
         // Assert
         var collections2 = store.GetCollectionsAsync();
-        Assert.Equal(0, await collections2.CountAsync());
+        Assert.True(await collections2.CountAsync() == 0);
     }
 
     [Fact]
     public async Task ItCanInsertIntoNonExistentCollectionAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
             description: "description",
-            embedding: new float[] { 1, 2, 3 },
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
             key: null,
             timestamp: null);
         string collection = "random collection";
         string redisKey = $"{collection}:{testRecord.Metadata.Id}";
-        byte[] embedding = MemoryMarshal.Cast<float, byte>(testRecord.Embedding.Span).ToArray();
+        byte[] embedding = MemoryMarshal.Cast<float, byte>(testRecord.Embedding.AsReadOnlySpan()).ToArray();
         this._mockDatabase
             .Setup<Task>(x => x.HashSetAsync(
                 It.Is<RedisKey>(x => x == redisKey),
@@ -141,7 +142,7 @@ public class RedisMemoryStoreTests
         Assert.NotNull(actual);
         Assert.Equal(testRecord.Metadata.Id, key);
         Assert.Equal(testRecord.Metadata.Id, actual.Key);
-        Assert.True(testRecord.Embedding.Span.SequenceEqual(actual.Embedding.Span));
+        Assert.Equal(testRecord.Embedding.Vector, actual.Embedding.Vector);
         Assert.Equal(testRecord.Metadata.Text, actual.Metadata.Text);
         Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
@@ -152,12 +153,12 @@ public class RedisMemoryStoreTests
     public async Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
             description: "description",
-            embedding: new float[] { 1, 2, 3 },
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
             key: null,
             timestamp: null);
         string collection = "test_collection";
@@ -177,20 +178,20 @@ public class RedisMemoryStoreTests
         // Assert
         Assert.NotNull(actualDefault);
         Assert.NotNull(actualWithEmbedding);
-        Assert.True(actualDefault.Embedding.IsEmpty);
-        Assert.False(actualWithEmbedding.Embedding.IsEmpty);
+        Assert.Empty(actualDefault.Embedding.Vector);
+        Assert.NotEmpty(actualWithEmbedding.Embedding.Vector);
     }
 
     [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
             description: "description",
-            embedding: new float[] { 1, 2, 3 },
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
             key: null,
             timestamp: null);
         string collection = "test_collection";
@@ -208,7 +209,7 @@ public class RedisMemoryStoreTests
         Assert.NotNull(actual);
         Assert.Equal(testRecord.Metadata.Id, key);
         Assert.Equal(testRecord.Metadata.Id, actual.Key);
-        Assert.True(testRecord.Embedding.Span.SequenceEqual(actual.Embedding.Span));
+        Assert.Equal(testRecord.Embedding.Vector, actual.Embedding.Vector);
         Assert.Equal(testRecord.Metadata.Text, actual.Metadata.Text);
         Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
@@ -219,12 +220,12 @@ public class RedisMemoryStoreTests
     public async Task ItCanUpsertAndRetrieveARecordWithTimestampAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
             description: "description",
-            embedding: new float[] { 1, 2, 3 },
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
             key: null,
             timestamp: DateTimeOffset.UtcNow);
         string collection = "test_collection";
@@ -242,7 +243,7 @@ public class RedisMemoryStoreTests
         Assert.NotNull(actual);
         Assert.Equal(testRecord.Metadata.Id, key);
         Assert.Equal(testRecord.Metadata.Id, actual.Key);
-        Assert.True(testRecord.Embedding.Span.SequenceEqual(actual.Embedding.Span));
+        Assert.Equal(testRecord.Embedding.Vector, actual.Embedding.Vector);
         Assert.Equal(testRecord.Metadata.Text, actual.Metadata.Text);
         Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
@@ -253,18 +254,18 @@ public class RedisMemoryStoreTests
     public async Task UpsertReplacesExistingRecordWithSameIdAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         string commonId = "test";
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: commonId,
             text: "text",
             description: "description",
-            embedding: new float[] { 1, 2, 3 });
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
         MemoryRecord testRecord2 = MemoryRecord.LocalRecord(
             id: commonId,
             text: "text2",
             description: "description2",
-            embedding: new float[] { 1, 2, 4 });
+            embedding: new Embedding<float>(new float[] { 1, 2, 4 }));
         string collection = "test_collection";
         this.MockCreateIndex(collection, () =>
         {
@@ -282,8 +283,8 @@ public class RedisMemoryStoreTests
         Assert.NotNull(actual);
         Assert.Equal(testRecord.Metadata.Id, key);
         Assert.Equal(testRecord2.Metadata.Id, actual.Key);
-        Assert.False(testRecord.Embedding.Span.SequenceEqual(actual.Embedding.Span));
-        Assert.True(testRecord2.Embedding.Span.SequenceEqual(actual.Embedding.Span));
+        Assert.NotEqual(testRecord.Embedding.Vector, actual.Embedding.Vector);
+        Assert.Equal(testRecord2.Embedding.Vector, actual.Embedding.Vector);
         Assert.NotEqual(testRecord.Metadata.Text, actual.Metadata.Text);
         Assert.Equal(testRecord2.Metadata.Description, actual.Metadata.Description);
     }
@@ -292,12 +293,12 @@ public class RedisMemoryStoreTests
     public async Task ExistingRecordCanBeRemovedAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
             description: "description",
-            embedding: new float[] { 1, 2, 3 });
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
         string collection = "test_collection";
         this.MockCreateIndex(collection, () =>
         {
@@ -321,7 +322,7 @@ public class RedisMemoryStoreTests
     public async Task RemovingNonExistingRecordDoesNothingAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         string collection = "test_collection";
         this.MockCreateIndex(collection, () =>
         {
@@ -341,7 +342,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanListAllDatabaseCollectionsAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         string[] testCollections = { "random_collection1", "random_collection2", "random_collection3" };
         foreach (var collection in testCollections)
         {
@@ -378,18 +379,18 @@ public class RedisMemoryStoreTests
     public async Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
-        var compareEmbedding = new float[] { 1, 1, 1 };
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         string collection = "test_collection";
         int topN = 4;
         double threshold = -1;
         var testEmbeddings = new[]
         {
-            new float[] { 1, 1, 1 },
-            new float[] { -1, -1, -1 },
-            new float[] { 1, 2, 3 },
-            new float[] { -1, -2, -3 },
-            new float[] { 1, -1, -2 }
+            new Embedding<float>(new float[] { 1, 1, 1 }),
+            new Embedding<float>(new float[] { -1, -1, -1 }),
+            new Embedding<float>(new float[] { 1, 2, 3 }),
+            new Embedding<float>(new float[] { -1, -2, -3 }),
+            new Embedding<float>(new float[] { 1, -1, -2 })
         };
         var testRecords = new List<MemoryRecord>();
         for (int i = 0; i < testEmbeddings.Length; i++)
@@ -436,18 +437,18 @@ public class RedisMemoryStoreTests
     public async Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
-        var compareEmbedding = new float[] { 1, 1, 1 };
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         string collection = "test_collection";
         int topN = 1;
         double threshold = 0.75;
         var testEmbeddings = new[]
         {
-            new float[] { 1, 1, 1 },
-            new float[] { -1, -1, -1 },
-            new float[] { 1, 2, 3 },
-            new float[] { -1, -2, -3 },
-            new float[] { 1, -1, -2 }
+            new Embedding<float>(new float[] { 1, 1, 1 }),
+            new Embedding<float>(new float[] { -1, -1, -1 }),
+            new Embedding<float>(new float[] { 1, 2, 3 }),
+            new Embedding<float>(new float[] { -1, -2, -3 }),
+            new Embedding<float>(new float[] { 1, -1, -2 })
         };
         var testRecords = new List<MemoryRecord>();
         for (int i = 0; i < testEmbeddings.Length; i++)
@@ -488,26 +489,26 @@ public class RedisMemoryStoreTests
         // Assert
         Assert.NotNull(topNResultDefault);
         Assert.NotNull(topNResultWithEmbedding);
-        Assert.True(topNResultDefault.Value.Item1.Embedding.IsEmpty);
-        Assert.False(topNResultWithEmbedding.Value.Item1.Embedding.IsEmpty);
+        Assert.Empty(topNResultDefault.Value.Item1.Embedding.Vector);
+        Assert.NotEmpty(topNResultWithEmbedding.Value.Item1.Embedding.Vector);
     }
 
     [Fact]
     public async Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
-        var compareEmbedding = new float[] { 1, 1, 1 };
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         string collection = "test_collection";
         int topN = 1;
         double threshold = 0.75;
         var testEmbeddings = new[]
         {
-            new float[] { 1, 1, 1 },
-            new float[] { -1, -1, -1 },
-            new float[] { 1, 2, 3 },
-            new float[] { -1, -2, -3 },
-            new float[] { 1, -1, -2 }
+            new Embedding<float>(new float[] { 1, 1, 1 }),
+            new Embedding<float>(new float[] { -1, -1, -1 }),
+            new Embedding<float>(new float[] { 1, 2, 3 }),
+            new Embedding<float>(new float[] { -1, -2, -3 }),
+            new Embedding<float>(new float[] { 1, -1, -2 })
         };
         var testRecords = new List<MemoryRecord>();
         for (int i = 0; i < testEmbeddings.Length; i++)
@@ -554,8 +555,8 @@ public class RedisMemoryStoreTests
     public async Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
-        var compareEmbedding = new float[] { 1, 1, 1 };
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         int topN = 4;
         double threshold = 0.75;
         string collection = "test_collection";
@@ -566,7 +567,7 @@ public class RedisMemoryStoreTests
                 id: "test" + i,
                 text: "text" + i,
                 description: "description" + i,
-                embedding: new float[] { 1, 1, 1 }));
+                embedding: new Embedding<float>(new float[] { 1, 1, 1 })));
         }
         this.MockCreateIndex(collection, () =>
         {
@@ -610,7 +611,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanBatchUpsertRecordsAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         int numRecords = 10;
         string collection = "test_collection";
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
@@ -637,7 +638,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanBatchGetRecordsAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         int numRecords = 10;
         string collection = "test_collection";
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
@@ -664,7 +665,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanBatchRemoveRecordsAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         int numRecords = 10;
         string collection = "test_collection";
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
@@ -678,7 +679,7 @@ public class RedisMemoryStoreTests
         });
         await store.CreateCollectionAsync(collection);
 
-        List<string> keys = [];
+        List<string> keys = new();
 
         // Act
         await foreach (var key in store.UpsertBatchAsync(collection, records))
@@ -699,18 +700,18 @@ public class RedisMemoryStoreTests
     public async Task GetNearestMatchAsyncThrowsExceptionOnInvalidVectorScoreAsync()
     {
         // Arrange
-        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
-        var compareEmbedding = new float[] { 1, 1, 1 };
+        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         string collection = "test_collection";
         int topN = 1;
         double threshold = 0.75;
         var testEmbeddings = new[]
         {
-            new float[] { 1, 1, 1 },
-            new float[] { -1, -1, -1 },
-            new float[] { 1, 2, 3 },
-            new float[] { -1, -2, -3 },
-            new float[] { 1, -1, -2 }
+            new Embedding<float>(new float[] { 1, 1, 1 }),
+            new Embedding<float>(new float[] { -1, -1, -1 }),
+            new Embedding<float>(new float[] { 1, 2, 3 }),
+            new Embedding<float>(new float[] { -1, -2, -3 }),
+            new Embedding<float>(new float[] { 1, -1, -2 })
         };
         var testRecords = new List<MemoryRecord>();
         for (int i = 0; i < testEmbeddings.Length; i++)
@@ -745,24 +746,18 @@ public class RedisMemoryStoreTests
         }
 
         // Assert
-        var ex = await Assert.ThrowsAsync<KernelException>(async () =>
+        var ex = await Assert.ThrowsAsync<SKException>(async () =>
         {
             // Act
             await store.GetNearestMatchAsync(collection, compareEmbedding, minRelevanceScore: threshold);
         });
-        Assert.Equal("Invalid or missing vector score value.", ex.Message);
+        Assert.Equal(ex.Message, "Invalid or missing vector score value.");
     }
 
     #region private
 
     private void MockCreateIndex(string collection, Action? callback = null)
     {
-        var mockBatch = new Mock<IBatch>();
-
-        this._mockDatabase
-            .Setup(x => x.CreateBatch(It.IsAny<object>()))
-            .Returns(mockBatch.Object);
-
         this._mockDatabase
             .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
                 It.Is<string>(x => x == "FT.CREATE"),
@@ -771,7 +766,7 @@ public class RedisMemoryStoreTests
             .ReturnsAsync(RedisResult.Create("OK", ResultType.SimpleString))
             .Callback(() =>
             {
-                this._collections.TryAdd(collection, []);
+                this._collections.TryAdd(collection, new());
 
                 this._mockDatabase
                     .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
@@ -829,7 +824,7 @@ public class RedisMemoryStoreTests
     private void MockHashSet(string collection, MemoryRecord record, Action? callback = null)
     {
         string redisKey = $"{collection}:{record.Metadata.Id}";
-        byte[] embedding = MemoryMarshal.Cast<float, byte>(record.Embedding.Span).ToArray();
+        byte[] embedding = MemoryMarshal.Cast<float, byte>(record.Embedding.AsReadOnlySpan()).ToArray();
         long timestamp = record.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
 
         this._mockDatabase
@@ -843,7 +838,7 @@ public class RedisMemoryStoreTests
             )
             .Callback(() =>
             {
-                (this._collections[collection] ??= []).Add(record);
+                (this._collections[collection] ??= new()).Add(record);
 
                 this._mockDatabase
                     .Setup<Task<HashEntry[]>>(x => x.HashGetAllAsync(It.Is<RedisKey>(x => x == redisKey), It.IsAny<CommandFlags>()))
@@ -870,11 +865,11 @@ public class RedisMemoryStoreTests
             .ReturnsAsync(true)
             .Callback(() =>
             {
-                (this._collections[collection] ??= []).RemoveAll(x => x.Key == key);
+                (this._collections[collection] ??= new()).RemoveAll(x => x.Key == key);
 
                 this._mockDatabase
                     .Setup<Task<HashEntry[]>>(x => x.HashGetAllAsync(It.Is<RedisKey>(x => x == redisKey), It.IsAny<CommandFlags>()))
-                    .ReturnsAsync([]);
+                    .ReturnsAsync(Array.Empty<HashEntry>());
 
                 callback?.Invoke();
             });
@@ -892,61 +887,61 @@ public class RedisMemoryStoreTests
             .ReturnsAsync(redisKeys.Length)
             .Callback(() =>
             {
-                (this._collections[collection] ??= []).RemoveAll(x => keys.Contains(x.Key));
+                (this._collections[collection] ??= new()).RemoveAll(x => keys.Contains(x.Key));
 
                 foreach (var redisKey in redisKeys)
                 {
                     this._mockDatabase
                     .Setup<Task<HashEntry[]>>(x => x.HashGetAllAsync(It.Is<RedisKey>(x => x == redisKey), It.IsAny<CommandFlags>()))
-                    .ReturnsAsync([]);
+                    .ReturnsAsync(Array.Empty<HashEntry>());
                 }
 
                 callback?.Invoke();
             });
     }
 
-    private void MockSearch(string collection, ReadOnlyMemory<float> compareEmbedding, int topN, double threshold, bool returnStringVectorScore = false)
+    private void MockSearch(string collection, Embedding<float> compareEmbedding, int topN, double threshold, bool returnStringVectorScore = false)
     {
-        List<(MemoryRecord Record, double Score)> embeddings = [];
+        TopNCollection<MemoryRecord> embeddings = new(topN);
 
-        List<MemoryRecord> records = this._collections.TryGetValue(collection, out var value) ? value : [];
+        List<MemoryRecord> records = this._collections.TryGetValue(collection, out var value) ? value : new();
 
         foreach (var record in records)
         {
-            double similarity = TensorPrimitives.CosineSimilarity(compareEmbedding.Span, record.Embedding.Span);
+            double similarity = compareEmbedding
+                .AsReadOnlySpan()
+                .CosineSimilarity(record.Embedding.AsReadOnlySpan());
             if (similarity >= threshold)
             {
                 embeddings.Add(new(record, similarity));
             }
         }
 
-        embeddings = embeddings.OrderByDescending(l => l.Score).Take(topN).ToList();
+        embeddings.SortByScore();
 
         string redisKey = $"{collection}";
 
-        var redisResults = new List<RedisResult>
-        {
-            RedisResult.Create(embeddings.Count)
-        };
+        var redisResults = new List<RedisResult>();
+        redisResults.Add(RedisResult.Create(embeddings.Count));
 
         foreach (var item in embeddings)
         {
-            long timestamp = item.Record.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
-            byte[] embedding = MemoryMarshal.Cast<float, byte>(item.Record.Embedding.Span).ToArray();
-            redisResults.Add(RedisResult.Create($"{collection}:{item.Record.Metadata.Id}", ResultType.BulkString));
+            long timestamp = item.Value.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
+            byte[] embedding = MemoryMarshal.Cast<float, byte>(item.Value.Embedding.AsReadOnlySpan()).ToArray();
+            redisResults.Add(RedisResult.Create($"{collection}:{item.Value.Metadata.Id}", ResultType.BulkString));
             redisResults.Add(RedisResult.Create(
                 new RedisResult[]
                 {
                     RedisResult.Create("key", ResultType.BulkString),
-                    RedisResult.Create(item.Record.Metadata.Id, ResultType.BulkString),
+                    RedisResult.Create(item.Value.Metadata.Id, ResultType.BulkString),
                     RedisResult.Create("metadata", ResultType.BulkString),
-                    RedisResult.Create(item.Record.GetSerializedMetadata(), ResultType.BulkString),
+                    RedisResult.Create(item.Value.GetSerializedMetadata(), ResultType.BulkString),
                     RedisResult.Create("embedding", ResultType.BulkString),
                     RedisResult.Create(embedding, ResultType.BulkString),
                     RedisResult.Create("timestamp", ResultType.BulkString),
                     RedisResult.Create(timestamp, ResultType.BulkString),
                     RedisResult.Create("vector_score", ResultType.BulkString),
-                    RedisResult.Create(returnStringVectorScore ? $"score:{1-item.Score}" : 1-item.Score, ResultType.BulkString),
+                    RedisResult.Create(returnStringVectorScore ? $"score:{1-item.Score.Value}" : 1-item.Score.Value, ResultType.BulkString),
                 })
             );
         }
@@ -971,7 +966,7 @@ public class RedisMemoryStoreTests
                 id: "test" + i,
                 text: "text" + i,
                 description: "description" + i,
-                embedding: new float[] { 1, 1, 1 });
+                embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
             records = records.Append(testRecord);
         }
 
@@ -981,7 +976,7 @@ public class RedisMemoryStoreTests
                 externalId: "test" + i,
                 sourceName: "sourceName" + i,
                 description: "description" + i,
-                embedding: new float[] { 1, 2, 3 });
+                embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
             records = records.Append(testRecord);
         }
 

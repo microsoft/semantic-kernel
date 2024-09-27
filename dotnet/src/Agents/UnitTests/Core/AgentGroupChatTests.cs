@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Core;
@@ -24,12 +23,18 @@ public class AgentGroupChatTests
     [Fact]
     public void VerifyGroupAgentChatDefaultState()
     {
+        // Arrange
         AgentGroupChat chat = new();
+
+        // Assert
         Assert.Empty(chat.Agents);
         Assert.NotNull(chat.ExecutionSettings);
         Assert.False(chat.IsComplete);
 
+        // Act
         chat.IsComplete = true;
+
+        // Assert
         Assert.True(chat.IsComplete);
     }
 
@@ -39,21 +44,29 @@ public class AgentGroupChatTests
     [Fact]
     public async Task VerifyGroupAgentChatAgentMembershipAsync()
     {
-        Agent agent1 = CreateMockAgent().Object;
-        Agent agent2 = CreateMockAgent().Object;
-        Agent agent3 = CreateMockAgent().Object;
-        Agent agent4 = CreateMockAgent().Object;
+        // Arrange
+        Agent agent1 = CreateMockAgent();
+        Agent agent2 = CreateMockAgent();
+        Agent agent3 = CreateMockAgent();
+        Agent agent4 = CreateMockAgent();
 
         AgentGroupChat chat = new(agent1, agent2);
+
+        // Assert
         Assert.Equal(2, chat.Agents.Count);
 
+<<<<<<< main
+        chat.Add(agent3);
+=======
+>>>>>>> ms/features/bugbash-prep
+        // Act
         chat.AddAgent(agent3);
+        // Assert
         Assert.Equal(3, chat.Agents.Count);
 
-        var messages = await chat.InvokeAsync(agent4, isJoining: false).ToArrayAsync();
-        Assert.Equal(3, chat.Agents.Count);
-
-        messages = await chat.InvokeAsync(agent4).ToArrayAsync();
+        // Act
+        ChatMessageContent[] messages = await chat.InvokeAsync(agent4).ToArrayAsync();
+        // Assert
         Assert.Equal(4, chat.Agents.Count);
     }
 
@@ -63,9 +76,10 @@ public class AgentGroupChatTests
     [Fact]
     public async Task VerifyGroupAgentChatMultiTurnAsync()
     {
-        Agent agent1 = CreateMockAgent().Object;
-        Agent agent2 = CreateMockAgent().Object;
-        Agent agent3 = CreateMockAgent().Object;
+        // Arrange
+        Agent agent1 = CreateMockAgent();
+        Agent agent2 = CreateMockAgent();
+        Agent agent3 = CreateMockAgent();
 
         AgentGroupChat chat =
             new(agent1, agent2, agent3)
@@ -82,10 +96,14 @@ public class AgentGroupChatTests
                 IsComplete = true
             };
 
+        // Act and Assert
         await Assert.ThrowsAsync<KernelException>(() => chat.InvokeAsync(CancellationToken.None).ToArrayAsync().AsTask());
 
+        // Act
         chat.ExecutionSettings.TerminationStrategy.AutomaticReset = true;
         var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
+
+        // Assert
         Assert.Equal(9, messages.Length);
         Assert.False(chat.IsComplete);
 
@@ -112,6 +130,7 @@ public class AgentGroupChatTests
     [Fact]
     public async Task VerifyGroupAgentChatFailedSelectionAsync()
     {
+        // Arrange
         AgentGroupChat chat = Create3AgentChat();
 
         chat.ExecutionSettings =
@@ -129,6 +148,7 @@ public class AgentGroupChatTests
         // Remove max-limit in order to isolate the target behavior.
         chat.ExecutionSettings.TerminationStrategy.MaximumIterations = int.MaxValue;
 
+        // Act and Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => chat.InvokeAsync().ToArrayAsync().AsTask());
     }
 
@@ -138,6 +158,7 @@ public class AgentGroupChatTests
     [Fact]
     public async Task VerifyGroupAgentChatMultiTurnTerminationAsync()
     {
+        // Arrange
         AgentGroupChat chat = Create3AgentChat();
 
         chat.ExecutionSettings =
@@ -151,7 +172,10 @@ public class AgentGroupChatTests
                     }
             };
 
+        // Act
         var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
+
+        // Assert
         Assert.Single(messages);
         Assert.True(chat.IsComplete);
     }
@@ -162,7 +186,8 @@ public class AgentGroupChatTests
     [Fact]
     public async Task VerifyGroupAgentChatDiscreteTerminationAsync()
     {
-        Agent agent1 = CreateMockAgent().Object;
+        // Arrange
+        Agent agent1 = CreateMockAgent();
 
         AgentGroupChat chat =
             new()
@@ -179,29 +204,37 @@ public class AgentGroupChatTests
                     }
             };
 
+        // Act
         var messages = await chat.InvokeAsync(agent1).ToArrayAsync();
+
+        // Assert
         Assert.Single(messages);
         Assert.True(chat.IsComplete);
     }
 
     private static AgentGroupChat Create3AgentChat()
     {
-        Agent agent1 = CreateMockAgent().Object;
-        Agent agent2 = CreateMockAgent().Object;
-        Agent agent3 = CreateMockAgent().Object;
+        Agent agent1 = CreateMockAgent();
+        Agent agent2 = CreateMockAgent();
+        Agent agent3 = CreateMockAgent();
 
         return new(agent1, agent2, agent3);
     }
 
+<<<<<<< main
+    private static MockAgent CreateMockAgent() => new() { Response = [new(AuthorRole.Assistant, "test")] };
+=======
     private static Mock<ChatHistoryKernelAgent> CreateMockAgent()
     {
         Mock<ChatHistoryKernelAgent> agent = new();
 
         ChatMessageContent[] messages = [new ChatMessageContent(AuthorRole.Assistant, "test")];
+        agent.Setup(a => a.InvokeAsync(It.IsAny<ChatHistory>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
         agent.Setup(a => a.InvokeAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
 
         return agent;
     }
+>>>>>>> origin/PR
 
     private sealed class TestTerminationStrategy(bool shouldTerminate) : TerminationStrategy
     {
@@ -213,7 +246,7 @@ public class AgentGroupChatTests
 
     private sealed class FailedSelectionStrategy : SelectionStrategy
     {
-        public override Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected override Task<Agent> SelectAgentAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             throw new InvalidOperationException();
         }

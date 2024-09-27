@@ -1,10 +1,17 @@
+<<<<<<< main
+// Copyright (c) Microsoft. All rights reserved.
+=======
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.OpenAI;
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> ms/features/bugbash-prep
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Chat;
 using Resources;
 
 namespace Agents;
@@ -13,10 +20,8 @@ namespace Agents;
 /// Demonstrate usage of <see cref="KernelFunctionTerminationStrategy"/> and <see cref="KernelFunctionSelectionStrategy"/>
 /// to manage <see cref="AgentGroupChat"/> execution.
 /// </summary>
-public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(output)
+public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    protected override bool ForceOpenAI => true;
-
     private const string InternalLeaderName = "InternalLeader";
     private const string InternalLeaderInstructions =
         """
@@ -94,12 +99,16 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         """;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task NestedChatWithAggregatorAgentAsync()
     {
         Console.WriteLine($"! {Model}");
 
-        OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatCompletionsResponseFormat.JsonObject };
+        OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatResponseFormat.JsonObject };
+<<<<<<< main
+        OpenAIPromptExecutionSettings autoInvokeSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+=======
         OpenAIPromptExecutionSettings autoInvokeSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+>>>>>>> ms/features/bugbash-prep
 
         ChatCompletionAgent internalLeaderAgent = CreateAgent(InternalLeaderName, InternalLeaderInstructions);
         ChatCompletionAgent internalGiftIdeaAgent = CreateAgent(InternalGiftIdeaAgentName, InternalGiftIdeaAgentInstructions);
@@ -154,20 +163,29 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         Console.WriteLine(">>>> AGGREGATED CHAT");
         Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-        await foreach (var content in chat.GetChatMessagesAsync(personalShopperAgent).Reverse())
+        await foreach (ChatMessageContent message in chat.GetChatMessagesAsync(personalShopperAgent).Reverse())
         {
-            Console.WriteLine($">>>> {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            this.WriteAgentChatMessage(message);
         }
 
         async Task InvokeChatAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+<<<<<<< main
+<<<<<<< main
+            chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> ms/features/bugbash-prep
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.AddChatMessage(message);
+            this.WriteAgentChatMessage(message);
 
-            await foreach (var content in chat.InvokeAsync(personalShopperAgent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(personalShopperAgent))
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                this.WriteAgentChatMessage(response);
             }
 
             Console.WriteLine($"\n# IS COMPLETE: {chat.IsComplete}");

@@ -20,7 +20,11 @@ public class ChatMessageContent : KernelContent
     /// </summary>
     [Experimental("SKEXP0001")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? AuthorName { get; set; }
+    public string? AuthorName
+    {
+        get => this._authorName;
+        set => this._authorName = string.IsNullOrWhiteSpace(value) ? null : value;
+    }
 
     /// <summary>
     /// Role of the author of the message
@@ -41,27 +45,21 @@ public class ChatMessageContent : KernelContent
         }
         set
         {
-            if (value == null)
-            {
-                return;
-            }
-
             var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
             if (textContent is not null)
             {
                 textContent.Text = value;
-                textContent.Encoding = this.Encoding;
             }
-            else
+            else if (value is not null)
             {
                 this.Items.Add(new TextContent(
                     text: value,
-                    modelId: this.ModelId,
-                    innerContent: this.InnerContent,
-                    encoding: this.Encoding,
-                    metadata: this.Metadata
+                ////modelId: this.ModelId, // %%% REDUNDANT
+                ////innerContent: this.InnerContent, // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION / MUTATION RISK (IGNORED FOR SERIALIZATION)
+                    encoding: this.Encoding // %%% WEIRD, BUT WHO CARES (IGNORED FOR SERIALIZATION)
+                ////metadata: this.Metadata, // %%% CARDINALITY MISMATCH / MUTATION RISK
                 )
-                { MimeType = this.MimeType });
+                { MimeType = this.MimeType }); // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION
             }
         }
     }
@@ -108,7 +106,7 @@ public class ChatMessageContent : KernelContent
     /// </summary>
     /// <remarks>
     /// The source is corresponds to the entity that generated this message.
-    /// The property is intended to be used by agents to associate themselves with the messages they generate.
+    /// The property is intended to be used by agents to associate themselves with the messages they generate or by a user who created it.
     /// </remarks>
     [Experimental("SKEXP0101")]
     [JsonIgnore]
@@ -177,4 +175,5 @@ public class ChatMessageContent : KernelContent
 
     private ChatMessageContentItemCollection? _items;
     private Encoding _encoding;
+    private string? _authorName;
 }

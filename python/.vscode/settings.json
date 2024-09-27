@@ -1,10 +1,13 @@
 {
+    "python.analysis.extraPaths": [
+        "./src"
+    ],
     "explorer.compactFolders": false,
     "prettier.enable": true,
     "editor.formatOnType": true,
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true,
-    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.defaultFormatter": "GitHub.copilot",
     "notebook.output.textLineLimit": 500,
     "cSpell.languageSettings": [
         {
@@ -25,11 +28,23 @@
             "source.fixAll": "explicit"
         },
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.defaultFormatter": "GitHub.copilot",
     },
     "notebook.formatOnSave.enabled": true,
     "notebook.codeActionsOnSave": {
-        "source.fixAll": true,
-        "source.organizeImports": true
+        "source.fixAll": "explicit",
+        "source.organizeImports": "explicit"
     }
+}
+    "python.formatting.provider": "autopep8",
+    "python.formatting.autopep8Args": [
+        "--max-line-length=160"
+    ],
+    "notebook.output.textLineLimit": 500,
+    "cSpell.words": [
+        "aeiou",
+        "nopep",
+        "OPENAI",
+        "skfunction"
+    ],
 }

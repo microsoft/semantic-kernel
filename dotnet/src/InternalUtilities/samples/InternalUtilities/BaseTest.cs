@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 public abstract class BaseTest
 {
@@ -76,9 +78,7 @@ public abstract class BaseTest
     /// </summary>
     /// <param name="target">Target object to write</param>
     public void WriteLine(object? target = null)
-    {
-        this.Output.WriteLine(target ?? string.Empty);
-    }
+        => this.Output.WriteLine(target ?? string.Empty);
 
     /// <summary>
     /// This method can be substituted by Console.WriteLine when used in Console apps.
@@ -86,14 +86,92 @@ public abstract class BaseTest
     /// <param name="format">Format string</param>
     /// <param name="args">Arguments</param>
     public void WriteLine(string? format, params object?[] args)
-        => this.Output.WriteLine(format ?? string.Empty, args);
+    {
+        if (args is null || args.Length == 0)
+        {
+            this.Output.WriteLine(format ?? string.Empty);
+        }
+        else
+        {
+            this.Output.WriteLine(format ?? string.Empty, args);
+        }
+    }
+
+    /// <summary>
+    /// This method can be substituted by Console.WriteLine when used in Console apps.
+    /// </summary>
+    /// <param name="message">The message</param>
+public void WriteLine(string? message = null)
+    => this.Output.WriteLine(message ?? string.Empty);
+        => this.Output.WriteLine(message ?? string.Empty);
 
     /// <summary>
     /// Current interface ITestOutputHelper does not have a Write method. This extension method adds it to make it analogous to Console.Write when used in Console apps.
     /// </summary>
     /// <param name="target">Target object to write</param>
     public void Write(object? target = null)
+        => this.Output.WriteLine(target ?? string.Empty);
+
+    /// <summary>
+    /// Outputs the last message in the chat history.
+    /// </summary>
+    /// <param name="chatHistory">Chat history</param>
+    protected void OutputLastMessage(ChatHistory chatHistory)
     {
-        this.Output.WriteLine(target ?? string.Empty);
+        var message = chatHistory.Last();
+
+        Console.WriteLine($"{message.Role}: {message.Content}");
+        Console.WriteLine("------------------------");
     }
+
+    /// <summary>
+    /// Utility method to write a horizontal rule to the console.
+    /// </summary>
+    protected void WriteHorizontalRule()
+        => Console.WriteLine(new string('-', HorizontalRuleLength));
+
+    protected sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
+    {
+        private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };
+
+        private readonly ITestOutputHelper _output = output;
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            // Log the request details
+            if (request.Content is not null)
+            {
+                var content = await request.Content.ReadAsStringAsync(cancellationToken);
+                this._output.WriteLine("=== REQUEST ===");
+                try
+                {
+                    string formattedContent = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(content), s_jsonSerializerOptions);
+                    this._output.WriteLine(formattedContent);
+                }
+                catch (JsonException)
+                {
+                    this._output.WriteLine(content);
+                }
+                this._output.WriteLine(string.Empty);
+            }
+
+            // Call the next handler in the pipeline
+            var response = await base.SendAsync(request, cancellationToken);
+
+            if (response.Content is not null)
+            {
+                // Log the response details
+                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                this._output.WriteLine("=== RESPONSE ===");
+                this._output.WriteLine(responseContent);
+                this._output.WriteLine(string.Empty);
+            }
+
+            return response;
+        }
+    }
+
+    #region private
+    private const int HorizontalRuleLength = 80;
+    #endregion
 }

@@ -5,12 +5,22 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+<<<<<<< HEAD
 using Microsoft.SemanticKernel.ChatCompletion;
+=======
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Microsoft.SemanticKernel.Memory;
 
+<<<<<<< HEAD
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+=======
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+#pragma warning restore IDE0130
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 
 /// <summary>
 /// Default flow status provider implemented on top of <see cref="IMemoryStore"/>
@@ -125,7 +135,11 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         {
             try
             {
+<<<<<<< HEAD
                 return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? [];
+=======
+                return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? new List<ReActStep>();
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
             }
             catch
             {
@@ -134,7 +148,11 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
             }
         }
 
+<<<<<<< HEAD
         return [];
+=======
+        return new List<ReActStep>();
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
     }
 
     /// <inheritdoc/>

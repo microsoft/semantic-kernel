@@ -1,0 +1,14 @@
+{
+  "description": "Given a query and a list of possible intents, detect which intent the input matches",
+  "default_settings": {
+    "max_tokens": 100,
+    "temperature": 0.1,
+    "top_p": 1.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0
+  },
+  "default_backends": [
+    "text-davinci-003"
+  ]
+  }
+}

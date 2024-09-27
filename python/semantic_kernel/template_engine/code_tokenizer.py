@@ -1,10 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List
+<<<<<<< main
 
 from semantic_kernel.exceptions import CodeBlockSyntaxError
+=======
+from typing import List
+
+>>>>>>> ms/small_fixes
 from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import CodeBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
@@ -24,8 +29,16 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [function-call]  ::= [function-id] | [function-id] [parameter]
 # [parameter]      ::= [variable] | [value]
 class CodeTokenizer:
+<<<<<<< main
+    """Tokenize the code text into blocks."""
+
+    @staticmethod
+    def tokenize(text: str) -> list[Block]:
+        """Tokenize the code text into blocks."""
+=======
     @staticmethod
     def tokenize(text: str) -> List[Block]:
+>>>>>>> ms/small_fixes
         # Remove spaces, which are ignored anyway
         text = text.strip() if text else ""
         # Render None/empty to []
@@ -39,14 +52,22 @@ class CodeTokenizer:
         current_token_type = None
 
         # Track the content of the current token
+<<<<<<< main
+        current_token_content: list[str] = []
+=======
         current_token_content: List[str] = []
+>>>>>>> ms/small_fixes
 
         # Other state we need to track
         text_value_delimiter = None
         space_separator_found = False
         skip_next_char = False
         next_char = ""
+<<<<<<< main
+        blocks: list[Block] = []
+=======
         blocks: List[Block] = []
+>>>>>>> ms/small_fixes
 
         for index, current_char in enumerate(text[:-1]):
             next_char = text[index + 1]
@@ -107,9 +128,19 @@ class CodeTokenizer:
                     current_token_content.clear()
                 elif current_token_type == BlockTypes.FUNCTION_ID:
                     if Symbols.NAMED_ARG_BLOCK_SEPARATOR.value in current_token_content:
+<<<<<<< main
+                        blocks.append(
+                            NamedArgBlock(content="".join(current_token_content))
+                        )
+                    else:
+                        blocks.append(
+                            FunctionIdBlock(content="".join(current_token_content))
+                        )
+=======
                         blocks.append(NamedArgBlock(content="".join(current_token_content)))
                     else:
                         blocks.append(FunctionIdBlock(content="".join(current_token_content)))
+>>>>>>> ms/small_fixes
                     current_token_content.clear()
 
                 space_separator_found = True
@@ -117,12 +148,18 @@ class CodeTokenizer:
 
                 continue
 
-            # If we're not inside a quoted value and we're not processing a space
+            # If we're not inside a quoted value, and we're not processing a space
             current_token_content.append(current_char)
 
             if current_token_type is None:
                 if not space_separator_found:
+<<<<<<< main
+                    raise CodeBlockSyntaxError(
+                        "Tokens must be separated by one space least"
+                    )
+=======
                     raise CodeBlockSyntaxError("Tokens must be separated by one space least")
+>>>>>>> ms/small_fixes
 
                 if current_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
                     # A quoted value starts here

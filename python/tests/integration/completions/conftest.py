@@ -1,11 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 
 import pytest
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+<<<<<<< main
 from semantic_kernel.kernel import Kernel
+
+
+@pytest.fixture(scope="function")
+def setup_tldr_function_for_oai_models(kernel: Kernel):
+=======
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 if sys.version_info >= (3, 9):
@@ -13,7 +18,10 @@ if sys.version_info >= (3, 9):
 
 
 @pytest.fixture(scope="function")
-def setup_tldr_function_for_oai_models(kernel: Kernel):
+def setup_tldr_function_for_oai_models(create_kernel):
+    kernel = create_kernel
+
+>>>>>>> ms/small_fixes
     # Define semantic function using SK prompt template language
     prompt = """
     {{$input}}
@@ -41,7 +49,12 @@ def setup_tldr_function_for_oai_models(kernel: Kernel):
 
 
 @pytest.fixture(scope="function")
+<<<<<<< main
 def setup_summarize_conversation_using_plugin(kernel: Kernel):
+=======
+def setup_summarize_conversation_using_plugin(create_kernel):
+    kernel = create_kernel
+>>>>>>> ms/small_fixes
     ChatTranscript = """John: Hello, how are you?
         Jane: I'm fine, thanks. How are you?
         John: I'm doing well, writing some example code.
@@ -81,10 +94,13 @@ def setup_summarize_conversation_using_plugin(kernel: Kernel):
         John: Yeah, that's a good idea."""
 
     yield kernel, ChatTranscript
+<<<<<<< main
+=======
 
 
 @pytest.fixture(scope="function")
-def setup_gp_text_completion_function(kernel: Kernel, get_gp_config):
+def setup_gp_text_completion_function(create_kernel, get_gp_config):
+    kernel = create_kernel
     api_key = get_gp_config
     # Configure LLM service
     palm_text_completion = sk_gp.GooglePalmTextCompletion(ai_model_id="models/text-bison-001", api_key=api_key)
@@ -100,11 +116,10 @@ def setup_gp_text_completion_function(kernel: Kernel, get_gp_config):
     prompt_template_config = PromptTemplateConfig(template=prompt, execution_settings=exec_settings)
 
     # Create the semantic function
-    text2text_function = kernel.add_function(
-        function_name="hello", plugin_name="plugin", prompt_template_config=prompt_template_config
-    )
+    text2text_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
 
     # User input
     simple_input = "sleeping and "
 
     yield kernel, text2text_function, simple_input
+>>>>>>> ms/small_fixes

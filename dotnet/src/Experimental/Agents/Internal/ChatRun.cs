@@ -95,7 +95,7 @@ internal sealed class ChatRun
             // Enumerate completed messages
             var newMessageIds =
                 steps.Data
-                    .Where(s => s.StepDetails.MessageCreation != null)
+                    .Where(s => s.StepDetails.MessageCreation is not null)
                     .Select(s => (s.StepDetails.MessageCreation!.MessageId, s.CompletedAt))
                     .Where(t => !processedMessageIds.Contains(t.MessageId))
                     .OrderBy(t => t.CompletedAt)
@@ -163,13 +163,12 @@ internal sealed class ChatRun
     private async Task<ToolResultModel> ProcessFunctionStepAsync(string callId, ThreadRunStepModel.FunctionDetailsModel functionDetails, CancellationToken cancellationToken)
     {
         var result = await InvokeFunctionCallAsync().ConfigureAwait(false);
-        var toolResult = result as string ?? JsonSerializer.Serialize(result);
 
         return
             new ToolResultModel
             {
                 CallId = callId,
-                Output = toolResult!,
+                Output = ParseFunctionResult(result),
             };
 
         async Task<object> InvokeFunctionCallAsync()
@@ -190,5 +189,20 @@ internal sealed class ChatRun
 
             return result.GetValue<object>() ?? string.Empty;
         }
+    }
+
+    private static string ParseFunctionResult(object result)
+    {
+        if (result is string stringResult)
+        {
+            return stringResult;
+        }
+
+        if (result is ChatMessageContent messageResult)
+        {
+            return messageResult.Content ?? JsonSerializer.Serialize(messageResult);
+        }
+
+        return JsonSerializer.Serialize(result);
     }
 }

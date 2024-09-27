@@ -7,33 +7,45 @@ on:
       - 'python/**'
 
 jobs:
-  ruff:
+  pre-commit:
     if: '!cancelled()'
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.10"]
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: python
+    env:
+      # Configure a constant location for the uv cache
+      UV_CACHE_DIR: /tmp/.uv-cache
     steps:
-      - run: echo "/root/.local/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - uses: actions/setup-python@v5
+      - name: Set up uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+<<<<<<< main
         with:
           python-version: ${{ matrix.python-version }}
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
           cache: "poetry"
-      - name: Install Semantic Kernel
+<<<<<<< main
+          cache-dependency-path: "python/pyproject.toml"
+      - name: Install SemanticKernel
         run: cd python && poetry install --no-ansi
-      - name: Run ruff
+      - name: Run lint
         run: cd python && poetry run ruff check .
   black:
-    if: '!cancelled()'
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.8"]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -45,29 +57,44 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
-      - name: Install Semantic Kernel
+          cache-dependency-path: "python/pyproject.toml"
+      - name: Install SemanticKernel
         run: cd python && poetry install --no-ansi
-      - name: Run black
+      - name: Run lint
         run: cd python && poetry run black --check .
-  mypy:
-    if: '!cancelled()'
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10"]
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - run: echo "/root/.local/bin" >> $GITHUB_PATH
-      - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - uses: actions/setup-python@v5
+      - name: Install dependencies
+        run: cd python && poetry install
+      - uses: pre-commit/action@v3.0.1
+<<<<<<< main
+=======
+>>>>>>> origin/main-auto-tune
+>>>>>>> origin/main
+=======
+      - name: Restore uv cache
+        uses: actions/cache@v4
+        with:
+          path: ${{  env.UV_CACHE_DIR  }}
+          key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
+      - name: Install the project
+        run: uv sync --all-extras --dev
+      - uses: pre-commit/action@v3.0.1
+=======
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "poetry"
-      - name: Install Semantic Kernel
-        run: cd python && poetry install --no-ansi
-      - name: Run mypy
-        run: cd python && poetry run mypy -p semantic_kernel --config-file=mypy.ini
-
+      - name: Restore uv cache
+        uses: actions/cache@v4
+        with:
+          path: ${{  env.UV_CACHE_DIR  }}
+          key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
+      - name: Install the project
+        run: uv sync --all-extras --dev
+      - uses: pre-commit/action@v3.0.1
+>>>>>>> ms/features/bugbash-prep
+        with:
+          extra_args: --config python/.pre-commit-config.yaml
+      - name: Minimize uv cache
+        run: uv cache prune --ci
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> ms/features/bugbash-prep

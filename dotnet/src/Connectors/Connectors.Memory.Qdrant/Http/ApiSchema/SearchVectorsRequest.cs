@@ -55,7 +55,7 @@ internal sealed class SearchVectorsRequest
 
     public SearchVectorsRequest HavingTags(IEnumerable<string>? tags)
     {
-        if (tags == null) { return this; }
+        if (tags is null) { return this; }
 
         foreach (var tag in tags)
         {

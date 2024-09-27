@@ -1,9 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+
+#pragma warning disable CA1054 // URI-like parameters should not be strings
 
 namespace Microsoft.SemanticKernel;
 
@@ -11,14 +12,22 @@ namespace Microsoft.SemanticKernel;
 /// Represents audio content.
 /// </summary>
 [Experimental("SKEXP0001")]
-public class AudioContent : KernelContent
+public class AudioContent : BinaryContent
 {
     /// <summary>
-    /// The audio data.
+    /// URI of audio file.
     /// </summary>
-    public ReadOnlyMemory<byte>? Data { get; set; }
+    private readonly Uri? _uri;
+
+    public Uri? Uri => _uri;
+
+    public AudioContent(Uri? uri)
+    {
+        _uri = uri;
+    }
 
     /// <summary>
+    /// The audio data.
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
     [JsonConstructor]
@@ -29,17 +38,42 @@ public class AudioContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
-    /// <param name="data">The audio binary data.</param>
+    /// <param name="uri">The URI of audio.</param>
+    public AudioContent(Uri uri) : base(uri)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+    /// </summary>
+    /// <param name="dataUri">DataUri of the audio</param>
+    public AudioContent(string dataUri) : base(dataUri)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+    /// </summary>
+    /// <param name="data">Byte array of the audio</param>
+    /// <param name="mimeType">Mime type of the audio</param>
+    public AudioContent(ReadOnlyMemory<byte> data, string? mimeType) : base(data, mimeType)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+    /// </summary>
+    /// <param name="uri">URI of audio file.</param>
     /// <param name="modelId">The model ID used to generate the content.</param>
     /// <param name="innerContent">Inner content,</param>
     /// <param name="metadata">Additional metadata</param>
     public AudioContent(
-        ReadOnlyMemory<byte> data,
-        string? modelId = null,
-        object? innerContent = null,
+        Uri uri,
+        public AudioContent(Uri uri, string modelId, object? innerContent, IReadOnlyDictionary<string, object?>? metadata)
+        object innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        this.Data = data;
+        this.Uri = uri;
     }
 }

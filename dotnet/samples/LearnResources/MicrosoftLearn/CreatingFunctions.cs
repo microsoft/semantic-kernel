@@ -55,14 +55,14 @@ public class CreatingFunctions(ITestOutputHelper output) : LearnBaseTest(["What 
         // Start the conversation
         Console.Write("User > ");
         string? userInput;
-        while ((userInput = Console.ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) is not null)
         {
             history.AddUserMessage(userInput);
 
             // Enable auto function calling
             OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
             {
-                ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
             };
 
             // Get the response from the AI

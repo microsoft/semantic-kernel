@@ -13,12 +13,17 @@ async def test_hf_embeddings_with_memories():
 
     model_id = "sentence-transformers/all-MiniLM-L6-v2"
 
-    embedding_gen = sk_hf.HuggingFaceTextEmbedding(service_id=model_id, ai_model_id=model_id)
+<<<<<<< main
+    embedding_gen = sk_hf.HuggingFaceTextEmbedding(
+        service_id=model_id, ai_model_id=model_id
+    )
 
     # Configure LLM service
     kernel.add_service(embedding_gen)
 
-    memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
+    memory = SemanticTextMemory(
+        storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen
+    )
     kernel.add_plugin(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     await memory.save_reference(
@@ -27,6 +32,13 @@ async def test_hf_embeddings_with_memories():
         text="this is a test",
         external_source_name="external source",
     )
+=======
+    embedding_gen = sk_hf.HuggingFaceTextEmbedding(service_id=model_id, ai_model_id=model_id)
+
+    # Configure LLM service
+    kernel.add_service(embedding_gen)
+    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
+>>>>>>> ms/small_fixes
 
     # Add some documents to the semantic memory
     await memory.save_information("test", id="info1", text="Sharks are fish.")

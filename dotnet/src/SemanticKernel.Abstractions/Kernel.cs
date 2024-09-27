@@ -114,6 +114,9 @@ public sealed class Kernel
             FunctionInvoked = this.FunctionInvoked,
             PromptRendering = this.PromptRendering,
             PromptRendered = this.PromptRendered,
+            _functionInvocationFilters = this._functionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IFunctionInvocationFilter>(this._functionInvocationFilters) : null,
+            _promptRenderFilters = this._promptRenderFilters is { Count: > 0 } ? new NonNullCollection<IPromptRenderFilter>(this._promptRenderFilters) : null,
+            _autoFunctionInvocationFilters = this._autoFunctionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IAutoFunctionInvocationFilter>(this._autoFunctionInvocationFilters) : null,
             _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
             _culture = this._culture,
         };
@@ -129,7 +132,6 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public IList<IFunctionInvocationFilter> FunctionInvocationFilters =>
         this._functionInvocationFilters ??
         Interlocked.CompareExchange(ref this._functionInvocationFilters, [], null) ??
@@ -138,7 +140,6 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public IList<IPromptRenderFilter> PromptRenderFilters =>
         this._promptRenderFilters ??
         Interlocked.CompareExchange(ref this._promptRenderFilters, [], null) ??
@@ -260,7 +261,7 @@ public sealed class Kernel
             // M.E.DI doesn't support querying for a service without a key, and it also doesn't
             // support AnyKey currently: https://github.com/dotnet/runtime/issues/91466
             // As a workaround, KernelBuilder injects a service containing the type-to-all-keys
-            // mapping. We can query for that service and and then use it to try to get a service.
+            // mapping. We can query for that service and then use it to try to get a service.
             if (this.Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
             {
                 if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?>? keys))
@@ -306,14 +307,17 @@ public sealed class Kernel
         }
     }
 
-    [Experimental("SKEXP0001")]
     internal async Task<FunctionInvocationContext> OnFunctionInvocationAsync(
         KernelFunction function,
         KernelArguments arguments,
         FunctionResult functionResult,
-        Func<FunctionInvocationContext, Task> functionCallback)
+        Func<FunctionInvocationContext, Task> functionCallback,
+        CancellationToken cancellationToken)
     {
-        FunctionInvocationContext context = new(this, function, arguments, functionResult);
+        FunctionInvocationContext context = new(this, function, arguments, functionResult)
+        {
+            CancellationToken = cancellationToken
+        };
 
         await InvokeFilterOrFunctionAsync(this._functionInvocationFilters, functionCallback, context).ConfigureAwait(false);
 
@@ -344,13 +348,16 @@ public sealed class Kernel
         }
     }
 
-    [Experimental("SKEXP0001")]
     internal async Task<PromptRenderContext> OnPromptRenderAsync(
         KernelFunction function,
         KernelArguments arguments,
-        Func<PromptRenderContext, Task> renderCallback)
+        Func<PromptRenderContext, Task> renderCallback,
+        CancellationToken cancellationToken)
     {
-        PromptRenderContext context = new(this, function, arguments);
+        PromptRenderContext context = new(this, function, arguments)
+        {
+            CancellationToken = cancellationToken
+        };
 
         await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).ConfigureAwait(false);
 
@@ -397,6 +404,8 @@ public sealed class Kernel
     /// <remarks>
     /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
     /// </remarks>
+    [RequiresUnreferencedCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     public Task<FunctionResult> InvokeAsync(
         KernelFunction function,
         KernelArguments? arguments = null,
@@ -422,6 +431,8 @@ public sealed class Kernel
     /// This behaves identically to using <see cref="KernelPluginExtensions.GetFunction"/> to find the desired <see cref="KernelFunction"/> and then
     /// invoking it with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
     /// </remarks>
+    [RequiresUnreferencedCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     public Task<FunctionResult> InvokeAsync(
         string? pluginName,
         string functionName,
@@ -449,6 +460,8 @@ public sealed class Kernel
     /// <remarks>
     /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
     /// </remarks>
+    [RequiresUnreferencedCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     public async Task<TResult?> InvokeAsync<TResult>(
         KernelFunction function,
         KernelArguments? arguments = null,
@@ -475,6 +488,8 @@ public sealed class Kernel
     /// This behaves identically to using <see cref="KernelPluginExtensions.GetFunction"/> to find the desired <see cref="KernelFunction"/> and then
     /// invoking it with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
     /// </remarks>
+    [RequiresUnreferencedCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     public async Task<TResult?> InvokeAsync<TResult>(
         string? pluginName,
         string functionName,
@@ -500,6 +515,8 @@ public sealed class Kernel
     /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
+    [RequiresUnreferencedCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     public IAsyncEnumerable<StreamingKernelContent> InvokeStreamingAsync(
         KernelFunction function,
         KernelArguments? arguments = null,
@@ -525,6 +542,8 @@ public sealed class Kernel
     /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
+    [RequiresUnreferencedCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     public IAsyncEnumerable<StreamingKernelContent> InvokeStreamingAsync(
         string? pluginName,
         string functionName,
@@ -550,6 +569,8 @@ public sealed class Kernel
     /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
+    [RequiresUnreferencedCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     public IAsyncEnumerable<T> InvokeStreamingAsync<T>(
         KernelFunction function,
         KernelArguments? arguments = null,
@@ -575,6 +596,8 @@ public sealed class Kernel
     /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
+    [RequiresUnreferencedCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     public IAsyncEnumerable<T> InvokeStreamingAsync<T>(
         string? pluginName,
         string functionName,

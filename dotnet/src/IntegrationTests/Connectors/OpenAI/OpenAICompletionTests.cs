@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -9,12 +9,17 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -127,6 +132,11 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         // Act
         await foreach (var content in target.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
         {
+            if (content is StreamingChatMessageContent messageContent)
+            {
+                Assert.NotNull(messageContent.Role);
+            }
+
             fullResult.Append(content);
         }
 
@@ -300,6 +310,10 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = "Any" }));
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
+        // Assert
+        Assert.True(context.ErrorOccurred);
+        Assert.IsType<HttpOperationException>(context.LastException);
+        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
     }
 
     [Fact]
@@ -325,6 +339,10 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = "Any" }));
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
+        // Assert
+        Assert.True(context.ErrorOccurred);
+        Assert.IsType<HttpOperationException>(context.LastException);
+        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
     }
 
     [Fact]
@@ -349,6 +367,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         // Act
         // Assert
         await Assert.ThrowsAsync<HttpOperationException>(() => plugins["SummarizePlugin"]["Summarize"].InvokeAsync(target, new() { [InputParameterName] = string.Join('.', Enumerable.Range(1, 40000)) }));
+        await Assert.ThrowsAsync<HttpOperationException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000))));
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -396,6 +415,38 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 
         // Assert
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(actual.Metadata);
+    }
+
+    [Fact]
+    public async Task AzureOpenAIInvokePromptWithMultipleResultsTestAsync()
+    {
+        // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        this.ConfigureAzureOpenAIChatAsText(builder);
+        Kernel target = builder.Build();
+
+        var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
+
+        var executionSettings = new OpenAIPromptExecutionSettings() { MaxTokens = 150, ResultsPerPrompt = 3 };
+
+        // Act
+        FunctionResult actual = await target.InvokePromptAsync(prompt, new(executionSettings));
+
+        // Assert
+        Assert.Null(actual.Metadata);
+
+        var chatMessageContents = actual.GetValue<IReadOnlyList<ChatMessageContent>>();
+
+        Assert.NotNull(chatMessageContents);
+        Assert.Equal(executionSettings.ResultsPerPrompt, chatMessageContents.Count);
+
+        foreach (var chatMessageContent in chatMessageContents)
+        {
+            Assert.NotNull(chatMessageContent.Metadata);
+            Assert.Contains("Pike Place", chatMessageContent.Content, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     [Fact]
@@ -433,7 +484,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
             {
                 "name": "FishMarket2",
                 "execution_settings": {
-                    "azure-text-davinci-003": {
+                    "azure-gpt-35-turbo-instruct": {
                         "max_tokens": 256
                     }
                 }
@@ -502,6 +553,38 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         // Assert
         Assert.NotNull(httpHeaderHandler.RequestHeaders);
         Assert.True(httpHeaderHandler.RequestHeaders.TryGetValues("Semantic-Kernel-Version", out var values));
+    }
+
+    [Theory(Skip = "This test is for manual verification.")]
+    [InlineData(null, null)]
+    [InlineData(false, null)]
+    [InlineData(true, 2)]
+    [InlineData(true, 5)]
+    public async Task LogProbsDataIsReturnedWhenRequestedAsync(bool? logprobs, int? topLogprobs)
+    {
+        // Arrange
+        var settings = new OpenAIPromptExecutionSettings { Logprobs = logprobs, TopLogprobs = topLogprobs };
+
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        this.ConfigureAzureOpenAIChatAsText(builder);
+        Kernel target = builder.Build();
+
+        // Act
+        var result = await target.InvokePromptAsync("Hi, can you help me today?", new(settings));
+
+        var logProbabilityInfo = result.Metadata?["LogProbabilityInfo"] as ChatChoiceLogProbabilityInfo;
+
+        // Assert
+        if (logprobs is true)
+        {
+            Assert.NotNull(logProbabilityInfo);
+            Assert.Equal(topLogprobs, logProbabilityInfo.TokenLogProbabilityResults[0].TopLogProbabilityEntries.Count);
+        }
+        else
+        {
+            Assert.Null(logProbabilityInfo);
+        }
     }
 
     #region internals

@@ -1,27 +1,43 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.textcompletion;
 
-import com.azure.ai.openai.OpenAIAsyncClient;
+import // `com.azure.ai.openai.OpenAIAsyncClient` is a class that likely serves as a client for
+// interacting with the OpenAI API asynchronously. It may provide methods for sending requests
+// to the OpenAI API to perform text completion tasks and handle responses in an asynchronous
+// manner using reactive programming concepts like Mono and Flux from Project Reactor.
+com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.Choice;
 import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
+<<<<<<< HEAD
 import com.microsoft.semantickernel.Verify;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.chatcompletion.ChatRequestSettings;
+=======
+import com.microsoft.semantickernel.ai.AIException;
+>>>>>>> main
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.NotSupportedException.ErrorCodes;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
+<<<<<<< HEAD
 import com.microsoft.semantickernel.textcompletion.CompletionType;
+=======
+>>>>>>> main
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+<<<<<<< HEAD
 import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
+=======
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+>>>>>>> main
 import reactor.core.publisher.Mono;
 
 /// <summary>
@@ -30,9 +46,12 @@ import reactor.core.publisher.Mono;
 // https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
 public class OpenAITextCompletion extends ClientBase implements TextCompletion {
+<<<<<<< HEAD
 
     private final CompletionType defaultCompletionType;
 
+=======
+>>>>>>> main
     /// <summary>
     /// Create an instance of the OpenAI text completion connector
     /// </summary>
@@ -42,9 +61,16 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
     /// <param name="handlerFactory">Retry handler factory for HTTP
     /// requests.</param>
     /// <param name="log">Application logger</param>
+    // `@Inject` is an annotation used in Java to indicate that a constructor, field, or method should
+    // be injected with dependencies by a dependency injection framework. In the context of the
+    // provided code snippet, the `@Inject` annotation is used on the constructor of the
+    // `OpenAITextCompletion` class to signal that the constructor should be used for dependency
+    // injection, specifically to inject an instance of `OpenAIAsyncClient` and a `String` representing
+    // the model ID when creating an instance of `OpenAITextCompletion`.
     @Inject
     public OpenAITextCompletion(OpenAIAsyncClient client, String modelId) {
         super(client, modelId);
+<<<<<<< HEAD
         defaultCompletionType = CompletionType.STREAMING;
     }
 
@@ -53,6 +79,8 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
         super(client, modelId);
 
         this.defaultCompletionType = defaultCompletionType;
+=======
+>>>>>>> main
     }
 
     @Override
@@ -61,6 +89,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
         return this.internalCompleteTextAsync(text, requestSettings);
     }
 
+<<<<<<< HEAD
     @Override
     public Flux<String> completeStreamAsync(
             @Nonnull String text, @Nonnull CompletionRequestSettings requestSettings) {
@@ -111,11 +140,21 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
 
     private CompletionsOptions getCompletionsOptions(
             String text, CompletionRequestSettings requestSettings) {
+=======
+    protected Mono<List<String>> internalCompleteTextAsync(
+            String text, CompletionRequestSettings requestSettings) {
+        // TODO
+
+>>>>>>> main
         if (requestSettings.getMaxTokens() < 1) {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, "Max tokens must be >0");
         }
 
+<<<<<<< HEAD
         CompletionsOptions options =
+=======
+        CompletionsOptions completionsOptions =
+>>>>>>> main
                 new CompletionsOptions(Collections.singletonList(text))
                         .setMaxTokens(requestSettings.getMaxTokens())
                         .setTemperature(requestSettings.getTemperature())
@@ -127,6 +166,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
                         .setBestOf(requestSettings.getBestOf())
                         .setLogitBias(new HashMap<>());
 
+<<<<<<< HEAD
         if (requestSettings instanceof ChatRequestSettings) {
             options = options.setStop(requestSettings.getStopSequences());
         }
@@ -138,6 +178,18 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
         @Nullable private OpenAIAsyncClient client;
         @Nullable private String modelId;
         private CompletionType defaultCompletionType = CompletionType.STREAMING;
+=======
+        return getClient()
+                .getCompletions(getModelId(), completionsOptions)
+                .flatMapIterable(Completions::getChoices)
+                .mapNotNull(Choice::getText)
+                .collectList();
+    }
+
+    public static final class Builder implements TextCompletion.Builder {
+        @Nullable private OpenAIAsyncClient client;
+        @Nullable private String modelId;
+>>>>>>> main
 
         public Builder withOpenAIClient(OpenAIAsyncClient client) {
             this.client = client;
@@ -150,12 +202,15 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
         }
 
         @Override
+<<<<<<< HEAD
         public Builder withDefaultCompletionType(CompletionType completionType) {
             this.defaultCompletionType = completionType;
             return this;
         }
 
         @Override
+=======
+>>>>>>> main
         public TextCompletion build() {
             if (client == null) {
                 throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "OpenAI client not set");
@@ -163,7 +218,11 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
             if (modelId == null) {
                 throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "Model ID not set");
             }
+<<<<<<< HEAD
             return new OpenAITextCompletion(client, modelId, defaultCompletionType);
+=======
+            return new OpenAITextCompletion(client, modelId);
+>>>>>>> main
         }
     }
 }

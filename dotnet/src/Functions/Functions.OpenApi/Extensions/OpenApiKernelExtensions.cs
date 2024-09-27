@@ -1,13 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,14 +13,14 @@ using Microsoft.SemanticKernel.Http;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// Provides extension methods for importing plugins exposed as OpenAPI v3 endpoints.
+/// Provides extension methods for importing plugins exposed as OpenAPI specifications.
 /// </summary>
 public static class OpenApiKernelExtensions
 {
     // TODO: Revise XML comments
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
+    /// Creates a plugin from an OpenAPI specification and adds it to the kernel's plugins collection.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -46,7 +41,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
+    /// Creates a plugin from an OpenAPI specification and adds it to the kernel's plugins collection.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -67,7 +62,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
+    /// Creates a plugin from an OpenAPI specification and adds it to the kernel's plugins collection.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -88,7 +83,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI v3 endpoint.
+    /// Creates a plugin from an OpenAPI specification.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -125,7 +120,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI v3 endpoint.
+    /// Creates a plugin from an OpenAPI specification.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -166,7 +161,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI v3 endpoint.
+    /// Creates a plugin from an OpenAPI specification.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -201,12 +196,6 @@ public static class OpenApiKernelExtensions
 
     #region private
 
-    /// <summary>The metadata property bag key to use when storing the method of an operation.</summary>
-    private const string OperationExtensionsMethodKey = "method";
-
-    /// <summary>The metadata property bag key to use for the list of extension values provided in the swagger file at the operation level.</summary>
-    private const string OperationExtensionsMetadataKey = "operation-extensions";
-
     private static async Task<KernelPlugin> CreateOpenApiPluginAsync(
         Kernel kernel,
         string pluginName,
@@ -216,9 +205,10 @@ public static class OpenApiKernelExtensions
         Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {
-        using var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson));
-
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
+
+        return await OpenApiKernelPluginFactory.CreateOpenApiPluginAsync(pluginName, executionParameters, httpClient, pluginJson, documentUri, loggerFactory, cancellationToken).ConfigureAwait(false); ;
+    }
 
         var parser = new OpenApiDocumentParser(loggerFactory);
 
@@ -280,7 +270,7 @@ public static class OpenApiKernelExtensions
 
         var logger = loggerFactory?.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
 
-        async Task<RestApiOperationResponse> ExecuteAsync(KernelArguments variables, CancellationToken cancellationToken)
+        async Task<RestApiOperationResponse> ExecuteAsync(Kernel kernel, KernelFunction function, KernelArguments variables, CancellationToken cancellationToken)
         {
             try
             {
@@ -314,6 +304,9 @@ public static class OpenApiKernelExtensions
 
                 var options = new RestApiOperationRunOptions
                 {
+                    Kernel = kernel,
+                    KernelFunction = function,
+                    KernelArguments = arguments,
                     ServerUrlOverride = executionParameters?.ServerUrlOverride,
                     ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null
                 };
@@ -341,8 +334,10 @@ public static class OpenApiKernelExtensions
         var returnParameter = operation.GetDefaultReturnParameter();
 
         // Add unstructured metadata, specific to Open API, to the metadata property bag.
-        var additionalMetadata = new Dictionary<string, object?>();
-        additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant());
+        var additionalMetadata = new Dictionary<string, object?>
+        {
+            { OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant() }
+        };
         if (operation.Extensions is { Count: > 0 })
         {
             additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMetadataKey, operation.Extensions);
@@ -362,12 +357,12 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Converts operation id to valid SK Function name.
+    /// Converts operation id to valid <see cref="KernelFunction"/> name.
     /// A function name can contain only ASCII letters, digits, and underscores.
     /// </summary>
     /// <param name="operationId">The operation id.</param>
     /// <param name="logger">The logger.</param>
-    /// <returns>Valid SK Function name.</returns>
+    /// <returns>Valid KernelFunction name.</returns>
     private static string ConvertOperationIdToValidFunctionName(string operationId, ILogger logger)
     {
         try
@@ -378,7 +373,7 @@ public static class OpenApiKernelExtensions
         catch (ArgumentException)
         {
             // The exception indicates that the operationId is not a valid function name.  
-            // To comply with the SK Function name requirements, it needs to be converted or sanitized.  
+            // To comply with the KernelFunction name requirements, it needs to be converted or sanitized.  
             // Therefore, it should not be re-thrown, but rather swallowed to allow the conversion below.  
         }
 
@@ -389,7 +384,7 @@ public static class OpenApiKernelExtensions
         foreach (string token in tokens)
         {
             // Removes all characters that are not ASCII letters, digits, and underscores.
-            string formattedToken = s_removeInvalidCharsRegex.Replace(token, "");
+            string formattedToken = RemoveInvalidCharsRegex().Replace(token, "");
             result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
         }
 
@@ -401,7 +396,13 @@ public static class OpenApiKernelExtensions
     /// <summary>
     /// Used to convert operationId to SK function names.
     /// </summary>
-    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]");
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]")]
+    private static partial Regex RemoveInvalidCharsRegex();
+#else
+    private static Regex RemoveInvalidCharsRegex() => s_removeInvalidCharsRegex;
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+#endif
 
     #endregion
 }

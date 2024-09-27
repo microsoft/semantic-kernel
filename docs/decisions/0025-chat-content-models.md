@@ -1,12 +1,12 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: accepted
+consulted: null
 contact: dmytrostruk
-date: 2023-12-08
+date: 2023-12-08T00:00:00Z
 deciders: SergeyMenshykh, markwallace, rbarreto, mabolan, stephentoub, dmytrostruk
-consulted: 
-informed: 
+informed: null
+status: accepted
 ---
+
 # Chat Models
 
 ## Context and Problem Statement
@@ -36,7 +36,7 @@ Since `chat message content` can be an object now instead of `string`, it requir
 
 New _ChatMessageContentType.cs_
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8RYVVR8BW"}
 public readonly struct ChatMessageContentType : IEquatable<ChatMessageContentType>
 {
     public static ChatMessageContentType Text { get; } = new("text");
@@ -51,7 +51,7 @@ public readonly struct ChatMessageContentType : IEquatable<ChatMessageContentTyp
 
 New _ChatMessageContent.cs_
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8RZR2KTY0"}
 public abstract class ChatMessageContent
 {
     public ChatMessageContentType Type { get; set; }
@@ -65,7 +65,7 @@ public abstract class ChatMessageContent
 
 Updated _ChatMessage.cs_:
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8RZWREX6Y"}
 public class ChatMessage : ContentBase
 {
     public AuthorRole Role { get; set; }
@@ -75,7 +75,7 @@ public class ChatMessage : ContentBase
 
 New _ChatMessageTextContent.cs_
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8S1CW26VR"}
 public class ChatMessageTextContent : ChatMessageContent
 {
     public string Text { get; set; }
@@ -89,7 +89,7 @@ public class ChatMessageTextContent : ChatMessageContent
 
 New _ChatMessageImageContent.cs_
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8S2VBPJJH"}
 public class ChatMessageImageContent : ChatMessageContent
 {
     public Uri Uri { get; set; }
@@ -103,7 +103,7 @@ public class ChatMessageImageContent : ChatMessageContent
 
 Usage:
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8S59HX5D7"}
 var chatHistory = new ChatHistory("You are friendly assistant.");
 
 // Construct request
@@ -151,7 +151,7 @@ Same as Option #1, but without naming changes. In order to differentiate actual 
 
 New _ChatMessageContentItemType.cs_
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8S868B3NG"}
 public readonly struct ChatMessageContentItemType : IEquatable<ChatMessageContentItemType>
 {
     public static ChatMessageContentItemType Text { get; } = new("text");
@@ -166,7 +166,7 @@ public readonly struct ChatMessageContentItemType : IEquatable<ChatMessageConten
 
 New _ChatMessageContentItem.cs_
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8SBB7XJC1"}
 public abstract class ChatMessageContentItem
 {
     public ChatMessageContentItemType Type { get; set; }
@@ -180,7 +180,7 @@ public abstract class ChatMessageContentItem
 
 Updated _ChatMessageContent.cs_:
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8SC54G70V"}
 public class ChatMessageContent : ContentBase
 {
     public AuthorRole Role { get; set; }
@@ -190,7 +190,7 @@ public class ChatMessageContent : ContentBase
 
 New _ChatMessageTextContentItem.cs_
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8SCCDJM9D"}
 public class ChatMessageTextContentItem : ChatMessageContentItem
 {
     public string Text { get; set; }
@@ -204,7 +204,7 @@ public class ChatMessageTextContentItem : ChatMessageContentItem
 
 New _ChatMessageImageContent.cs_
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8SFV31CJR"}
 public class ChatMessageImageContentItem : ChatMessageContentItem
 {
     public Uri Uri { get; set; }
@@ -218,7 +218,7 @@ public class ChatMessageImageContentItem : ChatMessageContentItem
 
 Usage:
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8SH83E2FX"}
 var chatHistory = new ChatHistory("You are friendly assistant.");
 
 // Construct request
@@ -259,7 +259,7 @@ This option will keep `string Content` property as it is, but will add new prope
 
 Updated _ChatMessageContent.cs_
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8SJ2SEWS2"}
 public class ChatMessageContent : ContentBase
 {
     public AuthorRole Role { get; set; }
@@ -272,7 +272,7 @@ public class ChatMessageContent : ContentBase
 
 New _ChatMessageContentItemCollection.cs_
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8SKTH9VDA"}
 public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyList<ContentBase>
 {
     // Implementation of IList<ContentBase>, IReadOnlyList<ContentBase> to catch null values.
@@ -281,7 +281,7 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
 
 Usage:
 
-```csharp
+```csharp {"id":"01J6KQ2GQT3AFR2AM8SQ5DZ1RA"}
 var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
 var chatHistory = new ChatHistory("You are a friendly assistant.");

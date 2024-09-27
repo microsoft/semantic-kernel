@@ -2,12 +2,20 @@
 
 import logging
 from re import compile
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Optional, Tuple
+<<<<<<< main
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import model_validator
 
 from semantic_kernel.exceptions import FunctionIdBlockSyntaxError
+=======
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Optional, Tuple
+
+from pydantic import model_validator
+
+>>>>>>> ms/small_fixes
 from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import FunctionIdBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 
 if TYPE_CHECKING:
@@ -16,7 +24,13 @@ if TYPE_CHECKING:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+<<<<<<< main
+FUNCTION_ID_BLOCK_REGEX = (
+    r"^((?P<plugin>[0-9A-Za-z_]+)[.])?(?P<function>[0-9A-Za-z_]+)$"
+)
+=======
 FUNCTION_ID_BLOCK_REGEX = r"^((?P<plugin>[0-9A-Za-z_]+)[.])?(?P<function>[0-9A-Za-z_]+)$"
+>>>>>>> ms/small_fixes
 
 FUNCTION_ID_BLOCK_MATCHER = compile(FUNCTION_ID_BLOCK_REGEX)
 
@@ -27,7 +41,11 @@ class FunctionIdBlock(Block):
     The content is parsed using a regex, that returns either a plugin and
     function name or just a function name, depending on the content.
 
+<<<<<<< main
+    Anything other than that and a ValueError is raised.
+=======
     Anything other then that and a ValueError is raised.
+>>>>>>> ms/small_fixes
 
     Args:
         content (str): The content of the block.
@@ -39,6 +57,18 @@ class FunctionIdBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.FUNCTION_ID
+<<<<<<< main
+    function_name: str = ""
+    plugin_name: str | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def parse_content(cls, fields: dict[str, Any]) -> dict[str, Any]:
+        """Parse the content of the function id block and extract the plugin and function name.
+
+        If both are present in the fields, return the fields as is.
+        Otherwise, use the regex to extract the plugin and function name.
+=======
     function_name: Optional[str] = ""
     plugin_name: Optional[str] = None
 
@@ -49,6 +79,7 @@ class FunctionIdBlock(Block):
 
         If both are present in the fields, return the fields as is.
         Otherwise use the regex to extract the plugin and function name.
+>>>>>>> ms/small_fixes
         """
         if "plugin_name" in fields and "function_name" in fields:
             return fields
@@ -61,5 +92,10 @@ class FunctionIdBlock(Block):
         fields["function_name"] = matches.group("function")
         return fields
 
+<<<<<<< main
+    def render(self, *_: "Kernel | KernelArguments | None") -> str:
+        """Render the function id block."""
+=======
     def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
+>>>>>>> ms/small_fixes
         return self.content

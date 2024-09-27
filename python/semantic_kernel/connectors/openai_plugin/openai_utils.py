@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
 
 import logging
 from typing import Any
@@ -16,11 +15,12 @@ class OpenAIUtils:
     @staticmethod
     def parse_openai_manifest_for_openapi_spec_url(plugin_json: dict[str, Any]) -> str:
         """Extract the OpenAPI Spec URL from the plugin JSON."""
-
         try:
             api_type = plugin_json["api"]["type"]
         except KeyError as ex:
-            raise PluginInitializationError("OpenAI manifest is missing the API type.") from ex
+            raise PluginInitializationError(
+                "OpenAI manifest is missing the API type."
+            ) from ex
 
         if api_type != "openapi":
             raise PluginInitializationError("OpenAI manifest is not of type OpenAPI.")
@@ -28,4 +28,6 @@ class OpenAIUtils:
         try:
             return plugin_json["api"]["url"]
         except KeyError as ex:
-            raise PluginInitializationError("OpenAI manifest is missing the OpenAPI Spec URL.") from ex
+            raise PluginInitializationError(
+                "OpenAI manifest is missing the OpenAPI Spec URL."
+            ) from ex

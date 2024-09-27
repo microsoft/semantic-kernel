@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
@@ -63,6 +67,8 @@ public class PineconeMemoryStoreTests
 
         // Act
         var exception = await Assert.ThrowsAsync<KernelException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+        var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+        var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
 
         // Assert
         this._mockPineconeClient
@@ -196,6 +202,24 @@ public class PineconeMemoryStoreTests
         Assert.Equal(memoryRecord.Metadata.Id, upsertBatch[0]);
         Assert.Equal(memoryRecord2.Metadata.Id, upsertBatch[1]);
         Assert.Equal(memoryRecord3.Metadata.Id, upsertBatch[2]);
+    }
+
+    [Fact]
+    public async Task TestRemoveBatchAsync()
+    {
+        // Arrange
+        string collectionName = "testCollection";
+        string[] keys = ["doc1", "doc2"];
+
+        this._mockPineconeClient
+            .Setup<Task>(x => x.DeleteAsync(collectionName, new[] { keys[0], keys[1] }, "", null, false, CancellationToken.None))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await this._pineconeMemoryStore.RemoveBatchAsync(collectionName, keys);
+
+        // Assert
+        this._mockPineconeClient.Verify(x => x.DeleteAsync(collectionName, new[] { keys[0], keys[1] }, "", null, false, CancellationToken.None), Times.Once);
     }
 
     [Fact]

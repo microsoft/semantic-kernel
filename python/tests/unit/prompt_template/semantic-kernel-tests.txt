@@ -36,10 +36,10 @@ foo
 {{ asis 'foo\' }}
 
 {{ asis 'f\'11' }}
-f'11
+f&#x27;11,f'11 
 
 {{ asis "f\\\'22" }}
-f\'22
+f\&#x27;22,f\'22
 
 # The last quote hides the closing }}
 {{ call 'f\\'33" }}

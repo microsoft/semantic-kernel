@@ -1,0 +1,62 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Azure.AI.OpenAI;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
+
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+
+internal sealed class ChatStreamingResult : IChatStreamingResult, ITextCompletionStreamingResult
+{
+    private readonly StreamingChatChoice _choice;
+
+    public ChatStreamingResult(StreamingChatChoice choice)
+    {
+        Verify.NotNull(choice);
+        this._choice = choice;
+    }
+
+    /// <inheritdoc/>
+    public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    {
+        var chatMessage = await this._choice.GetMessageStreaming(cancellationToken)
+                                                .LastOrDefaultAsync(cancellationToken)
+                                                .ConfigureAwait(false);
+
+        if (chatMessage is null)
+        {
+            throw new AIException(AIException.ErrorCodes.UnknownError, "Unable to get chat message from stream");
+        }
+
+        return new SKChatMessage(chatMessage);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
+        {
+            yield return new SKChatMessage(message);
+        }
+    }
+
+    public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    {
+        return (await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false)).Content;
+    }
+
+    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var result in this.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
+        {
+            yield return result.Content;
+        }
+    }
+}

@@ -73,7 +73,7 @@ public static class AIServiceExtensions
     /// <param name="arguments">The function arguments.</param>
     /// <returns>A tuple of the selected service and the settings associated with the service (the settings may be null).</returns>
     /// <exception cref="KernelException">An appropriate service could not be found.</exception>
-    public static (T?, PromptExecutionSettings?) SelectAIService<T>(
+    public static (T, PromptExecutionSettings?) SelectAIService<T>(
         this IAIServiceSelector selector,
         Kernel kernel,
         KernelFunction function,
@@ -91,19 +91,19 @@ public static class AIServiceExtensions
             return (service, settings);
         }
 
-        var message = new StringBuilder($"Required service of type {typeof(T)} not registered.");
+        var message = new StringBuilder().Append("Required service of type ").Append(typeof(T)).Append(" not registered.");
         if (function.ExecutionSettings is not null)
         {
             string serviceIds = string.Join("|", function.ExecutionSettings.Keys);
             if (!string.IsNullOrEmpty(serviceIds))
             {
-                message.Append($" Expected serviceIds: {serviceIds}.");
+                message.Append(" Expected serviceIds: ").Append(serviceIds).Append('.');
             }
 
             string modelIds = string.Join("|", function.ExecutionSettings.Values.Select(model => model.ModelId));
             if (!string.IsNullOrEmpty(modelIds))
             {
-                message.Append($" Expected modelIds: {modelIds}.");
+                message.Append(" Expected modelIds: ").Append(modelIds).Append('.');
             }
         }
 

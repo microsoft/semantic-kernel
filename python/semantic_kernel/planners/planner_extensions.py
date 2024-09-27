@@ -15,23 +15,38 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PlannerFunctionExtension:
+    """Function extension for the planner."""
+
     @staticmethod
     def to_manual_string(function: KernelFunctionMetadata):
+        """Convert the function to a string that can be used in the manual."""
         inputs = [
             f"  - {parameter.name}: {parameter.description}"
-            + (f" (default value: {parameter.default_value})" if parameter.default_value else "")
+            + (
+                f" (default value: {parameter.default_value})"
+                if parameter.default_value
+                else ""
+            )
             for parameter in function.parameters
         ]
         inputs = "\n".join(inputs)
-        return f"{function.fully_qualified_name}:\n  description: {function.description}\n  inputs:\n " f" {inputs}"
+        return f"{function.fully_qualified_name}:\n  description: {function.description}\n  inputs:\n  {inputs}"
 
     @staticmethod
     def to_embedding_string(function: KernelFunctionMetadata):
-        inputs = "\n".join([f"    - {parameter.name}: {parameter.description}" for parameter in function.parameters])
-        return f"{function.name}:\n  description: {function.description}\n " f" inputs:\n{inputs}"
+        """Convert the function to a string that can be used as an embedding."""
+        inputs = "\n".join(
+            [
+                f"    - {parameter.name}: {parameter.description}"
+                for parameter in function.parameters
+            ]
+        )
+        return f"{function.name}:\n  description: {function.description}\n  inputs:\n{inputs}"
 
 
 class PlannerKernelExtension:
+    """Kernel extension for the planner."""
+
     PLANNER_MEMORY_COLLECTION_NAME = " Planning.KernelFunctionManual"
     PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED = "Planning.KernelFunctionsAreRemembered"
 
@@ -41,14 +56,19 @@ class PlannerKernelExtension:
         arguments: KernelArguments,
         options: PlannerOptions = None,
     ) -> str:
+        """Get the string of the function."""
         options = options or PlannerOptions()
 
         if options.get_available_functions is None:
-            functions = await PlannerKernelExtension.get_available_functions(kernel, arguments, options)
+            functions = await PlannerKernelExtension.get_available_functions(
+                kernel, arguments, options
+            )
         else:
             functions = await options.get_available_functions(options)
 
-        return "\n\n".join([PlannerFunctionExtension.to_manual_string(func) for func in functions])
+        return "\n\n".join(
+            [PlannerFunctionExtension.to_manual_string(func) for func in functions]
+        )
 
     @staticmethod
     async def get_available_functions(
@@ -56,15 +76,15 @@ class PlannerKernelExtension:
         arguments: KernelArguments,
         options: PlannerOptions,
     ):
+        """Get the available functions for the kernel."""
         excluded_plugins = options.excluded_plugins or []
         excluded_functions = options.excluded_functions or []
 
-        available_functions = [
+        return [
             func
             for func in kernel.get_list_of_function_metadata()
-            if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
+            if (
+                func.plugin_name not in excluded_plugins
+                and func.name not in excluded_functions
+            )
         ]
-
-        # TODO support for semantic memory query
-
-        return available_functions

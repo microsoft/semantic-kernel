@@ -3,6 +3,11 @@ from enum import Enum
 
 
 class Symbols(str, Enum):
+<<<<<<< main
+    """Symbols used in the template engine."""
+
+=======
+>>>>>>> ms/small_fixes
     BLOCK_STARTER = "{"
     BLOCK_ENDER = "}"
 

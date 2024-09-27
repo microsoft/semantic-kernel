@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -30,6 +30,7 @@ internal static class Constants
         /// All reserved variable names
         /// </summary>
         public static readonly string[] All = [ChatHistory, ChatInput];
+        public static readonly string[] All = new[] { ChatHistory, ChatInput };
     }
 
     internal static class ChatPluginVariables
@@ -63,5 +64,6 @@ internal static class Constants
         /// The variables that change the default flow
         /// </summary>
         public static readonly string[] ControlVariables = [PromptInputName, ExitLoopName, ContinueLoopName, StopFlowName];
+        public static readonly string[] ControlVariables = new[] { PromptInputName, ExitLoopName, ContinueLoopName, StopFlowName };
     }
 }

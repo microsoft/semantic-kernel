@@ -15,7 +15,7 @@ Together with Semantic Kernel Prompt Filters, it's possible to define detection 
 3. Once you have your Azure subscription, create a [Content Safety resource](https://aka.ms/acs-create) in the Azure portal to get your key and endpoint. Enter a unique name for your resource, select your subscription, and select a resource group, supported region (East US or West Europe), and supported pricing tier. Then select **Create**.
 4. Update `appsettings.json/appsettings.Development.json` file with your configuration for `OpenAI` and `AzureContentSafety` sections or use .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets):
 
-```powershell
+```powershell {"id":"01J6KPZ7Y1YC06AFDVQDQB85Z1"}
 # Azure AI Content Safety
 dotnet user-secrets set "AzureContentSafety:Endpoint" "... your endpoint ..."
 dotnet user-secrets set "AzureContentSafety:ApiKey" "... your api key ... "

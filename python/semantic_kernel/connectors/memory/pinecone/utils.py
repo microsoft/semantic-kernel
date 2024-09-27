@@ -7,9 +7,7 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 
 
 def build_payload(record: MemoryRecord) -> dict:
-    """
-    Builds a metadata payload to be sent to Pinecone from a MemoryRecord.
-    """
+    """Builds a metadata payload to be sent to Pinecone from a MemoryRecord."""
     payload: dict = {}
     if record._text:
         payload["text"] = record._text
@@ -21,9 +19,7 @@ def build_payload(record: MemoryRecord) -> dict:
 
 
 def parse_payload(record: Vector, with_embeddings: bool) -> MemoryRecord:
-    """
-    Parses a record from Pinecone into a MemoryRecord.
-    """
+    """Parses a record from Pinecone into a MemoryRecord."""
     payload = record.metadata
     description = payload.get("description", None)
     text = payload.get("text", None)

@@ -1,8 +1,16 @@
-﻿# Euclidean distance
+# Euclidean Distance
+# Euclidean distance
 
 Euclidean distance is a mathematical concept that measures the straight-line distance
 between two points in a Euclidean space. It is named after the ancient Greek mathematician
 Euclid, who is often referred to as the "father of geometry". The formula for calculating
+Euclidean distance is based on the Pythagorean Theorem and can be expressed as:
+
+$$d = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$$
+
+For higher dimensions, this formula can be generalized to:
+
+$$d(p, q) = \sqrt{\sum\limits_{i\=1}^{n} (q_i - p_i)^2}$$
 Euclidean distance is based on the Pythagorean theorem and can be expressed as:
 
     d = √(x2 - x1)² + (y2 - y1)²

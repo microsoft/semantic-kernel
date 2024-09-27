@@ -34,9 +34,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ?
-            new OpenAIAudioToTextService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) :
-            new OpenAIAudioToTextService("model-id", "api-key", "organization");
+        var service = includeLoggerFactory ? new OpenAIAudioToTextService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) : new OpenAIAudioToTextService("model-id", "api-key", "organization");
 
         // Assert
         Assert.NotNull(service);
@@ -50,9 +48,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     {
         // Arrange & Act
         var client = new OpenAIClient("key");
-        var service = includeLoggerFactory ?
-            new OpenAIAudioToTextService("model-id", client, loggerFactory: this._mockLoggerFactory.Object) :
-            new OpenAIAudioToTextService("model-id", client);
+        var service = includeLoggerFactory ? new OpenAIAudioToTextService("model-id", client, loggerFactory: this._mockLoggerFactory.Object) : new OpenAIAudioToTextService("model-id", client);
 
         // Assert
         Assert.NotNull(service);
@@ -70,7 +66,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data")), new OpenAIAudioToTextExecutionSettings("file.mp3"));
+        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), new OpenAIAudioToTextExecutionSettings("file.mp3"));
 
         // Assert
         Assert.NotNull(result);

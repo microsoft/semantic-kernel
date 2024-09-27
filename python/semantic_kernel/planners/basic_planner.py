@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 """A basic JSON-based planner for the Python Semantic Kernel"""
-
 import json
 
 import regex
@@ -142,7 +141,9 @@ class BasicPlanner:
         # Get a dictionary of plugin names to all native and semantic functions
         if not kernel.plugins:
             return ""
-        all_functions = {f"{func.plugin_name}.{func.name}": func for func in kernel.get_list_of_function_metadata()}
+        all_functions = {
+            f"{func.plugin_name}.{func.name}": func for func in kernel.plugins.get_list_of_function_metadata()
+        }
         all_functions_descriptions_dict = {key: func.description for key, func in all_functions.items()}
         all_functions_params_dict = {key: func.parameters for key, func in all_functions.items()}
 
@@ -150,8 +151,8 @@ class BasicPlanner:
         available_functions_string = ""
         for name in list(all_functions_descriptions_dict.keys()):
             available_functions_string += name + "\n"
-            description = all_functions_descriptions_dict[name] or ""
-            available_functions_string += "description: " + description + "\n" if description else ""
+            description = all_functions_descriptions_dict[name]
+            available_functions_string += "description: " + description + "\n"
             available_functions_string += "args:\n"
 
             # Add the parameters for each function
@@ -188,7 +189,7 @@ class BasicPlanner:
         )
 
         # Create the prompt function for the planner with the given prompt
-        planner = kernel.add_function(
+        planner = kernel.create_function_from_prompt(
             plugin_name="PlannerPlugin",
             function_name="CreatePlan",
             prompt_template_config=prompt_template_config,
@@ -223,7 +224,8 @@ class BasicPlanner:
 
         for subtask in subtasks:
             plugin_name, function_name = subtask["function"].split(".")
-            kernel_function = kernel.get_function(plugin_name, function_name)
+            kernel_function = kernel.plugins[plugin_name][function_name]
+
             # Get the arguments dictionary for the function
             args = subtask.get("args", None)
             if args:

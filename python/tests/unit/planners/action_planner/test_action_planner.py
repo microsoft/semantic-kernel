@@ -1,38 +1,28 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from textwrap import dedent
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.exceptions import (
-    PlannerInvalidConfigurationError,
-    PlannerInvalidGoalError,
-    PlannerInvalidPlanError,
-)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.functions.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
+from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
 from semantic_kernel.planners import ActionPlanner
-from semantic_kernel.planners.action_planner.action_planner_config import ActionPlannerConfig
+from semantic_kernel.planners.action_planner.action_planner_config import (
+    ActionPlannerConfig,
+)
+from semantic_kernel.planners.planning_exception import PlanningException
 
 
-@pytest.fixture
-def plugins_input():
-    return [
-        ("SendEmail", "email", "Send an e-mail", False),
-        ("GetEmailAddress", "email", "Get an e-mail address", False),
-        ("Translate", "WriterPlugin", "Translate something", True),
-        ("today", "TimePlugin", "Get Today's date", True),
-        ("Summarize", "SummarizePlugin", "Summarize something", True),
-    ]
-
-
-def create_mock_function(
-    kernel_function_metadata: KernelFunctionMetadata, return_value: FunctionResult
-) -> KernelFunction:
+def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Mock(spec=KernelFunction):
     mock_function = Mock(spec=KernelFunction)
     mock_function.metadata = kernel_function_metadata
     mock_function.name = kernel_function_metadata.name
@@ -40,18 +30,22 @@ def create_mock_function(
     mock_function.is_prompt = kernel_function_metadata.is_prompt
     mock_function.description = kernel_function_metadata.description
     mock_function.prompt_execution_settings = PromptExecutionSettings()
-    mock_function.invoke.return_value = return_value
-    mock_function.function_copy.return_value = mock_function
     return mock_function
 
 
 def test_throw_without_kernel():
-    with pytest.raises(PlannerInvalidConfigurationError):
+    with pytest.raises(PlanningException):
         ActionPlanner(None, None)
 
 
 @pytest.fixture
-def mock_kernel(plugins_input, kernel: Kernel):
+def mock_kernel(plugins_input):
+    kernel = Mock(spec=Kernel)
+    plugins = MagicMock(spec=KernelPluginCollection)
+    functions_list = []
+
+    mock_plugins = {}
+
     for name, plugin_name, description, is_prompt in plugins_input:
         kernel_function_metadata = KernelFunctionMetadata(
             name=name,
@@ -61,21 +55,26 @@ def mock_kernel(plugins_input, kernel: Kernel):
             is_prompt=is_prompt,
             is_asynchronous=True,
         )
-        kernel.add_function(
-            plugin_name,
-            function=create_mock_function(
-                kernel_function_metadata,
-                FunctionResult(
-                    function=kernel_function_metadata, value="MOCK FUNCTION CALLED", metadata={"arguments": {}}
-                ),
-            ),
+        mock_function = create_mock_function(kernel_function_metadata)
+        functions_list.append(kernel_function_metadata)
+
+        if plugin_name not in mock_plugins:
+            mock_plugins[plugin_name] = {}
+        mock_plugins[plugin_name][name] = mock_function
+
+        mock_function.invoke.return_value = FunctionResult(
+            function=kernel_function_metadata, value="MOCK FUNCTION CALLED", metadata={"arguments": {}}
         )
 
+    plugins.__getitem__.side_effect = lambda plugin_name: MagicMock(__getitem__=mock_plugins[plugin_name].__getitem__)
+
+    kernel.plugins = plugins
+    kernel.plugins.get_list_of_function_metadata.return_value = functions_list
     return kernel
 
 
 @pytest.mark.asyncio
-async def test_plan_creation(kernel: Kernel):
+async def test_plan_creation():
     goal = "Translate Happy birthday to German."
     plan_str = dedent(
         """Here is a plan that can achieve the given task:\n\n{""plan"":\n{""rationale"":
@@ -86,7 +85,12 @@ async def test_plan_creation(kernel: Kernel):
         `Happy birthday` from english to german."""
     )
 
+    kernel = Mock(spec=Kernel)
     mock_function = Mock(spec=KernelFunction)
+    memory = Mock(spec=SemanticTextMemoryBase)
+    plugins = KernelPluginCollection()
+    kernel.plugins = plugins
+    kernel.register_memory(memory)
 
     kernel_function_metadata = KernelFunctionMetadata(
         name="Translate",
@@ -95,23 +99,16 @@ async def test_plan_creation(kernel: Kernel):
         is_prompt=False,
         parameters=[],
     )
-    mock_function = create_mock_function(
-        kernel_function_metadata, FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={})
-    )
+    mock_function = create_mock_function(kernel_function_metadata)
 
-    kernel.add_function("WriterPlugin", function=mock_function)
+    kernel.plugins.add(plugin=KernelPlugin(name=kernel_function_metadata.plugin_name, functions=[mock_function]))
+
+    function_result = FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={})
+    mock_function.invoke.return_value = function_result
+
+    kernel.create_function_from_prompt.return_value = mock_function
 
     planner = ActionPlanner(kernel, service_id="test")
-    planner._planner_function = create_mock_function(
-        KernelFunctionMetadata(
-            name="ActionPlanner",
-            description="Translate something",
-            plugin_name=planner.RESTRICTED_PLUGIN_NAME,
-            is_prompt=True,
-            parameters=[],
-        ),
-        FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={}),
-    )
     plan = await planner.create_plan(goal)
 
     assert plan is not None
@@ -121,46 +118,14 @@ async def test_plan_creation(kernel: Kernel):
     assert "input" in plan.state
 
 
-@pytest.mark.asyncio
-async def test_no_parameter_plan_creation(kernel: Kernel):
-    goal = "What date is it today?"
-    plan_str = dedent(
-        """Here is a plan that can achieve the given task:\n\n{""plan"":\n{""rationale"":
-        ""the list contains a function that allows to get today's date."",
-        ""function"": ""TimePlugin.today""\n}\n}\n\n
-        This plan makes use of the today function in TimePlugin to get today's date."""
-    )
-
-    kernel_function_metadata = KernelFunctionMetadata(
-        name="today",
-        description="Get Today's date",
-        plugin_name="TimePlugin",
-        is_prompt=False,
-        parameters=[],
-    )
-    mock_function = create_mock_function(
-        kernel_function_metadata, FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={})
-    )
-
-    kernel.add_function("TimePlugin", function=mock_function)
-
-    planner = ActionPlanner(kernel, service_id="test")
-    planner._planner_function = create_mock_function(
-        KernelFunctionMetadata(
-            name="ActionPlanner",
-            description="Translate something",
-            plugin_name=planner.RESTRICTED_PLUGIN_NAME,
-            is_prompt=True,
-            parameters=[],
-        ),
-        FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={}),
-    )
-    plan = await planner.create_plan(goal)
-
-    assert plan is not None
-    assert plan.parameters == {}
-    assert plan.state == {}
-    assert plan.description == mock_function.description
+@pytest.fixture
+def plugins_input():
+    return [
+        ("SendEmail", "email", "Send an e-mail", False),
+        ("GetEmailAddress", "email", "Get an e-mail address", False),
+        ("Translate", "WriterPlugin", "Translate something", True),
+        ("Summarize", "SummarizePlugin", "Summarize something", True),
+    ]
 
 
 def test_available_functions(plugins_input, mock_kernel):
@@ -210,9 +175,13 @@ def test_exclude_functions(plugins_input, mock_kernel):
 
 
 @pytest.mark.asyncio
-async def test_empty_goal_throw(kernel: Kernel):
+async def test_empty_goal_throw():
     goal = ""
+
+    kernel = Mock(spec=Kernel)
     mock_function = Mock(spec=KernelFunction)
+    plugins = MagicMock(spec=KernelPluginCollection)
+    kernel.plugins = plugins
 
     kernel_function_metadata = KernelFunctionMetadata(
         name="Translate",
@@ -221,20 +190,25 @@ async def test_empty_goal_throw(kernel: Kernel):
         is_prompt=False,
         parameters=[],
     )
-    mock_function = create_mock_function(
-        kernel_function_metadata, FunctionResult(function=kernel_function_metadata, value="", metadata={})
-    )
-    kernel.add_function("WriterPlugin", mock_function)
+    mock_function = create_mock_function(kernel_function_metadata)
+    kernel.plugins.__getitem__.return_value = MagicMock(__getitem__=MagicMock(return_value=mock_function))
+
     planner = ActionPlanner(kernel, service_id="test")
 
-    with pytest.raises(PlannerInvalidGoalError):
+    with pytest.raises(PlanningException):
         await planner.create_plan(goal)
 
 
 @pytest.mark.asyncio
-async def test_invalid_json_throw(kernel: Kernel):
+async def test_invalid_json_throw():
     goal = "Translate Happy birthday to German."
     plan_str = '{"":{""function"": ""WriterPlugin.Translate""}}'
+
+    kernel = Mock(spec=Kernel)
+    memory = Mock(spec=SemanticTextMemoryBase)
+    plugins = MagicMock(spec=KernelPluginCollection)
+    kernel.plugins = plugins
+    kernel.register_memory(memory)
 
     kernel_function_metadata = KernelFunctionMetadata(
         name="Translate",
@@ -243,22 +217,16 @@ async def test_invalid_json_throw(kernel: Kernel):
         is_prompt=False,
         parameters=[],
     )
-    mock_function = create_mock_function(
-        kernel_function_metadata, FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={})
-    )
+    mock_function = create_mock_function(kernel_function_metadata)
 
-    kernel.add_function("WriterPlugin", mock_function)
+    plugins.__getitem__.return_value = MagicMock(__getitem__=MagicMock(return_value=mock_function))
+
+    function_result = FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={})
+    mock_function.invoke.return_value = function_result
+
+    kernel.create_function_from_prompt.return_value = mock_function
+
     planner = ActionPlanner(kernel, service_id="test")
-    planner._planner_function = create_mock_function(
-        KernelFunctionMetadata(
-            name="ActionPlanner",
-            description="Translate something",
-            plugin_name=planner.RESTRICTED_PLUGIN_NAME,
-            is_prompt=True,
-            parameters=[],
-        ),
-        FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={}),
-    )
 
-    with pytest.raises(PlannerInvalidPlanError):
+    with pytest.raises(PlanningException):
         await planner.create_plan(goal)

@@ -4,9 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+<<<<<<< HEAD
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+=======
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
+
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 
 /// <summary>
 /// Extension methods for <see cref="Flow"/>.
@@ -20,12 +30,17 @@ public static class FlowExtensions
 
         while (remainingSteps.Count > 0)
         {
+<<<<<<< HEAD
+            var independentStep = remainingSteps.FirstOrDefault(step => !remainingSteps.Any(step.DependsOn)) ??
+                throw new KernelException("The plan contains circular dependencies.");
+=======
             var independentStep = remainingSteps.FirstOrDefault(step => !remainingSteps.Any(step.DependsOn));
 
             if (independentStep is null)
             {
-                throw new KernelException("The plan contains circular dependencies.");
+                throw new SKException("The plan contains circular dependencies.");
             }
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 
             sortedSteps.Add(independentStep);
             remainingSteps.Remove(independentStep);
@@ -48,8 +63,16 @@ public static class FlowExtensions
         foreach (var step in referenceSteps)
         {
             flow.Steps.Remove(step);
+<<<<<<< HEAD
             var referencedFlow = await flowRepository.GetFlowAsync(step.FlowName).ConfigureAwait(false) ??
                 throw new ArgumentException($"Referenced flow {step.FlowName} is not found");
+=======
+            var referencedFlow = await flowRepository.GetFlowAsync(step.FlowName).ConfigureAwait(false);
+            if (referencedFlow is null)
+            {
+                throw new ArgumentException($"Referenced flow {step.FlowName} is not found");
+            }
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 
             referencedFlow.CompletionType = step.CompletionType;
             referencedFlow.AddPassthrough(step.Passthrough.ToArray());

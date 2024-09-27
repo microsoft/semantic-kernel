@@ -41,6 +41,28 @@
         "kernelfunction",
         "skprompt",
         "templating",
-        "vectordb"
+        "vectordb",
+        "generativeai",
+        "genai",
+        "protos",
+        "endregion",
+        "vertexai",
+        "aiplatform",
+        "serde",
+        "datamodel",
+        "vectorstoremodel",
+        "qdrant",
+        "huggingface",
+        "pytestmark",
+        "contoso",
+        "opentelemetry",
+        "SEMANTICKERNEL",
+<<<<<<< main
+        "OTEL",
+        "mistralai"
+        "vectorizable"
+=======
+        "OTEL"
+>>>>>>> ms/features/bugbash-prep
     ]
 }

@@ -58,6 +58,9 @@ internal sealed class AzureCosmosDBMongoDBMemoryRecord
     /// </summary>
     public static MemoryRecord ToMemoryRecord(BsonDocument doc, bool withEmbedding)
     {
+        BsonValue? timestamp = doc["timestamp"];
+        DateTimeOffset? recordTimestamp = timestamp is BsonNull ? null : timestamp.ToUniversalTime();
+
         return new(
             BsonSerializer
                 .Deserialize<AzureCosmosDBMongoDBMemoryRecordMetadata>(
@@ -68,10 +71,8 @@ internal sealed class AzureCosmosDBMongoDBMemoryRecord
                 ? doc["embedding"].AsBsonArray.Select(x => (float)x.AsDouble).ToArray()
                 : null,
             doc["_id"].AsString,
-            doc["timestamp"]?.ToUniversalTime()
+            recordTimestamp
         );
-
-        // return result;
     }
 
     /// <summary>
@@ -83,7 +84,7 @@ internal sealed class AzureCosmosDBMongoDBMemoryRecord
             this.Metadata.ToMemoryRecordMetadata(),
             withEmbedding ? this.Embedding : null,
             this.Id,
-            this.Timestamp?.ToLocalTime()
+            this.Timestamp
         );
     }
 }

@@ -24,7 +24,7 @@ internal static class KernelFunctionHelpers
     /// <param name="kernel">Kernel instance.</param>
     /// <param name="executionContext">Kernel arguments maintained as the executing context.</param>
     /// <param name="promptConfig">The associated prompt template configuration.</param>
-    /// <param name="allowUnsafeContent">Flag indicating whether to allow unsafe content</param>
+    /// <param name="allowDangerouslySetContent">Flag indicating whether to allow unsafe dangerously set content</param>
     /// <param name="nameDelimiter">The character used to delimit the plugin name and function name in a Handlebars template.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public static void Register(
@@ -32,13 +32,13 @@ internal static class KernelFunctionHelpers
         Kernel kernel,
         KernelArguments executionContext,
         PromptTemplateConfig promptConfig,
-        bool allowUnsafeContent,
+        bool allowDangerouslySetContent,
         string nameDelimiter,
         CancellationToken cancellationToken)
     {
         foreach (var function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, allowUnsafeContent || promptConfig.AllowUnsafeContent, nameDelimiter, cancellationToken);
+            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, allowDangerouslySetContent || promptConfig.AllowDangerouslySetContent, nameDelimiter, cancellationToken);
         }
     }
 
@@ -49,7 +49,7 @@ internal static class KernelFunctionHelpers
         KernelArguments executionContext,
         IHandlebars handlebarsInstance,
         KernelFunctionMetadata functionMetadata,
-        bool allowUnsafeContent,
+        bool allowDangerouslySetContent,
         string nameDelimiter,
         CancellationToken cancellationToken)
     {
@@ -82,7 +82,7 @@ internal static class KernelFunctionHelpers
                 // Invoke the function and write the result to the template
                 var result = InvokeKernelFunction(kernel, function, executionContext, cancellationToken);
 
-                if (!allowUnsafeContent && result is string resultAsString)
+                if (!allowDangerouslySetContent && result is string resultAsString)
                 {
                     result = HttpUtility.HtmlEncode(resultAsString);
                 }
@@ -101,8 +101,13 @@ internal static class KernelFunctionHelpers
     /// </summary>
     /// <param name="parameterMetadata">Function parameter metadata.</param>
     /// <param name="argument">Handlebar argument.</param>
-    private static bool IsExpectedParameterType(KernelParameterMetadata parameterMetadata, object argument)
+    private static bool IsExpectedParameterType(KernelParameterMetadata parameterMetadata, object? argument)
     {
+        if (argument == null)
+        {
+            return false;
+        }
+
         var actualParameterType = parameterMetadata.ParameterType is Type parameterType && Nullable.GetUnderlyingType(parameterType) is Type underlyingType
             ? underlyingType
             : parameterMetadata.ParameterType;
@@ -140,13 +145,13 @@ internal static class KernelFunctionHelpers
             if (handlebarsArguments is not null && (handlebarsArguments.TryGetValue(fullyQualifiedParamName, out var value) || handlebarsArguments.TryGetValue(param.Name, out value)))
             {
                 value = KernelHelpersUtils.GetArgumentValue(value, executionContext);
-                if (value is not null && IsExpectedParameterType(param, value))
+                if (IsExpectedParameterType(param, value))
                 {
                     executionContext[param.Name] = value;
                 }
                 else
                 {
-                    throw new KernelException($"Invalid argument type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {value?.GetType()}.");
+                    throw new KernelException($"Invalid argument type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {value?.GetType().ToString() ?? "<null>"}.");
                 }
             }
             else if (param.IsRequired)
@@ -180,7 +185,7 @@ internal static class KernelFunctionHelpers
                 }
                 else
                 {
-                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {arg.GetType()}.");
+                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {arg?.GetType().ToString() ?? "<null>"}.");
                 }
             }
         }
@@ -226,7 +231,7 @@ internal static class KernelFunctionHelpers
             // Deserialize any JSON content or return the content as a string
             if (restApiOperationResponse.ContentType?.IndexOf("application/json", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                var parsedJson = JsonValue.Parse(restApiOperationResponse.Content.ToString());
+                var parsedJson = JsonValue.Parse(restApiOperationResponse.Content?.ToString() ?? string.Empty);
                 return KernelHelpersUtils.DeserializeJsonNode(parsedJson);
             }
 

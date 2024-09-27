@@ -4,7 +4,7 @@
 
 Before:
 
-```csharp
+```csharp {"id":"01J6KQ515VCHTSXPBP2NZG50S6"}
 public interface IChatCompletion : IAIService
 {
     ChatHistory CreateNewChat(string? instructions = null);
@@ -24,7 +24,7 @@ public static class ChatCompletionExtensions
 
 After:
 
-```csharp
+```csharp {"id":"01J6KQ515VCHTSXPBP2P3AE75A"}
 public interface IChatCompletion : IAIService
 {
     Task<IReadOnlyList<ChatContent>> GetChatContentsAsync(ChatHistory chat, ..> tags)
@@ -48,7 +48,7 @@ public static class ChatCompletionExtensions
 
 Before:
 
-```csharp
+```csharp {"id":"01J6KQ515VCHTSXPBP2SXK9GWA"}
 public interface ITextCompletion : IAIService
 {
     Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string prompt, ...);
@@ -66,7 +66,7 @@ public static class TextCompletionExtensions
 
 After:
 
-```csharp
+```csharp {"id":"01J6KQ515VCHTSXPBP2V49TDPD"}
 public interface ITextCompletion : IAIService
 {
     Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, ...);
@@ -105,7 +105,7 @@ _\*Specialized: Connector implementations that are specific to a single AI Servi
 
 `ModelContent` was chosen to represent a `non-streaming content` top-most abstraction which can be specialized and contains all the information that the AI Service returned. (Metadata, Raw Content, etc.)
 
-```csharp
+```csharp {"id":"01J6KQ515VCHTSXPBP2Z1D4HDX"}
 /// <summary>
 /// Base class for all AI non-streaming results
 /// </summary>
@@ -135,7 +135,7 @@ public abstract class ModelContent
 }
 ```
 
-```csharp
+```csharp {"id":"01J6KQ515VCHTSXPBP31581WSS"}
 /// <summary>
 /// Chat content abstraction
 /// </summary>
@@ -164,7 +164,7 @@ public class ChatContent : ModelContent
 }
 ```
 
-```csharp
+```csharp {"id":"01J6KQ515VCHTSXPBP329SZNBK"}
 /// <summary>
 /// Represents a text content result.
 /// </summary>
@@ -196,7 +196,7 @@ public class TextContent : ModelContent
 
 Before
 
-```csharp
+```csharp {"id":"01J6KQ515VCHTSXPBP32J12D0A"}
 await foreach (var message in textCompletion.GetStreamingContentAsync(prompt, executionSettings))
 {
     Console.Write(message);
@@ -205,7 +205,7 @@ await foreach (var message in textCompletion.GetStreamingContentAsync(prompt, ex
 
 After
 
-```csharp
+```csharp {"id":"01J6KQ515VCHTSXPBP3640HF7M"}
 await foreach (var message in textCompletion.GetStreamingTextContentAsync(prompt, executionSettings))
 {
     Console.Write(message);
@@ -216,14 +216,14 @@ await foreach (var message in textCompletion.GetStreamingTextContentAsync(prompt
 
 Before
 
-```csharp
+```csharp {"id":"01J6KQ515VCHTSXPBP37Y2V9P0"}
 string reply = await chatGPT.GenerateMessageAsync(chatHistory);
 chatHistory.AddAssistantMessage(reply);
 ```
 
 After
 
-```csharp
+```csharp {"id":"01J6KQ515VCHTSXPBP39S0H324"}
 var reply = await chatGPT.GetChatContentAsync(chatHistory);
 chatHistory.AddMessage(reply);
 

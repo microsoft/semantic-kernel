@@ -1,9 +1,9 @@
 package com.microsoft.semantickernel.skills.random;
 
+import java.util.logging.Logger;
+
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-
-import java.util.logging.Logger;
 
 public class Main {
 
@@ -13,7 +13,12 @@ public class Main {
         Logger logger =  java.util.logging.Logger.getLogger(Main.class.getName());
 
         Server server = ServerBuilder.forPort(PORT)
-                .addService(new RandomActivitySkill()).build();
+                .// The `addService` method in the code snippet is used to add a gRPC service
+                // implementation to the server. In this case, it is adding an instance of the
+                // `RandomActivitySkill` class as a service to the gRPC server being built. This
+                // allows the server to handle requests related to the functionality provided by the
+                // `RandomActivitySkill` class.
+                addService(new RandomActivitySkill()).build();
 
         System.out.println("Starting server...");
         try {

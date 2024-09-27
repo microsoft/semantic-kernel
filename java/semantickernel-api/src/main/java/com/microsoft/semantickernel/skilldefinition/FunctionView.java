@@ -9,7 +9,14 @@ import java.util.List;
  * not affect the skill collection.
  */
 public class FunctionView {
+<<<<<<< AI
 
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     // Name of the function. The name is used by the skill collection and in prompt templates e.g.
     // {{skillName.functionName}}
     private final String name;
@@ -64,6 +71,10 @@ public class FunctionView {
     public List<ParameterView> getParameters() {
         return parameters;
     }
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
 
     public String getDescription() {
         return description;
@@ -76,4 +87,9 @@ public class FunctionView {
     public String getName() {
         return name;
     }
+<<<<<<< AI
+=======
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 }

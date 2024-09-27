@@ -51,7 +51,7 @@ public class Plugin(ITestOutputHelper output) : LearnBaseTest([
         // Start the conversation
         Console.Write("User > ");
         string? userInput;
-        while ((userInput = Console.ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) is not null)
         {
             // Add user input
             history.AddUserMessage(userInput);
@@ -59,7 +59,7 @@ public class Plugin(ITestOutputHelper output) : LearnBaseTest([
             // Enable auto function calling
             OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
             {
-                ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
             };
 
             // Get the response from the AI

@@ -33,14 +33,25 @@ internal static class HttpRequest
         };
     }
 
-    public static HttpRequestMessage CreateDeleteRequest(string url)
+    public static HttpRequestMessage CreateDeleteRequest(string url, object? payload = null)
     {
-        return new(HttpMethod.Delete, url);
+        return new(HttpMethod.Delete, url)
+        {
+            Content = GetJsonContent(payload)
+        };
+    }
+
+    public static HttpRequestMessage CreatePutRequest(string url, object? payload = null)
+    {
+        return new(HttpMethod.Put, url)
+        {
+            Content = GetJsonContent(payload)
+        };
     }
 
     private static StringContent? GetJsonContent(object? payload)
     {
-        if (payload == null)
+        if (payload is null)
         {
             return null;
         }

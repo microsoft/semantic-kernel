@@ -4,9 +4,16 @@ import logging
 
 from pytest import mark, raises
 
+<<<<<<< main
 from semantic_kernel.exceptions import VarBlockSyntaxError
+from semantic_kernel.exceptions.template_engine_exceptions import VarBlockRenderError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+=======
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxError
+>>>>>>> ms/small_fixes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
@@ -49,6 +56,18 @@ def test_valid_syntax(name):
 @mark.parametrize(
     "content",
     ["$", "$test-var", "test_var", "$a>b", "$."],
+<<<<<<< main
+    ids=[
+        "prefix_only",
+        "invalid_characters",
+        "no_prefix",
+        "invalid_characters2",
+        "invalid_characters3",
+    ],
+)
+def test_syntax_errors(content):
+    match = content.replace("$", "\\$") if "$" in content else content
+=======
     ids=["prefix_only", "invalid_characters", "no_prefix", "invalid_characters2", "invalid_characters3"],
 )
 def test_syntax_errors(content):
@@ -56,6 +75,7 @@ def test_syntax_errors(content):
         match = content.replace("$", r"\$")
     else:
         match = content
+>>>>>>> ms/small_fixes
     with raises(VarBlockSyntaxError, match=rf".*{match}.*"):
         VarBlock(content=content)
 
@@ -76,3 +96,17 @@ def test_render_no_args():
     target = VarBlock(content="$var")
     result = target.render(Kernel())
     assert result == ""
+<<<<<<< main
+
+
+class MockNonString(str):
+    def __str__(self):
+        raise ValueError("This is not a string")
+
+
+def test_not_string():
+    target = VarBlock(content="$var")
+    with raises(VarBlockRenderError):
+        target.render(Kernel(), KernelArguments(var=MockNonString("1")))
+=======
+>>>>>>> ms/small_fixes

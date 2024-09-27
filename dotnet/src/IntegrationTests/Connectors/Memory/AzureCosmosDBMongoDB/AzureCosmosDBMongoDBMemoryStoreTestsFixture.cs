@@ -28,19 +28,19 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
             )
             .AddEnvironmentVariables()
             .Build();
-
         var connectionString = GetSetting(configuration, "ConnectionString");
         this.DatabaseName = "DotNetSKTestDB";
         this.CollectionName = "DotNetSKTestCollection";
         this.MemoryStore = new AzureCosmosDBMongoDBMemoryStore(
             connectionString,
             this.DatabaseName,
-            new AzureCosmosDBMongoDBConfig()
+            new AzureCosmosDBMongoDBConfig(dimensions: 3)
         );
     }
 
     public async Task InitializeAsync()
     {
+        await this.MemoryStore.CreateCollectionAsync(this.CollectionName);
         await this
             .MemoryStore.UpsertBatchAsync(this.CollectionName, DataHelper.VectorSearchTestRecords)
             .ToListAsync();
@@ -54,7 +54,7 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
 
     private static string GetSetting(IConfigurationRoot configuration, string settingName)
     {
-        var settingValue = configuration[$"AzureCosmosDB:{settingName}"];
+        var settingValue = configuration[$"AzureCosmosDBMongoDB:{settingName}"];
         if (string.IsNullOrWhiteSpace(settingValue))
         {
             throw new ArgumentNullException($"{settingValue} string is not configured");

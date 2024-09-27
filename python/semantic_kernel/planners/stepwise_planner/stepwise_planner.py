@@ -13,7 +13,6 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
-from semantic_kernel.exceptions import PlannerCreatePlanError, PlannerExecutionException, PlannerInvalidPlanError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -21,9 +20,14 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
-from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import StepwisePlannerConfig
+from semantic_kernel.planners.planning_exception import PlanningException
+from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import (
+    StepwisePlannerConfig,
+)
 from semantic_kernel.planners.stepwise_planner.system_step import SystemStep
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.prompt_template.prompt_template_config import (
+    PromptTemplateConfig,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
@@ -60,6 +64,7 @@ def is_null_or_empty(value: Optional[str] = None) -> bool:
 
 class StepwisePlanner:
     config: StepwisePlannerConfig
+    _arguments: "KernelArguments"
     _function_flow_function: "KernelFunction"
 
     def __init__(
@@ -86,9 +91,9 @@ class StepwisePlanner:
         prompt_config.template = prompt_template
 
         self._system_step_function = self.import_function_from_prompt(kernel, "StepwiseStep", prompt_config)
-        self._native_functions = self._kernel.add_plugin(self, RESTRICTED_PLUGIN_NAME)
+        self._native_functions = self._kernel.import_plugin(self, RESTRICTED_PLUGIN_NAME)
 
-        self._arguments = KernelArguments()
+        self._context = KernelArguments()
 
     @property
     def metadata(self) -> KernelFunctionMetadata:
@@ -97,9 +102,7 @@ class StepwisePlanner:
             plugin_name="planners",
             description="",
             parameters=[
-                KernelParameterMetadata(
-                    name="goal", description="The goal to achieve", default_value="", is_required=True
-                )
+                KernelParameterMetadata(name="goal", description="The goal to achieve", default_value="", required=True)
             ],
             is_prompt=True,
             is_asynchronous=True,
@@ -107,7 +110,7 @@ class StepwisePlanner:
 
     def create_plan(self, goal: str) -> Plan:
         if is_null_or_empty(goal):
-            raise PlannerInvalidPlanError("The goal specified is empty")
+            raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty")
 
         function_descriptions = self.get_function_descriptions()
 
@@ -120,7 +123,7 @@ class StepwisePlanner:
         plan_step._outputs.append("plugin_count")
         plan_step._outputs.append("steps_taken")
 
-        plan = Plan(description=goal)
+        plan = Plan(goal)
 
         plan.add_steps([plan_step])
 
@@ -133,20 +136,21 @@ class StepwisePlanner:
         question: Annotated[str, "The question to answer"],
         function_descriptions: Annotated[List[str], "List of tool descriptions"],
     ) -> FunctionResult:
-        self._arguments["question"] = question
-        self._arguments["function_descriptions"] = function_descriptions
         steps_taken: List[SystemStep] = []
         if not is_null_or_empty(question):
             for i in range(self.config.max_iterations):
                 scratch_pad = self.create_scratch_pad(question, steps_taken)
+
                 self._arguments["agent_scratch_pad"] = scratch_pad
 
                 llm_response = await self._system_step_function.invoke(self._kernel, self._arguments)
 
                 if isinstance(llm_response, FunctionResult) and "error" in llm_response.metadata:
-                    raise PlannerExecutionException(
+                    raise PlanningException(
+                        PlanningException.ErrorCodes.UnknownError,
                         f"Error occurred while executing stepwise plan: {llm_response.metadata['error']}",
-                    ) from llm_response.metadata["error"]
+                        llm_response.metadata["error"],
+                    )
 
                 action_text = str(llm_response).strip()
                 logger.debug(f"Response: {action_text}")
@@ -316,15 +320,18 @@ class StepwisePlanner:
     async def invoke_action(self, action_name: str, action_variables: Dict[str, str]) -> str:
         available_functions = self.get_available_functions()
         target_function = next(
-            (f for f in available_functions if f.fully_qualified_name == action_name),
+            (f for f in available_functions if self.to_fully_qualified_name(f) == action_name),
             None,
         )
 
         if target_function is None:
-            raise PlannerExecutionException(f"The function '{action_name}' was not found.")
+            raise PlanningException(
+                PlanningException.ErrorCodes.UnknownError,
+                f"The function '{action_name}' was not found.",
+            )
 
         try:
-            function = self._kernel.get_function(target_function.plugin_name, target_function.name)
+            function = self._kernel.func(target_function.plugin_name, target_function.name)
             action_arguments = self.create_action_arguments(action_variables)
 
             result = await function.invoke(self._kernel, action_arguments)
@@ -354,13 +361,16 @@ class StepwisePlanner:
 
     def get_available_functions(self) -> List[KernelFunctionMetadata]:
         if self._kernel.plugins is None:
-            raise PlannerCreatePlanError("Plugin collection not found in the kernel")
+            raise PlanningException(
+                PlanningException.ErrorCodes.CreatePlanError,
+                "Plugin collection not found in the kernel",
+            )
 
         excluded_plugins = self.config.excluded_plugins or []
         excluded_functions = self.config.excluded_functions or []
         available_functions = [
             func
-            for func in self._kernel.get_list_of_function_metadata()
+            for func in self._kernel.plugins.get_list_of_function_metadata()
             if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
         ]
         available_functions = sorted(available_functions, key=lambda x: (x.plugin_name, x.name))
@@ -379,10 +389,9 @@ class StepwisePlanner:
         function_name: str,
         config: PromptTemplateConfig = None,
     ) -> "KernelFunction":
-        kernel.add_function(
+        return kernel.create_function_from_prompt(
             plugin_name=RESTRICTED_PLUGIN_NAME, function_name=function_name, prompt_template_config=config
         )
-        return kernel.get_function(RESTRICTED_PLUGIN_NAME, function_name)
 
     def to_manual_string(self, function: KernelFunctionMetadata) -> str:
         inputs = [
@@ -392,9 +401,12 @@ class StepwisePlanner:
         ]
         inputs = "\n".join(inputs)
 
-        function_description = function.description.strip() if function.description else ""
+        function_description = function.description.strip()
 
         if is_null_or_empty(inputs):
-            return f"{function.fully_qualified_name}: {function_description}\n  inputs: None\n"
+            return f"{self.to_fully_qualified_name(function)}: {function_description}\n  inputs: None\n"
 
-        return f"{function.fully_qualified_name}: {function_description}\n  inputs:\n{inputs}\n"
+        return f"{self.to_fully_qualified_name(function)}: {function_description}\n  inputs:\n{inputs}\n"
+
+    def to_fully_qualified_name(self, function: KernelFunctionMetadata):
+        return f"{function.plugin_name}.{function.name}"

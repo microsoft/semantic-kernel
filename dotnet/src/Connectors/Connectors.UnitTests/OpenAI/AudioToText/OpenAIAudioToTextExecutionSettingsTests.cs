@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -42,16 +42,14 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
     public void ItCreatesOpenAIAudioToTextExecutionSettingsFromJson()
     {
         // Arrange
-        var json = """
-        {
-            "model_id": "model_id",
-            "language": "en",
-            "filename": "file.mp3",
-            "prompt": "prompt",
-            "response_format": "text",
-            "temperature": 0.2
-        }
-        """;
+        var json = @"{
+            ""model_id"": ""model_id"",
+            ""language"": ""en"",
+            ""filename"": ""file.mp3"",
+            ""prompt"": ""prompt"",
+            ""response_format"": ""text"",
+            ""temperature"": 0.2
+        }";
 
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
@@ -66,5 +64,25 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
         Assert.Equal("prompt", settings.Prompt);
         Assert.Equal("text", settings.ResponseFormat);
         Assert.Equal(0.2f, settings.Temperature);
+    }
+
+    [Fact]
+    public void ItReturnsValidOpenAIAudioToTextExecutionSettingsWhenCloned()
+    {
+        // Arrange
+        var audioToTextSettings = new OpenAIAudioToTextExecutionSettings("file.mp3")
+        {
+            ModelId = "model_id",
+            Language = "en",
+            Prompt = "prompt",
+            ResponseFormat = "text",
+            Temperature = 0.2f
+        };
+
+        // Act
+        var settings = audioToTextSettings.Clone();
+
+        // Assert
+        Assert.Same(audioToTextSettings, settings);
     }
 }

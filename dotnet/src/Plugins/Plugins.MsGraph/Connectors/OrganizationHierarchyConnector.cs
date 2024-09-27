@@ -45,7 +45,7 @@ public class OrganizationHierarchyConnector : IOrganizationHierarchyConnector
 
         List<User> directs = directsPage.Cast<User>().ToList();
 
-        while (directs.Count != 0 && directsPage.NextPageRequest != null)
+        while (directs.Count != 0 && directsPage.NextPageRequest is not null)
         {
             directsPage = await directsPage.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
             directs.AddRange(directsPage.Cast<User>());

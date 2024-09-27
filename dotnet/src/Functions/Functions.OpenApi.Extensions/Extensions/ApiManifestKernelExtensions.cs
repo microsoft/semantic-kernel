@@ -87,6 +87,11 @@ public static class ApiManifestKernelExtensions
             var apiDependencyDetails = apiDependency.Value;
 
             var apiDescriptionUrl = apiDependencyDetails.ApiDescriptionUrl;
+            if (apiDescriptionUrl is null)
+            {
+                logger.LogWarning("ApiDescriptionUrl is missing for API dependency: {ApiName}", apiName);
+                continue;
+            }
 
             var openApiDocumentString = await DocumentLoader.LoadDocumentFromUriAsync(new Uri(apiDescriptionUrl),
                 logger,
@@ -123,8 +128,6 @@ public static class ApiManifestKernelExtensions
             var predicate = OpenApiFilterService.CreatePredicate(null, null, requestUrls, openApiDocument);
             var filteredOpenApiDocument = OpenApiFilterService.CreateFilteredDocument(openApiDocument, predicate);
 
-            var serverUrl = filteredOpenApiDocument.Servers.FirstOrDefault()?.Url;
-
             var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.ContainsKey(apiName) == true
                 ? pluginParameters.FunctionExecutionParameters[apiName]
                 : null;
@@ -140,23 +143,31 @@ public static class ApiManifestKernelExtensions
                 openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
 
-            foreach (var path in filteredOpenApiDocument.Paths)
+            var server = filteredOpenApiDocument.Servers.FirstOrDefault();
+            if (server?.Url is not null)
             {
-                var operations = OpenApiDocumentParser.CreateRestApiOperations(serverUrl, path.Key, path.Value, null, logger);
-                foreach (RestApiOperation operation in operations)
+                foreach (var path in filteredOpenApiDocument.Paths)
                 {
-                    try
+                    var operations = OpenApiDocumentParser.CreateRestApiOperations(server, path.Key, path.Value, null, logger);
+                    foreach (RestApiOperation operation in operations)
                     {
-                        logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                        functions.Add(OpenApiKernelExtensions.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(serverUrl), loggerFactory));
-                    }
-                    catch (Exception ex) when (!ex.IsCriticalException())
-                    {
-                        //Logging the exception and keep registering other Rest functions
-                        logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
-                            pluginName, operation.Id, ex.Message);
+                        try
+                        {
+                            logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
+                            functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
+                        }
+                        catch (Exception ex) when (!ex.IsCriticalException())
+                        {
+                            //Logging the exception and keep registering other Rest functions
+                            logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                                pluginName, operation.Id, ex.Message);
+                        }
                     }
                 }
+            }
+            else
+            {
+                logger.LogWarning("Server URI not found. Plugin: {0}", pluginName);
             }
         }
 

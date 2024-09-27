@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -7,6 +7,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Chroma;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
@@ -117,13 +120,14 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var collectionName = this.GetRandomCollectionName();
 
         // Act
-        var exception = await Record.ExceptionAsync(() => this._chromaMemoryStore.DeleteCollectionAsync(collectionName));
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => this._chromaMemoryStore.DeleteCollectionAsync(collectionName));
 
         // Assert
         Assert.IsType<KernelException>(exception);
+        Assert.IsType<SKException>(exception);
         Assert.Contains(
-            $"Cannot delete non-existent collection {collectionName}",
-            exception.Message,
+            $"Collection {collectionName} does not exist.",
+            exception.ResponseContent,
             StringComparison.InvariantCulture);
     }
 

@@ -3,12 +3,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+<<<<<<< main
 using Microsoft.Extensions.Logging.Abstractions;
+=======
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Diagnostics;
+<<<<<<< main
+>>>>>>> ms/feature-error-handling
+=======
+>>>>>>> ms/feature-error-handling-part3
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -95,21 +104,35 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
+<<<<<<< main
         var vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, cancellationToken).ConfigureAwait(false) ??
             throw new KernelException("Failed to convert memory record to Qdrant vector record");
+=======
+        var vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, cancellationToken).ConfigureAwait(false);
 
-        try
+        if (vectorData == null)
         {
-            await this._qdrantClient.UpsertVectorsAsync(
+            throw new SKException("Failed to convert memory record to Qdrant vector record");
+        }
+>>>>>>> ms/feature-error-handling
+
+        await this._qdrantClient.UpsertVectorsAsync(
                 collectionName,
                 [vectorData],
                 cancellationToken).ConfigureAwait(false);
+<<<<<<< main
         }
         catch (HttpOperationException ex)
         {
+<<<<<<< main
             this._logger.LogError(ex, "Failed to upsert vectors: {Message}", ex.Message);
             throw;
+=======
+            throw new SKException("Failed to upsert vectors", ex);
+>>>>>>> ms/feature-error-handling-part3
         }
+=======
+>>>>>>> ms/feature-error-handling
 
         return vectorData.PointId;
     }
@@ -121,18 +144,24 @@ public class QdrantMemoryStore : IMemoryStore
         var tasks = Task.WhenAll(records.Select(async r => await this.ConvertFromMemoryRecordAsync(collectionName, r, cancellationToken).ConfigureAwait(false)));
         var vectorData = await tasks.ConfigureAwait(false);
 
-        try
-        {
-            await this._qdrantClient.UpsertVectorsAsync(
+        await this._qdrantClient.UpsertVectorsAsync(
                 collectionName,
                 vectorData,
                 cancellationToken).ConfigureAwait(false);
+<<<<<<< main
         }
         catch (HttpOperationException ex)
         {
+<<<<<<< main
             this._logger.LogError(ex, "Failed to upsert vectors: {Message}", ex.Message);
             throw;
+=======
+            throw new SKException("Failed to upsert vectors", ex);
+>>>>>>> ms/feature-error-handling-part3
         }
+=======
+
+>>>>>>> ms/feature-error-handling
         foreach (var v in vectorData)
         {
             yield return v.PointId;
@@ -142,10 +171,11 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
+<<<<<<< main
         try
         {
             var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, withEmbedding, cancellationToken).ConfigureAwait(false);
-            if (vectorData == null) { return null; }
+            if (vectorData is null) { return null; }
 
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
@@ -154,9 +184,22 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpOperationException ex)
         {
+<<<<<<< main
             this._logger.LogError(ex, "Failed to get vector data: {Message}", ex.Message);
             throw;
+=======
+            throw new SKException("Failed to get vector data", ex);
+>>>>>>> ms/feature-error-handling-part3
         }
+=======
+        var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, withEmbedding, cancellationToken).ConfigureAwait(false);
+        if (vectorData == null) { return null; }
+
+        return MemoryRecord.FromJsonMetadata(
+            json: vectorData.GetSerializedPayload(),
+            embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true),
+            key: vectorData.PointId);
+>>>>>>> ms/feature-error-handling
     }
 
     /// <inheritdoc/>
@@ -166,7 +209,7 @@ public class QdrantMemoryStore : IMemoryStore
         foreach (var key in keys)
         {
             MemoryRecord? record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (record != null)
+            if (record is not null)
             {
                 yield return record;
             }
@@ -181,7 +224,12 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Memory record</returns>
+<<<<<<< main
+<<<<<<< main
     /// <exception cref="KernelException"></exception>
+=======
+    /// <exception cref="SKException"></exception>
+>>>>>>> ms/feature-error-handling-part3
     public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
@@ -189,20 +237,44 @@ public class QdrantMemoryStore : IMemoryStore
         {
             var vectorDataList = this._qdrantClient
                 .GetVectorsByIdAsync(collectionName, [pointId], withEmbedding, cancellationToken);
+=======
+    /// <exception cref="SKException"></exception>
+    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = false,
+        CancellationToken cancellationToken = default)
+    {
+        var vectorDataList = this._qdrantClient
+                .GetVectorsByIdAsync(collectionName, new[] { pointId }, withEmbedding, cancellationToken);
+>>>>>>> ms/feature-error-handling
 
-            var vectorData = await vectorDataList.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        var vectorData = await vectorDataList.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
-            if (vectorData == null) { return null; }
+<<<<<<< main
+            if (vectorData is null) { return null; }
 
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
+<<<<<<< main
                 embedding: vectorData.Embedding);
         }
         catch (HttpOperationException ex)
         {
             this._logger.LogError(ex, "Failed to get vector data: {Message}", ex.Message);
             throw;
+=======
+                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true));
         }
+        catch (HttpRequestException ex)
+        {
+            throw new SKException("Failed to get vector data", ex);
+>>>>>>> ms/feature-error-handling-part3
+        }
+=======
+        if (vectorData == null) { return null; }
+
+        return MemoryRecord.FromJsonMetadata(
+            json: vectorData.GetSerializedPayload(),
+            embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true));
+>>>>>>> ms/feature-error-handling
     }
 
     /// <summary>
@@ -234,15 +306,23 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
+<<<<<<< main
         try
         {
             await this._qdrantClient.DeleteVectorByPayloadIdAsync(collectionName, key, cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
+<<<<<<< main
             this._logger.LogError(ex, "Failed to remove vector data: {Message}", ex.Message);
             throw;
+=======
+            throw new SKException("Failed to remove vector data", ex);
+>>>>>>> ms/feature-error-handling-part3
         }
+=======
+        await this._qdrantClient.DeleteVectorByPayloadIdAsync(collectionName, key, cancellationToken).ConfigureAwait(false);
+>>>>>>> ms/feature-error-handling
     }
 
     /// <inheritdoc />
@@ -257,7 +337,12 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="pointId">The unique indexed ID associated with the Qdrant vector record to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+<<<<<<< main
+<<<<<<< main
     /// <exception cref="KernelException"></exception>
+=======
+    /// <exception cref="SKException"></exception>
+>>>>>>> ms/feature-error-handling-part3
     public async Task RemoveWithPointIdAsync(string collectionName, string pointId, CancellationToken cancellationToken = default)
     {
         try
@@ -266,9 +351,19 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpOperationException ex)
         {
+<<<<<<< main
             this._logger.LogError(ex, "Failed to remove vector data: {Message}", ex.Message);
             throw;
+=======
+            throw new SKException("Failed to remove vector data", ex);
+>>>>>>> ms/feature-error-handling-part3
         }
+=======
+    /// <exception cref="SKException"></exception>
+    public async Task RemoveWithPointIdAsync(string collectionName, string pointId, CancellationToken cancellationToken = default)
+    {
+        await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, new[] { pointId }, cancellationToken).ConfigureAwait(false);
+>>>>>>> ms/feature-error-handling
     }
 
     /// <summary>
@@ -277,7 +372,12 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="pointIds">The unique indexed IDs associated with the Qdrant vector records to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+<<<<<<< main
+<<<<<<< main
     /// <exception cref="KernelException"></exception>
+=======
+    /// <exception cref="SKException"></exception>
+>>>>>>> ms/feature-error-handling-part3
     public async Task RemoveWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancellationToken = default)
     {
         try
@@ -286,9 +386,19 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpOperationException ex)
         {
+<<<<<<< main
             this._logger.LogError(ex, "Failed to remove vector data: {Message}", ex.Message);
             throw;
+=======
+            throw new SKException("Failed to remove vector data", ex);
+>>>>>>> ms/feature-error-handling-part3
         }
+=======
+    /// <exception cref="SKException"></exception>
+    public async Task RemoveWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancellationToken = default)
+    {
+        await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, pointIds, cancellationToken).ConfigureAwait(false);
+>>>>>>> ms/feature-error-handling
     }
 
     /// <inheritdoc/>
@@ -327,14 +437,18 @@ public class QdrantMemoryStore : IMemoryStore
                     result = null;
                 }
             }
+<<<<<<< main
             catch (HttpOperationException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+=======
+            catch (HttpOperationException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+>>>>>>> ms/feature-error-handling
             {
                 this._logger.LogWarning("NotFound when calling {QdrantMemoryStore}::FindNearestInCollectionAsync - the collection '{Name}' may not exist yet",
                     nameof(QdrantMemoryStore), collectionName);
                 hasResult = false;
             }
 
-            if (result != null)
+            if (result is not null)
             {
                 yield return (
                     MemoryRecord.FromJsonMetadata(
@@ -391,7 +505,7 @@ public class QdrantMemoryStore : IMemoryStore
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
-            if (existingRecord != null)
+            if (existingRecord is not null)
             {
                 pointId = existingRecord.PointId;
             }
@@ -403,15 +517,27 @@ public class QdrantMemoryStore : IMemoryStore
                     pointId = Guid.NewGuid().ToString();
                     existingRecord = await this._qdrantClient.GetVectorsByIdAsync(collectionName, [pointId], cancellationToken: cancellationToken)
                         .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
-                } while (existingRecord != null);
+                } while (existingRecord is not null);
             }
         }
 
         return QdrantVectorRecord.FromJsonMetadata(
             pointId: pointId,
+<<<<<<< main
             embedding: record.Embedding,
             json: record.GetSerializedMetadata()) ??
             throw new KernelException("Failed to convert memory record to Qdrant vector record");
+=======
+            embedding: record.Embedding.Vector,
+            json: record.GetSerializedMetadata());
+
+        if (vectorData == null)
+        {
+            throw new SKException("Failed to convert memory record to Qdrant vector record");
+        }
+
+        return vectorData;
+>>>>>>> ms/feature-error-handling
     }
 
     #endregion

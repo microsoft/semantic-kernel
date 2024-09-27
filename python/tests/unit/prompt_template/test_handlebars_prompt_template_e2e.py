@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
 
 from pytest import mark
 
@@ -8,15 +7,21 @@ from semantic_kernel import Kernel
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.prompt_template.handlebars_prompt_template import HandlebarsPromptTemplate
+from semantic_kernel.prompt_template.handlebars_prompt_template import (
+    HandlebarsPromptTemplate,
+)
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 def create_handlebars_prompt_template(template: str) -> HandlebarsPromptTemplate:
     return HandlebarsPromptTemplate(
         prompt_template_config=PromptTemplateConfig(
-            name="test", description="test", template=template, template_format="handlebars"
-        )
+            name="test",
+            description="test",
+            template=template,
+            template_format="handlebars",
+        ),
+        allow_dangerously_set_content=True,
     )
 
 
@@ -26,7 +31,7 @@ class MyPlugin:
         return "123 ok" if input == "123" else f"{input} != 123"
 
     @kernel_function()
-    def asis(self, input: Optional[str] = None) -> str:
+    def asis(self, input: str | None = None) -> str:
         return input or ""
 
 
@@ -40,7 +45,9 @@ class TestHandlebarsPromptTemplateEngine:
 
         arguments = KernelArguments(input=input, winner=winner)
         # Act
-        result = await create_handlebars_prompt_template(template).render(kernel, arguments)
+        result = await create_handlebars_prompt_template(template).render(
+            kernel, arguments
+        )
         # Assert
         expected = template.replace("{{input}}", input).replace("{{  winner }}", winner)
         assert expected == result
@@ -53,10 +60,12 @@ class TestHandlebarsPromptTemplateEngine:
 
         arguments = KernelArguments(call="123")
         # Act
-        result = await create_handlebars_prompt_template(template).render(kernel, arguments)
+        result = await create_handlebars_prompt_template(template).render(
+            kernel, arguments
+        )
 
         # Assert
-        assert "== 123 ok ==" == result
+        assert result == "== 123 ok =="
 
     @mark.asyncio
     async def test_it_allows_to_pass_values_to_functions(self, kernel: Kernel):
@@ -68,7 +77,7 @@ class TestHandlebarsPromptTemplateEngine:
         result = await create_handlebars_prompt_template(template).render(kernel, None)
 
         # Assert
-        assert "== 234 != 123 ==" == result
+        assert result == "== 234 != 123 =="
 
     @mark.asyncio
     async def test_it_allows_to_pass_escaped_values1_to_functions(self, kernel: Kernel):
@@ -79,7 +88,7 @@ class TestHandlebarsPromptTemplateEngine:
         result = await create_handlebars_prompt_template(template).render(kernel, None)
 
         # Assert
-        assert "== a'b != 123 ==" == result
+        assert result == "== a'b != 123 =="
 
     @mark.asyncio
     async def test_it_allows_to_pass_escaped_values2_to_functions(self, kernel: Kernel):
@@ -91,7 +100,7 @@ class TestHandlebarsPromptTemplateEngine:
         result = await create_handlebars_prompt_template(template).render(kernel, None)
 
         # Assert
-        assert '== a"b != 123 ==' == result
+        assert result == '== a"b != 123 =='
 
     @mark.asyncio
     async def test_chat_history_round_trip(self, kernel: Kernel):
@@ -101,7 +110,9 @@ class TestHandlebarsPromptTemplateEngine:
         chat_history = ChatHistory()
         chat_history.add_user_message("User message")
         chat_history.add_assistant_message("Assistant message")
-        rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+        rendered = await target.render(
+            kernel, KernelArguments(chat_history=chat_history)
+        )
         assert (
             rendered.strip()
             == """<message role="user">User message</message> <message role="assistant">Assistant message</message>"""

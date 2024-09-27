@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Microsoft.SemanticKernel;
@@ -41,6 +42,7 @@ public sealed class FunctionResult
         this.Value = value ?? result.Value;
         this.Culture = result.Culture;
         this.Metadata = result.Metadata;
+        this.RenderedPrompt = result.RenderedPrompt;
     }
 
     /// <summary>
@@ -66,6 +68,12 @@ public sealed class FunctionResult
     /// argument to <see cref="GetValue{T}"/>.
     /// </remarks>
     public Type? ValueType => this.Value?.GetType();
+
+    /// <summary>
+    /// Gets the prompt used during function invocation if any was rendered.
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    public string? RenderedPrompt { get; internal set; }
 
     /// <summary>
     /// Returns function result value.

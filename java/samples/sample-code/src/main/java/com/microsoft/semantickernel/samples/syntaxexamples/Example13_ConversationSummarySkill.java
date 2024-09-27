@@ -13,6 +13,10 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import reactor.core.publisher.Mono;
 
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
 /**
  * Demonstrate the {@code com.microsoft.semantickernel.coreskills.ConversationSummarySkill}
  * <p>
@@ -20,6 +24,11 @@ import reactor.core.publisher.Mono;
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
  * README</a> for configuring your environment to run the examples.
  */
+<<<<<<< AI
+=======
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 public class Example13_ConversationSummarySkill {
     private static final String ChatTranscript =
             """
@@ -90,7 +99,7 @@ public class Example13_ConversationSummarySkill {
                     Jane: Lorem ipsum dolor sit amet, con
                     Jane: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc sit amet aliquam
                     Jane: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc sit amet aliquam
-                    Jane: Darn, it's just repeating stuff now.
+                    Jane: Darn, it's just repeating stuf now.
                     John: I think we're done.
                     Jane: We're not though! We need like 1500 more characters.
                     John: Oh Cananda, our home and native land.

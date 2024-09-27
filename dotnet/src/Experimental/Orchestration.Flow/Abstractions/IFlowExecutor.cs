@@ -1,6 +1,7 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
@@ -18,4 +19,7 @@ public interface IFlowExecutor
     /// <param name="kernelArguments">The request kernel arguments </param>
     /// <returns>The execution context</returns>
     Task<FunctionResult> ExecuteFlowAsync(Flow flow, string sessionId, string input, KernelArguments kernelArguments);
+    /// <param name="contextVariables">The request context variables </param>
+    /// <returns>The execution context</returns>
+    Task<ContextVariables> ExecuteAsync(Flow flow, string sessionId, string input, ContextVariables contextVariables);
 }

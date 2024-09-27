@@ -1,0 +1,472 @@
+﻿{
+  "_type": "SearchResponse",
+  "queryContext": {
+    "originalQuery": "What is the Semantic Kernel? site:devblogs.microsoft.com"
+  },
+  "webPages": {
+    "webSearchUrl": "https://www.bing.com/search?q=What+is+the+Semantic+Kernel%3f+site%3adevblogs.microsoft.com",
+    "totalEstimatedMatches": 695,
+    "value": [
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.0",
+        "name": "Hello, Semantic Kernel! | Semantic Kernel",
+        "url": "https://devblogs.microsoft.com/semantic-kernel/hello-world/",
+        "thumbnailUrl": "https://www.bing.com/th?id=OIP.4Dwh1vVBFk1G8b1OVf3EpAHaEK&w=80&h=80&c=1&pid=5.1",
+        "datePublished": "2023-03-17T00:00:00.0000000",
+        "datePublishedDisplayText": "Mar 17, 2023",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://devblogs.microsoft.com/semantic-kernel/hello-world",
+        "snippet": "Semantic Kernel (SK) is a lightweight SDK that lets you mix conventional programming languages, like C# and Python, with the latest in Large Language Model (LLM) AI “prompts” with prompt templating, chaining, and planning capabilities.",
+        "dateLastCrawled": "2024-08-21T20:02:00.0000000Z",
+        "primaryImageOfPage": {
+          "thumbnailUrl": "https://www.bing.com/th?id=OIP.4Dwh1vVBFk1G8b1OVf3EpAHaEK&w=80&h=80&c=1&pid=5.1",
+          "width": 80,
+          "height": 80,
+          "sourceWidth": 474,
+          "sourceHeight": 266,
+          "imageId": "OIP.4Dwh1vVBFk1G8b1OVf3EpAHaEK"
+        },
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f+site%3adevblogs.microsoft.com&d=5054326545267017&mkt=en-IE&setlang=en-US&w=SaHmkGnfrj_6cVFw7MK-bEe2ythGfu8N",
+        "language": "en",
+        "isNavigational": false,
+        "richCaptionGoBigHints": {
+          "title": "devblogs.microsoft.com",
+          "publishDateDisplayText": "Mar 17, 2023"
+        },
+        "noCache": false,
+        "siteName": "Microsoft Developer Blogs"
+      },
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.1",
+        "name": "Architecting AI Apps with Semantic Kernel | Semantic Kernel",
+        "url": "https://devblogs.microsoft.com/semantic-kernel/architecting-ai-apps-with-semantic-kernel/",
+        "datePublished": "2024-03-06T00:00:00.0000000",
+        "datePublishedDisplayText": "Mar 6, 2024",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://devblogs.microsoft.com/semantic-kernel/architecting-ai-apps-with-semantic-kernel",
+        "snippet": "With Semantic Kernel, you can easily build agents that can call your existing code. This power lets you automate your business processes with models from OpenAI, Azure OpenAI, Hugging Face, and more! We often get asked though, “How do I architect my solution?” and “How does it actually work?”",
+        "dateLastCrawled": "2024-08-20T17:04:00.0000000Z",
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f+site%3adevblogs.microsoft.com&d=5018850118025290&mkt=en-IE&setlang=en-US&w=3y8E3u-wEwTqT2CGXMi8SRmSm7P3b2ph",
+        "language": "en",
+        "isNavigational": false,
+        "noCache": false,
+        "siteName": "Microsoft Developer Blogs"
+      },
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.2",
+        "name": "Semantic Kernel | The latest news from the Semantic Kernel team for ...",
+        "url": "https://devblogs.microsoft.com/semantic-kernel/",
+        "datePublished": "2024-08-15T00:00:00.0000000",
+        "datePublishedDisplayText": "Aug 15, 2024",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://devblogs.microsoft.com/semantic-kernel",
+        "snippet": "In Semantic Kernel, we handle the heavy lifting so that you can bring your own code or utilize built-in plugins that cater to your use case. Our goal is to make it easy for you to incorporate function calling into your application.",
+        "dateLastCrawled": "2024-08-22T14:04:00.0000000Z",
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f+site%3adevblogs.microsoft.com&d=4874504853913722&mkt=en-IE&setlang=en-US&w=40WmOrDn8FOoqwuPBDz6-Jlw_4V3X_wS",
+        "language": "en",
+        "isNavigational": false,
+        "noCache": false,
+        "siteName": "Microsoft Developer Blogs"
+      },
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.3",
+        "name": "How to Get Started using Semantic Kernel .NET | Semantic Kernel",
+        "url": "https://devblogs.microsoft.com/semantic-kernel/how-to-get-started-using-semantic-kernel-net/",
+        "datePublished": "2024-05-14T00:00:00.0000000",
+        "datePublishedDisplayText": "May 14, 2024",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://devblogs.microsoft.com/semantic-kernel/how-to-get-started-using-semantic...",
+        "snippet": "Semantic Kernel is fully compatible with .Net Dependency Injection abstractions and supports the IServiceCollection pattern. In this step we are going through how you can leverage DI into your code.",
+        "dateLastCrawled": "2024-08-21T21:40:00.0000000Z",
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f+site%3adevblogs.microsoft.com&d=4526324736983139&mkt=en-IE&setlang=en-US&w=ez50IvE42hkKVYeanZ0u999uBdmACAt1",
+        "language": "en",
+        "isNavigational": false,
+        "noCache": false,
+        "siteName": "Microsoft Developer Blogs"
+      }
+    ]
+  },
+  "relatedSearches": {
+    "id": "https://api.bing.microsoft.com/api/v7/#RelatedSearches",
+    "value": [
+      {
+        "text": "semantic kernel examples",
+        "displayText": "semantic kernel examples",
+        "webSearchUrl": "https://www.bing.com/search?q=semantic+kernel+examples"
+      },
+      {
+        "text": "getting started with semantic kernel",
+        "displayText": "getting started with semantic kernel",
+        "webSearchUrl": "https://www.bing.com/search?q=getting+started+with+semantic+kernel"
+      },
+      {
+        "text": "semantic kernel python example",
+        "displayText": "semantic kernel python example",
+        "webSearchUrl": "https://www.bing.com/search?q=semantic+kernel+python+example"
+      },
+      {
+        "text": "what is semantic kernel microsoft",
+        "displayText": "what is semantic kernel microsoft",
+        "webSearchUrl": "https://www.bing.com/search?q=what+is+semantic+kernel+microsoft"
+      },
+      {
+        "text": "semantic kernel samples",
+        "displayText": "semantic kernel samples",
+        "webSearchUrl": "https://www.bing.com/search?q=semantic+kernel+samples"
+      },
+      {
+        "text": "semantic kernel planner examples",
+        "displayText": "semantic kernel planner examples",
+        "webSearchUrl": "https://www.bing.com/search?q=semantic+kernel+planner+examples"
+      },
+      {
+        "text": "langchain vs semantic kernel",
+        "displayText": "langchain vs semantic kernel",
+        "webSearchUrl": "https://www.bing.com/search?q=langchain+vs+semantic+kernel"
+      },
+      {
+        "text": "semantic kernel code interpreter",
+        "displayText": "semantic kernel code interpreter",
+        "webSearchUrl": "https://www.bing.com/search?q=semantic+kernel+code+interpreter"
+      }
+    ]
+  },
+  "videos": {
+    "id": "https://api.bing.microsoft.com/api/v7/#Videos",
+    "readLink": "https://api.bing.microsoft.com/api/v7/videos/search?q=What+is+the+Semantic+Kernel%3f+site%3adevblogs.microsoft.com",
+    "webSearchUrl": "https://www.bing.com/videos/search?q=What+is+the+Semantic+Kernel%3f+site%3adevblogs.microsoft.com",
+    "isFamilyFriendly": true,
+    "value": [
+      {
+        "webSearchUrl": "https://www.bing.com/videos/search?q=What%20is%20the%20Semantic%20Kernel?%20site:devblogs.microsoft.com&view=detail&mid=6328301320A0A7BE84176328301320A0A7BE8417",
+        "name": "Spring 2024 roadmap for Semantic Kernel",
+        "description": "Now that it’s February, we wanted to share what we had planned for Semantic Kernel from now until Microsoft Build. Most of our next immediate investments fall into one of three buckets: V1.0 parity across all our languages, additional connectors, and last but not least,",
+        "thumbnailUrl": "https://tse4.mm.bing.net/th?id=OVP.8UWiuXMNdFVQpD8h7lOBTwHgEO&pid=Api",
+        "datePublished": "2024-02-12T16:00:21.0000000",
+        "publisher": [
+          {
+            "name": "Microsoft Blogs"
+          }
+        ],
+        "creator": {
+          "name": "Matthew Bolanos"
+        },
+        "contentUrl": "https://devblogs.microsoft.com/semantic-kernel/spring-2024-roadmap-for-semantic-kernel/",
+        "hostPageUrl": "https://devblogs.microsoft.com/semantic-kernel/spring-2024-roadmap-for-semantic-kernel/",
+        "encodingFormat": "mp4",
+        "hostPageDisplayUrl": "https://devblogs.microsoft.com/semantic-kernel/spring-2024-roadmap-for-semantic-kernel/",
+        "width": 1920,
+        "height": 1080,
+        "duration": "PT9M13S",
+        "motionThumbnailUrl": "https://tse4.mm.bing.net/th?id=OM1.F4S-p6AgEzAoYw&pid=Api",
+        "viewCount": 0,
+        "thumbnail": {
+          "width": 160,
+          "height": 90
+        },
+        "isSuperfresh": false
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/videos/search?q=What%20is%20the%20Semantic%20Kernel?%20site:devblogs.microsoft.com&view=detail&mid=D1CE54DA55D4D3749A30D1CE54DA55D4D3749A30",
+        "name": "What’s coming next? Summer / Fall roadmap for Semantic Kernel",
+        "description": "It feels like yesterday when we went live with v1.0+ of all our SDKs (Python, Java, and C#) at Microsoft Build. Since then, the Semantic Kernel team has been hard at work making Semantic Kernel even better. Now that we’ve made some progress,",
+        "thumbnailUrl": "https://tse3.mm.bing.net/th?id=OVP.lRb_0KhOLK_vTr4TmQloPAHgEO&pid=Api",
+        "datePublished": "2024-07-30T19:31:08.0000000",
+        "publisher": [
+          {
+            "name": "Microsoft Blogs"
+          }
+        ],
+        "creator": {
+          "name": "Matthew Bolanos"
+        },
+        "contentUrl": "https://devblogs.microsoft.com/semantic-kernel/whats-coming-next-summer-fall-roadmap-for-semantic-kernel/",
+        "hostPageUrl": "https://devblogs.microsoft.com/semantic-kernel/whats-coming-next-summer-fall-roadmap-for-semantic-kernel/",
+        "encodingFormat": "",
+        "hostPageDisplayUrl": "https://devblogs.microsoft.com/semantic-kernel/whats-coming-next-summer-fall-roadmap-for-semantic-kernel/",
+        "width": 327,
+        "height": 181,
+        "motionThumbnailUrl": "https://tse3.mm.bing.net/th?id=OM1.MJp009RV2lTO0Q&pid=Api",
+        "viewCount": 0,
+        "thumbnail": {
+          "width": 160,
+          "height": 90
+        },
+        "isSuperfresh": false
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/videos/search?q=What%20is%20the%20Semantic%20Kernel?%20site:devblogs.microsoft.com&view=detail&mid=1E40931E5A60478CA5FA1E40931E5A60478CA5FA",
+        "name": "Image to Text with Semantic Kernel and HuggingFace",
+        "description": "We are thrilled to introduce a new feature within Semantic Kernel that promises to improve AI capabilities: Image to Text modality service abstraction, with a new HuggingFace Service implementation using this capability. A Glimpse into the Demonstration In the video below,",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OVP.Ufru2WWn59a-VGuKXTdfKgG2EO&pid=Api",
+        "datePublished": "2024-03-21T17:27:39.0000000",
+        "publisher": [
+          {
+            "name": "Microsoft Blogs"
+          }
+        ],
+        "creator": {
+          "name": "Sophia Lagerkrans-Pandey,Roger Barreto"
+        },
+        "contentUrl": "https://devblogs.microsoft.com/semantic-kernel/image-to-text-with-semantic-kernel-and-huggingface/",
+        "hostPageUrl": "https://devblogs.microsoft.com/semantic-kernel/image-to-text-with-semantic-kernel-and-huggingface/",
+        "encodingFormat": "mp4",
+        "hostPageDisplayUrl": "https://devblogs.microsoft.com/semantic-kernel/image-to-text-with-semantic-kernel-and-huggingface/",
+        "width": 1920,
+        "height": 1080,
+        "duration": "PT6M13S",
+        "motionThumbnailUrl": "https://tse1.mm.bing.net/th?id=OM1.-qWMR2BaHpNAHg&pid=Api",
+        "viewCount": 0,
+        "thumbnail": {
+          "width": 160,
+          "height": 98
+        },
+        "isSuperfresh": false
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/videos/search?q=What%20is%20the%20Semantic%20Kernel?%20site:devblogs.microsoft.com&view=detail&mid=B896DED8BF4B0BA1CB50B896DED8BF4B0BA1CB50",
+        "name": "Customer Case Study: preezie’s AI Journey with Microsoft Semantic Kernel",
+        "description": "Today we’re thrilled to feature the Prezzie team on the Semantic Kernel blog. The Prezzie team will discuss their AI journey, how they’ve integrated the Semantic Kernel SDK to build out their AI solutions and advice they’d give to other customers getting started on their AI journeys.",
+        "thumbnailUrl": "https://tse4.mm.bing.net/th?id=OVP.UO5gfmc6NKq98Z7doqAfCwFHC1&pid=Api",
+        "datePublished": "2024-07-04T00:00:58.0000000",
+        "publisher": [
+          {
+            "name": "Microsoft Blogs"
+          }
+        ],
+        "contentUrl": "https://devblogs.microsoft.com/semantic-kernel/customer-case-study-prezzies-ai-journey-with-microsoft-semantic-kernel/",
+        "hostPageUrl": "https://devblogs.microsoft.com/semantic-kernel/customer-case-study-prezzies-ai-journey-with-microsoft-semantic-kernel/",
+        "encodingFormat": "",
+        "hostPageDisplayUrl": "https://devblogs.microsoft.com/semantic-kernel/customer-case-study-prezzies-ai-journey-with-microsoft-semantic-kernel/",
+        "width": 327,
+        "height": 181,
+        "motionThumbnailUrl": "https://tse4.mm.bing.net/th?id=OM1.UMuhC0u_2N6WuA&pid=Api",
+        "viewCount": 0,
+        "thumbnail": {
+          "width": 160,
+          "height": 88
+        },
+        "isSuperfresh": false
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/videos/search?q=What%20is%20the%20Semantic%20Kernel?%20site:devblogs.microsoft.com&view=detail&mid=2BDD063EFB46177900DB2BDD063EFB46177900DB",
+        "name": "Demystifying Retrieval Augmented Generation with .NET",
+        "description": "Build a chat-based console app with Retrieval Augmented Generation (RAG) from scratch.",
+        "thumbnailUrl": "https://tse4.mm.bing.net/th?id=OVP.KaRIiOSUsK26yltC_lOUGQEsA8&pid=Api",
+        "datePublished": "2023-09-06T12:00:00.0000000",
+        "publisher": [
+          {
+            "name": "Microsoft Blogs"
+          }
+        ],
+        "creator": {
+          "name": "Stephen Toub - MSFT"
+        },
+        "contentUrl": "https://devblogs.microsoft.com/dotnet/demystifying-retrieval-augmented-generation-with-dotnet/",
+        "hostPageUrl": "https://devblogs.microsoft.com/dotnet/demystifying-retrieval-augmented-generation-with-dotnet/",
+        "encodingFormat": "mp4",
+        "hostPageDisplayUrl": "https://devblogs.microsoft.com/dotnet/demystifying-retrieval-augmented-generation-with-dotnet/",
+        "width": 1734,
+        "height": 349,
+        "duration": "PT15S",
+        "motionThumbnailUrl": "https://tse4.mm.bing.net/th?id=OM2.2wB5F0b7PgbdKw_1707520004&pid=Api",
+        "viewCount": 0,
+        "thumbnail": {
+          "width": 160,
+          "height": 32
+        },
+        "isSuperfresh": false
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/videos/search?q=What%20is%20the%20Semantic%20Kernel?%20site:devblogs.microsoft.com&view=detail&mid=53B095170D82FF0DC86353B095170D82FF0DC863",
+        "name": "Build your own app’s copilot on Microsoft Teams with the new Teams AI Library",
+        "description": "Beyond plugins, you can build conversational app experiences for your Teams users—your very own copilots.- with Teams AI library.",
+        "thumbnailUrl": "https://tse2.mm.bing.net/th?id=OVP.ipSCJjdfFRX_UyZs0wVTqwEsCo&pid=Api",
+        "datePublished": "2023-06-01T15:00:44.0000000",
+        "publisher": [
+          {
+            "name": "Microsoft Blogs"
+          }
+        ],
+        "creator": {
+          "name": "Daniel Carrasco,Joey Glocke,Ankit Govil"
+        },
+        "contentUrl": "https://devblogs.microsoft.com/microsoft365dev/build-your-own-apps-copilot-on-microsoft-teams-with-the-new-teams-ai-library/",
+        "hostPageUrl": "https://devblogs.microsoft.com/microsoft365dev/build-your-own-apps-copilot-on-microsoft-teams-with-the-new-teams-ai-library/",
+        "encodingFormat": "mp4",
+        "hostPageDisplayUrl": "https://devblogs.microsoft.com/microsoft365dev/build-your-own-apps-copilot-on-microsoft-teams-with-the-new-teams-ai-library/",
+        "width": 2500,
+        "height": 1406,
+        "duration": "PT1M28S",
+        "motionThumbnailUrl": "https://tse2.mm.bing.net/th?id=OM1.Y8gN_4INF5WwUw_1695886134&pid=Api",
+        "viewCount": 0,
+        "thumbnail": {
+          "width": 160,
+          "height": 89
+        },
+        "isSuperfresh": false
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/videos/search?q=What%20is%20the%20Semantic%20Kernel?%20site:devblogs.microsoft.com&view=detail&mid=57829794BDF395A27C0D57829794BDF395A27C0D",
+        "name": "Early Lessons From GPT-4: The Schillace Laws",
+        "description": "What if you could use natural language to create software? What if you could leverage the power of a large-scale language model that can generate code, data, and text from simple prompts? What if you could balance the trade-offs between leverage and precision,",
+        "thumbnailUrl": "https://tse4.mm.bing.net/th?id=OVP.I8aoeKGF8jXzk1MuZ_irNAHgEO&pid=Api",
+        "datePublished": "2023-03-23T16:45:28.0000000",
+        "publisher": [
+          {
+            "name": "Microsoft Blogs"
+          }
+        ],
+        "creator": {
+          "name": "John Maeda"
+        },
+        "contentUrl": "https://devblogs.microsoft.com/semantic-kernel/early-lessons-from-gpt-4-the-schillace-laws/",
+        "hostPageUrl": "https://devblogs.microsoft.com/semantic-kernel/early-lessons-from-gpt-4-the-schillace-laws/",
+        "encodingFormat": "mp4",
+        "hostPageDisplayUrl": "https://devblogs.microsoft.com/semantic-kernel/early-lessons-from-gpt-4-the-schillace-laws/",
+        "width": 1280,
+        "height": 720,
+        "duration": "PT33S",
+        "motionThumbnailUrl": "https://tse4.mm.bing.net/th?id=OM1.DXyilfO9lJeCVw_1722211610&pid=Api",
+        "viewCount": 0,
+        "thumbnail": {
+          "width": 160,
+          "height": 90
+        },
+        "isSuperfresh": false
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/videos/search?q=What%20is%20the%20Semantic%20Kernel?%20site:devblogs.microsoft.com&view=detail&mid=B931321BEF00095B89F3B931321BEF00095B89F3",
+        "name": "Transform your business with smart .NET apps powered by Azure and ChatGPT",
+        "description": "Learn how you can build intelligent apps and unleash the full potential of AI in your .NET applications using ChatGPT.",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OVP.dzPac7eC0VSeKI6qNBP1kQEsCm&pid=Api",
+        "datePublished": "2023-05-23T16:45:00.0000000",
+        "publisher": [
+          {
+            "name": "Microsoft Blogs"
+          }
+        ],
+        "creator": {
+          "name": "Luis Quintanilla"
+        },
+        "contentUrl": "https://devblogs.microsoft.com/dotnet/transform-business-smart-dotnet-apps-azure-chatgpt/",
+        "hostPageUrl": "https://devblogs.microsoft.com/dotnet/transform-business-smart-dotnet-apps-azure-chatgpt/",
+        "encodingFormat": "mp4",
+        "hostPageDisplayUrl": "https://devblogs.microsoft.com/dotnet/transform-business-smart-dotnet-apps-azure-chatgpt/",
+        "width": 2546,
+        "height": 1417,
+        "duration": "PT14S",
+        "motionThumbnailUrl": "https://tse1.mm.bing.net/th?id=OM2.84lbCQDvGzIxuQ&pid=Api",
+        "viewCount": 0,
+        "thumbnail": {
+          "width": 160,
+          "height": 88
+        },
+        "isSuperfresh": false
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/videos/search?q=What%20is%20the%20Semantic%20Kernel?%20site:devblogs.microsoft.com&view=detail&mid=6B15EFB42CBC610559036B15EFB42CBC61055903",
+        "name": "Announcing NuGet 6.4 – Signed, Central, Delivered",
+        "description": "NuGet 6.4 is included in Visual Studio 2022 and .NET 7.0 out of the box. You can also download NuGet 6.4 for Windows, macOS, and Linux as a standalone executable. NuGet 6.4 is one of many releases in our .NET unification journey.",
+        "thumbnailUrl": "https://tse2.mm.bing.net/th?id=OVP.se1BiCMOIUJxlBXtNx6yNgEsDg&pid=Api",
+        "datePublished": "2022-11-08T20:59:34.0000000",
+        "publisher": [
+          {
+            "name": "Microsoft Blogs"
+          }
+        ],
+        "creator": {
+          "name": "Jon Douglas,Nikolche Kolev"
+        },
+        "contentUrl": "https://devblogs.microsoft.com/nuget/announcing-nuget-6-4-signed-central-delivered/",
+        "hostPageUrl": "https://devblogs.microsoft.com/nuget/announcing-nuget-6-4-signed-central-delivered/",
+        "encodingFormat": "mp4",
+        "hostPageDisplayUrl": "https://devblogs.microsoft.com/nuget/announcing-nuget-6-4-signed-central-delivered/",
+        "width": 323,
+        "height": 242,
+        "duration": "PT42S",
+        "motionThumbnailUrl": "https://tse2.mm.bing.net/th?id=OM2.A1kFYbwstO8Vaw_1681651868&pid=Api",
+        "viewCount": 0,
+        "thumbnail": {
+          "width": 160,
+          "height": 119
+        },
+        "isSuperfresh": false
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/videos/search?q=What%20is%20the%20Semantic%20Kernel?%20site:devblogs.microsoft.com&view=detail&mid=06B0F8036E1135F0D28106B0F8036E1135F0D281",
+        "name": "Build 2024 Recap: Bridging the chasm between your ML and app devs",
+        "description": "Last week, Semantic Kernel had a huge milestone during Microsoft Build. Both its Python and Java libraries achieved V1.0 status, guaranteeing that neither of them would have breaking changes for non-experimental features moving forward. This is a big deal for our customers,",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OVP.WwQnsRXrNpcetlyLBb1XjgEsCo&pid=Api",
+        "datePublished": "2024-05-28T17:18:32.0000000",
+        "publisher": [
+          {
+            "name": "Microsoft Blogs"
+          }
+        ],
+        "creator": {
+          "name": "Matthew Bolanos"
+        },
+        "contentUrl": "https://devblogs.microsoft.com/semantic-kernel/build-2024-recap-bridging-the-chasm-between-your-ml-and-app-devs/",
+        "hostPageUrl": "https://devblogs.microsoft.com/semantic-kernel/build-2024-recap-bridging-the-chasm-between-your-ml-and-app-devs/",
+        "encodingFormat": "",
+        "hostPageDisplayUrl": "https://devblogs.microsoft.com/semantic-kernel/build-2024-recap-bridging-the-chasm-between-your-ml-and-app-devs/",
+        "width": 1000,
+        "height": 562,
+        "viewCount": 0,
+        "thumbnail": {
+          "width": 160,
+          "height": 89
+        },
+        "isSuperfresh": false
+      }
+    ],
+    "scenario": "List"
+  },
+  "rankingResponse": {
+    "mainline": {
+      "items": [
+        {
+          "answerType": "WebPages",
+          "resultIndex": 0,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.0"
+          }
+        },
+        {
+          "answerType": "WebPages",
+          "resultIndex": 1,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.1"
+          }
+        },
+        {
+          "answerType": "WebPages",
+          "resultIndex": 2,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.2"
+          }
+        },
+        {
+          "answerType": "WebPages",
+          "resultIndex": 3,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.3"
+          }
+        },
+        {
+          "answerType": "Videos",
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#Videos"
+          }
+        },
+        {
+          "answerType": "RelatedSearches",
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#RelatedSearches"
+          }
+        }
+      ]
+    }
+  }
+}

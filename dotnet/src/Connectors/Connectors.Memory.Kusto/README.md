@@ -1,15 +1,15 @@
-﻿# Microsoft.SemanticKernel.Connectors.Kusto
+# Microsoft.SemanticKernel.Connectors.Kusto
 
 This connector uses [Azure Data Explorer (Kusto)](https://learn.microsoft.com/en-us/azure/data-explorer/) to implement Semantic Memory.
 
 ## Quick Start
 
 1. Create a cluster and database in Azure Data Explorer (Kusto) - see https://learn.microsoft.com/en-us/azure/data-explorer/create-cluster-and-database?tabs=free
-
 2. To use Kusto as a semantic memory store, use the following code:
+
    > See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
 
-```csharp
+```csharp {"id":"01J6KPNSDA8KM2K36VWNEPCD6P"}
 using Kusto.Data;
 
 var connectionString = new KustoConnectionStringBuilder("https://kvc123.eastus.kusto.windows.net").WithAadUserPromptAuthentication();

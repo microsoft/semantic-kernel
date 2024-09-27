@@ -1,0 +1,13 @@
+# For more details on the format and content:
+# https://github.com/robocorp/rcc/blob/master/docs/recipes.md#what-is-in-condayaml
+# Tip: Adding a link to the release notes of the packages helps maintenance and security.
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.10.14                    # https://pyreadiness.org/3.10
+  - pip=24.0                          # https://pip.pypa.io/en/stable/news
+  - robocorp-truststore=0.8.0         # https://pypi.org/project/robocorp-truststore/
+  - pip:
+    - rpaframework==28.6.2            # https://rpaframework.org/releasenotes.html

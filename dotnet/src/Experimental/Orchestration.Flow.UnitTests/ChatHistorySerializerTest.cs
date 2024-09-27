@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
 using Microsoft.SemanticKernel.ChatCompletion;
+=======
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Xunit;
 

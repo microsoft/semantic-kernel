@@ -33,7 +33,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         kernel.PromptRenderFilters.Add(new MyPromptFilter(this.Output));
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
@@ -77,7 +77,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         {
             if (e.Result.Metadata is not null && e.Result.Metadata.ContainsKey("Usage"))
             {
-                Console.WriteLine($"Token usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
+                Console.WriteLine("Token usage: {0}", e.Result.Metadata?["Usage"]?.AsJson());
             }
         }
 
@@ -88,7 +88,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         kernel.FunctionInvoked += MyInvokedHandler;
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 

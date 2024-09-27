@@ -43,23 +43,32 @@ public sealed class RegexTerminationStrategy : TerminationStrategy
     {
         Verify.NotNull(expressions);
 
-        this._expressions = expressions.OfType<Regex>().ToArray();
+        this._expressions = expressions;
     }
 
     /// <inheritdoc/>
     protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // Most recent message
-        var message = history[history.Count - 1].Content;
-
-        // Evaluate expressions for match
-        foreach (var expression in this._expressions)
+        if (history.Count > 0 && history[history.Count - 1].Content is string message)
         {
-            if (expression.IsMatch(message))
+            this.Logger.LogRegexTerminationStrategyEvaluating(nameof(ShouldAgentTerminateAsync), this._expressions.Length);
+
+            // Evaluate expressions for match
+            foreach (var expression in this._expressions)
             {
-                return Task.FromResult(true);
+                this.Logger.LogRegexTerminationStrategyEvaluatingExpression(nameof(ShouldAgentTerminateAsync), expression);
+
+                if (expression.IsMatch(message))
+                {
+                    this.Logger.LogRegexTerminationStrategyMatchedExpression(nameof(ShouldAgentTerminateAsync), expression);
+
+                    return Task.FromResult(true);
+                }
             }
         }
+
+        this.Logger.LogRegexTerminationStrategyNoMatch(nameof(ShouldAgentTerminateAsync));
 
         return Task.FromResult(false);
     }

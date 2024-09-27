@@ -2,9 +2,18 @@
 
 using System;
 using System.Linq;
+<<<<<<< HEAD
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+=======
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
+
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+#pragma warning restore IDE0130
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 
 /// <summary>
 /// The flow validator
@@ -60,7 +69,11 @@ public class FlowValidator : IFlowValidator
     {
         var steps = flow.Steps
             .Select(step => step as ReferenceFlowStep)
+<<<<<<< HEAD
+            .Where(step => step is not null);
+=======
             .Where(step => step != null);
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 
         foreach (var step in steps)
         {

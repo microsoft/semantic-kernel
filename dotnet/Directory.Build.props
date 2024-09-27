@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <!-- Default properties inherited by all projects. Projects can override. -->
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
@@ -11,6 +11,12 @@
     <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- In "main" branch this flag should be always "false". -->
+    <IsReleaseCandidate>false</IsReleaseCandidate>
+    <IsReleaseCandidate>true</IsReleaseCandidate>
+  </PropertyGroup>
+  
   <PropertyGroup>
     <!-- Disable NuGet packaging by default. Projects can override. -->
     <IsPackable>disable</IsPackable>

@@ -4,19 +4,17 @@ import os
 
 from dotenv import load_dotenv
 
-from semantic_kernel import Kernel
+import semantic_kernel as sk
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins import WebSearchEnginePlugin
-from semantic_kernel.prompt_template import PromptTemplateConfig
-from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env
 
 load_dotenv()
 
 
 async def main():
-    kernel = Kernel()
-    deployment, key, endpoint, api_version = azure_openai_settings_from_dot_env(include_api_version=True)
+    kernel = sk.Kernel()
+    deployment, key, endpoint, api_version = sk.azure_openai_settings_from_dot_env(include_api_version=True)
     service_id = "chat-gpt"
     kernel.add_service(
         AzureChatCompletion(
@@ -28,7 +26,7 @@ async def main():
         ),
     )
     connector = BingConnector(api_key=os.getenv("BING_API_KEY"))
-    web_plugin = kernel.add_plugin(WebSearchEnginePlugin(connector), "WebSearch")
+    web_plugin = kernel.import_plugin(WebSearchEnginePlugin(connector), "WebSearch")
 
     print("---------------- Question 1 -----------------\n")
 
@@ -48,10 +46,10 @@ async def main():
     Answer:
     """
 
-    req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+    req_settings = kernel.get_service("chat-gpt").get_prompt_execution_settings_class()(service_id=service_id)
     req_settings.temperature = 0.2
 
-    prompt_template_config = PromptTemplateConfig(
+    prompt_template_config = sk.PromptTemplateConfig(
         template=prompt,
         name="qna",
         template_format="semantic-kernel",
@@ -59,11 +57,7 @@ async def main():
     )
 
     question = "What is Semantic Kernel?"
-    qna = kernel.add_function(
-        function_name="qna",
-        plugin_name="WebSearch",
-        prompt_template_config=prompt_template_config,
-    )
+    qna = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
     result = await qna.invoke(kernel, question=question, num_results=10, offset=0)
 
     print(f"Question: {question}\n")

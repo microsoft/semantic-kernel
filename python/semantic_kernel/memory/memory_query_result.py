@@ -1,8 +1,24 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
-
 from numpy import ndarray
+
+from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.utils.experimental_decorator import experimental_class
+
+
+@experimental_class
+class MemoryQueryResult:
+    """The memory query result."""
+
+    is_reference: bool
+    external_source_name: str | None
+    id: str
+    description: str | None
+    text: str | None
+    additional_metadata: str | None
+    relevance: float
+    embedding: ndarray | None
+from typing import Optional
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 
@@ -13,35 +29,40 @@ class MemoryQueryResult:
     id: str
     description: Optional[str]
     text: Optional[str]
-    additional_metadata: Optional[str]
     relevance: float
-    embedding: Optional[ndarray]
 
     def __init__(
         self,
         is_reference: bool,
-        external_source_name: Optional[str],
+        external_source_name: str | None,
         id: str,
-        description: Optional[str],
-        text: Optional[str],
-        additional_metadata: Optional[str],
-        embedding: Optional[ndarray],
+        description: str | None,
+        text: str | None,
+        additional_metadata: str | None,
+        embedding: ndarray | None,
         relevance: float,
     ) -> None:
         """Initialize a new instance of MemoryQueryResult.
 
-        Arguments:
-            is_reference {bool} -- Whether the record is a reference record.
-            external_source_name {Optional[str]} -- The name of the external source.
-            id {str} -- A unique for the record.
-            description {Optional[str]} -- The description of the record.
-            text {Optional[str]} -- The text of the record.
-            embedding {ndarray} -- The embedding of the record.
-            relevance {float} -- The relevance of the record to a known query.
+        Args:
+            is_reference (bool): Whether the record is a reference record.
+            external_source_name (Optional[str]): The name of the external source.
+            id (str): A unique for the record.
+            description (Optional[str]): The description of the record.
+            text (Optional[str]): The text of the record.
+            additional_metadata (Optional[str]): Custom metadata for the record.
+            embedding (ndarray): The embedding of the record.
+            relevance (float): The relevance of the record to a known query.
 
         Returns:
-            None -- None.
+            None: None.
         """
+        external_source_name: Optional[str],
+        id: str,
+        description: Optional[str],
+        text: Optional[str],
+        relevance: float,
+    ) -> None:
         self.is_reference = is_reference
         self.external_source_name = external_source_name
         self.id = id
@@ -58,12 +79,12 @@ class MemoryQueryResult:
     ) -> "MemoryQueryResult":
         """Create a new instance of MemoryQueryResult from a MemoryRecord.
 
-        Arguments:
-            record {MemoryRecord} -- The MemoryRecord to create the MemoryQueryResult from.
-            relevance {float} -- The relevance of the record to a known query.
+        Args:
+            record (MemoryRecord): The MemoryRecord to create the MemoryQueryResult from.
+            relevance (float): The relevance of the record to a known query.
 
         Returns:
-            MemoryQueryResult -- The created MemoryQueryResult.
+            MemoryQueryResult: The created MemoryQueryResult.
         """
         return MemoryQueryResult(
             is_reference=record._is_reference,
@@ -73,5 +94,17 @@ class MemoryQueryResult:
             text=record._text,
             additional_metadata=record._additional_metadata,
             embedding=record._embedding,
+        self.relevance = relevance
+
+    @staticmethod
+    def from_memory_record(
+        record: MemoryRecord, relevance: float
+    ) -> "MemoryQueryResult":
+        return MemoryQueryResult(
+            is_reference=record.is_reference,
+            external_source_name=record.external_source_name,
+            id=record.id,
+            description=record.description,
+            text=record.text,
             relevance=relevance,
         )

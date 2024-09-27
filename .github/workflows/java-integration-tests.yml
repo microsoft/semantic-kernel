@@ -8,6 +8,11 @@ on:
       - 'java/**'
   pull_request:
     branches: [ "main", "java-development" ]
+    branches: [ "experimental-java" ]
+    paths:
+      - 'java/**'
+  pull_request: beeed7b7a795d8c989165740de6ddb21aeacbb6f
+    branches: [ "main", "java-development" ]
     paths:
       - 'java/**'
 
@@ -21,7 +26,7 @@ jobs:
       javaChanges: ${{ steps.filter.outputs.java }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
@@ -40,6 +45,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: paths-filter
     if: needs.paths-filter.outputs.javaChanges == 'true'
+  java-integration-tests:
+    runs-on: ubuntu-latest beeed7b7a795d8c989165740de6ddb21aeacbb6f
     strategy:
       fail-fast: false
       matrix:
@@ -49,7 +56,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Need to use JDK 11 to build for JDK 8
       - name: Set JDK
@@ -70,8 +77,9 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
+        run: ./mvnw -B -Pwith-samples -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
         working-directory: java
+        if: ${{ matrix.java-versions >= 17 }}
 
       # API tests run on JDK 17+
       - name: Run integration tests

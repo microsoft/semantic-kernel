@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from unittest.mock import Mock
 
 import pytest
 
@@ -19,8 +20,9 @@ from semantic_kernel.planners.stepwise_planner.stepwise_planner import StepwiseP
         ("I think I have everything I need.\n[FINAL ANSWER]\n 42\n\n\n", "42"),
     ],
 )
-def test_when_input_is_final_answer_returns_final_answer(kernel: Kernel, input: str, expected: str):
-    # kernel.prompt_template_engine = Mock()
+def test_when_input_is_final_answer_returns_final_answer(input: str, expected: str):
+    kernel = Mock(spec=Kernel)
+    kernel.prompt_template_engine = Mock()
     planner = StepwisePlanner(kernel)
 
     result = planner.parse_result(input)
@@ -37,7 +39,9 @@ def test_when_input_is_final_answer_returns_final_answer(kernel: Kernel, input: 
         ("My thought\n\n\n", "My thought"),
     ],
 )
-def test_when_input_is_only_thought_does_not_throw_error(kernel: Kernel, input: str, expected: str):
+def test_when_input_is_only_thought_does_not_throw_error(input: str, expected: str):
+    kernel = Mock(spec=Kernel)
+    kernel.prompt_template_engine = Mock()
     planner = StepwisePlanner(kernel)
     result = planner.parse_result(input)
     assert result.thought == expected

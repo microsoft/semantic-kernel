@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
+<<<<<<< HEAD
+from typing import Any
+=======
 from typing import List, Optional
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 
 from pydantic import Field
 
@@ -11,18 +14,21 @@ from semantic_kernel.utils.validation import FUNCTION_NAME_REGEX, PLUGIN_NAME_RE
 
 
 class KernelFunctionMetadata(KernelBaseModel):
-    name: str = Field(pattern=FUNCTION_NAME_REGEX)
-    plugin_name: Optional[str] = Field(None, pattern=PLUGIN_NAME_REGEX)
-    description: Optional[str] = Field(default=None)
-    parameters: List[KernelParameterMetadata] = Field(default_factory=list)
+<<<<<<< HEAD
+    """The kernel function metadata."""
+
+    name: str = Field(..., pattern=FUNCTION_NAME_REGEX)
+    plugin_name: str | None = Field(None, pattern=PLUGIN_NAME_REGEX)
+    description: str | None = Field(default=None)
+    parameters: list[KernelParameterMetadata] = Field(default_factory=list)
     is_prompt: bool
-    is_asynchronous: Optional[bool] = Field(default=True)
-    return_parameter: Optional[KernelParameterMetadata] = None
+    is_asynchronous: bool | None = Field(default=True)
+    return_parameter: KernelParameterMetadata | None = None
+    additional_properties: dict[str, Any] | None = Field(default=None)
 
     @property
     def fully_qualified_name(self) -> str:
-        """
-        Get the fully qualified name of the function.
+        """Get the fully qualified name of the function.
 
         Returns:
             The fully qualified name of the function.
@@ -30,8 +36,20 @@ class KernelFunctionMetadata(KernelBaseModel):
         return f"{self.plugin_name}-{self.name}" if self.plugin_name else self.name
 
     def __eq__(self, other: object) -> bool:
+        """Compare to another KernelFunctionMetadata instance.
+=======
+    name: str = Field(pattern=FUNCTION_NAME_REGEX)
+    plugin_name: str = Field(pattern=PLUGIN_NAME_REGEX)
+    description: Optional[str] = Field(default=None)
+    parameters: List[KernelParameterMetadata] = Field(default_factory=list)
+    is_prompt: bool
+    is_asynchronous: Optional[bool] = Field(default=True)
+    return_parameter: Optional[KernelParameterMetadata] = None
+
+    def __eq__(self, other: "KernelFunctionMetadata") -> bool:
         """
         Compare to another KernelFunctionMetadata instance.
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 
         Args:
             other (KernelFunctionMetadata): The other KernelFunctionMetadata instance.

@@ -4,9 +4,13 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.PromptTemplates.Handlebars</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.PromptTemplates.Handlebars</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>SKEXP0001</NoWarn>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
+    <VersionSuffix>rc</VersionSuffix>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />

@@ -2,22 +2,17 @@
 
 import asyncio
 import os
-from functools import reduce
-from typing import TYPE_CHECKING, List
 
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
-from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
-from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.core_plugins import MathPlugin, TimePlugin
-from semantic_kernel.functions import KernelArguments
-from semantic_kernel.utils.settings import openai_settings_from_dot_env
-
-if TYPE_CHECKING:
-    from semantic_kernel.functions import KernelFunction
+import semantic_kernel as sk
+import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.utils import (
+    chat_completion_with_tool_call,
+    get_tool_call_object,
+)
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.core_plugins import MathPlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.prompt_template.input_variable import InputVariable
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -32,15 +27,18 @@ Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
-kernel = Kernel()
+kernel = sk.Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-api_key, org_id = openai_settings_from_dot_env()
+deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+api_version = "2023-12-01-preview"
 kernel.add_service(
-    OpenAIChatCompletion(
+    sk_oai.AzureChatCompletion(
         service_id="chat",
-        ai_model_id="gpt-3.5-turbo-1106",
+        deployment_name=deployment_name,
+        base_url=endpoint,
         api_key=api_key,
+        api_version=api_version,
     ),
 )
 
@@ -49,32 +47,32 @@ plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
 # kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
-kernel.add_plugin(MathPlugin(), plugin_name="math")
-kernel.add_plugin(TimePlugin(), plugin_name="time")
+kernel.import_plugin(MathPlugin(), plugin_name="math")
 
-chat_function = kernel.add_function(
-    prompt="{{$chat_history}}{{$user_input}}",
-    plugin_name="ChatBot",
-    function_name="Chat",
-)
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
-
-# Note: the number of responses for auto inoking tool calls is limited to 1.
-# If configured to be greater than one, this value will be overridden to 1.
-execution_settings = OpenAIChatPromptExecutionSettings(
+execution_settings = sk_oai.AzureChatPromptExecutionSettings(
     service_id="chat",
-    ai_model_id="gpt-3.5-turbo-1106",
+    ai_model_id=deployment_name,
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
     tool_choice="auto",
     tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
-    auto_invoke_kernel_functions=True,
-    max_auto_invoke_attempts=3,
+)
+
+prompt_template_config = sk.PromptTemplateConfig(
+    template="{{$user_input}}",
+    name="chat",
+    template_format="semantic-kernel",
+    input_variables=[
+        InputVariable(name="user_input", description="The user input", is_required=True),
+        InputVariable(name="history", description="The history of the conversation", is_required=True, default=""),
+    ],
+    execution_settings={"default": execution_settings},
 )
 
 history = ChatHistory()
@@ -83,53 +81,13 @@ history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
-arguments = KernelArguments(settings=execution_settings)
+arguments = KernelArguments()
 
-
-def print_tool_calls(message: ChatMessageContent) -> None:
-    # A helper method to pretty print the tool calls from the message.
-    # This is only triggered if auto invoke tool calls is disabled.
-    items = message.items
-    formatted_tool_calls = []
-    for i, item in enumerate(items, start=1):
-        if isinstance(item, FunctionCallContent):
-            tool_call_id = item.id
-            function_name = item.name
-            function_arguments = item.arguments
-            formatted_str = (
-                f"tool_call {i} id: {tool_call_id}\n"
-                f"tool_call {i} function name: {function_name}\n"
-                f"tool_call {i} arguments: {function_arguments}"
-            )
-            formatted_tool_calls.append(formatted_str)
-    print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
-
-
-async def handle_streaming(
-    kernel: Kernel,
-    chat_function: "KernelFunction",
-    arguments: KernelArguments,
-) -> None:
-    response = kernel.invoke_stream(
-        chat_function,
-        return_function_results=False,
-        arguments=arguments,
-    )
-
-    print("Mosscap:> ", end="")
-    streamed_chunks: List[StreamingChatMessageContent] = []
-    async for message in response:
-        if not execution_settings.auto_invoke_kernel_functions:
-            streamed_chunks.append(message[0])
-        else:
-            print(str(message[0]), end="")
-
-    if streamed_chunks:
-        streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
-        print("Auto tool calls is disabled, printing returned tool calls...")
-        print_tool_calls(streaming_chat_message)
-
-    print("\n")
+chat_function = kernel.create_function_from_prompt(
+    prompt_template_config=prompt_template_config,
+    plugin_name="ChatBot",
+    function_name="Chat",
+)
 
 
 async def chat() -> bool:
@@ -145,23 +103,16 @@ async def chat() -> bool:
     if user_input == "exit":
         print("\n\nExiting chat...")
         return False
-    arguments["user_input"] = user_input
-    arguments["chat_history"] = history
-
-    stream = True
-    if stream:
-        await handle_streaming(kernel, chat_function, arguments=arguments)
-    else:
-        result = await kernel.invoke(chat_function, arguments=arguments)
-
-        # If tools are used, and auto invoke tool calls is False, the response will be of type
-        # ChatMessageContent with information about the tool calls, which need to be sent
-        # back to the model to get the final response.
-        if not execution_settings.auto_invoke_kernel_functions:
-            print_tool_calls(result.value[0])
-            return True
-
-        print(f"Mosscap:> {result}")
+    arguments = KernelArguments(
+        user_input=user_input, history=("\n").join([f"{msg.role}: {msg.content}" for msg in history])
+    )
+    result = await chat_completion_with_tool_call(
+        kernel=kernel,
+        arguments=arguments,
+        chat_plugin_name="ChatBot",
+        chat_function_name="Chat",
+    )
+    print(f"Mosscap:> {result}")
     return True
 
 
@@ -169,8 +120,8 @@ async def main() -> None:
     chatting = True
     print(
         "Welcome to the chat bot!\
-        \n  Type 'exit' to exit.\
-        \n  Try a math question to see the function calling in action (i.e. what is 3+3?)."
+\n  Type 'exit' to exit.\
+\n  Try a math question to see the function calling in action (i.e. what is 3+3?)."
     )
     while chatting:
         chatting = await chat()

@@ -2,7 +2,13 @@
 
 from pytest import mark, raises
 
+<<<<<<< main
 from semantic_kernel.exceptions import TemplateSyntaxError
+=======
+from semantic_kernel.template_engine.blocks.block_errors import (
+    TemplateSyntaxError,
+)
+>>>>>>> ms/small_fixes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
@@ -102,8 +108,13 @@ def test_it_tokenizes_the_right_token_count(template, block_count):
 def test_invalid_syntax(template, error):
     with raises(error):
         TemplateTokenizer.tokenize(template)
+<<<<<<< main
 
 
+=======
+
+
+>>>>>>> ms/small_fixes
 def test_it_tokenizes_edge_cases_correctly_1():
     blocks1 = TemplateTokenizer.tokenize("{{{{a}}")
     blocks2 = TemplateTokenizer.tokenize("{{'{{a}}")
@@ -160,7 +171,11 @@ def test_it_tokenizes_edge_cases_correctly_4(template):
 
 
 def test_it_tokenizes_a_typical_prompt():
+<<<<<<< main
+    template = "this is a {{ $prompt }} with {{$some}} variables and {{function $calls}} {{ and 'values' }}"
+=======
     template = "this is a {{ $prompt }} with {{$some}} variables " "and {{function $calls}} {{ and 'values' }}"
+>>>>>>> ms/small_fixes
 
     blocks = TemplateTokenizer.tokenize(template)
 

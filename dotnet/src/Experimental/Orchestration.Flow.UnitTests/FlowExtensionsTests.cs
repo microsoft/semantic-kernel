@@ -18,10 +18,15 @@ public class FlowExtensionsTests
         // Arrange
         var flow1 = CreateFlowWithReferenceStep("flow2");
 
+<<<<<<< HEAD
         var flow2 = new Microsoft.SemanticKernel.Experimental.Orchestration.Flow("flow2", "test flow goal 2")
         {
             CompletionType = CompletionType.Optional
         };
+=======
+        var flow2 = new Microsoft.SemanticKernel.Experimental.Orchestration.Flow("flow2", "test flow goal 2");
+        flow2.CompletionType = CompletionType.Optional;
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
         var step5 = new FlowStep("step1");
         step5.AddRequires("a");
         step5.AddProvides("b");
@@ -29,7 +34,11 @@ public class FlowExtensionsTests
         flow2.AddStep(step5);
 
         // Act
+<<<<<<< HEAD
         var catalog = new InMemoryFlowCatalog([flow1, flow2]);
+=======
+        var catalog = new InMemoryFlowCatalog(new List<Microsoft.SemanticKernel.Experimental.Orchestration.Flow> { flow1, flow2 });
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
         var flow1InCatalog = await catalog.GetFlowAsync("flow1");
         Assert.NotNull(flow1InCatalog);
 
@@ -56,7 +65,11 @@ public class FlowExtensionsTests
         flow2.AddStep(step5);
 
         // Act and assert
+<<<<<<< HEAD
         Assert.Throws<AggregateException>(() => new InMemoryFlowCatalog([flow1, flow2]));
+=======
+        Assert.Throws<AggregateException>(() => new InMemoryFlowCatalog(new List<Microsoft.SemanticKernel.Experimental.Orchestration.Flow> { flow1, flow2 }));
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
     }
 
     private static Microsoft.SemanticKernel.Experimental.Orchestration.Flow CreateFlowWithReferenceStep(string referenceFlowName)
@@ -84,7 +97,11 @@ public class FlowExtensionsTests
 
     private sealed class InMemoryFlowCatalog : IFlowCatalog
     {
+<<<<<<< HEAD
         private readonly Dictionary<string, Microsoft.SemanticKernel.Experimental.Orchestration.Flow> _flows = [];
+=======
+        private readonly Dictionary<string, Microsoft.SemanticKernel.Experimental.Orchestration.Flow> _flows = new();
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 
         internal InMemoryFlowCatalog()
         {

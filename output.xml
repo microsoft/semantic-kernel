@@ -1,0 +1,1866 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 6.1.1 (Python 3.10.14 on linux)" generated="20240916 03:01:05.945" rpa="true" schemaversion="4">
+<suite id="s1" name="Consumer" source="/home/user/app/consumer.robot">
+<test id="s1-t1" name="Consume Input" line="74">
+<kw name="For Each Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>Process Input</arg>
+<arg>return_results=${False}</arg>
+<doc>Run a keyword or function for each work item in the input queue.</doc>
+<kw name="Process Input">
+<doc>Processes input data and releases a BUSINESS failure for any
+invalid item. If reporting is enabled, a new output Work Item is created
+with its post-process info. (items failed to be processed due to APPLICATION
+errors can be retried in Control Room)</doc>
+<kw name="Get Work Item Variable" library="RPA.Robocorp.WorkItems">
+<var>${data}</var>
+<arg>data</arg>
+<doc>Return a single variable value from the work item,
+or default value if defined and key does not exist.</doc>
+<msg timestamp="20240916 03:01:06.060" level="INFO">${data} = 1. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.060" endtime="20240916 03:01:06.061"/>
+</kw>
+<kw name="Validate Input">
+<var>${status}</var>
+<var>${message}</var>
+<arg>${data}</arg>
+<doc>Checks input data against a pattern and returns the status.</doc>
+<kw name="Set Variable" library="BuiltIn">
+<var>${pattern}</var>
+<arg>^\\d+\\..*\\(${TODAY}\\)$</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20240916 03:01:06.062" level="INFO">${pattern} = ^\d+\..*\(2024-09-16\)$</msg>
+<status status="PASS" starttime="20240916 03:01:06.062" endtime="20240916 03:01:06.062"/>
+</kw>
+<kw name="Run Keyword And Return Status" library="BuiltIn">
+<var>${match_ok}</var>
+<arg>Should Match Regexp</arg>
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<kw name="Should Match Regexp" library="BuiltIn">
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Fails if ``string`` does not match ``pattern`` as a regular expression.</doc>
+<status status="PASS" starttime="20240916 03:01:06.063" endtime="20240916 03:01:06.063"/>
+</kw>
+<msg timestamp="20240916 03:01:06.063" level="INFO">${match_ok} = True</msg>
+<status status="PASS" starttime="20240916 03:01:06.062" endtime="20240916 03:01:06.063"/>
+</kw>
+<if>
+<branch type="IF" condition="${match_ok}">
+<return>
+<value>${True}</value>
+<value>Item content is valid.</value>
+<status status="PASS" starttime="20240916 03:01:06.064" endtime="20240916 03:01:06.064"/>
+</return>
+<status status="PASS" starttime="20240916 03:01:06.064" endtime="20240916 03:01:06.064"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.063" endtime="20240916 03:01:06.064"/>
+</if>
+<return>
+<value>${False}</value>
+<value>Data "${data}" doesn't match with "&lt;number&gt;.*(${TODAY})"!</value>
+<status status="NOT RUN" starttime="20240916 03:01:06.064" endtime="20240916 03:01:06.064"/>
+</return>
+<msg timestamp="20240916 03:01:06.065" level="INFO">${status} = True</msg>
+<msg timestamp="20240916 03:01:06.065" level="INFO">${message} = Item content is valid.</msg>
+<status status="PASS" starttime="20240916 03:01:06.062" endtime="20240916 03:01:06.065"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${status}">
+<kw name="Log" library="BuiltIn">
+<arg>Invalid data due to: ${message}</arg>
+<arg>level=WARN</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.065" endtime="20240916 03:01:06.065"/>
+</kw>
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=BUSINESS</arg>
+<arg>code=INVALID_DATA</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.065" endtime="20240916 03:01:06.066"/>
+</kw>
+<return>
+<status status="NOT RUN" starttime="20240916 03:01:06.066" endtime="20240916 03:01:06.066"/>
+</return>
+<status status="NOT RUN" starttime="20240916 03:01:06.065" endtime="20240916 03:01:06.066"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.065" endtime="20240916 03:01:06.066"/>
+</if>
+<kw name="Log" library="BuiltIn">
+<arg>Processing item data: ${data}...</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.066" level="INFO">Processing item data: 1. Hello World! (2024-09-16)...</msg>
+<status status="PASS" starttime="20240916 03:01:06.066" endtime="20240916 03:01:06.066"/>
+</kw>
+<try>
+<branch type="TRY">
+<kw name="My Resource Keyword" library="keywords">
+<var>${processed_data}</var>
+<arg>${data}</arg>
+<doc>Describe what this pure RF keyword does.</doc>
+<kw name="Log" library="BuiltIn">
+<arg>RF keyword executed with value: ${var}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.068" level="INFO">RF keyword executed with value: 1. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.068" endtime="20240916 03:01:06.068"/>
+</kw>
+<return>
+<value>${var}</value>
+<status status="PASS" starttime="20240916 03:01:06.068" endtime="20240916 03:01:06.068"/>
+</return>
+<msg timestamp="20240916 03:01:06.069" level="INFO">${processed_data} = 1. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.067" endtime="20240916 03:01:06.069"/>
+</kw>
+<kw name="My Library Keyword" library="DummyLibrary">
+<var>${processed_data}</var>
+<arg>${processed_data}</arg>
+<doc>Describe what this RF exposed keyword does.</doc>
+<msg timestamp="20240916 03:01:06.069" level="INFO" html="true">Python code (as RF keyword) executed with value: %s</msg>
+<msg timestamp="20240916 03:01:06.069" level="INFO">${processed_data} = 1. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.069" endtime="20240916 03:01:06.069"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.067" endtime="20240916 03:01:06.069"/>
+</branch>
+<branch type="EXCEPT" variable="${error}">
+<kw name="Log" library="BuiltIn">
+<arg>Bad data processing due to: ${error}</arg>
+<arg>level=ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.070" endtime="20240916 03:01:06.070"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${message}</var>
+<arg>${error}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.070" endtime="20240916 03:01:06.070"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${processed_data}</var>
+<arg>${None}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.070" endtime="20240916 03:01:06.070"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.070" endtime="20240916 03:01:06.070"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.067" endtime="20240916 03:01:06.071"/>
+</try>
+<if>
+<branch type="IF" condition="&quot;%{CREATE_REPORT=}&quot;">
+<kw name="Create Dictionary" library="BuiltIn">
+<var>&amp;{variables}</var>
+<arg>processed_data</arg>
+<arg>${processed_data}</arg>
+<arg>message</arg>
+<arg>${message}</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20240916 03:01:06.071" level="INFO">&amp;{variables} = { processed_data=1. Hello World! (2024-09-16) | message=Item content is valid. }</msg>
+<status status="PASS" starttime="20240916 03:01:06.071" endtime="20240916 03:01:06.071"/>
+</kw>
+<kw name="Create Output Work Item" library="RPA.Robocorp.WorkItems">
+<arg>variables=${variables}</arg>
+<arg>save=${True}</arg>
+<doc>Create a new output work item with optional variables and files.</doc>
+<msg timestamp="20240916 03:01:06.075" level="INFO">processed_data = 1. Hello World! (2024-09-16)</msg>
+<msg timestamp="20240916 03:01:06.075" level="INFO">message = Item content is valid.</msg>
+<msg timestamp="20240916 03:01:06.076" level="INFO">Saved into output file: /home/user/app/devdata/work-items-out/run-3/work-items.json</msg>
+<status status="PASS" starttime="20240916 03:01:06.072" endtime="20240916 03:01:06.076"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.071" endtime="20240916 03:01:06.076"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.071" endtime="20240916 03:01:06.076"/>
+</if>
+<if>
+<branch type="IF" condition="&quot;${processed_data}&quot; == &quot;${None}&quot;">
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=APPLICATION</arg>
+<arg>code=BAD_PROCESSING</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.077" endtime="20240916 03:01:06.077"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.076" endtime="20240916 03:01:06.077"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.076" endtime="20240916 03:01:06.077"/>
+</if>
+<status status="PASS" starttime="20240916 03:01:06.060" endtime="20240916 03:01:06.077"/>
+</kw>
+<msg timestamp="20240916 03:01:06.077" level="INFO">Releasing item '0' with COMPLETED state and exception: None</msg>
+<kw name="Process Input">
+<doc>Processes input data and releases a BUSINESS failure for any
+invalid item. If reporting is enabled, a new output Work Item is created
+with its post-process info. (items failed to be processed due to APPLICATION
+errors can be retried in Control Room)</doc>
+<kw name="Get Work Item Variable" library="RPA.Robocorp.WorkItems">
+<var>${data}</var>
+<arg>data</arg>
+<doc>Return a single variable value from the work item,
+or default value if defined and key does not exist.</doc>
+<msg timestamp="20240916 03:01:06.078" level="INFO">${data} = 2. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.078" endtime="20240916 03:01:06.078"/>
+</kw>
+<kw name="Validate Input">
+<var>${status}</var>
+<var>${message}</var>
+<arg>${data}</arg>
+<doc>Checks input data against a pattern and returns the status.</doc>
+<kw name="Set Variable" library="BuiltIn">
+<var>${pattern}</var>
+<arg>^\\d+\\..*\\(${TODAY}\\)$</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20240916 03:01:06.079" level="INFO">${pattern} = ^\d+\..*\(2024-09-16\)$</msg>
+<status status="PASS" starttime="20240916 03:01:06.078" endtime="20240916 03:01:06.079"/>
+</kw>
+<kw name="Run Keyword And Return Status" library="BuiltIn">
+<var>${match_ok}</var>
+<arg>Should Match Regexp</arg>
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<kw name="Should Match Regexp" library="BuiltIn">
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Fails if ``string`` does not match ``pattern`` as a regular expression.</doc>
+<status status="PASS" starttime="20240916 03:01:06.079" endtime="20240916 03:01:06.079"/>
+</kw>
+<msg timestamp="20240916 03:01:06.080" level="INFO">${match_ok} = True</msg>
+<status status="PASS" starttime="20240916 03:01:06.079" endtime="20240916 03:01:06.080"/>
+</kw>
+<if>
+<branch type="IF" condition="${match_ok}">
+<return>
+<value>${True}</value>
+<value>Item content is valid.</value>
+<status status="PASS" starttime="20240916 03:01:06.080" endtime="20240916 03:01:06.080"/>
+</return>
+<status status="PASS" starttime="20240916 03:01:06.080" endtime="20240916 03:01:06.080"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.080" endtime="20240916 03:01:06.080"/>
+</if>
+<return>
+<value>${False}</value>
+<value>Data "${data}" doesn't match with "&lt;number&gt;.*(${TODAY})"!</value>
+<status status="NOT RUN" starttime="20240916 03:01:06.080" endtime="20240916 03:01:06.080"/>
+</return>
+<msg timestamp="20240916 03:01:06.081" level="INFO">${status} = True</msg>
+<msg timestamp="20240916 03:01:06.081" level="INFO">${message} = Item content is valid.</msg>
+<status status="PASS" starttime="20240916 03:01:06.078" endtime="20240916 03:01:06.081"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${status}">
+<kw name="Log" library="BuiltIn">
+<arg>Invalid data due to: ${message}</arg>
+<arg>level=WARN</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.082" endtime="20240916 03:01:06.082"/>
+</kw>
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=BUSINESS</arg>
+<arg>code=INVALID_DATA</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.082" endtime="20240916 03:01:06.082"/>
+</kw>
+<return>
+<status status="NOT RUN" starttime="20240916 03:01:06.083" endtime="20240916 03:01:06.083"/>
+</return>
+<status status="NOT RUN" starttime="20240916 03:01:06.081" endtime="20240916 03:01:06.083"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.081" endtime="20240916 03:01:06.083"/>
+</if>
+<kw name="Log" library="BuiltIn">
+<arg>Processing item data: ${data}...</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.083" level="INFO">Processing item data: 2. Hello World! (2024-09-16)...</msg>
+<status status="PASS" starttime="20240916 03:01:06.083" endtime="20240916 03:01:06.083"/>
+</kw>
+<try>
+<branch type="TRY">
+<kw name="My Resource Keyword" library="keywords">
+<var>${processed_data}</var>
+<arg>${data}</arg>
+<doc>Describe what this pure RF keyword does.</doc>
+<kw name="Log" library="BuiltIn">
+<arg>RF keyword executed with value: ${var}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.084" level="INFO">RF keyword executed with value: 2. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.084" endtime="20240916 03:01:06.084"/>
+</kw>
+<return>
+<value>${var}</value>
+<status status="PASS" starttime="20240916 03:01:06.084" endtime="20240916 03:01:06.084"/>
+</return>
+<msg timestamp="20240916 03:01:06.085" level="INFO">${processed_data} = 2. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.084" endtime="20240916 03:01:06.085"/>
+</kw>
+<kw name="My Library Keyword" library="DummyLibrary">
+<var>${processed_data}</var>
+<arg>${processed_data}</arg>
+<doc>Describe what this RF exposed keyword does.</doc>
+<msg timestamp="20240916 03:01:06.085" level="INFO" html="true">Python code (as RF keyword) executed with value: %s</msg>
+<msg timestamp="20240916 03:01:06.085" level="INFO">${processed_data} = 2. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.085" endtime="20240916 03:01:06.085"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.083" endtime="20240916 03:01:06.085"/>
+</branch>
+<branch type="EXCEPT" variable="${error}">
+<kw name="Log" library="BuiltIn">
+<arg>Bad data processing due to: ${error}</arg>
+<arg>level=ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.086" endtime="20240916 03:01:06.086"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${message}</var>
+<arg>${error}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.086" endtime="20240916 03:01:06.086"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${processed_data}</var>
+<arg>${None}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.086" endtime="20240916 03:01:06.086"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.085" endtime="20240916 03:01:06.086"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.083" endtime="20240916 03:01:06.086"/>
+</try>
+<if>
+<branch type="IF" condition="&quot;%{CREATE_REPORT=}&quot;">
+<kw name="Create Dictionary" library="BuiltIn">
+<var>&amp;{variables}</var>
+<arg>processed_data</arg>
+<arg>${processed_data}</arg>
+<arg>message</arg>
+<arg>${message}</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20240916 03:01:06.087" level="INFO">&amp;{variables} = { processed_data=2. Hello World! (2024-09-16) | message=Item content is valid. }</msg>
+<status status="PASS" starttime="20240916 03:01:06.087" endtime="20240916 03:01:06.087"/>
+</kw>
+<kw name="Create Output Work Item" library="RPA.Robocorp.WorkItems">
+<arg>variables=${variables}</arg>
+<arg>save=${True}</arg>
+<doc>Create a new output work item with optional variables and files.</doc>
+<msg timestamp="20240916 03:01:06.088" level="INFO">processed_data = 2. Hello World! (2024-09-16)</msg>
+<msg timestamp="20240916 03:01:06.088" level="INFO">message = Item content is valid.</msg>
+<msg timestamp="20240916 03:01:06.090" level="INFO">Saved into output file: /home/user/app/devdata/work-items-out/run-3/work-items.json</msg>
+<status status="PASS" starttime="20240916 03:01:06.088" endtime="20240916 03:01:06.090"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.087" endtime="20240916 03:01:06.090"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.086" endtime="20240916 03:01:06.090"/>
+</if>
+<if>
+<branch type="IF" condition="&quot;${processed_data}&quot; == &quot;${None}&quot;">
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=APPLICATION</arg>
+<arg>code=BAD_PROCESSING</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.091" endtime="20240916 03:01:06.091"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.090" endtime="20240916 03:01:06.091"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.090" endtime="20240916 03:01:06.091"/>
+</if>
+<status status="PASS" starttime="20240916 03:01:06.077" endtime="20240916 03:01:06.091"/>
+</kw>
+<msg timestamp="20240916 03:01:06.091" level="INFO">Releasing item '1' with COMPLETED state and exception: None</msg>
+<kw name="Process Input">
+<doc>Processes input data and releases a BUSINESS failure for any
+invalid item. If reporting is enabled, a new output Work Item is created
+with its post-process info. (items failed to be processed due to APPLICATION
+errors can be retried in Control Room)</doc>
+<kw name="Get Work Item Variable" library="RPA.Robocorp.WorkItems">
+<var>${data}</var>
+<arg>data</arg>
+<doc>Return a single variable value from the work item,
+or default value if defined and key does not exist.</doc>
+<msg timestamp="20240916 03:01:06.092" level="INFO">${data} = 3. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.092" endtime="20240916 03:01:06.092"/>
+</kw>
+<kw name="Validate Input">
+<var>${status}</var>
+<var>${message}</var>
+<arg>${data}</arg>
+<doc>Checks input data against a pattern and returns the status.</doc>
+<kw name="Set Variable" library="BuiltIn">
+<var>${pattern}</var>
+<arg>^\\d+\\..*\\(${TODAY}\\)$</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20240916 03:01:06.093" level="INFO">${pattern} = ^\d+\..*\(2024-09-16\)$</msg>
+<status status="PASS" starttime="20240916 03:01:06.093" endtime="20240916 03:01:06.093"/>
+</kw>
+<kw name="Run Keyword And Return Status" library="BuiltIn">
+<var>${match_ok}</var>
+<arg>Should Match Regexp</arg>
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<kw name="Should Match Regexp" library="BuiltIn">
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Fails if ``string`` does not match ``pattern`` as a regular expression.</doc>
+<status status="PASS" starttime="20240916 03:01:06.093" endtime="20240916 03:01:06.093"/>
+</kw>
+<msg timestamp="20240916 03:01:06.094" level="INFO">${match_ok} = True</msg>
+<status status="PASS" starttime="20240916 03:01:06.093" endtime="20240916 03:01:06.094"/>
+</kw>
+<if>
+<branch type="IF" condition="${match_ok}">
+<return>
+<value>${True}</value>
+<value>Item content is valid.</value>
+<status status="PASS" starttime="20240916 03:01:06.094" endtime="20240916 03:01:06.094"/>
+</return>
+<status status="PASS" starttime="20240916 03:01:06.094" endtime="20240916 03:01:06.094"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.094" endtime="20240916 03:01:06.094"/>
+</if>
+<return>
+<value>${False}</value>
+<value>Data "${data}" doesn't match with "&lt;number&gt;.*(${TODAY})"!</value>
+<status status="NOT RUN" starttime="20240916 03:01:06.094" endtime="20240916 03:01:06.095"/>
+</return>
+<msg timestamp="20240916 03:01:06.095" level="INFO">${status} = True</msg>
+<msg timestamp="20240916 03:01:06.095" level="INFO">${message} = Item content is valid.</msg>
+<status status="PASS" starttime="20240916 03:01:06.092" endtime="20240916 03:01:06.095"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${status}">
+<kw name="Log" library="BuiltIn">
+<arg>Invalid data due to: ${message}</arg>
+<arg>level=WARN</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.095" endtime="20240916 03:01:06.095"/>
+</kw>
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=BUSINESS</arg>
+<arg>code=INVALID_DATA</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.096" endtime="20240916 03:01:06.096"/>
+</kw>
+<return>
+<status status="NOT RUN" starttime="20240916 03:01:06.096" endtime="20240916 03:01:06.096"/>
+</return>
+<status status="NOT RUN" starttime="20240916 03:01:06.095" endtime="20240916 03:01:06.096"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.095" endtime="20240916 03:01:06.096"/>
+</if>
+<kw name="Log" library="BuiltIn">
+<arg>Processing item data: ${data}...</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.096" level="INFO">Processing item data: 3. Hello World! (2024-09-16)...</msg>
+<status status="PASS" starttime="20240916 03:01:06.096" endtime="20240916 03:01:06.097"/>
+</kw>
+<try>
+<branch type="TRY">
+<kw name="My Resource Keyword" library="keywords">
+<var>${processed_data}</var>
+<arg>${data}</arg>
+<doc>Describe what this pure RF keyword does.</doc>
+<kw name="Log" library="BuiltIn">
+<arg>RF keyword executed with value: ${var}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.098" level="INFO">RF keyword executed with value: 3. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.097" endtime="20240916 03:01:06.098"/>
+</kw>
+<return>
+<value>${var}</value>
+<status status="PASS" starttime="20240916 03:01:06.098" endtime="20240916 03:01:06.098"/>
+</return>
+<msg timestamp="20240916 03:01:06.098" level="INFO">${processed_data} = 3. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.097" endtime="20240916 03:01:06.099"/>
+</kw>
+<kw name="My Library Keyword" library="DummyLibrary">
+<var>${processed_data}</var>
+<arg>${processed_data}</arg>
+<doc>Describe what this RF exposed keyword does.</doc>
+<msg timestamp="20240916 03:01:06.099" level="INFO" html="true">Python code (as RF keyword) executed with value: %s</msg>
+<msg timestamp="20240916 03:01:06.099" level="INFO">${processed_data} = 3. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.099" endtime="20240916 03:01:06.099"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.097" endtime="20240916 03:01:06.099"/>
+</branch>
+<branch type="EXCEPT" variable="${error}">
+<kw name="Log" library="BuiltIn">
+<arg>Bad data processing due to: ${error}</arg>
+<arg>level=ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.099" endtime="20240916 03:01:06.100"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${message}</var>
+<arg>${error}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.100" endtime="20240916 03:01:06.100"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${processed_data}</var>
+<arg>${None}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.100" endtime="20240916 03:01:06.101"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.099" endtime="20240916 03:01:06.101"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.097" endtime="20240916 03:01:06.101"/>
+</try>
+<if>
+<branch type="IF" condition="&quot;%{CREATE_REPORT=}&quot;">
+<kw name="Create Dictionary" library="BuiltIn">
+<var>&amp;{variables}</var>
+<arg>processed_data</arg>
+<arg>${processed_data}</arg>
+<arg>message</arg>
+<arg>${message}</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20240916 03:01:06.101" level="INFO">&amp;{variables} = { processed_data=3. Hello World! (2024-09-16) | message=Item content is valid. }</msg>
+<status status="PASS" starttime="20240916 03:01:06.101" endtime="20240916 03:01:06.102"/>
+</kw>
+<kw name="Create Output Work Item" library="RPA.Robocorp.WorkItems">
+<arg>variables=${variables}</arg>
+<arg>save=${True}</arg>
+<doc>Create a new output work item with optional variables and files.</doc>
+<msg timestamp="20240916 03:01:06.102" level="INFO">processed_data = 3. Hello World! (2024-09-16)</msg>
+<msg timestamp="20240916 03:01:06.102" level="INFO">message = Item content is valid.</msg>
+<msg timestamp="20240916 03:01:06.105" level="INFO">Saved into output file: /home/user/app/devdata/work-items-out/run-3/work-items.json</msg>
+<status status="PASS" starttime="20240916 03:01:06.102" endtime="20240916 03:01:06.105"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.101" endtime="20240916 03:01:06.105"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.101" endtime="20240916 03:01:06.105"/>
+</if>
+<if>
+<branch type="IF" condition="&quot;${processed_data}&quot; == &quot;${None}&quot;">
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=APPLICATION</arg>
+<arg>code=BAD_PROCESSING</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.105" endtime="20240916 03:01:06.105"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.105" endtime="20240916 03:01:06.105"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.105" endtime="20240916 03:01:06.106"/>
+</if>
+<status status="PASS" starttime="20240916 03:01:06.091" endtime="20240916 03:01:06.106"/>
+</kw>
+<msg timestamp="20240916 03:01:06.106" level="INFO">Releasing item '2' with COMPLETED state and exception: None</msg>
+<kw name="Process Input">
+<doc>Processes input data and releases a BUSINESS failure for any
+invalid item. If reporting is enabled, a new output Work Item is created
+with its post-process info. (items failed to be processed due to APPLICATION
+errors can be retried in Control Room)</doc>
+<kw name="Get Work Item Variable" library="RPA.Robocorp.WorkItems">
+<var>${data}</var>
+<arg>data</arg>
+<doc>Return a single variable value from the work item,
+or default value if defined and key does not exist.</doc>
+<msg timestamp="20240916 03:01:06.106" level="INFO">${data} = 4. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.106" endtime="20240916 03:01:06.107"/>
+</kw>
+<kw name="Validate Input">
+<var>${status}</var>
+<var>${message}</var>
+<arg>${data}</arg>
+<doc>Checks input data against a pattern and returns the status.</doc>
+<kw name="Set Variable" library="BuiltIn">
+<var>${pattern}</var>
+<arg>^\\d+\\..*\\(${TODAY}\\)$</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20240916 03:01:06.107" level="INFO">${pattern} = ^\d+\..*\(2024-09-16\)$</msg>
+<status status="PASS" starttime="20240916 03:01:06.107" endtime="20240916 03:01:06.107"/>
+</kw>
+<kw name="Run Keyword And Return Status" library="BuiltIn">
+<var>${match_ok}</var>
+<arg>Should Match Regexp</arg>
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<kw name="Should Match Regexp" library="BuiltIn">
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Fails if ``string`` does not match ``pattern`` as a regular expression.</doc>
+<status status="PASS" starttime="20240916 03:01:06.108" endtime="20240916 03:01:06.108"/>
+</kw>
+<msg timestamp="20240916 03:01:06.108" level="INFO">${match_ok} = True</msg>
+<status status="PASS" starttime="20240916 03:01:06.107" endtime="20240916 03:01:06.108"/>
+</kw>
+<if>
+<branch type="IF" condition="${match_ok}">
+<return>
+<value>${True}</value>
+<value>Item content is valid.</value>
+<status status="PASS" starttime="20240916 03:01:06.108" endtime="20240916 03:01:06.109"/>
+</return>
+<status status="PASS" starttime="20240916 03:01:06.108" endtime="20240916 03:01:06.109"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.108" endtime="20240916 03:01:06.109"/>
+</if>
+<return>
+<value>${False}</value>
+<value>Data "${data}" doesn't match with "&lt;number&gt;.*(${TODAY})"!</value>
+<status status="NOT RUN" starttime="20240916 03:01:06.109" endtime="20240916 03:01:06.109"/>
+</return>
+<msg timestamp="20240916 03:01:06.109" level="INFO">${status} = True</msg>
+<msg timestamp="20240916 03:01:06.109" level="INFO">${message} = Item content is valid.</msg>
+<status status="PASS" starttime="20240916 03:01:06.107" endtime="20240916 03:01:06.109"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${status}">
+<kw name="Log" library="BuiltIn">
+<arg>Invalid data due to: ${message}</arg>
+<arg>level=WARN</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.110" endtime="20240916 03:01:06.110"/>
+</kw>
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=BUSINESS</arg>
+<arg>code=INVALID_DATA</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.110" endtime="20240916 03:01:06.110"/>
+</kw>
+<return>
+<status status="NOT RUN" starttime="20240916 03:01:06.110" endtime="20240916 03:01:06.110"/>
+</return>
+<status status="NOT RUN" starttime="20240916 03:01:06.109" endtime="20240916 03:01:06.110"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.109" endtime="20240916 03:01:06.110"/>
+</if>
+<kw name="Log" library="BuiltIn">
+<arg>Processing item data: ${data}...</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.111" level="INFO">Processing item data: 4. Hello World! (2024-09-16)...</msg>
+<status status="PASS" starttime="20240916 03:01:06.111" endtime="20240916 03:01:06.111"/>
+</kw>
+<try>
+<branch type="TRY">
+<kw name="My Resource Keyword" library="keywords">
+<var>${processed_data}</var>
+<arg>${data}</arg>
+<doc>Describe what this pure RF keyword does.</doc>
+<kw name="Log" library="BuiltIn">
+<arg>RF keyword executed with value: ${var}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.112" level="INFO">RF keyword executed with value: 4. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.111" endtime="20240916 03:01:06.112"/>
+</kw>
+<return>
+<value>${var}</value>
+<status status="PASS" starttime="20240916 03:01:06.112" endtime="20240916 03:01:06.112"/>
+</return>
+<msg timestamp="20240916 03:01:06.112" level="INFO">${processed_data} = 4. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.111" endtime="20240916 03:01:06.112"/>
+</kw>
+<kw name="My Library Keyword" library="DummyLibrary">
+<var>${processed_data}</var>
+<arg>${processed_data}</arg>
+<doc>Describe what this RF exposed keyword does.</doc>
+<msg timestamp="20240916 03:01:06.113" level="INFO" html="true">Python code (as RF keyword) executed with value: %s</msg>
+<msg timestamp="20240916 03:01:06.113" level="INFO">${processed_data} = 4. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.112" endtime="20240916 03:01:06.113"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.111" endtime="20240916 03:01:06.113"/>
+</branch>
+<branch type="EXCEPT" variable="${error}">
+<kw name="Log" library="BuiltIn">
+<arg>Bad data processing due to: ${error}</arg>
+<arg>level=ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.113" endtime="20240916 03:01:06.113"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${message}</var>
+<arg>${error}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.114" endtime="20240916 03:01:06.114"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${processed_data}</var>
+<arg>${None}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.114" endtime="20240916 03:01:06.114"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.113" endtime="20240916 03:01:06.114"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.111" endtime="20240916 03:01:06.114"/>
+</try>
+<if>
+<branch type="IF" condition="&quot;%{CREATE_REPORT=}&quot;">
+<kw name="Create Dictionary" library="BuiltIn">
+<var>&amp;{variables}</var>
+<arg>processed_data</arg>
+<arg>${processed_data}</arg>
+<arg>message</arg>
+<arg>${message}</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20240916 03:01:06.115" level="INFO">&amp;{variables} = { processed_data=4. Hello World! (2024-09-16) | message=Item content is valid. }</msg>
+<status status="PASS" starttime="20240916 03:01:06.114" endtime="20240916 03:01:06.115"/>
+</kw>
+<kw name="Create Output Work Item" library="RPA.Robocorp.WorkItems">
+<arg>variables=${variables}</arg>
+<arg>save=${True}</arg>
+<doc>Create a new output work item with optional variables and files.</doc>
+<msg timestamp="20240916 03:01:06.116" level="INFO">processed_data = 4. Hello World! (2024-09-16)</msg>
+<msg timestamp="20240916 03:01:06.116" level="INFO">message = Item content is valid.</msg>
+<msg timestamp="20240916 03:01:06.117" level="INFO">Saved into output file: /home/user/app/devdata/work-items-out/run-3/work-items.json</msg>
+<status status="PASS" starttime="20240916 03:01:06.115" endtime="20240916 03:01:06.118"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.114" endtime="20240916 03:01:06.118"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.114" endtime="20240916 03:01:06.118"/>
+</if>
+<if>
+<branch type="IF" condition="&quot;${processed_data}&quot; == &quot;${None}&quot;">
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=APPLICATION</arg>
+<arg>code=BAD_PROCESSING</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.118" endtime="20240916 03:01:06.118"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.118" endtime="20240916 03:01:06.118"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.118" endtime="20240916 03:01:06.118"/>
+</if>
+<status status="PASS" starttime="20240916 03:01:06.106" endtime="20240916 03:01:06.118"/>
+</kw>
+<msg timestamp="20240916 03:01:06.119" level="INFO">Releasing item '3' with COMPLETED state and exception: None</msg>
+<kw name="Process Input">
+<doc>Processes input data and releases a BUSINESS failure for any
+invalid item. If reporting is enabled, a new output Work Item is created
+with its post-process info. (items failed to be processed due to APPLICATION
+errors can be retried in Control Room)</doc>
+<kw name="Get Work Item Variable" library="RPA.Robocorp.WorkItems">
+<var>${data}</var>
+<arg>data</arg>
+<doc>Return a single variable value from the work item,
+or default value if defined and key does not exist.</doc>
+<msg timestamp="20240916 03:01:06.119" level="INFO">${data} = 5. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.119" endtime="20240916 03:01:06.119"/>
+</kw>
+<kw name="Validate Input">
+<var>${status}</var>
+<var>${message}</var>
+<arg>${data}</arg>
+<doc>Checks input data against a pattern and returns the status.</doc>
+<kw name="Set Variable" library="BuiltIn">
+<var>${pattern}</var>
+<arg>^\\d+\\..*\\(${TODAY}\\)$</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20240916 03:01:06.120" level="INFO">${pattern} = ^\d+\..*\(2024-09-16\)$</msg>
+<status status="PASS" starttime="20240916 03:01:06.120" endtime="20240916 03:01:06.120"/>
+</kw>
+<kw name="Run Keyword And Return Status" library="BuiltIn">
+<var>${match_ok}</var>
+<arg>Should Match Regexp</arg>
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<kw name="Should Match Regexp" library="BuiltIn">
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Fails if ``string`` does not match ``pattern`` as a regular expression.</doc>
+<status status="PASS" starttime="20240916 03:01:06.120" endtime="20240916 03:01:06.121"/>
+</kw>
+<msg timestamp="20240916 03:01:06.121" level="INFO">${match_ok} = True</msg>
+<status status="PASS" starttime="20240916 03:01:06.120" endtime="20240916 03:01:06.121"/>
+</kw>
+<if>
+<branch type="IF" condition="${match_ok}">
+<return>
+<value>${True}</value>
+<value>Item content is valid.</value>
+<status status="PASS" starttime="20240916 03:01:06.121" endtime="20240916 03:01:06.121"/>
+</return>
+<status status="PASS" starttime="20240916 03:01:06.121" endtime="20240916 03:01:06.121"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.121" endtime="20240916 03:01:06.121"/>
+</if>
+<return>
+<value>${False}</value>
+<value>Data "${data}" doesn't match with "&lt;number&gt;.*(${TODAY})"!</value>
+<status status="NOT RUN" starttime="20240916 03:01:06.122" endtime="20240916 03:01:06.122"/>
+</return>
+<msg timestamp="20240916 03:01:06.122" level="INFO">${status} = True</msg>
+<msg timestamp="20240916 03:01:06.122" level="INFO">${message} = Item content is valid.</msg>
+<status status="PASS" starttime="20240916 03:01:06.119" endtime="20240916 03:01:06.122"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${status}">
+<kw name="Log" library="BuiltIn">
+<arg>Invalid data due to: ${message}</arg>
+<arg>level=WARN</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.122" endtime="20240916 03:01:06.122"/>
+</kw>
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=BUSINESS</arg>
+<arg>code=INVALID_DATA</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.123" endtime="20240916 03:01:06.123"/>
+</kw>
+<return>
+<status status="NOT RUN" starttime="20240916 03:01:06.123" endtime="20240916 03:01:06.123"/>
+</return>
+<status status="NOT RUN" starttime="20240916 03:01:06.122" endtime="20240916 03:01:06.123"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.122" endtime="20240916 03:01:06.123"/>
+</if>
+<kw name="Log" library="BuiltIn">
+<arg>Processing item data: ${data}...</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.123" level="INFO">Processing item data: 5. Hello World! (2024-09-16)...</msg>
+<status status="PASS" starttime="20240916 03:01:06.123" endtime="20240916 03:01:06.124"/>
+</kw>
+<try>
+<branch type="TRY">
+<kw name="My Resource Keyword" library="keywords">
+<var>${processed_data}</var>
+<arg>${data}</arg>
+<doc>Describe what this pure RF keyword does.</doc>
+<kw name="Log" library="BuiltIn">
+<arg>RF keyword executed with value: ${var}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.124" level="INFO">RF keyword executed with value: 5. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.124" endtime="20240916 03:01:06.124"/>
+</kw>
+<return>
+<value>${var}</value>
+<status status="PASS" starttime="20240916 03:01:06.125" endtime="20240916 03:01:06.125"/>
+</return>
+<msg timestamp="20240916 03:01:06.125" level="INFO">${processed_data} = 5. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.124" endtime="20240916 03:01:06.126"/>
+</kw>
+<kw name="My Library Keyword" library="DummyLibrary">
+<var>${processed_data}</var>
+<arg>${processed_data}</arg>
+<doc>Describe what this RF exposed keyword does.</doc>
+<msg timestamp="20240916 03:01:06.126" level="INFO" html="true">Python code (as RF keyword) executed with value: %s</msg>
+<msg timestamp="20240916 03:01:06.126" level="INFO">${processed_data} = 5. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.126" endtime="20240916 03:01:06.126"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.124" endtime="20240916 03:01:06.126"/>
+</branch>
+<branch type="EXCEPT" variable="${error}">
+<kw name="Log" library="BuiltIn">
+<arg>Bad data processing due to: ${error}</arg>
+<arg>level=ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.127" endtime="20240916 03:01:06.127"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${message}</var>
+<arg>${error}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.127" endtime="20240916 03:01:06.127"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${processed_data}</var>
+<arg>${None}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.127" endtime="20240916 03:01:06.127"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.127" endtime="20240916 03:01:06.127"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.124" endtime="20240916 03:01:06.128"/>
+</try>
+<if>
+<branch type="IF" condition="&quot;%{CREATE_REPORT=}&quot;">
+<kw name="Create Dictionary" library="BuiltIn">
+<var>&amp;{variables}</var>
+<arg>processed_data</arg>
+<arg>${processed_data}</arg>
+<arg>message</arg>
+<arg>${message}</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20240916 03:01:06.128" level="INFO">&amp;{variables} = { processed_data=5. Hello World! (2024-09-16) | message=Item content is valid. }</msg>
+<status status="PASS" starttime="20240916 03:01:06.128" endtime="20240916 03:01:06.128"/>
+</kw>
+<kw name="Create Output Work Item" library="RPA.Robocorp.WorkItems">
+<arg>variables=${variables}</arg>
+<arg>save=${True}</arg>
+<doc>Create a new output work item with optional variables and files.</doc>
+<msg timestamp="20240916 03:01:06.129" level="INFO">processed_data = 5. Hello World! (2024-09-16)</msg>
+<msg timestamp="20240916 03:01:06.129" level="INFO">message = Item content is valid.</msg>
+<msg timestamp="20240916 03:01:06.132" level="INFO">Saved into output file: /home/user/app/devdata/work-items-out/run-3/work-items.json</msg>
+<status status="PASS" starttime="20240916 03:01:06.128" endtime="20240916 03:01:06.132"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.128" endtime="20240916 03:01:06.132"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.128" endtime="20240916 03:01:06.132"/>
+</if>
+<if>
+<branch type="IF" condition="&quot;${processed_data}&quot; == &quot;${None}&quot;">
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=APPLICATION</arg>
+<arg>code=BAD_PROCESSING</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.132" endtime="20240916 03:01:06.133"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.132" endtime="20240916 03:01:06.133"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.132" endtime="20240916 03:01:06.133"/>
+</if>
+<status status="PASS" starttime="20240916 03:01:06.119" endtime="20240916 03:01:06.133"/>
+</kw>
+<msg timestamp="20240916 03:01:06.133" level="INFO">Releasing item '4' with COMPLETED state and exception: None</msg>
+<kw name="Process Input">
+<doc>Processes input data and releases a BUSINESS failure for any
+invalid item. If reporting is enabled, a new output Work Item is created
+with its post-process info. (items failed to be processed due to APPLICATION
+errors can be retried in Control Room)</doc>
+<kw name="Get Work Item Variable" library="RPA.Robocorp.WorkItems">
+<var>${data}</var>
+<arg>data</arg>
+<doc>Return a single variable value from the work item,
+or default value if defined and key does not exist.</doc>
+<msg timestamp="20240916 03:01:06.134" level="INFO">${data} = 6. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.133" endtime="20240916 03:01:06.134"/>
+</kw>
+<kw name="Validate Input">
+<var>${status}</var>
+<var>${message}</var>
+<arg>${data}</arg>
+<doc>Checks input data against a pattern and returns the status.</doc>
+<kw name="Set Variable" library="BuiltIn">
+<var>${pattern}</var>
+<arg>^\\d+\\..*\\(${TODAY}\\)$</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20240916 03:01:06.134" level="INFO">${pattern} = ^\d+\..*\(2024-09-16\)$</msg>
+<status status="PASS" starttime="20240916 03:01:06.134" endtime="20240916 03:01:06.135"/>
+</kw>
+<kw name="Run Keyword And Return Status" library="BuiltIn">
+<var>${match_ok}</var>
+<arg>Should Match Regexp</arg>
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<kw name="Should Match Regexp" library="BuiltIn">
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Fails if ``string`` does not match ``pattern`` as a regular expression.</doc>
+<status status="PASS" starttime="20240916 03:01:06.135" endtime="20240916 03:01:06.135"/>
+</kw>
+<msg timestamp="20240916 03:01:06.135" level="INFO">${match_ok} = True</msg>
+<status status="PASS" starttime="20240916 03:01:06.135" endtime="20240916 03:01:06.135"/>
+</kw>
+<if>
+<branch type="IF" condition="${match_ok}">
+<return>
+<value>${True}</value>
+<value>Item content is valid.</value>
+<status status="PASS" starttime="20240916 03:01:06.136" endtime="20240916 03:01:06.136"/>
+</return>
+<status status="PASS" starttime="20240916 03:01:06.136" endtime="20240916 03:01:06.136"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.136" endtime="20240916 03:01:06.136"/>
+</if>
+<return>
+<value>${False}</value>
+<value>Data "${data}" doesn't match with "&lt;number&gt;.*(${TODAY})"!</value>
+<status status="NOT RUN" starttime="20240916 03:01:06.136" endtime="20240916 03:01:06.136"/>
+</return>
+<msg timestamp="20240916 03:01:06.137" level="INFO">${status} = True</msg>
+<msg timestamp="20240916 03:01:06.137" level="INFO">${message} = Item content is valid.</msg>
+<status status="PASS" starttime="20240916 03:01:06.134" endtime="20240916 03:01:06.137"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${status}">
+<kw name="Log" library="BuiltIn">
+<arg>Invalid data due to: ${message}</arg>
+<arg>level=WARN</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.137" endtime="20240916 03:01:06.137"/>
+</kw>
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=BUSINESS</arg>
+<arg>code=INVALID_DATA</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.137" endtime="20240916 03:01:06.138"/>
+</kw>
+<return>
+<status status="NOT RUN" starttime="20240916 03:01:06.138" endtime="20240916 03:01:06.138"/>
+</return>
+<status status="NOT RUN" starttime="20240916 03:01:06.137" endtime="20240916 03:01:06.138"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.137" endtime="20240916 03:01:06.138"/>
+</if>
+<kw name="Log" library="BuiltIn">
+<arg>Processing item data: ${data}...</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.138" level="INFO">Processing item data: 6. Hello World! (2024-09-16)...</msg>
+<status status="PASS" starttime="20240916 03:01:06.138" endtime="20240916 03:01:06.139"/>
+</kw>
+<try>
+<branch type="TRY">
+<kw name="My Resource Keyword" library="keywords">
+<var>${processed_data}</var>
+<arg>${data}</arg>
+<doc>Describe what this pure RF keyword does.</doc>
+<kw name="Log" library="BuiltIn">
+<arg>RF keyword executed with value: ${var}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.142" level="INFO">RF keyword executed with value: 6. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.141" endtime="20240916 03:01:06.142"/>
+</kw>
+<return>
+<value>${var}</value>
+<status status="PASS" starttime="20240916 03:01:06.142" endtime="20240916 03:01:06.142"/>
+</return>
+<msg timestamp="20240916 03:01:06.142" level="INFO">${processed_data} = 6. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.141" endtime="20240916 03:01:06.142"/>
+</kw>
+<kw name="My Library Keyword" library="DummyLibrary">
+<var>${processed_data}</var>
+<arg>${processed_data}</arg>
+<doc>Describe what this RF exposed keyword does.</doc>
+<msg timestamp="20240916 03:01:06.143" level="INFO" html="true">Python code (as RF keyword) executed with value: %s</msg>
+<msg timestamp="20240916 03:01:06.143" level="INFO">${processed_data} = 6. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.142" endtime="20240916 03:01:06.143"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.141" endtime="20240916 03:01:06.143"/>
+</branch>
+<branch type="EXCEPT" variable="${error}">
+<kw name="Log" library="BuiltIn">
+<arg>Bad data processing due to: ${error}</arg>
+<arg>level=ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.143" endtime="20240916 03:01:06.143"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${message}</var>
+<arg>${error}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.143" endtime="20240916 03:01:06.143"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${processed_data}</var>
+<arg>${None}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.144" endtime="20240916 03:01:06.144"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.143" endtime="20240916 03:01:06.144"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.141" endtime="20240916 03:01:06.144"/>
+</try>
+<if>
+<branch type="IF" condition="&quot;%{CREATE_REPORT=}&quot;">
+<kw name="Create Dictionary" library="BuiltIn">
+<var>&amp;{variables}</var>
+<arg>processed_data</arg>
+<arg>${processed_data}</arg>
+<arg>message</arg>
+<arg>${message}</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20240916 03:01:06.145" level="INFO">&amp;{variables} = { processed_data=6. Hello World! (2024-09-16) | message=Item content is valid. }</msg>
+<status status="PASS" starttime="20240916 03:01:06.144" endtime="20240916 03:01:06.145"/>
+</kw>
+<kw name="Create Output Work Item" library="RPA.Robocorp.WorkItems">
+<arg>variables=${variables}</arg>
+<arg>save=${True}</arg>
+<doc>Create a new output work item with optional variables and files.</doc>
+<msg timestamp="20240916 03:01:06.145" level="INFO">processed_data = 6. Hello World! (2024-09-16)</msg>
+<msg timestamp="20240916 03:01:06.145" level="INFO">message = Item content is valid.</msg>
+<msg timestamp="20240916 03:01:06.147" level="INFO">Saved into output file: /home/user/app/devdata/work-items-out/run-3/work-items.json</msg>
+<status status="PASS" starttime="20240916 03:01:06.145" endtime="20240916 03:01:06.147"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.144" endtime="20240916 03:01:06.147"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.144" endtime="20240916 03:01:06.147"/>
+</if>
+<if>
+<branch type="IF" condition="&quot;${processed_data}&quot; == &quot;${None}&quot;">
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=APPLICATION</arg>
+<arg>code=BAD_PROCESSING</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.148" endtime="20240916 03:01:06.148"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.147" endtime="20240916 03:01:06.148"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.147" endtime="20240916 03:01:06.148"/>
+</if>
+<status status="PASS" starttime="20240916 03:01:06.133" endtime="20240916 03:01:06.148"/>
+</kw>
+<msg timestamp="20240916 03:01:06.148" level="INFO">Releasing item '5' with COMPLETED state and exception: None</msg>
+<kw name="Process Input">
+<doc>Processes input data and releases a BUSINESS failure for any
+invalid item. If reporting is enabled, a new output Work Item is created
+with its post-process info. (items failed to be processed due to APPLICATION
+errors can be retried in Control Room)</doc>
+<kw name="Get Work Item Variable" library="RPA.Robocorp.WorkItems">
+<var>${data}</var>
+<arg>data</arg>
+<doc>Return a single variable value from the work item,
+or default value if defined and key does not exist.</doc>
+<msg timestamp="20240916 03:01:06.149" level="INFO">${data} = 7. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.149" endtime="20240916 03:01:06.149"/>
+</kw>
+<kw name="Validate Input">
+<var>${status}</var>
+<var>${message}</var>
+<arg>${data}</arg>
+<doc>Checks input data against a pattern and returns the status.</doc>
+<kw name="Set Variable" library="BuiltIn">
+<var>${pattern}</var>
+<arg>^\\d+\\..*\\(${TODAY}\\)$</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20240916 03:01:06.150" level="INFO">${pattern} = ^\d+\..*\(2024-09-16\)$</msg>
+<status status="PASS" starttime="20240916 03:01:06.149" endtime="20240916 03:01:06.150"/>
+</kw>
+<kw name="Run Keyword And Return Status" library="BuiltIn">
+<var>${match_ok}</var>
+<arg>Should Match Regexp</arg>
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<kw name="Should Match Regexp" library="BuiltIn">
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Fails if ``string`` does not match ``pattern`` as a regular expression.</doc>
+<status status="PASS" starttime="20240916 03:01:06.150" endtime="20240916 03:01:06.150"/>
+</kw>
+<msg timestamp="20240916 03:01:06.151" level="INFO">${match_ok} = True</msg>
+<status status="PASS" starttime="20240916 03:01:06.150" endtime="20240916 03:01:06.151"/>
+</kw>
+<if>
+<branch type="IF" condition="${match_ok}">
+<return>
+<value>${True}</value>
+<value>Item content is valid.</value>
+<status status="PASS" starttime="20240916 03:01:06.151" endtime="20240916 03:01:06.151"/>
+</return>
+<status status="PASS" starttime="20240916 03:01:06.151" endtime="20240916 03:01:06.151"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.151" endtime="20240916 03:01:06.151"/>
+</if>
+<return>
+<value>${False}</value>
+<value>Data "${data}" doesn't match with "&lt;number&gt;.*(${TODAY})"!</value>
+<status status="NOT RUN" starttime="20240916 03:01:06.151" endtime="20240916 03:01:06.151"/>
+</return>
+<msg timestamp="20240916 03:01:06.152" level="INFO">${status} = True</msg>
+<msg timestamp="20240916 03:01:06.152" level="INFO">${message} = Item content is valid.</msg>
+<status status="PASS" starttime="20240916 03:01:06.149" endtime="20240916 03:01:06.152"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${status}">
+<kw name="Log" library="BuiltIn">
+<arg>Invalid data due to: ${message}</arg>
+<arg>level=WARN</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.152" endtime="20240916 03:01:06.152"/>
+</kw>
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=BUSINESS</arg>
+<arg>code=INVALID_DATA</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.152" endtime="20240916 03:01:06.153"/>
+</kw>
+<return>
+<status status="NOT RUN" starttime="20240916 03:01:06.153" endtime="20240916 03:01:06.153"/>
+</return>
+<status status="NOT RUN" starttime="20240916 03:01:06.152" endtime="20240916 03:01:06.153"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.152" endtime="20240916 03:01:06.153"/>
+</if>
+<kw name="Log" library="BuiltIn">
+<arg>Processing item data: ${data}...</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.154" level="INFO">Processing item data: 7. Hello World! (2024-09-16)...</msg>
+<status status="PASS" starttime="20240916 03:01:06.153" endtime="20240916 03:01:06.154"/>
+</kw>
+<try>
+<branch type="TRY">
+<kw name="My Resource Keyword" library="keywords">
+<var>${processed_data}</var>
+<arg>${data}</arg>
+<doc>Describe what this pure RF keyword does.</doc>
+<kw name="Log" library="BuiltIn">
+<arg>RF keyword executed with value: ${var}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.155" level="INFO">RF keyword executed with value: 7. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.154" endtime="20240916 03:01:06.155"/>
+</kw>
+<return>
+<value>${var}</value>
+<status status="PASS" starttime="20240916 03:01:06.155" endtime="20240916 03:01:06.155"/>
+</return>
+<msg timestamp="20240916 03:01:06.155" level="INFO">${processed_data} = 7. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.154" endtime="20240916 03:01:06.155"/>
+</kw>
+<kw name="My Library Keyword" library="DummyLibrary">
+<var>${processed_data}</var>
+<arg>${processed_data}</arg>
+<doc>Describe what this RF exposed keyword does.</doc>
+<msg timestamp="20240916 03:01:06.156" level="INFO" html="true">Python code (as RF keyword) executed with value: %s</msg>
+<msg timestamp="20240916 03:01:06.156" level="INFO">${processed_data} = 7. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.155" endtime="20240916 03:01:06.156"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.154" endtime="20240916 03:01:06.156"/>
+</branch>
+<branch type="EXCEPT" variable="${error}">
+<kw name="Log" library="BuiltIn">
+<arg>Bad data processing due to: ${error}</arg>
+<arg>level=ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.156" endtime="20240916 03:01:06.156"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${message}</var>
+<arg>${error}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.156" endtime="20240916 03:01:06.157"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${processed_data}</var>
+<arg>${None}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.157" endtime="20240916 03:01:06.157"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.156" endtime="20240916 03:01:06.157"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.154" endtime="20240916 03:01:06.157"/>
+</try>
+<if>
+<branch type="IF" condition="&quot;%{CREATE_REPORT=}&quot;">
+<kw name="Create Dictionary" library="BuiltIn">
+<var>&amp;{variables}</var>
+<arg>processed_data</arg>
+<arg>${processed_data}</arg>
+<arg>message</arg>
+<arg>${message}</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20240916 03:01:06.158" level="INFO">&amp;{variables} = { processed_data=7. Hello World! (2024-09-16) | message=Item content is valid. }</msg>
+<status status="PASS" starttime="20240916 03:01:06.157" endtime="20240916 03:01:06.158"/>
+</kw>
+<kw name="Create Output Work Item" library="RPA.Robocorp.WorkItems">
+<arg>variables=${variables}</arg>
+<arg>save=${True}</arg>
+<doc>Create a new output work item with optional variables and files.</doc>
+<msg timestamp="20240916 03:01:06.159" level="INFO">processed_data = 7. Hello World! (2024-09-16)</msg>
+<msg timestamp="20240916 03:01:06.159" level="INFO">message = Item content is valid.</msg>
+<msg timestamp="20240916 03:01:06.161" level="INFO">Saved into output file: /home/user/app/devdata/work-items-out/run-3/work-items.json</msg>
+<status status="PASS" starttime="20240916 03:01:06.158" endtime="20240916 03:01:06.161"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.157" endtime="20240916 03:01:06.161"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.157" endtime="20240916 03:01:06.161"/>
+</if>
+<if>
+<branch type="IF" condition="&quot;${processed_data}&quot; == &quot;${None}&quot;">
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=APPLICATION</arg>
+<arg>code=BAD_PROCESSING</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.162" endtime="20240916 03:01:06.162"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.161" endtime="20240916 03:01:06.162"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.161" endtime="20240916 03:01:06.162"/>
+</if>
+<status status="PASS" starttime="20240916 03:01:06.148" endtime="20240916 03:01:06.162"/>
+</kw>
+<msg timestamp="20240916 03:01:06.162" level="INFO">Releasing item '6' with COMPLETED state and exception: None</msg>
+<kw name="Process Input">
+<doc>Processes input data and releases a BUSINESS failure for any
+invalid item. If reporting is enabled, a new output Work Item is created
+with its post-process info. (items failed to be processed due to APPLICATION
+errors can be retried in Control Room)</doc>
+<kw name="Get Work Item Variable" library="RPA.Robocorp.WorkItems">
+<var>${data}</var>
+<arg>data</arg>
+<doc>Return a single variable value from the work item,
+or default value if defined and key does not exist.</doc>
+<msg timestamp="20240916 03:01:06.163" level="INFO">${data} = 8. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.163" endtime="20240916 03:01:06.163"/>
+</kw>
+<kw name="Validate Input">
+<var>${status}</var>
+<var>${message}</var>
+<arg>${data}</arg>
+<doc>Checks input data against a pattern and returns the status.</doc>
+<kw name="Set Variable" library="BuiltIn">
+<var>${pattern}</var>
+<arg>^\\d+\\..*\\(${TODAY}\\)$</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20240916 03:01:06.164" level="INFO">${pattern} = ^\d+\..*\(2024-09-16\)$</msg>
+<status status="PASS" starttime="20240916 03:01:06.164" endtime="20240916 03:01:06.164"/>
+</kw>
+<kw name="Run Keyword And Return Status" library="BuiltIn">
+<var>${match_ok}</var>
+<arg>Should Match Regexp</arg>
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<kw name="Should Match Regexp" library="BuiltIn">
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Fails if ``string`` does not match ``pattern`` as a regular expression.</doc>
+<status status="PASS" starttime="20240916 03:01:06.164" endtime="20240916 03:01:06.165"/>
+</kw>
+<msg timestamp="20240916 03:01:06.165" level="INFO">${match_ok} = True</msg>
+<status status="PASS" starttime="20240916 03:01:06.164" endtime="20240916 03:01:06.165"/>
+</kw>
+<if>
+<branch type="IF" condition="${match_ok}">
+<return>
+<value>${True}</value>
+<value>Item content is valid.</value>
+<status status="PASS" starttime="20240916 03:01:06.165" endtime="20240916 03:01:06.165"/>
+</return>
+<status status="PASS" starttime="20240916 03:01:06.165" endtime="20240916 03:01:06.165"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.165" endtime="20240916 03:01:06.165"/>
+</if>
+<return>
+<value>${False}</value>
+<value>Data "${data}" doesn't match with "&lt;number&gt;.*(${TODAY})"!</value>
+<status status="NOT RUN" starttime="20240916 03:01:06.165" endtime="20240916 03:01:06.165"/>
+</return>
+<msg timestamp="20240916 03:01:06.166" level="INFO">${status} = True</msg>
+<msg timestamp="20240916 03:01:06.167" level="INFO">${message} = Item content is valid.</msg>
+<status status="PASS" starttime="20240916 03:01:06.163" endtime="20240916 03:01:06.167"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${status}">
+<kw name="Log" library="BuiltIn">
+<arg>Invalid data due to: ${message}</arg>
+<arg>level=WARN</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.168" endtime="20240916 03:01:06.168"/>
+</kw>
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=BUSINESS</arg>
+<arg>code=INVALID_DATA</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.168" endtime="20240916 03:01:06.168"/>
+</kw>
+<return>
+<status status="NOT RUN" starttime="20240916 03:01:06.168" endtime="20240916 03:01:06.168"/>
+</return>
+<status status="NOT RUN" starttime="20240916 03:01:06.167" endtime="20240916 03:01:06.168"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.167" endtime="20240916 03:01:06.168"/>
+</if>
+<kw name="Log" library="BuiltIn">
+<arg>Processing item data: ${data}...</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.169" level="INFO">Processing item data: 8. Hello World! (2024-09-16)...</msg>
+<status status="PASS" starttime="20240916 03:01:06.168" endtime="20240916 03:01:06.169"/>
+</kw>
+<try>
+<branch type="TRY">
+<kw name="My Resource Keyword" library="keywords">
+<var>${processed_data}</var>
+<arg>${data}</arg>
+<doc>Describe what this pure RF keyword does.</doc>
+<kw name="Log" library="BuiltIn">
+<arg>RF keyword executed with value: ${var}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.170" level="INFO">RF keyword executed with value: 8. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.169" endtime="20240916 03:01:06.170"/>
+</kw>
+<return>
+<value>${var}</value>
+<status status="PASS" starttime="20240916 03:01:06.170" endtime="20240916 03:01:06.170"/>
+</return>
+<msg timestamp="20240916 03:01:06.170" level="INFO">${processed_data} = 8. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.169" endtime="20240916 03:01:06.170"/>
+</kw>
+<kw name="My Library Keyword" library="DummyLibrary">
+<var>${processed_data}</var>
+<arg>${processed_data}</arg>
+<doc>Describe what this RF exposed keyword does.</doc>
+<msg timestamp="20240916 03:01:06.171" level="INFO" html="true">Python code (as RF keyword) executed with value: %s</msg>
+<msg timestamp="20240916 03:01:06.171" level="INFO">${processed_data} = 8. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.170" endtime="20240916 03:01:06.171"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.169" endtime="20240916 03:01:06.171"/>
+</branch>
+<branch type="EXCEPT" variable="${error}">
+<kw name="Log" library="BuiltIn">
+<arg>Bad data processing due to: ${error}</arg>
+<arg>level=ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.171" endtime="20240916 03:01:06.171"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${message}</var>
+<arg>${error}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.171" endtime="20240916 03:01:06.172"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${processed_data}</var>
+<arg>${None}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.172" endtime="20240916 03:01:06.172"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.171" endtime="20240916 03:01:06.172"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.169" endtime="20240916 03:01:06.172"/>
+</try>
+<if>
+<branch type="IF" condition="&quot;%{CREATE_REPORT=}&quot;">
+<kw name="Create Dictionary" library="BuiltIn">
+<var>&amp;{variables}</var>
+<arg>processed_data</arg>
+<arg>${processed_data}</arg>
+<arg>message</arg>
+<arg>${message}</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20240916 03:01:06.173" level="INFO">&amp;{variables} = { processed_data=8. Hello World! (2024-09-16) | message=Item content is valid. }</msg>
+<status status="PASS" starttime="20240916 03:01:06.172" endtime="20240916 03:01:06.173"/>
+</kw>
+<kw name="Create Output Work Item" library="RPA.Robocorp.WorkItems">
+<arg>variables=${variables}</arg>
+<arg>save=${True}</arg>
+<doc>Create a new output work item with optional variables and files.</doc>
+<msg timestamp="20240916 03:01:06.173" level="INFO">processed_data = 8. Hello World! (2024-09-16)</msg>
+<msg timestamp="20240916 03:01:06.174" level="INFO">message = Item content is valid.</msg>
+<msg timestamp="20240916 03:01:06.175" level="INFO">Saved into output file: /home/user/app/devdata/work-items-out/run-3/work-items.json</msg>
+<status status="PASS" starttime="20240916 03:01:06.173" endtime="20240916 03:01:06.176"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.172" endtime="20240916 03:01:06.176"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.172" endtime="20240916 03:01:06.176"/>
+</if>
+<if>
+<branch type="IF" condition="&quot;${processed_data}&quot; == &quot;${None}&quot;">
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=APPLICATION</arg>
+<arg>code=BAD_PROCESSING</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.176" endtime="20240916 03:01:06.176"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.176" endtime="20240916 03:01:06.176"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.176" endtime="20240916 03:01:06.176"/>
+</if>
+<status status="PASS" starttime="20240916 03:01:06.162" endtime="20240916 03:01:06.176"/>
+</kw>
+<msg timestamp="20240916 03:01:06.177" level="INFO">Releasing item '7' with COMPLETED state and exception: None</msg>
+<kw name="Process Input">
+<doc>Processes input data and releases a BUSINESS failure for any
+invalid item. If reporting is enabled, a new output Work Item is created
+with its post-process info. (items failed to be processed due to APPLICATION
+errors can be retried in Control Room)</doc>
+<kw name="Get Work Item Variable" library="RPA.Robocorp.WorkItems">
+<var>${data}</var>
+<arg>data</arg>
+<doc>Return a single variable value from the work item,
+or default value if defined and key does not exist.</doc>
+<msg timestamp="20240916 03:01:06.177" level="INFO">${data} = 9. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.177" endtime="20240916 03:01:06.177"/>
+</kw>
+<kw name="Validate Input">
+<var>${status}</var>
+<var>${message}</var>
+<arg>${data}</arg>
+<doc>Checks input data against a pattern and returns the status.</doc>
+<kw name="Set Variable" library="BuiltIn">
+<var>${pattern}</var>
+<arg>^\\d+\\..*\\(${TODAY}\\)$</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20240916 03:01:06.178" level="INFO">${pattern} = ^\d+\..*\(2024-09-16\)$</msg>
+<status status="PASS" starttime="20240916 03:01:06.178" endtime="20240916 03:01:06.178"/>
+</kw>
+<kw name="Run Keyword And Return Status" library="BuiltIn">
+<var>${match_ok}</var>
+<arg>Should Match Regexp</arg>
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<kw name="Should Match Regexp" library="BuiltIn">
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Fails if ``string`` does not match ``pattern`` as a regular expression.</doc>
+<status status="PASS" starttime="20240916 03:01:06.179" endtime="20240916 03:01:06.179"/>
+</kw>
+<msg timestamp="20240916 03:01:06.179" level="INFO">${match_ok} = True</msg>
+<status status="PASS" starttime="20240916 03:01:06.178" endtime="20240916 03:01:06.179"/>
+</kw>
+<if>
+<branch type="IF" condition="${match_ok}">
+<return>
+<value>${True}</value>
+<value>Item content is valid.</value>
+<status status="PASS" starttime="20240916 03:01:06.180" endtime="20240916 03:01:06.181"/>
+</return>
+<status status="PASS" starttime="20240916 03:01:06.180" endtime="20240916 03:01:06.181"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.180" endtime="20240916 03:01:06.181"/>
+</if>
+<return>
+<value>${False}</value>
+<value>Data "${data}" doesn't match with "&lt;number&gt;.*(${TODAY})"!</value>
+<status status="NOT RUN" starttime="20240916 03:01:06.181" endtime="20240916 03:01:06.181"/>
+</return>
+<msg timestamp="20240916 03:01:06.181" level="INFO">${status} = True</msg>
+<msg timestamp="20240916 03:01:06.181" level="INFO">${message} = Item content is valid.</msg>
+<status status="PASS" starttime="20240916 03:01:06.178" endtime="20240916 03:01:06.181"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${status}">
+<kw name="Log" library="BuiltIn">
+<arg>Invalid data due to: ${message}</arg>
+<arg>level=WARN</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.182" endtime="20240916 03:01:06.182"/>
+</kw>
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=BUSINESS</arg>
+<arg>code=INVALID_DATA</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.182" endtime="20240916 03:01:06.182"/>
+</kw>
+<return>
+<status status="NOT RUN" starttime="20240916 03:01:06.182" endtime="20240916 03:01:06.182"/>
+</return>
+<status status="NOT RUN" starttime="20240916 03:01:06.181" endtime="20240916 03:01:06.182"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.181" endtime="20240916 03:01:06.182"/>
+</if>
+<kw name="Log" library="BuiltIn">
+<arg>Processing item data: ${data}...</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.183" level="INFO">Processing item data: 9. Hello World! (2024-09-16)...</msg>
+<status status="PASS" starttime="20240916 03:01:06.183" endtime="20240916 03:01:06.183"/>
+</kw>
+<try>
+<branch type="TRY">
+<kw name="My Resource Keyword" library="keywords">
+<var>${processed_data}</var>
+<arg>${data}</arg>
+<doc>Describe what this pure RF keyword does.</doc>
+<kw name="Log" library="BuiltIn">
+<arg>RF keyword executed with value: ${var}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.184" level="INFO">RF keyword executed with value: 9. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.184" endtime="20240916 03:01:06.184"/>
+</kw>
+<return>
+<value>${var}</value>
+<status status="PASS" starttime="20240916 03:01:06.184" endtime="20240916 03:01:06.184"/>
+</return>
+<msg timestamp="20240916 03:01:06.184" level="INFO">${processed_data} = 9. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.183" endtime="20240916 03:01:06.184"/>
+</kw>
+<kw name="My Library Keyword" library="DummyLibrary">
+<var>${processed_data}</var>
+<arg>${processed_data}</arg>
+<doc>Describe what this RF exposed keyword does.</doc>
+<msg timestamp="20240916 03:01:06.185" level="INFO" html="true">Python code (as RF keyword) executed with value: %s</msg>
+<msg timestamp="20240916 03:01:06.185" level="INFO">${processed_data} = 9. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.184" endtime="20240916 03:01:06.185"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.183" endtime="20240916 03:01:06.185"/>
+</branch>
+<branch type="EXCEPT" variable="${error}">
+<kw name="Log" library="BuiltIn">
+<arg>Bad data processing due to: ${error}</arg>
+<arg>level=ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.185" endtime="20240916 03:01:06.185"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${message}</var>
+<arg>${error}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.185" endtime="20240916 03:01:06.186"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${processed_data}</var>
+<arg>${None}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.186" endtime="20240916 03:01:06.186"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.185" endtime="20240916 03:01:06.186"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.183" endtime="20240916 03:01:06.186"/>
+</try>
+<if>
+<branch type="IF" condition="&quot;%{CREATE_REPORT=}&quot;">
+<kw name="Create Dictionary" library="BuiltIn">
+<var>&amp;{variables}</var>
+<arg>processed_data</arg>
+<arg>${processed_data}</arg>
+<arg>message</arg>
+<arg>${message}</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20240916 03:01:06.187" level="INFO">&amp;{variables} = { processed_data=9. Hello World! (2024-09-16) | message=Item content is valid. }</msg>
+<status status="PASS" starttime="20240916 03:01:06.186" endtime="20240916 03:01:06.187"/>
+</kw>
+<kw name="Create Output Work Item" library="RPA.Robocorp.WorkItems">
+<arg>variables=${variables}</arg>
+<arg>save=${True}</arg>
+<doc>Create a new output work item with optional variables and files.</doc>
+<msg timestamp="20240916 03:01:06.188" level="INFO">processed_data = 9. Hello World! (2024-09-16)</msg>
+<msg timestamp="20240916 03:01:06.188" level="INFO">message = Item content is valid.</msg>
+<msg timestamp="20240916 03:01:06.189" level="INFO">Saved into output file: /home/user/app/devdata/work-items-out/run-3/work-items.json</msg>
+<status status="PASS" starttime="20240916 03:01:06.187" endtime="20240916 03:01:06.189"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.186" endtime="20240916 03:01:06.189"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.186" endtime="20240916 03:01:06.189"/>
+</if>
+<if>
+<branch type="IF" condition="&quot;${processed_data}&quot; == &quot;${None}&quot;">
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=APPLICATION</arg>
+<arg>code=BAD_PROCESSING</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.190" endtime="20240916 03:01:06.190"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.189" endtime="20240916 03:01:06.190"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.189" endtime="20240916 03:01:06.190"/>
+</if>
+<status status="PASS" starttime="20240916 03:01:06.177" endtime="20240916 03:01:06.190"/>
+</kw>
+<msg timestamp="20240916 03:01:06.190" level="INFO">Releasing item '8' with COMPLETED state and exception: None</msg>
+<kw name="Process Input">
+<doc>Processes input data and releases a BUSINESS failure for any
+invalid item. If reporting is enabled, a new output Work Item is created
+with its post-process info. (items failed to be processed due to APPLICATION
+errors can be retried in Control Room)</doc>
+<kw name="Get Work Item Variable" library="RPA.Robocorp.WorkItems">
+<var>${data}</var>
+<arg>data</arg>
+<doc>Return a single variable value from the work item,
+or default value if defined and key does not exist.</doc>
+<msg timestamp="20240916 03:01:06.191" level="INFO">${data} = 10. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.191" endtime="20240916 03:01:06.191"/>
+</kw>
+<kw name="Validate Input">
+<var>${status}</var>
+<var>${message}</var>
+<arg>${data}</arg>
+<doc>Checks input data against a pattern and returns the status.</doc>
+<kw name="Set Variable" library="BuiltIn">
+<var>${pattern}</var>
+<arg>^\\d+\\..*\\(${TODAY}\\)$</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20240916 03:01:06.192" level="INFO">${pattern} = ^\d+\..*\(2024-09-16\)$</msg>
+<status status="PASS" starttime="20240916 03:01:06.191" endtime="20240916 03:01:06.192"/>
+</kw>
+<kw name="Run Keyword And Return Status" library="BuiltIn">
+<var>${match_ok}</var>
+<arg>Should Match Regexp</arg>
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<kw name="Should Match Regexp" library="BuiltIn">
+<arg>${data}</arg>
+<arg>${pattern}</arg>
+<doc>Fails if ``string`` does not match ``pattern`` as a regular expression.</doc>
+<status status="PASS" starttime="20240916 03:01:06.192" endtime="20240916 03:01:06.192"/>
+</kw>
+<msg timestamp="20240916 03:01:06.193" level="INFO">${match_ok} = True</msg>
+<status status="PASS" starttime="20240916 03:01:06.192" endtime="20240916 03:01:06.193"/>
+</kw>
+<if>
+<branch type="IF" condition="${match_ok}">
+<return>
+<value>${True}</value>
+<value>Item content is valid.</value>
+<status status="PASS" starttime="20240916 03:01:06.193" endtime="20240916 03:01:06.193"/>
+</return>
+<status status="PASS" starttime="20240916 03:01:06.193" endtime="20240916 03:01:06.193"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.193" endtime="20240916 03:01:06.193"/>
+</if>
+<return>
+<value>${False}</value>
+<value>Data "${data}" doesn't match with "&lt;number&gt;.*(${TODAY})"!</value>
+<status status="NOT RUN" starttime="20240916 03:01:06.193" endtime="20240916 03:01:06.193"/>
+</return>
+<msg timestamp="20240916 03:01:06.194" level="INFO">${status} = True</msg>
+<msg timestamp="20240916 03:01:06.194" level="INFO">${message} = Item content is valid.</msg>
+<status status="PASS" starttime="20240916 03:01:06.191" endtime="20240916 03:01:06.194"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${status}">
+<kw name="Log" library="BuiltIn">
+<arg>Invalid data due to: ${message}</arg>
+<arg>level=WARN</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.194" endtime="20240916 03:01:06.194"/>
+</kw>
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=BUSINESS</arg>
+<arg>code=INVALID_DATA</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.195" endtime="20240916 03:01:06.195"/>
+</kw>
+<return>
+<status status="NOT RUN" starttime="20240916 03:01:06.195" endtime="20240916 03:01:06.195"/>
+</return>
+<status status="NOT RUN" starttime="20240916 03:01:06.194" endtime="20240916 03:01:06.195"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.194" endtime="20240916 03:01:06.195"/>
+</if>
+<kw name="Log" library="BuiltIn">
+<arg>Processing item data: ${data}...</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.195" level="INFO">Processing item data: 10. Hello World! (2024-09-16)...</msg>
+<status status="PASS" starttime="20240916 03:01:06.195" endtime="20240916 03:01:06.196"/>
+</kw>
+<try>
+<branch type="TRY">
+<kw name="My Resource Keyword" library="keywords">
+<var>${processed_data}</var>
+<arg>${data}</arg>
+<doc>Describe what this pure RF keyword does.</doc>
+<kw name="Log" library="BuiltIn">
+<arg>RF keyword executed with value: ${var}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20240916 03:01:06.196" level="INFO">RF keyword executed with value: 10. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.196" endtime="20240916 03:01:06.196"/>
+</kw>
+<return>
+<value>${var}</value>
+<status status="PASS" starttime="20240916 03:01:06.197" endtime="20240916 03:01:06.197"/>
+</return>
+<msg timestamp="20240916 03:01:06.197" level="INFO">${processed_data} = 10. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.196" endtime="20240916 03:01:06.197"/>
+</kw>
+<kw name="My Library Keyword" library="DummyLibrary">
+<var>${processed_data}</var>
+<arg>${processed_data}</arg>
+<doc>Describe what this RF exposed keyword does.</doc>
+<msg timestamp="20240916 03:01:06.197" level="INFO" html="true">Python code (as RF keyword) executed with value: %s</msg>
+<msg timestamp="20240916 03:01:06.197" level="INFO">${processed_data} = 10. Hello World! (2024-09-16)</msg>
+<status status="PASS" starttime="20240916 03:01:06.197" endtime="20240916 03:01:06.198"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.196" endtime="20240916 03:01:06.198"/>
+</branch>
+<branch type="EXCEPT" variable="${error}">
+<kw name="Log" library="BuiltIn">
+<arg>Bad data processing due to: ${error}</arg>
+<arg>level=ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.198" endtime="20240916 03:01:06.198"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${message}</var>
+<arg>${error}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.198" endtime="20240916 03:01:06.198"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${processed_data}</var>
+<arg>${None}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.198" endtime="20240916 03:01:06.199"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.198" endtime="20240916 03:01:06.199"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.196" endtime="20240916 03:01:06.199"/>
+</try>
+<if>
+<branch type="IF" condition="&quot;%{CREATE_REPORT=}&quot;">
+<kw name="Create Dictionary" library="BuiltIn">
+<var>&amp;{variables}</var>
+<arg>processed_data</arg>
+<arg>${processed_data}</arg>
+<arg>message</arg>
+<arg>${message}</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20240916 03:01:06.199" level="INFO">&amp;{variables} = { processed_data=10. Hello World! (2024-09-16) | message=Item content is valid. }</msg>
+<status status="PASS" starttime="20240916 03:01:06.199" endtime="20240916 03:01:06.199"/>
+</kw>
+<kw name="Create Output Work Item" library="RPA.Robocorp.WorkItems">
+<arg>variables=${variables}</arg>
+<arg>save=${True}</arg>
+<doc>Create a new output work item with optional variables and files.</doc>
+<msg timestamp="20240916 03:01:06.200" level="INFO">processed_data = 10. Hello World! (2024-09-16)</msg>
+<msg timestamp="20240916 03:01:06.200" level="INFO">message = Item content is valid.</msg>
+<msg timestamp="20240916 03:01:06.203" level="INFO">Saved into output file: /home/user/app/devdata/work-items-out/run-3/work-items.json</msg>
+<status status="PASS" starttime="20240916 03:01:06.200" endtime="20240916 03:01:06.203"/>
+</kw>
+<status status="PASS" starttime="20240916 03:01:06.199" endtime="20240916 03:01:06.203"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.199" endtime="20240916 03:01:06.204"/>
+</if>
+<if>
+<branch type="IF" condition="&quot;${processed_data}&quot; == &quot;${None}&quot;">
+<kw name="Release Input Work Item" library="RPA.Robocorp.WorkItems">
+<arg>FAILED</arg>
+<arg>exception_type=APPLICATION</arg>
+<arg>code=BAD_PROCESSING</arg>
+<arg>message=${message}</arg>
+<doc>Release the lastly retrieved input work item and set its state.</doc>
+<status status="NOT RUN" starttime="20240916 03:01:06.204" endtime="20240916 03:01:06.204"/>
+</kw>
+<status status="NOT RUN" starttime="20240916 03:01:06.204" endtime="20240916 03:01:06.204"/>
+</branch>
+<status status="PASS" starttime="20240916 03:01:06.204" endtime="20240916 03:01:06.204"/>
+</if>
+<status status="PASS" starttime="20240916 03:01:06.190" endtime="20240916 03:01:06.204"/>
+</kw>
+<msg timestamp="20240916 03:01:06.204" level="INFO">Releasing item '9' with COMPLETED state and exception: None</msg>
+<status status="PASS" starttime="20240916 03:01:06.059" endtime="20240916 03:01:06.204"/>
+</kw>
+<kw name="Log To Console" library="BuiltIn">
+<arg>Done with processing all the input Work Items (Producer outputs).</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" starttime="20240916 03:01:06.205" endtime="20240916 03:01:06.206"/>
+</kw>
+<doc>Read and process the output Work Items from the 1st Step and
+optionally create output ones (the result) as inputs for the 3rd Step.</doc>
+<status status="PASS" starttime="20240916 03:01:06.058" endtime="20240916 03:01:06.206"/>
+</test>
+<doc>Robot Framework template implementing a Producer-Consumer model using
+custom libraries and resources. (Consumer robot which consumes input work)</doc>
+<status status="PASS" starttime="20240916 03:01:05.949" endtime="20240916 03:01:06.207"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="0" skip="0">All Tasks</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat pass="1" fail="0" skip="0" id="s1" name="Consumer">Consumer</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

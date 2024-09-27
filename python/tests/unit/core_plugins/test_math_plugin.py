@@ -15,10 +15,10 @@ def test_can_be_instantiated():
 def test_can_be_imported():
     kernel = Kernel()
     kernel.add_plugin(MathPlugin(), "math")
-    assert kernel.plugins["math"] is not None
-    assert kernel.plugins["math"].name == "math"
-    assert kernel.plugins["math"]["Add"] is not None
-    assert kernel.plugins["math"]["Subtract"] is not None
+    assert kernel.get_plugin(plugin_name="math") is not None
+    assert kernel.get_plugin(plugin_name="math").name == "math"
+    assert kernel.get_function(plugin_name="math", function_name="Add") is not None
+    assert kernel.get_function(plugin_name="math", function_name="Subtract") is not None
 
 
 @pytest.mark.parametrize(
@@ -34,7 +34,13 @@ def test_can_be_imported():
         (-192, -13, -205),
     ],
 )
+<<<<<<< main
+def test_add_when_valid_parameters_should_succeed(
+    initial_value, amount, expected_result
+):
+=======
 def test_add_when_valid_parameters_should_succeed(initial_value, amount, expected_result):
+>>>>>>> ms/small_fixes
     # Arrange
     plugin = MathPlugin()
     arguments = KernelArguments(input=initial_value, amount=amount)
@@ -59,7 +65,13 @@ def test_add_when_valid_parameters_should_succeed(initial_value, amount, expecte
         (-192, -13, -179),
     ],
 )
+<<<<<<< main
+def test_subtract_when_valid_parameters_should_succeed(
+    initial_value, amount, expected_result
+):
+=======
 def test_subtract_when_valid_parameters_should_succeed(initial_value, amount, expected_result):
+>>>>>>> ms/small_fixes
     # Arrange
     plugin = MathPlugin()
     arguments = KernelArguments(input=initial_value, amount=amount)
@@ -93,11 +105,16 @@ def test_add_when_invalid_initial_value_should_throw(initial_value):
     arguments = KernelArguments(input=initial_value, amount=1)
 
     # Act
+<<<<<<< main
+    with pytest.raises(ValueError):
+        plugin.add(**arguments)
+=======
     with pytest.raises(ValueError) as exception:
         plugin.add(**arguments)
 
     # Assert
     assert exception.type == ValueError
+>>>>>>> ms/small_fixes
 
 
 @pytest.mark.parametrize(
@@ -122,10 +139,15 @@ def test_add_when_invalid_amount_should_throw(amount):
     arguments = KernelArguments(input=1, amount=amount)
 
     # Act / Assert
+<<<<<<< main
+    with pytest.raises(ValueError):
+        plugin.add(**arguments)
+=======
     with pytest.raises(ValueError) as exception:
         plugin.add(**arguments)
 
     assert exception.type == ValueError
+>>>>>>> ms/small_fixes
 
 
 @pytest.mark.parametrize(
@@ -150,11 +172,16 @@ def test_subtract_when_invalid_initial_value_should_throw(initial_value):
     arguments = KernelArguments(input=initial_value, amount=1)
 
     # Act / Assert
+<<<<<<< main
+    with pytest.raises(ValueError):
+        plugin.subtract(**arguments)
+=======
     with pytest.raises(ValueError) as exception:
         plugin.subtract(**arguments)
 
     # Assert
     assert exception.type == ValueError
+>>>>>>> ms/small_fixes
 
 
 @pytest.mark.parametrize(
@@ -179,8 +206,13 @@ def test_subtract_when_invalid_amount_should_throw(amount):
     arguments = KernelArguments(input=1, amount=amount)
 
     # Act / Assert
+<<<<<<< main
+    with pytest.raises(ValueError):
+        plugin.subtract(**arguments)
+=======
     with pytest.raises(ValueError) as exception:
         plugin.subtract(**arguments)
 
     # Assert
     assert exception.type == ValueError
+>>>>>>> ms/small_fixes
