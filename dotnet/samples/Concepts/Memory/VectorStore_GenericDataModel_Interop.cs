@@ -12,7 +12,7 @@ using Qdrant.Client;
 namespace Memory;
 
 /// <summary>
-/// Semantic Kernal provides a generic data model for vector stores that can be used with any
+/// Semantic Kernel provides a generic data model for vector stores that can be used with any
 /// schema. The schema still has to be provided in the form of a record definition, but no
 /// custom data model is required.
 ///
