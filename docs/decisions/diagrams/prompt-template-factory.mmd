@@ -1,0 +1,36 @@
+---
+title: IPromptTemplateFactory
+---
+classDiagram
+    %% Use https://mermaid.live/ to preview this diagram. The VS Code extension does not handle namespaces.
+    direction BT
+    namespace SemanticKernel {
+        class IPromptTemplate {
+            <<interface>>
+            IReadOnlyList<ParameterView> Parameters;
+            public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default);
+        }
+
+        class IPromptTemplateFactory {
+            <<interface>>
+            IPromptTemplate CreatePromptTemplate(string template, PromptTemplateConfig config)
+        }
+    }
+
+    namespace TemplateEngine_Basic {
+        class BasicPromptTemplate
+        class FStringPromptTemplate
+        class BasicPromptTemplateFactory
+    }
+
+    namespace TemplateEngine_Handlebars {
+        class HandlebarsPromptTemplate
+        class HandlebarsPromptTemplateFactory
+    }
+
+    IPromptTemplateFactory <|.. BasicPromptTemplateFactory
+    IPromptTemplateFactory <|.. HandlebarsPromptTemplateFactory
+
+    IPromptTemplate <|.. BasicPromptTemplate
+    IPromptTemplate <|.. FStringPromptTemplate
+    IPromptTemplate <|.. HandlebarsPromptTemplate

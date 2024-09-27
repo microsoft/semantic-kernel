@@ -1,0 +1,30 @@
+Using the information below and ONLY the information below, answer the question:
+
+[EXAMPLES]
+[EXAMPLE 1]
+[INFORMATION]
+- My computer is hot
+- My computers fan is on
+[END INFORMATION]
+Question: What temperature is my computer?
+Answer: Your computer is hot
+[END EXAMPLE 2]
+
+
+[EXAMPLE 2]
+[INFORMATION]
+- The house is red
+- The house has 5 bed rooms
+[END INFORMATION]
+Question: Where is the house?
+Answer: I do not have enough information to answer that.
+[END EXAMPLE 2]
+
+[END EXAMPLES]
+
+[INFORMATION]
+{{$sources}}
+[END INFORMATION]
+
+Question: {{$input}}
+Answer:

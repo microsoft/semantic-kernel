@@ -7,6 +7,7 @@
 > and we appreciate your support, input and PRs!
 
 can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
+You can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
 filing issues for problems you encounter is a great way to contribute. Contributing
 code is greatly appreciated.
 
@@ -23,6 +24,9 @@ tips on how you can make reporting your issue as effective as possible.
 New New issues can be reported in our [list of issues](https://github.com/semantic-kernel/issues).
 >>>>>>>+8590ec5
 ore filing a new issue, please search the list of issues to make sure it does
+New issues can be reported in our [list of issues](https://github.com/microsoft/semantic-kernel/issues).
+
+Before filing a new issue, please search the list of issues to make sure it does
 not already exist.
 
 If you do find an existing issue for what you wanted to report, please include
@@ -37,6 +41,7 @@ The better a bug report, the faster the problem will be resolved. Ideally, a bug
 report should contain the following information:
 
 <<<<<<- A high-level description of the problem.
+- A high-level description of the problem.
 - A _minimal reproduction_, i.e. the smallest size of code/configuration required
   to reproduce the wrong behavior.
 - A description of the _expected behavior_, contrasted with the _actual behavior_ observed.
@@ -55,6 +60,8 @@ report should contain the following information:
 >>>>>>>+8590ec5
 ntributing Changes
 
+## Contributing Changes
+
 Project maintainers will merge accepted code changes from contributors.
 
 ### DOs and DON'Ts
@@ -62,6 +69,7 @@ Project maintainers will merge accepted code changes from contributors.
 DO's:
 
 <<<<<<- **DO** follow the standard coding conventions
+- **DO** follow the standard coding conventions
 
   - [.NET](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
   - [Python](https://pypi.org/project/black/)
@@ -108,6 +116,8 @@ DON'Ts:
 -   **DON'T** make new APIs without filing an issue and discussing with us first.
 >>>>>>>+8590ec5
 reaking Changes
+
+### Breaking Changes
 
 Contributions must maintain API signature and behavioral compatibility. Contributions
 that include breaking changes will be rejected. Please file an issue to discuss

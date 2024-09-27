@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+
+  <!-- NullMemory.getInstance() may expose internal representation by returning NullMemory.DEFAULT, but NullMemory has no internal representation. -->
+  <Match>
+    <Class name="com.microsoft.semantickernel.memory.NullMemory"/>
+    <Method name="getInstance"/>
+    <Bug pattern="MS_EXPOSE_REP"/>
+  </Match>
+
+  <!-- DefaultSemanticTextMemory(MemoryStore, EmbeddingGeneration) may expose internal representation by storing an externally mutable object into DefaultSemanticTextMemory._storage  -->
+  <!-- TODO: This should be a temporary exclusion pending a proper fix, if possible. -->
+  <Match>
+    <Class name="com.microsoft.semantickernel.memory.DefaultSemanticTextMemory"/>
+    <Field name="_storage"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+  
+  <Match>
+    <Class name="com.microsoft.semantickernel.Kernel$Builder"/>
+    <Method name="withMemoryStore"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.Kernel$Builder"/>
+    <Method name="withMemory"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.DefaultKernel"/>
+    <Field name="memoryStore"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.DefaultKernel"/>
+    <Method name="getMemory"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.DefaultKernel"/>
+    <Field name="memory"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.DefaultKernel"/>
+    <Method name="registerMemory"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.ai.embeddings.Embedding"/>
+    <Method name="getVector"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.memory.DefaultSemanticTextMemory$Builder"/>
+    <Method name="withStorage"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection"/>
+    <Method name="getSkillCollection"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.jdbc.JDBCConnector"/>
+    <Method name="&lt;init&gt;"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStore"/>
+    <Method name="&lt;init&gt;"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStore$Builder"/>
+    <Method name="withConnection"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.sqlite.SQLiteMemoryStore$Builder"/>
+    <Method name="withConnection"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.postgresql.PostgreSQLMemoryStore$Builder"/>
+    <Method name="withConnection"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.mysql.MySQLMemoryStore$Builder"/>
+    <Method name="withConnection"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemoryRecord"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+  
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemoryStore"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+</FindBugsFilter>

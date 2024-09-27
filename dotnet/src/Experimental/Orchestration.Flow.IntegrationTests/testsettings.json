@@ -1,0 +1,34 @@
+﻿{
+  "OpenAI": {
+    "ServiceId": "text-davinci-003",
+    "ModelId": "text-davinci-003",
+    "ApiKey": ""
+  },
+  "AzureOpenAI": {
+    "ServiceId": "azure-text-davinci-003",
+    "DeploymentName": "text-davinci-003",
+    "ChatDeploymentName": "gpt-4",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
+  "OpenAIEmbeddings": {
+    "ServiceId": "text-embedding-ada-002",
+    "ModelId": "text-embedding-ada-002",
+    "ApiKey": ""
+  },
+  "AzureOpenAIEmbeddings": {
+    "ServiceId": "azure-text-embedding-ada-002",
+    "DeploymentName": "text-embedding-ada-002",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
+  "HuggingFace": {
+    "ApiKey": ""
+  },
+  "Bing": {
+    "ApiKey": ""
+  },
+  "Postgres": {
+    "ConnectionString": ""
+  }
+}

@@ -20,3 +20,6 @@ jobs:
         with:
           repo-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
  
+      - uses: actions/labeler@v4
+        with:
+          repo-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"

@@ -1,0 +1,9 @@
+{
+  "title": "DefaultResponse",
+  "type": "object",
+  "properties": {
+    "code": { "type": "integer", "format": "int32" },
+    "message": { "type": "string" }
+  },
+  "additionalProperties": false
+}
