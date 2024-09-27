@@ -1,0 +1,55 @@
+[tool.poetry]
+name = "guided_conversation"
+version = "0.1.0"
+description = ""
+authors = ["DavidKoleczek <dkoleczek@microsoft.com>", "natalieisak", "christyang-ms", "dasham8"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+
+azure-identity = "^1.18"
+semantic-kernel = { git = "https://github.com/microsoft/semantic-kernel.git", branch = "main", subdirectory = "python" }
+pydantic = "^2.8"
+python-dotenv = "^1.0"
+
+[tool.poetry.dev-dependencies]
+ipykernel = "*"
+
+[tool.poetry.group.lint.dependencies]
+ruff = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "F", # pyflakes
+    "E", # pycodestyle
+    "I", # isort
+    "N", # pep8-naming
+    "UP", # pyupgrade
+    "RUF", # ruff
+    "B", # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "ISC", # flake8-implicit-str-concat
+    "PTH", # flake8-use-pathlib
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+]
+ignore = ["E501"]
+unfixable = ["F401"]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+split-on-trailing-comma = false
+known-first-party = ["guided_conversation"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
