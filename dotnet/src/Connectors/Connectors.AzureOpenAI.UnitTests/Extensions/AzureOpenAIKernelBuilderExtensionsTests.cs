@@ -32,7 +32,7 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(new Uri("http://localhost"), new ApiKeyCredential("key"));
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(client);
@@ -68,7 +68,7 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(new Uri("http://localhost"), new ApiKeyCredential("key"));
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -122,7 +122,7 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(new Uri("http://localhost"), new ApiKeyCredential("key"));
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -156,7 +156,7 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(new Uri("http://endpoint"), new ApiKeyCredential("key"));
+        var client = new AzureOpenAIClient(new Uri("https://endpoint"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
