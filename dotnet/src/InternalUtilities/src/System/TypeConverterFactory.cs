@@ -18,7 +18,8 @@ internal static class TypeConverterFactory
     /// </summary>
     /// <param name="type">The Type of the object to convert.</param>
     /// <returns>A TypeConverter instance if a suitable converter is found, otherwise null.</returns>
-    internal static TypeConverter? GetTypeConverter(Type type)
+    internal static TypeConverter? GetTypeConverter(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicFields)] Type type)
     {
         // In an ideal world, this would use TypeDescriptor.GetConverter. However, that is not friendly to
         // any form of ahead-of-time compilation, as it could end up requiring functionality that was trimmed.
