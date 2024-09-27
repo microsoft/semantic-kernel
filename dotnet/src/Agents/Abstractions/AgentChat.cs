@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.Agents.Filters;
 using Microsoft.SemanticKernel.Agents.Internal;
 using Microsoft.SemanticKernel.Agents.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -28,6 +29,7 @@ public abstract class AgentChat
     private readonly Dictionary<Agent, string> _channelMap; // Map agent to its channel-hash: one entry per agent.
 
     private int _isActive;
+    private List<IAgentChatFilter>? _filters;
     private ILogger? _logger;
 
     /// <summary>
@@ -50,6 +52,11 @@ public abstract class AgentChat
     /// The <see cref="ILogger"/> associated with this chat.
     /// </summary>
     protected ILogger Logger => this._logger ??= this.LoggerFactory.CreateLogger(this.GetType());
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public IList<IAgentChatFilter> Filters => this._filters ??= [];
 
     /// <summary>
     /// Exposes the internal history to subclasses.
@@ -225,6 +232,9 @@ public abstract class AgentChat
 
         try
         {
+            // %%%
+            this.OnAgentInvokingFilter(agent, this.History);
+
             // Get or create the required channel and block until channel is synchronized.
             // Will throw exception when propagating a processing failure.
             AgentChannel channel = await this.GetOrCreateChannelAsync(agent, cancellationToken).ConfigureAwait(false);
@@ -240,6 +250,17 @@ public abstract class AgentChat
 
                 // Add to primary history
                 this.History.Add(message);
+                // Invoke filter
+                AgentChatFilterInvokedContext? context = this.OnAgentInvokedFilter(agent, this.History, message);
+
+                // Capture potential message replacement
+                ChatMessageContent effectiveMessage = context?.Message ?? message;
+
+                this.Logger.LogTrace("[{MethodName}] Agent message {AgentType}: {Message}", nameof(InvokeAgentAsync), agent.GetType(), message);
+
+                // Add to primary history
+                this.History.Add(effectiveMessage);
+                messages.Add(effectiveMessage);
 
                 if (isVisible)
                 // Don't expose internal messages to caller.
@@ -249,6 +270,9 @@ public abstract class AgentChat
                     // Yield message to caller
                     yield return message;
                 }
+
+                // Yield message to caller
+                yield return effectiveMessage;
             }
 
             // Broadcast message to other channels (in parallel)
@@ -471,6 +495,40 @@ public abstract class AgentChat
         }
 
         return channel;
+    }
+
+    private AgentChatFilterInvokingContext? OnAgentInvokingFilter(Agent agent, IReadOnlyList<ChatMessageContent> history)
+    {
+        AgentChatFilterInvokingContext? context = null;
+
+        if (this._filters is { Count: > 0 })
+        {
+            context = new(agent, history);
+
+            for (int i = 0; i < this._filters.Count; i++)
+            {
+                this._filters[i].OnAgentInvoking(context);
+            }
+        }
+
+        return context;
+    }
+
+    private AgentChatFilterInvokedContext? OnAgentInvokedFilter(Agent agent, IReadOnlyList<ChatMessageContent> history, ChatMessageContent message)
+    {
+        AgentChatFilterInvokedContext? context = null;
+
+        if (this._filters is { Count: > 0 })
+        {
+            context = new(agent, history, message);
+
+            for (int i = 0; i < this._filters.Count; i++)
+            {
+                this._filters[i].OnAgentInvoked(context);
+            }
+        }
+
+        return context;
     }
 
     /// <summary>
