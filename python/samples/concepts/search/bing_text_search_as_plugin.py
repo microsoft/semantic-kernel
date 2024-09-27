@@ -10,13 +10,12 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIChatCompletion,
     OpenAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.search.bing.bing_search import BingSearch
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.data.filters.text_search_filter import TextSearchFilter
-from semantic_kernel.data.text_search_options import TextSearchOptions
+from semantic_kernel.connectors.search.bing import BingSearch
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.data import TextSearchFilter, TextSearchOptions
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions import KernelArguments
 
 kernel = Kernel()
 service_id = "chat"
@@ -107,7 +106,7 @@ async def main():
     print(
         "Welcome to the chat bot!\
         \n  Type 'exit' to exit.\
-        \n  Try a math question to see the function calling in action (i.e. what is 3+3?)."
+        \n  Try to find out more about the inner workings of Semantic Kernel."
     )
     while chatting:
         chatting = await chat()

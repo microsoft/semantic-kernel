@@ -5,15 +5,15 @@ from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from semantic_kernel.data.kernel_search_result import KernelSearchResult
+from semantic_kernel.data.kernel_search_result import KernelSearchResults
 from semantic_kernel.data.search_base import SearchBase
-from semantic_kernel.data.text_search_options import TextSearchOptions
+from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.data.search_options_base import SearchOptions
-    from semantic_kernel.data.text_search_result import TextSearchResult
+    from semantic_kernel.data.text_search.text_search_result import TextSearchResult
 
 TMapInput = TypeVar("TMapInput")
 
@@ -25,14 +25,33 @@ class TextSearch(SearchBase):
     """The base class for all text searches."""
 
     @abstractmethod
+    async def search(self, options: "SearchOptions | None" = None, **kwargs: Any) -> "KernelSearchResults[str]":
+        """Search for text, returning a KernelSearchResult with a list of strings.
+
+        Args:
+            options: The search options.
+            **kwargs: If options is None, the search options can be passed as keyword arguments.
+                They are then used to create a search options object.
+
+        """
+        ...
+
+    @abstractmethod
+    async def get_search_result(
+        self, options: "SearchOptions | None" = None, **kwargs: Any
+    ) -> "KernelSearchResults[Any]":
+        """Search for text, returning a KernelSearchResult with the results directly from the service."""
+        ...
+
+    @abstractmethod
     async def get_text_search_result(
         self, options: "SearchOptions | None" = None, **kwargs: Any
-    ) -> "KernelSearchResult[TextSearchResult]":
+    ) -> "KernelSearchResults[TextSearchResult]":
         """Search for text, returning a KernelSearchResult with TextSearchResults."""
         ...
 
     @property
-    def _search_function_map(self) -> dict[str, Callable[..., Awaitable[KernelSearchResult[Any]]]]:
+    def _search_function_map(self) -> dict[str, Callable[..., Awaitable[KernelSearchResults[Any]]]]:
         """Get the search function map.
 
         Can be overwritten by subclasses.
