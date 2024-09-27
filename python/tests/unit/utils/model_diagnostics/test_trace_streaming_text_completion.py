@@ -13,7 +13,7 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
 from semantic_kernel.utils.telemetry.model_diagnostics import gen_ai_attributes
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
-    TEXT_COMPLETION_OPERATION,
+    TEXT_STREAMING_COMPLETION_OPERATION,
     _messages_to_openai_format,
     trace_streaming_text_completion,
 )
@@ -97,7 +97,7 @@ async def test_trace_streaming_text_completion(
 
         # Before the call to the model
         mock_span.set_attributes.assert_called_with({
-            gen_ai_attributes.OPERATION: TEXT_COMPLETION_OPERATION,
+            gen_ai_attributes.OPERATION: TEXT_STREAMING_COMPLETION_OPERATION,
             gen_ai_attributes.SYSTEM: MockTextCompletion.MODEL_PROVIDER_NAME,
             gen_ai_attributes.MODEL: text_completion.ai_model_id,
         })
