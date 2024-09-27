@@ -16,9 +16,8 @@ from qdrant_client.models import PointStruct, VectorParams
 
 from semantic_kernel.connectors.memory.qdrant.const import DISTANCE_FUNCTION_MAP, TYPE_MAPPER_VECTOR
 from semantic_kernel.connectors.memory.qdrant.utils import AsyncQdrantClientWrapper
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
+from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
     MemoryConnectorInitializationError,
     VectorStoreModelValidationError,

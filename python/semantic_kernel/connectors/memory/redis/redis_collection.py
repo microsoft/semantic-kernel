@@ -20,12 +20,12 @@ from redis.commands.search.indexDefinition import IndexDefinition
 
 from semantic_kernel.connectors.memory.redis.const import INDEX_TYPE_MAP, RedisCollectionTypes
 from semantic_kernel.connectors.memory.redis.utils import RedisWrapper, data_model_definition_to_redis_fields
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.data.record_definition import (
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
+from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
