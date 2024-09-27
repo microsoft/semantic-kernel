@@ -8,8 +8,9 @@ namespace GettingStartedWithProcesses;
 
 /// <summary>
 /// Demonstrate creation of <see cref="KernelProcess"/> and
-/// eliciting its response to three explicit user messages.
-/// For visual reference of the process check the diagram in: https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#step02_accountOpening
+/// eliciting its response to five explicit user messages.<br/>
+/// For each test there is a different set of user messages that will cause different steps to be triggered using the same pipeline.<br/>
+/// For visual reference of the process check the <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#step02_accountOpening" >diagram</see> .
 /// </summary>
 public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output)
 {

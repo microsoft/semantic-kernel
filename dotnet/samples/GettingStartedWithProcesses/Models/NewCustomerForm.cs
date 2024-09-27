@@ -4,6 +4,11 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 
 namespace Models;
+
+/// <summary>
+/// Represents the data structure for a form capturing details of a new customer, including personal information and contact details.<br/>
+/// Model used in Step02_AccountOpening.cs samples
+/// </summary>
 public class NewCustomerForm
 {
     [JsonPropertyName("userFirstName")]
