@@ -1,5 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 namespace Events;
+
+/// <summary>
+/// Processes Events related to Account Opening scenarios.<br/>
+/// Class used in Step02_AccountOpening.cs samples
+/// </summary>
 public static class AccountOpeningEvents
 {
     public static readonly string NewCustomerFormWelcomeMessageComplete = "newCustomerWelcomeComplete";
