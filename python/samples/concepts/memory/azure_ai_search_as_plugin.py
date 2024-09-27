@@ -24,6 +24,10 @@ from semantic_kernel.data.vector_search import (
     VectorSearchFilter,
     VectorSearchOptions,
 from semantic_kernel.data.record_definition import (
+from semantic_kernel.data import (
+    SearchOptions,
+    VectorSearchFilter,
+    VectorSearchOptions,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordUtils,
