@@ -25,10 +25,9 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 {
     [Fact]
-    //[Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
     public async Task ItCanUseOpenAiChatForTextGenerationAsync()
     {
-        //
+        // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
         var func = kernel.CreateFunctionFromPrompt(
@@ -47,7 +46,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     [Fact]
     public async Task OpenAIStreamingTestAsync()
     {
-        //
+        // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
         var plugins = TestHelpers.ImportSamplePlugins(kernel, "ChatPlugin");
@@ -69,7 +68,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     [Fact]
     public async Task OpenAIHttpRetryPolicyTestAsync()
     {
-        //
+        // Arrange
         List<HttpStatusCode?> statusCodes = [];
 
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
@@ -113,7 +112,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     [Fact]
     public async Task OpenAIShouldReturnMetadataAsync()
     {
-        //
+        // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
         var plugins = TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
@@ -143,7 +142,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     [InlineData("\r\n")]
     public async Task CompletionWithDifferentLineEndingsAsync(string lineEnding)
     {
-        //
+        // Arrange
         var prompt =
             "Given a json input and a request. Apply the request on the json input and return the result. " +
             $"Put the result in between <result></result> tags{lineEnding}" +
@@ -163,7 +162,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     [Fact]
     public async Task ChatSystemPromptIsNotIgnoredAsync()
     {
-        //
+        // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
         var settings = new OpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
@@ -178,7 +177,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     [Fact]
     public async Task SemanticKernelVersionHeaderIsSentAsync()
     {
-        //
+        // Arrange
         using var defaultHandler = new HttpClientHandler();
         using var httpHeaderHandler = new HttpHeaderHandler(defaultHandler);
         using var httpClient = new HttpClient(httpHeaderHandler);
@@ -201,7 +200,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     [InlineData(true, 5)]
     public async Task LogProbsDataIsReturnedWhenRequestedAsync(bool? logprobs, int? topLogprobs)
     {
-        //
+        // Arrange
         var settings = new OpenAIPromptExecutionSettings { Logprobs = logprobs, TopLogprobs = topLogprobs };
 
         var kernel = this.CreateAndInitializeKernel();
