@@ -24,7 +24,6 @@ public class SparseVectorData
     /// </summary>
     /// <value>The corresponding values of the sparse data, which must be the same length as the indices.</value>
     [JsonPropertyName("values")]
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float> Values { get; set; }
 
     /// <summary>

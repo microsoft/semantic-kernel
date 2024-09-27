@@ -26,7 +26,6 @@ internal sealed class SearchVectorsResponse : QdrantResponse
         public Dictionary<string, object> Payload { get; set; }
 
         [JsonPropertyName("vector")]
-        [JsonConverter(typeof(ReadOnlyMemoryConverter))]
         public ReadOnlyMemory<float> Vector { get; }
 
         [JsonConstructor]
