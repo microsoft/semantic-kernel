@@ -22,14 +22,14 @@ service_id = "phi3"
 # (https://huggingface.co/microsoft/Phi-3-vision-128k-instruct-onnx-gpu)
 # Then set ONNX_GEN_AI_FOLDER environment variable to the path to the model folder
 #############################################
-streaming = False
+streaming = True
 
 chat_completion = OnnxGenAIChatCompletion(ai_model_id=service_id, template="phi3v")
 
 # Max length prperty is important to allocate RAM
 # If the value is to big, you ran out of memory
 # If the value is to small, your input is limited
-settings = OnnxGenAIPromptExecutionSettings(max_length=3072)
+settings = OnnxGenAIPromptExecutionSettings(max_length=4096)
 
 system_message = """
 You are a helpful assistant.
@@ -61,14 +61,14 @@ async def chat() -> bool:
             print(chunk.content, end="")
             if chunk.content:
                 message += chunk.content
-        print("\n")
-        chat_history.add_message(message)
+        chat_history.add_assistant_message(message)
+        print("")
     else:
         answer = await chat_completion.get_chat_message_content(
             chat_history=chat_history, settings=settings, kernel=kernel
         )
         print(f"Mosscap:> {answer}")
-        chat_history.add_message(answer)
+        chat_history.add_message(message)
     return True
 
 

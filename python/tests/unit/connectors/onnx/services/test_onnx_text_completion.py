@@ -34,7 +34,7 @@ def test_onnx_chat_completion_with_invalid_env_variable(onnx_unit_test_env):
         OnnxGenAITextCompletion()
 
 
-@pytest.mark.parametrize("exclude_list", [["ONNX_GEN_AI_MODEL_PATH"]], indirect=True)
+@pytest.mark.parametrize("exclude_list", [["ONNX_GEN_AI_TEXT_MODEL_FOLDER"]], indirect=True)
 def test_onnx_chat_completion_with_missing_ai_path(onnx_unit_test_env):
     with pytest.raises(ServiceInitializationError):
         OnnxGenAITextCompletion(env_file_path="test.env")

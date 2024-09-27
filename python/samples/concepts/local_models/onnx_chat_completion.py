@@ -54,14 +54,14 @@ async def chat() -> bool:
             if chunk:
                 print(str(chunk), end="")
                 message += str(chunk)
-        print("\n")
         chat_history.add_assistant_message(message)
+        print("")
     else:
         answer = await chat_completion.get_chat_message_content(
             chat_history=chat_history, settings=settings, kernel=kernel
         )
         print(f"Mosscap:> {answer}")
-        chat_history.add_assistant_message(answer)
+        chat_history.add_message(answer)
     return True
 
 

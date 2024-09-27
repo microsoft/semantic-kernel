@@ -60,18 +60,26 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         """
         try:
             settings = OnnxGenAISettings.create(
-                folder=ai_model_path,
-                ai_model_id=ai_model_id,
+                chat_model_folder=ai_model_path,
+                chat_model_id=ai_model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
             raise ServiceInitializationError(f"Error creating OnnxGenAISettings: {e}") from e
 
-        if settings.ai_model_id is None:
-            settings.ai_model_id = settings.folder
+        if settings.chat_model_folder is None:
+            raise ServiceInitializationError(
+                "AI model path is not provided. Please provide the 'ai_model_path' parameter in the constructor. "
+                "OR set the 'ONNX_GEN_AI_CHAT_MODEL_FOLDER' environment variable."
+            )
 
-        super().__init__(ai_model_id=settings.ai_model_id, ai_model_path=settings.folder, template=template)
+        if settings.chat_model_id is None:
+            settings.chat_model_id = settings.chat_model_folder
+
+        super().__init__(
+            ai_model_id=settings.chat_model_id, ai_model_path=settings.chat_model_folder, template=template
+        )
 
     @override
     async def _inner_get_chat_message_contents(

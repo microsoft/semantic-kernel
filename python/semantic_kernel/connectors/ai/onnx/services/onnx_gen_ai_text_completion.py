@@ -47,20 +47,26 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
         """
         try:
             settings = OnnxGenAISettings.create(
-                folder=ai_model_path,
-                ai_model_id=ai_model_id,
+                text_model_folder=ai_model_path,
+                text_model_id=ai_model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
             raise ServiceInitializationError(f"Invalid settings for OnnxGenAITextCompletion: {e}")
 
-        if settings.ai_model_id is None:
-            settings.ai_model_id = settings.folder
+        if settings.text_model_folder is None:
+            raise ServiceInitializationError(
+                "AI model path is not provided. Please provide the 'ai_model_path' parameter in the constructor. "
+                "OR set the 'ONNX_GEN_AI_TEXT_MODEL_FOLDER' environment variable."
+            )
+
+        if settings.text_model_id is None:
+            settings.text_model_id = settings.text_model_folder
 
         super().__init__(
-            ai_model_id=settings.ai_model_id,
-            ai_model_path=settings.folder,
+            ai_model_id=settings.text_model_id,
+            ai_model_path=settings.text_model_folder,
         )
 
     @override

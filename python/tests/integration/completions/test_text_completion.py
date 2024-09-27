@@ -64,7 +64,7 @@ except KeyError:
 
 anthropic_setup: bool = False
 try:
-    if os.environ["ONNX_GEN_AI_FOLDER"]:
+    if os.environ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"]:
         onnx_setup = True
 except KeyError:
     onnx_setup = False

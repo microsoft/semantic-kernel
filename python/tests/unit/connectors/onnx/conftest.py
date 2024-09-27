@@ -12,7 +12,10 @@ def onnx_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         override_env_param_dict = {}
 
     env_vars = {
-        "ONNX_GEN_AI_FOLDER": "test_chat_model_id",
+        "ONNX_GEN_AI_CHAT_MODEL_FOLDER": "test",
+        "ONNX_GEN_AI_TEXT_MODEL_FOLDER": "test",
+        "ONNX_GEN_AI_CHAT_MODEL_ID": "test",
+        "ONNX_GEN_AI_TEXT_MODEL_ID": "test",
     }
 
     env_vars.update(override_env_param_dict)
