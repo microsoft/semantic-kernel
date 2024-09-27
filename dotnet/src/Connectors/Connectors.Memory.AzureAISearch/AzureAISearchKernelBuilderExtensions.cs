@@ -66,7 +66,7 @@ public static class AzureAISearchKernelBuilderExtensions
     /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
+    /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddAzureAISearchVectorStoreRecordCollection<TRecord>(
         this IKernelBuilder builder,
         string collectionName,
@@ -89,7 +89,7 @@ public static class AzureAISearchKernelBuilderExtensions
     /// <param name="tokenCredential">The credential to authenticate to Azure AI Search with.</param>
     /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
+    /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddAzureAISearchVectorStoreRecordCollection<TRecord>(
         this IKernelBuilder builder,
         string collectionName,
@@ -114,7 +114,7 @@ public static class AzureAISearchKernelBuilderExtensions
     /// <param name="credential">The credential to authenticate to Azure AI Search with.</param>
     /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
+    /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddAzureAISearchVectorStoreRecordCollection<TRecord>(
         this IKernelBuilder builder,
         string collectionName,

@@ -47,7 +47,7 @@ public static class PineconeKernelBuilderExtensions
     /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
+    /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddPineconeVectorStoreRecordCollection<TRecord>(
         this IKernelBuilder builder,
         string collectionName,
@@ -69,7 +69,7 @@ public static class PineconeKernelBuilderExtensions
     /// <param name="apiKey">The api key for Pinecone.</param>
     /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
+    /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddPineconeVectorStoreRecordCollection<TRecord>(
         this IKernelBuilder builder,
         string collectionName,
