@@ -4,6 +4,8 @@ import sys
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any
 
+import boto3
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -31,11 +33,17 @@ if TYPE_CHECKING:
 class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     """Amazon Bedrock Chat Completion Service."""
 
-    def __init__(self, model_id: str | None = None, client: Any | None = None) -> None:
+    def __init__(
+        self,
+        model_id: str | None = None,
+        runtime_client: Any | None = None,
+        client: Any | None = None,
+    ) -> None:
         """Initialize the Amazon Bedrock Chat Completion Service.
 
         Args:
             model_id: The Amazon Bedrock chat model ID to use.
+            runtime_client: The Amazon Bedrock runtime client to use.
             client: The Amazon Bedrock client to use.
         """
         try:
@@ -46,7 +54,11 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         if bedrock_settings.chat_model_id is None:
             raise ServiceInitializationError("The Amazon Bedrock Chat Model ID is missing.")
 
-        super().__init__(ai_model_id=bedrock_settings.chat_model_id, client=client)
+        super().__init__(
+            ai_model_id=bedrock_settings.text_model_id,
+            bedrock_runtime_client=runtime_client or boto3.client("bedrock-runtime"),
+            bedrock_client=client or boto3.client("bedrock"),
+        )
 
     # region Overriding base class methods
 

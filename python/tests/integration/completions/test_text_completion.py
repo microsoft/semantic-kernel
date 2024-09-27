@@ -8,6 +8,8 @@ from typing import Any
 import pytest
 from openai import AsyncAzureOpenAI
 
+from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockTextPromptExecutionSettings
+from semantic_kernel.connectors.ai.bedrock.services.bedrock_text_completion import BedrockTextCompletion
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAITextPromptExecutionSettings,
 )
@@ -54,14 +56,14 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "openai",
             {},
-            ["Repeat the word Hello"],
+            ["Repeat the word Hello once"],
             {},
             id="openai_text_completion",
         ),
         pytest.param(
             "azure",
             {},
-            ["Repeat the word Hello"],
+            ["Repeat the word Hello once"],
             {},
             id="azure_text_completion",
         ),
@@ -97,7 +99,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "ollama",
             {},
-            ["Repeat the word Hello"],
+            ["Repeat the word Hello once"],
             {},
             marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_completion",
@@ -105,7 +107,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "google_ai",
             {},
-            ["Repeat the word Hello"],
+            ["Repeat the word Hello once"],
             {},
             marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
             id="google_ai_text_completion",
@@ -113,9 +115,16 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "vertex_ai",
             {},
-            ["Repeat the word Hello"],
+            ["Repeat the word Hello once"],
             {},
             id="vertex_ai_text_completion",
+        ),
+        pytest.param(
+            "bedrock",
+            {},
+            ["Repeat the word Hello once"],
+            {},
+            id="bedrock_text_completion",
         ),
     ],
 )
@@ -174,6 +183,7 @@ class TestTextCompletion(CompletionTestBase):
                 ),
                 HuggingFacePromptExecutionSettings,
             ),
+            "bedrock": (BedrockTextCompletion(), BedrockTextPromptExecutionSettings),
         }
 
     async def get_text_completion_response(

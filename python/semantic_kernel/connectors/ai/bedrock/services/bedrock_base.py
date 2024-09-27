@@ -1,29 +1,32 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC
-from typing import Any
+from functools import partial
+from typing import Any, ClassVar
 
-import boto3
-
+from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import run_in_executor
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class BedrockBase(KernelBaseModel, ABC):
     """Amazon Bedrock Service Base Class."""
 
-    MODEL_PROVIDER_NAME: str = "bedrock"
+    MODEL_PROVIDER_NAME: ClassVar[str] = "bedrock"
 
+    # Amazon Bedrock Clients
+    # Runtime Client: Use for inference
+    # Client: Use for model management
+    bedrock_runtime_client: Any
     bedrock_client: Any
 
-    def __init__(
-        self,
-        client: Any | None = None,
-        **kwargs: Any,
-    ) -> None:
-        """Initialize the Amazon Bedrock Service Base Class.
+    async def get_foundation_model_info(self, model_id: str) -> dict[str, Any]:
+        """Get the foundation model information."""
+        response = await run_in_executor(
+            None,
+            partial(
+                self.bedrock_client.get_foundation_model,
+                modelIdentifier=model_id,
+            ),
+        )
 
-        Args:
-            client: The Amazon Bedrock client to use.
-            **kwargs: Additional keyword arguments.
-        """
-        self.bedrock_client = client or boto3.client("bedrock-runtime")
+        return response.get("modelDetails")
