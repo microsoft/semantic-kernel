@@ -207,12 +207,12 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
             var stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
             Verify.NotNull(stateType);
 
-            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Id, this.Name);
+            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, this.Id);
         }
         else
         {
             // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
-            stateObject = new KernelProcessStepState(this.Id, this.Name);
+            stateObject = new KernelProcessStepState(this.Name, this.Id);
         }
 
         Verify.NotNull(stateObject);

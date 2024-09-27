@@ -1,10 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-<<<<<<< main
 from semantic_kernel.kernel import Kernel
 
-<<<<<<< main
-__version__ = "1.9.0"
+__version__ = "1.10.0"
 __all__ = ["Kernel", "__version__"]
 import semantic_kernel.memory as memory
 from semantic_kernel.configuration.kernel_config import KernelConfig
@@ -22,7 +20,6 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
-=======
 from semantic_kernel import core_plugins, memory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -33,7 +30,6 @@ from semantic_kernel.prompt_template.prompt_template_config import (
     PromptTemplateConfig,
 )
 from semantic_kernel.utils.logging import setup_logging
->>>>>>> ms/small_fixes
 from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
@@ -51,18 +47,13 @@ __all__ = [
     "openai_settings_from_dot_env",
     "extensions",
     "PromptTemplateConfig",
-<<<<<<< main
     "PromptTemplate",
     "SemanticFunctionConfig",
     "ContextVariables",
     "SKFunctionBase",
     "SKContext",
-=======
     "KernelArguments",
->>>>>>> ms/small_fixes
     "memory",
 ]
-=======
 __version__ = "1.8.1"
 __all__ = ["Kernel", "__version__"]
->>>>>>> ms/features/bugbash-prep
