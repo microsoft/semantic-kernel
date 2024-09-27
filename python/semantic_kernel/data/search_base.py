@@ -2,7 +2,7 @@
 
 import json
 import logging
-from abc import ABC, abstractmethod
+from abc import ABC
 from collections.abc import Awaitable, Callable, Sequence
 from copy import deepcopy
 from typing import Any, TypeVar
@@ -10,8 +10,9 @@ from typing import Any, TypeVar
 from pydantic import BaseModel, ValidationError
 
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION
-from semantic_kernel.data.kernel_search_result import KernelSearchResult
+from semantic_kernel.data.kernel_search_result import KernelSearchResults
 from semantic_kernel.data.search_options_base import SearchOptions
+from semantic_kernel.exceptions.search_exceptions import SearchResultEmptyError
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
@@ -62,7 +63,10 @@ class SearchBase(ABC):
             inner_options = self._create_options(deepcopy(options), **kwargs)
             if update_options_function:
                 inner_options = update_options_function(inner_options, kwargs)
-            results = await search_func(options=inner_options)
+            try:
+                results = await search_func(options=inner_options)
+            except SearchResultEmptyError:
+                return ["No results found for this query"]
             return self._map_result_to_strings(results, map_function)
 
         return KernelFunctionFromMethod(
@@ -90,7 +94,7 @@ class SearchBase(ABC):
             return self._get_options_class()
 
     def _map_result_to_strings(
-        self, results: KernelSearchResult[TMapInput], map_function: Callable[[TMapInput], str] | None = None
+        self, results: KernelSearchResults[TMapInput], map_function: Callable[[TMapInput], str] | None = None
     ) -> list[str]:
         """Map search results to strings."""
         if not map_function:
@@ -105,23 +109,6 @@ class SearchBase(ABC):
         return result if isinstance(result, str) else json.dumps(result)
 
     # region: Abstract and Overridable methods
-
-    @abstractmethod
-    async def search(self, options: SearchOptions | None = None, **kwargs: Any) -> "KernelSearchResult[str]":
-        """Search for text, returning a KernelSearchResult with a list of strings.
-
-        Args:
-            options: The search options.
-            **kwargs: If options is None, the search options can be passed as keyword arguments.
-                They are then used to create a search options object.
-
-        """
-        ...
-
-    @abstractmethod
-    async def get_search_result(self, options: SearchOptions | None = None, **kwargs: Any) -> "KernelSearchResult[Any]":
-        """Search for text, returning a KernelSearchResult with the results directly from the service."""
-        ...
 
     @staticmethod
     def _default_parameter_metadata() -> list[KernelParameterMetadata]:
@@ -150,12 +137,9 @@ class SearchBase(ABC):
         return SearchOptions
 
     @property
-    def _search_function_map(self) -> dict[str, Callable[..., Awaitable[KernelSearchResult[Any]]]]:
+    def _search_function_map(self) -> dict[str, Callable[..., Awaitable[KernelSearchResults[Any]]]]:
         """Get the search function map.
 
         Can be overwritten by subclasses.
         """
-        return {
-            "search": self.search,
-            "get_search_result": self.get_search_result,
-        }
+        return {}

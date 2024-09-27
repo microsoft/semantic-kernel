@@ -17,8 +17,8 @@ from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collectio
     AzureAISearchCollection,
 )
 from semantic_kernel.connectors.memory.azure_ai_search.utils import get_search_client, get_search_index_client
-from semantic_kernel.data.vector_store import VectorStore
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_storage import VectorStore
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from azure.core.credentials import AzureKeyCredential, TokenCredential
     from azure.core.credentials_async import AsyncTokenCredential
 
-    from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+    from semantic_kernel.data import VectorStoreRecordCollection
 
 
 logger: logging.Logger = logging.getLogger(__name__)

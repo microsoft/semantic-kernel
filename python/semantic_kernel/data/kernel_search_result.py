@@ -4,11 +4,13 @@ from collections.abc import Mapping, Sequence
 from typing import Any, Generic, TypeVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 T = TypeVar("T")
 
 
-class KernelSearchResult(KernelBaseModel, Generic[T]):
+@experimental_class
+class KernelSearchResults(KernelBaseModel, Generic[T]):
     """The result of a kernel search."""
 
     results: Sequence[T]
