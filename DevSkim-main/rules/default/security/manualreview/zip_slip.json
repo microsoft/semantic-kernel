@@ -1,0 +1,46 @@
+[
+    {
+        "name": "Do not extract untrusted zip archives",
+        "id": "DS113854",
+        "description": "Zip archive can contain file names with directory stepping sequence",
+        "recommendation": "Make sure that ZipArchiveEntry.FullName doesn't directory stepping characters ..\\",
+        "applies_to": [
+            "csharp",
+            "fsharp"
+        ],
+        "tags": [
+            "DotNet.DangerousFunctionCall"
+        ],
+        "confidence": "medium",
+        "severity": "ManualReview",
+        "rule_info": "DS113854.md",
+        "patterns": [
+            {
+                "pattern": "ExtractToFile",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "conditions" : [
+            {
+                "pattern" : 
+                {
+                    "pattern": "ZipArchiveEntry",
+                    "type": "regex",                    
+                    "scopes": [
+                        "code"
+                    ]      
+                },
+                "search_in" : "finding-region(-15,0)",             
+                "_comment": "" 
+            }          
+        ],
+        "must-match": [
+            "using (ZipArchive archive = ZipFile.OpenRead(zipPath))\n{\n    foreach (ZipArchiveEntry entry in archive.Entries)\n    {\n        if (entry.FullName.EndsWith(\".txt\", StringComparison.OrdinalIgnoreCase))\n        {\n            entry.ExtractToFile(Path.Combine(extractPath, entry.FullName));\n        }\n    }\n}"
+        ],
+        "must-not-match": [
+        ]
+    }
+]

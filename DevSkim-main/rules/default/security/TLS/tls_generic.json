@@ -1,0 +1,389 @@
+[
+    {
+        "name": "Generic: Hard-coded SSL/TLS Protocol",
+        "id": "DS440001",
+        "description": "Generic: Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "does_not_apply_to": [
+            "json",
+            "yaml",
+            "rust"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "overrides": [
+            "DS440000"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS440001.md",
+        "patterns": [
+            {
+                "pattern": "\\b(SSL|D?TLS) ?v?[0123][0123_\\.]+",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "modifiers" : ["i"],
+                "_comment": "Generic reference to a SSL/TLS version"
+            }
+        ],
+        "conditions" : [
+            {
+                "pattern" :
+                {
+                    "pattern": "--tlsv1.3",
+                    "type": "string",
+                    "scopes": [
+                        "code"
+                    ]
+                },
+                "negate_finding": true,
+                "search_in": "same-line"
+            }
+        ]
+    },
+    {
+        "name": "OpenSSL: Hard-coded SSL/TLS Protocol",
+        "id": "DS440011",
+        "description": "OpenSSL: Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "overrides": [
+            "DS440000"
+        ],
+        "does_not_apply_to": [
+            "json",
+            "yaml"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "_comment": "Applies to all languages since many just wrap OpenSSL constructs.",
+        "rule_info": "DS440001.md",
+        "patterns": [
+            {
+                "pattern": "SSLv2?3_method|D?TLSv1_([123]_)?(client_|server_)?method",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL functions that implement specific protocol versions"
+            },
+            {
+                "pattern": "DTLSv1_listen|SSL_stateless",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL functions that implicitly call specific protocol versions"
+            },
+            {
+                "pattern": "SSL_(CTX_)?set_(min|max)_proto_version",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL functions that explictly set protocol versions"
+            },
+            {
+                "pattern": "SSL_EXT_TLS_ONLY|SSL_EXT_DTLS_ONLY|SSL_EXT_TLS_IMPLEMENTATION_ONLY|SSL_EXT_SSL3_ALLOWED|SSL_EXT_TLS1_2_AND_BELOW_ONLY|SSL_EXT|TLS1_3_ONLY|SSL_EXT_TLS1_2_SERVER_HELLO|SSL_EXT_TLS1_3_SERVER_HELLO",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL extension / options"
+            },
+            {
+                "pattern": "SSL_OP_(NO_(SSLv2|SSLv3|TLSv1|TLSv1_1|TLSv1_2|TLSv1_3|DTLSv1|DTLSv1_2))",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL extension / options"
+            },
+            {
+                "pattern": "((ADH-)?(AES[0-9]*|DES|RC4|SEED)-(CBC3|GCM|SHA[0-9]*|MD5))(-SHA[0-9]*)?|(AECDH-(AES[0-9]*|DES|NULL|RC4)-(SHA|CBC3))(-SHA)?|((ECDHE-(ECDSA|RSA)-)|(DHE?-(DSS|RSA)-))?(NULL|RC4|CAMELLIA[0-9]*|DES|SEED|AES[0-9]*)-(CBC3|CCM8?|GCM|SHA[0-9]*)(-SHA[0-9]*)?|DES-CBC3-SHA|(GOST(2001|94)-(GOST89|NULL))-GOST(89|94)|IDEA-CBC-SHA|NULL-(MD5|SHA(0-9)*)|TLS_(AES|CHACHA20)_([0-9]*|POLY1305)(_(CCM(_8)?|GCM))?_SHA[0-9]*",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "OpenSSL cipher suite"
+            }
+        ]
+    },
+    {
+        "name": "BoringSSL: Hard-coded SSL/TLS Protocol",
+        "id": "DS440012",
+        "description": "BoringSSL: Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "overrides": [
+            "DS440000"
+        ],
+        "does_not_apply_to": [
+            "json",
+            "yaml"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "_comment": "Applies to all languages since many just wrap OpenSSL constructs.",
+        "rule_info": "DS440001.md",
+        "patterns": [
+            {
+                "pattern": "\\b(SSL|D?TLS) ?v?[0123_\\.]*_VERSION(_MAJOR)?",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "BoringSSL functions that implement specific protocol versions"
+            }
+        ]
+    },    
+    {
+        "name": "GnuTLS: Hard-coded SSL/TLS Protocol",
+        "id": "DS440013",
+        "description": "GnuTLS: Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "overrides": [
+            "DS440000"
+        ],
+        "does_not_apply_to": [
+            "json",
+            "yaml"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "_comment": "Applies to all languages since many just wrap GnuTLS constructs.",
+        "rule_info": "DS440001.md",
+        "patterns": [
+            {
+                "pattern": "GNUTLS_(SSL|D?TLS)[01239_\\.]+",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "GnuTLS functions that implement specific protocol versions"
+            }
+        ]
+    },        
+    {
+        "name": "LibreSSL: Hard-coded SSL/TLS Protocol",
+        "id": "DS440014",
+        "description": "LibreSSL: Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "overrides": [
+            "DS440000"
+        ],
+        "does_not_apply_to": [
+            "json",
+            "yaml"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "_comment": "Applies to all languages since many just wrap LibreSSL constructs.",
+        "rule_info": "DS440001.md",
+        "patterns": [
+            {
+                "pattern": "(SSL|D?TLS)[01239_\\.]+_VERSION(_MAJOR|_MINOR)?",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "LibreSSL functions that implement specific protocol versions"
+            }
+        ]
+    },         
+    {
+        "name": "mbedTLS: Hard-coded SSL/TLS Protocol",
+        "id": "DS440015",
+        "description": "mbedTLS: Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "overrides": [
+            "DS440000"
+        ],
+        "does_not_apply_to": [
+            "json",
+            "yaml"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "_comment": "Applies to all languages since many just wrap mbedTLS constructs.",
+        "rule_info": "DS440001.md",
+        "patterns": [
+            {
+                "pattern": "MBEDTLS_SSL_PROTO_(SSL|D?TLS)[123_]+",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "mbedTLS functions that implement specific protocol versions"
+            },
+            {
+                "pattern": "MBEDTLS_SSL_(MAJOR|MINOR)_VERSION_[0123]",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "mbedTLS functions that implement specific protocol versions"
+            }            
+        ]
+    },
+    {
+        "name": "Generic: Hard-coded SSL/TLS Protocol",
+        "id": "DS440016",
+        "description": "Curl: Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "overrides": [
+            "DS440000"
+        ],
+        "does_not_apply_to": [
+            "json",
+            "yaml"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS440001.md",
+        "patterns": [
+            {
+                "pattern": "--(sslv2|sslv3|tlsv1|tlsv11|tlsv1\\.1|tlsv1\\.2)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "curl"
+            }
+        ],
+        "conditions" : [
+            {
+                "pattern" :
+                {
+                    "pattern": "--tlsv1.3",
+                    "type": "substring",
+                    "scopes": [
+                        "code"
+                    ]
+                },
+                "negate_finding": true,
+                "search_in": "same-line"
+            }
+        ]
+    },
+    {
+        "name": "Generic: Hard-coded SSL/TLS Protocol",
+        "id": "DS440016",
+        "description": "Generic: Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "overrides": [
+            "DS440000"
+        ],        
+        "does_not_apply_to": [
+            "json",
+            "yaml"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS440001.md",
+        "patterns": [
+            {
+                "pattern": "--secure-protocol=",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "wget"
+            },
+            {
+                "pattern": "CURL_SSLVERSION_(MAX_)?(SSL|TLS)v[0123_]+",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "curl (library)"
+            },
+            {
+                "pattern": "ssl_protocols\\s+[^;]+;",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "Nginx"
+            },
+            {
+                "pattern": "ssl_version",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "DISABLE_SSL_([^\\b]+)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },            
+            {
+                "pattern": "SSLProtocol\\s.+",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "Apache"
+            },
+            {
+                "pattern": "sslEnabledProtocols\\s*=",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "Generic"
+            }
+        ]
+    },
+    {
+        "name": "Generic: Hard-coded Elliptic Curve",
+        "id": "DS440100",
+        "description": "Generic: Hard-coded Elliptic Curve",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "does_not_apply_to": [
+            "json",
+            "yaml"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Elliptic-Curve.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS440001.md",
+        "patterns": [
+            {
+                "pattern": "arbitrary_explicit_char2_curves|arbitrary_explicit_prime_curves|brainpoolP160r1|brainpoolP160t1|brainpoolP192r1|brainpoolP192t1|brainpoolP224r1|brainpoolP224t1|brainpoolP256r1|brainpoolp256r1|brainpoolP256t1|brainpoolP320r1|brainpoolP320t1|brainpoolP384r1|brainpoolp384r1|brainpoolP384t1|brainpoolP512r1|brainpoolp512r1|brainpoolP512t1|curve25519|ec192wapi|nistP192|nistP224|nistP256|nistP384|nistP521|numsP256t1|numsP384t1|numsP512t1|secP160k1|secp160k1|secP160r1|secp160r1|secP160r2|secp160r2|secP192k1|secp192k1|secP192r1|secp192r1|secP224k1|secp224k1|secP224r1|secp224r1|secP256k1|secp256k1|secP256r1|secp256r1|secP384r1|secp384r1|secP521r1|secp521r1|sect163k1|sect163r1|sect163r2|sect193r1|sect193r2|sect233k1|sect233r1|sect239k1|sect283k1|sect283r1|sect409k1|sect409r1|sect571k1|sect571r1|wtls12|wtls7|wtls9|X25519|X448|x962P192v1|x962P192v2|x962P192v3|x962P239v1|x962P239v2|x962P239v3|x962P256v1",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "Named curves from RustTLS, CNG, and others."
+            }
+        ]
+    }
+]

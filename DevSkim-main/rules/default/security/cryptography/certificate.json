@@ -1,0 +1,497 @@
+[
+    {
+        "name": "Disabled certificate validation",
+        "id": "DS181865",
+        "description": "Extend default certificate validation, but do not disable or override default rules.",
+        "recommendation": "Always use a valid certificate, even during testing.",
+        "applies_to": [
+            "objective-c"
+        ],
+        "tags": [
+            "Cryptography.Certificate.Validation"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS181865.md",
+        "patterns": [
+            {
+                "pattern": "setValidatesSecureCertificate:\\s*NO",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "setAllowsAnyHTTPSCertificate:\\s*YES",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "allowsAnyHTTPSCertificate\\s*=\\s*YES",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "validatesSecureCertificate\\s*=\\s*NO",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "continueWithoutCredentialForAuthenticationChallenge",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kCFStreamSSL(Level|AllowsExpiredCertificates|AllowsExpiredRoots|AllowsAnyRoot|ValidatesCertificateChain|PeerName)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kCFStreamPropertySSLSettings",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "setValidatesSecureCertificate: NO",
+            "setAllowsAnyHTTPSCertificate: YES",
+            "allowsAnyHTTPSCertificate = YES",
+            "setValidatesSecureCertificate: NO",
+            "validatesSecureCertificate = NO",
+            "continueWithoutCredentialForAuthenticationChallenge = true",
+            "kCFStreamSSLAllowsExpiredCertificates",
+            "kCFStreamPropertySSLSettings"
+        ],
+        "must-not-match": [
+            "setValidatesSecureCertificate: YES"
+        ]
+    },
+    {
+        "name": "Disabled certificate validation",
+        "id": "DS176603",
+        "description": "Extend default certificate validation, but do not disable or override default rules.",
+        "recommendation": "Always use a valid certificate, even during testing.",
+        "applies_to": [
+            "ruby"
+        ],
+        "tags": [
+            "Cryptography.Certificate.Validation"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS181865.md",
+        "patterns": [
+            {
+                "pattern": "OpenSSL::SSL::VERIFY_NONE",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "http.verify_mode = OpenSSL::SSL::VERIFY_NONE"
+        ],
+        "must-not-match": [
+        ]
+    },
+    {
+        "name": "Disabled certificate validation",
+        "id": "DS130822",
+        "description": "Extend default certificate validation, but do not disable or override default rules.",
+        "recommendation": "Always use a valid certificate, even during testing.",
+        "applies_to": [
+            "python"
+        ],
+        "tags": [
+            "Cryptography.Certificate.Validation"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS181865.md",
+        "patterns": [
+            {
+                "pattern": "\\.check_hostname\\s*=\\s*False",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "disable_ssl_certificate_validation\\s*=\\s*True",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "request.check_hostname = False",
+            "disable_ssl_certificate_validation = True"
+        ],
+        "must-not-match": [
+            "request.check_hostname = SomeOtherValue",
+            "request.check_hostname = True",
+            "disable_ssl_certificate_validation = SomeOtherValue",
+            "disable_ssl_certificate_validation = False"
+        ]
+    },
+    {
+        "name": "Disabled certificate validation",
+        "id": "DS159369",
+        "description": "Extend default certificate validation, but do not disable or override default rules.",
+        "recommendation": "Always use a valid certificate, even during testing.",
+        "applies_to": [
+            "cpp"
+        ],
+        "tags": [
+            "Cryptography.Certificate.Validation"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS181865.md",
+        "patterns": [
+            {
+                "pattern": "SECURITY_FLAG_IGNORE_CERT_CN_INVALID",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_IGNORE_CERT_DATE_INVALID",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_IGNORE_REVOCATION",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_IGNORE_UNKNOWN_CA",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_IGNORE_WRONG_USAGE",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_IGNORE_CERT_WRONG_USAGE",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "old|=SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;"
+        ]
+    },
+    {
+        "name": "Disabled certificate validation",
+        "id": "DS101940",
+        "description": "Extend default certificate validation, but do not disable or override default rules.",
+        "recommendation": "Always use a valid certificate, even during testing.",
+        "applies_to": [
+            ".config"
+        ],
+        "tags": [
+            "Cryptography.Certificate.Validation"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS181865.md",
+        "patterns": [
+            {
+                "pattern": "certificateValidationMode\\s*=\\s*\"None\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "checkCertificateName\\s*=\\s*\"false\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "checkCertificateRevocationList\\s*=\\s*\"false\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "encryptionPolicy\\s*=\\s*\"(AllowNoEncryption|NoEncryption)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "<authentication certificateValidationMode = \"None\" revocationMode=\"NoCheck\" />"
+        ],
+        "must-not-match": [
+        ]
+    },
+    {
+        "name": "Disabled certificate validation",
+        "id": "DS125134",
+        "description": "Extend default certificate validation, but do not disable or override default rules.",
+        "recommendation": "Always use a valid certificate, even during testing.",
+        "applies_to": [
+            "javascript"
+        ],
+        "tags": [
+            "Cryptography.Certificate.Validation"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS181865.md",
+        "patterns": [
+            {
+                "pattern": "NODE_TLS_REJECT_UNAUTHORIZED|rejectUnauthorized",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "export NODE_TLS_REJECT_UNAUTHORIZED = 0"
+        ]
+    },
+    {
+        "name": "Disabled certificate validation",
+        "id": "DS152094",
+        "description": "Extend default certificate validation, but do not disable or override default rules.",
+        "recommendation": "Always use a valid certificate, even during testing.",
+        "applies_to": [
+            "java"
+        ],
+        "tags": [
+            "Cryptography.Certificate.Validation"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS181865.md",
+        "patterns": [
+            {
+                "pattern": "(TrustManager|getInsecure|HostnameVerifier|AbstractVerifier|AllowAllHostnameVerifier|BrowserCompatHostnameVerifier|StrictHostnameVerifier|onReceivedSslError|insecuresocketfactory|customhostnameverifier)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "sInsecureFactory = SSLCertificateSocketFactory.getInsecure(0, null);"
+        ]
+    },
+    {
+        "name": "Disabled certificate validation",
+        "id": "DS126185",
+        "description": "Extend default certificate validation, but do not disable or override default rules.",
+        "recommendation": "Always use a valid certificate, even during testing.",
+        "applies_to": [
+            "powershell"
+        ],
+        "tags": [
+            "Cryptography.Certificate.Validation"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS181865.md",
+        "patterns": [
+            {
+                "pattern": "::ServerCertificateValidationCallback\\s*=\\s*{\\s*\\$true\\s*}",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "::ServerCertificateValidationCallback={$true}"
+        ]
+    },
+    {
+        "name": "Disabled certificate validation",
+        "id": "DS126186",
+        "description": "Extend default certificate validation, but do not disable or override default rules.",
+        "recommendation": "Always use a valid certificate, even during testing.",
+        "applies_to": [
+            "python"
+        ],
+        "tags": [
+            "Cryptography.Certificate.Validation"
+        ],
+        "confidence": "medium",
+        "severity": "critical",
+        "rule_info": "DS181865.md",
+        "patterns": [
+            {
+                "pattern": "verify\\s*=\\s*False",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "conditions": [
+            {
+                "pattern" :
+                {
+                    "pattern": "requests.",
+                    "type": "substring",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                },
+                "search_in": "finding-region(-3, 0)",
+                "negate_finding": false
+            }
+        ],
+        "must-match": [
+            "r = requests.get('https://github.com/timeline.json', verify=False)\n"
+        ]
+    },
+    {
+        "name": "Disabled certificate validation",
+        "id": "DS126187",
+        "description": "Extend default certificate validation, but do not disable or override default rules.",
+        "recommendation": "Always use a valid certificate, even during testing.",
+        "applies_to": [
+            "csharp",
+            "fsharp"
+        ],
+        "tags": [
+            "Cryptography.Certificate.Validation"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS181865.md",
+        "patterns": [
+            {
+                "pattern": "ServerCertificateValidationCallback\\s*=\\s*delegate\\s*{\\s*return true;\\s*}",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "ServerCertificateValidationCallback\\s*=\\s*\\(?[^\\)]+\\)\\s*=>\\s*{\\s*return true;\\s*}",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "ServerCertificateValidationCallback\\s*=\\s*\\(+[^\\)]+\\)\\s*=>\\s*true",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "RemoteCertificateValidationCallback\\(delegate\\s*{\\s*return true;\\s*}\\)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "CertificatePolicy\\s*=\\s*delegate\\s*{\\s*return true;\\s*}",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "X509CertificateValidationMode.None",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SkipTlsVerify\\s*=\\s*true",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "ServerCertificateValidationCallback = delegate { return true; }",
+            "ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => { return true; }",
+            "ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true",
+            "SkipTlsVerify = true"
+        ],
+        "must-not-match": [
+            "ServerCertificateValidationCallback = customDelegate;"
+        ]
+    },
+    {
+        "name": "Disabled certificate validation",
+        "id": "DS126188",
+        "description": "Do not disable certificate validation (Kubernetes)",
+        "recommendation": "Always use a valid certificate, even during testing.",
+        "applies_to": [
+            "shellscript",
+            "powershell",
+            "batch"
+        ],
+        "tags": [
+            "Cryptography.Certificate.Validation"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS181865.md",
+        "patterns": [
+            {
+                "pattern": "--insecure-skip-tls-verify(=true|$|[^=])",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+
+        ],
+        "must-match": [
+            "@kubectl config --kubeconfig=config/development set-cluster scratch --server=https://5.6.7.8 --insecure-skip-tls-verify",
+            "@kubectl config --kubeconfig=config/development set-cluster scratch --server=https://5.6.7.8 --insecure-skip-tls-verify=true"
+
+        ],
+        "must-not-match": [
+            "@kubectl config --kubeconfig=config/development set-cluster scratch --server=https://5.6.7.8 --insecure-skip-tls-verify=false"
+        ]
+    }
+]

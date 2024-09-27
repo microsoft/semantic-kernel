@@ -1,0 +1,129 @@
+[
+    {
+        "name": ".NET - Hard-coded SSL/TLS Protocol",
+        "id": "DS112835",
+        "description": ".NET - Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "overrides": [
+            "DS440000"
+        ],
+        "applies_to": [
+            "csharp",
+            "powershell",
+            "vb",
+            "fsharp"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS112835.md",
+        "patterns": [
+            {
+                "pattern": "SecurityProtocolType.Ssl3",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SecurityProtocolType)48",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SecurityProtocolType.SystemDefault",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SecurityProtocolType)0",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SecurityProtocolType)192",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SecurityProtocolType)768",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SecurityProtocolType\\.Tls[123]?",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(SecurityProtocolType)3072",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },            
+            {
+                "pattern": "SecurityProtocolType.Tls13",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },            
+            {
+                "pattern": "(SecurityProtocolType)12288",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SecurityProtocolTypeExtensions.Tls11",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SecurityProtocolTypeExtensions.Tls12",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SecurityProtocolTypeExtensions.SystemDefault",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;",
+            "System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.SystemDefault;",
+            "System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;",
+            "System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11;",
+            "System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;",
+            "System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13;",
+            "System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolTypeExtensions.Tls11;",
+            "System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolTypeExtensions.Tls12;",
+            "System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolTypeExtensions.SystemDefault;"
+        ],
+        "must-not-match": [
+        ]
+    }
+]

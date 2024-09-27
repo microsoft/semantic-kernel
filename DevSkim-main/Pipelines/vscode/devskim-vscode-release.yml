@@ -1,0 +1,238 @@
+# Azure Pipelines
+# https://aka.ms/yaml
+
+name: DevSkim_VSCode_Release_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - "*.md"
+pr: none
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: SecurityEngineering/OSS-Tools-Pipeline-Templates
+      ref: refs/tags/v1.1.1
+
+stages:
+- stage: SDL
+  dependsOn: []
+  jobs:
+  - template: sdl-job.yml@templates
+    parameters:
+      serviceTreeID: '9792b8d3-bc2c-432c-8fc9-bdb143552208'
+
+- stage: Build
+  dependsOn: []
+  jobs:
+  - job: build_vscode_plugin
+    displayName: Build VS Code Plugin
+    pool:
+      name: 'CSPA'
+      vmImage: 'win2022-image-base'
+    steps:
+    - task: UseDotNet@2
+      displayName: Install Dotnet SDK
+      inputs:
+        packageType: 'sdk'
+        version: '8.0.x'
+    - task: CodeQL3000Init@0
+    - task: Npm@1
+      displayName: Build VS Code Plugin
+      inputs:
+        command: 'custom'
+        workingDir: 'DevSkim-VSCode-Plugin/'     
+        customCommand: 'run build'
+    - task: CodeQL3000Finalize@0
+    - task: AntiMalware@4
+      displayName: Anti-Malware Scan
+      inputs:
+        InputType: 'Basic'
+        ScanType: 'CustomScan'
+        FileDirPath: 'DevSkim-VSCode-Plugin/'
+        EnableServices: true
+        SupportLogOnError: false
+        TreatSignatureUpdateFailureAs: 'Warning'
+        SignatureFreshness: 'UpToDate'
+        TreatStaleSignatureAs: 'Warning'
+    - template: nbgv-set-version-steps.yml@templates
+    - task: PowerShell@2
+      displayName: Mkdir for Manifests and Packages
+      inputs:
+        targetType: 'inline'
+        script: mkdir sbom/vscode/ ; mkdir sbom/langserver/ ; mkdir packages
+        workingDirectory: '$(Build.StagingDirectory)'
+    - task: ManifestGeneratorTask@0
+      displayName: Generate VS Code Plugin Manifest
+      inputs:
+        BuildDropPath: '$(Build.SourcesDirectory)/DevSkim-VSCode-Plugin/client/out/'
+        ManifestDirPath: '$(Build.StagingDirectory)/sbom/vscode/'
+        PackageName: 'DevSkim VS Code Plugin'
+        PackageVersion: '$(ReleaseVersion)'
+    - task: ManifestGeneratorTask@0
+      displayName: Generate DevSkim Language Server Manifest
+      inputs:
+        BuildDropPath: '$(Build.SourcesDirectory)/DevSkim-VSCode-Plugin/devskimBinaries/'
+        ManifestDirPath: '$(Build.StagingDirectory)/sbom/langserver/'
+        PackageName: 'DevSkim Language Server'
+        PackageVersion: '$(ReleaseVersion)'
+    - task: ArchiveFiles@2
+      displayName: Archive Manifests
+      inputs:
+        rootFolderOrFile: '$(Build.StagingDirectory)/sbom/'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.StagingDirectory)/Manifests/DevSkim_VSCode_Manifests.zip'
+        replaceExistingArchive: true
+    - task: PublishBuildArtifacts@1
+      displayName: Pipeline Publish Manifest Archive
+      inputs:
+        PathtoPublish: '$(Build.StagingDirectory)/Manifests'
+        ArtifactName: 'Manifests'
+        publishLocation: 'Container'
+    - task: Npm@1
+      displayName: Package VS Code Plugin
+      inputs:
+        command: 'custom'
+        workingDir: 'DevSkim-VSCode-Plugin/'
+        customCommand: 'run pack-ext'
+    - task: AntiMalware@4
+      displayName: Anti-Malware Scan
+      inputs:
+        InputType: 'Basic'
+        ScanType: 'CustomScan'
+        FileDirPath: 'DevSkim-VSCode-Plugin/'
+        EnableServices: true
+        SupportLogOnError: false
+        TreatSignatureUpdateFailureAs: 'Warning'
+        SignatureFreshness: 'UpToDate'
+        TreatStaleSignatureAs: 'Warning'
+    - task: PowerShell@2
+      displayName: Move Plugin File
+      inputs:
+        targetType: 'inline'
+        script: 'mv DevSkim-VSCode-Plugin/*.vsix $env:BUILD_STAGINGDIRECTORY/packages/'
+    - task: PublishBuildArtifacts@1
+      displayName: Pipeline Publish Unsigned Artifact
+      inputs:
+        PathtoPublish: '$(Build.StagingDirectory)/packages/'
+        ArtifactName: 'Unsigned_Plugin'
+        publishLocation: 'Container'
+
+- stage: Release
+  dependsOn:
+  - SDL
+  - Build
+  condition: succeeded()
+  jobs:
+  - job: sign_hash_release
+    displayName: Code Sign, Generate Hashes, Publish Public Release
+    pool:
+      name: 'CSPA'
+      vmImage: 'win2022-image-base'
+    steps:
+    - template: nbgv-set-version-steps.yml@templates
+    - task: DownloadBuildArtifacts@0
+      displayName: Retrieve Unsigned Artifact 
+      inputs:
+        buildType: 'current'
+        downloadType: 'specific'
+        itemPattern: 'Unsigned_Plugin\*.vsix'
+        downloadPath: '$(Build.BinariesDirectory)'
+    - task: AntiMalware@4
+      displayName: Anti-Malware Scan
+      inputs:
+        InputType: 'Basic'
+        ScanType: 'CustomScan'
+        FileDirPath: '$(Build.BinariesDirectory)\Unsigned_Plugin'
+        EnableServices: true
+        SupportLogOnError: false
+        TreatSignatureUpdateFailureAs: 'Warning'
+        SignatureFreshness: 'UpToDate'
+        TreatStaleSignatureAs: 'Warning'
+    - task: EsrpCodeSigning@5
+      displayName: Code Sign VSCode Plugin
+      inputs:
+        ConnectedServiceName: 'CodeSignConnection'
+        AppRegistrationClientId: '20c4d859-e6d2-4527-a52d-ca6756291e99'
+        AppRegistrationTenantId: '72f988bf-86f1-41af-91ab-2d7cd011db47'
+        AuthAKVName: 'prss-scanx'
+        AuthCertName: 'buildtask-1fdauth1'
+        AuthSignCertName: 'buildtask-1fdsign'
+        FolderPath: '$(Build.BinariesDirectory)\Unsigned_Plugin'
+        Pattern: '*.vsix'
+        signConfigType: 'inlineSignParams'
+        inlineOperation: |
+          [
+                  {
+                      "KeyCode" : "CP-233016",
+                      "OperationCode" : "OpcSign",
+                      "Parameters" : {
+                          "FileDigest" : "/fd SHA256"
+                      },
+                      "ToolName" : "sign",
+                      "ToolVersion" : "1.0"
+                  },
+                  {
+                      "KeyCode" : "CP-233016",
+                      "OperationCode" : "OpcVerify",
+                      "Parameters" : {},
+                      "ToolName" : "sign",
+                      "ToolVersion" : "1.0"
+                  }
+              ]
+        SessionTimeout: '60'
+        MaxConcurrency: '50'
+        MaxRetryAttempts: '5'
+    - powershell: 'Get-ChildItem -Path ''$(Build.BinariesDirectory)'' -Recurse CodeSign* | foreach { Remove-Item -Path $_.FullName }'
+      displayName: 'Delete Code Sign Summaries'
+    - task: PowerShell@2
+      displayName: Move Plugin File
+      inputs:
+        targetType: 'inline'
+        script: 'mv $env:BUILD_BINARIESDIRECTORY/Unsigned_Plugin/*.vsix $env:BUILD_STAGINGDIRECTORY/'
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Signed Artifact to Pipeline
+      inputs:
+        targetPath: '$(Build.StagingDirectory)'
+        artifact: 'Signed_Plugin_$(System.JobId)_$(System.JobAttempt)'
+    - task: Npm@1
+      displayName: Install vsce
+      inputs:
+        command: 'custom'
+        customCommand: 'install -g vsce'
+    - task: PowerShell@2
+      displayName: Publish Pre-Release / Release
+      inputs:
+        targetType: 'inline'
+        script: |
+            $packPath = Resolve-Path $env:BUILD_STAGINGDIRECTORY\*.vsix
+            if ("$(ReleaseVersion)".Contains("-"))
+            {
+                echo "Publishing as --pre-release = $(ReleaseVersion)"
+                vsce publish --packagePath $packPath --pat $(VS_Token) --pre-release
+            }
+            else
+            {
+                echo "Publishing as official release = $(ReleaseVersion)"
+                vsce publish --packagePath $packPath --pat $(VS_Token)
+            }
+    - task: GitHubRelease@1
+      displayName: Release to GitHub
+      inputs:
+        gitHubConnection: 'github.com_gfs'
+        repositoryName: 'microsoft/DevSkim'
+        action: 'create'
+        target: '$(Build.SourceVersion)'
+        tagSource: 'userSpecifiedTag'
+        tag: 'VSCode_v$(ReleaseVersion)'
+        title: 'DevSkim VS Code Extension v$(ReleaseVersion)'
+        assets: |
+          $(Build.StagingDirectory)/*.vsix
+        changeLogCompareToRelease: 'lastNonDraftRelease'
+        changeLogType: 'commitBased'
