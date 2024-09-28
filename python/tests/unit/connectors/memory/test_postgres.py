@@ -248,9 +248,16 @@ async def test_get_records(vector_store: PostgresStore, mock_cursor: Mock) -> No
 # Test settings
 
 
-def test_settings_connection_string() -> None:
-    settings = PostgresSettings(connection_string="postgresql://user:password@localhost:5432/dbname")
+def test_settings_connection_string(monkeypatch) -> None:
+    monkeypatch.delenv("PGHOST", raising=False)
+    monkeypatch.delenv("PGPORT", raising=False)
+    monkeypatch.delenv("PGDATABASE", raising=False)
+    monkeypatch.delenv("PGUSER", raising=False)
+    monkeypatch.delenv("PGPASSWORD", raising=False)
+
+    settings = PostgresSettings(connection_string="host=localhost port=5432 dbname=dbname user=user password=password")
     conn_info = settings.get_connection_args()
+
     assert conn_info["host"] == "localhost"
     assert conn_info["port"] == 5432
     assert conn_info["dbname"] == "dbname"
@@ -259,7 +266,15 @@ def test_settings_connection_string() -> None:
 
 
 def test_settings_env_connection_string(monkeypatch) -> None:
-    monkeypatch.setenv("POSTGRES_CONNECTION_STRING", "postgresql://user:password@localhost:5432/dbname")
+    monkeypatch.delenv("PGHOST", raising=False)
+    monkeypatch.delenv("PGPORT", raising=False)
+    monkeypatch.delenv("PGDATABASE", raising=False)
+    monkeypatch.delenv("PGUSER", raising=False)
+    monkeypatch.delenv("PGPASSWORD", raising=False)
+
+    monkeypatch.setenv(
+        "POSTGRES_CONNECTION_STRING", "host=localhost port=5432 dbname=dbname user=user password=password"
+    )
 
     settings = PostgresSettings()
     conn_info = settings.get_connection_args()
