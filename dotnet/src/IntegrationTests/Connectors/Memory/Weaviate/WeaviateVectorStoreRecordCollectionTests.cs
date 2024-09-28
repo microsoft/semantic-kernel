@@ -206,6 +206,53 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal(10, getResult.HotelRating);
     }
 
+    [Fact]
+    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
+    {
+        // Arrange
+        var hotelId = new Guid("55555555-5555-5555-5555-555555555555");
+        var options = new WeaviateVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<Guid>>
+        {
+            VectorStoreRecordDefinition = this.GetTestHotelRecordDefinition()
+        };
+
+        var sut = new WeaviateVectorStoreRecordCollection<VectorStoreGenericDataModel<Guid>>(fixture.HttpClient!, "TestGenericMapper", options);
+
+        await sut.CreateCollectionAsync();
+
+        // Act
+        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<Guid>(hotelId)
+        {
+            Data =
+            {
+                { "HotelName", "Generic Mapper Hotel" },
+                { "Description", "This is a generic mapper hotel" },
+                { "Tags", new List<string> { "generic" } },
+                { "parking_is_included", false },
+                { "Timestamp", new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero) },
+                { "HotelRating", 3.6f }
+            },
+            Vectors =
+            {
+                { "DescriptionEmbedding", new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]) }
+            }
+        });
+
+        var localGetResult = await sut.GetAsync(hotelId, new GetRecordOptions { IncludeVectors = true });
+
+        // Assert
+        Assert.Equal(hotelId, upsertResult);
+
+        Assert.NotNull(localGetResult);
+        Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
+        Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
+        Assert.Equal(new List<string> { "generic" }, localGetResult.Data["Tags"]);
+        Assert.False((bool?)localGetResult.Data["parking_is_included"]);
+        Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), localGetResult.Data["Timestamp"]);
+        Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
+        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+    }
+
     #region private
 
     private WeaviateHotel CreateTestHotel(Guid hotelId, string? hotelName = null)
@@ -237,7 +284,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
+                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.CosineDistance }
             ]
         };
