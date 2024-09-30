@@ -20,7 +20,7 @@ service_id = "phi3"
 # use the model stored in /cpu folder
 # If onnxruntime-genai-cuda is installed for gpu use:
 # use the model stored in /cuda folder
-# Then set ONNX_GEN_AI_FOLDER environment variable to the path to the model folder
+# Then set ONNX_GEN_AI_CHAT_MODEL_FOLDER environment variable to the path to the model folder
 #############################################
 streaming = True
 
