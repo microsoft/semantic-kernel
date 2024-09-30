@@ -452,7 +452,7 @@ internal static class AssistantThreadActions
     {
         List<RunStep> steps = [];
 
-        await foreach (var step in client.GetRunStepsAsync(run).ConfigureAwait(false))
+        await foreach (RunStep step in client.GetRunStepsAsync(run).ConfigureAwait(false))
         {
             steps.Add(step);
         }
