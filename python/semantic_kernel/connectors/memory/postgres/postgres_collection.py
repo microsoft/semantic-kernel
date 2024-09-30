@@ -66,6 +66,7 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
         db_schema: str = DEFAULT_SCHEMA,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        settings: PostgresSettings | None = None,
     ):
         """Initialize the collection.
 
@@ -77,6 +78,8 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
             db_schema: The database schema.
             env_file_path (str): Use the environment settings file as a fallback to environment variables.
             env_file_encoding (str): The encoding of the environment settings file.
+            settings: The settings for creating a new connection pool. If not provided, the settings will be created
+                from the environment.
         """
         super().__init__(
             collection_name=collection_name,
@@ -88,7 +91,12 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
 
         # If the connection pool was not provided, save settings for creating a new one.
         if not connection_pool:
-            self._settings = PostgresSettings.create(env_file_path=env_file_path, env_file_encoding=env_file_encoding)
+            if settings:
+                self._settings = settings
+            else:
+                self._settings = PostgresSettings.create(
+                    env_file_path=env_file_path, env_file_encoding=env_file_encoding
+                )
 
     @override
     async def __aenter__(self) -> "PostgresCollection":
