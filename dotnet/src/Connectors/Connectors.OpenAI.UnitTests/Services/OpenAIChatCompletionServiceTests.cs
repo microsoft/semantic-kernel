@@ -324,6 +324,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         await enumerator.MoveNextAsync();
         Assert.Equal("Stop", enumerator.Current.Metadata?["FinishReason"]);
+
+        await enumerator.MoveNextAsync();
+        Assert.NotNull(enumerator.Current.Metadata?["Usage"]);
+        Assert.Equal("{\"OutputTokens\":8,\"InputTokens\":13,\"TotalTokens\":21}", JsonSerializer.Serialize(enumerator.Current.Metadata?["Usage"]));
     }
 
     [Fact]
