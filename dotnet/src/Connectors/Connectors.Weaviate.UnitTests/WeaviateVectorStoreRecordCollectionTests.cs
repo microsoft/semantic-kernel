@@ -336,7 +336,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 
         jsonObject["properties"]!["hotel_name"] = "Test Name from Mapper";
 
-        var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonNode>>();
+        var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonObject>>();
 
         mockMapper
             .Setup(l => l.MapFromDataToStorageModel(It.IsAny<WeaviateHotel>()))
@@ -352,7 +352,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(
             this._mockHttpClient,
             "Collection",
-            new() { JsonNodeCustomMapper = mockMapper.Object });
+            new() { JsonObjectCustomMapper = mockMapper.Object });
 
         // Act
         var result = await sut.UpsertAsync(hotel);
@@ -384,16 +384,16 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
             Content = new StringContent(JsonSerializer.Serialize(jsonObject))
         };
 
-        var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonNode>>();
+        var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonObject>>();
 
         mockMapper
-            .Setup(l => l.MapFromStorageToDataModel(It.IsAny<JsonNode>(), It.IsAny<StorageToDataModelMapperOptions>()))
+            .Setup(l => l.MapFromStorageToDataModel(It.IsAny<JsonObject>(), It.IsAny<StorageToDataModelMapperOptions>()))
             .Returns(new WeaviateHotel { HotelId = id, HotelName = "Test Name from mapper" });
 
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(
             this._mockHttpClient,
             "Collection",
-            new() { JsonNodeCustomMapper = mockMapper.Object });
+            new() { JsonObjectCustomMapper = mockMapper.Object });
 
         // Act
         var result = await sut.GetAsync(id);

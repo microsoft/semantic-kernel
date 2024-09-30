@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, JsonNode> where TRecord : class
+internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, JsonObject> where TRecord : class
 {
     private readonly string _collectionName;
 
@@ -46,7 +46,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         this._vectorProperties = vectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
     }
 
-    public JsonNode MapFromDataToStorageModel(TRecord dataModel)
+    public JsonObject MapFromDataToStorageModel(TRecord dataModel)
     {
         Verify.NotNull(dataModel);
 
@@ -86,7 +86,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         return weaviateObjectModel;
     }
 
-    public TRecord MapFromStorageToDataModel(JsonNode storageModel, StorageToDataModelMapperOptions options)
+    public TRecord MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
     {
         Verify.NotNull(storageModel);
 

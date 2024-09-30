@@ -14,18 +14,20 @@ public record KernelProcessStepState
     public string? Id { get; init; }
 
     /// <summary>
-    /// The name of the Step. This is itended to be human readable and is not required to be unique. If not set
-    /// when the Step is added to a Process, the name will be derived from the steps .NET type.
+    /// The name of the Step. This is itended to be human readable and is not required to be unique. If
+    /// not provided, the name will be derived from the steps .NET type.
     /// </summary>
-    public string? Name { get; init; }
+    public string Name { get; init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepState"/> class.
     /// </summary>
-    /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
     /// <param name="name">The name of the associated <see cref="KernelProcessStep"/></param>
-    public KernelProcessStepState(string? id = null, string? name = null)
+    /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
+    public KernelProcessStepState(string name, string? id = null)
     {
+        Verify.NotNullOrWhiteSpace(name);
+
         this.Id = id;
         this.Name = name;
     }
@@ -45,10 +47,13 @@ public sealed record KernelProcessStepState<TState> : KernelProcessStepState whe
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepState"/> class.
     /// </summary>
-    /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
     /// <param name="name">The name of the associated <see cref="KernelProcessStep"/></param>
-    public KernelProcessStepState(string? id = null, string? name = null)
+    /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
+    public KernelProcessStepState(string name, string? id = null)
+        : base(name, id)
     {
+        Verify.NotNullOrWhiteSpace(name);
+
         this.Id = id;
         this.Name = name;
     }

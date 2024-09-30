@@ -47,6 +47,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     private static readonly HashSet<Type> s_supportedDataTypes =
     [
         typeof(string),
+        typeof(bool),
+        typeof(bool?),
         typeof(int),
         typeof(int?),
         typeof(long),
@@ -66,9 +68,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         typeof(DateTimeOffset),
         typeof(DateTimeOffset?),
         typeof(Guid),
-        typeof(Guid?),
-        typeof(bool),
-        typeof(bool?)
+        typeof(Guid?)
     ];
 
     /// <summary>Default JSON serializer options.</summary>
@@ -117,7 +117,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     private readonly List<string> _vectorPropertyStorageNames;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
-    private readonly IVectorStoreRecordMapper<TRecord, JsonNode> _mapper;
+    private readonly IVectorStoreRecordMapper<TRecord, JsonObject> _mapper;
 
     /// <summary>Weaviate endpoint.</summary>
     private readonly Uri _endpoint;
@@ -178,14 +178,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         this._vectorPropertyStorageNames = this._vectorProperties.Select(l => this._storagePropertyNames[l.DataModelPropertyName]).ToList();
 
         // Assign mapper.
-        this._mapper = this._options.JsonNodeCustomMapper ??
-            new WeaviateVectorStoreRecordMapper<TRecord>(
-                this.CollectionName,
-                this._keyProperty,
-                this._dataProperties,
-                this._vectorProperties,
-                this._storagePropertyNames,
-                s_jsonSerializerOptions);
+        this._mapper = this.InitializeMapper();
     }
 
     /// <inheritdoc />
@@ -294,9 +287,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             var includeVectors = options?.IncludeVectors is true;
             var request = new WeaviateGetCollectionObjectRequest(this.CollectionName, key, includeVectors).Build();
 
-            var jsonNode = await this.ExecuteRequestWithNotFoundHandlingAsync<JsonNode>(request, cancellationToken).ConfigureAwait(false);
+            var jsonObject = await this.ExecuteRequestWithNotFoundHandlingAsync<JsonObject>(request, cancellationToken).ConfigureAwait(false);
 
-            if (jsonNode is null)
+            if (jsonObject is null)
             {
                 return null;
             }
@@ -305,7 +298,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 DatabaseName,
                 this.CollectionName,
                 OperationName,
-                () => this._mapper.MapFromStorageToDataModel(jsonNode!, new() { IncludeVectors = includeVectors }));
+                () => this._mapper.MapFromStorageToDataModel(jsonObject!, new() { IncludeVectors = includeVectors }));
         });
     }
 
@@ -346,13 +339,13 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         var responses = await this.RunOperationAsync(OperationName, async () =>
         {
-            var jsonNodes = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
+            var jsonObjects = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromDataToStorageModel(record))).ToList();
 
-            var request = new WeaviateUpsertCollectionObjectBatchRequest(jsonNodes).Build();
+            var request = new WeaviateUpsertCollectionObjectBatchRequest(jsonObjects).Build();
 
             return await this.ExecuteRequestAsync<List<WeaviateUpsertCollectionObjectBatchResponse>>(request, cancellationToken).ConfigureAwait(false);
         }).ConfigureAwait(false);
@@ -529,6 +522,38 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         // If vector property is not provided in options, return first vector property from schema.
         return this._firstVectorProperty;
+    }
+
+    /// <summary>
+    /// Returns custom mapper, generic data model mapper or default record mapper.
+    /// </summary>
+    private IVectorStoreRecordMapper<TRecord, JsonObject> InitializeMapper()
+    {
+        if (this._options.JsonObjectCustomMapper is not null)
+        {
+            return this._options.JsonObjectCustomMapper;
+        }
+
+        if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<Guid>))
+        {
+            var mapper = new WeaviateGenericDataModelMapper(
+                this.CollectionName,
+                this._keyProperty,
+                this._dataProperties,
+                this._vectorProperties,
+                this._storagePropertyNames,
+                s_jsonSerializerOptions);
+
+            return (mapper as IVectorStoreRecordMapper<TRecord, JsonObject>)!;
+        }
+
+        return new WeaviateVectorStoreRecordMapper<TRecord>(
+            this.CollectionName,
+            this._keyProperty,
+            this._dataProperties,
+            this._vectorProperties,
+            this._storagePropertyNames,
+            s_jsonSerializerOptions);
     }
 
     #endregion
