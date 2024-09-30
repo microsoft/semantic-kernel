@@ -119,10 +119,14 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
                 f"Invalid channel binding for agent with id: `{id}` with name: ({type(agent).__name__})"
             )
 
+        message_count = len(self.messages)
+
         async for response_message in agent.invoke_stream(self):
             if response_message.content:
-                messages.append(response_message)
                 yield response_message
+
+        for message_index in range(message_count, len(self.messages)):
+            messages.append(self.messages[message_index])
 
     def _is_message_visible(self, message: ChatMessageContent, message_queue_count: int) -> bool:
         """Determine if a message is visible to the user."""

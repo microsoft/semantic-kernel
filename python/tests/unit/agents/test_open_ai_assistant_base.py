@@ -284,6 +284,7 @@ def mock_run_in_progress():
                     ]
                 ),
             )
+            self.last_error = None
 
         def update_status(self):
             self.poll_count += 1

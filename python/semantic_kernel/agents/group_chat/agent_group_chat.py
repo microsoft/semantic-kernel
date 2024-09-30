@@ -14,13 +14,14 @@ from semantic_kernel.agents.strategies import (
 from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class AgentGroupChat(AgentChat):
     """An agent chat that supports multi-turn interactions."""
 
@@ -86,6 +87,20 @@ class AgentGroupChat(AgentChat):
                 self.is_complete = await task
             yield message
 
+    async def invoke_stream_single_turn(self, agent: Agent) -> AsyncIterable[ChatMessageContent]:
+        """Invoke the agent chat for a single turn.
+
+        Args:
+            agent: The agent to invoke.
+
+        Yields:
+            The chat message.
+        """
+        async for message in self.invoke_stream(agent, is_joining=True):
+            yield message
+
+        self.is_complete = await self.termination_strategy.should_terminate(agent, self.history.messages)
+
     async def invoke(self, agent: Agent | None = None, is_joining: bool = True) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent chat asynchronously.
 
@@ -137,7 +152,7 @@ class AgentGroupChat(AgentChat):
 
     async def invoke_stream(
         self, agent: Agent | None = None, is_joining: bool = True
-    ) -> AsyncIterable[StreamingChatMessageContent]:
+    ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent chat stream asynchronously.
 
         Handles both group interactions and single agent interactions based on the provided arguments.
@@ -178,10 +193,9 @@ class AgentGroupChat(AgentChat):
                 raise AgentChatException("Failed to select agent") from ex
 
             async for message in super().invoke_agent_stream(selected_agent):
-                if message.role == AuthorRole.ASSISTANT:
-                    task = self.termination_strategy.should_terminate(selected_agent, self.history.messages)
-                    self.is_complete = await task
                 yield message
+
+            self.is_complete = await self.termination_strategy.should_terminate(selected_agent, self.history.messages)
 
             if self.is_complete:
                 break

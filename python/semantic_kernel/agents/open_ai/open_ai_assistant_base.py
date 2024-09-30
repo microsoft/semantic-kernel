@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 from collections.abc import AsyncIterable, Iterable
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from openai import AsyncOpenAI
@@ -49,6 +50,16 @@ if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+@experimental_class
+@dataclass
+class FunctionActionResult:
+    """Function Action Result."""
+
+    function_call_content: ChatMessageContent | None
+    function_result_content: ChatMessageContent | None
+    tool_outputs: list[dict[str, str]] | None
 
 
 @experimental_class
@@ -602,7 +613,7 @@ class OpenAIAssistantBase(Agent):
         truncation_message_count: int | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
-        metadata: dict[str, str] | None = {},
+        metadata: dict[str, str] | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the chat assistant.
@@ -659,7 +670,7 @@ class OpenAIAssistantBase(Agent):
         truncation_message_count: int | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
-        metadata: dict[str, str] | None = {},
+        metadata: dict[str, str] | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
         """Internal invoke method.
@@ -689,6 +700,9 @@ class OpenAIAssistantBase(Agent):
 
         if self._is_deleted:
             raise AgentInitializationException("The assistant has been deleted.")
+
+        if metadata is None:
+            metadata = {}
 
         self._check_if_deleted()
         tools = self._get_tools()
@@ -727,7 +741,7 @@ class OpenAIAssistantBase(Agent):
 
             if run.status in self.error_message_states:
                 error_message = ""
-                if hasattr(run, "last_error"):
+                if run.last_error and run.last_error.message:
                     error_message = run.last_error.message
                 raise AgentInvokeException(
                     f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}` "
@@ -787,7 +801,7 @@ class OpenAIAssistantBase(Agent):
                     )
                     if message:
                         content = generate_message_content(self.name, message)
-                        if len(content.items) > 0:
+                        if content and len(content.items) > 0:
                             message_count += 1
                             yield True, content
                 processed_step_ids.add(completed_step.id)
@@ -806,7 +820,7 @@ class OpenAIAssistantBase(Agent):
         truncation_message_count: int | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
-        metadata: dict[str, str] | None = {},
+        metadata: dict[str, str] | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the chat assistant with streaming."""
@@ -842,7 +856,7 @@ class OpenAIAssistantBase(Agent):
         truncation_message_count: int | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
-        metadata: dict[str, str] | None = {},
+        metadata: dict[str, str] | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
         """Internal invoke method with streaming."""
@@ -851,6 +865,9 @@ class OpenAIAssistantBase(Agent):
 
         if self._is_deleted:
             raise AgentInitializationException("The assistant has been deleted.")
+
+        if metadata is None:
+            metadata = {}
 
         tools = self._get_tools()
 
@@ -881,48 +898,60 @@ class OpenAIAssistantBase(Agent):
         )
 
         function_steps: dict[str, FunctionCallContent] = {}
+        message_ids = set()
 
         while True:
             async with stream as response_stream:
                 async for event in response_stream:
                     if event.event == "thread.run.created":
                         run = event.data
-                        logger.info(f"Run created with ID: {run.id}")
+                        logger.info(f"Assistant run created with ID: {run.id}")
                     elif event.event == "thread.run.in_progress":
                         run = event.data
-                        logger.info(f"Run in progress with ID: {run.id}")
+                        logger.info(f"Assistant run in progress with ID: {run.id}")
                     elif event.event == "thread.message.delta":
                         content = generate_streaming_message_content(self.name, event.data)
-                        if messages is not None and content.items:
-                            messages.append(content)
                         yield content
+                    elif event.event == "thread.message.completed":
+                        message_ids.add(event.data.id)
                     elif event.event == "thread.run.requires_action":
                         run = event.data
-                        (
-                            function_call_content,
-                            function_result_content,
-                            tool_outputs,
-                        ) = await self._handle_requires_action(run, function_steps)
-                        if function_result_content and messages is not None:
-                            messages.append(function_result_content)
-                        if function_call_content:
+                        function_action_result = await self._handle_streaming_requires_action(run, function_steps)
+                        if function_action_result is None:
+                            raise AgentInvokeException(
+                                f"Function call required but no function steps found for agent `{self.name}` "
+                                f"thread: {thread_id}."
+                            )
+                        if function_action_result.function_result_content and messages is not None:
+                            messages.append(function_action_result.function_result_content)
+                        if function_action_result.function_call_content:
                             if messages is not None:
-                                messages.append(function_call_content)
-
+                                messages.append(function_action_result.function_call_content)
                             stream = self.client.beta.threads.runs.submit_tool_outputs_stream(
                                 run_id=run.id,
                                 thread_id=thread_id,
-                                tool_outputs=tool_outputs,
+                                tool_outputs=function_action_result.tool_outputs,  # type: ignore
                             )
                             break
                     elif event.event == "thread.run.completed":
                         run = event.data
                         logger.info(f"Run completed with ID: {run.id}")
+                        if len(message_ids) > 0:
+                            for id in message_ids:
+                                message = await self._retrieve_message(
+                                    thread_id=thread_id,
+                                    message_id=id,  # type: ignore
+                                )
+
+                                if message and message.content:
+                                    content = generate_message_content(self.name, message)
+                                    if messages is not None:
+                                        messages.append(content)
                         return
                     elif event.event.startswith("thread.run.") and event.event.endswith("failed"):
-                        run = event.data
+                        run = event.data  # type: ignore
                         error_message = ""
-                        if hasattr(run, "last_error"):
+                        if run.last_error and run.last_error.message:
                             error_message = run.last_error.message
                         raise AgentInvokeException(
                             f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}` "
@@ -932,9 +961,9 @@ class OpenAIAssistantBase(Agent):
                     # If the inner loop completes without encountering a 'break', exit the outer loop
                     break
 
-    async def _handle_requires_action(
+    async def _handle_streaming_requires_action(
         self, run: Run, function_steps: dict[str, FunctionCallContent]
-    ) -> tuple[ChatMessageContent, ChatMessageContent, list[dict[str, str]]] | tuple[None, None, None]:
+    ) -> FunctionActionResult | None:
         fccs = get_function_call_contents(run, function_steps)
         if fccs:
             function_call_content = generate_function_call_content(agent_name=self.name, fccs=fccs)
@@ -945,8 +974,8 @@ class OpenAIAssistantBase(Agent):
             function_result_content = merge_function_results(chat_history.messages)[0]
 
             tool_outputs = self._format_tool_outputs(fccs, chat_history)
-            return function_call_content, function_result_content, tool_outputs
-        return None, None, None
+            return FunctionActionResult(function_call_content, function_result_content, tool_outputs)
+        return None
 
     # endregion
 

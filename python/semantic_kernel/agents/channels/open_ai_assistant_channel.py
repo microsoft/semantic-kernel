@@ -4,8 +4,6 @@ import sys
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any
 
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -16,13 +14,15 @@ from openai import AsyncOpenAI
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.assistant_content_generation import create_chat_message, generate_message_content
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
 
 
+@experimental_class
 class OpenAIAssistantChannel(AgentChannel):
     """OpenAI Assistant Channel."""
 
@@ -67,7 +67,7 @@ class OpenAIAssistantChannel(AgentChannel):
     @override
     async def invoke_stream(
         self, agent: "Agent", messages: list[ChatMessageContent]
-    ) -> AsyncIterable["StreamingChatMessageContent"]:
+    ) -> AsyncIterable["ChatMessageContent"]:
         """Invoke the agent stream.
 
         Args:
