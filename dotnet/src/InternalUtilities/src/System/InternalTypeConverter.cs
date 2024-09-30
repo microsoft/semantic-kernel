@@ -38,10 +38,8 @@ internal static class InternalTypeConverter
     /// </summary>
     /// <param name="sourceType">The source Type for which to retrieve the type-to-string converter delegate.</param>
     /// <returns>A Func delegate for converting the source type to a string, considering CultureInfo, or null if no suitable converter is found.</returns>
-    private static Func<object?, CultureInfo, string?>? GetTypeToStringConverterDelegate(
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicFields)] Type sourceType) =>
-        s_converters.GetOrAdd(sourceType, (
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicFields)] Type innerSourceType) =>
+    private static Func<object?, CultureInfo, string?>? GetTypeToStringConverterDelegate(Type sourceType) =>
+        s_converters.GetOrAdd(sourceType, (Type innerSourceType) =>
         {
             // Strings just render as themselves.
             if (innerSourceType == typeof(string))
