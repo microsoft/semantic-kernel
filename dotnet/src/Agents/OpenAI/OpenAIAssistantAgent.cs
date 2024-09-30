@@ -151,7 +151,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         AssistantClient client = CreateClient(provider);
 
         // Query and enumerate assistant definitions
-        await foreach (var model in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = AssistantCollectionOrder.Descending }, cancellationToken).ConfigureAwait(false))
+        await foreach (Assistant model in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = AssistantCollectionOrder.Descending }, cancellationToken).ConfigureAwait(false))
         {
             yield return CreateAssistantDefinition(model);
         }
