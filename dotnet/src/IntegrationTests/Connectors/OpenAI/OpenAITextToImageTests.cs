@@ -51,7 +51,7 @@ public sealed class OpenAITextToImageTests
         Assert.NotNull(openAIConfiguration);
 
         var kernel = Kernel.CreateBuilder()
-            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: null)
+            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey)
             .Build();
 
         var service = kernel.GetRequiredService<ITextToImageService>();

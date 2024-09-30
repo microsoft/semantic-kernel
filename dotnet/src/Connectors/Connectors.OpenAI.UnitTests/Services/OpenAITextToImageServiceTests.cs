@@ -65,9 +65,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         Assert.Equal(modelId, sut.Attributes["ModelId"]);
 
         // Act 
-#pragma warning disable CS0618 // Type or member is obsolete
         var result = await sut.GenerateImageAsync("description", width, height);
-#pragma warning restore CS0618 // Type or member is obsolete
 
         // Assert
         Assert.Equal("https://image-url/", result);

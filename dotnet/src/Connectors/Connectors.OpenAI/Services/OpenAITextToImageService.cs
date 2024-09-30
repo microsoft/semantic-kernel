@@ -36,7 +36,7 @@ public class OpenAITextToImageService : ITextToImageService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._client = new(modelId, apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(this.GetType()));
+        this._client = new(modelId ?? "dall-e-2", apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(this.GetType()));
     }
 
     /// <inheritdoc/>
@@ -45,5 +45,5 @@ public class OpenAITextToImageService : ITextToImageService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetImageContentsAsync(input, executionSettings, kernel, cancellationToken);
+        => this._client.GetImageContentsAsync(this._client.ModelId, input, executionSettings, kernel, cancellationToken);
 }
