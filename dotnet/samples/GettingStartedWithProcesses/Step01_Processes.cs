@@ -10,7 +10,7 @@ namespace GettingStartedWithProcesses;
 /// Demonstrate creation of <see cref="KernelProcess"/> and
 /// eliciting its response to three explicit user messages.
 /// </summary>
-public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
+public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
     /// <summary>
     /// Demonstrates the creation of a simple process that has multiple steps, takes
@@ -103,7 +103,9 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
             _state = state.State;
 
             _state.UserInputs.Add("Hello");
-            _state.UserInputs.Add("How are you?");
+            _state.UserInputs.Add("How tall is the tallest mountain?");
+            _state.UserInputs.Add("How low is the lowest valley?");
+            _state.UserInputs.Add("How wide is the widest river?");
             _state.UserInputs.Add("exit");
 
             return ValueTask.CompletedTask;
@@ -120,6 +122,8 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
         {
             var input = _state!.UserInputs[_state.CurrentInputIndex];
             _state.CurrentInputIndex++;
+
+            System.Console.WriteLine($"User: {input}");
 
             if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
             {
@@ -168,10 +172,15 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
             _state!.ChatMessages.Add(new(AuthorRole.User, userMessage));
             IChatCompletionService chatService = _kernel.Services.GetRequiredService<IChatCompletionService>();
             ChatMessageContent response = await chatService.GetChatMessageContentAsync(_state.ChatMessages).ConfigureAwait(false);
-            if (response != null)
+            if (response == null)
             {
-                _state.ChatMessages.Add(response!);
+                throw new InvalidOperationException("Failed to get a response from the chat completion service.");
             }
+
+            System.Console.WriteLine($"Assistant: {response.Content}");
+
+            // Update state with the response
+            _state.ChatMessages.Add(response);
 
             // emit event: assistantResponse
             await context.EmitEventAsync(new KernelProcessEvent { Id = ChatBotEvents.AssistantResponseGenerated, Data = response });
