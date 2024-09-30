@@ -53,12 +53,14 @@ internal partial class ClientCore
     /// <summary>
     /// Generates an image with the provided configuration.
     /// </summary>
+    /// <param name="targetModel">Model identifier</param>
     /// <param name="input">The input text content to generate the image</param>
     /// <param name="executionSettings">Execution settings for the image generation</param>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of image generated contents</returns>
     internal async Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(
+        string targetModel,
         TextContent input,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
@@ -79,8 +81,6 @@ internal partial class ClientCore
             EndUserId = imageSettings.EndUserId,
         };
 
-        var targetModel = this.GetModelId(imageSettings.ModelId);
-
         ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client!.GetImageClient(targetModel).GenerateImageAsync(input.Text, imageGenerationOptions, cancellationToken)).ConfigureAwait(false);
         var generatedImage = response.Value;
 
@@ -96,10 +96,6 @@ internal partial class ClientCore
 
         return result;
     }
-
-    protected virtual string GetModelId(string? settingsModelId)
-        // Defaults to the DALL-E 2 server-side - https://platform.openai.com/docs/api-reference/images/create#images-create-model.
-        => string.IsNullOrEmpty(settingsModelId) ? "dall-e-2" : settingsModelId!;
 
     private static GeneratedImageSize? GetGeneratedImageSize((int Width, int Height)? size)
         => size is null

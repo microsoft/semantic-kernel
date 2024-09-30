@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.TextToImage;
 public interface ITextToImageService : IAIService
 {
     /// <summary>
-    /// Generate images matching the given text description
+    /// Given a prompt and/or an input text, the model will generate a new image.
     /// </summary>
     /// <param name="input">Input text for image generation</param>
     /// <param name="executionSettings">Text to image execution settings</param>

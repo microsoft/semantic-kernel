@@ -125,5 +125,5 @@ public class AzureOpenAITextToImageService : ITextToImageService
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(TextContent input, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._client.GetImageContentsAsync(input, executionSettings, kernel, cancellationToken);
+        => this._client.GetImageContentsAsync(this._client.DeploymentName, input, executionSettings, kernel, cancellationToken);
 }

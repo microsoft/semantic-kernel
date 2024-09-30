@@ -15,15 +15,14 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAITextToImageExecutionSettings"/> class.
-    /// </summary>
-    public OpenAITextToImageExecutionSettings()
-    {
-    }
-
-    /// <summary>
     /// Optional width and height of the generated image.
     /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item>Must be one of <c>256x256, 512x512, or 1024x1024</c> for <c>dall-e-2</c> model.</item>
+    /// <item>Must be one of <c>1024x1024, 1792x1024, 1024x1792</c> for <c>dall-e-3</c> model.</item>
+    /// </list>
+    /// </remarks>
     public (int Width, int Height)? Size
     {
         get => this._size;
@@ -36,9 +35,16 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// The quality of the image that will be generated. Defaults to "standard"
-    /// "hd" or "high" creates images with finer details and greater consistency. This param is only supported for dall-e-3.
+    /// The quality of the image that will be generated.
     /// </summary>
+    /// <remarks>
+    /// Must be one of <c>standard</c> or <c>hd</c> or <c>high</c>.
+    /// <list type="bullet">
+    /// <item><c>standard</c>: creates images with standard quality. This is the default.</item>
+    /// <item><c>hd</c> OR <c>high</c>: creates images with finer details and greater consistency.</item>
+    /// </list>
+    /// This param is only supported for <c>dall-e-3</c> model.
+    /// </remarks>
     [JsonPropertyName("quality")]
     public string? Quality
     {
@@ -52,11 +58,16 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// The style of the generated images. Must be one of vivid or natural.
-    /// Vivid causes the model to lean towards generating hyper-real and dramatic images.
-    /// Natural causes the model to produce more natural, less hyper-real looking images.
-    /// This param is only supported for dall-e-3.
+    /// The style of the generated images.
     /// </summary>
+    /// <remarks>
+    /// Must be one of <c>vivid</c> or <c>natural</c>.
+    /// <list type="bullet">
+    /// <item><c>vivid</c>: causes the model to lean towards generating hyper-real and dramatic images.</item>
+    /// <item><c>natural</c>: causes the model to produce more natural, less hyper-real looking images.</item>
+    /// </list>
+    /// This param is only supported for <c>dall-e-3</c> model.
+    /// </remarks>
     [JsonPropertyName("style")]
     public string? Style
     {
@@ -70,11 +81,12 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// The format in which the generated images are returned.
-    /// Can be a <see cref="GeneratedImageFormat"/> or a string where:
+    /// The format of the generated images.
+    /// Can be a <see cref="GeneratedImageFormat"/> or a <c>string</c> where:
     /// <list type="bullet">
-    /// <item>Url = "url" or "uri".</item>
-    /// <item>Base64 = "b64_json" or "bytes".</item>
+    /// <item><see cref="GeneratedImageFormat"/>: causes the model to generated in the provided format</item>
+    /// <item><c>url</c> OR <c>uri</c>: causes the model to return an url for the generated images.</item>
+    /// <item><c>b64_json</c> or <c>bytes</c>: causes the model to return in a Base64 format the content of the images.</item>
     /// </list>
     /// </summary>
     [JsonPropertyName("response_format")]

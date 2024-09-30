@@ -138,4 +138,8 @@ internal partial class AzureClientCore : ClientCore
 
         return options;
     }
+
+    /// <inheritdoc/>
+    protected override string GetClientModelId()
+        => this.DeploymentName;
 }

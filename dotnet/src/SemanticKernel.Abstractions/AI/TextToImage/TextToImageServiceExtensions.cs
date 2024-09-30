@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ namespace Microsoft.SemanticKernel.TextToImage;
 public static class TextToImageServiceExtensions
 {
     /// <summary>
-    /// Generate an image matching the given description
+    /// Given a prompt and/or an input text, the model will generate a new image.
     /// </summary>
     /// <param name="service">Target <see cref="ITextToImageService"/> instance</param>
     /// <param name="description">Image generation prompt</param>
@@ -22,7 +21,6 @@ public static class TextToImageServiceExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Generated image in base64 format or image URL</returns>
-    [Obsolete("This method is obsolete. Use GetImageContentsAsync instead.")]
     public static async Task<string> GenerateImageAsync(this ITextToImageService service,
     string description,
     int width,
