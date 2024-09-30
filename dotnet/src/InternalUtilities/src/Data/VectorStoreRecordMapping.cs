@@ -18,12 +18,12 @@ internal static class VectorStoreRecordMapping
     /// <summary>
     /// Build a list of properties with their values from the given data model properties and storage values.
     /// </summary>
-    /// <typeparam name="TStorageType">The type of the storage proeprties.</typeparam>
+    /// <typeparam name="TStorageType">The type of the storage properties.</typeparam>
     /// <param name="dataModelPropertiesInfo"><see cref="PropertyInfo"/> objects listing the properties on the data model to get values for.</param>
     /// <param name="dataModelToStorageNameMapping">Storage property names keyed by data property names.</param>
     /// <param name="storageValues">A dictionary of storage values by storage property name.</param>
     /// <param name="storageValueConverter">An optional function to convert the storage property values to data property values.</param>
-    /// <returns>The list of data property ojects and their values.</returns>
+    /// <returns>The list of data property objects and their values.</returns>
     public static IEnumerable<KeyValuePair<PropertyInfo, object?>> BuildPropertiesInfoWithValues<TStorageType>(
         IEnumerable<PropertyInfo> dataModelPropertiesInfo,
         IDictionary<string, string> dataModelToStorageNameMapping,
