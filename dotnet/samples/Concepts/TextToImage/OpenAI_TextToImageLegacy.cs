@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
