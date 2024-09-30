@@ -15,8 +15,8 @@ class BedrockBase(KernelBaseModel, ABC):
 
     # Amazon Bedrock Clients
     # Runtime Client: Use for inference
-    # Client: Use for model management
     bedrock_runtime_client: Any
+    # Client: Use for model management
     bedrock_client: Any
 
     async def get_foundation_model_info(self, model_id: str) -> dict[str, Any]:
