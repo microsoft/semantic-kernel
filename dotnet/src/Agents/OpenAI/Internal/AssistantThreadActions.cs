@@ -279,7 +279,7 @@ internal static class AssistantThreadActions
 
                     if (message is not null)
                     {
-                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message);
+                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, completedStep);
 
                         if (content.Items.Count > 0)
                         {
@@ -373,13 +373,14 @@ internal static class AssistantThreadActions
 
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
-        HashSet<string> messageIds = [];
-
+        Dictionary<string, RunStep?> activeMessages = [];
         ThreadRun? run = null;
+        RunStep? currentStep = null;
+
         IAsyncEnumerable<StreamingUpdate> asyncUpdates = client.CreateRunStreamingAsync(threadId, agent.Id, options, cancellationToken);
         do
         {
-            messageIds.Clear();
+            activeMessages.Clear();
 
             await foreach (StreamingUpdate update in asyncUpdates.ConfigureAwait(false))
             {
@@ -387,12 +388,42 @@ internal static class AssistantThreadActions
                 {
                     run = runUpdate.Value;
 
-                    logger.LogOpenAIAssistantCreatedRun(nameof(InvokeAsync), run.Id, threadId);
+                    switch (runUpdate.UpdateKind)
+                    {
+                        case StreamingUpdateReason.RunCreated:
+                            logger.LogOpenAIAssistantCreatedRun(nameof(InvokeAsync), run.Id, threadId);
+                            break;
+                    }
                 }
                 else if (update is MessageContentUpdate contentUpdate)
                 {
-                    messageIds.Add(contentUpdate.MessageId);
-                    yield return GenerateStreamingMessageContent(agent.GetName(), contentUpdate);
+                    switch (contentUpdate.UpdateKind)
+                    {
+                        case StreamingUpdateReason.MessageUpdated:
+                            yield return GenerateStreamingMessageContent(agent.GetName(), contentUpdate);
+                            break;
+                    }
+                }
+                else if (update is MessageStatusUpdate statusUpdate)
+                {
+                    switch (statusUpdate.UpdateKind)
+                    {
+                        case StreamingUpdateReason.MessageCompleted:
+                            activeMessages.Add(statusUpdate.Value.Id, currentStep);
+                            break;
+                    }
+                }
+                else if (update is RunStepUpdate stepUpdate)
+                {
+                    switch (stepUpdate.UpdateKind)
+                    {
+                        case StreamingUpdateReason.RunStepCreated:
+                            currentStep = stepUpdate.Value;
+                            break;
+                        case StreamingUpdateReason.RunStepCompleted:
+                            currentStep = null;
+                            break;
+                    }
                 }
             }
 
@@ -432,22 +463,23 @@ internal static class AssistantThreadActions
                 }
             }
 
-            if (messageIds.Count > 0)
+            if (activeMessages.Count > 0)
             {
                 logger.LogOpenAIAssistantProcessingRunMessages(nameof(InvokeAsync), run!.Id, threadId);
 
-                foreach (string messageId in messageIds)
+                foreach (string messageId in activeMessages.Keys)
                 {
+                    RunStep? step = activeMessages[messageId];
                     ThreadMessage? message = await RetrieveMessageAsync(client, threadId, messageId, agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
 
                     if (message != null)
                     {
-                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message);
+                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, step);
                         messages?.Add(content);
                     }
                 }
 
-                logger.LogOpenAIAssistantProcessedRunMessages(nameof(InvokeAsync), messageIds.Count, run!.Id, threadId);
+                logger.LogOpenAIAssistantProcessedRunMessages(nameof(InvokeAsync), activeMessages.Count, run!.Id, threadId);
             }
         }
         while (run?.Status != RunStatus.Completed);
@@ -467,14 +499,29 @@ internal static class AssistantThreadActions
         return steps;
     }
 
-    private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message)
+    private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message, RunStep? completedStep = null)
     {
         AuthorRole role = new(message.Role.ToString());
+
+        Dictionary<string, object?>? metaData =
+            completedStep != null ?
+                new Dictionary<string, object?>
+                {
+                    { nameof(completedStep.CreatedAt), completedStep.CreatedAt },
+                    { nameof(MessageContentUpdate.MessageId), message.Id },
+                    { nameof(RunStepDetailsUpdate.StepId), completedStep.Id },
+                    { nameof(completedStep.RunId), completedStep.RunId },
+                    { nameof(completedStep.ThreadId), completedStep.ThreadId },
+                    { nameof(completedStep.AssistantId), completedStep.AssistantId },
+                    { nameof(completedStep.Usage), completedStep.Usage },
+                } :
+                null;
 
         ChatMessageContent content =
             new(role, content: null)
             {
                 AuthorName = assistantName,
+                Metadata = metaData,
             };
 
         foreach (MessageContent itemContent in message.Content)
