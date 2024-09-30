@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.TextToImage;
 namespace TextToImage;
 
 // The following example shows how to use Semantic Kernel with OpenAI DALL-E 2 to create images
-public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(output)
+public class OpenAI_TextToImage(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task OpenAIDallE2Async()
