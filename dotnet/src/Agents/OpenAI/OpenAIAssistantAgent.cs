@@ -292,7 +292,8 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     {
         if (!this.IsDeleted)
         {
-            this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value.Deleted;
+            AssistantDeletionResult result = await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false);
+            this.IsDeleted = result.Deleted;
         }
 
         return this.IsDeleted;
