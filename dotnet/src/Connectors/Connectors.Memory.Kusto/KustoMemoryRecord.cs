@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Text.Json.Serialization;
 using Kusto.Cloud.Platform.Utils;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Kusto;
 
@@ -26,7 +24,6 @@ public sealed class KustoMemoryRecord
     /// <summary>
     /// Source content embedding.
     /// </summary>
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float> Embedding { get; set; }
 
     /// <summary>

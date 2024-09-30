@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
@@ -23,7 +22,6 @@ public class QdrantVectorRecord
     /// The embedding data.
     /// </summary>
     [JsonPropertyName("embedding")]
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float> Embedding { get; }
 
     /// <summary>

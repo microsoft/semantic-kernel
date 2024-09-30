@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
@@ -184,8 +185,9 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
     /// </summary>
     private static async Task<ChatHistory?> ChatHistoryLastMessageReducerAsync(ChatHistory chatHistory, CancellationToken cancellationToken)
     {
-        var firstMessage = chatHistory.FirstOrDefault();
-        ChatHistory reducedChatHistory = (firstMessage?.Role == AuthorRole.System) ? new(firstMessage?.Content!) : new();
+        var systemMessage = GetSystemMessage(chatHistory);
+        ChatHistory reducedChatHistory = systemMessage is not null ? new(systemMessage.Content!) : new();
+        // Using the last message only but could be the last N messages
         reducedChatHistory.Add(chatHistory[^1]);
         return reducedChatHistory;
     }
@@ -195,14 +197,14 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
     /// </summary>
     private static async Task<ChatHistory?> ChatHistoryMaxTokensReducerAsync(ChatHistory chatHistory, CancellationToken cancellationToken)
     {
-        ChatHistory reducedChatHistory = new();
+        ChatHistory reducedChatHistory = [];
         var totalTokenCount = 0;
         var insertIndex = 0;
-        var firstMessage = chatHistory.FirstOrDefault();
-        if (firstMessage?.Role == AuthorRole.System)
+        var systemMessage = GetSystemMessage(chatHistory);
+        if (systemMessage is not null)
         {
-            reducedChatHistory.Add(firstMessage);
-            totalTokenCount += (int)(firstMessage.Metadata?["TokenCount"] ?? 0);
+            reducedChatHistory.Add(systemMessage);
+            totalTokenCount += (int)(systemMessage.Metadata?["TokenCount"] ?? 0);
             insertIndex = 1;
         }
         // Add the remaining messages that fit within the token limit
@@ -217,6 +219,26 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
             totalTokenCount += tokenCount;
         }
         return reducedChatHistory;
+    }
+
+    /// <summary>
+    /// ChatHistoryReducer function that summarizes as.
+    /// </summary>
+    private static async Task<ChatHistory?> ChatHistorySummarizingReducerAsync(ChatHistory chatHistory, CancellationToken cancellationToken)
+    {
+        var systemMessage = GetSystemMessage(chatHistory);
+        ChatHistory reducedChatHistory = systemMessage is not null ? new(systemMessage.Content!) : new();
+        // Using the last message only but could be the last N messages
+        reducedChatHistory.Add(chatHistory[^1]);
+        return reducedChatHistory;
+    }
+
+    /// <summary>
+    /// Returns the system prompt from the chat history.
+    /// </summary>
+    private static ChatMessageContent? GetSystemMessage(ChatHistory chatHistory)
+    {
+        return chatHistory.FirstOrDefault(m => m.Role == AuthorRole.System);
     }
     #endregion
 }

@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// Source copied from https://github.com/eiriktsarpalis/stj-schema-mapper
+// It should be kept in sync with any changes made in that repo,
+// and should be removed once the relevant replacements are available in STJv9.
+
 #if !NET9_0_OR_GREATER && !SYSTEM_TEXT_JSON_V9
 using System;
 using System.Collections.Generic;
