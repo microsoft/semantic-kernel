@@ -230,7 +230,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         // Validate input
         Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
 
-        return (await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false)).Value.Deleted;
+        ThreadDeletionResult result = await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+
+        return result.Deleted;
     }
 
     /// <summary>
