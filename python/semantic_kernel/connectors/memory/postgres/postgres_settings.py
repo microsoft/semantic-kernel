@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from psycopg.conninfo import conninfo_to_dict
 from psycopg_pool import AsyncConnectionPool
@@ -42,7 +42,7 @@ class PostgresSettings(KernelBaseSettings):
 
     default_dimensionality: int = 100
 
-    def get_connection_args(self) -> dict[str, str | int | None]:
+    def get_connection_args(self) -> dict[str, Any]:
         """Get connection arguments."""
         result = conninfo_to_dict(self.connection_string.get_secret_value()) if self.connection_string else {}
 
