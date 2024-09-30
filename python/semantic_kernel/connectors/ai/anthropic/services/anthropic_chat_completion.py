@@ -362,9 +362,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         }
 
     @override
-    def _update_function_choice_settings_callback(
-        self,
-    ):
+    def _update_function_choice_settings_callback(self):
         return self.update_settings_from_function_call_configuration_anthropic
 
     async def _send_chat_request(self, settings: AnthropicChatPromptExecutionSettings) -> list["ChatMessageContent"]:
