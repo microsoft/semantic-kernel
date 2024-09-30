@@ -188,7 +188,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Ensure template is valid (avoid failure after posting assistant creation)
         IPromptTemplate? template =
-            !string.IsNullOrWhiteSpace(model.Instructions) ? templateFactory?.Create(new PromptTemplateConfig(model.Instructions!)) : null;
+            !string.IsNullOrWhiteSpace(model.Instructions) ?
+                templateFactory?.Create(new PromptTemplateConfig(model.Instructions!)) :
+                null;
 
         // Instantiate the agent
         return
