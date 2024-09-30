@@ -327,7 +327,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         await enumerator.MoveNextAsync();
         Assert.NotNull(enumerator.Current.Metadata?["Usage"]);
-        Assert.Equal("{\"OutputTokens\":8,\"InputTokens\":13,\"TotalTokens\":21}", JsonSerializer.Serialize(enumerator.Current.Metadata?["Usage"]));
+        var serializedUsage = JsonSerializer.Serialize(enumerator.Current.Metadata?["Usage"])!;
+        Assert.Contains("\"OutputTokenCount\":8", serializedUsage);
+        Assert.Contains("\"InputTokenCount\":13", serializedUsage);
+        Assert.Contains("\"TotalTokenCount\":21", serializedUsage);
     }
 
     [Fact]
