@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Data;
@@ -13,6 +15,30 @@ namespace SemanticKernel.UnitTests.Data;
 
 public class VectorStoreRecordPropertyReaderTests
 {
+    [Fact]
+    public void GetParameterlessConstructorReturnsConstructor()
+    {
+        // Act.
+        var constructor = VectorStoreRecordPropertyReader.GetParameterlessConstructor(typeof(SinglePropsModel));
+
+        // Assert.
+        Assert.NotNull(constructor);
+    }
+
+    [Fact]
+    public void GetParameterlessConstructorThrowsForNoPublicConstructor()
+    {
+        // Act & Assert.
+        Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.GetParameterlessConstructor(typeof(NoPublicConstructorModel)));
+    }
+
+    [Fact]
+    public void GetParameterlessConstructorThrowsForNoParameterlessConstructor()
+    {
+        // Act & Assert.
+        Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.GetParameterlessConstructor(typeof(NoParameterlessConstructorModel)));
+    }
+
     [Fact]
     public void SplitDefinitionsAndVerifyReturnsProperties()
     {
@@ -370,7 +396,46 @@ public class VectorStoreRecordPropertyReaderTests
         assertJsonNameMap(jsonNameMap2);
     }
 
+    [Theory]
+    [InlineData(typeof(List<string>), true)]
+    [InlineData(typeof(ICollection<string>), true)]
+    [InlineData(typeof(IEnumerable<string>), true)]
+    [InlineData(typeof(IList<string>), true)]
+    [InlineData(typeof(IReadOnlyCollection<string>), true)]
+    [InlineData(typeof(IReadOnlyList<string>), true)]
+    [InlineData(typeof(string[]), true)]
+    [InlineData(typeof(IEnumerable), true)]
+    [InlineData(typeof(ArrayList), true)]
+    [InlineData(typeof(string), false)]
+    [InlineData(typeof(HashSet<string>), false)]
+    [InlineData(typeof(ISet<string>), false)]
+    [InlineData(typeof(Dictionary<string, string>), false)]
+    [InlineData(typeof(Stack<string>), false)]
+    [InlineData(typeof(Queue<string>), false)]
+    public void IsSupportedEnumerableTypeReturnsCorrectAnswerForEachType(Type type, bool expected)
+    {
+        // Act.
+        var actual = VectorStoreRecordPropertyReader.IsSupportedEnumerableType(type);
+
+        // Assert.
+        Assert.Equal(expected, actual);
+    }
+
 #pragma warning disable CA1812 // Invalid unused classes error, since I am using these for testing purposes above.
+
+    private sealed class NoPublicConstructorModel
+    {
+        private NoPublicConstructorModel()
+        {
+        }
+    }
+
+    private sealed class NoParameterlessConstructorModel
+    {
+        public NoParameterlessConstructorModel(string param1)
+        {
+        }
+    }
 
     private sealed class NoKeyModel
     {
