@@ -37,6 +37,5 @@
 
   <ItemGroup>
     <PackageReference Include="OpenAI" />
-    <PackageReference Include="System.ClientModel" />
   </ItemGroup>
 </Project>

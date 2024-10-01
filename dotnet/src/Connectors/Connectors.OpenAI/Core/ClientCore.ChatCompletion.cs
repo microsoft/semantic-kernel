@@ -182,14 +182,15 @@ internal partial class ClientCore
                         // Capture available metadata even if the operation failed.
                         activity
                             .SetResponseId(chatCompletion.Id)
-                            .SetPromptTokenUsage(chatCompletion.Usage.InputTokens)
-                            .SetCompletionTokenUsage(chatCompletion.Usage.OutputTokens);
+                            .SetPromptTokenUsage(chatCompletion.Usage.InputTokenCount)
+                            .SetCompletionTokenUsage(chatCompletion.Usage.OutputTokenCount);
                     }
+
                     throw;
                 }
 
                 chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel);
-                activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokens, chatCompletion.Usage.OutputTokens);
+                activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
             }
 
             // If we don't want to attempt to invoke any functions or there is nothing to call, just return the result.
@@ -455,7 +456,7 @@ internal partial class ClientCore
     {
         var options = new ChatCompletionOptions
         {
-            MaxTokens = executionSettings.MaxTokens,
+            MaxOutputTokenCount = executionSettings.MaxTokens,
             Temperature = (float?)executionSettings.Temperature,
             TopP = (float?)executionSettings.TopP,
             FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
@@ -520,11 +521,12 @@ internal partial class ClientCore
                 switch (formatString)
                 {
                     case "json_object":
-                        return ChatResponseFormat.JsonObject;
+                        return ChatResponseFormat.CreateJsonObjectFormat();
 
                     case "text":
-                        return ChatResponseFormat.Text;
+                        return ChatResponseFormat.CreateTextFormat();
                 }
+
                 break;
 
             case JsonElement formatElement:
@@ -536,12 +538,13 @@ internal partial class ClientCore
                     switch (formatString)
                     {
                         case "json_object":
-                            return ChatResponseFormat.JsonObject;
+                            return ChatResponseFormat.CreateJsonObjectFormat();
 
                         case "text":
-                            return ChatResponseFormat.Text;
+                            return ChatResponseFormat.CreateTextFormat();
                     }
                 }
+
                 break;
             case Type formatObjectType:
                 return GetJsonSchemaResponseFormat(formatObjectType);
@@ -555,14 +558,12 @@ internal partial class ClientCore
     /// </summary>
     private static ChatResponseFormat GetJsonSchemaResponseFormat(Type formatObjectType)
     {
-        var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ?
-            Nullable.GetUnderlyingType(formatObjectType)! :
-            formatObjectType;
+        var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
 
         var schema = KernelJsonSchemaBuilder.Build(options: null, type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
-        return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, strictSchemaEnabled: true);
+        return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, jsonSchemaIsStrict: true);
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
@@ -679,13 +680,16 @@ internal partial class ClientCore
                 return [new UserChatMessage(textContent.Text) { ParticipantName = message.AuthorName }];
             }
 
-            return [new UserChatMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentPart)(item switch
-            {
-                TextContent textContent => ChatMessageContentPart.CreateTextMessageContentPart(textContent.Text),
-                ImageContent imageContent => GetImageContentItem(imageContent),
-                _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
-            })))
-            { ParticipantName = message.AuthorName }];
+            return
+            [
+                new UserChatMessage(message.Items.Select(static (KernelContent item) => item switch
+                    {
+                        TextContent textContent => ChatMessageContentPart.CreateTextPart(textContent.Text),
+                        ImageContent imageContent => GetImageContentItem(imageContent),
+                        _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
+                    }))
+                { ParticipantName = message.AuthorName }
+            ];
         }
 
         if (message.Role == AuthorRole.Assistant)
@@ -753,7 +757,13 @@ internal partial class ClientCore
                 return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
             }
 
-            return [new AssistantChatMessage(toolCalls, message.Content) { ParticipantName = message.AuthorName }];
+            var assistantMessage = new AssistantChatMessage(toolCalls) { ParticipantName = message.AuthorName };
+            if (message.Content is { } content)
+            {
+                assistantMessage.Content.Add(content);
+            }
+
+            return [assistantMessage];
         }
 
         throw new NotSupportedException($"Role {message.Role} is not supported.");
@@ -763,12 +773,12 @@ internal partial class ClientCore
     {
         if (imageContent.Data is { IsEmpty: false } data)
         {
-            return ChatMessageContentPart.CreateImageMessageContentPart(BinaryData.FromBytes(data), imageContent.MimeType);
+            return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MimeType);
         }
 
         if (imageContent.Uri is not null)
         {
-            return ChatMessageContentPart.CreateImageMessageContentPart(imageContent.Uri);
+            return ChatMessageContentPart.CreateImagePart(imageContent.Uri);
         }
 
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
@@ -875,13 +885,13 @@ internal partial class ClientCore
         if (this.Logger!.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation(
-                "Prompt tokens: {InputTokens}. Completion tokens: {OutputTokens}. Total tokens: {TotalTokens}.",
-                usage.InputTokens, usage.OutputTokens, usage.TotalTokens);
+                "Prompt tokens: {InputTokenCount}. Completion tokens: {OutputTokenCount}. Total tokens: {TotalTokenCount}.",
+                usage.InputTokenCount, usage.OutputTokenCount, usage.TotalTokenCount);
         }
 
-        s_promptTokensCounter.Add(usage.InputTokens);
-        s_completionTokensCounter.Add(usage.OutputTokens);
-        s_totalTokensCounter.Add(usage.TotalTokens);
+        s_promptTokensCounter.Add(usage.InputTokenCount);
+        s_completionTokensCounter.Add(usage.OutputTokenCount);
+        s_totalTokensCounter.Add(usage.TotalTokenCount);
     }
 
     private ToolCallingConfig GetFunctionCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory, int requestIndex)
@@ -932,7 +942,7 @@ internal partial class ClientCore
 
         return new ToolCallingConfig(
             Tools: tools ?? [s_nonInvocableFunctionTool],
-            Choice: choice ?? ChatToolChoice.None,
+            Choice: choice ?? ChatToolChoice.CreateNoneChoice(),
             AutoInvoke: autoInvoke,
             AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction,
             Options: options);
@@ -974,15 +984,15 @@ internal partial class ClientCore
         {
             if (config.Choice == FunctionChoice.Auto)
             {
-                toolChoice = ChatToolChoice.Auto;
+                toolChoice = ChatToolChoice.CreateAutoChoice();
             }
             else if (config.Choice == FunctionChoice.Required)
             {
-                toolChoice = ChatToolChoice.Required;
+                toolChoice = ChatToolChoice.CreateRequiredChoice();
             }
             else if (config.Choice == FunctionChoice.None)
             {
-                toolChoice = ChatToolChoice.None;
+                toolChoice = ChatToolChoice.CreateNoneChoice();
             }
             else
             {

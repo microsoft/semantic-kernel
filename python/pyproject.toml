@@ -28,6 +28,9 @@ dependencies = [
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
 
+    # azure identity
+    "azure-identity ~= 1.13",
+
     # embeddings
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
