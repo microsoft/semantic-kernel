@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Google.Apis.CustomSearchAPI.v1.Data;
 using Google.Apis.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
@@ -24,6 +25,20 @@ public sealed class GoogleTextSearchTests : IDisposable
         this._messageHandlerStub = new MultipleHttpMessageHandlerStub();
         this._clientFactory = new CustomHttpClientFactory(this._messageHandlerStub);
         this._kernel = new Kernel();
+    }
+
+    [Fact]
+    public void AddGoogleTextSearchSucceeds()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder.AddGoogleTextSearch(searchEngineId: "searchEngineId", apiKey: "ApiKey");
+        var kernel = builder.Build();
+
+        // Assert
+        Assert.IsType<GoogleTextSearch>(kernel.Services.GetRequiredService<ITextSearch>());
     }
 
     [Fact]
