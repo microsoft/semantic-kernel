@@ -44,7 +44,7 @@ public static class WebKernelBuilderExtensions
         GoogleTextSearchOptions? options = null,
         string? serviceId = default)
     {
-        builder.AddGoogleTextSearch(searchEngineId, apiKey, options, serviceId);
+        builder.Services.AddGoogleTextSearch(searchEngineId, apiKey, options, serviceId);
         return builder;
     }
 }

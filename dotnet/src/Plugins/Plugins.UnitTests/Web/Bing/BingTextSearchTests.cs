@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
-using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Xunit;
 
@@ -38,7 +37,7 @@ public sealed class BingTextSearchTests : IDisposable
         var kernel = builder.Build();
 
         // Assert
-        Assert.NotNull(kernel.Services.GetRequiredService<ITextSearch>());
+        Assert.IsType<BingTextSearch>(kernel.Services.GetRequiredService<ITextSearch>());
     }
 
     [Fact]

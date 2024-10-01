@@ -38,7 +38,7 @@ public sealed class GoogleTextSearchTests : IDisposable
         var kernel = builder.Build();
 
         // Assert
-        Assert.NotNull(kernel.Services.GetRequiredService<ITextSearch>());
+        Assert.IsType<GoogleTextSearch>(kernel.Services.GetRequiredService<ITextSearch>());
     }
 
     [Fact]
