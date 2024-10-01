@@ -53,7 +53,7 @@ internal partial class ClientCore
     private static AudioTranscriptionOptions AudioOptionsFromExecutionSettings(OpenAIAudioToTextExecutionSettings executionSettings)
         => new()
         {
-            Granularities = AudioTimestampGranularities.Default,
+            TimestampGranularities = AudioTimestampGranularities.Default,
             Language = executionSettings.Language,
             Prompt = executionSettings.Prompt,
             Temperature = executionSettings.Temperature,
@@ -62,15 +62,15 @@ internal partial class ClientCore
 
     private static AudioTranscriptionFormat? ConvertResponseFormat(string? responseFormat)
     {
-        return responseFormat switch
+        switch (responseFormat)
         {
-            "json" => AudioTranscriptionFormat.Simple,
-            "verbose_json" => AudioTranscriptionFormat.Verbose,
-            "vtt" => AudioTranscriptionFormat.Vtt,
-            "srt" => AudioTranscriptionFormat.Srt,
-            null => null,
-            _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
-        };
+            case "json": return AudioTranscriptionFormat.Simple;
+            case "verbose_json": return AudioTranscriptionFormat.Verbose;
+            case "vtt": return AudioTranscriptionFormat.Vtt;
+            case "srt": return AudioTranscriptionFormat.Srt;
+            case null: return null;
+            default: throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported.");
+        }
     }
 
     private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription)

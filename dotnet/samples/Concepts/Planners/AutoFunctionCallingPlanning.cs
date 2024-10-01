@@ -14,6 +14,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Planning;
 using OpenAI.Chat;
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace Planners;
 

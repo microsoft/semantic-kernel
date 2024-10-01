@@ -289,7 +289,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <returns>True if assistant definition has been deleted</returns>
     /// <remarks>
     /// Assistant based agent will not be useable after deletion.
-    /// </remarks>
+    /// </remarks>B
     public async Task<bool> DeleteAsync(CancellationToken cancellationToken = default)
     {
         if (!this.IsDeleted)

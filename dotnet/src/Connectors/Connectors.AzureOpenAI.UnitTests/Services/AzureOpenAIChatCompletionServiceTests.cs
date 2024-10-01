@@ -21,6 +21,7 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using OpenAI.Chat;
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 

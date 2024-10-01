@@ -16,6 +16,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
