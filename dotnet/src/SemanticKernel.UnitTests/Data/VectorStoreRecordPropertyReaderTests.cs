@@ -14,6 +14,30 @@ namespace SemanticKernel.UnitTests.Data;
 public class VectorStoreRecordPropertyReaderTests
 {
     [Fact]
+    public void GetParameterlessConstructorReturnsConstructor()
+    {
+        // Act.
+        var constructor = VectorStoreRecordPropertyReader.GetParameterlessConstructor(typeof(SinglePropsModel));
+
+        // Assert.
+        Assert.NotNull(constructor);
+    }
+
+    [Fact]
+    public void GetParameterlessConstructorThrowsForNoPublicConstructor()
+    {
+        // Act & Assert.
+        Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.GetParameterlessConstructor(typeof(NoPublicConstructorModel)));
+    }
+
+    [Fact]
+    public void GetParameterlessConstructorThrowsForNoParameterlessConstructor()
+    {
+        // Act & Assert.
+        Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.GetParameterlessConstructor(typeof(NoParameterlessConstructorModel)));
+    }
+
+    [Fact]
     public void SplitDefinitionsAndVerifyReturnsProperties()
     {
         // Act.
@@ -299,6 +323,20 @@ public class VectorStoreRecordPropertyReaderTests
     }
 
 #pragma warning disable CA1812 // Invalid unused classes error, since I am using these for testing purposes above.
+
+    private sealed class NoPublicConstructorModel
+    {
+        private NoPublicConstructorModel()
+        {
+        }
+    }
+
+    private sealed class NoParameterlessConstructorModel
+    {
+        public NoParameterlessConstructorModel(string param1)
+        {
+        }
+    }
 
     private sealed class NoKeyModel
     {
