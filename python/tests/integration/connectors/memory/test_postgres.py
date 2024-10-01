@@ -189,6 +189,8 @@ async def test_upsert_get_and_delete_batch(simple_collection: VectorStoreRecordC
     assert result_before_upsert is None
 
     await simple_collection.upsert_batch([record1, record2])
+    # Test get_batch for the two existing keys and one non-existing key;
+    # this should return only the two existing records.
     result = await simple_collection.get_batch([1, 2, 3])
     assert result is not None
     assert len(result) == 2
