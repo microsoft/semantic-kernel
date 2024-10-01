@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,21 +47,6 @@ public class VectorStoreTextSearchTestBase
         var vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorSearch, new MockTextEmbeddingGenerationService());
         var sut = new VectorStoreTextSearch<DataModel>(vectorizableTextSearch, stringMapper, resultMapper);
         return sut;
-    }
-
-    /// <summary>
-    /// Convert an <see cref="IAsyncEnumerable{T}"/> to a <see cref="List{T}"/>.
-    /// </summary>
-    public static async ValueTask<List<T>> ToListAsync<T>(IAsyncEnumerable<T> source, CancellationToken cancellationToken = default)
-    {
-        var result = new List<T>();
-
-        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            result.Add(item);
-        }
-
-        return result;
     }
 
     /// <summary>

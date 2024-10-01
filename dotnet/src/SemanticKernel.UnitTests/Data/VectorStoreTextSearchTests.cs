@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Data;
 using Xunit;
@@ -48,7 +49,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 
         // Act.
         KernelSearchResults<string> searchResults = await sut.SearchAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
-        var results = await ToListAsync(searchResults.Results);
+        var results = await searchResults.Results.ToListAsync();
 
         Assert.Equal(2, results.Count);
     }
@@ -61,7 +62,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 
         // Act.
         KernelSearchResults<TextSearchResult> searchResults = await sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
-        var results = await ToListAsync(searchResults.Results);
+        var results = await searchResults.Results.ToListAsync();
 
         Assert.Equal(2, results.Count);
     }
@@ -74,7 +75,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 
         // Act.
         KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
-        var results = await ToListAsync(searchResults.Results);
+        var results = await searchResults.Results.ToListAsync();
 
         Assert.Equal(2, results.Count);
     }
@@ -87,7 +88,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 
         // Act.
         KernelSearchResults<string> searchResults = await sut.SearchAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
-        var results = await ToListAsync(searchResults.Results);
+        var results = await searchResults.Results.ToListAsync();
 
         Assert.Equal(2, results.Count);
     }
@@ -100,7 +101,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 
         // Act.
         KernelSearchResults<TextSearchResult> searchResults = await sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
-        var results = await ToListAsync(searchResults.Results);
+        var results = await searchResults.Results.ToListAsync();
 
         Assert.Equal(2, results.Count);
     }
@@ -113,7 +114,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 
         // Act.
         KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
-        var results = await ToListAsync(searchResults.Results);
+        var results = await searchResults.Results.ToListAsync();
 
         Assert.Equal(2, results.Count);
     }
@@ -135,14 +136,14 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
             Skip = 0,
             Filter = evenFilter
         });
-        var evenResults = await ToListAsync(evenSearchResults.Results);
+        var evenResults = await evenSearchResults.Results.ToListAsync();
         KernelSearchResults<object> oddSearchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new()
         {
             Top = 2,
             Skip = 0,
             Filter = oddFilter
         });
-        var oddResults = await ToListAsync(oddSearchResults.Results);
+        var oddResults = await oddSearchResults.Results.ToListAsync();
 
         Assert.Equal(2, evenResults.Count);
         var result1 = evenResults[0] as DataModel;

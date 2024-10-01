@@ -13,45 +13,18 @@ namespace Microsoft.SemanticKernel;
 public static class TextSearchServiceCollectionExtensions
 {
     /// <summary>
-    /// Register an <see cref="ITextSearch"/> instance with the specified service ID.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="ITextSearch"/> on.</param>
-    /// <param name="textSearch">Instance of <see cref="ITextSearch"/> to register.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    public static IServiceCollection AddTextSearch(
-        this IServiceCollection services,
-        ITextSearch textSearch,
-        string? serviceId = default)
-    {
-        ITextSearch Factory(IServiceProvider serviceProvider, object? _) => textSearch;
-        services.AddKeyedSingleton<ITextSearch>(serviceId, (Func<IServiceProvider, object?, ITextSearch>)Factory);
-        return services;
-    }
-
-    /// <summary>
-    /// Register an <see cref="IVectorizableTextSearch{TRecord}"/> instance with the specified service ID.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="ITextSearch"/> on.</param>
-    /// <param name="vectorTextSearch">Instance of <see cref="IVectorizableTextSearch{TRecord}"/> to register.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    public static IServiceCollection AddVectorStoreTextSearch<TRecord>(
-        this IServiceCollection services,
-        VectorStoreTextSearch<TRecord> vectorTextSearch,
-        string? serviceId = default)
-        where TRecord : class
-    {
-        VectorStoreTextSearch<TRecord> Factory(IServiceProvider serviceProvider, object? _) => vectorTextSearch;
-        services.AddKeyedSingleton<VectorStoreTextSearch<TRecord>>(serviceId, (Func<IServiceProvider, object?, VectorStoreTextSearch<TRecord>>)Factory);
-        return services;
-    }
-
-    /// <summary>
     /// Register a <see cref="VectorStoreTextSearch{TRecord}"/> instance with the specified service ID.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="ITextSearch"/> on.</param>
+    /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
+    /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
+    /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     public static IServiceCollection AddVectorStoreTextSearch<TRecord>(
         this IServiceCollection services,
+        ITextSearchStringMapper? stringMapper = null,
+        ITextSearchResultMapper? resultMapper = null,
+        VectorStoreTextSearchOptions? options = null,
         string? serviceId = default)
         where TRecord : class
     {
@@ -61,9 +34,9 @@ public static class TextSearchServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                var stringMapper = sp.GetRequiredService<ITextSearchStringMapper>();
-                var resultMapper = sp.GetRequiredService<ITextSearchResultMapper>();
-                var options = sp.GetService<VectorStoreTextSearchOptions>();
+                stringMapper ??= sp.GetRequiredService<ITextSearchStringMapper>();
+                resultMapper ??= sp.GetRequiredService<ITextSearchResultMapper>();
+                options ??= sp.GetService<VectorStoreTextSearchOptions>();
 
                 var vectorizableTextSearch = sp.GetService<IVectorizableTextSearch<TRecord>>();
                 if (vectorizableTextSearch is not null)

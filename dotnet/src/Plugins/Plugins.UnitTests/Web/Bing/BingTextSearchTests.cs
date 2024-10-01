@@ -6,8 +6,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Xunit;
 
@@ -23,6 +25,20 @@ public sealed class BingTextSearchTests : IDisposable
         this._messageHandlerStub = new MultipleHttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
         this._kernel = new Kernel();
+    }
+
+    [Fact]
+    public void AddBingTextSearchSucceeds()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder.AddBingTextSearch(apiKey: "ApiKey");
+        var kernel = builder.Build();
+
+        // Assert
+        Assert.NotNull(kernel.Services.GetRequiredService<ITextSearch>());
     }
 
     [Fact]
