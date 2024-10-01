@@ -126,6 +126,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var settings = new AzureOpenAIPromptExecutionSettings()
         {
             MaxTokens = 123,
@@ -145,6 +146,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
                 Authentication = DataSourceAuthentication.FromApiKey("api-key"),
             }
         };
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("User Message");

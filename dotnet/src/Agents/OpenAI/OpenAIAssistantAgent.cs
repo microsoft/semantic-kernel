@@ -245,13 +245,13 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The file identifier</returns>
     /// <remarks>
-    /// Use the <see cref="FileClient"/> directly for more advanced file operations.
+    /// Use the <see cref="OpenAIFileClient"/> directly for more advanced file operations.
     /// </remarks>
     public async Task<string> UploadFileAsync(Stream stream, string name, CancellationToken cancellationToken = default)
     {
-        FileClient client = this._provider.Client.GetFileClient();
+        OpenAIFileClient client = this._provider.Client.GetOpenAIFileClient();
 
-        OpenAIFileInfo fileInfo = await client.UploadFileAsync(stream, name, FileUploadPurpose.Assistants, cancellationToken).ConfigureAwait(false);
+        OpenAIFile fileInfo = await client.UploadFileAsync(stream, name, FileUploadPurpose.Assistants, cancellationToken).ConfigureAwait(false);
 
         return fileInfo.Id;
     }

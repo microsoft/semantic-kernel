@@ -48,11 +48,11 @@ internal static class AssistantMessageFactory
             {
                 if (imageContent.Uri != null)
                 {
-                    yield return MessageContent.FromImageUrl(imageContent.Uri);
+                    yield return MessageContent.FromImageUri(imageContent.Uri);
                 }
                 else if (string.IsNullOrWhiteSpace(imageContent.DataUri))
                 {
-                    yield return MessageContent.FromImageUrl(new(imageContent.DataUri!));
+                    yield return MessageContent.FromImageUri(new(imageContent.DataUri!));
                 }
             }
             else if (content is FileReferenceContent fileContent)
