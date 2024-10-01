@@ -53,9 +53,7 @@ public class AzureOpenAITextToImageService : ITextToImageService
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
-        var options = AzureClientCore.GetAzureOpenAIClientOptions(
-            httpClient,
-            AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // DALL-E 3 is supported in the latest API releases - https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#image-generation
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // DALL-E 3 is supported in the latest API releases - https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#image-generation
 
         var azureOpenAIClient = new AzureOpenAIClient(new Uri(connectorEndpoint), new ApiKeyCredential(apiKey), options);
 
@@ -88,15 +86,10 @@ public class AzureOpenAITextToImageService : ITextToImageService
     {
         Verify.NotNull(credential);
 
-        var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri;
-        if (connectorEndpoint is null)
-        {
-            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
-        }
+        var connectorEndpoint = (!string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri)
+            ?? throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
 
-        var options = AzureClientCore.GetAzureOpenAIClientOptions(
-            httpClient,
-            AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // DALL-E 3 is supported in the latest API releases - https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#image-generation
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // DALL-E 3 is supported in the latest API releases - https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#image-generation
 
         var azureOpenAIClient = new AzureOpenAIClient(new Uri(connectorEndpoint), credential, options);
 
@@ -132,6 +125,6 @@ public class AzureOpenAITextToImageService : ITextToImageService
     }
 
     /// <inheritdoc/>
-    public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._client.GenerateImageAsync(this._client.DeploymentName, description, width, height, cancellationToken);
+    public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(TextContent input, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this._client.GetImageContentsAsync(this._client.DeploymentName, input, executionSettings, kernel, cancellationToken);
 }
