@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from openai.resources.beta.threads.messages import Message
     from openai.resources.beta.threads.runs.runs import Run
     from openai.types.beta.threads.annotation import Annotation
+    from openai.types.beta.threads.runs import RunStep
     from openai.types.beta.threads.runs.tool_call import ToolCall
 
 
@@ -96,11 +97,27 @@ def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
 
 
 @experimental_function
-def generate_message_content(assistant_name: str, message: "Message") -> ChatMessageContent:
+def generate_message_content(
+    assistant_name: str, message: "Message", completed_step: "RunStep | None" = None
+) -> ChatMessageContent:
     """Generate message content."""
     role = AuthorRole(message.role)
 
-    content: ChatMessageContent = ChatMessageContent(role=role, name=assistant_name)  # type: ignore
+    metadata = (
+        {
+            "created_at": completed_step.created_at,
+            "message_id": message.id,  # message needs to be defined in context
+            "step_id": completed_step.id,
+            "run_id": completed_step.run_id,
+            "thread_id": completed_step.thread_id,
+            "assistant_id": completed_step.assistant_id,
+            "usage": completed_step.usage,
+        }
+        if completed_step is not None
+        else None
+    )
+
+    content: ChatMessageContent = ChatMessageContent(role=role, name=assistant_name, metadata=metadata)  # type: ignore
 
     for item_content in message.content:
         if item_content.type == "text":

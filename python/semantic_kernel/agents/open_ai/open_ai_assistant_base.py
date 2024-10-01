@@ -900,7 +900,7 @@ class OpenAIAssistantBase(Agent):
         )
 
         function_steps: dict[str, FunctionCallContent] = {}
-        message_ids = set()
+        active_messages: dict[str, RunStep] = {}
 
         while True:
             async with stream as response_stream:
@@ -914,8 +914,12 @@ class OpenAIAssistantBase(Agent):
                     elif event.event == "thread.message.delta":
                         content = generate_streaming_message_content(self.name, event.data)
                         yield content
-                    elif event.event == "thread.message.completed":
-                        message_ids.add(event.data.id)
+                    elif event.event == "thread.run.step.completed":
+                        logger.info(f"Run step completed with ID: {event.data.id}")
+                        if hasattr(event.data.step_details, "message_creation"):
+                            message_id = event.data.step_details.message_creation.message_id
+                            if message_id not in active_messages:
+                                active_messages[message_id] = event.data
                     elif event.event == "thread.run.requires_action":
                         run = event.data
                         function_action_result = await self._handle_streaming_requires_action(run, function_steps)
@@ -938,15 +942,16 @@ class OpenAIAssistantBase(Agent):
                     elif event.event == "thread.run.completed":
                         run = event.data
                         logger.info(f"Run completed with ID: {run.id}")
-                        if len(message_ids) > 0:
-                            for id in message_ids:
+                        if len(active_messages) > 0:
+                            for id in active_messages:
+                                step: RunStep = active_messages[id]
                                 message = await self._retrieve_message(
                                     thread_id=thread_id,
                                     message_id=id,  # type: ignore
                                 )
 
                                 if message and message.content:
-                                    content = generate_message_content(self.name, message)
+                                    content = generate_message_content(self.name, message, step)
                                     if messages is not None:
                                         messages.append(content)
                         return

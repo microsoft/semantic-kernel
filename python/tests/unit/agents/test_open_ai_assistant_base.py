@@ -14,6 +14,7 @@ from openai.types.beta.assistant_stream_event import (
     ThreadMessageDelta,
     ThreadRunFailed,
     ThreadRunRequiresAction,
+    ThreadRunStepCompleted,
 )
 from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
 from openai.types.beta.function_tool import FunctionDefinition, FunctionTool
@@ -41,6 +42,7 @@ from openai.types.beta.threads.runs.code_interpreter_tool_call import (
 from openai.types.beta.threads.runs.function_tool_call import Function as RunsFunction
 from openai.types.beta.threads.runs.function_tool_call import FunctionToolCall
 from openai.types.beta.threads.runs.message_creation_step_details import MessageCreation, MessageCreationStepDetails
+from openai.types.beta.threads.runs.run_step import Usage
 from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStepDetails
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
@@ -152,13 +154,15 @@ def mock_message():
 @pytest.fixture
 def mock_thread_messages():
     class MockMessage:
-        def __init__(self, role, content, assistant_id=None):
+        def __init__(self, id, role, content, assistant_id=None):
+            self.id = id
             self.role = role
             self.content = content
             self.assistant_id = assistant_id
 
     return [
         MockMessage(
+            id="test_message_id_1",
             role="user",
             content=[
                 TextContentBlock(
@@ -186,6 +190,7 @@ def mock_thread_messages():
             ],
         ),
         MockMessage(
+            id="test_message_id_2",
             role="assistant",
             content=[
                 ImageFileContentBlock(type="image_file", image_file=ImageFile(file_id="test_file_id", detail="auto"))
@@ -488,6 +493,27 @@ def mock_thread_requires_action_run():
             tool_resources={"code_interpreter": {"file_ids": []}},
         ),
         event="thread.run.requires_action",
+    )
+
+
+def mock_thread_run_step_completed():
+    return ThreadRunStepCompleted(
+        data=RunStep(
+            id="step_id_2",
+            type="message_creation",
+            completed_at=int(datetime.now(timezone.utc).timestamp()),
+            created_at=int((datetime.now(timezone.utc) - timedelta(minutes=2)).timestamp()),
+            step_details=MessageCreationStepDetails(
+                type="message_creation", message_creation=MessageCreation(message_id="test")
+            ),
+            assistant_id="assistant_id",
+            object="thread.run.step",
+            run_id="run_id",
+            status="completed",
+            thread_id="thread_id",
+            usage=Usage(completion_tokens=10, prompt_tokens=5, total_tokens=15),
+        ),
+        event="thread.run.step.completed",
     )
 
 
@@ -1101,13 +1127,16 @@ async def test_invoke(
 
 @pytest.mark.asyncio
 async def test_invoke_stream(
-    azure_openai_assistant_agent, mock_assistant, mock_thread_messages, azure_openai_unit_test_env
+    azure_openai_assistant_agent,
+    mock_assistant,
+    mock_thread_messages,
+    azure_openai_unit_test_env,
 ):
     events = [
         MockEvent("thread.run.created", MockRunData(id="run_1", status="queued")),
         MockEvent("thread.run.in_progress", MockRunData(id="run_1", status="in_progress")),
         create_thread_message_delta_mock(),
-        MockEvent("thread.message.completed", MockRunData(id="run_1", status="completed")),
+        mock_thread_run_step_completed(),
         MockEvent("thread.run.completed", MockRunData(id="run_1", status="completed")),
         mock_thread_requires_action_run(),
     ]
