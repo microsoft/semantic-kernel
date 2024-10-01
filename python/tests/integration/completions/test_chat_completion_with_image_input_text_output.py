@@ -185,6 +185,24 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_image_input_file",
         ),
+        pytest.param(
+            "bedrock",
+            {},
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+            ],
+            {},
+            id="bedrock_image_input_uri",
+        ),
     ],
 )
 

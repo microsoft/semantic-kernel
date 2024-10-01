@@ -146,6 +146,16 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_text_input",
         ),
+        pytest.param(
+            "bedrock",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            {},
+            id="bedrock_text_input",
+        ),
     ],
 )
 

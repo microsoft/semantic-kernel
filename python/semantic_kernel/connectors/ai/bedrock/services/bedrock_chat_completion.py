@@ -17,17 +17,28 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.bedrock.bedrock_settings import BedrockSettings
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_base import BedrockBase
+from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import (
+    get_chat_completion_additional_model_request_fields,
+)
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import (
     MESSAGE_CONVERTERS,
+    finish_reason_from_bedrock_to_semantic_kernel,
     remove_none_recursively,
     run_in_executor,
     update_settings_from_function_choice_configuration,
 )
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
+from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,
@@ -36,8 +47,6 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents.chat_history import ChatHistory
-    from semantic_kernel.contents.chat_message_content import ChatMessageContent
-    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
 
 class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
@@ -148,7 +157,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
 
     def _prepare_settings_for_request(
         self,
-        chat_history: ChatHistory,
+        chat_history: "ChatHistory",
         settings: "BedrockChatPromptExecutionSettings",
     ) -> dict[str, Any]:
         """Prepare the settings for the request.
@@ -167,6 +176,9 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 "temperature": settings.temperature,
                 "topP": settings.top_p,
                 "stopSequences": settings.stop,
+                "additionalModelRequestFields": get_chat_completion_additional_model_request_fields(
+                    self.ai_model_id, settings
+                ),
             }),
         }
 
@@ -180,7 +192,42 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
 
     def _create_chat_message_content(self, response: dict[str, Any]) -> ChatMessageContent:
         """Create a chat message content object."""
-        return ChatMessageContent(AuthorRole.ASSISTANT, [])
+        finish_reason: FinishReason | None = finish_reason_from_bedrock_to_semantic_kernel(response["stopReason"])
+        usage = CompletionUsage(
+            prompt_tokens=response["usage"]["inputTokens"],
+            completion_tokens=response["usage"]["outputTokens"],
+        )
+        items: list[ITEM_TYPES] = []
+        for content in response["output"]["message"]["content"]:
+            if "text" in content:
+                items.append(TextContent(text=content["text"], inner_content=content))
+            elif "image" in content:
+                items.append(
+                    ImageContent(
+                        data=content["image"]["source"]["bytes"],
+                        mime_type=content["image"]["source"]["format"],
+                        inner_content=content["image"],
+                    )
+                )
+            elif "toolUse" in content:
+                items.append(
+                    FunctionCallContent(
+                        id=content["toolUse"]["toolUseId"],
+                        name=content["toolUse"]["name"],
+                        arguments=content["toolUse"]["input"],
+                    )
+                )
+            else:
+                raise ServiceInvalidResponseError(f"Unsupported content type in the response: {content}")
+
+        return ChatMessageContent(
+            ai_model_id=self.ai_model_id,
+            role=AuthorRole.ASSISTANT,
+            items=items,
+            inner_content=response,
+            finish_reason=finish_reason,
+            metadata={"usage": usage},
+        )
 
     async def _async_converse(self, **kwargs) -> Any:
         """Invoke the model asynchronously."""

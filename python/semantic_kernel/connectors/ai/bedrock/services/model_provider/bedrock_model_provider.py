@@ -4,7 +4,10 @@ from collections.abc import Callable
 from enum import Enum
 from typing import Any
 
-from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockTextPromptExecutionSettings
+from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import (
+    BedrockChatPromptExecutionSettings,
+    BedrockTextPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.bedrock.services.model_provider import (
     bedrock_ai21_labs,
     bedrock_amazon_titan,
@@ -83,6 +86,31 @@ def parse_streaming_text_completion_response(model_id: str, chunk: dict) -> Stre
     """Parse the response from streaming text completion for Amazon Bedrock models."""
     model_provider = BedrockModelProvider.to_model_provider(model_id)
     return STREAMING_TEXT_COMPLETION_RESPONSE_MAPPING[model_provider](chunk, model_id)
+
+
+# endregion
+
+
+# region Chat Completion
+
+CHAT_COMPLETION_ADDITIONAL_MODEL_REQUEST_FIELDS_MAPPING: dict[
+    BedrockModelProvider, Callable[[BedrockChatPromptExecutionSettings], dict[str, Any] | None]
+] = {
+    BedrockModelProvider.AMAZON: bedrock_amazon_titan.get_chat_completion_additional_model_request_fields,
+    BedrockModelProvider.ANTHROPIC: bedrock_anthropic_claude.get_chat_completion_additional_model_request_fields,
+    BedrockModelProvider.COHERE: bedrock_cohere.get_chat_completion_additional_model_request_fields,
+    BedrockModelProvider.AI21LABS: bedrock_ai21_labs.get_chat_completion_additional_model_request_fields,
+    BedrockModelProvider.META: bedrock_meta_llama.get_chat_completion_additional_model_request_fields,
+    BedrockModelProvider.MISTRALAI: bedrock_mistralai.get_chat_completion_additional_model_request_fields,
+}
+
+
+def get_chat_completion_additional_model_request_fields(
+    model_id: str, settings: BedrockChatPromptExecutionSettings
+) -> dict[str, Any] | None:
+    """Get the additional model request fields for chat completion for Amazon Bedrock models."""
+    model_provider = BedrockModelProvider.to_model_provider(model_id)
+    return CHAT_COMPLETION_ADDITIONAL_MODEL_REQUEST_FIELDS_MAPPING[model_provider](settings)
 
 
 # endregion

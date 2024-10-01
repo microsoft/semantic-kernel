@@ -2,9 +2,14 @@
 
 from typing import Any
 
-from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockTextPromptExecutionSettings
+from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import (
+    BedrockChatPromptExecutionSettings,
+    BedrockTextPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import remove_none_recursively
 from semantic_kernel.contents.text_content import TextContent
+
+# region Text Completion
 
 
 def get_text_completion_request_body(prompt: str, settings: BedrockTextPromptExecutionSettings) -> Any:
@@ -35,3 +40,31 @@ def parse_text_completion_response(response: dict[str, Any], model_id: str) -> l
         )
         for completion in response.get("completions", [])
     ]
+
+
+# endregion
+
+
+# region Chat Completion
+
+
+def get_chat_completion_additional_model_request_fields(
+    settings: BedrockChatPromptExecutionSettings,
+) -> dict[str, Any] | None:
+    """Get the additional model request fields for chat completion for AI21 Labs models.
+
+    https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-jamba.html
+    """
+    additional_fields: dict[str, Any] = remove_none_recursively({
+        "n": settings.n if hasattr(settings, "n") else None,
+        "frequency_penalty": settings.frequency_penalty if hasattr(settings, "frequency_penalty") else None,
+        "presence_penalty": settings.presence_penalty if hasattr(settings, "presence_penalty") else None,
+    })
+
+    if not additional_fields:
+        return None
+
+    return additional_fields
+
+
+# endregion

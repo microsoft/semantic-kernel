@@ -15,6 +15,7 @@ from semantic_kernel.contents.function_result_content import FunctionResultConte
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 
 
@@ -67,7 +68,7 @@ def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
         if isinstance(item, ImageContent):
             contents.append({
                 "image": {
-                    "format": item.mime_type,
+                    "format": item.mime_type.removeprefix("image/"),
                     "source": {
                         "bytes": item.data,
                     },
@@ -206,3 +207,14 @@ def update_settings_from_function_choice_configuration(
             }
             for function in function_choice_configuration.available_functions
         ]
+
+
+def finish_reason_from_bedrock_to_semantic_kernel(finish_reason: str) -> FinishReason | None:
+    """Convert a finish reason from Bedrock to Semantic Kernel."""
+    return {
+        "stop_sequence": FinishReason.STOP,
+        "end_turn": FinishReason.STOP,
+        "max_tokens": FinishReason.LENGTH,
+        "content_filtered": FinishReason.CONTENT_FILTER,
+        "tool_use": FinishReason.TOOL_CALLS,
+    }.get(finish_reason)
