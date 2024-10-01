@@ -102,9 +102,8 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
 
     #region private ================================================================================
 
-#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    [Experimental("SKEXP0010")]
     private AzureSearchChatDataSource? _azureChatDataSource;
-#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     #endregion
 }
