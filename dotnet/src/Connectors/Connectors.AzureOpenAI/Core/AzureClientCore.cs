@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Net.Http;
 using System.Threading;
@@ -57,7 +58,7 @@ internal partial class AzureClientCore : ClientCore
         this.Logger = logger ?? NullLogger.Instance;
         this.DeploymentName = deploymentName;
         this.Endpoint = new Uri(endpoint);
-        this.Client = new AzureOpenAIClient(this.Endpoint, apiKey, options);
+        this.Client = new AzureOpenAIClient(this.Endpoint, new ApiKeyCredential(apiKey), options);
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
         this.AddAttribute(DeploymentNameKey, deploymentName);

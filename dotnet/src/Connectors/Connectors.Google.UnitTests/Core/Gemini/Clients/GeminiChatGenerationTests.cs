@@ -34,6 +34,24 @@ public sealed class GeminiChatGenerationTests : IDisposable
     }
 
     [Fact]
+    public async Task ShouldReturnEmptyMessageContentAndNullMetadataIfEmptyJsonInResponseAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent("{}");
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var messages = await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.Single(messages, item =>
+            item.Role == AuthorRole.Assistant &&
+            string.IsNullOrEmpty(item.Content) &&
+            item.Metadata == null);
+    }
+
+    [Fact]
     public async Task ShouldReturnEmptyMessageContentIfNoContentInResponseAsync()
     {
         // Arrange
@@ -417,12 +435,12 @@ public sealed class GeminiChatGenerationTests : IDisposable
         using var httpClient = new HttpClient(multipleMessageHandlerStub, false);
 
         var client = new GeminiChatCompletionClient(
-                httpClient: httpClient,
-                modelId: "fake-model",
-                apiVersion: VertexAIVersion.V1,
-                bearerTokenProvider: () => bearerTokenGenerator.GetBearerToken(),
-                location: "fake-location",
-                projectId: "fake-project-id");
+            httpClient: httpClient,
+            modelId: "fake-model",
+            apiVersion: VertexAIVersion.V1,
+            bearerTokenProvider: () => bearerTokenGenerator.GetBearerToken(),
+            location: "fake-location",
+            projectId: "fake-project-id");
 
         var chatHistory = CreateSampleChatHistory();
 
