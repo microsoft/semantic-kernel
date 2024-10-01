@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Contains options for <see cref="VectorStoreRecordPropertyReader2{TRecord}"/>.
+/// Contains options for <see cref="VectorStoreRecordPropertyReader2"/>.
 /// </summary>
 [ExcludeFromCodeCoverage]
 internal sealed class VectorStoreRecordPropertyReader2Options

@@ -81,7 +81,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     private readonly IVectorStoreRecordMapper<TRecord, JsonObject>? _mapper;
 
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
-    private readonly VectorStoreRecordPropertyReader2<TRecord> _propertyReader;
+    private readonly VectorStoreRecordPropertyReader2 _propertyReader;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> class.
@@ -104,7 +104,8 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         this._collectionName = collectionName;
         this._options = options ?? new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>();
         this._searchClient = this._searchIndexClient.GetSearchClient(collectionName);
-        this._propertyReader = new VectorStoreRecordPropertyReader2<TRecord>(
+        this._propertyReader = new VectorStoreRecordPropertyReader2(
+            typeof(TRecord),
             this._options.VectorStoreRecordDefinition,
             new()
             {

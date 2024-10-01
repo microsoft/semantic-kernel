@@ -14,8 +14,11 @@ namespace Microsoft.SemanticKernel.Data;
 /// Contains helpers for reading vector store model properties and their attributes.
 /// </summary>
 [ExcludeFromCodeCoverage]
-internal sealed class VectorStoreRecordPropertyReader2<TRecord>
+internal sealed class VectorStoreRecordPropertyReader2
 {
+    /// <summary>The <see cref="Type"/> of the data model.</summary>
+    private readonly Type _dataModelType;
+
     /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 
@@ -64,8 +67,12 @@ internal sealed class VectorStoreRecordPropertyReader2<TRecord>
     /// <summary>A lazy initialized list of json names of vector properties.</summary>
     private readonly Lazy<List<string>> _vectorPropertyJsonNames;
 
-    public VectorStoreRecordPropertyReader2(VectorStoreRecordDefinition? vectorStoreRecordDefinition, VectorStoreRecordPropertyReader2Options? options)
+    public VectorStoreRecordPropertyReader2(
+        Type dataModelType,
+        VectorStoreRecordDefinition? vectorStoreRecordDefinition,
+        VectorStoreRecordPropertyReader2Options? options)
     {
+        this._dataModelType = dataModelType;
         this._options = options ?? new VectorStoreRecordPropertyReader2Options();
 
         // If a definition is provided, use it. Otherwise, create one from the type.
@@ -81,7 +88,7 @@ internal sealed class VectorStoreRecordPropertyReader2<TRecord>
             // Here we didn't receive a definition, so we need to derive the information from
             // the data model. Since we may need the PropertyInfo objects later to read or write
             // property values on the data model, we save them for later in case we need them.
-            var propertiesInfo = FindPropertiesInfo(typeof(TRecord));
+            var propertiesInfo = FindPropertiesInfo(dataModelType);
             this._vectorStoreRecordDefinition = CreateVectorStoreRecordDefinitionFromType(propertiesInfo);
 
             this._keyPropertiesInfo = propertiesInfo.KeyProperties;
@@ -91,7 +98,7 @@ internal sealed class VectorStoreRecordPropertyReader2<TRecord>
 
         // Verify the definition to make sure it does not have too many or too few of each property type.
         (this._keyProperties, this._dataProperties, this._vectorProperties) = SplitDefinitionAndVerify(
-            typeof(TRecord).Name,
+            dataModelType.Name,
             this._vectorStoreRecordDefinition,
             this._options.SupportsMultipleKeys,
             this._options.SupportsMultipleVectors,
@@ -125,7 +132,7 @@ internal sealed class VectorStoreRecordPropertyReader2<TRecord>
         {
             return BuildPropertyNameToJsonPropertyNameMap(
                 (this._keyProperties, this._dataProperties, this._vectorProperties),
-                typeof(TRecord),
+                dataModelType,
                 this._options.JsonSerializerOptions);
         });
 
@@ -283,7 +290,7 @@ internal sealed class VectorStoreRecordPropertyReader2<TRecord>
         // from the data model would already be saved. If we didn't though, there could be a mismatch
         // between what is defined in the definition and what is in the data model. Therefore, this
         // method will throw if any property in the definition in not on the data model.
-        var propertiesInfo = FindPropertiesInfo(typeof(TRecord), this._vectorStoreRecordDefinition);
+        var propertiesInfo = FindPropertiesInfo(this._dataModelType, this._vectorStoreRecordDefinition);
 
         this._keyPropertiesInfo = propertiesInfo.KeyProperties;
         this._dataPropertiesInfo = propertiesInfo.DataProperties;
@@ -417,6 +424,8 @@ internal sealed class VectorStoreRecordPropertyReader2<TRecord>
                 {
                     throw new ArgumentException($"Vector property '{vectorPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
                 }
+
+                vectorProperties.Add(vectorProperty);
             }
             else
             {
