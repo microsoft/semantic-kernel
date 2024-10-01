@@ -99,10 +99,10 @@ stores: dict[str, Callable[[], VectorStoreRecordCollection]] = {
 }
 
 
-async def main(store: str, use_azureopenai: bool, embedding_model: str):
+async def main(store: str, use_azure_openai: bool, embedding_model: str):
     kernel = Kernel()
     service_id = "embedding"
-    if use_azureopenai:
+    if use_azure_openai:
         kernel.add_service(AzureTextEmbedding(service_id=service_id, deployment_name=embedding_model))
     else:
         kernel.add_service(OpenAITextEmbedding(service_id=service_id, ai_model_id=embedding_model))
@@ -137,11 +137,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--store", default="volatile", choices=stores.keys(), help="What store to use.")
     # Option of whether to use OpenAI or Azure OpenAI.
-    parser.add_argument("--use_azureopenai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
+    parser.add_argument("--use_azure_openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     # Model
     parser.add_argument(
         "--model", default="text-embedding-3-small", help="The model or deployment to use for embeddings."
     )
     args = parser.parse_args()
 
-    asyncio.run(main(store=args.store, use_azureopenai=args.use_azureopenai, embedding_model=args.model))
+    asyncio.run(main(store=args.store, use_azure_openai=args.use_azure_openai, embedding_model=args.model))
