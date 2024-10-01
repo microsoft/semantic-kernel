@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
@@ -40,10 +39,11 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
 
             var response = await openAiChatService.GetChatMessageContentAsync(chatHistory);
             chatHistory.AddAssistantMessage(response.Content!);
+            Console.WriteLine($"\n>>> Assistant:\n{response.Content!}");
 
             if (response.InnerContent is OpenAI.Chat.ChatCompletion chatCompletion)
             {
-                totalTokenCount += chatCompletion.Usage?.TotalTokens ?? 0;
+                totalTokenCount += chatCompletion.Usage?.TotalTokenCount ?? 0;
             }
         }
 
@@ -60,7 +60,7 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         OpenAIChatCompletionService openAiChatService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatService = openAiChatService.WithChatHistoryReducer(ChatHistoryLastMessageReducerAsync);
+        IChatCompletionService chatService = openAiChatService.WithTrimmingChatHistoryReducer(1);
 
         var chatHistory = new ChatHistory("You are a librarian and expert on books about cities");
 
@@ -76,13 +76,15 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         foreach (var userMessage in userMessages)
         {
             chatHistory.AddUserMessage(userMessage);
+            Console.WriteLine($"\n>>> User:\n{userMessage}");
 
             var response = await chatService.GetChatMessageContentAsync(chatHistory);
             chatHistory.AddAssistantMessage(response.Content!);
+            Console.WriteLine($"\n>>> Assistant:\n{response.Content!}");
 
             if (response.InnerContent is OpenAI.Chat.ChatCompletion chatCompletion)
             {
-                totalTokenCount += chatCompletion.Usage?.TotalTokens ?? 0;
+                totalTokenCount += chatCompletion.Usage?.TotalTokenCount ?? 0;
             }
         }
 
@@ -99,7 +101,7 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         OpenAIChatCompletionService openAiChatService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatService = openAiChatService.WithChatHistoryReducer(ChatHistoryLastMessageReducerAsync);
+        IChatCompletionService chatService = openAiChatService.WithTrimmingChatHistoryReducer(1);
 
         var chatHistory = new ChatHistory("You are a librarian and expert on books about cities");
 
@@ -115,6 +117,7 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         foreach (var userMessage in userMessages)
         {
             chatHistory.AddUserMessage(userMessage);
+            Console.WriteLine($"\n>>> User:\n{userMessage}");
 
             var response = new StringBuilder();
             var chatUpdates = chatService.GetStreamingChatMessageContentsAsync(chatHistory);
@@ -124,10 +127,11 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
 
                 if (chatUpdate.InnerContent is StreamingChatCompletionUpdate openAiChatUpdate)
                 {
-                    totalTokenCount += openAiChatUpdate.Usage?.TotalTokens ?? 0;
+                    totalTokenCount += openAiChatUpdate.Usage?.TotalTokenCount ?? 0;
                 }
             }
             chatHistory.AddAssistantMessage(response.ToString());
+            Console.WriteLine($"\n>>> Assistant:\n{response.ToString()}");
         }
 
         // Example total token usage is approximately: 3000
@@ -143,7 +147,7 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         OpenAIChatCompletionService openAiChatService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatService = openAiChatService.WithChatHistoryReducer(ChatHistoryMaxTokensReducerAsync);
+        IChatCompletionService chatService = openAiChatService.WithMaxTokensChatHistoryReducer(100);
 
         var chatHistory = new ChatHistory();
         chatHistory.AddSystemMessageWithTokenCount("You are an expert on the best restaurants in the world. Keep responses short.");
@@ -169,76 +173,11 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
 
             if (response.InnerContent is OpenAI.Chat.ChatCompletion chatCompletion)
             {
-                totalTokenCount += chatCompletion.Usage?.TotalTokens ?? 0;
+                totalTokenCount += chatCompletion.Usage?.TotalTokenCount ?? 0;
             }
         }
 
         // Example total token usage is approximately: 3000
         Console.WriteLine($"Total Token Count: {totalTokenCount}");
     }
-
-    #region private
-    private const int MaxTokenCount = 100;
-
-    /// <summary>
-    /// ChatHistoryReducer function that just preserves the system message and the last n messages.
-    /// </summary>
-    private static async Task<ChatHistory?> ChatHistoryLastMessageReducerAsync(ChatHistory chatHistory, CancellationToken cancellationToken)
-    {
-        var systemMessage = GetSystemMessage(chatHistory);
-        ChatHistory reducedChatHistory = systemMessage is not null ? new(systemMessage.Content!) : new();
-        // Using the last message only but could be the last N messages
-        reducedChatHistory.Add(chatHistory[^1]);
-        return reducedChatHistory;
-    }
-
-    /// <summary>
-    /// ChatHistoryReducer function that just preserves the system message and the last n messages.
-    /// </summary>
-    private static async Task<ChatHistory?> ChatHistoryMaxTokensReducerAsync(ChatHistory chatHistory, CancellationToken cancellationToken)
-    {
-        ChatHistory reducedChatHistory = [];
-        var totalTokenCount = 0;
-        var insertIndex = 0;
-        var systemMessage = GetSystemMessage(chatHistory);
-        if (systemMessage is not null)
-        {
-            reducedChatHistory.Add(systemMessage);
-            totalTokenCount += (int)(systemMessage.Metadata?["TokenCount"] ?? 0);
-            insertIndex = 1;
-        }
-        // Add the remaining messages that fit within the token limit
-        for (int i = chatHistory.Count - 1; i >= 1; i--)
-        {
-            var tokenCount = (int)(chatHistory[i].Metadata?["TokenCount"] ?? 0);
-            if (tokenCount + totalTokenCount > MaxTokenCount)
-            {
-                break;
-            }
-            reducedChatHistory.Insert(insertIndex, chatHistory[i]);
-            totalTokenCount += tokenCount;
-        }
-        return reducedChatHistory;
-    }
-
-    /// <summary>
-    /// ChatHistoryReducer function that summarizes as.
-    /// </summary>
-    private static async Task<ChatHistory?> ChatHistorySummarizingReducerAsync(ChatHistory chatHistory, CancellationToken cancellationToken)
-    {
-        var systemMessage = GetSystemMessage(chatHistory);
-        ChatHistory reducedChatHistory = systemMessage is not null ? new(systemMessage.Content!) : new();
-        // Using the last message only but could be the last N messages
-        reducedChatHistory.Add(chatHistory[^1]);
-        return reducedChatHistory;
-    }
-
-    /// <summary>
-    /// Returns the system prompt from the chat history.
-    /// </summary>
-    private static ChatMessageContent? GetSystemMessage(ChatHistory chatHistory)
-    {
-        return chatHistory.FirstOrDefault(m => m.Role == AuthorRole.System);
-    }
-    #endregion
 }
