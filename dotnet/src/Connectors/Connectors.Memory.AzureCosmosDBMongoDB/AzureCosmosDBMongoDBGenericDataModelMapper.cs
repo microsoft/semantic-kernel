@@ -140,7 +140,7 @@ internal sealed class AzureCosmosDBMongoDBGenericDataModelMapper : IVectorStoreR
             Type t when t == typeof(DateTime) => value.ToUniversalTime(),
             Type t when t == typeof(DateTime?) => value.ToNullableUniversalTime(),
             Type t when typeof(IEnumerable).IsAssignableFrom(t) => value.AsBsonArray.Select(
-                item => GetDataPropertyValue(propertyName, VectorStoreRecordPropertyReader.GetCollectionElementType(t), item)),
+                item => GetDataPropertyValue(propertyName, VectorStoreRecordPropertyVerification.GetCollectionElementType(t), item)),
             _ => throw new NotSupportedException($"Mapping for property {propertyName} with type {propertyType.FullName} is not supported in generic data model.")
         };
     }

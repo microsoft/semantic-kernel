@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
 using Xunit;
@@ -19,7 +20,8 @@ public sealed class OpenAIFunctionToolCallTests
     public void FullyQualifiedNameReturnsValidName(string toolCallName, string expectedName)
     {
         // Arrange
-        var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, string.Empty);
+        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, args);
         var openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
 
         // Act & Assert

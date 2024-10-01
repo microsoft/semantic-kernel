@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.ClientModel;
 using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,7 +43,7 @@ public sealed class MixedAgentTests
         // Arrange, Act & Assert
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(openAISettings),
-            OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
+            OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
             openAISettings.ChatModelId!,
             useNewFunctionCallingModel);
     }
