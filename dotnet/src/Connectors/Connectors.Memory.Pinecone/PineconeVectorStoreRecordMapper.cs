@@ -71,9 +71,9 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     {
         // Validate property types.
         var propertiesInfo = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: false);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([propertiesInfo.KeyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.DataProperties, s_supportedDataTypes, s_supportedEnumerableDataElementTypes, "Data");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.VectorProperties, s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes([propertiesInfo.KeyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(propertiesInfo.DataProperties, s_supportedDataTypes, s_supportedEnumerableDataElementTypes, "Data");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(propertiesInfo.VectorProperties, s_supportedVectorTypes, "Vector");
 
         // Assign.
         this._keyPropertyInfo = propertiesInfo.KeyProperty;
