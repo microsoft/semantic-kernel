@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.Data;
@@ -80,6 +81,31 @@ public class VectorStoreRecordPropertyVerificationTests
         {
             VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(recordType, definitionSupplied);
         }
+    }
+
+    [Theory]
+    [InlineData(typeof(List<string>), true)]
+    [InlineData(typeof(ICollection<string>), true)]
+    [InlineData(typeof(IEnumerable<string>), true)]
+    [InlineData(typeof(IList<string>), true)]
+    [InlineData(typeof(IReadOnlyCollection<string>), true)]
+    [InlineData(typeof(IReadOnlyList<string>), true)]
+    [InlineData(typeof(string[]), true)]
+    [InlineData(typeof(IEnumerable), true)]
+    [InlineData(typeof(ArrayList), true)]
+    [InlineData(typeof(string), false)]
+    [InlineData(typeof(HashSet<string>), false)]
+    [InlineData(typeof(ISet<string>), false)]
+    [InlineData(typeof(Dictionary<string, string>), false)]
+    [InlineData(typeof(Stack<string>), false)]
+    [InlineData(typeof(Queue<string>), false)]
+    public void IsSupportedEnumerableTypeReturnsCorrectAnswerForEachType(Type type, bool expected)
+    {
+        // Act.
+        var actual = VectorStoreRecordPropertyVerification.IsSupportedEnumerableType(type);
+
+        // Assert.
+        Assert.Equal(expected, actual);
     }
 
 #pragma warning disable CA1812 // Invalid unused classes error, since I am using these for testing purposes above.
