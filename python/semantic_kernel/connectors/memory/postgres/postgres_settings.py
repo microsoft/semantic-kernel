@@ -34,8 +34,13 @@ class PostgresSettings(KernelBaseSettings):
         Use "require" to require SSL, "disable" to disable SSL, or "prefer" to prefer
         SSL but allow a connection without it. Defaults to "prefer".
     - min_pool: int - Minimum connection pool size. Defaults to 1.
+        (Env var POSTGRES_MIN_POOL)
     - max_pool: int - Maximum connection pool size. Defaults to 5.
+        (Env var POSTGRES_MAX_POOL)
     - default_dimensionality: int - Default dimensionality for vectors. Defaults to 100.
+        (Env var POSTGRES_DEFAULT_DIMENSIONALITY)
+    - max_rows_per_transaction: int - Maximum number of rows to process in a single transaction. Defaults to 1000.
+        (Env var POSTGRES_MAX_ROWS_PER_TRANSACTION)
     """
 
     env_prefix: ClassVar[str] = "POSTGRES_"
@@ -52,6 +57,7 @@ class PostgresSettings(KernelBaseSettings):
     max_pool: int = 5
 
     default_dimensionality: int = 100
+    max_rows_per_transaction: int = 1000
 
     def get_connection_args(self) -> dict[str, Any]:
         """Get connection arguments."""

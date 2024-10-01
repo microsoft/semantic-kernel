@@ -26,7 +26,7 @@ from psycopg import sql
 from psycopg.errors import DatabaseError
 from psycopg_pool import AsyncConnectionPool
 
-from semantic_kernel.connectors.memory.postgres.constants import DEFAULT_SCHEMA, MAX_DIMENSIONALITY, MAX_KEYS_PER_BATCH
+from semantic_kernel.connectors.memory.postgres.constants import DEFAULT_SCHEMA, MAX_DIMENSIONALITY
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordKeyField, VectorStoreRecordVectorField
 from semantic_kernel.exceptions.memory_connector_exceptions import (
@@ -54,8 +54,8 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
     _handle_pool_close: bool = PrivateAttr(False)
     """Whether the collection should handle closing the pool. True if the pool was created by the collection."""
 
-    _settings: PostgresSettings | None = PrivateAttr(None)
-    """The settings for creating a new connection pool."""
+    _settings: PostgresSettings = PrivateAttr()
+    """Postgres settings"""
 
     def __init__(
         self,
@@ -89,21 +89,14 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
             db_schema=db_schema,
         )
 
-        # If the connection pool was not provided, save settings for creating a new one.
-        if not connection_pool:
-            if settings:
-                self._settings = settings
-            else:
-                self._settings = PostgresSettings.create(
-                    env_file_path=env_file_path, env_file_encoding=env_file_encoding
-                )
+        self._settings = settings or PostgresSettings.create(
+            env_file_path=env_file_path, env_file_encoding=env_file_encoding
+        )
 
     @override
     async def __aenter__(self) -> "PostgresCollection":
         # If the connection pool was not provided, create a new one.
         if not self.connection_pool:
-            if not self._settings:
-                raise MemoryConnectorException("Settings for creating a connection pool are not available.")
             self.connection_pool = await self._settings.create_connection_pool()
             self._handle_pool_close = True
         return self
@@ -160,8 +153,9 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
                 conn.cursor() as cur,
             ):
                 # Split the records into batches
-                for i in range(0, len(records), MAX_KEYS_PER_BATCH):
-                    record_batch = records[i : i + MAX_KEYS_PER_BATCH]
+                max_rows_per_transaction = self._settings.max_rows_per_transaction
+                for i in range(0, len(records), max_rows_per_transaction):
+                    record_batch = records[i : i + max_rows_per_transaction]
 
                     fields = list(self.data_model_definition.fields.items())
 
@@ -243,8 +237,9 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
                 conn.cursor() as cur,
             ):
                 # Split the keys into batches
-                for i in range(0, len(keys), MAX_KEYS_PER_BATCH):
-                    key_batch = keys[i : i + MAX_KEYS_PER_BATCH]
+                max_rows_per_transaction = self._settings.max_rows_per_transaction
+                for i in range(0, len(keys), max_rows_per_transaction):
+                    key_batch = keys[i : i + max_rows_per_transaction]
 
                     # Execute the DELETE statement for each batch
                     await cur.execute(
