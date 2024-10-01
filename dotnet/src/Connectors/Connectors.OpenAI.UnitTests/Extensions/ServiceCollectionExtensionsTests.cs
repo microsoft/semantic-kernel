@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
@@ -27,7 +28,7 @@ public class ServiceCollectionExtensionsTests
     public void ItCanAddChatCompletionService(InitializationType type)
     {
         // Arrange
-        var client = new OpenAIClient("key");
+        var client = new OpenAIClient(new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(client);
@@ -73,7 +74,7 @@ public class ServiceCollectionExtensionsTests
         var sut = new ServiceCollection();
 
         // Act
-        var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient("key"))
+        var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient(new ApiKeyCredential("key")))
             .BuildServiceProvider()
             .GetRequiredService<ITextEmbeddingGenerationService>();
 
@@ -133,7 +134,7 @@ public class ServiceCollectionExtensionsTests
         var sut = new ServiceCollection();
 
         // Act
-        var service = sut.AddOpenAIAudioToText("model", new OpenAIClient("key"))
+        var service = sut.AddOpenAIAudioToText("model", new OpenAIClient(new ApiKeyCredential("key")))
             .BuildServiceProvider()
             .GetRequiredService<IAudioToTextService>();
 

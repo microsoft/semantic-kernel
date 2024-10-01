@@ -331,7 +331,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
                 usage is ChatTokenUsage completionsUsage &&
                 completionsUsage is not null)
             {
-                tokens += completionsUsage.TotalTokens;
+                tokens += completionsUsage.TotalTokenCount;
             }
         }
 
