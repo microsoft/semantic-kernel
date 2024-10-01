@@ -212,6 +212,12 @@ internal partial class ClientCore
     }
 
     /// <summary>
+    /// Gets the model identifier to use for the client.
+    /// </summary>
+    protected virtual string GetClientModelId()
+        => this.ModelId;
+
+    /// <summary>
     /// Invokes the specified request and handles exceptions.
     /// </summary>
     /// <typeparam name="T">Type of the response.</typeparam>
