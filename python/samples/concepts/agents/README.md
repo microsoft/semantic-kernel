@@ -10,7 +10,7 @@ This project contains a step by step guide to get started with _Semantic Kernel 
 
 #### Source
 
-- [Semantic Kernel Agent Framework](../../semantic_kernel/agents/)
+- [Semantic Kernel Agent Framework](../../../semantic_kernel/agents/)
 
 ## Examples
 
