@@ -133,11 +133,9 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     /// <inheritdoc />
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        const string OperationName = "DropTable";
-
-        using var command = this._commandBuilder.BuildDropTableCommand();
-
-        return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
+        return Task.WhenAll(
+            this.DropTableAsync(cancellationToken),
+            this.DropVirtualTableAsync(cancellationToken));
     }
 
     /// <inheritdoc />
@@ -242,6 +240,24 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         const string OperationName = "CreateVirtualTable";
 
         using var command = this._commandBuilder.BuildCreateVirtualTableCommand(ifNotExists);
+
+        return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
+    }
+
+    private Task<int> DropTableAsync(CancellationToken cancellationToken)
+    {
+        const string OperationName = "DropTable";
+
+        using var command = this._commandBuilder.BuildDropTableCommand();
+
+        return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
+    }
+
+    private Task<int> DropVirtualTableAsync(CancellationToken cancellationToken)
+    {
+        const string OperationName = "DropVirtualTable";
+
+        using var command = this._commandBuilder.BuildDropVirtualTableCommand();
 
         return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
     }

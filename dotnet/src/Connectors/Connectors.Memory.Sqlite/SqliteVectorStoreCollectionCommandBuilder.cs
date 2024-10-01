@@ -14,8 +14,11 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </summary>
 internal class SqliteVectorStoreCollectionCommandBuilder
 {
-    /// <summary>The name of the collection.</summary>
-    private readonly string _collectionName;
+    /// <summary>The name of the table.</summary>
+    private readonly string _tableName;
+
+    /// <summary>The name of the virtual table.</summary>
+    private readonly string _virtualTableName;
 
     /// <summary><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</summary>
     private readonly SqliteConnection _connection;
@@ -56,7 +59,11 @@ internal class SqliteVectorStoreCollectionCommandBuilder
         Verify.NotNull(vectorProperties);
         Verify.NotNull(storagePropertyNames);
 
-        this._collectionName = collectionName;
+        this._tableName = collectionName;
+
+        // Use virtual table name with prefix to avoid collisions with regular table name.
+        this._virtualTableName = $"vec_{this._tableName}";
+
         this._connection = connection;
         this._keyProperty = keyProperty;
         this._dataProperties = dataProperties;
@@ -73,7 +80,7 @@ internal class SqliteVectorStoreCollectionCommandBuilder
 
         using var command = new SqliteCommand(query, this._connection);
 
-        command.Parameters.AddWithValue(ParameterName, this._collectionName);
+        command.Parameters.AddWithValue(ParameterName, this._tableName);
 
         return command;
     }
@@ -84,7 +91,7 @@ internal class SqliteVectorStoreCollectionCommandBuilder
         var builder = new StringBuilder();
         var columns = new List<string>();
 
-        builder.AppendLine($"CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{this._collectionName} (");
+        builder.AppendLine($"CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{this._tableName} (");
 
         this.AddColumn(columns, this._keyProperty);
 
@@ -107,10 +114,7 @@ internal class SqliteVectorStoreCollectionCommandBuilder
         var builder = new StringBuilder();
         var columns = new List<string>();
 
-        // Use virtual table name with prefix to avoid collisions with regular table name.
-        var tableName = $"vec_{this._collectionName}";
-
-        builder.AppendLine($"CREATE VIRTUAL TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{tableName} USING {SqliteConstants.VectorSearchExtensionName}(");
+        builder.AppendLine($"CREATE VIRTUAL TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{this._virtualTableName} USING {SqliteConstants.VectorSearchExtensionName}(");
 
         this.AddColumn(columns, this._keyProperty);
 
@@ -127,15 +131,25 @@ internal class SqliteVectorStoreCollectionCommandBuilder
         return new SqliteCommand(query, this._connection);
     }
 
-    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Query does not contain user input.")]
     public SqliteCommand BuildDropTableCommand()
     {
-        string query = $"DROP TABLE IF EXISTS [{this._collectionName}];";
+        return this.BuildDropTableCommand(this._tableName);
+    }
 
-        return new SqliteCommand(query, this._connection);
+    public SqliteCommand BuildDropVirtualTableCommand()
+    {
+        return this.BuildDropTableCommand(this._virtualTableName);
     }
 
     #region private
+
+    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Query does not contain user input.")]
+    private SqliteCommand BuildDropTableCommand(string tableName)
+    {
+        string query = $"DROP TABLE [{tableName}];";
+
+        return new SqliteCommand(query, this._connection);
+    }
 
     private void AddColumn(List<string> columns, VectorStoreRecordProperty property)
     {
