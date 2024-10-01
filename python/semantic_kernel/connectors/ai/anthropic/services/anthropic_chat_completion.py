@@ -384,7 +384,14 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     async def _send_chat_stream_request(
         self, settings: AnthropicChatPromptExecutionSettings
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], None]:
-        """Send the chat stream request."""
+        """Send the chat stream request.
+
+        The stream yields a sequence of stream events, which are used to create streaming chat message content:
+        - RawMessageStartEvent is used to determine the message id and input tokens.
+        - RawMessageDeltaEvent is used to determine the finish reason.
+        - TextEvent is used to determine the text content and ContentBlockStopEvent is used to determine
+            the tool use content.
+        """
         try:
             async with self.async_client.messages.stream(**settings.prepare_settings_dict()) as stream:
                 metadata: dict[str, Any] = {"usage": {}, "id": None}
