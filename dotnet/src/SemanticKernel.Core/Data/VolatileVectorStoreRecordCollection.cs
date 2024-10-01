@@ -66,7 +66,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         // Verify.
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._collectionName = collectionName;
@@ -77,7 +77,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         // Validate property types.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
         this._vectorProperties = properties.VectorProperties.ToDictionary(x => x.DataModelPropertyName);
         if (properties.VectorProperties.Count > 0)
         {
