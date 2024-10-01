@@ -146,8 +146,13 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
     def __add__(self, other: "StreamingChatMessageContent") -> "StreamingChatMessageContent":
         """When combining two StreamingChatMessageContent instances, the content fields are combined.
 
-        The inner_content of the first one is used, ai_model_id and encoding should be the same,
-        if role is set, they should be the same.
+        The addition should follow these rules:
+            1. The inner_content of the two will be combined. If they are not lists, they will be converted to lists.
+            2. ai_model_id should be the same.
+            3. encoding should be the same.
+            4. role should be the same.
+            5. choice_index should be the same.
+            6. Metadata will be combined
         """
         if not isinstance(other, StreamingChatMessageContent):
             raise ContentAdditionException(
@@ -161,36 +166,14 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different encoding")
         if self.role and other.role and self.role != other.role:
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
-        if self.items or other.items:
-            for other_item in other.items:
-                added = False
-                for id, item in enumerate(list(self.items)):
-                    if type(item) is type(other_item) and hasattr(item, "__add__"):
-                        try:
-                            new_item = item + other_item  # type: ignore
-                            self.items[id] = new_item
-                            added = True
-                        except (ValueError, ContentAdditionException):
-                            continue
-                if not added:
-                    self.items.append(other_item)
-        if not isinstance(self.inner_content, list):
-            self.inner_content = [self.inner_content] if self.inner_content else []
-        other_content = (
-            other.inner_content
-            if isinstance(other.inner_content, list)
-            else [other.inner_content]
-            if other.inner_content
-            else []
-        )
-        self.inner_content.extend(other_content)
+
         return StreamingChatMessageContent(
             role=self.role,
-            items=self.items,  # type: ignore
+            items=self._merge_items_lists(other.items),
             choice_index=self.choice_index,
-            inner_content=self.inner_content,
+            inner_content=self._merge_inner_contents(other.inner_content),
             ai_model_id=self.ai_model_id,
-            metadata=self.metadata,
+            metadata=self.metadata | other.metadata,
             encoding=self.encoding,
             finish_reason=self.finish_reason or other.finish_reason,
         )

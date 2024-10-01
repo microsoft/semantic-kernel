@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Data;
 using Qdrant.Client.Grpc;
 
@@ -19,34 +17,8 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, PointStruct>
     where TRecord : class
 {
-    /// <summary>A set of types that data properties on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedDataTypes =
-    [
-        typeof(string),
-        typeof(int),
-        typeof(long),
-        typeof(double),
-        typeof(float),
-        typeof(bool),
-        typeof(int?),
-        typeof(long?),
-        typeof(double?),
-        typeof(float?),
-        typeof(bool?)
-    ];
-
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    /// <remarks>
-    /// While qdrant supports float32 and uint64, the api only supports float64, therefore
-    /// any float32 vectors will be converted to float64 before being sent to qdrant.
-    /// </remarks>
-    private static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-        typeof(ReadOnlyMemory<double>),
-        typeof(ReadOnlyMemory<double>?)
-    ];
+    /// <summary>The public parameterless constructor for the current data model.</summary>
+    private readonly ConstructorInfo _constructorInfo;
 
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
@@ -81,9 +53,10 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         Verify.NotNull(storagePropertyNames);
 
         // Validate property types.
+        this._constructorInfo = VectorStoreRecordPropertyReader.GetParameterlessConstructor(typeof(TRecord));
         var propertiesInfo = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: hasNamedVectors);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.DataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.VectorProperties, s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(propertiesInfo.DataProperties, QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes, "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(propertiesInfo.VectorProperties, QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes, "Vector");
 
         // Assign.
         this._hasNamedVectors = hasNamedVectors;
@@ -128,7 +101,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         {
             var propertyName = this._storagePropertyNames[dataPropertyInfo.Name];
             var propertyValue = dataPropertyInfo.GetValue(dataModel);
-            pointStruct.Payload.Add(propertyName, ConvertToGrpcFieldValue(propertyValue));
+            pointStruct.Payload.Add(propertyName, QdrantVectorStoreRecordFieldMapping.ConvertToGrpcFieldValue(propertyValue));
         }
 
         // Add vectors.
@@ -169,130 +142,54 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     public TRecord MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
     {
         // Get the key property name and value.
-        var keyJsonName = this._jsonPropertyNames[this._keyPropertyInfo.Name];
-        var keyPropertyValue = storageModel.Id.HasNum ? storageModel.Id.Num as object : storageModel.Id.Uuid as object;
+        var keyPropertyValue = storageModel.Id.HasNum ? storageModel.Id.Num as object : new Guid(storageModel.Id.Uuid) as object;
 
-        // Create a json object to represent the point.
-        var outputJsonObject = new JsonObject
-        {
-            { keyJsonName, JsonValue.Create(keyPropertyValue) },
-        };
+        // Construct the output record.
+        var outputRecord = (TRecord)this._constructorInfo.Invoke(null);
 
-        // Add each vector property if embeddings are included in the point.
+        // Set Key.
+        var keyPropertyInfoWithValue = new KeyValuePair<PropertyInfo, object?>(
+                this._keyPropertyInfo,
+                keyPropertyValue);
+        VectorStoreRecordMapping.SetPropertiesOnRecord(
+            outputRecord,
+            [keyPropertyInfoWithValue]);
+
+        // Set each vector property if embeddings are included in the point.
         if (options?.IncludeVectors is true)
         {
-            foreach (var vectorProperty in this._vectorPropertiesInfo)
+            if (this._hasNamedVectors)
             {
-                var propertyName = this._storagePropertyNames[vectorProperty.Name];
-                var jsonName = this._jsonPropertyNames[vectorProperty.Name];
-
-                if (this._hasNamedVectors)
-                {
-                    if (storageModel.Vectors.Vectors_.Vectors.TryGetValue(propertyName, out var vector))
-                    {
-                        outputJsonObject.Add(jsonName, new JsonArray(vector.Data.Select(x => JsonValue.Create(x)).ToArray()));
-                    }
-                }
-                else
-                {
-                    outputJsonObject.Add(jsonName, new JsonArray(storageModel.Vectors.Vector.Data.Select(x => JsonValue.Create(x)).ToArray()));
-                }
+                var propertiesInfoWithValues = VectorStoreRecordMapping.BuildPropertiesInfoWithValues(
+                    this._vectorPropertiesInfo,
+                    this._storagePropertyNames,
+                    storageModel.Vectors.Vectors_.Vectors,
+                    (Vector vector, Type targetType) => new ReadOnlyMemory<float>(vector.Data.ToArray()));
+                VectorStoreRecordMapping.SetPropertiesOnRecord(outputRecord, propertiesInfoWithValues);
+            }
+            else
+            {
+                var propertyInfoWithValue = new KeyValuePair<PropertyInfo, object?>(
+                        this._vectorPropertiesInfo[0],
+                        new ReadOnlyMemory<float>(storageModel.Vectors.Vector.Data.ToArray()));
+                VectorStoreRecordMapping.SetPropertiesOnRecord(
+                    outputRecord,
+                    [propertyInfoWithValue]);
             }
         }
 
-        // Add each data property.
+        // Set each data property.
         foreach (var dataProperty in this._dataPropertiesInfo)
         {
-            var propertyName = this._storagePropertyNames[dataProperty.Name];
-            var jsonName = this._jsonPropertyNames[dataProperty.Name];
-
-            if (storageModel.Payload.TryGetValue(propertyName, out var value))
-            {
-                outputJsonObject.Add(jsonName, ConvertFromGrpcFieldValueToJsonNode(value));
-            }
+            var propertiesInfoWithValues = VectorStoreRecordMapping.BuildPropertiesInfoWithValues(
+                this._dataPropertiesInfo,
+                this._storagePropertyNames,
+                storageModel.Payload,
+                (Value grpcValue, Type targetType) =>
+                    QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToNativeType(grpcValue, targetType));
+            VectorStoreRecordMapping.SetPropertiesOnRecord(outputRecord, propertiesInfoWithValues);
         }
 
-        // Convert from json object to the target data model.
-        return JsonSerializer.Deserialize<TRecord>(outputJsonObject)!;
-    }
-
-    /// <summary>
-    /// Convert the given <paramref name="payloadValue"/> to the correct native type based on its properties.
-    /// </summary>
-    /// <param name="payloadValue">The value to convert to a native type.</param>
-    /// <returns>The converted native value.</returns>
-    /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
-    private static JsonNode? ConvertFromGrpcFieldValueToJsonNode(Value payloadValue)
-    {
-        return payloadValue.KindCase switch
-        {
-            Value.KindOneofCase.NullValue => null,
-            Value.KindOneofCase.IntegerValue => JsonValue.Create(payloadValue.IntegerValue),
-            Value.KindOneofCase.StringValue => JsonValue.Create(payloadValue.StringValue),
-            Value.KindOneofCase.DoubleValue => JsonValue.Create(payloadValue.DoubleValue),
-            Value.KindOneofCase.BoolValue => JsonValue.Create(payloadValue.BoolValue),
-            Value.KindOneofCase.ListValue => new JsonArray(payloadValue.ListValue.Values.Select(x => ConvertFromGrpcFieldValueToJsonNode(x)).ToArray()),
-            Value.KindOneofCase.StructValue => new JsonObject(payloadValue.StructValue.Fields.ToDictionary(x => x.Key, x => ConvertFromGrpcFieldValueToJsonNode(x.Value))),
-            _ => throw new VectorStoreRecordMappingException($"Unsupported grpc value kind {payloadValue.KindCase}."),
-        };
-    }
-
-    /// <summary>
-    /// Convert the given <paramref name="sourceValue"/> to a <see cref="Value"/> object that can be stored in Qdrant.
-    /// </summary>
-    /// <param name="sourceValue">The object to convert.</param>
-    /// <returns>The converted Qdrant value.</returns>
-    /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
-    private static Value ConvertToGrpcFieldValue(object? sourceValue)
-    {
-        var value = new Value();
-        if (sourceValue is null)
-        {
-            value.NullValue = NullValue.NullValue;
-        }
-        else if (sourceValue is int intValue)
-        {
-            value.IntegerValue = intValue;
-        }
-        else if (sourceValue is long longValue)
-        {
-            value.IntegerValue = longValue;
-        }
-        else if (sourceValue is string stringValue)
-        {
-            value.StringValue = stringValue;
-        }
-        else if (sourceValue is float floatValue)
-        {
-            value.DoubleValue = floatValue;
-        }
-        else if (sourceValue is double doubleValue)
-        {
-            value.DoubleValue = doubleValue;
-        }
-        else if (sourceValue is bool boolValue)
-        {
-            value.BoolValue = boolValue;
-        }
-        else if (sourceValue is IEnumerable<int> ||
-            sourceValue is IEnumerable<long> ||
-            sourceValue is IEnumerable<string> ||
-            sourceValue is IEnumerable<float> ||
-            sourceValue is IEnumerable<double> ||
-            sourceValue is IEnumerable<bool>)
-        {
-            var listValue = sourceValue as IEnumerable;
-            value.ListValue = new ListValue();
-            foreach (var item in listValue!)
-            {
-                value.ListValue.Values.Add(ConvertToGrpcFieldValue(item));
-            }
-        }
-        else
-        {
-            throw new VectorStoreRecordMappingException($"Unsupported source value type {sourceValue?.GetType().FullName}.");
-        }
-
-        return value;
+        return outputRecord;
     }
 }

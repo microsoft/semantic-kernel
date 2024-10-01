@@ -11,6 +11,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import AzureTextCompletion
+from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError
@@ -54,17 +55,23 @@ def test_init_with_custom_header(azure_openai_unit_test_env) -> None:
         assert azure_text_completion.client.default_headers[key] == value
 
 
+def test_azure_text_embedding_generates_no_token_with_api_key_in_env(azure_openai_unit_test_env) -> None:
+    with (
+        patch(
+            f"{AzureOpenAISettings.__module__}.{AzureOpenAISettings.__qualname__}.get_azure_openai_auth_token",
+        ) as mock_get_token,
+    ):
+        mock_get_token.return_value = "test_token"
+        azure_text_completion = AzureTextCompletion()
+
+        assert azure_text_completion.client is not None
+        # API key is provided in env var, so the ad_token should be None
+        assert mock_get_token.call_count == 0
+
+
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True)
 def test_init_with_empty_deployment_name(monkeypatch, azure_openai_unit_test_env) -> None:
     monkeypatch.delenv("AZURE_OPENAI_TEXT_DEPLOYMENT_NAME", raising=False)
-    with pytest.raises(ServiceInitializationError):
-        AzureTextCompletion(
-            env_file_path="test.env",
-        )
-
-
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
-def test_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureTextCompletion(
             env_file_path="test.env",
