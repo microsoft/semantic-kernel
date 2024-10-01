@@ -66,8 +66,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         // Verify.
         Verify.NotNull(mongoDatabase);
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.BsonDocumentCustomMapper is not null, AzureCosmosDBMongoDBConstants.SupportedKeyTypes);
-        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.BsonDocumentCustomMapper is not null, AzureCosmosDBMongoDBConstants.SupportedKeyTypes);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._mongoDatabase = mongoDatabase;
