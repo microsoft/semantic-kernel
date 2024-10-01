@@ -6,10 +6,10 @@ using System.Text.Json;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Contains options for <see cref="VectorStoreRecordPropertyReader2"/>.
+/// Contains options for <see cref="VectorStoreRecordPropertyReader"/>.
 /// </summary>
 [ExcludeFromCodeCoverage]
-internal sealed class VectorStoreRecordPropertyReader2Options
+internal sealed class VectorStoreRecordPropertyReaderOptions
 {
     /// <summary>
     /// Gets or sets a value indicating whether the connector/db supports multiple key properties.
