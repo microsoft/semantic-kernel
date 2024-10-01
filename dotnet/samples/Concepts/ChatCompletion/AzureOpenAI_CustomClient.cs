@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ClientModel;
 using System.ClientModel.Primitives;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
@@ -29,7 +30,7 @@ public sealed class AzureOpenAI_CustomClient(ITestOutputHelper output) : BaseTes
             RetryPolicy = new ClientRetryPolicy()
         };
 
-        var customClient = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), TestConfiguration.AzureOpenAI.ApiKey, clientOptions);
+        var customClient = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), new ApiKeyCredential(TestConfiguration.AzureOpenAI.ApiKey), clientOptions);
 
         var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, customClient)
