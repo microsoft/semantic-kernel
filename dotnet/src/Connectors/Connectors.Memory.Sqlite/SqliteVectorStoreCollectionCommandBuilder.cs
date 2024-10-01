@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Data.Sqlite;
 using Microsoft.SemanticKernel.Data;
@@ -9,45 +10,87 @@ using Microsoft.SemanticKernel.Data;
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 /// <summary>
-/// Contains helper methods to create queries for SQLite database.
+/// Command builder for queries in SQLite database.
 /// </summary>
-internal static class SqliteVectorStoreCollectionCommandBuilder
+internal class SqliteVectorStoreCollectionCommandBuilder
 {
-    public static SqliteCommand BuildTableCountCommand(
+    /// <summary>The name of the collection.</summary>
+    private readonly string _collectionName;
+
+    /// <summary><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</summary>
+    private readonly SqliteConnection _connection;
+
+    /// <summary>The key property of the storage model.</summary>
+    private readonly VectorStoreRecordKeyProperty _keyProperty;
+
+    /// <summary>Collection of record data properties.</summary>
+    private readonly List<VectorStoreRecordDataProperty> _dataProperties;
+
+    /// <summary>Collection of record vector properties.</summary>
+    private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
+
+    // <summary>A dictionary that maps from a property name to the storage name.</summary>
+    private readonly Dictionary<string, string> _storagePropertyNames;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqliteVectorStoreCollectionCommandBuilder"/> class.
+    /// </summary>
+    /// <param name="collectionName"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
+    /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
+    /// <param name="keyProperty">The key property of the storage model.</param>
+    /// <param name="dataProperties">Collection of record data properties.</param>
+    /// <param name="vectorProperties">Collection of record vector properties.</param>
+    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name.</param>
+    public SqliteVectorStoreCollectionCommandBuilder(
+        string collectionName,
         SqliteConnection connection,
-        string tableName)
+        VectorStoreRecordKeyProperty keyProperty,
+        List<VectorStoreRecordDataProperty> dataProperties,
+        List<VectorStoreRecordVectorProperty> vectorProperties,
+        Dictionary<string, string> storagePropertyNames)
+    {
+        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNull(connection);
+        Verify.NotNull(keyProperty);
+        Verify.NotNull(dataProperties);
+        Verify.NotNull(vectorProperties);
+        Verify.NotNull(storagePropertyNames);
+
+        this._collectionName = collectionName;
+        this._connection = connection;
+        this._keyProperty = keyProperty;
+        this._dataProperties = dataProperties;
+        this._vectorProperties = vectorProperties;
+        this._storagePropertyNames = storagePropertyNames;
+    }
+
+    public SqliteCommand BuildTableCountCommand()
     {
         const string SystemTable = "sqlite_master";
         const string ParameterName = "@tableName";
 
         var query = $"SELECT count(*) FROM {SystemTable} WHERE type='table' AND name={ParameterName};";
 
-        using var command = new SqliteCommand(query, connection);
+        using var command = new SqliteCommand(query, this._connection);
 
-        command.Parameters.AddWithValue(ParameterName, tableName);
+        command.Parameters.AddWithValue(ParameterName, this._collectionName);
 
         return command;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Query does not contain user input.")]
-    public static SqliteCommand BuildCreateTableCommand(
-        SqliteConnection connection,
-        string tableName,
-        VectorStoreRecordKeyProperty keyProperty,
-        List<VectorStoreRecordDataProperty> dataProperties,
-        Dictionary<string, string> storagePropertyNames,
-        bool ifNotExists)
+    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Query does not contain user input.")]
+    public SqliteCommand BuildCreateTableCommand(bool ifNotExists)
     {
         var builder = new StringBuilder();
         var columns = new List<string>();
 
-        builder.AppendLine($"CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{tableName} (");
+        builder.AppendLine($"CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{this._collectionName} (");
 
-        AddColumn(columns, keyProperty, storagePropertyNames, isPrimaryKey: true);
+        this.AddColumn(columns, this._keyProperty);
 
-        foreach (var property in dataProperties)
+        foreach (var property in this._dataProperties)
         {
-            AddColumn(columns, property, storagePropertyNames);
+            this.AddColumn(columns, property);
         }
 
         builder.AppendLine(string.Join(",\n", columns));
@@ -55,32 +98,55 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
         var query = builder.ToString();
 
-        return new SqliteCommand(query, connection);
+        return new SqliteCommand(query, this._connection);
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Query does not contain user input.")]
-    public static SqliteCommand BuildDropTableCommand(
-        SqliteConnection connection,
-        string tableName)
+    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Query does not contain user input.")]
+    public SqliteCommand BuildCreateVirtualTableCommand(bool ifNotExists)
     {
-        string query = $"DROP TABLE IF EXISTS [{tableName}];";
+        var builder = new StringBuilder();
+        var columns = new List<string>();
 
-        return new SqliteCommand(query, connection);
+        // Use virtual table name with prefix to avoid collisions with regular table name.
+        var tableName = $"vec_{this._collectionName}";
+
+        builder.AppendLine($"CREATE VIRTUAL TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{tableName} USING {SqliteConstants.VectorSearchExtensionName}(");
+
+        this.AddColumn(columns, this._keyProperty);
+
+        foreach (var property in this._vectorProperties)
+        {
+            this.AddColumn(columns, property);
+        }
+
+        builder.AppendLine(string.Join(",\n", columns));
+        builder.Append(");");
+
+        var query = builder.ToString();
+
+        return new SqliteCommand(query, this._connection);
+    }
+
+    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Query does not contain user input.")]
+    public SqliteCommand BuildDropTableCommand()
+    {
+        string query = $"DROP TABLE IF EXISTS [{this._collectionName}];";
+
+        return new SqliteCommand(query, this._connection);
     }
 
     #region private
 
-    private static void AddColumn(
-        List<string> columns,
-        VectorStoreRecordProperty property,
-        Dictionary<string, string> storagePropertyNames,
-        bool isPrimaryKey = false)
+    private void AddColumn(List<string> columns, VectorStoreRecordProperty property)
     {
         const string PrimaryKeyIdentifier = "PRIMARY KEY";
 
-        var primaryKeyPlaceholder = isPrimaryKey ? $" {PrimaryKeyIdentifier}" : string.Empty;
+        var primaryKeyPlaceholder = property is VectorStoreRecordKeyProperty ? $" {PrimaryKeyIdentifier}" : string.Empty;
+        var propertyType = property is VectorStoreRecordVectorProperty vectorProperty ?
+            GetVectorStoragePropertyType(vectorProperty) :
+            GetStoragePropertyType(property);
 
-        columns.Add($"{storagePropertyNames[property.DataModelPropertyName]} {GetStoragePropertyType(property)}{primaryKeyPlaceholder}");
+        columns.Add($"{this._storagePropertyNames[property.DataModelPropertyName]} {propertyType}{primaryKeyPlaceholder}");
     }
 
     private static string GetStoragePropertyType(VectorStoreRecordProperty property)
@@ -114,6 +180,20 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
             // Default fallback for unknown types
             _ => throw new NotSupportedException($"Property {property.DataModelPropertyName} has type {property.PropertyType.FullName}, which is not supported by SQLite connector.")
         };
+    }
+
+    private static string GetVectorStoragePropertyType(VectorStoreRecordVectorProperty vectorProperty)
+    {
+        var propertyType = vectorProperty.PropertyType;
+
+        if (!SqliteConstants.SupportedVectorTypes.Contains(propertyType))
+        {
+            throw new NotSupportedException($"Property {vectorProperty.DataModelPropertyName} has type {propertyType.FullName}, which is not supported by SQLite connector.");
+        }
+
+        var storagePropertyType = $"FLOAT[{vectorProperty.Dimensions}]";
+
+        return storagePropertyType;
     }
 
     #endregion

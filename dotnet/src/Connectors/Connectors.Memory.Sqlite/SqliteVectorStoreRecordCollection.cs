@@ -23,47 +23,6 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "SQLite";
 
-    /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedKeyTypes =
-    [
-        typeof(ulong),
-        typeof(string)
-    ];
-
-    /// <summary>A <see cref="HashSet{T}"/> of types that data properties on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedDataTypes =
-    [
-        typeof(int),
-        typeof(int?),
-        typeof(long),
-        typeof(long?),
-        typeof(ulong),
-        typeof(ulong?),
-        typeof(short),
-        typeof(short?),
-        typeof(ushort),
-        typeof(ushort?),
-        typeof(string),
-        typeof(bool),
-        typeof(bool?),
-        typeof(float),
-        typeof(float?),
-        typeof(double),
-        typeof(double?),
-        typeof(decimal),
-        typeof(decimal?),
-        typeof(byte[]),
-        typeof(DateTime),
-        typeof(DateTime?),
-    ];
-
-    /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-    ];
-
     /// <summary><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</summary>
     private readonly SqliteConnection _connection;
 
@@ -82,6 +41,9 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     /// <summary>The mapper to use when mapping between the consumer data model and the SQLite record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
 
+    /// <summary>Command builder for queries in SQLite database.</summary>
+    private readonly SqliteVectorStoreCollectionCommandBuilder _commandBuilder;
+
     /// <inheritdoc />
     public string CollectionName { get; }
 
@@ -99,7 +61,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         // Verify.
         Verify.NotNull(connection);
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), customMapperSupplied: false, s_supportedKeyTypes);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), customMapperSupplied: false, SqliteConstants.SupportedKeyTypes);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
@@ -110,9 +72,9 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         // Validate property types.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.DataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes([properties.KeyProperty], SqliteConstants.SupportedKeyTypes, "Key");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.DataProperties, SqliteConstants.SupportedDataTypes, "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.VectorProperties, SqliteConstants.SupportedVectorTypes, "Vector");
 
         this._keyProperty = properties.KeyProperty;
         this._dataProperties = properties.DataProperties;
@@ -121,6 +83,13 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
 
         this._mapper = this.InitializeMapper(options);
+        this._commandBuilder = new SqliteVectorStoreCollectionCommandBuilder(
+            this.CollectionName,
+            this._connection,
+            this._keyProperty,
+            this._dataProperties,
+            this._vectorProperties,
+            this._storagePropertyNames);
     }
 
     /// <inheritdoc />
@@ -128,9 +97,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     {
         const string OperationName = "TableCount";
 
-        var command = SqliteVectorStoreCollectionCommandBuilder.BuildTableCountCommand(
-            this._connection,
-            this.CollectionName);
+        var command = this._commandBuilder.BuildTableCountCommand();
 
         var result = await this
             .RunOperationAsync(OperationName, () => command.ExecuteScalarAsync(cancellationToken))
@@ -146,13 +113,21 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     /// <inheritdoc />
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return this.CreateTableAsync(ifNotExists: false, cancellationToken);
+        const bool IfNotExists = false;
+
+        return Task.WhenAll(
+            this.CreateTableAsync(IfNotExists, cancellationToken),
+            this.CreateVirtualTableAsync(IfNotExists, cancellationToken));
     }
 
     /// <inheritdoc />
     public Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this.CreateTableAsync(ifNotExists: true, cancellationToken);
+        const bool IfNotExists = true;
+
+        return Task.WhenAll(
+            this.CreateTableAsync(IfNotExists, cancellationToken),
+            this.CreateVirtualTableAsync(IfNotExists, cancellationToken));
     }
 
     /// <inheritdoc />
@@ -160,9 +135,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     {
         const string OperationName = "DropTable";
 
-        using var command = SqliteVectorStoreCollectionCommandBuilder.BuildDropTableCommand(
-            this._connection,
-            this.CollectionName);
+        using var command = this._commandBuilder.BuildDropTableCommand();
 
         return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
     }
@@ -259,13 +232,16 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     {
         const string OperationName = "CreateTable";
 
-        using var command = SqliteVectorStoreCollectionCommandBuilder.BuildCreateTableCommand(
-            this._connection,
-            this.CollectionName,
-            this._keyProperty,
-            this._dataProperties,
-            this._storagePropertyNames,
-            ifNotExists);
+        using var command = this._commandBuilder.BuildCreateTableCommand(ifNotExists);
+
+        return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
+    }
+
+    private Task<int> CreateVirtualTableAsync(bool ifNotExists, CancellationToken cancellationToken)
+    {
+        const string OperationName = "CreateVirtualTable";
+
+        using var command = this._commandBuilder.BuildCreateVirtualTableCommand(ifNotExists);
 
         return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
     }
