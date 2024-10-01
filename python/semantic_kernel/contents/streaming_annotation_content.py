@@ -30,7 +30,7 @@ class StreamingAnnotationContent(KernelContent):
 
     def __str__(self) -> str:
         """Return the string representation of the annotation content."""
-        return f"AnnotationContent(file_id={self.file_id}, quote={self.quote}, start_index={self.start_index}, end_index={self.end_index})"  # noqa: E501
+        return f"StreamingAnnotationContent(file_id={self.file_id}, quote={self.quote}, start_index={self.start_index}, end_index={self.end_index})"  # noqa: E501
 
     def to_element(self) -> Element:
         """Convert the annotation content to an Element."""

@@ -27,7 +27,7 @@ class StreamingFileReferenceContent(KernelContent):
 
     def __str__(self) -> str:
         """Return the string representation of the file reference content."""
-        return f"FileReferenceContent(file_id={self.file_id})"
+        return f"StreamingFileReferenceContent(file_id={self.file_id})"
 
     def to_element(self) -> Element:
         """Convert the file reference content to an Element."""
