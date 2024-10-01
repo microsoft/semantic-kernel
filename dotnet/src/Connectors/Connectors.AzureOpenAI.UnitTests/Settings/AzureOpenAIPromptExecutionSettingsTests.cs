@@ -7,6 +7,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Settings;
 
 /// <summary>
@@ -242,9 +244,8 @@ public class AzureOpenAIPromptExecutionSettingsTests
         var executionSettings = new AzureOpenAIPromptExecutionSettings { StopSequences = [] };
 
         // Act
-#pragma warning disable CS0618 // AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions
         var executionSettingsWithData = AzureOpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
-#pragma warning restore CS0618
+
         // Assert
         Assert.Null(executionSettingsWithData.StopSequences);
     }

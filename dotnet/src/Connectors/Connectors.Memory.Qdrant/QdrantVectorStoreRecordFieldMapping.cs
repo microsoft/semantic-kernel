@@ -65,7 +65,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
             Value.KindOneofCase.BoolValue => payloadValue.BoolValue,
             Value.KindOneofCase.ListValue => VectorStoreRecordMapping.CreateEnumerable(
                 payloadValue.ListValue.Values.Select(
-                    x => ConvertFromGrpcFieldValueToNativeType(x, VectorStoreRecordPropertyReader.GetCollectionElementType(targetType))),
+                    x => ConvertFromGrpcFieldValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))),
                 targetType),
             _ => throw new VectorStoreRecordMappingException($"Unsupported grpc value kind {payloadValue.KindCase}."),
         };
