@@ -215,8 +215,6 @@ public abstract class KernelFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function's execution.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
-    [RequiresUnreferencedCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
-    [RequiresDynamicCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     public async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
         KernelArguments? arguments = null,
@@ -231,14 +229,7 @@ public abstract class KernelFunction
         arguments ??= [];
         logger.LogFunctionInvoking(this.Name);
 
-        if (this._jsonSerializerOptions is not null)
-        {
-            logger.LogFunctionArguments(arguments, this._jsonSerializerOptions);
-        }
-        else
-        {
-            logger.LogFunctionArguments(arguments);
-        }
+        this.LogFunctionArguments(logger, arguments);
 
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -285,14 +276,7 @@ public abstract class KernelFunction
 
             logger.LogFunctionInvokedSuccess(this.Name);
 
-            if (this._jsonSerializerOptions is not null)
-            {
-                logger.LogFunctionResultValue(functionResult, this._jsonSerializerOptions);
-            }
-            else
-            {
-                logger.LogFunctionResultValue(functionResult);
-            }
+            this.LogFunctionResult(logger, functionResult);
 
             return functionResult;
         }
@@ -320,8 +304,6 @@ public abstract class KernelFunction
     /// <returns>The result of the function's execution, cast to <typeparamref name="TResult"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
     /// <exception cref="InvalidCastException">The function's result could not be cast to <typeparamref name="TResult"/>.</exception>
-    [RequiresUnreferencedCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
-    [RequiresDynamicCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     public async Task<TResult?> InvokeAsync<TResult>(
         Kernel kernel,
         KernelArguments? arguments = null,
@@ -342,8 +324,6 @@ public abstract class KernelFunction
     /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
-    [RequiresUnreferencedCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
-    [RequiresDynamicCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     public IAsyncEnumerable<StreamingKernelContent> InvokeStreamingAsync(
         Kernel kernel,
         KernelArguments? arguments = null,
@@ -363,8 +343,6 @@ public abstract class KernelFunction
     /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
-    [RequiresUnreferencedCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
-    [RequiresDynamicCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     public async IAsyncEnumerable<TResult> InvokeStreamingAsync<TResult>(
         Kernel kernel,
         KernelArguments? arguments = null,
@@ -378,14 +356,7 @@ public abstract class KernelFunction
         arguments ??= [];
         logger.LogFunctionStreamingInvoking(this.Name);
 
-        if (this._jsonSerializerOptions is not null)
-        {
-            logger.LogFunctionArguments(arguments, this._jsonSerializerOptions);
-        }
-        else
-        {
-            logger.LogFunctionArguments(arguments);
-        }
+        this.LogFunctionArguments(logger, arguments);
 
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -536,6 +507,34 @@ public abstract class KernelFunction
                 kernelEx.Data.Add(entry.Key, entry.Value);
             }
             throw kernelEx;
+        }
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
+    private void LogFunctionArguments(ILogger logger, KernelArguments arguments)
+    {
+        if (this._jsonSerializerOptions is not null)
+        {
+            logger.LogFunctionArguments(arguments, this._jsonSerializerOptions);
+        }
+        else
+        {
+            logger.LogFunctionArguments(arguments);
+        }
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
+    private void LogFunctionResult(ILogger logger, FunctionResult functionResult)
+    {
+        if (this._jsonSerializerOptions is not null)
+        {
+            logger.LogFunctionResultValue(functionResult, this._jsonSerializerOptions);
+        }
+        else
+        {
+            logger.LogFunctionResultValue(functionResult);
         }
     }
 }
