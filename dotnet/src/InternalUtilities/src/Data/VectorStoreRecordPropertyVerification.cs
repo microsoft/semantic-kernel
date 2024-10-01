@@ -117,7 +117,6 @@ internal static class VectorStoreRecordPropertyVerification
         }
     }
 
-
     /// <summary>
     /// Verify if the provided type is one of the supported Enumerable types.
     /// </summary>
