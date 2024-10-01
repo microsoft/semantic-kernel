@@ -86,8 +86,8 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         // Verify.
         Verify.NotNull(database);
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.JsonNodeCustomMapper is not null, s_supportedKeyTypes);
-        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.JsonNodeCustomMapper is not null, s_supportedKeyTypes);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._database = database;
@@ -98,8 +98,8 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 
         // Validate property types.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, this._vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
 
         // Lookup storage property names.
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), this._jsonSerializerOptions);
