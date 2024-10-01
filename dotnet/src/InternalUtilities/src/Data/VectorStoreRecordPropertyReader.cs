@@ -24,6 +24,23 @@ internal static class VectorStoreRecordPropertyReader
     private static readonly ConcurrentDictionary<Type, (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties)> s_multipleVectorsPropertiesCache = new();
 
     /// <summary>
+    /// Verify that the given type has a public parameterless constructor and return it if it exists.
+    /// </summary>
+    /// <param name="type">The type to get the constructor for.</param>
+    /// <returns>The public parameterless constructor.</returns>
+    /// <exception cref="ArgumentException">Thrown if the provided type doesn't have a public parameterless constructor.</exception>
+    public static ConstructorInfo GetParameterlessConstructor(Type type)
+    {
+        var constructor = type.GetConstructor(Type.EmptyTypes);
+        if (constructor == null)
+        {
+            throw new ArgumentException($"Type {type.FullName} must have a parameterless constructor.");
+        }
+
+        return constructor;
+    }
+
+    /// <summary>
     /// Split the given <paramref name="definition"/> into key, data and vector properties and verify that we have the expected numbers of each type.
     /// </summary>
     /// <param name="typeName">The name of the type that the definition relates to.</param>
