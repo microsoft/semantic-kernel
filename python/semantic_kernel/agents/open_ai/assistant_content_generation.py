@@ -3,8 +3,8 @@
 from typing import TYPE_CHECKING, Any
 
 from openai import AsyncOpenAI
-from openai.types.beta.threads.file_citation_annotation import FileCitationAnnotation
-from openai.types.beta.threads.file_path_annotation import FilePathAnnotation
+from openai.types.beta.threads.file_citation_delta_annotation import FileCitationDeltaAnnotation
+from openai.types.beta.threads.file_path_delta_annotation import FilePathDeltaAnnotation
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.image_file_delta_block import ImageFileDeltaBlock
 from openai.types.beta.threads.message_delta_event import MessageDeltaEvent
@@ -149,7 +149,7 @@ def generate_streaming_message_content(
                 # Process annotations if any
                 if delta_block.text.annotations:
                     for annotation in delta_block.text.annotations or []:
-                        if isinstance(annotation, (FileCitationAnnotation, FilePathAnnotation)):
+                        if isinstance(annotation, (FileCitationDeltaAnnotation, FilePathDeltaAnnotation)):
                             items.append(generate_streaming_annotation_content(annotation))
         elif delta_block.type == "image_file":
             assert isinstance(delta_block, ImageFileDeltaBlock)  # nosec
@@ -262,10 +262,10 @@ def generate_annotation_content(annotation: "Annotation") -> AnnotationContent:
 def generate_streaming_annotation_content(annotation: "Annotation") -> StreamingAnnotationContent:
     """Generate streaming annotation content."""
     file_id = None
-    if hasattr(annotation, "file_path"):
-        file_id = annotation.file_path.file_id
-    elif hasattr(annotation, "file_citation"):
-        file_id = annotation.file_citation.file_id
+    if hasattr(annotation, "file_path") and annotation.file_path:
+        file_id = annotation.file_path.file_id if annotation.file_path.file_id else None
+    elif hasattr(annotation, "file_citation") and annotation.file_citation:
+        file_id = annotation.file_citation.file_id if annotation.file_citation.file_id else None
 
     return StreamingAnnotationContent(
         file_id=file_id,

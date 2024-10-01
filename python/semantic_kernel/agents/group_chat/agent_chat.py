@@ -168,8 +168,7 @@ class AgentChat(KernelBaseModel):
                 yield message
 
             for message in messages:
-                if message.content:
-                    self.history.messages.append(message)
+                self.history.messages.append(message)
 
             # Broadcast message to other channels (in parallel)
             # Note: Able to queue messages without synchronizing channels.

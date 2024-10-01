@@ -810,6 +810,7 @@ class OpenAIAssistantBase(Agent):
         self,
         thread_id: str,
         *,
+        messages: list[ChatMessageContent] | None = None,
         ai_model_id: str | None = None,
         enable_code_interpreter: bool | None = False,
         enable_file_search: bool | None = False,
@@ -826,6 +827,7 @@ class OpenAIAssistantBase(Agent):
         """Invoke the chat assistant with streaming."""
         async for content in self._invoke_internal_stream(
             thread_id=thread_id,
+            messages=messages,
             ai_model_id=ai_model_id,
             enable_code_interpreter=enable_code_interpreter,
             enable_file_search=enable_file_search,
@@ -948,7 +950,7 @@ class OpenAIAssistantBase(Agent):
                                     if messages is not None:
                                         messages.append(content)
                         return
-                    elif event.event.startswith("thread.run.") and event.event.endswith("failed"):
+                    elif event.event == "thread.run.failed":
                         run = event.data  # type: ignore
                         error_message = ""
                         if run.last_error and run.last_error.message:

@@ -4188,10 +4188,11 @@ wheels = [
 
 [[package]]
 name = "semantic-kernel"
-version = "1.10.0"
+version = "1.10.1"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "azure-identity", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "defusedxml", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "jinja2", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "nest-asyncio", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -4289,6 +4290,7 @@ requires-dist = [
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = "~=0.32" },
     { name = "azure-ai-inference", marker = "extra == 'azure'", specifier = ">=1.0.0b3" },
     { name = "azure-cosmos", marker = "extra == 'azure'", specifier = "~=4.7" },
+    { name = "azure-identity", specifier = "~=1.13" },
     { name = "azure-identity", marker = "extra == 'azure'", specifier = "~=1.13" },
     { name = "azure-search-documents", marker = "extra == 'azure'", specifier = ">=11.6.0b4" },
     { name = "chromadb", marker = "extra == 'chroma'", specifier = ">=0.4,<0.6" },
