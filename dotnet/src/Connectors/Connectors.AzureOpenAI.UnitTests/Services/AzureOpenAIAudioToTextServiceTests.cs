@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -68,7 +69,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
     public void ConstructorWithOpenAIClientWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var client = new AzureOpenAIClient(new Uri("http://host"), "key");
+        var client = new AzureOpenAIClient(new Uri("http://host"), new ApiKeyCredential("key"));
         var service = includeLoggerFactory ?
             new AzureOpenAIAudioToTextService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object) :
             new AzureOpenAIAudioToTextService("deployment", client, "model-id");
@@ -83,11 +84,11 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new AzureOpenAIAudioToTextService(" ", "http://host", "apikey"));
-        Assert.Throws<ArgumentException>(() => new AzureOpenAIAudioToTextService(" ", azureOpenAIClient: new(new Uri("http://host"), "apikey")));
+        Assert.Throws<ArgumentException>(() => new AzureOpenAIAudioToTextService(" ", azureOpenAIClient: new(new Uri("http://host"), new ApiKeyCredential("apikey"))));
         Assert.Throws<ArgumentException>(() => new AzureOpenAIAudioToTextService("", "http://host", "apikey"));
-        Assert.Throws<ArgumentException>(() => new AzureOpenAIAudioToTextService("", azureOpenAIClient: new(new Uri("http://host"), "apikey")));
+        Assert.Throws<ArgumentException>(() => new AzureOpenAIAudioToTextService("", azureOpenAIClient: new(new Uri("http://host"), new ApiKeyCredential("apikey"))));
         Assert.Throws<ArgumentNullException>(() => new AzureOpenAIAudioToTextService(null!, "http://host", "apikey"));
-        Assert.Throws<ArgumentNullException>(() => new AzureOpenAIAudioToTextService(null!, azureOpenAIClient: new(new Uri("http://host"), "apikey")));
+        Assert.Throws<ArgumentNullException>(() => new AzureOpenAIAudioToTextService(null!, azureOpenAIClient: new(new Uri("http://host"), new ApiKeyCredential("apikey"))));
     }
 
     [Theory]

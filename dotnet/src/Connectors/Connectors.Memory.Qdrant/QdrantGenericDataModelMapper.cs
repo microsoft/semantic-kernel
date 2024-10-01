@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using Microsoft.SemanticKernel.Data;
 using Qdrant.Client.Grpc;
 
@@ -34,8 +32,8 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 
         // Validate property types.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify("VectorStoreGenericDataModel", vectorStoreRecordDefinition, supportsMultipleVectors: hasNamedVectors, requiresAtLeastOneVector: !hasNamedVectors);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.DataProperties, QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.VectorProperties, QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.DataProperties, QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes, "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.VectorProperties, QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes, "Vector");
 
         // Assign.
         this._vectorStoreRecordDefinition = vectorStoreRecordDefinition;
@@ -189,34 +187,9 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
                     // Shortcut any null handling here so we don't have to check for it for each case.
                     dataProperties[dataProperty.DataModelPropertyName] = null;
                 }
-                else if (typeof(IEnumerable).IsAssignableFrom(dataProperty.PropertyType))
-                {
-                    // Using json deserialization to convert lists back into the correct enumerable type.
-                    // There are many different possible enumerable types and this makes it easy to
-                    // support all that System.Text.Json supports.
-                    var jsonNode = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToJsonNode(propertyValue);
-                    var targetObject = jsonNode.Deserialize(dataProperty.PropertyType);
-                    dataProperties[dataProperty.DataModelPropertyName] = targetObject;
-                }
-                else if (dataProperty.PropertyType == typeof(int) || dataProperty.PropertyType == typeof(int?))
-                {
-                    // The Qdrant sdk only returns long values for integers, so we need to convert them
-                    // manually to the type of our data model.
-                    var convertedValue = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValue(propertyValue);
-                    convertedValue = Convert.ToInt32(convertedValue);
-                    dataProperties[dataProperty.DataModelPropertyName] = convertedValue;
-                }
-                else if (dataProperty.PropertyType == typeof(float) || dataProperty.PropertyType == typeof(float?))
-                {
-                    // The Qdrant sdk only returns double values for floats, so we need to convert them
-                    // manually to the type of our data model.
-                    var convertedValue = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValue(propertyValue);
-                    convertedValue = Convert.ToSingle(convertedValue);
-                    dataProperties[dataProperty.DataModelPropertyName] = convertedValue;
-                }
                 else
                 {
-                    var convertedValue = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValue(propertyValue);
+                    var convertedValue = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToNativeType(propertyValue, dataProperty.PropertyType);
                     dataProperties[dataProperty.DataModelPropertyName] = convertedValue;
                 }
             }
