@@ -57,7 +57,7 @@ internal static class TypeConverterFactory
         return null;
     }
 
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2067:UnrecognizedReflectionPattern", Justification = "Trimmer does not trim enums")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2067:UnrecognizedReflectionPattern", Justification = "Trimmer does not trim enums. See the PR - https://github.com/dotnet/runtime/pull/100347 for more details.")]
     private static EnumConverter CreateEnumConverter(Type type)
     {
         Debug.Assert(type.IsEnum || type == typeof(Enum));
