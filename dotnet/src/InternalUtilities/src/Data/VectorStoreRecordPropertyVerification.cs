@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Collections;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.SemanticKernel.Data;
