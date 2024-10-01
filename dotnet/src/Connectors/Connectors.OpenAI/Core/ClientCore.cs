@@ -132,7 +132,7 @@ internal partial class ClientCore
             this.AddAttribute(ClientCore.OrganizationKey, organizationId);
         }
 
-        this.Client = new OpenAIClient(apiKey!, options);
+        this.Client = new OpenAIClient(new ApiKeyCredential(apiKey!), options);
     }
 
     /// <summary>
