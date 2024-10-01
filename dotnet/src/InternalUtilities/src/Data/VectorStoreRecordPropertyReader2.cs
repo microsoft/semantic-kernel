@@ -238,7 +238,7 @@ internal sealed class VectorStoreRecordPropertyReader2
     /// <param name="supportedTypes">The list of supported types.</param>
     public void VerifyKeyProperties(HashSet<Type> supportedTypes)
     {
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(this._keyProperties, supportedTypes, "Key");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(this._keyProperties, supportedTypes, "Key");
     }
 
     /// <summary>Verify that the types of the data properties fall within the provided set.</summary>
@@ -246,14 +246,14 @@ internal sealed class VectorStoreRecordPropertyReader2
     /// <param name="supportEnumerable">A value indicating whether enumerable types are supported where the element type is one of the supported types.</param>
     public void VerifyDataProperties(HashSet<Type> supportedTypes, bool supportEnumerable)
     {
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(this._dataProperties, supportedTypes, "Data", supportEnumerable);
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(this._dataProperties, supportedTypes, "Data", supportEnumerable);
     }
 
     /// <summary>Verify that the types of the vector properties fall within the provided set.</summary>
     /// <param name="supportedTypes">The list of supported types.</param>
     public void VerifyVectorProperties(HashSet<Type> supportedTypes)
     {
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(this._vectorProperties, supportedTypes, "Vector");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(this._vectorProperties, supportedTypes, "Vector");
     }
 
     /// <summary>
@@ -330,7 +330,7 @@ internal sealed class VectorStoreRecordPropertyReader2
 
         if (requiresAtLeastOneVector && vectorProperties.Count == 0)
         {
-            throw new ArgumentException($"No vector property found on type {typeName} or the provided {nameof(VectorStoreRecordDefinition)}.");
+            throw new ArgumentException($"No vector property found on type {typeName} or the provided {nameof(VectorStoreRecordDefinition)} while at least one is required.");
         }
 
         if (!supportsMultipleVectors && vectorProperties.Count > 1)

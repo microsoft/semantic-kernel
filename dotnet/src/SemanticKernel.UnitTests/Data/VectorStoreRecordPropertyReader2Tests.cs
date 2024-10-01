@@ -55,6 +55,15 @@ public class VectorStoreRecordPropertyReader2Tests
     }
 
     [Theory]
+    [MemberData(nameof(NoVectorsTypeAndDefinitionCombos))]
+    public void ConstructorFailsForUnsupportedNoVectors(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Act & Assert.
+        var exception = Assert.Throws<ArgumentException>(() => new VectorStoreRecordPropertyReader2(type, definition, new VectorStoreRecordPropertyReader2Options { RequiresAtLeastOneVector = true }));
+        Assert.Equal("No vector property found on type NoVectorModel or the provided VectorStoreRecordDefinition while at least one is required.", exception.Message);
+    }
+
+    [Theory]
     [MemberData(nameof(TypeAndDefinitionCombos))]
     public void CanGetDefinition(Type type, VectorStoreRecordDefinition? definition)
     {
@@ -427,9 +436,15 @@ public class VectorStoreRecordPropertyReader2Tests
         yield return new object?[] { typeof(NoKeyModel), null };
     }
 
+    public static IEnumerable<object?[]> NoVectorsTypeAndDefinitionCombos()
+    {
+        yield return new object?[] { typeof(NoVectorModel), s_noVectorDefinition };
+        yield return new object?[] { typeof(NoVectorModel), null };
+    }
+
     public static IEnumerable<object?[]> MultiKeysTypeAndDefinitionCombos()
     {
-        yield return new object?[] { typeof(MultiKeysModel), s_multiKeysDefinition};
+        yield return new object?[] { typeof(MultiKeysModel), s_multiKeysDefinition };
         yield return new object?[] { typeof(MultiKeysModel), null };
     }
 
@@ -460,6 +475,8 @@ public class VectorStoreRecordPropertyReader2Tests
         yield return new object?[] { typeof(EnumerablePropsModel), s_enumerablePropsDefinition };
         yield return new object?[] { typeof(EnumerablePropsModel), null };
     }
+
+#pragma warning disable CA1812 // Invalid unused classes error, since I am using these for testing purposes above.
 
     private sealed class NoKeyModel
     {
@@ -618,4 +635,6 @@ public class VectorStoreRecordPropertyReader2Tests
             new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "storage_vector" }
         ]
     };
+
+#pragma warning restore CA1812
 }
