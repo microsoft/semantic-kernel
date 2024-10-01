@@ -25,6 +25,17 @@ class PostgresSettings(KernelBaseSettings):
     Args:
     - connection_string: str - Postgres connection string
         (Env var POSTGRES_CONNECTION_STRING)
+    - host: str - Postgres host (Env var PGHOST})
+    - port: int - Postgres port (Env var PGPORT)
+    - dbname: str - Postgres database name (Env var PGDATABASE)
+    - user: str - Postgres user (Env var PGUSER)
+    - password: str - Postgres password (Env var PGPASSWORD)
+    - sslmode: str - Postgres sslmode (Env var PGSSL_MODE)
+        Use "require" to require SSL, "disable" to disable SSL, or "prefer" to prefer
+        SSL but allow a connection without it. Defaults to "prefer".
+    - min_pool: int - Minimum connection pool size. Defaults to 1.
+    - max_pool: int - Maximum connection pool size. Defaults to 5.
+    - default_dimensionality: int - Default dimensionality for vectors. Defaults to 100.
     """
 
     env_prefix: ClassVar[str] = "POSTGRES_"
