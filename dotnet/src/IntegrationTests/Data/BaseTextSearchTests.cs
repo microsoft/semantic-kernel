@@ -22,7 +22,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
     public async Task CanSearchAsync()
     {
         // Arrange
-        var textSearch = this.CreateTextSearch();
+        var textSearch = await this.CreateTextSearchAsync();
         var query = this.GetQuery();
 
         // Act
@@ -42,7 +42,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
     public async Task CanGetTextSearchResultsAsync()
     {
         // Arrange
-        var textSearch = this.CreateTextSearch();
+        var textSearch = await this.CreateTextSearchAsync();
         var query = this.GetQuery();
 
         // Act
@@ -68,7 +68,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
     public async Task CanGetSearchResultsAsync()
     {
         // Arrange
-        var textSearch = this.CreateTextSearch();
+        var textSearch = await this.CreateTextSearchAsync();
         var query = this.GetQuery();
 
         // Act
@@ -88,7 +88,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
     public async Task UsingTextSearchWithAFilterAsync()
     {
         // Arrange
-        var textSearch = this.CreateTextSearch();
+        var textSearch = await this.CreateTextSearchAsync();
         var query = this.GetQuery();
         var filter = this.GetTextSearchFilter();
 
@@ -112,7 +112,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var filter = new AutoFunctionInvocationFilter();
         var kernel = this.CreateKernelWithOpenAI();
         kernel.AutoFunctionInvocationFilters.Add(filter);
-        var textSearch = this.CreateTextSearch();
+        var textSearch = await this.CreateTextSearchAsync();
 
         var searchPlugin = textSearch.CreateWithSearch("SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
@@ -137,7 +137,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var filter = new AutoFunctionInvocationFilter();
         var kernel = this.CreateKernelWithOpenAI();
         kernel.AutoFunctionInvocationFilters.Add(filter);
-        var textSearch = this.CreateTextSearch();
+        var textSearch = await this.CreateTextSearchAsync();
 
         var searchPlugin = textSearch.CreateWithGetSearchResults("SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
@@ -162,7 +162,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var filter = new AutoFunctionInvocationFilter();
         var kernel = this.CreateKernelWithOpenAI();
         kernel.AutoFunctionInvocationFilters.Add(filter);
-        var textSearch = this.CreateTextSearch();
+        var textSearch = await this.CreateTextSearchAsync();
 
         var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
@@ -183,7 +183,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
     /// <summary>
     /// Create an instance of <see cref="ITextSearch"/>.
     /// </summary>
-    public abstract ITextSearch CreateTextSearch();
+    public abstract Task<ITextSearch> CreateTextSearchAsync();
 
     /// <summary>
     /// Create a query to use with the <see cref="ITextSearch"/> instance.

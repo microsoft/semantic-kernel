@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
@@ -14,15 +15,15 @@ namespace SemanticKernel.IntegrationTests.Plugins.Web.Google;
 public class GoogleTextSearchTests : BaseTextSearchTests
 {
     /// <inheritdoc/>
-    public override ITextSearch CreateTextSearch()
+    public override Task<ITextSearch> CreateTextSearchAsync()
     {
         var configuration = this.Configuration.GetSection("Google").Get<GoogleConfiguration>();
         Assert.NotNull(configuration);
         Assert.NotNull(configuration.ApiKey);
 
-        return new GoogleTextSearch(
+        return Task.FromResult<ITextSearch>(new GoogleTextSearch(
             initializer: new() { ApiKey = configuration.ApiKey },
-            searchEngineId: configuration.SearchEngineId);
+            searchEngineId: configuration.SearchEngineId));
     }
 
     /// <inheritdoc/>
