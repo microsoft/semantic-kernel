@@ -131,7 +131,7 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
                 }
             }
             chatHistory.AddAssistantMessage(response.ToString());
-            Console.WriteLine($"\n>>> Assistant:\n{response.ToString()}");
+            Console.WriteLine($"\n>>> Assistant:\n{response}");
         }
 
         // Example total token usage is approximately: 3000

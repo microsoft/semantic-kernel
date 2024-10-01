@@ -53,7 +53,10 @@ internal static class ChatCompletionServiceExtensions
     }
 }
 
-internal class TrimmingChatHistoryReducer : IChatHistoryReducer
+/// <summary>
+/// Implementation of <see cref="IChatHistoryReducer"/> which trim to the last N messages.
+/// </summary>
+internal sealed class TrimmingChatHistoryReducer : IChatHistoryReducer
 {
     private readonly int _messageCount;
 
@@ -73,7 +76,10 @@ internal class TrimmingChatHistoryReducer : IChatHistoryReducer
     }
 }
 
-internal class MaxTokensChatHistoryReducer : IChatHistoryReducer
+/// <summary>
+/// Implementation of <see cref="IChatHistoryReducer"/> which trim to the specified max token count.
+/// </summary>
+internal sealed class MaxTokensChatHistoryReducer : IChatHistoryReducer
 {
     private readonly int _maxTokenCount;
 
@@ -110,7 +116,10 @@ internal class MaxTokensChatHistoryReducer : IChatHistoryReducer
     }
 }
 
-internal class SummarizingChatHistoryReducer : IChatHistoryReducer
+/// <summary>
+/// Implementation of <see cref="IChatHistoryReducer"/> which trim to the last N messages and summarizes the remainder.
+/// </summary>
+internal sealed class SummarizingChatHistoryReducer : IChatHistoryReducer
 {
     private readonly int _messageCount;
 
@@ -179,5 +188,4 @@ internal sealed class ChatCompletionServiceWithReducer(IChatCompletionService se
             yield return message;
         }
     }
-
 }
