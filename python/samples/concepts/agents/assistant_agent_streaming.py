@@ -22,7 +22,7 @@ HOST_NAME = "Host"
 HOST_INSTRUCTIONS = "Answer questions about the menu."
 
 # Note: you may toggle this to switch between AzureOpenAI and OpenAI
-use_azure_openai = False
+use_azure_openai = True
 
 
 # Define a sample plugin for the sample
