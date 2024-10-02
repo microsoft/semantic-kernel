@@ -19,11 +19,18 @@ Currently, Azure Open AI GA package against what we were expecting choose remove
 
 This also requires us to rethink how we are going to proceed with our strategy for the following versions of our connectors.
 
+| Name                | SDK NameSpace   | Semantic Kernel NameSpace                       |
+| ------------------- | --------------- | ----------------------------------------------- |
+| OpenAI (OAI)        | OpenAI          | Microsoft.SemanticKernel.Connectors.OpenAI      |
+| Azure OpenAI (AOAI) | Azure.AI.OpenAI | Microsoft.SemanticKernel.Connectors.AzureOpenAI |
+
 ## Decision Drivers
 
 - Minimize the impact of customers
+- Allow customers to use either GA or Beta versions of OpenAI and Azure.AI.OpenAI packages
 - Keep a clear message on our strategy
 - Keep the compatibility with the previous versions
+- Our package versioning should make it clear which version of OpenAI or Azure.AI.OpenAI packages we depend on
 - Follow the Semantic Kernel versioning strategy in a way that accommodates well with other SDK version strategies.
 
 ## Considered Options
@@ -76,6 +83,7 @@ Cons:
 
 - There won't be a SK connector version that targets a stable GA package for OpenAI or AzureOpenAI.
 - New customers that understand and target GA only available features and also have a strict requirement for dependent packages to be also GA will not be able to use the SK connector. (We don't have an estimate but this could be very small compared to the number of customers that are already OK on using the preview Azure SDK OpenAI SDK available for the past 18 months)
+- Potential unexpected breaking changes introduced by OpenAI and Azure.AI.OpenAI beta versions that eventually we might be passing on due to their dependency.
 
 ## 2. Preview + GA versioning
 
