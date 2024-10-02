@@ -70,12 +70,12 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
 
         Args:
             collection_name: The name of the collection, which corresponds to the table name.
-            data_model_type (type[TModel]): The type of the data model.
+            data_model_type: The type of the data model.
             data_model_definition: The data model definition.
             connection_pool: The connection pool.
             db_schema: The database schema.
-            env_file_path (str): Use the environment settings file as a fallback to environment variables.
-            env_file_encoding (str): The encoding of the environment settings file.
+            env_file_path: Use the environment settings file as a fallback to environment variables.
+            env_file_encoding: The encoding of the environment settings file.
             settings: The settings for creating a new connection pool. If not provided, the settings will be created
                 from the environment.
         """
@@ -135,7 +135,7 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
 
         Args:
             records: The records, the format is specific to the store.
-            **kwargs (Any): Additional arguments, to be passed to the store.
+            **kwargs: Additional arguments, to be passed to the store.
 
         Returns:
             The keys of the upserted records.

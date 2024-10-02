@@ -25,7 +25,7 @@ class PostgresSettings(KernelBaseSettings):
     This class is used to configure the Postgres connection pool
     and other settings related to the Postgres store.
 
-    The settings that match what can be configured on tool such as
+    The settings that match what can be configured on tools such as
     psql, pg_dump, pg_restore, pgbench, createdb, and
     `libpq <https://www.postgresql.org/docs/current/libpq-envars.html>`_
     match the environment variables used by those tools. This includes
@@ -34,24 +34,24 @@ class PostgresSettings(KernelBaseSettings):
     e.g. POSTGRES_CONNECTION_STRING.
 
     Args:
-    - connection_string: str - Postgres connection string
+        connection_string: Postgres connection string
         (Env var POSTGRES_CONNECTION_STRING)
-    - host: str - Postgres host (Env var PGHOST)
-    - port: int - Postgres port (Env var PGPORT)
-    - dbname: str - Postgres database name (Env var PGDATABASE)
-    - user: str - Postgres user (Env var PGUSER)
-    - password: str - Postgres password (Env var PGPASSWORD)
-    - sslmode: str - Postgres sslmode (Env var PGSSL_MODE)
-        Use "require" to require SSL, "disable" to disable SSL, or "prefer" to prefer
-        SSL but allow a connection without it. Defaults to "prefer".
-    - min_pool: int - Minimum connection pool size. Defaults to 1.
-        (Env var POSTGRES_MIN_POOL)
-    - max_pool: int - Maximum connection pool size. Defaults to 5.
-        (Env var POSTGRES_MAX_POOL)
-    - default_dimensionality: int - Default dimensionality for vectors. Defaults to 100.
-        (Env var POSTGRES_DEFAULT_DIMENSIONALITY)
-    - max_rows_per_transaction: int - Maximum number of rows to process in a single transaction. Defaults to 1000.
-        (Env var POSTGRES_MAX_ROWS_PER_TRANSACTION)
+        host: Postgres host (Env var PGHOST)
+        port: Postgres port (Env var PGPORT)
+        dbname: Postgres database name (Env var PGDATABASE)
+        user: Postgres user (Env var PGUSER)
+        password: Postgres password (Env var PGPASSWORD)
+        sslmode: Postgres sslmode (Env var PGSSL_MODE)
+            Use "require" to require SSL, "disable" to disable SSL, or "prefer" to prefer
+            SSL but allow a connection without it. Defaults to "prefer".
+        min_pool: Minimum connection pool size. Defaults to 1.
+            (Env var POSTGRES_MIN_POOL)
+        max_pool: Maximum connection pool size. Defaults to 5.
+            (Env var POSTGRES_MAX_POOL)
+        default_dimensionality: Default dimensionality for vectors. Defaults to 100.
+            (Env var POSTGRES_DEFAULT_DIMENSIONALITY)
+        max_rows_per_transaction: Maximum number of rows to process in a single transaction. Defaults to 1000.
+            (Env var POSTGRES_MAX_ROWS_PER_TRANSACTION)
     """
 
     env_prefix: ClassVar[str] = "POSTGRES_"
