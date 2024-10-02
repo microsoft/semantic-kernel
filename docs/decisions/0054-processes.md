@@ -24,7 +24,8 @@ In technical terms, a process is something that can be represented as a graph wh
 
 ## Decision Drivers
 
-- Customers should be able to leverage their existing investments in all supported languages of Sematic Kernel.
+- Customers should be able to leverage their existing investments in all supported languages of Semantic Kernel.
+- ```
 - Customers should be able to leverage their existing investments in infrastructure.
 - Customers should be able to collaborate with their business process peers to build up composable processes.
 - Customers should be able to use AI to enhance and streamline the steps within their business processes.
