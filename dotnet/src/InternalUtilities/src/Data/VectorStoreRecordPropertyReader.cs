@@ -171,8 +171,8 @@ internal sealed class VectorStoreRecordPropertyReader
         });
     }
 
-    /// <summary>Gets the definition of the current storage model.</summary>
-    public VectorStoreRecordDefinition Definition => this._vectorStoreRecordDefinition;
+    /// <summary>Gets the record definition of the current storage model.</summary>
+    public VectorStoreRecordDefinition RecordDefinition => this._vectorStoreRecordDefinition;
 
     /// <summary>Gets the list of properties from the record definition.</summary>
     public IReadOnlyList<VectorStoreRecordProperty> Properties => this._vectorStoreRecordDefinition.Properties;
@@ -343,7 +343,7 @@ internal sealed class VectorStoreRecordPropertyReader
         // If we previously built the definition from the data model, the PropertyInfo objects
         // from the data model would already be saved. If we didn't though, there could be a mismatch
         // between what is defined in the definition and what is in the data model. Therefore, this
-        // method will throw if any property in the definition in not on the data model.
+        // method will throw if any property in the definition is not on the data model.
         var propertiesInfo = FindPropertiesInfo(this._dataModelType, this._vectorStoreRecordDefinition);
 
         this._keyPropertiesInfo = propertiesInfo.KeyProperties;

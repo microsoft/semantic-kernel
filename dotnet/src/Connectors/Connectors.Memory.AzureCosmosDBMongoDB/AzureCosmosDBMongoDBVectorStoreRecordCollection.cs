@@ -437,7 +437,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
         {
-            return (new AzureCosmosDBMongoDBGenericDataModelMapper(this._propertyReader.Definition) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
+            return (new AzureCosmosDBMongoDBGenericDataModelMapper(this._propertyReader.RecordDefinition) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
         }
 
         return new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(this._propertyReader);

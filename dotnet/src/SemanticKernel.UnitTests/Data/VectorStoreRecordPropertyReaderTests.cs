@@ -71,7 +71,7 @@ public class VectorStoreRecordPropertyReaderTests
         var sut = new VectorStoreRecordPropertyReader(type, definition, null);
 
         // Act.
-        var actual = sut.Definition;
+        var actual = sut.RecordDefinition;
 
         // Assert.
         Assert.NotNull(actual);

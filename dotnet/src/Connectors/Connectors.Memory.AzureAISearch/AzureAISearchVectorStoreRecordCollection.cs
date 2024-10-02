@@ -130,7 +130,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         }
         else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
         {
-            this._mapper = new AzureAISearchGenericDataModelMapper(this._propertyReader.Definition) as IVectorStoreRecordMapper<TRecord, JsonObject>;
+            this._mapper = new AzureAISearchGenericDataModelMapper(this._propertyReader.RecordDefinition) as IVectorStoreRecordMapper<TRecord, JsonObject>;
         }
     }
 
