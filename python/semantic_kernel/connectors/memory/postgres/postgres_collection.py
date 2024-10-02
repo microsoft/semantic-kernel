@@ -5,8 +5,17 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, TypeVar
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+from psycopg import sql
+from psycopg.errors import DatabaseError
+from psycopg_pool import AsyncConnectionPool
 from pydantic import PrivateAttr
 
+from semantic_kernel.connectors.memory.postgres.constants import DEFAULT_SCHEMA, MAX_DIMENSIONALITY
 from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.connectors.memory.postgres.utils import (
     convert_dict_to_row,
@@ -16,17 +25,6 @@ from semantic_kernel.connectors.memory.postgres.utils import (
 )
 from semantic_kernel.data.const import IndexKind
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
-from psycopg import sql
-from psycopg.errors import DatabaseError
-from psycopg_pool import AsyncConnectionPool
-
-from semantic_kernel.connectors.memory.postgres.constants import DEFAULT_SCHEMA, MAX_DIMENSIONALITY
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordKeyField, VectorStoreRecordVectorField
 from semantic_kernel.exceptions.memory_connector_exceptions import (
