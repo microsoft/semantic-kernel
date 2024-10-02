@@ -86,7 +86,7 @@ ollama = [
     "ollama ~= 0.2"
 ]
 onnx = [
-    "onnxruntime-genai ~= 0.4"
+    "onnxruntime-genai ~= 0.4; platform_system != 'Darwin'"
 ]
 anthropic = [
     "anthropic ~= 0.32"

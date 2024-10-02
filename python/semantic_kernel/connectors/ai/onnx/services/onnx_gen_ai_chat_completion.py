@@ -61,7 +61,6 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         try:
             settings = OnnxGenAISettings.create(
                 chat_model_folder=ai_model_path,
-                chat_model_id=ai_model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
@@ -74,12 +73,10 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
                 "OR set the 'ONNX_GEN_AI_CHAT_MODEL_FOLDER' environment variable."
             )
 
-        if settings.chat_model_id is None:
-            settings.chat_model_id = settings.chat_model_folder
+        if ai_model_id is None:
+            ai_model_id = settings.chat_model_folder
 
-        super().__init__(
-            ai_model_id=settings.chat_model_id, ai_model_path=settings.chat_model_folder, template=template
-        )
+        super().__init__(ai_model_id=ai_model_id, ai_model_path=settings.chat_model_folder, template=template)
 
     @override
     async def _inner_get_chat_message_contents(

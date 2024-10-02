@@ -15,13 +15,9 @@ class OnnxGenAISettings(KernelBaseSettings):
 
     Optional settings for prefix 'ONNX_GEN_AI_' are:
     - chat_model_folder: Path to the Onnx chat model folder (ENV: ONNX_GEN_AI_CHAT_MODEL_FOLDER).
-    - chat_model_id: ID of the Onnx chat model (ENV: ONNX_GEN_AI_CHAT_MODEL_ID).
     - text_model_folder: Path to the Onnx text model folder (ENV: ONNX_GEN_AI_TEXT_MODEL_FOLDER).
-    - text_model_id: ID of the Onnx text model (ENV: ONNX_GEN_AI_TEXT_MODEL_ID).
     """
 
     env_prefix: ClassVar[str] = "ONNX_GEN_AI_"
     chat_model_folder: str | None = None
-    chat_model_id: str | None = None
     text_model_folder: str | None = None
-    text_model_id: str | None = None

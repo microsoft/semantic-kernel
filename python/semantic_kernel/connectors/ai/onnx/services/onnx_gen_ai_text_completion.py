@@ -48,7 +48,6 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
         try:
             settings = OnnxGenAISettings.create(
                 text_model_folder=ai_model_path,
-                text_model_id=ai_model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
@@ -61,11 +60,11 @@ class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase)
                 "OR set the 'ONNX_GEN_AI_TEXT_MODEL_FOLDER' environment variable."
             )
 
-        if settings.text_model_id is None:
-            settings.text_model_id = settings.text_model_folder
+        if ai_model_id is None:
+            ai_model_id = settings.text_model_folder
 
         super().__init__(
-            ai_model_id=settings.text_model_id,
+            ai_model_id=ai_model_id,
             ai_model_path=settings.text_model_folder,
         )
 
