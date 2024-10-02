@@ -16,7 +16,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     /// This example demonstrates chat completion streaming using OpenAI.
     /// </summary>
     [Fact]
-    public Task StreamServicePromptAsync()
+    public async Task StreamServicePromptAsync()
     {
         Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
@@ -25,7 +25,25 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
-        return this.StartStreamingChatAsync(chatCompletionService);
+        Console.WriteLine("Chat content:");
+        Console.WriteLine("------------------------");
+
+        var chatHistory = new ChatHistory("You are a librarian, expert about books");
+        OutputLastMessage(chatHistory);
+
+        // First user message
+        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
+        OutputLastMessage(chatHistory);
+
+        // First assistant message
+        await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
+
+        // Second user message
+        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
+        OutputLastMessage(chatHistory);
+
+        // Second assistant message
+        await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
     }
 
     /// <summary>
@@ -196,30 +214,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         }
     }
 
-    private async Task StartStreamingChatAsync(IChatCompletionService chatCompletionService)
-    {
-        Console.WriteLine("Chat content:");
-        Console.WriteLine("------------------------");
-
-        var chatHistory = new ChatHistory("You are a librarian, expert about books");
-        OutputLastMessage(chatHistory);
-
-        // First user message
-        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
-        OutputLastMessage(chatHistory);
-
-        // First assistant message
-        await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
-
-        // Second user message
-        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
-        OutputLastMessage(chatHistory);
-
-        // Second assistant message
-        await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
-    }
-
-    private async Task StreamMessageOutputAsync(IChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
+    private async Task StreamMessageOutputAsync(OpenAIChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
     {
         bool roleWritten = false;
         string fullMessage = string.Empty;
@@ -236,6 +231,13 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             {
                 fullMessage += chatUpdate.Content;
                 Console.Write(chatUpdate.Content);
+            }
+
+            // The last message in the chunk has the usage metadata.
+            // https://platform.openai.com/docs/api-reference/chat/create#chat-create-stream_options
+            if (chatUpdate.Metadata?["Usage"] is not null)
+            {
+                Console.WriteLine(chatUpdate.Metadata["Usage"]?.AsJson());
             }
         }
 
@@ -258,6 +260,13 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             {
                 fullMessage += chatUpdate.Content;
                 Console.Write(chatUpdate.Content);
+            }
+
+            // The last message in the chunk has the usage metadata.
+            // https://platform.openai.com/docs/api-reference/chat/create#chat-create-stream_options
+            if (chatUpdate.Metadata?["Usage"] is not null)
+            {
+                Console.WriteLine(chatUpdate.Metadata["Usage"]?.AsJson());
             }
         }
         Console.WriteLine("\n------------------------");
@@ -293,7 +302,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             {
                 Console.WriteLine($"   Image uri: {contentUpdate.ImageUri}");
                 Console.WriteLine($"   Image media type: {contentUpdate.ImageBytesMediaType}");
-                Console.WriteLine($"   Image detail: {contentUpdate.ImageDetail}");
+                Console.WriteLine($"   Image detail: {contentUpdate.ImageDetailLevel}");
                 Console.WriteLine($"   Image bytes: {contentUpdate.ImageBytes}");
                 Console.WriteLine("   =======");
             }
@@ -342,12 +351,13 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             }
         }
 
-        /// The last message in the chunk is a <see cref="ChatDoneResponseStream"/> type with additional metadata.
+        // The last message in the chunk has the usage metadata.
+        // https://platform.openai.com/docs/api-reference/chat/create#chat-create-stream_options
         if (streamChunk.Usage is not null)
         {
-            Console.WriteLine($"Usage input tokens: {streamChunk.Usage.InputTokens}");
-            Console.WriteLine($"Usage output tokens: {streamChunk.Usage.OutputTokens}");
-            Console.WriteLine($"Usage total tokens: {streamChunk.Usage.TotalTokens}");
+            Console.WriteLine($"Usage input tokens: {streamChunk.Usage.InputTokenCount}");
+            Console.WriteLine($"Usage output tokens: {streamChunk.Usage.OutputTokenCount}");
+            Console.WriteLine($"Usage total tokens: {streamChunk.Usage.TotalTokenCount}");
         }
         Console.WriteLine("------------------------");
     }
