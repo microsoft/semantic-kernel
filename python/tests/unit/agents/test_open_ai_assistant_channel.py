@@ -13,8 +13,10 @@ from openai.types.beta.threads.image_file_content_block import ImageFileContentB
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
 
+from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
@@ -138,6 +140,64 @@ async def test_invoke_agent():
 
 
 @pytest.mark.asyncio
+async def test_invoke_agent_invalid_instance_throws():
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+
+    client = MagicMock(spec=AsyncOpenAI)
+    thread_id = "test_thread"
+    agent = MagicMock(spec=ChatCompletionAgent)
+    agent._is_deleted = False
+    channel = OpenAIAssistantChannel(client=client, thread_id=thread_id)
+
+    with pytest.raises(AgentChatException, match=f"Agent is not of the expected type {type(OpenAIAssistantBase)}."):
+        async for _, _ in channel.invoke(agent):
+            pass
+
+
+@pytest.mark.asyncio
+async def test_invoke_streaming_agent():
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+
+    client = MagicMock(spec=AsyncOpenAI)
+    thread_id = "test_thread"
+    agent = MagicMock(spec=OpenAIAssistantBase)
+    agent._is_deleted = False
+    channel = OpenAIAssistantChannel(client=client, thread_id=thread_id)
+
+    results = []
+
+    async def mock_invoke_internal(*args, **kwargs):
+        for _ in range(3):
+            msg = MagicMock(spec=ChatMessageContent)
+            yield msg
+            results.append(msg)
+
+    agent._invoke_internal_stream.side_effect = mock_invoke_internal
+
+    async for message in channel.invoke_stream(agent, results):
+        assert message is not None
+
+    assert len(results) == 3
+    for message in results:
+        assert isinstance(message, ChatMessageContent)
+
+
+@pytest.mark.asyncio
+async def test_invoke_streaming_agent_invalid_instance_throws():
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+
+    client = MagicMock(spec=AsyncOpenAI)
+    thread_id = "test_thread"
+    agent = MagicMock(spec=ChatCompletionAgent)
+    agent._is_deleted = False
+    channel = OpenAIAssistantChannel(client=client, thread_id=thread_id)
+
+    with pytest.raises(AgentChatException, match=f"Agent is not of the expected type {type(OpenAIAssistantBase)}."):
+        async for _ in channel.invoke_stream(agent, []):
+            pass
+
+
+@pytest.mark.asyncio
 async def test_invoke_agent_deleted():
     from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
@@ -149,6 +209,21 @@ async def test_invoke_agent_deleted():
 
     with pytest.raises(AgentChatException, match="Agent is deleted"):
         async for _ in channel.invoke(agent):
+            pass
+
+
+@pytest.mark.asyncio
+async def test_invoke_streaming_agent_deleted():
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+
+    client = MagicMock(spec=AsyncOpenAI)
+    thread_id = "test_thread"
+    agent = MagicMock(spec=OpenAIAssistantBase)
+    agent._is_deleted = True
+    channel = OpenAIAssistantChannel(client=client, thread_id=thread_id)
+
+    with pytest.raises(AgentChatException, match="Agent is deleted"):
+        async for _ in channel.invoke_stream(agent, []):
             pass
 
 
@@ -260,3 +335,16 @@ async def test_reset_channel_error_throws_exception(mock_thread_messages, mock_a
 
     with pytest.raises(Exception, match="Test error"):
         await channel.reset()
+
+
+@pytest.mark.asyncio
+async def test_channel_receive_fcc_skipped(openai_unit_test_env):
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+
+    message = ChatMessageContent(role=AuthorRole.ASSISTANT, items=[FunctionCallContent(function_name="test_function")])
+
+    client = MagicMock(spec=AsyncOpenAI)
+
+    channel = OpenAIAssistantChannel(client=client, thread_id="test_thread")
+
+    await channel.receive([message])
