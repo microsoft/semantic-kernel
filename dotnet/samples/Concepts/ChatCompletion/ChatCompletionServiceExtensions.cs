@@ -183,8 +183,7 @@ internal sealed class SummarizingChatHistoryReducer : IChatHistoryReducer
         KernelArguments arguments = new() { { "chat_messages", chatMessages } };
         var result = await this._summarizationFunction.InvokeAsync(this._kernel, arguments, cancellationToken);
 
-        this._output.WriteLine($"\nSUMMARISE: [[{chatMessages}]]");
-        this._output.WriteLine($"\nSUMMARY: [[{result.GetValue<string>()}]]");
+        this._output.WriteLine($"\n>>>Summary:\n {result.GetValue<string>()}");
 
         // store previous summary in the chat history
         this.AddSummaryToMessage(chatHistory, start, result.GetValue<string>());
@@ -198,7 +197,18 @@ internal sealed class SummarizingChatHistoryReducer : IChatHistoryReducer
         {
             return;
         }
+
         var currentMessage = chatHistory[index];
+        var metaData = currentMessage.Metadata is null ?
+            new Dictionary<string, object?>()
+            {
+                ["Summary"] = summary
+            } :
+            new Dictionary<string, object?>(currentMessage.Metadata)
+            {
+                ["Summary"] = summary
+            };
+
         ChatMessageContent newMessage = new()
         {
             Role = currentMessage.Role,
@@ -206,10 +216,7 @@ internal sealed class SummarizingChatHistoryReducer : IChatHistoryReducer
             ModelId = currentMessage.ModelId,
             InnerContent = currentMessage.InnerContent,
             Encoding = currentMessage.Encoding,
-            Metadata = new Dictionary<string, object?>(currentMessage.Metadata)
-            {
-                ["Summary"] = summary
-            }
+            Metadata = metaData
         };
         chatHistory[index] = newMessage;
     }
