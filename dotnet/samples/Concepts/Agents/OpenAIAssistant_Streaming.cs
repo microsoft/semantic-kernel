@@ -115,7 +115,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
         ChatHistory history = [];
 
         bool isFirst = false;
-        AuthorRole? role = null;
+        bool isCode = false;
         await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(threadId, messages: history))
         {
             if (string.IsNullOrEmpty(response.Content))
@@ -124,10 +124,10 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
             }
 
             // Differentiate between assistant and tool messages
-            if (role == null || role != response.Role)
+            if (isCode != (response.Metadata?.ContainsKey(OpenAIAssistantAgent.CodeInterpreterMetadataKey) ?? false))
             {
                 isFirst = false;
-                role = response.Role;
+                isCode = !isCode;
             }
 
             if (!isFirst)

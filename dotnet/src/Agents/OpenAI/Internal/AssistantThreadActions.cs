@@ -408,7 +408,7 @@ internal static class AssistantThreadActions
                 }
                 else if (update is RunStepDetailsUpdate detailsUpdate)
                 {
-                    StreamingChatMessageContent? toolContent = GenerateStreamingToolsContent(agent.GetName(), detailsUpdate);
+                    StreamingChatMessageContent? toolContent = GenerateStreamingCodeInterpreterContent(agent.GetName(), detailsUpdate);
                     if (toolContent != null)
                     {
                         yield return toolContent;
@@ -423,6 +423,8 @@ internal static class AssistantThreadActions
                             break;
                         case StreamingUpdateReason.RunStepCompleted:
                             currentStep = null;
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -579,10 +581,10 @@ internal static class AssistantThreadActions
         return content;
     }
 
-    private static StreamingChatMessageContent? GenerateStreamingToolsContent(string? assistantName, RunStepDetailsUpdate update)
+    private static StreamingChatMessageContent? GenerateStreamingCodeInterpreterContent(string? assistantName, RunStepDetailsUpdate update)
     {
         StreamingChatMessageContent content =
-            new(AuthorRole.Tool, content: null)
+            new(AuthorRole.Assistant, content: null)
             {
                 AuthorName = assistantName,
             };
@@ -591,6 +593,7 @@ internal static class AssistantThreadActions
         if (update.CodeInterpreterInput != null)
         {
             content.Items.Add(new StreamingTextContent(update.CodeInterpreterInput));
+            content.Metadata = new Dictionary<string, object?> { { OpenAIAssistantAgent.CodeInterpreterMetadataKey, true } };
         }
 
         if ((update.CodeInterpreterOutputs?.Count ?? 0) > 0)
