@@ -14,6 +14,7 @@ from semantic_kernel.connectors.memory.postgres.constants import (
     PGSSL_MODE_ENV_VAR,
     PGUSER_ENV_VAR,
 )
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -87,13 +88,17 @@ class PostgresSettings(KernelBaseSettings):
 
         # Ensure required values
         if "host" not in result:
-            raise ValueError("host is required. Please set PGHOST or connection_string.")
+            raise MemoryConnectorInitializationError("host is required. Please set PGHOST or connection_string.")
         if "dbname" not in result:
-            raise ValueError("database is required. Please set PGDATABASE or connection_string.")
+            raise MemoryConnectorInitializationError(
+                "database is required. Please set PGDATABASE or connection_string."
+            )
         if "user" not in result:
-            raise ValueError("user is required. Please set PGUSER or connection_string.")
+            raise MemoryConnectorInitializationError("user is required. Please set PGUSER or connection_string.")
         if "password" not in result:
-            raise ValueError("password is required. Please set PGPASSWORD or connection_string.")
+            raise MemoryConnectorInitializationError(
+                "password is required. Please set PGPASSWORD or connection_string."
+            )
 
         return result
 
