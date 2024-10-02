@@ -34,7 +34,7 @@ public class SequentialPlanParserTests
             .WithAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey,
+                credentials: new AzureCliCredential(),
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
         kernel.ImportPluginFromType<EmailPluginFake>("email");

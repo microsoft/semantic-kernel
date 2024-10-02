@@ -73,6 +73,9 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
 
         var openAIExecutionSettings = JsonSerializer.Deserialize<AzureOpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
+        // Restore the function choice behavior that lost internal state(list of function instances) during serialization/deserialization process.
+        openAIExecutionSettings!.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
+
         return openAIExecutionSettings!;
     }
 
