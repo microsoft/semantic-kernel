@@ -13,6 +13,11 @@ namespace Microsoft.SemanticKernel.Agents.Serialization;
 public sealed class ChatMessageReference(ChatMessageContent message) // %%% SCOPE
 {
     /// <summary>
+    /// The referenced <see cref="ChatMessageContent.AuthorName"/> property.
+    /// </summary>
+    public string? AuthorName => message.AuthorName;
+
+    /// <summary>
     /// The referenced <see cref="ChatMessageContent.Role"/> property.
     /// </summary>
     public AuthorRole Role => message.Role;
