@@ -21,7 +21,7 @@ namespace SemanticKernel.IntegrationTests.Data;
 /// </summary>
 public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
 {
-    protected VolatileVectorStore? VectorStore { get; set; }
+    protected IVectorStore? VectorStore { get; set; }
 
     protected ITextEmbeddingGenerationService? EmbeddingGenerator { get; set; }
 
