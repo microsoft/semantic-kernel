@@ -59,6 +59,7 @@
         "templating",
         "vectordb",
         "vectorstoremodel",
-        "vertexai"
+        "vertexai",
+        "Weaviate"
     ]
 }

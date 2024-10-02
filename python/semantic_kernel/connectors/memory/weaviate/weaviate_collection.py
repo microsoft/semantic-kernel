@@ -1,0 +1,218 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import sys
+from collections.abc import Sequence
+from typing import Any, TypeVar
+
+from semantic_kernel.kernel_types import OneOrMany
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+import weaviate
+from pydantic import field_validator
+from weaviate.classes.init import Auth
+from weaviate.classes.query import Filter
+from weaviate.collections.collection import CollectionAsync
+
+from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    MemoryConnectorException,
+    MemoryConnectorInitializationError,
+)
+from semantic_kernel.utils.experimental_decorator import experimental_class
+
+TModel = TypeVar("TModel")
+TKey = TypeVar("TKey")
+
+
+@experimental_class
+class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
+    """A Weaviate collection is a collection of records that are stored in a Weaviate database."""
+
+    async_client: weaviate.WeaviateAsyncClient
+
+    def __init__(
+        self,
+        data_model_type: type[TModel],
+        data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
+        url: str | None = None,
+        api_key: str | None = None,
+        local_host: str | None = None,
+        local_port: int | None = None,
+        local_grpc_port: int | None = None,
+        use_embed: bool = False,
+        async_client: weaviate.WeaviateAsyncClient | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+    ):
+        """Initialize a Weaviate collection.
+
+        Args:
+            data_model_type: The type of the data model.
+            data_model_definition: The definition of the data model.
+            collection_name: The name of the collection.
+            url: The Weaviate URL
+            api_key: The Weaviate API key.
+            local_host: The local Weaviate host (i.e. Weaviate in a Docker container).
+            local_port: The local Weaviate port.
+            local_grpc_port: The local Weaviate gRPC port.
+            use_embed: Whether to use the client embedding options.
+            async_client: A custom Weaviate async client.
+            env_file_path: The path to the environment file.
+            env_file_encoding: The encoding of the environment file.
+        """
+        self.settings = WeaviateSettings.create(
+            url=url,
+            api_key=api_key,
+            local_host=local_host,
+            local_port=local_port,
+            local_grpc_port=local_grpc_port,
+            use_embed=use_embed,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
+
+        try:
+            if async_client:
+                self.async_client = async_client
+            elif self.settings.url:
+                self.async_client = weaviate.use_async_with_weaviate_cloud(
+                    cluster_url=self.settings.url,
+                    auth_credentials=Auth.api_key(self.settings.api_key.get_secret_value()),
+                )
+            elif self.settings.local_host:
+                self.async_client = weaviate.use_async_with_local(
+                    host=self.settings.local_host,
+                    port=self.settings.local_port,
+                    grpc_port=self.settings.local_grpc_port,
+                )
+            elif self.settings.use_embed:
+                self.async_client = weaviate.use_async_with_embedded()
+            else:
+                raise NotImplementedError(
+                    "Weaviate settings must specify either a custom client, a Weaviate Cloud instance,",
+                    " a local Weaviate instance, or the client embedding options.",
+                )
+        except Exception as e:
+            raise MemoryConnectorInitializationError(f"Failed to initialize Weaviate client: {e}")
+
+        super().__init__(
+            data_model_type=data_model_type,
+            data_model_definition=data_model_definition,
+            collection_name=collection_name,
+        )
+
+    @field_validator("collection_name")
+    @classmethod
+    def collection_name_must_start_with_uppercase(cls, value: str) -> str:
+        """By convention, the collection name starts with an uppercase letter.
+
+        https://weaviate.io/developers/weaviate/manage-data/collections#create-a-collection
+        Will change the collection name to start with an uppercase letter if it does not.
+        """
+        value[0] = value[0].upper()
+        return value
+
+    @override
+    async def _inner_upsert(
+        self,
+        records: Sequence[Any],
+        **kwargs: Any,
+    ) -> Sequence[TKey]:
+        async with self.async_client:
+            try:
+                collection: CollectionAsync = await self.async_client.collections.get(self.collection_name)
+                await collection.data.insert_many(records)
+            except Exception as ex:
+                raise MemoryConnectorException(f"Failed to upsert records: {ex}")
+
+        return [record[self.data_model_definition.key_field_name] for record in records]
+
+    @override
+    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
+        async with self.async_client:
+            try:
+                collection: CollectionAsync = await self.async_client.collections.get(self.collection_name)
+                response = await collection.query.fetch_objects(
+                    filter=(
+                        Filter.any_of([
+                            Filter.by_property(self.data_model_definition.key_field.name).equal(key) for key in keys
+                        ])
+                    )
+                )
+                return response.objects
+            except Exception as ex:
+                raise MemoryConnectorException(f"Failed to get records: {ex}")
+
+    @override
+    async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
+        async with self.async_client:
+            try:
+                collection: CollectionAsync = await self.async_client.collections.get(self.collection_name)
+                await collection.data.delete_many(
+                    filter=Filter.any_of([
+                        Filter.by_property(self.data_model_definition.key_field.name).equal(key) for key in keys
+                    ])
+                )
+            except Exception as ex:
+                raise MemoryConnectorException(f"Failed to delete records: {ex}")
+
+    @override
+    def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
+        return records
+
+    @override
+    def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
+        return records
+
+    @override
+    async def create_collection(self, **kwargs) -> None:
+        """Create the collection in Weaviate.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+        """
+        async with self.async_client:
+            try:
+                await self.async_client.collections.create(
+                    self.collection_name,
+                    properties=self.data_model_definition_to_weaviate_properties(),
+                )
+            except Exception as ex:
+                raise MemoryConnectorException(f"Failed to create collection: {ex}")
+
+    @override
+    async def does_collection_exist(self, **kwargs) -> bool:
+        """Check if the collection exists in Weaviate.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            bool: Whether the collection exists.
+        """
+        async with self.async_client:
+            try:
+                await self.async_client.collections.exists(self.collection_name)
+                return True
+            except Exception as ex:
+                raise MemoryConnectorException(f"Failed to check if collection exists: {ex}")
+
+    @override
+    async def delete_collection(self, **kwargs) -> None:
+        """Delete the collection in Weaviate.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+        """
+        async with self.async_client:
+            try:
+                await self.async_client.collections.delete(self.collection_name)
+            except Exception as ex:
+                raise MemoryConnectorException(f"Failed to delete collection: {ex}")
