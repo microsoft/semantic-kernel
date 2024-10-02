@@ -224,7 +224,7 @@ The instance of `KernelProcess` that we've created is nothing more than an objec
       "StepType": "SkProcess.Orleans.Silo.UserInputStep, SkProcess.Orleans.Silo, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
       "StateType": "SkProcess.Orleans.Silo.UserInputState, SkProcess.Orleans.Silo, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
       "OutputEdges": {
-        "UserInputStep_6fa2d6b513464eb5a4daa9b5ebc1a956.exit": [
+        "UserInputStep_6fa2d6b513464eb5a4dxa9b5ebc1a956.exit": [
           {
             "SourceId": "6fa2d6b513464eb5a4dxa9b5ebc1a956",
             "OutputTargets": [
