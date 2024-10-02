@@ -22,6 +22,17 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class PostgresSettings(KernelBaseSettings):
     """Postgres model settings.
 
+    This class is used to configure the Postgres connection pool
+    and other settings related to the Postgres store.
+
+    The settings that match what can be configured on tool such as
+    psql, pg_dump, pg_restore, pgbench, createdb, and
+    `libpq <https://www.postgresql.org/docs/current/libpq-envars.html>`_
+    match the environment variables used by those tools. This includes
+    PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD, and PGSSL_MODE.
+    Other settings follow the standard pattern of Pydantic settings,
+    e.g. POSTGRES_CONNECTION_STRING.
+
     Args:
     - connection_string: str - Postgres connection string
         (Env var POSTGRES_CONNECTION_STRING)
