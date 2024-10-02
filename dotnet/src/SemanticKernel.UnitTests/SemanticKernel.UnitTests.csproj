@@ -46,6 +46,8 @@
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseLine.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseReader.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/StreamJsonParser.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Data/VectorStoreRecordPropertyVerification.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Data/VectorStoreRecordMapping.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
