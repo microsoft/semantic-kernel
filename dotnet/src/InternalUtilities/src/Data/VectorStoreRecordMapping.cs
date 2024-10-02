@@ -26,8 +26,8 @@ internal static class VectorStoreRecordMapping
     /// <returns>The list of data property objects and their values.</returns>
     public static IEnumerable<KeyValuePair<PropertyInfo, object?>> BuildPropertiesInfoWithValues<TStorageType>(
         IEnumerable<PropertyInfo> dataModelPropertiesInfo,
-        IDictionary<string, string> dataModelToStorageNameMapping,
-        IDictionary<string, TStorageType> storageValues,
+        IReadOnlyDictionary<string, string> dataModelToStorageNameMapping,
+        IReadOnlyDictionary<string, TStorageType> storageValues,
         Func<TStorageType, Type, object?>? storageValueConverter = null)
     {
         foreach (var propertyInfo in dataModelPropertiesInfo)
