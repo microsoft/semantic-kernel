@@ -406,6 +406,14 @@ internal static class AssistantThreadActions
                             break;
                     }
                 }
+                else if (update is RunStepDetailsUpdate detailsUpdate)
+                {
+                    StreamingChatMessageContent? toolContent = GenerateStreamingToolsContent(agent.GetName(), detailsUpdate);
+                    if (toolContent != null)
+                    {
+                        yield return toolContent;
+                    }
+                }
                 else if (update is RunStepUpdate stepUpdate)
                 {
                     switch (stepUpdate.UpdateKind)
@@ -569,6 +577,34 @@ internal static class AssistantThreadActions
         }
 
         return content;
+    }
+
+    private static StreamingChatMessageContent? GenerateStreamingToolsContent(string? assistantName, RunStepDetailsUpdate update)
+    {
+        StreamingChatMessageContent content =
+            new(AuthorRole.Tool, content: null)
+            {
+                AuthorName = assistantName,
+            };
+
+        // Process text content
+        if (update.CodeInterpreterInput != null)
+        {
+            content.Items.Add(new StreamingTextContent(update.CodeInterpreterInput));
+        }
+
+        if ((update.CodeInterpreterOutputs?.Count ?? 0) > 0)
+        {
+            foreach (var output in update.CodeInterpreterOutputs!)
+            {
+                if (output.ImageFileId != null)
+                {
+                    content.Items.Add(new StreamingFileReferenceContent(output.ImageFileId));
+                }
+            }
+        }
+
+        return content.Items.Count > 0 ? content : null;
     }
 
     private static AnnotationContent GenerateAnnotationContent(TextAnnotation annotation)
