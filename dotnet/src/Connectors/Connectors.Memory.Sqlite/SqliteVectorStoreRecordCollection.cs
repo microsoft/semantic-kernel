@@ -23,26 +23,14 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "SQLite";
 
-    /// <summary><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</summary>
-    private readonly SqliteConnection _connection;
-
-    /// <summary>The key property of the current storage model.</summary>
-    private readonly VectorStoreRecordKeyProperty _keyProperty;
-
-    /// <summary>Collection of record data properties.</summary>
-    private readonly List<VectorStoreRecordDataProperty> _dataProperties;
-
-    /// <summary>Collection of record vector properties.</summary>
-    private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
-
-    /// <summary>A dictionary that maps from a property name to the storage name.</summary>
-    private readonly Dictionary<string, string> _storagePropertyNames = [];
-
     /// <summary>The mapper to use when mapping between the consumer data model and the SQLite record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
 
     /// <summary>Command builder for queries in SQLite database.</summary>
     private readonly SqliteVectorStoreCollectionCommandBuilder _commandBuilder;
+
+    /// <summary>Flag which indicates whether vector properties exist in the consumer data model.</summary>
+    private readonly bool _vectorPropertiesExist;
 
     /// <inheritdoc />
     public string CollectionName { get; }
@@ -65,7 +53,6 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
-        this._connection = connection;
         this.CollectionName = collectionName;
 
         var vectorStoreRecordDefinition = options?.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), supportsMultipleVectors: true);
@@ -76,20 +63,22 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.DataProperties, SqliteConstants.SupportedDataTypes, "Data", supportEnumerable: true);
         VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.VectorProperties, SqliteConstants.SupportedVectorTypes, "Vector");
 
-        this._keyProperty = properties.KeyProperty;
-        this._dataProperties = properties.DataProperties;
-        this._vectorProperties = properties.VectorProperties;
+        this._vectorPropertiesExist = properties.VectorProperties.Count > 0;
 
-        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
+        var storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
 
-        this._mapper = this.InitializeMapper(options);
+        this._mapper = InitializeMapper(
+            vectorStoreRecordDefinition,
+            storagePropertyNames,
+            options);
+
         this._commandBuilder = new SqliteVectorStoreCollectionCommandBuilder(
             this.CollectionName,
-            this._connection,
-            this._keyProperty,
-            this._dataProperties,
-            this._vectorProperties,
-            this._storagePropertyNames);
+            connection,
+            properties.KeyProperty,
+            properties.DataProperties,
+            properties.VectorProperties,
+            storagePropertyNames);
     }
 
     /// <inheritdoc />
@@ -113,29 +102,26 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     /// <inheritdoc />
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        const bool IfNotExists = false;
-
-        return Task.WhenAll(
-            this.CreateTableAsync(IfNotExists, cancellationToken),
-            this.CreateVirtualTableAsync(IfNotExists, cancellationToken));
+        return this.InternalCreateCollectionAsync(ifNotExists: false, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
-        const bool IfNotExists = true;
-
-        return Task.WhenAll(
-            this.CreateTableAsync(IfNotExists, cancellationToken),
-            this.CreateVirtualTableAsync(IfNotExists, cancellationToken));
+        return this.InternalCreateCollectionAsync(ifNotExists: true, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return Task.WhenAll(
-            this.DropTableAsync(cancellationToken),
-            this.DropVirtualTableAsync(cancellationToken));
+        List<Task> tasks = [this.DropTableAsync(cancellationToken)];
+
+        if (this._vectorPropertiesExist)
+        {
+            tasks.Add(this.DropVirtualTableAsync(cancellationToken));
+        }
+
+        return Task.WhenAll(tasks);
     }
 
     /// <inheritdoc />
@@ -226,6 +212,18 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
     #region private
 
+    private Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)
+    {
+        List<Task> tasks = [this.CreateTableAsync(ifNotExists, cancellationToken)];
+
+        if (this._vectorPropertiesExist)
+        {
+            tasks.Add(this.CreateVirtualTableAsync(ifNotExists, cancellationToken));
+        }
+
+        return Task.WhenAll(tasks);
+    }
+
     private Task<int> CreateTableAsync(bool ifNotExists, CancellationToken cancellationToken)
     {
         const string OperationName = "CreateTable";
@@ -279,31 +277,19 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         }
     }
 
-    private async Task RunOperationAsync(string operationName, Func<Task> operation)
-    {
-        try
-        {
-            await operation.Invoke().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreType = DatabaseName,
-                CollectionName = this.CollectionName,
-                OperationName = operationName
-            };
-        }
-    }
-
-    private IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> InitializeMapper(SqliteVectorStoreRecordCollectionOptions<TRecord>? options)
+    private static IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> InitializeMapper(
+        VectorStoreRecordDefinition vectorStoreRecordDefinition,
+        Dictionary<string, string> storagePropertyNames,
+        SqliteVectorStoreRecordCollectionOptions<TRecord>? options)
     {
         if (options?.DictionaryCustomMapper is not null)
         {
             return options.DictionaryCustomMapper;
         }
 
-        return new SqliteVectorStoreRecordMapper<TRecord>();
+        return new SqliteVectorStoreRecordMapper<TRecord>(
+            vectorStoreRecordDefinition,
+            storagePropertyNames);
     }
 
     #endregion

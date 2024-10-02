@@ -32,7 +32,7 @@ internal class SqliteVectorStoreCollectionCommandBuilder
     /// <summary>Collection of record vector properties.</summary>
     private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
 
-    // <summary>A dictionary that maps from a property name to the storage name.</summary>
+    /// <summary>A dictionary that maps from a property name to the storage name.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames;
 
     /// <summary>
@@ -141,6 +141,18 @@ internal class SqliteVectorStoreCollectionCommandBuilder
         return this.BuildDropTableCommand(this._virtualTableName);
     }
 
+    public SqliteCommand BuildInsertOrReplaceDataCommand(Dictionary<string, object?> record)
+    {
+        List<VectorStoreRecordProperty> properties = [this._keyProperty, .. this._dataProperties];
+        return this.BuildInsertOrReplaceCommand(this._tableName, properties, record);
+    }
+
+    public SqliteCommand BuildInsertOrReplaceVectorCommand(Dictionary<string, object?> record)
+    {
+        List<VectorStoreRecordProperty> properties = [.. this._vectorProperties];
+        return this.BuildInsertOrReplaceCommand(this._virtualTableName, properties, record);
+    }
+
     #region private
 
     [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Query does not contain user input.")]
@@ -149,6 +161,45 @@ internal class SqliteVectorStoreCollectionCommandBuilder
         string query = $"DROP TABLE [{tableName}];";
 
         return new SqliteCommand(query, this._connection);
+    }
+
+    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "User input is passed using command parameters.")]
+    private SqliteCommand BuildInsertOrReplaceCommand(
+        string tableName,
+        List<VectorStoreRecordProperty> properties,
+        Dictionary<string, object?> record)
+    {
+        var builder = new StringBuilder();
+
+        var columns = new List<string>();
+        var valueParameters = new List<string>();
+        var values = new List<object?>();
+
+        foreach (var property in properties)
+        {
+            var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
+
+            if (record.TryGetValue(storagePropertyName, out var value))
+            {
+                columns.Add(storagePropertyName);
+                valueParameters.Add($"@{storagePropertyName}");
+                values.Add(value ?? DBNull.Value);
+            }
+        }
+
+        builder.AppendLine($"INSERT OR REPLACE INTO ${this._tableName} ({string.Join(", ", columns)})");
+        builder.AppendLine($"VALUES ({string.Join(", ", valueParameters)});");
+
+        var query = builder.ToString();
+
+        var command = new SqliteCommand(query, this._connection);
+
+        for (var i = 0; i < valueParameters.Count; i++)
+        {
+            command.Parameters.AddWithValue(valueParameters[i], values[i]);
+        }
+
+        return command;
     }
 
     private void AddColumn(List<string> columns, VectorStoreRecordProperty property)
