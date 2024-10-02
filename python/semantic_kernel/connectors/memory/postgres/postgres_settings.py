@@ -25,7 +25,7 @@ class PostgresSettings(KernelBaseSettings):
     Args:
     - connection_string: str - Postgres connection string
         (Env var POSTGRES_CONNECTION_STRING)
-    - host: str - Postgres host (Env var PGHOST})
+    - host: str - Postgres host (Env var PGHOST)
     - port: int - Postgres port (Env var PGPORT)
     - dbname: str - Postgres database name (Env var PGDATABASE)
     - user: str - Postgres user (Env var PGUSER)
