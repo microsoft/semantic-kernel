@@ -15,18 +15,19 @@ namespace Microsoft.SemanticKernel;
 internal sealed class LocalProcess : LocalStep, IDisposable
 {
     private const string EndProcessId = "END";
-    private CancellationTokenSource? _processCancelSource;
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
+    private readonly Lazy<ValueTask> _initializeTask;
 
     internal readonly List<KernelProcessStepInfo> _stepsInfos;
-    internal readonly List<LocalStep> _steps;
+    internal readonly List<LocalStep> _steps = [];
     internal readonly KernelProcess _process;
     internal readonly Kernel _kernel;
 
     private readonly ILogger? _logger;
     private JoinableTask? _processTask;
+    private CancellationTokenSource? _processCancelSource;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LocalProcess"/> class.
@@ -35,17 +36,17 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
     /// <param name="parentProcessId">Optional. The Id of the parent process if one exists, otherwise null.</param>
     /// <param name="loggerFactory">Optional. A <see cref="ILoggerFactory"/>.</param>
-    public LocalProcess(KernelProcess process, Kernel kernel, string? parentProcessId = null, ILoggerFactory? loggerFactory = null)
-        : base(process.State.Name!, process.State.Id ?? Guid.NewGuid().ToString("n"), kernel, parentProcessId, loggerFactory)
+    internal LocalProcess(KernelProcess process, Kernel kernel, string? parentProcessId = null, ILoggerFactory? loggerFactory = null)
+        : base(process, kernel, parentProcessId, loggerFactory)
     {
         Verify.NotNull(process);
         Verify.NotNull(process.Steps);
         Verify.NotNull(kernel);
 
         this._stepsInfos = new List<KernelProcessStepInfo>(process.Steps);
-        this._steps = [];
         this._kernel = kernel;
         this._process = process;
+        this._initializeTask = new Lazy<ValueTask>(this.InitializeProcessAsync);
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
         this._joinableTaskContext = new JoinableTaskContext();
         this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
@@ -53,10 +54,84 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     }
 
     /// <summary>
+    /// Starts the process with an initial event and an optional kernel.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> instance to use within the running process.</param>
+    /// <param name="keepAlive">Indicates if the process should wait for external events after it's finished processing.</param>
+    /// <returns> <see cref="Task"/></returns>
+    internal async Task StartAsync(Kernel? kernel = null, bool keepAlive = true)
+    {
+        // Lazy one-time initialization of the process before staring it.
+        await this._initializeTask.Value.ConfigureAwait(false);
+
+        this._processCancelSource = new CancellationTokenSource();
+        this._processTask = this._joinableTaskFactory.RunAsync(()
+            => this.Internal_ExecuteAsync(kernel, keepAlive: keepAlive, cancellationToken: this._processCancelSource.Token));
+    }
+
+    /// <summary>
+    /// Starts the process with an initial event and then waits for the process to finish. In this case the process will not
+    /// keep alive waiting for external events after the internal messages have stopped.
+    /// </summary>
+    /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
+    /// <param name="kernel">Optional. A <see cref="Kernel"/> to use when executing the process.</param>
+    /// <returns>A <see cref="Task"/></returns>
+    internal async Task RunOnceAsync(KernelProcessEvent? processEvent, Kernel? kernel = null)
+    {
+        Verify.NotNull(processEvent);
+        await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
+        await this.StartAsync(kernel, keepAlive: false).ConfigureAwait(false);
+        await this._processTask!.JoinAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Stops a running process. This will cancel the process and wait for it to complete before returning.
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
+    internal async Task StopAsync()
+    {
+        if (this._processTask is null || this._processCancelSource is null || this._processTask.IsCompleted)
+        {
+            return;
+        }
+
+        // Cancel the process and wait for it to complete.
+        this._processCancelSource.Cancel();
+
+        try
+        {
+            await this._processTask;
+        }
+        catch (OperationCanceledException)
+        {
+            // The task was cancelled, so we can ignore this exception.
+        }
+        finally
+        {
+            this._processCancelSource.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Sends a message to the process. This does not start the process if it's not already running, in
+    /// this case the message will remain queued until the process is started.
+    /// </summary>
+    /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
+    /// <param name="kernel">Optional. A <see cref="Kernel"/> to use when executing the process.</param>
+    /// <returns>A <see cref="Task"/></returns>
+    internal async Task SendMessageAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
+    {
+        Verify.NotNull(processEvent);
+        await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
+    }
+
+    #region Private Methods
+
+    /// <summary>
     /// Loads the process and initializes the steps. Once this is complete the process can be started.
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
-    public async Task LoadAsync()
+    private ValueTask InitializeProcessAsync()
     {
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
@@ -91,74 +166,30 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 Verify.NotNull(step.State?.Id);
 
                 localStep = new LocalStep(
-                    name: step.State.Name,
-                    id: step.State.Id,
+                    stepInfo: step,
                     kernel: this._kernel,
                     parentProcessId: this.Id,
                     loggerFactory: this.LoggerFactory);
             }
 
-            await localStep.InitializeAsync(step).ConfigureAwait(false);
             this._steps.Add(localStep);
         }
+
+        return default;
     }
 
     /// <summary>
-    /// Starts the process with an initial event and an optional kernel.
+    /// Executes the process asynchronously until one of the following conditions is met:
+    /// - The process has been cancelled.
+    /// - The process has hit the specified limit of supersteps.
+    /// - There are no more messages to be process AND <paramref name="keepAlive"/> is false. No more messages means that
+    /// none of the steps in this process emitted any events in the last superstep, indicating that they have finished processing.
     /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> instance to use within the running process.</param>
-    /// <param name="keepAlive">Indicates if the process should wait for external events after it's finished processing.</param>
-    /// <returns> <see cref="Task"/></returns>
-    public Task StartAsync(Kernel? kernel = null, bool keepAlive = true)
-    {
-        this._processCancelSource = new CancellationTokenSource();
-        this._processTask = this._joinableTaskFactory.RunAsync(()
-            => this.Internal_ExecuteAsync(kernel, keepAlive: keepAlive, cancellationToken: this._processCancelSource.Token));
-        return Task.CompletedTask;
-    }
-
-    public async Task RunOnceAsync(KernelProcessEvent? processEvent, Kernel? kernel = null)
-    {
-        Verify.NotNull(processEvent);
-        await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
-        await this.StartAsync(kernel, keepAlive: false).ConfigureAwait(false);
-        await this._processTask!.JoinAsync().ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Stops a running process. This will cancel the process and wait for it to complete before returning.
-    /// </summary>
+    /// <param name="kernel">An options override of the process level kernel.</param>
+    /// <param name="maxSupersteps">The maximum number of supersteps that this process can execute. Defaults to 100.</param>
+    /// <param name="keepAlive">If true, the process will continue running after internal events have stopped. This allows the process to wait for external events.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
     /// <returns></returns>
-    public async Task StopAsync()
-    {
-        if (this._processTask is null || this._processCancelSource is null || this._processTask.IsCompleted)
-        {
-            return;
-        }
-
-        // Cancel the process and wait for it to complete.
-        this._processCancelSource.Cancel();
-
-        try
-        {
-            await this._processTask;
-        }
-        catch (OperationCanceledException)
-        {
-            // The task was cancelled, so we can ignore this exception.
-        }
-        finally
-        {
-            this._processCancelSource.Dispose();
-        }
-    }
-
-    public async Task SendMessageAsync(KernelProcessEvent? processEvent, Kernel? kernel = null)
-    {
-        Verify.NotNull(processEvent);
-        await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
-    }
-
     private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
     {
         Kernel localKernel = kernel ?? this._kernel;
@@ -171,12 +202,12 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             for (int superstep = 0; superstep < maxSupersteps; superstep++)
             {
                 // Check for external events
-                this.EnqueueExternalEventsAsync(messageChannel);
+                this.EnqueueExternalMessages(messageChannel);
 
                 // Get all of the messages that have been sent to the steps within the process and queue them up for processing.
                 foreach (var step in this._steps)
                 {
-                    this.EnqueueStepMessagesAsync(step, localKernel, messageChannel);
+                    this.EnqueueStepMessages(step, messageChannel);
                 }
 
                 // Complete the writing side, indicating no more messages in this superstep.
@@ -231,7 +262,12 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         return;
     }
 
-    private void EnqueueExternalEventsAsync(Queue<LocalMessage> stepQueue)
+    /// <summary>
+    /// Processes external events that have been sent to the process, translates them to <see cref="LocalMessage"/>s, and enqueues
+    /// them to the provided message channel so that they can be processesed in the next superstep.
+    /// </summary>
+    /// <param name="messageChannel">The message channel where messages should be enqueued.</param>
+    private void EnqueueExternalMessages(Queue<LocalMessage> messageChannel)
     {
         while (this._externalEventChannel.Reader.TryRead(out var externalEvent))
         {
@@ -246,15 +282,20 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     }
 
                     LocalMessage newMessage = new(edge.SourceStepId, edge.OutputTarget.StepId, edge.OutputTarget.FunctionName, parameterValue);
-                    stepQueue.Enqueue(newMessage);
+                    messageChannel.Enqueue(newMessage);
                 }
             }
         }
     }
 
-    private void EnqueueStepMessagesAsync(LocalStep step, Kernel kernel, Queue<LocalMessage> messageChannel)
+    /// <summary>
+    /// Processes events emitted by the given step in the last superstep, translates them to <see cref="LocalMessage"/>s, and enqueues
+    /// them to the provided message channel so that they can be processesed in the next superstep.
+    /// </summary>
+    /// <param name="step">The step containing outgoing events to process.</param>
+    /// <param name="messageChannel">The message channel where messages should be enqueued.</param>
+    private void EnqueueStepMessages(LocalStep step, Queue<LocalMessage> messageChannel)
     {
-        // Process all of the messages that have been sent to this step
         var allStepEvents = step.GetAllEvents();
         foreach (var stepEvent in allStepEvents)
         {
@@ -272,6 +313,8 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             }
         }
     }
+
+    #endregion
 
     public void Dispose()
     {

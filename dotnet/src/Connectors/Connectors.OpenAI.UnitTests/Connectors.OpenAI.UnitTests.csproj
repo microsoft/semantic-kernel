@@ -86,7 +86,10 @@
     <None Update="TestData\text-embeddings-response.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\text-to-image-response.txt">
+    <None Update="TestData\text-to-image-b64_json-format-response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\text-to-image-response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

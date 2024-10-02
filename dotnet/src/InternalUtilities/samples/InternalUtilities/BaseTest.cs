@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-public abstract class BaseTest
+public abstract class BaseTest : TextWriter
 {
     /// <summary>
     /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
@@ -59,7 +60,7 @@ public abstract class BaseTest
         return builder.Build();
     }
 
-    protected BaseTest(ITestOutputHelper output)
+    protected BaseTest(ITestOutputHelper output, bool redirectSystemConsoleOutput = false)
     {
         this.Output = output;
         this.LoggerFactory = new XunitLogger(output);
@@ -71,36 +72,32 @@ public abstract class BaseTest
             .Build();
 
         TestConfiguration.Initialize(configRoot);
+
+        // Redirect System.Console output to the test output if requested
+        if (redirectSystemConsoleOutput)
+        {
+            System.Console.SetOut(this);
+        }
     }
 
-    /// <summary>
-    /// This method can be substituted by Console.WriteLine when used in Console apps.
-    /// </summary>
-    /// <param name="target">Target object to write</param>
-    public void WriteLine(object? target = null)
-        => this.Output.WriteLine(target ?? string.Empty);
+    /// <inheritdoc/>
+    public override void WriteLine(object? value = null)
+        => this.Output.WriteLine(value ?? string.Empty);
 
-    /// <summary>
-    /// This method can be substituted by Console.WriteLine when used in Console apps.
-    /// </summary>
-    /// <param name="format">Format string</param>
-    /// <param name="args">Arguments</param>
-    public void WriteLine(string? format, params object?[] args)
-        => this.Output.WriteLine(format ?? string.Empty, args);
+    /// <inheritdoc/>
+    public override void WriteLine(string? format, params object?[] arg)
+        => this.Output.WriteLine(format ?? string.Empty, arg);
 
-    /// <summary>
-    /// This method can be substituted by Console.WriteLine when used in Console apps.
-    /// </summary>
-    /// <param name="message">The message</param>
-    public void WriteLine(string? message)
-        => this.Output.WriteLine(message ?? string.Empty);
+    /// <inheritdoc/>
+    public override void WriteLine(string? value)
+        => this.Output.WriteLine(value ?? string.Empty);
 
-    /// <summary>
-    /// Current interface ITestOutputHelper does not have a Write method. This extension method adds it to make it analogous to Console.Write when used in Console apps.
-    /// </summary>
-    /// <param name="target">Target object to write</param>
-    public void Write(object? target = null)
-        => this.Output.WriteLine(target ?? string.Empty);
+    /// <inheritdoc/>
+    public override void Write(object? value = null)
+        => this.Output.WriteLine(value ?? string.Empty);
+
+    /// <inheritdoc/>
+    public override Encoding Encoding => Encoding.UTF8;
 
     /// <summary>
     /// Outputs the last message in the chat history.
