@@ -71,6 +71,19 @@ class MyDataModelList:
 collection_name = "test"
 MyDataModel = MyDataModelArray
 
+# A list of VectorStoreRecordCollection that can be used.
+# Available stores are:
+# - ai_search: Azure AI Search
+# - postgres: PostgreSQL
+# - redis_json: Redis JSON
+# - redis_hashset: Redis Hashset
+# - qdrant: Qdrant
+# - volatile: In-memory store
+#
+# This is represented as a mapping from the store name to a
+# function which returns the store.
+# Using a function allows for lazy initialization of the store,
+# so that settings for unused stores do not cause validation errors.
 stores: dict[str, Callable[[], VectorStoreRecordCollection]] = {
     "ai_search": lambda: AzureAISearchCollection[MyDataModel](
         data_model_type=MyDataModel,
