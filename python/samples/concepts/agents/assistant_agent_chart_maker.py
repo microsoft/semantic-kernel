@@ -18,7 +18,7 @@ AGENT_NAME = "ChartMaker"
 AGENT_INSTRUCTIONS = "Create charts as requested without explanation."
 
 # Note: you may toggle this to switch between AzureOpenAI and OpenAI
-use_azure_openai = False
+use_azure_openai = True
 
 streaming = True
 
