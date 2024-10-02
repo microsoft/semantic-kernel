@@ -29,7 +29,7 @@ This also requires us to rethink how we are going to proceed with our strategy f
 ## Considered Options
 
 1. **Keep As-Is** - Target only preview packages.
-2. **Mimic their strategy** (Create a new version (GA + pre-release) side by side of the Azure OpenAI and OpenAI Connectors).
+2. **Preview + GA versioning** (Create a new version (GA + pre-release) side by side of the Azure OpenAI and OpenAI Connectors).
 3. **Stop targeting preview packages**, only target GA packages moving forward.
 
 ## 1. Keep As-Is - Target only preview packages
@@ -77,13 +77,17 @@ Cons:
 - There won't be a SK connector version that targets a stable GA package for OpenAI or AzureOpenAI.
 - New customers that understand and target GA only available features and also have a strict requirement for dependent packages to be also GA will not be able to use the SK connector. (We don't have an estimate but this could be very small compared to the number of customers that are already OK on using the preview Azure SDK OpenAI SDK available for the past 18 months)
 
-## Mimic Azure OpenAI and OpenAI versioning strategy
+## 2. Preview + GA versioning
 
-This option we will create a new GA version and introduce the pre-release versions of the connectors following the respective GA and Non-GA versions of the Azure OpenAI and OpenAI SDKs.
+This option we will introduce pre-release versions of the connectors:
 
-This option has some impact for customers as we are now following a different strategy on features exposure for GA and Non-GA versions.
+1. General Available (GA) versions of the connector will target a GA version of the SDK.
+2. Pre-release versions of the connector will target a pre-release versions of the SDK.
 
-Customers that were targeting previous SK GA packages that were using Azure OpenAI SDK preview features (not available as GA) will need to update their pipelines to target only SK versions that are now pre-releases.
+This option has some impact for customers that were targeting strictly only GA packages on their pipeline while using preview features that are not available anymore on underlying SDK GA versions.
+
+All preview only functionalities not available in the SDK will be Annotate in Semantic kernel connectors with an Experimental `SKEXP0011` dedicated identifier attribute, to identify and clarify the potential impact when attempting to move to a `GA` package.
+Those annotations will be removed as soon as they are officially supported on the GA version of the SDK.
 
 ```mermaid
 %%{init: { 'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchName': 'SemanticKernel'}} }%%
@@ -95,23 +99,30 @@ Customers that were targeting previous SK GA packages that were using Azure Open
         branch AzureOpenAI
         commit id:"AOAI 2.0-beta.6"
         checkout SemanticKernel
-        merge OpenAI id:"SK OAI 1.22"
-        merge AzureOpenAI id:"SK AOAI 1.22"
+        merge OpenAI id:"SK OAI 1.22-beta"
+        merge AzureOpenAI id:"SK AOAI 1.22-beta"
         checkout OpenAI
         commit id:"OAI 2.0 GA"
-        checkout SemanticKernel
-        merge OpenAI id:"SK OAI 1.23"
         checkout AzureOpenAI
         merge OpenAI id:"AOAI 2.0 GA"
         checkout SemanticKernel
+        merge OpenAI id:"SK OAI 1.23"
         merge AzureOpenAI id:"SK AOAI 1.23"
         checkout OpenAI
         commit id:"OAI 2.1-beta.1"
         checkout AzureOpenAI
-        commit id:"AOAI 2.1-beta.1"
+        merge OpenAI id:"AOAI 2.1-beta.1"
         checkout SemanticKernel
-        merge OpenAI id:"SK OAI 1.23-beta.1"
-        merge AzureOpenAI id:"SK AOAI 1.23-beta.1"
+        merge OpenAI id:"SK OAI 1.23-beta"
+        merge AzureOpenAI id:"SK AOAI 1.23-beta"
+        checkout OpenAI
+        commit id:"OAI 2.1-beta.2"
+        checkout AzureOpenAI
+        merge OpenAI id:"AOAI 2.1-beta.2"
+        checkout SemanticKernel
+        merge OpenAI id:"SK OAI 1.24-beta"
+        checkout SemanticKernel
+        merge AzureOpenAI id:"SK AOAI 1.24-beta"
 ```
 
 Pros:
@@ -126,13 +137,26 @@ Cons:
 - Customers that were using `OpenAI` and `AzureOpenAI` preview only features available in previous SK GA packages will need to update their pipelines to target only future SK pre-release versions.
 - Small Overhead to maintain two versions of the connectors.
 
-### Smoothing Transition
+### Version and Branching Strategy
 
-To smooth the transition and mitigate impact on customers using preview features on SK GA packages.
+Create a special release branch for the targeted `GA` version of the connector, keeping it in the record for that release with all modifications/removal that all the other projects need to make to work with the stable release this will be also a important guideline on where and when to add/remove the `SKEXP0011` exceptions from API's samples.
 
-- Annotate all the features that are preview only with a special Experimental identifier
-- Use the **Keep As-Is** option for a while (TBD) to give time for customers to update their pipelines.
-- After the notification period, start this strategy releasing GA and Non-GA SK Connector versions for the following the Azure OpenAI and OpenAI SDK versions.
+We will follow our own version cadence with the addition of `beta` prefix for `beta` versions of the underlying SDKs.
+
+| Seq | OpenAI Version | Azure OpenAI Version | Semantic Kernel Version | Branch          |
+| --- | -------------- | -------------------- | ----------------------- | --------------- |
+| 1   | 2.0.0          | 2.0.0                | 1.25.0                  | releases/1.25.0 |
+| 2   | 2.1.0-beta.1   | 2.1.0-beta.1         | 1.26.0-beta             | main            |
+| 3   | 2.1.0-beta.3   | 2.1.0-beta.2         | 1.27.0-beta             | main            |
+| 4\* | 2.1.0-beta.3   | 2.1.0-beta.2         | 1.27.1-beta             | main            |
+| 5   | 2.1.0          | 2.1.0                | 1.28.0                  | releases/1.28.0 |
+| 6   | 2.2.0-beta.1   | 2.1.0-beta.1         | 1.29.0-beta             | main            |
+
+<sup>\*</sup> Other minor changes to Semantic Kernel that needed a version update.
+
+### Optional Smoothing Transition
+
+In the intend to smooth the transition and mitigate impact on customers using preview features on SK GA packages straight away we would provide a notice period where we give the time for customers adapt to the `preview` vs `GA` future releases of the connector packages. While for the notice duration we would maintain our strategy with the **Keep As-Is** option before shifting to the **Preview + GA versioning** option.
 
 ## 3. Stop targeting preview packages
 
