@@ -180,4 +180,54 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         // Example total token usage is approximately: 3000
         Console.WriteLine($"Total Token Count: {totalTokenCount}");
     }
+
+    [Fact]
+    public async Task ShowHowToReduceChatHistoryWithSummarizationAsync()
+    {
+        Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
+        Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
+
+        var summarizationPrompt = @"Provide a CONCISE SUMMARY of the following chat messages
+        EXTRACT KEY DETAILS from user questions and assistant responses
+        MOST RECENT AND IMPORTANT MESSAGES ARE AT THE END
+        The summary will only be used to help you respond to the user DO NOT INCLUDE ANY COMMENTARY
+        Always use the last location the user asked about as the context for the next response
+        <MESSAGES START>{{$chat_messages}}<MESSAGES END>";
+
+        OpenAIChatCompletionService openAiChatService = new(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey);
+        var systemPrompt = "You are an expert on the best restaurants in every city. Answer for the city the user has asked about.";
+        IChatCompletionService chatService = openAiChatService.WithSummarizingChatHistoryReducer(Output, systemPrompt, summarizationPrompt, 1);
+
+        var chatHistory = new ChatHistory();
+
+        string[] userMessages = [
+            "Recommend restaurants in Seattle",
+            "What is the best Italian restaurant?",
+            "What is the best Korean restaurant?",
+            "Recommend restaurants in Dublin",
+            "What is the best Indian restaurant?",
+            "What is the best Japanese restaurant?",
+        ];
+
+        int totalTokenCount = 0;
+        foreach (var userMessage in userMessages)
+        {
+            chatHistory.AddUserMessageWithTokenCount(userMessage);
+            Console.WriteLine($"\n>>> User:\n{userMessage}");
+
+            var response = await chatService.GetChatMessageContentAsync(chatHistory);
+            chatHistory.AddAssistantMessageWithTokenCount(response.Content!);
+            Console.WriteLine($"\n>>> Assistant:\n{response.Content!}");
+
+            if (response.InnerContent is OpenAI.Chat.ChatCompletion chatCompletion)
+            {
+                totalTokenCount += chatCompletion.Usage?.TotalTokenCount ?? 0;
+            }
+        }
+
+        // Example total token usage is approximately: 3000
+        Console.WriteLine($"Total Token Count: {totalTokenCount}");
+    }
 }
