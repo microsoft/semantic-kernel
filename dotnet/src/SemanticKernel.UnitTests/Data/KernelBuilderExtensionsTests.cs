@@ -53,6 +53,26 @@ public class KernelBuilderExtensionsTests
         Assert.IsType<VectorStoreTextSearch<DataModel>>(vectorStoreTextSearch);
     }
 
+    [Fact]
+    public void AddVolatileVectorStoreTextSearchWithDelegatesRegistersClass()
+    {
+        // Arrange.
+        this._kernelBuilder.AddVolatileVectorStore();
+        this._kernelBuilder.AddOpenAITextEmbeddingGeneration("modelId", "apiKey");
+
+        // Act.
+        this._kernelBuilder.AddVolatileVectorStoreTextSearch<Guid, DataModel>(
+            "records",
+            obj => ((DataModel)obj).Text,
+            obj => new TextSearchResult(name: ((DataModel)obj).Key.ToString(), value: ((DataModel)obj).Text));
+
+        // Assert.
+        var kernel = this._kernelBuilder.Build();
+        var vectorStoreTextSearch = kernel.Services.GetRequiredService<VectorStoreTextSearch<DataModel>>();
+        Assert.NotNull(vectorStoreTextSearch);
+        Assert.IsType<VectorStoreTextSearch<DataModel>>(vectorStoreTextSearch);
+    }
+
     /// <summary>
     /// String mapper which converts a DataModel to a string.
     /// </summary>

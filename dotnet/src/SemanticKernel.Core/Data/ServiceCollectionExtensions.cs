@@ -21,8 +21,8 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddVolatileVectorStore(this IServiceCollection services, string? serviceId = default)
     {
-        services.AddKeyedSingleton<IVectorStore, VolatileVectorStore>(serviceId);
         services.AddKeyedSingleton<VolatileVectorStore, VolatileVectorStore>(serviceId);
+        services.AddKeyedSingleton<IVectorStore>(serviceId, (sp, obj) => sp.GetRequiredKeyedService<VolatileVectorStore>(serviceId));
         return services;
     }
 
