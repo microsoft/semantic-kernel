@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -102,6 +103,19 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
         Assert.NotNull(message.ModelId);
         Assert.Equal("phi3", message.ModelId);
+
+        // Ollama Sharp always perform streaming even for non-streaming calls,
+        // The inner content in this case is the full list of chunks returned by the Ollama Client.
+        Assert.NotNull(message.InnerContent);
+        Assert.IsType<List<ChatResponseStream>>(message.InnerContent);
+        var innerContentList = message.InnerContent as List<ChatResponseStream>;
+        Assert.NotNull(innerContentList);
+        Assert.NotEmpty(innerContentList);
+        var lastMessage = innerContentList.Last();
+        var doneMessageChunk = lastMessage as ChatDoneResponseStream;
+        Assert.NotNull(doneMessageChunk);
+        Assert.True(doneMessageChunk.Done);
+        Assert.Equal("stop", doneMessageChunk.DoneReason);
     }
 
     [Fact]
@@ -140,6 +154,34 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var innerContent = lastMessage.InnerContent as ChatDoneResponseStream;
         Assert.NotNull(innerContent);
         Assert.True(innerContent.Done);
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsShouldHaveDoneReasonAsync()
+    {
+        //Arrange
+        var expectedModel = "phi3";
+        var sut = new OllamaChatCompletionService(
+            expectedModel,
+            httpClient: this._httpClient);
+
+        var chat = new ChatHistory();
+        chat.AddMessage(AuthorRole.User, "fake-text");
+
+        // Act
+        StreamingChatMessageContent? lastMessage = null;
+        await foreach (var message in sut.GetStreamingChatMessageContentsAsync(chat))
+        {
+            lastMessage = message;
+        }
+
+        // Assert
+        Assert.NotNull(lastMessage);
+        Assert.IsType<ChatDoneResponseStream>(lastMessage.InnerContent);
+        var innerContent = lastMessage.InnerContent as ChatDoneResponseStream;
+        Assert.NotNull(innerContent);
+        Assert.True(innerContent.Done);
+        Assert.Equal("stop", innerContent.DoneReason);
     }
 
     [Fact]

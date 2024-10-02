@@ -96,8 +96,8 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
     {
         Console.WriteLine($"! {Model}");
 
-        OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatResponseFormat.JsonObject };
-        OpenAIPromptExecutionSettings autoInvokeSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat() };
+        OpenAIPromptExecutionSettings autoInvokeSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         ChatCompletionAgent internalLeaderAgent = CreateAgent(InternalLeaderName, InternalLeaderInstructions);
         ChatCompletionAgent internalGiftIdeaAgent = CreateAgent(InternalGiftIdeaAgentName, InternalGiftIdeaAgentInstructions);

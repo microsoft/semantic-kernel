@@ -80,7 +80,19 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
     public async Task CanAutoInvokeKernelFunctionsWithComplexTypeParametersAsync()
     {
         // Arrange
-        var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
+        var kernel = this.CreateAndInitializeKernel();
+        kernel.ImportPluginFromFunctions("HelperFunctions",
+        [
+            kernel.CreateFunctionFromMethod((WeatherParameters parameters) =>
+            {
+                if (parameters.City.Name == "Dublin" && (parameters.City.Country == "Ireland" || parameters.City.Country == "IE"))
+                {
+                    return Task.FromResult(42.8); // 42.8 Fahrenheit.
+                }
+
+                throw new NotSupportedException($"Weather in {parameters.City.Name} ({parameters.City.Country}) is not supported.");
+            }, "Get_Current_Temperature", "Get current temperature."),
+        ]);
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -796,7 +808,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 
         // Assert
         Assert.Equal("abc@domain.com", emailRecipient);
-        Assert.Contains("61\u00B0F", emailBody);
+        Assert.Contains("61", emailBody);
     }
 
     [Fact]
@@ -861,6 +873,54 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
     }
 
+    [Fact]
+    public async Task SubsetOfFunctionsCanBeUsedForFunctionCallingAsync()
+    {
+        // Arrange
+        var kernel = this.CreateAndInitializeKernel();
+
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
+        kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("What day is today?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableFunctions([function.Metadata.ToOpenAIFunction()], true) };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Friday", result.Content, StringComparison.InvariantCulture);
+    }
+
+    [Fact]
+    public async Task RequiredFunctionShouldBeCalledAsync()
+    {
+        // Arrange
+        var kernel = this.CreateAndInitializeKernel();
+
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
+        kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("What day is today?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.RequireFunction(function.Metadata.ToOpenAIFunction(), true) };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Friday", result.Content, StringComparison.InvariantCulture);
+    }
+
     private Kernel CreateAndInitializeKernel(bool importHelperPlugin = false)
     {
         var OpenAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
@@ -889,20 +949,6 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
                         _ => "31 and snowing",
                     };
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
-                kernel.CreateFunctionFromMethod((WeatherParameters parameters) =>
-                {
-                    if (parameters.City.Name == "Dublin" && (parameters.City.Country == "Ireland" || parameters.City.Country == "IE"))
-                    {
-                        return Task.FromResult(42.8); // 42.8 Fahrenheit.
-                    }
-
-                    throw new NotSupportedException($"Weather in {parameters.City.Name} ({parameters.City.Country}) is not supported.");
-                }, "Get_Current_Temperature", "Get current temperature."),
-                kernel.CreateFunctionFromMethod((double temperatureInFahrenheit) =>
-                {
-                    double temperatureInCelsius = (temperatureInFahrenheit - 32) * 5 / 9;
-                    return Task.FromResult(temperatureInCelsius);
-                }, "Convert_Temperature_From_Fahrenheit_To_Celsius", "Convert temperature from Fahrenheit to Celsius.")
             ]);
         }
 

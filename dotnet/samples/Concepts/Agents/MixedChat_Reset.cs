@@ -25,13 +25,13 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agents
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
                 provider,
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Name = nameof(OpenAIAssistantAgent),
                     Instructions = AgentInstructions,
-                });
+                },
+                kernel: new Kernel());
 
         ChatCompletionAgent chatAgent =
             new()

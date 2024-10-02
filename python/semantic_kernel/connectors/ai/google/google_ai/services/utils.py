@@ -126,7 +126,7 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
                         name=gemini_function_name,
                         response={
                             "name": gemini_function_name,
-                            "content": item.result,
+                            "content": str(item.result),
                         },
                     )
                 )

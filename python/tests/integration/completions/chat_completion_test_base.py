@@ -1,16 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-import os
 import sys
 from functools import reduce
-from typing import Any
+from typing import Annotated, Any
 
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
-from azure.core.credentials import AzureKeyCredential
+from azure.identity import DefaultAzureCredential
 from openai import AsyncAzureOpenAI
 
+from semantic_kernel.connectors.ai.anthropic import AnthropicChatCompletion
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceChatPromptExecutionSettings,
 )
@@ -32,6 +32,7 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -44,7 +45,10 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.exceptions import ServiceInitializationError
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 
 if sys.version_info >= (3, 12):
@@ -54,17 +58,53 @@ else:
 
 mistral_ai_setup: bool = False
 try:
-    if os.environ["MISTRALAI_API_KEY"] and os.environ["MISTRALAI_CHAT_MODEL_ID"]:
-        mistral_ai_setup = True
-except KeyError:
+    MistralAIChatCompletion()
+    mistral_ai_setup = True
+except ServiceInitializationError:
     mistral_ai_setup = False
 
 ollama_setup: bool = False
 try:
-    if os.environ["OLLAMA_MODEL"]:
-        ollama_setup = True
-except KeyError:
+    OllamaChatCompletion()
+    ollama_setup = True
+except ServiceInitializationError:
     ollama_setup = False
+
+google_ai_setup: bool = False
+try:
+    GoogleAIChatCompletion()
+    google_ai_setup = True
+except ServiceInitializationError:
+    google_ai_setup = False
+
+vertex_ai_setup: bool = False
+try:
+    VertexAIChatCompletion()
+    vertex_ai_setup = True
+except ServiceInitializationError:
+    vertex_ai_setup = False
+
+anthropic_setup: bool = False
+try:
+    AnthropicChatCompletion()
+    anthropic_setup = True
+except ServiceInitializationError:
+    anthropic_setup = False
+
+
+# A mock plugin that contains a function that returns a complex object.
+class PersonDetails(KernelBaseModel):
+    id: str
+    name: str
+    age: int
+
+
+class PersonSearchPlugin:
+    @kernel_function(name="SearchPerson", description="Search details of a person given their id.")
+    def search_person(
+        self, person_id: Annotated[str, "The person ID to search"]
+    ) -> Annotated[PersonDetails, "The details of the person"]:
+        return PersonDetails(id=person_id, name="John Doe", age=42)
 
 
 class ChatCompletionTestBase(CompletionTestBase):
@@ -76,13 +116,13 @@ class ChatCompletionTestBase(CompletionTestBase):
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = azure_openai_settings.endpoint
         deployment_name = azure_openai_settings.chat_deployment_name
-        api_key = azure_openai_settings.api_key.get_secret_value()
+        ad_token = azure_openai_settings.get_azure_openai_auth_token()
         api_version = azure_openai_settings.api_version
         azure_custom_client = AzureChatCompletion(
             async_client=AsyncAzureOpenAI(
                 azure_endpoint=endpoint,
                 azure_deployment=deployment_name,
-                api_key=api_key,
+                azure_ad_token=ad_token,
                 api_version=api_version,
                 default_headers={"Test-User-X-ID": "test"},
             ),
@@ -91,8 +131,9 @@ class ChatCompletionTestBase(CompletionTestBase):
             ai_model_id=deployment_name,
             client=ChatCompletionsClient(
                 endpoint=f'{str(endpoint).strip("/")}/openai/deployments/{deployment_name}',
-                credential=AzureKeyCredential(""),
-                headers={"api-key": api_key},
+                credential=DefaultAzureCredential(),
+                credential_scopes=["https://cognitiveservices.azure.com/.default"],
+                api_version=DEFAULT_AZURE_API_VERSION,
             ),
         )
 
@@ -106,13 +147,14 @@ class ChatCompletionTestBase(CompletionTestBase):
                 MistralAIChatPromptExecutionSettings,
             ),
             "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
-            "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
-            "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
+            "google_ai": (GoogleAIChatCompletion() if google_ai_setup else None, GoogleAIChatPromptExecutionSettings),
+            "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
         }
 
     def setup(self, kernel: Kernel):
         """Setup the kernel with the completion service and function."""
         kernel.add_plugin(MathPlugin(), plugin_name="math")
+        kernel.add_plugin(PersonSearchPlugin(), plugin_name="search")
 
     async def get_chat_completion_response(
         self,

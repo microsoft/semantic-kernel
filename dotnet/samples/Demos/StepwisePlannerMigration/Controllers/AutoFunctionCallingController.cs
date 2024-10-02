@@ -48,7 +48,7 @@ public class AutoFunctionCallingController : ControllerBase
         ChatHistory chatHistory = [];
         chatHistory.AddUserMessage(request.Goal);
 
-        OpenAIPromptExecutionSettings executionSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings executionSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         await this._chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, this._kernel);
 
@@ -62,7 +62,7 @@ public class AutoFunctionCallingController : ControllerBase
     [HttpPost, Route("execute-new-plan")]
     public async Task<IActionResult> ExecuteNewPlanAsync(PlanRequest request)
     {
-        OpenAIPromptExecutionSettings executionSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings executionSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         FunctionResult result = await this._kernel.InvokePromptAsync(request.Goal, new(executionSettings));
 
@@ -77,7 +77,7 @@ public class AutoFunctionCallingController : ControllerBase
     public async Task<IActionResult> ExecuteExistingPlanAsync()
     {
         ChatHistory chatHistory = this._planProvider.GetPlan("auto-function-calling-plan.json");
-        OpenAIPromptExecutionSettings executionSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings executionSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         ChatMessageContent result = await this._chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, this._kernel);
 
