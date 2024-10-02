@@ -21,7 +21,7 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping
     /// <param name="numLists">Number of clusters that the inverted file (IVF) index uses to group the vector data.</param>
     /// <param name="efConstruction">The size of the dynamic candidate list for constructing the graph.</param>
     public static BsonArray GetVectorIndexes(
-        List<VectorStoreRecordVectorProperty> vectorProperties,
+        IReadOnlyList<VectorStoreRecordVectorProperty> vectorProperties,
         Dictionary<string, string> storagePropertyNames,
         HashSet<string?> uniqueIndexes,
         int numLists,
@@ -72,7 +72,7 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping
     /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name.</param>
     /// <param name="uniqueIndexes">Collection of unique existing indexes to avoid creating duplicates.</param>
     public static BsonArray GetFilterableDataIndexes(
-        List<VectorStoreRecordDataProperty> dataProperties,
+        IReadOnlyList<VectorStoreRecordDataProperty> dataProperties,
         Dictionary<string, string> storagePropertyNames,
         HashSet<string?> uniqueIndexes)
     {
