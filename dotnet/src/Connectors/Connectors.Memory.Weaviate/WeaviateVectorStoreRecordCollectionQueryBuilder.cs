@@ -24,9 +24,9 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         string keyPropertyName,
         JsonSerializerOptions jsonSerializerOptions,
         VectorSearchOptions searchOptions,
-        Dictionary<string, string> storagePropertyNames,
-        List<string> vectorPropertyStorageNames,
-        List<string> dataPropertyStorageNames)
+        IReadOnlyDictionary<string, string> storagePropertyNames,
+        IReadOnlyList<string> vectorPropertyStorageNames,
+        IReadOnlyList<string> dataPropertyStorageNames)
     {
         var vectorsQuery = searchOptions.IncludeVectors ?
             $"vectors {{ {string.Join(" ", vectorPropertyStorageNames)} }}" :
@@ -74,7 +74,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         VectorSearchFilter? vectorSearchFilter,
         JsonSerializerOptions jsonSerializerOptions,
         string keyPropertyName,
-        Dictionary<string, string> storagePropertyNames)
+        IReadOnlyDictionary<string, string> storagePropertyNames)
     {
         const string EqualOperator = "Equal";
         const string ContainsAnyOperator = "ContainsAny";

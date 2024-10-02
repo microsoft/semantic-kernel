@@ -51,6 +51,10 @@ dotnet user-secrets set "OpenAITextToImage:ServiceId" "dall-e-3"
 dotnet user-secrets set "OpenAITextToImage:ModelId" "dall-e-3"
 dotnet user-secrets set "OpenAITextToImage:ApiKey" "..."
 
+dotnet user-secrets set "OpenAIEmbeddings:ServiceId" "text-embedding-ada-002"
+dotnet user-secrets set "OpenAIEmbeddings:ModelId" "text-embedding-ada-002"
+dotnet user-secrets set "OpenAIEmbeddings:ApiKey" "..."
+
 dotnet user-secrets set "AzureAIInference:ServiceId" "azure-ai-inference"
 dotnet user-secrets set "AzureAIInference:ApiKey" "..."
 dotnet user-secrets set "AzureAIInference:Endpoint" "https://contoso.models.ai.azure.com/"

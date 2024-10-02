@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -8,41 +8,24 @@ using Microsoft.SemanticKernel.Embeddings;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Extension methods to register Data services on an <see cref="IServiceCollection"/>.
+/// Extension methods to register <see cref="ITextSearch"/> for use with <see cref="IServiceCollection"/>.
 /// </summary>
-[Experimental("SKEXP0001")]
-public static class ServiceCollectionExtensions
+public static class TextSearchServiceCollectionExtensions
 {
-    /// <summary>
-    /// Register a Volatile <see cref="IVectorStore"/> with the specified service ID.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
-    public static IServiceCollection AddVolatileVectorStore(this IServiceCollection services, string? serviceId = default)
-    {
-        services.AddKeyedSingleton<VolatileVectorStore, VolatileVectorStore>(serviceId);
-        services.AddKeyedSingleton<IVectorStore>(serviceId, (sp, obj) => sp.GetRequiredKeyedService<VolatileVectorStore>(serviceId));
-        return services;
-    }
-
     /// <summary>
     /// Register a <see cref="VectorStoreTextSearch{TRecord}"/> instance with the specified service ID.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="ITextSearch"/> on.</param>
-    /// <param name="collectionName">The name of the collection.</param>
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    public static IServiceCollection AddVolatileVectorStoreTextSearch<TKey, TRecord>(
+    public static IServiceCollection AddVectorStoreTextSearch<TRecord>(
         this IServiceCollection services,
-        string collectionName,
         ITextSearchStringMapper? stringMapper = null,
         ITextSearchResultMapper? resultMapper = null,
         VectorStoreTextSearchOptions? options = null,
         string? serviceId = default)
-        where TKey : notnull
         where TRecord : class
     {
         // If we are not constructing the dependent services, add the VectorStoreTextSearch as transient, since we
@@ -51,13 +34,33 @@ public static class ServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                var vectorStore = sp.GetRequiredService<VolatileVectorStore>();
-                var vectorSearch = vectorStore.GetCollection<TKey, TRecord>(collectionName);
-                var generationService = sp.GetRequiredService<ITextEmbeddingGenerationService>();
                 stringMapper ??= sp.GetRequiredService<ITextSearchStringMapper>();
                 resultMapper ??= sp.GetRequiredService<ITextSearchResultMapper>();
                 options ??= sp.GetService<VectorStoreTextSearchOptions>();
-                return new VectorStoreTextSearch<TRecord>(vectorSearch, generationService, stringMapper, resultMapper, options);
+
+                var vectorizableTextSearch = sp.GetService<IVectorizableTextSearch<TRecord>>();
+                if (vectorizableTextSearch is not null)
+                {
+                    return new VectorStoreTextSearch<TRecord>(
+                        vectorizableTextSearch,
+                        stringMapper,
+                        resultMapper,
+                        options);
+                }
+
+                var vectorizedSearch = sp.GetService<IVectorizedSearch<TRecord>>();
+                var generationService = sp.GetService<ITextEmbeddingGenerationService>();
+                if (vectorizedSearch is not null && generationService is not null)
+                {
+                    return new VectorStoreTextSearch<TRecord>(
+                        vectorizedSearch,
+                        generationService,
+                        stringMapper,
+                        resultMapper,
+                        options);
+                }
+
+                throw new InvalidOperationException("No IVectorizableTextSearch<TRecord> or IVectorizedSearch<TRecord> and ITextEmbeddingGenerationService registered.");
             });
 
         return services;
