@@ -7,7 +7,7 @@ deciders: sergeymenshykh, markwallace, rogerbarreto, westey-m, dmytrostruk,
 consulted: crickman
 ---
 
-# Further Versioning Strategy for Azure OpenAI and OpenAI Connectors
+# Connectors Versioning Strategy for Underlying SDKs
 
 ## Context and Problem Statement
 
