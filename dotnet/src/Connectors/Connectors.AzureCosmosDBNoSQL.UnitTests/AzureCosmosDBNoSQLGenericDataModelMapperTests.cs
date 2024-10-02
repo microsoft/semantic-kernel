@@ -67,10 +67,8 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
     {
         // Arrange
-        var test = JsonSerializer.Serialize(s_byteVector);
-
         var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition,
+            s_vectorStoreRecordDefinition.Properties,
             s_storagePropertyNames,
             s_jsonSerializerOptions);
 
@@ -168,7 +166,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
         };
 
         var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition,
+            s_vectorStoreRecordDefinition.Properties,
             s_storagePropertyNames,
             s_jsonSerializerOptions);
 
@@ -186,7 +184,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
     {
         // Arrange
         var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition,
+            s_vectorStoreRecordDefinition.Properties,
             s_storagePropertyNames,
             s_jsonSerializerOptions);
 
@@ -274,7 +272,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
         };
 
         var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition,
+            s_vectorStoreRecordDefinition.Properties,
             s_storagePropertyNames,
             s_jsonSerializerOptions);
 
@@ -293,7 +291,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
     {
         // Arrange
         var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition,
+            s_vectorStoreRecordDefinition.Properties,
             s_storagePropertyNames,
             s_jsonSerializerOptions);
 
@@ -320,7 +318,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
 
         var dataModel = new VectorStoreGenericDataModel<string>("key");
         var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition,
+            s_vectorStoreRecordDefinition.Properties,
             s_storagePropertyNames,
             s_jsonSerializerOptions);
 
@@ -353,7 +351,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
         };
 
         var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition,
+            s_vectorStoreRecordDefinition.Properties,
             s_storagePropertyNames,
             s_jsonSerializerOptions);
 

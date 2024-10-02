@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using SharedSteps;
 
-namespace GettingStartedWithProcesses;
+namespace Step01;
 
 /// <summary>
 /// Demonstrate creation of <see cref="KernelProcess"/> and
 /// eliciting its response to three explicit user messages.
 /// </summary>
-public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
+public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
     /// <summary>
     /// Demonstrates the creation of a simple process that has multiple steps, takes
@@ -31,7 +33,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
         // Create a process that will interact with the chat completion service
         ProcessBuilder process = new("ChatBot");
         var introStep = process.AddStepFromType<IntroStep>();
-        var userInputStep = process.AddStepFromType<UserInputStep>();
+        var userInputStep = process.AddStepFromType<ChatUserInputStep>();
         var responseStep = process.AddStepFromType<ChatBotResponseStep>();
 
         // Define the behavior when the process receives an external event
@@ -51,7 +53,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
 
         // When the userInput step emits a user input event, send it to the assistantResponse step
         userInputStep
-            .OnEvent(ChatBotEvents.UserInputReceived)
+            .OnEvent(CommonEvents.UserInputReceived)
             .SendEventTo(new ProcessFunctionTargetBuilder(responseStep, parameterName: "userMessage"));
 
         // When the assistantResponse step emits a response, send it to the userInput step
@@ -84,52 +86,18 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
     /// <summary>
     /// A step that elicits user input.
     /// </summary>
-    private sealed class UserInputStep : KernelProcessStep<UserInputState>
+    private sealed class ChatUserInputStep : ScriptedUserInputStep
     {
-        /// <summary>
-        /// The state object for the user input step. This object holds the user inputs and the current input index.
-        /// </summary>
-        private UserInputState? _state;
-
-        /// <summary>
-        /// Activates the user input step by initializing the state object. This method is called when the process is started
-        /// and before any of the KernelFunctions are invoked.
-        /// </summary>
-        /// <param name="state">The state object for the step.</param>
-        /// <returns>A <see cref="ValueTask"/></returns>
-        public override ValueTask ActivateAsync(KernelProcessStepState<UserInputState> state)
+        public override void PopulateUserInputs()
         {
-            state.State ??= new();
-            _state = state.State;
-
-            _state.UserInputs.Add("Hello");
-            _state.UserInputs.Add("How are you?");
-            _state.UserInputs.Add("exit");
-
-            return ValueTask.CompletedTask;
-        }
-
-        /// <summary>
-        /// Gets the user input.
-        /// </summary>
-        /// <param name="context">An instance of <see cref="KernelProcessStepContext"/> which can be
-        /// used to emit events from within a KernelFunction.</param>
-        /// <returns>A <see cref="ValueTask"/></returns>
-        [KernelFunction("GetUserInput")]
-        public async ValueTask GetUserInputAsync(KernelProcessStepContext context)
-        {
-            var input = _state!.UserInputs[_state.CurrentInputIndex];
-            _state.CurrentInputIndex++;
-
-            if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
+            if (_state != null)
             {
-                // Emit the exit event
-                await context.EmitEventAsync(new() { Id = ChatBotEvents.Exit });
-                return;
+                _state.UserInputs.Add("Hello");
+                _state.UserInputs.Add("How tall is the tallest mountain?");
+                _state.UserInputs.Add("How low is the lowest valley?");
+                _state.UserInputs.Add("How wide is the widest river?");
+                _state.UserInputs.Add("exit");
             }
-
-            // Emit the user input
-            await context.EmitEventAsync(new() { Id = ChatBotEvents.UserInputReceived, Data = input });
         }
     }
 
@@ -138,6 +106,11 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private sealed class ChatBotResponseStep : KernelProcessStep<ChatBotState>
     {
+        public static class Functions
+        {
+            public const string GetChatResponse = nameof(GetChatResponse);
+        }
+
         /// <summary>
         /// The internal state object for the chat bot response step.
         /// </summary>
@@ -162,16 +135,24 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
         /// <param name="userMessage">The user message from a previous step.</param>
         /// <param name="_kernel">A <see cref="Kernel"/> instance.</param>
         /// <returns></returns>
-        [KernelFunction("GetChatResponse")]
+        [KernelFunction(Functions.GetChatResponse)]
         public async Task GetChatResponseAsync(KernelProcessStepContext context, string userMessage, Kernel _kernel)
         {
             _state!.ChatMessages.Add(new(AuthorRole.User, userMessage));
             IChatCompletionService chatService = _kernel.Services.GetRequiredService<IChatCompletionService>();
             ChatMessageContent response = await chatService.GetChatMessageContentAsync(_state.ChatMessages).ConfigureAwait(false);
-            if (response != null)
+            if (response == null)
             {
-                _state.ChatMessages.Add(response!);
+                throw new InvalidOperationException("Failed to get a response from the chat completion service.");
             }
+
+            System.Console.ForegroundColor = ConsoleColor.Yellow;
+            System.Console.Write("Assistant: ");
+            System.Console.ResetColor();
+            System.Console.WriteLine(response.Content);
+
+            // Update state with the response
+            _state.ChatMessages.Add(response);
 
             // emit event: assistantResponse
             await context.EmitEventAsync(new KernelProcessEvent { Id = ChatBotEvents.AssistantResponseGenerated, Data = response });
@@ -187,16 +168,6 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>
-    /// The state object for the <see cref="UserInputStep"/>
-    /// </summary>
-    private sealed record UserInputState
-    {
-        public List<string> UserInputs { get; init; } = new();
-
-        public int CurrentInputIndex { get; set; } = 0;
-    }
-
-    /// <summary>
     /// A class that defines the events that can be emitted by the chat bot process. This is
     /// not required but used to ensure that the event names are consistent.
     /// </summary>
@@ -204,7 +175,6 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output)
     {
         public const string StartProcess = "startProcess";
         public const string IntroComplete = "introComplete";
-        public const string UserInputReceived = "userInputReceived";
         public const string AssistantResponseGenerated = "assistantResponseGenerated";
         public const string Exit = "exit";
     }

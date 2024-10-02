@@ -150,9 +150,9 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine($"Created At: {innerContent.CreatedAt}");
 
         Console.WriteLine($"Finish reason: {innerContent.FinishReason}");
-        Console.WriteLine($"Input tokens usage: {innerContent.Usage.InputTokens}");
-        Console.WriteLine($"Output tokens usage: {innerContent.Usage.OutputTokens}");
-        Console.WriteLine($"Total tokens usage: {innerContent.Usage.TotalTokens}");
+        Console.WriteLine($"Input tokens usage: {innerContent.Usage.InputTokenCount}");
+        Console.WriteLine($"Output tokens usage: {innerContent.Usage.OutputTokenCount}");
+        Console.WriteLine($"Total tokens usage: {innerContent.Usage.TotalTokenCount}");
         Console.WriteLine($"Refusal: {innerContent.Refusal} ");
         Console.WriteLine($"Id: {innerContent.Id}");
         Console.WriteLine($"System fingerprint: {innerContent.SystemFingerprint}");
