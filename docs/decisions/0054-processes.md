@@ -236,7 +236,7 @@ The instance of `KernelProcess` that we've created is nothing more than an objec
             ]
           }
         ],
-        "UserInputStep_6fa2d6b513464eb5a4daa9b5ebc1a956.userInputReceived": [
+        "UserInputStep_6fa2d6b513464eb5a4dxa9b5ebc1a956.userInputReceived": [
           {
             "SourceId": "6fa2d6b513464eb5a4daa9b5ebc1a956",
             "OutputTargets": [
