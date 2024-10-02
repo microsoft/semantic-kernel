@@ -41,9 +41,7 @@ from semantic_kernel.services.kernel_services_extension import KernelServicesExt
 from semantic_kernel.utils.naming import generate_random_ascii_name
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.function_choice_behavior import (
-        FunctionChoiceBehavior,
-    )
+    from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.functions.kernel_function import KernelFunction
 
@@ -239,7 +237,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         Returns:
             FunctionResult | list[FunctionResult] | None: The result of the function(s)
         """
-        if not arguments:
+        if arguments is None:
             arguments = KernelArguments(**kwargs)
         if not prompt:
             raise TemplateSyntaxError("The prompt is either null or empty.")
@@ -280,7 +278,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         Returns:
             AsyncIterable[StreamingContentMixin]: The content of the stream of the last function provided.
         """
-        if not arguments:
+        if arguments is None:
             arguments = KernelArguments(**kwargs)
         if not prompt:
             raise TemplateSyntaxError("The prompt is either null or empty.")
@@ -403,14 +401,12 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         )
         await stack(invocation_context)
 
-        if invocation_context.terminate:
-            return invocation_context
-
         frc = FunctionResultContent.from_function_call_content_and_result(
             function_call_content=function_call, result=invocation_context.function_result
         )
         chat_history.add_message(message=frc.to_chat_message_content())
-        return None
+
+        return invocation_context if invocation_context.terminate else None
 
     async def _inner_auto_function_invoke_handler(self, context: AutoFunctionInvocationContext):
         """Inner auto function invocation handler."""

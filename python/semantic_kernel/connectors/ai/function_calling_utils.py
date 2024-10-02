@@ -3,10 +3,16 @@
 from collections import OrderedDict
 from typing import TYPE_CHECKING, Any
 
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.function_choice_behavior import FunctionCallChoiceConfiguration
+    from semantic_kernel.connectors.ai.function_choice_behavior import (
+        FunctionCallChoiceConfiguration,
+        FunctionChoiceType,
+    )
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
@@ -14,7 +20,7 @@ if TYPE_CHECKING:
 def update_settings_from_function_call_configuration(
     function_choice_configuration: "FunctionCallChoiceConfiguration",
     settings: "PromptExecutionSettings",
-    type: str,
+    type: "FunctionChoiceType",
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""
     if (
@@ -68,3 +74,22 @@ def _combine_filter_dicts(*dicts: dict[str, list[str]]) -> dict:
         combined_filters[key] = list(combined_functions.keys())
 
     return combined_filters
+
+
+def merge_function_results(
+    messages: list[ChatMessageContent],
+) -> list[ChatMessageContent]:
+    """Combine multiple function result content types to one chat message content type.
+
+    This method combines the FunctionResultContent items from separate ChatMessageContent messages,
+    and is used in the event that the `context.terminate = True` condition is met.
+    """
+    items: list[Any] = []
+    for message in messages:
+        items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
+    return [
+        ChatMessageContent(
+            role=AuthorRole.TOOL,
+            items=items,
+        )
+    ]

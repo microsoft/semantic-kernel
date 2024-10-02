@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 
@@ -16,21 +14,37 @@ namespace Microsoft.SemanticKernel.Agents;
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
 /// <remarks>
-/// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
-/// (<see cref="ChatCompletionAgent.Arguments"/>)
+/// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins.
+/// (<see cref="KernelAgent.Arguments"/>)
 /// </remarks>
-public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
+public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 {
     /// <summary>
-    /// Optional arguments for the agent.
+    /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
     /// </summary>
-    public KernelArguments? Arguments { get; init; }
+    public ChatCompletionAgent() { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class from
+    /// a <see cref="PromptTemplateConfig"/>.
+    /// </summary>
+    /// <param name="templateConfig">Prompt template configuration</param>
+    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent</param>
+    /// <remarks>
+    /// When 'templateFactory' parameter is not provided, the default <see cref="KernelPromptTemplateFactory"/> is used.
+    /// </remarks>
+    public ChatCompletionAgent(
+        PromptTemplateConfig templateConfig,
+        IPromptTemplateFactory? templateFactory = null)
+    {
+        this.Name = templateConfig.Name;
+        this.Description = templateConfig.Description;
+        this.Instructions = templateConfig.Template;
+        this.Template = templateFactory?.Create(templateConfig);
+    }
 
     /// <inheritdoc/>
-    public IChatHistoryReducer? HistoryReducer { get; init; }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
@@ -39,9 +53,9 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
         kernel ??= this.Kernel;
         arguments ??= this.Arguments;
 
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
-        ChatHistory chat = this.SetupAgentChatHistory(history);
+        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
 
         int messageCount = chat.Count;
 
@@ -66,7 +80,7 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
             history.Add(message);
         }
 
-        foreach (ChatMessageContent message in messages ?? [])
+        foreach (ChatMessageContent message in messages)
         {
             message.AuthorName = this.Name;
 
@@ -75,7 +89,7 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+    public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
@@ -84,9 +98,9 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
         kernel ??= this.Kernel;
         arguments ??= this.Arguments;
 
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
-        ChatHistory chat = this.SetupAgentChatHistory(history);
+        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
 
         int messageCount = chat.Count;
 
@@ -101,9 +115,15 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
 
         this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, chatCompletionService.GetType());
 
+        AuthorRole? role = null;
+        StringBuilder builder = new();
         await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
         {
+            role = message.Role;
+            message.Role ??= AuthorRole.Assistant;
             message.AuthorName = this.Name;
+
+            builder.Append(message.ToString());
 
             yield return message;
         }
@@ -117,33 +137,12 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
 
             history.Add(message);
         }
-    }
 
-    /// <inheritdoc/>
-    protected override IEnumerable<string> GetChannelKeys()
-    {
-        // Agents with different reducers shall not share the same channel.
-        // Agents with the same or equivalent reducer shall share the same channel.
-        if (this.HistoryReducer != null)
+        // Do not duplicate terminated function result to history
+        if (role != AuthorRole.Tool)
         {
-            // Explicitly include the reducer type to eliminate the possibility of hash collisions
-            // with custom implementations of IChatHistoryReducer.
-            yield return this.HistoryReducer.GetType().FullName!;
-
-            yield return this.HistoryReducer.GetHashCode().ToString(CultureInfo.InvariantCulture);
+            history.Add(new(role ?? AuthorRole.Assistant, builder.ToString()) { AuthorName = this.Name });
         }
-    }
-
-    /// <inheritdoc/>
-    protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
-    {
-        ChatHistoryChannel channel =
-            new()
-            {
-                Logger = this.LoggerFactory.CreateLogger<ChatHistoryChannel>()
-            };
-
-        return Task.FromResult<AgentChannel>(channel);
     }
 
     /// <inheritdoc/>
@@ -155,7 +154,7 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
         return Task.FromResult<AgentChannel>(new ChatHistoryChannel(history));
     }
 
-    private (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
+    internal static (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
     {
         // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
         KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("placeholder", arguments?.ExecutionSettings?.Values);
@@ -168,13 +167,19 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
         return (chatCompletionService, executionSettings);
     }
 
-    private ChatHistory SetupAgentChatHistory(IReadOnlyList<ChatMessageContent> history)
+    private async Task<ChatHistory> SetupAgentChatHistoryAsync(
+        IReadOnlyList<ChatMessageContent> history,
+        KernelArguments? arguments,
+        Kernel kernel,
+        CancellationToken cancellationToken)
     {
         ChatHistory chat = [];
 
-        if (!string.IsNullOrWhiteSpace(this.Instructions))
+        string? instructions = await this.FormatInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        if (!string.IsNullOrWhiteSpace(instructions))
         {
-            chat.Add(new ChatMessageContent(AuthorRole.System, this.Instructions) { AuthorName = this.Name });
+            chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { AuthorName = this.Name });
         }
 
         chat.AddRange(history);

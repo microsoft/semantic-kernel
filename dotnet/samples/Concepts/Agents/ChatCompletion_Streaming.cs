@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
-using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -9,10 +8,9 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 namespace Agents;
 
 /// <summary>
-/// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
-/// eliciting its response to three explicit user messages.
+/// Demonstrate consuming "streaming" message for <see cref="ChatCompletionAgent"/>.
 /// </summary>
-public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseTest(output)
+public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string ParrotName = "Parrot";
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
@@ -35,6 +33,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseTest(outpu
         await InvokeAgentAsync(agent, chat, "Fortune favors the bold.");
         await InvokeAgentAsync(agent, chat, "I came, I saw, I conquered.");
         await InvokeAgentAsync(agent, chat, "Practice makes perfect.");
+
+        // Output the entire chat history
+        DisplayChatHistory(chat);
     }
 
     [Fact]
@@ -49,7 +50,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseTest(outpu
                 Name = "Host",
                 Instructions = MenuInstructions,
                 Kernel = this.CreateKernelWithChatCompletion(),
-                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
@@ -61,37 +62,56 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseTest(outpu
         // Respond to user input
         await InvokeAgentAsync(agent, chat, "What is the special soup?");
         await InvokeAgentAsync(agent, chat, "What is the special drink?");
+
+        // Output the entire chat history
+        DisplayChatHistory(chat);
     }
 
     // Local function to invoke agent and display the conversation messages.
     private async Task InvokeAgentAsync(ChatCompletionAgent agent, ChatHistory chat, string input)
     {
-        chat.Add(new ChatMessageContent(AuthorRole.User, input));
+        ChatMessageContent message = new(AuthorRole.User, input);
+        chat.Add(message);
+        this.WriteAgentChatMessage(message);
 
-        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+        int historyCount = chat.Count;
 
-        StringBuilder builder = new();
-        await foreach (StreamingChatMessageContent message in agent.InvokeStreamingAsync(chat))
+        bool isFirst = false;
+        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(chat))
         {
-            if (string.IsNullOrEmpty(message.Content))
+            if (string.IsNullOrEmpty(response.Content))
             {
                 continue;
             }
 
-            if (builder.Length == 0)
+            if (!isFirst)
             {
-                Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}:");
+                Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");
+                isFirst = true;
             }
 
-            Console.WriteLine($"\t > streamed: '{message.Content}'");
-            builder.Append(message.Content);
+            Console.WriteLine($"\t > streamed: '{response.Content}'");
         }
 
-        if (builder.Length > 0)
+        if (historyCount <= chat.Count)
         {
-            // Display full response and capture in chat history
-            Console.WriteLine($"\t > complete: '{builder}'");
-            chat.Add(new ChatMessageContent(AuthorRole.Assistant, builder.ToString()) { AuthorName = agent.Name });
+            for (int index = historyCount; index < chat.Count; index++)
+            {
+                this.WriteAgentChatMessage(chat[index]);
+            }
+        }
+    }
+
+    private void DisplayChatHistory(ChatHistory history)
+    {
+        // Display the chat history.
+        Console.WriteLine("================================");
+        Console.WriteLine("CHAT HISTORY");
+        Console.WriteLine("================================");
+
+        foreach (ChatMessageContent message in history)
+        {
+            this.WriteAgentChatMessage(message);
         }
     }
 

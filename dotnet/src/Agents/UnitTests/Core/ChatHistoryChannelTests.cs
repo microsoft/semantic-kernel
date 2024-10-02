@@ -15,13 +15,16 @@ public class ChatHistoryChannelTests
 {
     /// <summary>
     /// Verify a <see cref="ChatHistoryChannel"/> throws if passed an agent that
-    /// does not implement <see cref="IChatHistoryHandler"/>.
+    /// does not implement <see cref="ChatHistoryKernelAgent"/>.
     /// </summary>
     [Fact]
     public async Task VerifyAgentWithoutIChatHistoryHandlerAsync()
     {
-        Mock<Agent> agent = new(); // Not a IChatHistoryHandler
+        // Arrange
+        Mock<Agent> agent = new(); // Not a ChatHistoryKernelAgent
         ChatHistoryChannel channel = new(); // Requires IChatHistoryHandler
+
+        // Act & Assert
         await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAsync(agent.Object).ToArrayAsync().AsTask());
     }
 }

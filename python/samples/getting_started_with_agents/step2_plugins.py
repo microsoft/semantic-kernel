@@ -3,7 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents.chat_completion_agent import ChatCompletionAgent
+from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -70,7 +70,6 @@ async def main():
     # Create the instance of the Kernel
     kernel = Kernel()
 
-    # Add the OpenAIChatCompletion AI Service to the Kernel
     service_id = "agent"
     kernel.add_service(AzureChatCompletion(service_id=service_id))
 
@@ -78,7 +77,7 @@ async def main():
     # Configure the function choice behavior to auto invoke kernel functions
     settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
-    kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
+    kernel.add_plugin(MenuPlugin(), plugin_name="menu")
 
     # Create the agent
     agent = ChatCompletionAgent(

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -349,6 +350,62 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
         // Act & Assert
         await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync(11, new GetRecordOptions { IncludeVectors = true }));
+    }
+
+    [Fact]
+    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
+    {
+        // Arrange
+        var options = new QdrantVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<ulong>>
+        {
+            VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
+        };
+        var sut = new QdrantVectorStoreRecordCollection<VectorStoreGenericDataModel<ulong>>(fixture.QdrantClient, "singleVectorHotels", options);
+
+        // Act
+        var baseSetGetResult = await sut.GetAsync(11, new GetRecordOptions { IncludeVectors = true });
+        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<ulong>(40)
+        {
+            Data =
+            {
+                { "HotelName", "Generic Mapper Hotel" },
+                { "HotelCode", 40 },
+                { "ParkingIncluded", false },
+                { "HotelRating", 3.6d },
+                { "Tags", new string[] { "generic" } },
+                { "Description", "This is a generic mapper hotel" },
+            },
+            Vectors =
+            {
+                { "DescriptionEmbedding", new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }) }
+            }
+        });
+        var localGetResult = await sut.GetAsync(40, new GetRecordOptions { IncludeVectors = true });
+
+        // Assert
+        Assert.NotNull(baseSetGetResult);
+        Assert.Equal(11ul, baseSetGetResult.Key);
+        Assert.Equal("My Hotel 11", baseSetGetResult.Data["HotelName"]);
+        Assert.Equal(11, baseSetGetResult.Data["HotelCode"]);
+        Assert.True((bool)baseSetGetResult.Data["ParkingIncluded"]!);
+        Assert.Equal(4.5f, baseSetGetResult.Data["HotelRating"]);
+        Assert.Equal(new[] { "t1", "t2" }, ((List<string>)baseSetGetResult.Data["Tags"]!).ToArray());
+        Assert.Equal("This is a great hotel.", baseSetGetResult.Data["Description"]);
+        Assert.NotNull(baseSetGetResult.Vectors["DescriptionEmbedding"]);
+        Assert.IsType<ReadOnlyMemory<float>>(baseSetGetResult.Vectors["DescriptionEmbedding"]);
+
+        Assert.Equal(40ul, upsertResult);
+
+        Assert.NotNull(localGetResult);
+        Assert.Equal(40ul, localGetResult.Key);
+        Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
+        Assert.Equal(40, localGetResult.Data["HotelCode"]);
+        Assert.False((bool)localGetResult.Data["ParkingIncluded"]!);
+        Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
+        Assert.Equal(new[] { "generic" }, ((List<string>)localGetResult.Data["Tags"]!).ToArray());
+        Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
+        Assert.NotNull(localGetResult.Vectors["DescriptionEmbedding"]);
+        Assert.IsType<ReadOnlyMemory<float>>(localGetResult.Vectors["DescriptionEmbedding"]);
     }
 
     private HotelInfo CreateTestHotel(uint hotelId)

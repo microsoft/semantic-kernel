@@ -10,7 +10,7 @@ namespace Agents;
 /// Demonstrate that two different agent types are able to participate in the same conversation.
 /// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
 /// </summary>
-public class MixedChat_Serialization(ITestOutputHelper output) : BaseTest(output)
+public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string TranslatorName = "Translator";
     private const string TranslatorInstructions =
@@ -41,12 +41,11 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseTest(output
         OpenAIAssistantAgent agentCounter =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
-                definition: new()
+                clientProvider: this.GetClientProvider(),
+                definition: new(this.Model)
                 {
                     Instructions = CounterInstructions,
                     Name = CounterName,
-                    ModelId = this.Model,
                 });
 
         AgentGroupChat chat = CreateGroupChat();

@@ -1,57 +1,56 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// The data associated with an assistant's definition.
+/// Defines an assistant.
 /// </summary>
-public sealed class OpenAIAssistantDefinition
+public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 {
-    /// <summary>
-    /// Identifies the AI model (OpenAI) or deployment (AzureOAI) this agent targets.
-    /// </summary>
-    public string? ModelId { get; init; }
-
     /// <summary>
     /// The description of the assistant.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Description { get; init; }
-
-    /// <summary>
-    /// The assistant's unique id.  (Ignored on create.)
-    /// </summary>
-    public string? Id { get; init; }
 
     /// <summary>
     /// The system instructions for the assistant to use.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Instructions { get; init; }
 
     /// <summary>
     /// The name of the assistant.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Name { get; init; }
 
     /// <summary>
-    /// Set if code-interpreter is enabled.
+    /// Provide the captured template format for the assistant if needed for agent retrieval.
+    /// (<see cref="OpenAIAssistantAgent.RetrieveAsync"/>)
     /// </summary>
-    public bool EnableCodeInterpreter { get; init; }
+    [JsonIgnore]
+    public string? TemplateFactoryFormat
+    {
+        get
+        {
+            if (this.Metadata == null)
+            {
+                return null;
+            }
+
+            this.Metadata.TryGetValue(OpenAIAssistantAgent.TemplateMetadataKey, out string? templateFormat);
+
+            return templateFormat;
+        }
+    }
 
     /// <summary>
-    /// Set if retrieval is enabled.
+    /// Initializes a new instance of the <see cref="OpenAIAssistantDefinition"/> class.
     /// </summary>
-    public bool EnableRetrieval { get; init; }
-
-    /// <summary>
-    /// A list of previously uploaded file IDs to attach to the assistant.
-    /// </summary>
-    public IEnumerable<string>? FileIds { get; init; }
-
-    /// <summary>
-    /// A set of up to 16 key/value pairs that can be attached to an agent, used for
-    /// storing additional information about that object in a structured format.Keys
-    /// may be up to 64 characters in length and values may be up to 512 characters in length.
-    /// </summary>
-    public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+    /// <param name="modelId">The targeted model</param>
+    [JsonConstructor]
+    public OpenAIAssistantDefinition(string modelId)
+        : base(modelId) { }
 }

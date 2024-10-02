@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Data;
@@ -52,53 +51,37 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         typeof(ReadOnlyMemory<float>?),
     ];
 
-    private readonly PropertyInfo _keyPropertyInfo;
-
-    private readonly List<PropertyInfo> _dataPropertiesInfo;
-
-    private readonly PropertyInfo _vectorPropertyInfo;
-
-    private readonly Dictionary<string, string> _storagePropertyNames = [];
-
-    private readonly Dictionary<string, string> _jsonPropertyNames = [];
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStoreRecordMapper{TDataModel}"/> class.
     /// </summary>
-    /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
+    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
     public PineconeVectorStoreRecordMapper(
-        VectorStoreRecordDefinition vectorStoreRecordDefinition)
+        VectorStoreRecordPropertyReader propertyReader)
     {
         // Validate property types.
-        var propertiesInfo = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: false);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([propertiesInfo.KeyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.DataProperties, s_supportedDataTypes, s_supportedEnumerableDataElementTypes, "Data");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.VectorProperties, s_supportedVectorTypes, "Vector");
+        propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
+        propertyReader.VerifyDataProperties(s_supportedDataTypes, s_supportedEnumerableDataElementTypes);
+        propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
 
         // Assign.
-        this._keyPropertyInfo = propertiesInfo.KeyProperty;
-        this._dataPropertiesInfo = propertiesInfo.DataProperties;
-        this._vectorPropertyInfo = propertiesInfo.VectorProperties[0];
-
-        // Get storage names and store for later use.
-        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, vectorStoreRecordDefinition, supportsMultipleVectors: false, requiresAtLeastOneVector: true);
-        this._jsonPropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), JsonSerializerOptions.Default);
-        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
+        this._propertyReader = propertyReader;
     }
 
     /// <inheritdoc />
     public Vector MapFromDataToStorageModel(TRecord dataModel)
     {
-        var keyObject = this._keyPropertyInfo.GetValue(dataModel);
+        var keyObject = this._propertyReader.KeyPropertyInfo.GetValue(dataModel);
         if (keyObject is null)
         {
-            throw new VectorStoreRecordMappingException($"Key property {this._keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName} may not be null.");
+            throw new VectorStoreRecordMappingException($"Key property {this._propertyReader.KeyPropertyName} on provided record of type {typeof(TRecord).FullName} may not be null.");
         }
 
         var metadata = new MetadataMap();
-        foreach (var dataPropertyInfo in this._dataPropertiesInfo)
+        foreach (var dataPropertyInfo in this._propertyReader.DataPropertiesInfo)
         {
-            var propertyName = this._storagePropertyNames[dataPropertyInfo.Name];
+            var propertyName = this._propertyReader.GetStoragePropertyName(dataPropertyInfo.Name);
             var propertyValue = dataPropertyInfo.GetValue(dataModel);
             if (propertyValue != null)
             {
@@ -106,10 +89,10 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
             }
         }
 
-        var valuesObject = this._vectorPropertyInfo.GetValue(dataModel);
+        var valuesObject = this._propertyReader.FirstVectorPropertyInfo!.GetValue(dataModel);
         if (valuesObject is not ReadOnlyMemory<float> values)
         {
-            throw new VectorStoreRecordMappingException($"Vector property {this._vectorPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName} may not be null.");
+            throw new VectorStoreRecordMappingException($"Vector property {this._propertyReader.FirstVectorPropertyName} on provided record of type {typeof(TRecord).FullName} may not be null.");
         }
 
         // TODO: what about sparse values?
@@ -127,7 +110,7 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     /// <inheritdoc />
     public TRecord MapFromStorageToDataModel(Vector storageModel, StorageToDataModelMapperOptions options)
     {
-        var keyJsonName = this._jsonPropertyNames[this._keyPropertyInfo.Name];
+        var keyJsonName = this._propertyReader.KeyPropertyJsonName;
         var outputJsonObject = new JsonObject
         {
             { keyJsonName, JsonValue.Create(storageModel.Id) },
@@ -135,17 +118,17 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 
         if (options?.IncludeVectors is true)
         {
-            var propertyName = this._storagePropertyNames[this._vectorPropertyInfo.Name];
-            var jsonName = this._jsonPropertyNames[this._vectorPropertyInfo.Name];
+            var propertyName = this._propertyReader.GetStoragePropertyName(this._propertyReader.FirstVectorPropertyName!);
+            var jsonName = this._propertyReader.GetJsonPropertyName(this._propertyReader.FirstVectorPropertyName!);
             outputJsonObject.Add(jsonName, new JsonArray(storageModel.Values.Select(x => JsonValue.Create(x)).ToArray()));
         }
 
         if (storageModel.Metadata != null)
         {
-            foreach (var dataProperty in this._dataPropertiesInfo)
+            foreach (var dataProperty in this._propertyReader.DataPropertiesInfo)
             {
-                var propertyName = this._storagePropertyNames[dataProperty.Name];
-                var jsonName = this._jsonPropertyNames[dataProperty.Name];
+                var propertyName = this._propertyReader.GetStoragePropertyName(dataProperty.Name);
+                var jsonName = this._propertyReader.GetJsonPropertyName(dataProperty.Name);
 
                 if (storageModel.Metadata.TryGetValue(propertyName, out var value))
                 {

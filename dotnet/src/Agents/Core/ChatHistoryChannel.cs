@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// A <see cref="AgentChannel"/> specialization for that acts upon a <see cref="IChatHistoryHandler"/>.
+/// A <see cref="AgentChannel"/> specialization for that acts upon a <see cref="ChatHistoryKernelAgent"/>.
 /// </summary>
 internal sealed class ChatHistoryChannel : AgentChannel
 {
@@ -24,13 +24,13 @@ internal sealed class ChatHistoryChannel : AgentChannel
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (agent is not IChatHistoryHandler historyHandler)
+        if (agent is not ChatHistoryKernelAgent historyAgent)
         {
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
 
         // Pre-process history reduction.
-        await this._history.ReduceAsync(historyHandler.HistoryReducer, cancellationToken).ConfigureAwait(false);
+        await historyAgent.ReduceAsync(this._history, cancellationToken).ConfigureAwait(false);
 
         // Capture the current message count to evaluate history mutation.
         int messageCount = this._history.Count;
@@ -40,7 +40,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
         Queue<ChatMessageContent> messageQueue = [];
 
         ChatMessageContent? yieldMessage = null;
-        await foreach (ChatMessageContent responseMessage in historyHandler.InvokeAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
+        await foreach (ChatMessageContent responseMessage in historyAgent.InvokeAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
         {
             // Capture all messages that have been included in the mutated the history.
             for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++)
@@ -80,6 +80,30 @@ internal sealed class ChatHistoryChannel : AgentChannel
     }
 
     /// <inheritdoc/>
+    protected override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(Agent agent, IList<ChatMessageContent> messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (agent is not ChatHistoryKernelAgent historyAgent)
+        {
+            throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
+        }
+
+        // Pre-process history reduction.
+        await historyAgent.ReduceAsync(this._history, cancellationToken).ConfigureAwait(false);
+
+        int messageCount = this._history.Count;
+
+        await foreach (StreamingChatMessageContent streamingMessage in historyAgent.InvokeStreamingAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
+        {
+            yield return streamingMessage;
+        }
+
+        for (int index = messageCount; index < this._history.Count; ++index)
+        {
+            messages.Add(this._history[index]);
+        }
+    }
+
+    /// <inheritdoc/>
     protected override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         this._history.AddRange(history);
@@ -91,6 +115,14 @@ internal sealed class ChatHistoryChannel : AgentChannel
     protected override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
         return this._history.ToDescendingAsync();
+    }
+
+    /// <inheritdoc/>
+    protected override Task ResetAsync(CancellationToken cancellationToken = default)
+    {
+        this._history.Clear();
+
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>

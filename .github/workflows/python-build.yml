@@ -1,0 +1,30 @@
+name: Python Build Assets
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  python-build-assets:
+    if: github.event_name == 'release' && startsWith(github.event.release.tag_name, 'python-')
+    name: Python Build Assets and add to Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Set up uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Check version
+        run: |
+            echo "Building and uploading Python package version: ${{ github.event.release.tag_name }}"
+      - name: Build the package
+        run: cd python && make build
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            python/dist/*
