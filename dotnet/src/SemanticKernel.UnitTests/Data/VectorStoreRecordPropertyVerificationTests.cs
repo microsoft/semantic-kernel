@@ -15,10 +15,10 @@ public class VectorStoreRecordPropertyVerificationTests
     public void VerifyPropertyTypesPassForAllowedTypes()
     {
         // Arrange.
-        var properties = VectorStoreRecordPropertyReader.FindProperties(typeof(SinglePropsModel), true);
+        var reader = new VectorStoreRecordPropertyReader(typeof(SinglePropsModel), null, null);
 
         // Act.
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.DataProperties, [typeof(string)], "Data");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(reader.DataProperties, [typeof(string)], "Data");
         VectorStoreRecordPropertyVerification.VerifyPropertyTypes(this._singlePropsDefinition.Properties.OfType<VectorStoreRecordDataProperty>(), [typeof(string)], "Data");
     }
 
@@ -26,10 +26,10 @@ public class VectorStoreRecordPropertyVerificationTests
     public void VerifyPropertyTypesPassForAllowedEnumerableTypes()
     {
         // Arrange.
-        var properties = VectorStoreRecordPropertyReader.FindProperties(typeof(EnumerablePropsModel), true);
+        var reader = new VectorStoreRecordPropertyReader(typeof(EnumerablePropsModel), null, null);
 
         // Act.
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.DataProperties, [typeof(string)], "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(reader.DataProperties, [typeof(string)], "Data", supportEnumerable: true);
         VectorStoreRecordPropertyVerification.VerifyPropertyTypes(this._enumerablePropsDefinition.Properties.OfType<VectorStoreRecordDataProperty>(), [typeof(string)], "Data", supportEnumerable: true);
     }
 
@@ -37,10 +37,10 @@ public class VectorStoreRecordPropertyVerificationTests
     public void VerifyPropertyTypesFailsForDisallowedTypes()
     {
         // Arrange.
-        var properties = VectorStoreRecordPropertyReader.FindProperties(typeof(SinglePropsModel), true);
+        var reader = new VectorStoreRecordPropertyReader(typeof(SinglePropsModel), null, null);
 
         // Act.
-        var ex1 = Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.DataProperties, [typeof(int), typeof(float)], "Data"));
+        var ex1 = Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyVerification.VerifyPropertyTypes(reader.DataProperties, [typeof(int), typeof(float)], "Data"));
         var ex2 = Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyVerification.VerifyPropertyTypes(this._singlePropsDefinition.Properties.OfType<VectorStoreRecordDataProperty>(), [typeof(int), typeof(float)], "Data"));
 
         // Assert.
