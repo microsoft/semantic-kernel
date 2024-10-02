@@ -6,7 +6,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
-using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.Agents.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
