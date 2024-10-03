@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// Contains a method for doing a vector search using a vector.
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
+[Experimental("SKEXP0001")]
 public interface IVectorizedSearch<TRecord>
     where TRecord : class
 {
