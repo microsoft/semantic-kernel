@@ -2,12 +2,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using SemanticKernel.IntegrationTests.Data;
-using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using static SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch.AzureAISearchVectorStoreFixture;
 
@@ -69,12 +66,7 @@ public class AzureAISearchTextSearchTests(AzureAISearchVectorStoreFixture fixtur
     {
         if (this.VectorStore is null)
         {
-            OpenAIConfiguration? openAIConfiguration = this.Configuration.GetSection("OpenAIEmbeddings").Get<OpenAIConfiguration>();
-            Assert.NotNull(openAIConfiguration);
-            Assert.NotEmpty(openAIConfiguration.ModelId);
-            Assert.NotEmpty(openAIConfiguration.ApiKey);
-            this.EmbeddingGenerator = new OpenAITextEmbeddingGenerationService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
-
+            this.EmbeddingGenerator = fixture.EmbeddingGenerator;
             this.VectorStore = new AzureAISearchVectorStore(fixture.SearchIndexClient);
         }
 
