@@ -22,9 +22,9 @@ namespace AgentsSample;
  * dotnet user-secrets set "AzureOpenAISettings:ChatModelDeployment" "gpt-4o"
 
  * INPUTS:
- * 1. Which countries have state or province defined?  Create a report with the count of states or provinces and the total population.
- * 2. Compare the files to determine the number of countries do not have a state or province defined	compared to the total count
- * 3. Provide a bar chart for all countries whose names start with the same letter and sort the x axis by highest count to lowest
+ * 1. Compare the files to determine the number of countries do not have a state or province defined compared to the total count
+ * 2. Create a table for countries with state or province defined.  Include the count of states or provinces and the total population
+ * 3. Provide a bar chart for countries whose names start with the same letter and sort the x axis by highest count to lowest (include all countries)
  *****************/
 
 public static class Program
@@ -54,7 +54,7 @@ public static class Program
                         """
                         Analyze the available data to provide an answer to the user's question.
                         Always format response using markdown.
-                        Always include a numerical index for any lists that starts at 1.
+                        Always include a numerical index that starts at 1 for any lists or tables.
                         Always sort lists in ascending order.
                         """,
                     EnableCodeInterpreter = true,
@@ -73,7 +73,7 @@ public static class Program
             List<string> fileIds = [];
             do
             {
-                Console.WriteLine(Environment.NewLine);
+                Console.WriteLine();
                 Console.Write("> ");
                 string input = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(input))
@@ -89,8 +89,16 @@ public static class Program
                 await agent.AddChatMessageAsync(threadId, new ChatMessageContent(AuthorRole.User, input));
 
                 Console.WriteLine();
+
+                bool isCode = false;
                 await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(threadId))
                 {
+                    if (isCode != (response.Metadata?.ContainsKey(OpenAIAssistantAgent.CodeInterpreterMetadataKey) ?? false))
+                    {
+                        Console.WriteLine();
+                        isCode = !isCode;
+                    }
+
                     // Display response.
                     Console.Write($"{response.Content}");
 
