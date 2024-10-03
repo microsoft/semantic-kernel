@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Resources;
 
 namespace GettingStarted;
 
@@ -22,14 +23,14 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
                 clientProvider: this.GetClientProvider(),
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Instructions = HostInstructions,
                     Name = HostName,
                     Metadata = AssistantSampleMetadata,
-                });
+                },
+                kernel: new Kernel());
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -62,6 +63,61 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
             await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
             {
                 this.WriteAgentChatMessage(response);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UseTemplateForAssistantAgentAsync()
+    {
+        // Define the agent
+        string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
+        PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
+
+        // Instructions, Name and Description properties defined via the config.
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateFromTemplateAsync(
+                clientProvider: this.GetClientProvider(),
+                capabilities: new OpenAIAssistantCapabilities(this.Model)
+                {
+                    Metadata = AssistantSampleMetadata,
+                },
+                kernel: new Kernel(),
+                defaultArguments: new KernelArguments()
+                {
+                    { "topic", "Dog" },
+                    { "length", "3" },
+                },
+                templateConfig);
+
+        // Create a thread for the agent conversation.
+        string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
+
+        try
+        {
+            // Invoke the agent with the default arguments.
+            await InvokeAgentAsync();
+
+            // Invoke the agent with the override arguments.
+            await InvokeAgentAsync(
+                new()
+                {
+                { "topic", "Cat" },
+                { "length", "3" },
+                });
+        }
+        finally
+        {
+            await agent.DeleteThreadAsync(threadId);
+            await agent.DeleteAsync();
+        }
+
+        // Local function to invoke agent and display the response.
+        async Task InvokeAgentAsync(KernelArguments? arguments = null)
+        {
+            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId, arguments))
+            {
+                WriteAgentChatMessage(response);
             }
         }
     }

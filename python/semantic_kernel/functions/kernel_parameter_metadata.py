@@ -36,13 +36,18 @@ class KernelParameterMetadata(KernelBaseModel):
 
     @classmethod
     def infer_schema(
-        cls, type_object: type | None, parameter_type: str | None, default_value: Any, description: str | None
+        cls,
+        type_object: type | None = None,
+        parameter_type: str | None = None,
+        default_value: Any | None = None,
+        description: str | None = None,
+        structured_output: bool = False,
     ) -> dict[str, Any] | None:
         """Infer the schema for the parameter metadata."""
         schema = None
 
         if type_object is not None:
-            schema = KernelJsonSchemaBuilder.build(type_object, description)
+            schema = KernelJsonSchemaBuilder.build(type_object, description, structured_output)
         elif parameter_type is not None:
             string_default = str(default_value) if default_value is not None else None
             if string_default and string_default.strip():

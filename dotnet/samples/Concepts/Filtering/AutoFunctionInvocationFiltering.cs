@@ -29,7 +29,7 @@ public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTes
 
         var executionSettings = new OpenAIPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.RequireFunction(function.Metadata.ToOpenAIFunction(), autoInvoke: true)
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Required([function], autoInvoke: true)
         };
 
         var result = await kernel.InvokePromptAsync("Invoke provided function and return result", new(executionSettings));
@@ -76,7 +76,7 @@ public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTes
 
         var executionSettings = new OpenAIPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
         await foreach (var chunk in kernel.InvokePromptStreamingAsync("Check current UTC time and return current weather in Boston city.", new(executionSettings)))

@@ -10,6 +10,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+import httpx
 from ollama import AsyncClient
 from pydantic import ValidationError
 
@@ -22,7 +23,10 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_chat_completion,
+    trace_streaming_chat_completion,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -68,6 +72,9 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create Ollama settings.", ex) from ex
 
+        if not ollama_settings.model:
+            raise ServiceInitializationError("Please provide ai_model_id or OLLAMA_MODEL env variable is required")
+
         super().__init__(
             service_id=service_id or ollama_settings.model,
             ai_model_id=ollama_settings.model,
@@ -81,6 +88,14 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         """Get the request settings class."""
         return OllamaChatPromptExecutionSettings
+
+    # Override from AIServiceClientBase
+    @override
+    def service_url(self) -> str | None:
+        if hasattr(self.client, "_client") and isinstance(self.client._client, httpx.AsyncClient):
+            # Best effort to get the endpoint
+            return str(self.client._client.base_url)
+        return None
 
     @override
     @trace_chat_completion(OllamaBase.MODEL_PROVIDER_NAME)
@@ -118,6 +133,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
         ]
 
     @override
+    @trace_streaming_chat_completion(OllamaBase.MODEL_PROVIDER_NAME)
     async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",

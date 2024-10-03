@@ -3,9 +3,7 @@
 import asyncio
 import logging
 import threading
-from abc import abstractmethod
 from collections.abc import AsyncGenerator, AsyncIterable
-from typing import Protocol, runtime_checkable
 
 from pydantic import Field, PrivateAttr
 
@@ -21,17 +19,6 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-
-@experimental_class
-@runtime_checkable
-class AgentChatProtocol(Protocol):
-    """A protocol for agent chat."""
-
-    @abstractmethod
-    async def invoke(self, agent: Agent) -> AsyncIterable[ChatMessageContent]:
-        """Invoke an agent asynchronously."""
-        ...
 
 
 @experimental_class
@@ -162,7 +149,32 @@ class AgentChat(KernelBaseModel):
 
             # Broadcast message to other channels (in parallel)
             # Note: Able to queue messages without synchronizing channels.
-            channel_refs = [ChannelReference(channel=channel, hash=key) for key, channel in self.agent_channels.items()]
+            channel_refs = [
+                ChannelReference(channel=ch, hash=key) for key, ch in self.agent_channels.items() if ch != channel
+            ]
+            await self.broadcast_queue.enqueue(channel_refs, messages)
+        finally:
+            self.clear_activity_signal()
+
+    async def invoke_agent_stream(self, agent: Agent) -> AsyncIterable[ChatMessageContent]:
+        """Invoke an agent stream asynchronously."""
+        self.set_activity_or_throw()
+        logger.info(f"Invoking agent {agent.name}")
+        try:
+            channel: AgentChannel = await self._get_or_create_channel(agent)
+            messages: list[ChatMessageContent] = []
+
+            async for message in channel.invoke_stream(agent, messages):
+                yield message
+
+            for message in messages:
+                self.history.messages.append(message)
+
+            # Broadcast message to other channels (in parallel)
+            # Note: Able to queue messages without synchronizing channels.
+            channel_refs = [
+                ChannelReference(channel=ch, hash=key) for key, ch in self.agent_channels.items() if ch != channel
+            ]
             await self.broadcast_queue.enqueue(channel_refs, messages)
         finally:
             self.clear_activity_signal()

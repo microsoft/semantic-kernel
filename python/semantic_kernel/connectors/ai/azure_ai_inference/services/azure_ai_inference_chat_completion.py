@@ -5,10 +5,6 @@ import sys
 from collections.abc import AsyncGenerator, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
-from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -25,6 +21,7 @@ from azure.ai.inference.models import (
     StreamingChatCompletionsUpdate,
 )
 from azure.core.credentials import AzureKeyCredential
+from azure.identity import DefaultAzureCredential
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.azure_ai_inference import (
@@ -34,8 +31,11 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.azure_ai_inference.services.utils import MESSAGE_CONVERTERS
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -50,6 +50,11 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInvalidExecutionSettingsError,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_chat_completion,
+    trace_streaming_chat_completion,
+)
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -103,11 +108,24 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             except ValidationError as e:
                 raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
 
-            client = ChatCompletionsClient(
-                endpoint=str(azure_ai_inference_settings.endpoint),
-                credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
-                user_agent=SEMANTIC_KERNEL_USER_AGENT,
-            )
+            endpoint_to_use: str = str(azure_ai_inference_settings.endpoint)
+            if azure_ai_inference_settings.api_key is not None:
+                client = ChatCompletionsClient(
+                    endpoint=endpoint_to_use,
+                    credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
+                    user_agent=SEMANTIC_KERNEL_USER_AGENT,
+                )
+            else:
+                # Try to create the client with a DefaultAzureCredential
+                client = (
+                    ChatCompletionsClient(
+                        endpoint=endpoint_to_use,
+                        credential=DefaultAzureCredential(),
+                        credential_scopes=["https://cognitiveservices.azure.com/.default"],
+                        api_version=DEFAULT_AZURE_API_VERSION,
+                        user_agent=SEMANTIC_KERNEL_USER_AGENT,
+                    ),
+                )
 
         super().__init__(
             ai_model_id=ai_model_id,
@@ -121,6 +139,14 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return AzureAIInferenceChatPromptExecutionSettings
+
+    # Override from AIServiceClientBase
+    @override
+    def service_url(self) -> str | None:
+        if hasattr(self.client, "_client") and hasattr(self.client._client, "_base_url"):
+            # Best effort to get the endpoint
+            return self.client._client._base_url
+        return None
 
     @override
     @trace_chat_completion(AzureAIInferenceBase.MODEL_PROVIDER_NAME)
@@ -144,6 +170,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
 
     @override
+    @trace_streaming_chat_completion(AzureAIInferenceBase.MODEL_PROVIDER_NAME)
     async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
@@ -321,5 +348,10 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             "id": response.id,
             "model": response.model,
             "created": response.created,
-            "usage": response.usage,
+            "usage": CompletionUsage(
+                prompt_tokens=response.usage.prompt_tokens,
+                completion_tokens=response.usage.completion_tokens,
+            )
+            if response.usage
+            else None,
         }

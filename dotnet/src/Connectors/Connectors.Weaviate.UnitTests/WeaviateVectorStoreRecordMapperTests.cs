@@ -20,7 +20,12 @@ public sealed class WeaviateVectorStoreRecordMapperTests
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters =
+        {
+            new WeaviateDateTimeOffsetConverter(),
+            new WeaviateNullableDateTimeOffsetConverter()
+        }
     };
 
     private readonly WeaviateVectorStoreRecordMapper<WeaviateHotel> _sut;
