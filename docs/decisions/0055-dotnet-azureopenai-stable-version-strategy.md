@@ -151,16 +151,17 @@ Create a special release branch for the targeted `GA` version of the connector, 
 
 We will follow our own version cadence with the addition of `beta` prefix for `beta` versions of the underlying SDKs.
 
-| Seq | OpenAI Version | Azure OpenAI Version | Semantic Kernel Version | Branch          |
-| --- | -------------- | -------------------- | ----------------------- | --------------- |
-| 1   | 2.0.0          | 2.0.0                | 1.25.0                  | releases/1.25.0 |
-| 2   | 2.1.0-beta.1   | 2.1.0-beta.1         | 1.26.0-beta             | main            |
-| 3   | 2.1.0-beta.3   | 2.1.0-beta.2         | 1.27.0-beta             | main            |
-| 4\* | 2.1.0-beta.3   | 2.1.0-beta.2         | 1.27.1-beta             | main            |
-| 5   | 2.1.0          | 2.1.0                | 1.28.0                  | releases/1.28.0 |
-| 6   | 2.2.0-beta.1   | 2.1.0-beta.1         | 1.29.0-beta             | main            |
+| Seq | OpenAI Version | Azure OpenAI Version | Semantic Kernel Version<sup>1</sup> | Branch          |
+| --- | -------------- | -------------------- | ----------------------------------- | --------------- |
+| 1   | 2.0.0          | 2.0.0                | 1.25.0                              | releases/1.25.0 |
+| 2   | 2.1.0-beta.1   | 2.1.0-beta.1         | 1.26.0-beta                         | main            |
+| 3   | 2.1.0-beta.3   | 2.1.0-beta.2         | 1.27.0-beta                         | main            |
+| 4   | No changes     | No changes           | 1.27.1-beta<sup>**2**</sup>         | main            |
+| 5   | 2.1.0          | 2.1.0                | 1.28.0                              | releases/1.28.0 |
+| 6   | 2.2.0-beta.1   | 2.1.0-beta.1         | 1.29.0-beta                         | main            |
 
-<sup>\*</sup> Other minor changes to Semantic Kernel that needed a version update.
+1. Versions apply for the **Connectors packages** and the **Semantic Kernel meta package**.
+2. No changes on the SDKs but other minor changes to Semantic Kernel code base that needed a version update.
 
 ### Optional Smoothing Transition
 
