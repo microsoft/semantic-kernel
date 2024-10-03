@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Microsoft.SemanticKernel.Data;
 using Xunit;
-using static SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB.AzureCosmosDBMongoDBVectorStoreFixture;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 
@@ -149,14 +148,48 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItCanGetUpsertDeleteBatchAsync()
+    public async Task ItCanGetUpsertDeleteBatchWithNumericKeyAsync()
     {
         // Arrange
         const ulong HotelId1 = 1;
         const ulong HotelId2 = 2;
         const ulong HotelId3 = 3;
 
-        var sut = fixture.GetCollection<SqliteHotel<ulong>>("GetUpsertDeleteBatch");
+        var sut = fixture.GetCollection<SqliteHotel<ulong>>("GetUpsertDeleteBatchWithNumericKey");
+
+        await sut.CreateCollectionAsync();
+
+        var record1 = CreateTestHotel(HotelId1);
+        var record2 = CreateTestHotel(HotelId2);
+        var record3 = CreateTestHotel(HotelId3);
+
+        var upsertResults = await sut.UpsertBatchAsync([record1, record2, record3]).ToListAsync();
+        var getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+
+        Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
+
+        Assert.NotNull(getResults.First(l => l.HotelId == HotelId1));
+        Assert.NotNull(getResults.First(l => l.HotelId == HotelId2));
+        Assert.NotNull(getResults.First(l => l.HotelId == HotelId3));
+
+        // Act
+        await sut.DeleteBatchAsync([HotelId1, HotelId2, HotelId3]);
+
+        getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+
+        // Assert
+        Assert.Empty(getResults);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanGetUpsertDeleteBatchWithStringKeyAsync()
+    {
+        // Arrange
+        const string HotelId1 = "11111111-1111-1111-1111-111111111111";
+        const string HotelId2 = "22222222-2222-2222-2222-222222222222";
+        const string HotelId3 = "33333333-3333-3333-3333-333333333333";
+
+        var sut = fixture.GetCollection<SqliteHotel<string>>("GetUpsertDeleteBatchWithStringKey") as IVectorStoreRecordCollection<string, SqliteHotel<string>>;
 
         await sut.CreateCollectionAsync();
 
