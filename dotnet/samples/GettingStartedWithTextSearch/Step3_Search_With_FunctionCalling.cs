@@ -9,7 +9,7 @@ namespace GettingStartedWithTextSearch;
 /// <summary>
 /// This example shows how to use <see cref="ITextSearch"/> for Function Calling.
 /// </summary>
-public class Step4_Search_With_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
+public class Step3_Search_With_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a default <see cref="KernelPlugin"/> from an <see cref="BingTextSearch"/> and use it with
