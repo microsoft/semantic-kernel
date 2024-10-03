@@ -406,6 +406,14 @@ internal static class AssistantThreadActions
                             break;
                     }
                 }
+                else if (update is RunStepDetailsUpdate detailsUpdate)
+                {
+                    StreamingChatMessageContent? toolContent = GenerateStreamingCodeInterpreterContent(agent.GetName(), detailsUpdate);
+                    if (toolContent != null)
+                    {
+                        yield return toolContent;
+                    }
+                }
                 else if (update is RunStepUpdate stepUpdate)
                 {
                     switch (stepUpdate.UpdateKind)
@@ -415,6 +423,8 @@ internal static class AssistantThreadActions
                             break;
                         case StreamingUpdateReason.RunStepCompleted:
                             currentStep = null;
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -569,6 +579,35 @@ internal static class AssistantThreadActions
         }
 
         return content;
+    }
+
+    private static StreamingChatMessageContent? GenerateStreamingCodeInterpreterContent(string? assistantName, RunStepDetailsUpdate update)
+    {
+        StreamingChatMessageContent content =
+            new(AuthorRole.Assistant, content: null)
+            {
+                AuthorName = assistantName,
+            };
+
+        // Process text content
+        if (update.CodeInterpreterInput != null)
+        {
+            content.Items.Add(new StreamingTextContent(update.CodeInterpreterInput));
+            content.Metadata = new Dictionary<string, object?> { { OpenAIAssistantAgent.CodeInterpreterMetadataKey, true } };
+        }
+
+        if ((update.CodeInterpreterOutputs?.Count ?? 0) > 0)
+        {
+            foreach (var output in update.CodeInterpreterOutputs!)
+            {
+                if (output.ImageFileId != null)
+                {
+                    content.Items.Add(new StreamingFileReferenceContent(output.ImageFileId));
+                }
+            }
+        }
+
+        return content.Items.Count > 0 ? content : null;
     }
 
     private static AnnotationContent GenerateAnnotationContent(TextAnnotation annotation)
