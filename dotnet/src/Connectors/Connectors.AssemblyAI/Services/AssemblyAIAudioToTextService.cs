@@ -143,7 +143,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 
             try
             {
-                transcript = await this._client.Transcripts.WaitUntilReady(
+                transcript = await this._client.Transcripts.WaitUntilReadyAsync(
                     transcript.Id,
                     pollingInterval: pollingInterval,
                     pollingTimeout: pollingTimeout,
