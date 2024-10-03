@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using AssemblyAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
 using Xunit;
