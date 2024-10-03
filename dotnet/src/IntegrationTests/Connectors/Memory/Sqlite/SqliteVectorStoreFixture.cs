@@ -1,31 +1,63 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
+using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 
-public class SqliteVectorStoreFixture : IAsyncLifetime
+public class SqliteVectorStoreFixture : IAsyncLifetime, IDisposable
 {
-    public SqliteConnection Connection { get; }
+    /// <summary>
+    /// SQLite extension name for vector search.
+    /// More information here: <see href="https://github.com/asg017/sqlite-vec"/>.
+    /// </summary>
+    private const string VectorSearchExtensionName = "vec0";
+
+    private readonly SqliteConnection _connection;
 
     public SqliteVectorStoreFixture()
     {
-        this.Connection = new SqliteConnection("Data Source=:memory:");
+        this._connection = new SqliteConnection("Data Source=:memory:");
     }
 
-    public async Task DisposeAsync()
+    public SqliteVectorStoreRecordCollection<TRecord> GetCollection<TRecord>(
+        string collectionName,
+        SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default)
+        where TRecord : class
     {
-        await this.Connection.DisposeAsync();
+        return new SqliteVectorStoreRecordCollection<TRecord>(
+            this._connection,
+            collectionName,
+            VectorSearchExtensionName,
+            options);
+    }
+
+    public Task DisposeAsync()
+    {
+        return Task.CompletedTask;
     }
 
     public async Task InitializeAsync()
     {
-        const string VectorSearchExtensionName = "vec0";
+        await this._connection.OpenAsync();
 
-        await this.Connection.OpenAsync();
+        this._connection.LoadExtension(VectorSearchExtensionName);
+    }
 
-        this.Connection.LoadExtension(VectorSearchExtensionName);
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._connection.Dispose();
+        }
     }
 }

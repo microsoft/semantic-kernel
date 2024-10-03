@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Microsoft.SemanticKernel.Data;
 using Xunit;
+using static SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB.AzureCosmosDBMongoDBVectorStoreFixture;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 
@@ -23,7 +25,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task CollectionExistsReturnsCollectionStateAsync(bool createCollection)
     {
         // Arrange
-        var sut = new SqliteVectorStoreRecordCollection<SqliteHotel<ulong>>(fixture.Connection, "CollectionExists");
+        var sut = fixture.GetCollection<SqliteHotel<ulong>>("CollectionExists");
 
         if (createCollection)
         {
@@ -41,7 +43,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanCreateCollectionAsync()
     {
         // Arrange
-        var sut = new SqliteVectorStoreRecordCollection<SqliteHotel<ulong>>(fixture.Connection, "CreateCollection");
+        var sut = fixture.GetCollection<SqliteHotel<ulong>>("CreateCollection");
 
         // Act
         await sut.CreateCollectionAsync();
@@ -54,7 +56,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
-        var sut = new SqliteVectorStoreRecordCollection<SqliteHotel<ulong>>(fixture.Connection, "DeleteCollection");
+        var sut = fixture.GetCollection<SqliteHotel<ulong>>("DeleteCollection");
 
         await sut.CreateCollectionAsync();
 
@@ -85,7 +87,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             VectorStoreRecordDefinition = useRecordDefinition ? GetVectorStoreRecordDefinition<ulong>() : null
         };
 
-        var sut = new SqliteVectorStoreRecordCollection<SqliteHotel<ulong>>(fixture.Connection, collectionName);
+        var sut = fixture.GetCollection<SqliteHotel<ulong>>("DeleteCollection", options);
 
         var record = CreateTestHotel(HotelId);
 
@@ -118,6 +120,100 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         {
             Assert.Null(getResult.DescriptionEmbedding);
         }
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanGetAndDeleteRecordAsync()
+    {
+        // Arrange
+        const ulong HotelId = 5;
+        var sut = fixture.GetCollection<SqliteHotel<ulong>>("DeleteRecord");
+
+        await sut.CreateCollectionAsync();
+
+        var record = CreateTestHotel(HotelId);
+
+        var upsertResult = await sut.UpsertAsync(record);
+        var getResult = await sut.GetAsync(HotelId);
+
+        Assert.Equal(HotelId, upsertResult);
+        Assert.NotNull(getResult);
+
+        // Act
+        await sut.DeleteAsync(HotelId);
+
+        getResult = await sut.GetAsync(HotelId);
+
+        // Assert
+        Assert.Null(getResult);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanGetUpsertDeleteBatchAsync()
+    {
+        // Arrange
+        const ulong HotelId1 = 1;
+        const ulong HotelId2 = 2;
+        const ulong HotelId3 = 3;
+
+        var sut = fixture.GetCollection<SqliteHotel<ulong>>("GetUpsertDeleteBatch");
+
+        await sut.CreateCollectionAsync();
+
+        var record1 = CreateTestHotel(HotelId1);
+        var record2 = CreateTestHotel(HotelId2);
+        var record3 = CreateTestHotel(HotelId3);
+
+        var upsertResults = await sut.UpsertBatchAsync([record1, record2, record3]).ToListAsync();
+        var getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+
+        Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
+
+        Assert.NotNull(getResults.First(l => l.HotelId == HotelId1));
+        Assert.NotNull(getResults.First(l => l.HotelId == HotelId2));
+        Assert.NotNull(getResults.First(l => l.HotelId == HotelId3));
+
+        // Act
+        await sut.DeleteBatchAsync([HotelId1, HotelId2, HotelId3]);
+
+        getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+
+        // Assert
+        Assert.Empty(getResults);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanUpsertRecordAsync()
+    {
+        // Arrange
+        const ulong HotelId = 5;
+        var sut = fixture.GetCollection<SqliteHotel<ulong>>("UpsertRecord");
+
+        await sut.CreateCollectionAsync();
+
+        var record = CreateTestHotel(HotelId);
+
+        var upsertResult = await sut.UpsertAsync(record);
+        var getResult = await sut.GetAsync(HotelId);
+
+        Assert.Equal(HotelId, upsertResult);
+        Assert.NotNull(getResult);
+
+        // Act
+        record.HotelName = "Updated name";
+        record.HotelRating = 10;
+        record.DescriptionEmbedding = new[] { 1f, 2f, 3f, 4f };
+
+        upsertResult = await sut.UpsertAsync(record);
+        getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = true });
+
+        // Assert
+        Assert.NotNull(getResult);
+        Assert.Equal("Updated name", getResult.HotelName);
+        Assert.Equal(10, getResult.HotelRating);
+
+        Assert.NotNull(getResult.DescriptionEmbedding);
+        Assert.Equal(record.DescriptionEmbedding!.Value.ToArray(), getResult.DescriptionEmbedding.Value.ToArray());
     }
 
     #region
