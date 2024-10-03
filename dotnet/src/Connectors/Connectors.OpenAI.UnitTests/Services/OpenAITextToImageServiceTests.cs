@@ -82,12 +82,14 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public async Task GetUriImageContentsResponseFormatRequestWorksCorrectlyAsync(string? responseFormatOption, string? expectedResponseFormat)
     {
         // Arrange
-        object? responseFormatObject = responseFormatOption switch
+        object? responseFormatObject = null;
+
+        switch (responseFormatOption)
         {
-            "GeneratedImage.Uri" => GeneratedImageFormat.Uri,
-            "GeneratedImage.Bytes" => GeneratedImageFormat.Bytes,
-            _ => responseFormatOption
-        };
+            case "GeneratedImage.Uri": responseFormatObject = GeneratedImageFormat.Uri; break;
+            case "GeneratedImage.Bytes": responseFormatObject = GeneratedImageFormat.Bytes; break;
+            default: responseFormatObject = responseFormatOption; break;
+        }
 
         var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
 

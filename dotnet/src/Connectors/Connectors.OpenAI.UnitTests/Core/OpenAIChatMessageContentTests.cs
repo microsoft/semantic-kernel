@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -19,7 +20,7 @@ public sealed class OpenAIChatMessageContentTests
     public void ConstructorsWorkCorrectly()
     {
         // Arrange
-        List<ChatToolCall> toolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", "args")];
+        List<ChatToolCall> toolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", BinaryData.FromString("args"))];
 
         // Act
         var content1 = new OpenAIChatMessageContent(ChatMessageRole.User, "content1", "model-id1", toolCalls) { AuthorName = "Fred" };
@@ -37,8 +38,8 @@ public sealed class OpenAIChatMessageContentTests
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
 
         List<ChatToolCall> toolCalls = [
-            ChatToolCall.CreateFunctionToolCall("id1", "name", args),
-            ChatToolCall.CreateFunctionToolCall("id2", "name", args)];
+            ChatToolCall.CreateFunctionToolCall("id1", "name", BinaryData.FromString(args)),
+            ChatToolCall.CreateFunctionToolCall("id2", "name", BinaryData.FromString(args))];
 
         var content1 = new OpenAIChatMessageContent(AuthorRole.User, "content", "model-id", toolCalls);
         var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content", "model-id", []);
@@ -68,8 +69,8 @@ public sealed class OpenAIChatMessageContentTests
             new Dictionary<string, object?> { { "key", "value" } };
 
         List<ChatToolCall> toolCalls = [
-            ChatToolCall.CreateFunctionToolCall("id1", "name", args),
-            ChatToolCall.CreateFunctionToolCall("id2", "name", args)];
+            ChatToolCall.CreateFunctionToolCall("id1", "name", BinaryData.FromString(args)),
+            ChatToolCall.CreateFunctionToolCall("id2", "name", BinaryData.FromString(args))];
 
         // Act
         var content1 = new OpenAIChatMessageContent(AuthorRole.User, "content1", "model-id1", [], metadata);

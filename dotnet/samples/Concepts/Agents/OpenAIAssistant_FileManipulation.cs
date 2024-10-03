@@ -18,9 +18,9 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
     {
         OpenAIClientProvider provider = this.GetClientProvider();
 
-        FileClient fileClient = provider.Client.GetFileClient();
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
 
-        OpenAIFileInfo uploadFile =
+        OpenAIFile uploadFile =
             await fileClient.UploadFileAsync(
                 new BinaryData(await EmbeddedResource.ReadAllAsync("sales.csv")!),
                 "sales.csv",
