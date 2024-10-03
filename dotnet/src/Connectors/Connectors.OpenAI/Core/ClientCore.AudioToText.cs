@@ -67,17 +67,14 @@ internal partial class ClientCore
             return null;
         }
 
-        AudioTranscriptionFormat result;
-        switch (responseFormat)
+        return responseFormat switch
         {
-            case "json": result = AudioTranscriptionFormat.Simple; break;
-            case "verbose_json": result = AudioTranscriptionFormat.Verbose; break;
-            case "vtt": result = AudioTranscriptionFormat.Vtt; break;
-            case "srt": result = AudioTranscriptionFormat.Srt; break;
-            default: throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported.");
+            "json" => AudioTranscriptionFormat.Simple,
+            "verbose_json" => AudioTranscriptionFormat.Verbose,
+            "vtt" => AudioTranscriptionFormat.Vtt,
+            "srt" => AudioTranscriptionFormat.Srt,
+            _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported.")
         };
-
-        return result;
     }
 
     private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription)

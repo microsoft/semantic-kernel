@@ -109,15 +109,12 @@ internal partial class ClientCore
             return null;
         }
 
-        GeneratedImageQuality result;
-        switch (quality.ToUpperInvariant())
+        return quality.ToUpperInvariant() switch
         {
-            case "STANDARD": result = GeneratedImageQuality.Standard; break;
-            case "HIGH" or "HD": result = GeneratedImageQuality.High; break;
-            default: throw new NotSupportedException($"The provided quality '{quality}' is not supported.");
-        }
-
-        return result;
+            "STANDARD" => GeneratedImageQuality.Standard,
+            "HIGH" or "HD" => GeneratedImageQuality.High,
+            _ => throw new NotSupportedException($"The provided quality '{quality}' is not supported.")
+        };
     }
 
     private static GeneratedImageStyle? GetGeneratedImageStyle(string? style)
@@ -127,15 +124,12 @@ internal partial class ClientCore
             return null;
         }
 
-        GeneratedImageStyle result;
-        switch (style.ToUpperInvariant())
+        return style.ToUpperInvariant() switch
         {
-            case "VIVID": result = GeneratedImageStyle.Vivid; break;
-            case "NATURAL": result = GeneratedImageStyle.Natural; break;
-            default: throw new NotSupportedException($"The provided style '{style}' is not supported.");
-        }
-
-        return result;
+            "VIVID" => GeneratedImageStyle.Vivid,
+            "NATURAL" => GeneratedImageStyle.Natural,
+            _ => throw new NotSupportedException($"The provided style '{style}' is not supported.")
+        };
     }
 
     private static GeneratedImageFormat? GetResponseFormat(object? responseFormat)
