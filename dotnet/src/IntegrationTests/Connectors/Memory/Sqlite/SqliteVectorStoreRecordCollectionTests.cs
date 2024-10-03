@@ -52,6 +52,19 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     }
 
     [Fact(Skip = SkipReason)]
+    public async Task ItCanCreateCollectionForSupportedDistanceFunctionsAsync()
+    {
+        // Arrange
+        var sut = fixture.GetCollection<RecordWithSupportedDistanceFunctions>("CreateCollectionForSupportedDistanceFunctions");
+
+        // Act
+        await sut.CreateCollectionAsync();
+
+        // Assert
+        Assert.True(await sut.CollectionExistsAsync());
+    }
+
+    [Fact(Skip = SkipReason)]
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
@@ -279,6 +292,21 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             Timestamp = new DateTime(2024, 09, 23, 15, 32, 33),
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
         };
+    }
+
+    private sealed class RecordWithSupportedDistanceFunctions
+    {
+        [VectorStoreRecordKey]
+        public ulong Id { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        public ReadOnlyMemory<float>? Embedding1 { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance)]
+        public ReadOnlyMemory<float>? Embedding2 { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.ManhattanDistance)]
+        public ReadOnlyMemory<float>? Embedding3 { get; set; }
     }
 
     #endregion

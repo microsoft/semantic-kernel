@@ -202,8 +202,20 @@ internal class SqliteVectorStoreCollectionCommandBuilder
     {
         const string PrimaryKeyIdentifier = "PRIMARY KEY";
 
-        var primaryKeyPlaceholder = column.IsPrimary ? $" {PrimaryKeyIdentifier}" : string.Empty;
-        return $"{column.Name} {column.Type}{primaryKeyPlaceholder}";
+        List<string> columnDefinitionParts = [column.Name, column.Type];
+
+        if (column.IsPrimary)
+        {
+            columnDefinitionParts.Add(PrimaryKeyIdentifier);
+        }
+
+        if (column.Configuration is { Count: > 0 })
+        {
+            columnDefinitionParts.AddRange(column.Configuration
+                .Select(configuration => $"{configuration.Key}={configuration.Value}"));
+        }
+
+        return string.Join(" ", columnDefinitionParts);
     }
 
     private static string GetEqualityClause(string propertyName, List<string> parameterNames)

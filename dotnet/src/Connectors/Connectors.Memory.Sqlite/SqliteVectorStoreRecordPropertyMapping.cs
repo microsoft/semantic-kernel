@@ -17,17 +17,34 @@ internal static class SqliteVectorStoreRecordPropertyMapping
         List<VectorStoreRecordProperty> properties,
         IReadOnlyDictionary<string, string> storagePropertyNames)
     {
+        const string DistanceMetricConfigurationName = "distance_metric";
+
         var columns = new List<SqliteColumn>();
 
         foreach (var property in properties)
         {
             var isPrimary = property is VectorStoreRecordKeyProperty;
             var propertyName = storagePropertyNames[property.DataModelPropertyName];
-            var propertyType = property is VectorStoreRecordVectorProperty vectorProperty ?
-                GetStorageVectorPropertyType(vectorProperty) :
-                GetStorageDataPropertyType(property);
 
-            columns.Add(new(propertyName, propertyType, isPrimary));
+            string propertyType;
+            Dictionary<string, object>? configuration = null;
+
+            if (property is VectorStoreRecordVectorProperty vectorProperty)
+            {
+                propertyType = GetStorageVectorPropertyType(vectorProperty);
+                configuration = new()
+                {
+                    [DistanceMetricConfigurationName] = GetDistanceMetric(vectorProperty.DistanceFunction, vectorProperty.DataModelPropertyName)
+                };
+            }
+            else
+            {
+                propertyType = GetStorageDataPropertyType(property);
+            }
+
+            var column = new SqliteColumn(propertyName, propertyType, isPrimary, configuration);
+
+            columns.Add(column);
         }
 
         return columns;
@@ -99,6 +116,26 @@ internal static class SqliteVectorStoreRecordPropertyMapping
 
             // Default fallback for unknown types
             _ => throw new NotSupportedException($"Property {property.DataModelPropertyName} has type {property.PropertyType.FullName}, which is not supported by SQLite connector.")
+        };
+    }
+
+    private static string GetDistanceMetric(string? distanceFunction, string vectorPropertyName)
+    {
+        const string Cosine = "cosine";
+        const string L1 = "l1";
+        const string L2 = "l2";
+
+        if (string.IsNullOrWhiteSpace(distanceFunction))
+        {
+            return Cosine;
+        }
+
+        return distanceFunction switch
+        {
+            DistanceFunction.CosineDistance => Cosine,
+            DistanceFunction.ManhattanDistance => L1,
+            DistanceFunction.EuclideanDistance => L2,
+            _ => throw new NotSupportedException($"Distance function '{distanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the SQLite connector.")
         };
     }
 
