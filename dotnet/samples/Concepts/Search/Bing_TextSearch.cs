@@ -90,7 +90,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>
-    /// Show how to create a <see cref="BingTextSearch"/> with a custom mapper and use it to perform a text search.
+    /// Show how to create a <see cref="BingTextSearch"/> limit to the search results to the Microsoft Developer Blogs website.
     /// </summary>
     [Fact]
     public async Task UsingBingTextSearchWithASiteFilterAsync()
@@ -103,7 +103,6 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var textSearch = new BingTextSearch(apiKey: TestConfiguration.Bing.ApiKey, options: new()
         {
             HttpClient = httpClient,
-            StringMapper = new TestTextSearchStringMapper(),
         });
 
         var query = "What is the Semantic Kernel?";
