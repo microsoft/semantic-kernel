@@ -57,6 +57,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       # Need to use JDK 11 to build for JDK 8
       - name: Set JDK
@@ -80,6 +81,8 @@ jobs:
         run: ./mvnw -B -Pwith-samples -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
         working-directory: java
         if: ${{ matrix.java-versions >= 17 }}
+        run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
+        working-directory: java
 
       # API tests run on JDK 17+
       - name: Run integration tests

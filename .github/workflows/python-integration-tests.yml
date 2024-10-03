@@ -51,6 +51,9 @@ jobs:
     name: Python Pre-Merge Integration Tests
     needs: paths-filter
     if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    needs: paths-filter
+    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -60,11 +63,8 @@ jobs:
     defaults:
       run:
         working-directory: python
-<<<<<<< main
     runs-on: ${{ matrix.os }}
     environment: "integration"
-=======
->>>>>>> ms/features/bugbash-prep
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
@@ -74,6 +74,10 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: irm https://astral.sh/uv/install.ps1 | iex
         shell: powershell
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -84,6 +88,7 @@ jobs:
         with:
           path: ${{  env.UV_CACHE_DIR  }}
           key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
+          cache: "poetry"
       - name: Install dependencies with hnswlib native disabled
         if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
         run: |
@@ -164,16 +169,13 @@ jobs:
           VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
           VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
           REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
-<<<<<<< main
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
         run: |
           cd python
           poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
-=======
         run: |          
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
->>>>>>> ms/features/bugbash-prep
       - name: Surface failing tests
         if: always()
         uses: pmeier/pytest-results-action@main
@@ -183,22 +185,58 @@ jobs:
           display-options: fEX
           fail-on-empty: true
           title: Test results
-<<<<<<< main
-<<<<<<< main
       - name: Minimize uv cache
         run: uv cache prune --ci
-=======
           poetry run pytest ./tests/integration -v
           poetry run pytest ./tests/samples -v
->>>>>>> origin/PR
-=======
       - name: Minimize uv cache
         run: uv cache prune --ci
->>>>>>> ms/features/bugbash-prep
+          python -m pip install --upgrade pip setuptools wheel
+          cd python && poetry install
+      - name: Install dependencies with hnswlib native enabled
+        if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          cd python
+          poetry install
+      - name: Run Integration Tests
+        id: run_tests
+        shell: bash
+        env: # Set Azure credentials secret as an input
+          HNSWLIB_NO_NATIVE: 1
+          Python_Integration_Tests: Python_Integration_Tests
+          AzureOpenAI__Label: azure-text-davinci-003
+          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
+          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+          AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
+          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS__DEPLOYMENTNAME2 }}
+          AzureOpenAIEmbeddings_EastUS__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS_EASTUS__DEPLOYMENTNAME}}
+          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAI_EastUS__Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
+          AzureOpenAI_EastUS__ApiKey: ${{ secrets.AZUREOPENAI_EASTUS__APIKEY }}
+          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+          Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
+          Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
+          Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
+          AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
+          MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
+        run: |
+          if ${{ matrix.os == 'ubuntu-latest' }}; then
+            docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          fi
+
+          cd python
+          poetry run pytest ./tests/integration -v
 
   python-integration-tests:
     needs: paths-filter
     if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.paths-filter.outputs.pythonChanges == 'true'
+    runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -208,11 +246,8 @@ jobs:
     defaults:
       run:
         working-directory: python
-<<<<<<< main
     runs-on: ${{ matrix.os }}
     environment: "integration"
-=======
->>>>>>> ms/features/bugbash-prep
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
@@ -222,6 +257,12 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: irm https://astral.sh/uv/install.ps1 | iex
         shell: powershell
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -232,6 +273,7 @@ jobs:
         with:
           path: ${{ env.UV_CACHE_DIR }}
           key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
+          cache: "poetry"
       - name: Install dependencies with hnswlib native disabled
         if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
         run: |
@@ -262,7 +304,6 @@ jobs:
           project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}
           credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
       - name: Set up gcloud
-<<<<<<< main
         uses: google-github-actions/setup-gcloud@v2
       - name: Setup Redis Stack Server
         if: matrix.os == 'ubuntu-latest'
@@ -278,7 +319,6 @@ jobs:
         id: run_tests
         shell: bash
         env:
-=======
         uses: google-github-actions/setup-gcloud@v2      
       - name: Setup Redis Stack Server
         if: matrix.os == 'ubuntu-latest'
@@ -287,7 +327,6 @@ jobs:
         id: run_tests
         shell: bash
         env: 
->>>>>>> ms/features/bugbash-prep
           HNSWLIB_NO_NATIVE: 1
           Python_Integration_Tests: Python_Integration_Tests
           AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
@@ -336,16 +375,49 @@ jobs:
           title: Test results
       - name: Minimize uv cache
         run: uv cache prune --ci
-<<<<<<< main
+          python -m pip install --upgrade pip setuptools wheel
+          cd python && poetry install
+
+      - name: Install dependencies with hnswlib native enabled
+        if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          cd python && poetry install
+
+      - name: Run Integration Tests
+        id: run_tests
+        shell: bash
+        env: # Set Azure credentials secret as an input
+          HNSWLIB_NO_NATIVE: 1
+          Python_Integration_Tests: Python_Integration_Tests
+          AzureOpenAI__Label: azure-text-davinci-003
+          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
+          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+          AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
+          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS__DEPLOYMENTNAME2 }}
+          AzureOpenAIEmbeddings_EastUS__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS_EASTUS__DEPLOYMENTNAME}}
+          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          AzureOpenAI_EastUS__Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
+          AzureOpenAI_EastUS__ApiKey: ${{ secrets.AZUREOPENAI_EASTUS__APIKEY }}
+          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+          Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
+          Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
+          Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
+          AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
+          MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
+        run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
-          fi
 
           cd python
           poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/integration -v
           poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v
-=======
->>>>>>> ms/features/bugbash-prep
+          poetry run pytest ./tests/integration -v
 
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   python-integration-tests-check:
@@ -383,6 +455,7 @@ jobs:
         id: check_tests_failed
         if: contains(join(needs.*.result, ','), 'failure')
         uses: actions/github-script@v7
+        uses: actions/github-script@v6
         with:
           script: core.setFailed('Integration Tests Failed!')
 
@@ -390,6 +463,7 @@ jobs:
         id: check_tests_cancelled
         if: contains(join(needs.*.result, ','), 'cancelled')
         uses: actions/github-script@v7
+        uses: actions/github-script@v6
         with:
           script: core.setFailed('Integration Tests Cancelled!')
 

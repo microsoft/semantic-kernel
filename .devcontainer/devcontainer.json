@@ -19,19 +19,13 @@
 				"GitHub.copilot-chat",
 				"GitHub.copilot",
 				"franneck94.c-cpp-runner",
-<<<<<<< main
 				"ms-python.debugpy",
-<<<<<<< main
 				"atariq11700.debugpy-old",
 				"ms-vscode.powershell"
-=======
 				"atariq11700.debugpy-old"
->>>>>>> origin/PR
-=======
 				"hangxingliu.vscode-coding-tracker",
 				"micoloth.reactive-jupyter",
 				"ms-vscode-remote.remote-containers"
->>>>>>> origin/Bryan-Roe/issue389
 			]
 		}
 	},
@@ -61,4 +55,5 @@
     }
   },
   "postCreateCommand": "sudo chmod a+rwx /usr/share/dotnet" // avoids needing to run as 'sudo' when starting KernelHttpServer
+}
 }
