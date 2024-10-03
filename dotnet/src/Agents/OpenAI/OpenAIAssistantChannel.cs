@@ -52,4 +52,7 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     /// <inheritdoc/>
     protected override Task ResetAsync(CancellationToken cancellationToken = default) =>
         this._client.DeleteThreadAsync(this._threadId, cancellationToken);
+
+    /// <inheritdoc/>
+    protected override string Serialize() => this._threadId;
 }

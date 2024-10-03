@@ -153,6 +153,8 @@ public class AgentChatTests
     {
         public MockAgent Agent { get; } = new() { Response = [new(AuthorRole.Assistant, "sup")] };
 
+        public override IReadOnlyList<Agent> Agents => [this.Agent];
+
         public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             CancellationToken cancellationToken = default) =>
                 this.InvokeAgentAsync(this.Agent, cancellationToken);
