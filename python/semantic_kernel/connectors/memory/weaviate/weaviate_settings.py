@@ -15,6 +15,9 @@ class WeaviateSettings(KernelBaseSettings):
     Args:
         url: HttpsUrl | None - Weaviate URL (Env var WEAVIATE_URL)
         api_key: SecretStr | None - Weaviate token (Env var WEAVIATE_API_KEY)
+        local_host: str | None - Local Weaviate host, i.e. a Docker instance (Env var WEAVIATE_LOCAL_HOST)
+        local_port: int | None - Local Weaviate port (Env var WEAVIATE_LOCAL_PORT)
+        local_grpc_port: int | None - Local Weaviate gRPC port (Env var WEAVIATE_LOCAL_GRPC_PORT)
         use_embed: bool - Whether to use the client embedding options
           (Env var WEAVIATE_USE_EMBED)
     """

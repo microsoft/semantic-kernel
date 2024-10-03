@@ -1,9 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import sys
 from collections.abc import Sequence
 from typing import Any, TypeVar
 
+from semantic_kernel.connectors.memory.weaviate.utils import data_model_definition_to_weaviate_properties
+from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField
 from semantic_kernel.kernel_types import OneOrMany
 
 if sys.version_info >= (3, 12):
@@ -15,6 +18,7 @@ import weaviate
 from pydantic import field_validator
 from weaviate.classes.init import Auth
 from weaviate.classes.query import Filter
+from weaviate.collections.classes.data import DataObject
 from weaviate.collections.collection import CollectionAsync
 
 from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
@@ -67,7 +71,7 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
             env_file_path: The path to the environment file.
             env_file_encoding: The encoding of the environment file.
         """
-        self.settings = WeaviateSettings.create(
+        weaviate_settings = WeaviateSettings.create(
             url=url,
             api_key=api_key,
             local_host=local_host,
@@ -78,34 +82,38 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
             env_file_encoding=env_file_encoding,
         )
 
-        try:
-            if async_client:
-                self.async_client = async_client
-            elif self.settings.url:
-                self.async_client = weaviate.use_async_with_weaviate_cloud(
-                    cluster_url=self.settings.url,
-                    auth_credentials=Auth.api_key(self.settings.api_key.get_secret_value()),
-                )
-            elif self.settings.local_host:
-                self.async_client = weaviate.use_async_with_local(
-                    host=self.settings.local_host,
-                    port=self.settings.local_port,
-                    grpc_port=self.settings.local_grpc_port,
-                )
-            elif self.settings.use_embed:
-                self.async_client = weaviate.use_async_with_embedded()
-            else:
-                raise NotImplementedError(
-                    "Weaviate settings must specify either a custom client, a Weaviate Cloud instance,",
-                    " a local Weaviate instance, or the client embedding options.",
-                )
-        except Exception as e:
-            raise MemoryConnectorInitializationError(f"Failed to initialize Weaviate client: {e}")
+        if not async_client:
+            try:
+                if weaviate_settings.url:
+                    async_client = weaviate.use_async_with_weaviate_cloud(
+                        cluster_url=weaviate_settings.url,
+                        auth_credentials=Auth.api_key(weaviate_settings.api_key.get_secret_value()),
+                    )
+                elif weaviate_settings.local_host:
+                    kwargs = {
+                        "port": weaviate_settings.local_port,
+                        "grpc_port": weaviate_settings.local_grpc_port,
+                    }
+                    kwargs = {k: v for k, v in kwargs.items() if v is not None}
+                    async_client = weaviate.use_async_with_local(
+                        host=weaviate_settings.local_host,
+                        **kwargs,
+                    )
+                elif weaviate_settings.use_embed:
+                    async_client = weaviate.use_async_with_embedded()
+                else:
+                    raise NotImplementedError(
+                        "Weaviate settings must specify either a custom client, a Weaviate Cloud instance,",
+                        " a local Weaviate instance, or the client embedding options.",
+                    )
+            except Exception as e:
+                raise MemoryConnectorInitializationError(f"Failed to initialize Weaviate client: {e}")
 
         super().__init__(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             collection_name=collection_name,
+            async_client=async_client,
         )
 
     @field_validator("collection_name")
@@ -116,8 +124,9 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
         https://weaviate.io/developers/weaviate/manage-data/collections#create-a-collection
         Will change the collection name to start with an uppercase letter if it does not.
         """
-        value[0] = value[0].upper()
-        return value
+        if value[0].isupper():
+            return value
+        return value[0].upper() + value[1:]
 
     @override
     async def _inner_upsert(
@@ -125,28 +134,29 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
         records: Sequence[Any],
         **kwargs: Any,
     ) -> Sequence[TKey]:
+        assert all([isinstance(record, DataObject) for record in records])  # nosec
+
         async with self.async_client:
             try:
-                collection: CollectionAsync = await self.async_client.collections.get(self.collection_name)
-                await collection.data.insert_many(records)
+                collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
+                response = await collection.data.insert_many(records)
             except Exception as ex:
                 raise MemoryConnectorException(f"Failed to upsert records: {ex}")
 
-        return [record[self.data_model_definition.key_field_name] for record in records]
+        return [str(v) for _, v in response.uuids.items()]
 
     @override
     async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
+        include_vector = kwargs.get("include_vectors", False)
+
         async with self.async_client:
             try:
-                collection: CollectionAsync = await self.async_client.collections.get(self.collection_name)
-                response = await collection.query.fetch_objects(
-                    filter=(
-                        Filter.any_of([
-                            Filter.by_property(self.data_model_definition.key_field.name).equal(key) for key in keys
-                        ])
-                    )
-                )
-                return response.objects
+                collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
+                data_objects: list[DataObject] = await asyncio.gather(*[
+                    collection.query.fetch_object_by_id(key, include_vector=include_vector) for key in keys
+                ])
+
+                return data_objects
             except Exception as ex:
                 raise MemoryConnectorException(f"Failed to get records: {ex}")
 
@@ -154,9 +164,9 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
     async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
         async with self.async_client:
             try:
-                collection: CollectionAsync = await self.async_client.collections.get(self.collection_name)
+                collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
                 await collection.data.delete_many(
-                    filter=Filter.any_of([
+                    where=Filter.any_of([
                         Filter.by_property(self.data_model_definition.key_field.name).equal(key) for key in keys
                     ])
                 )
@@ -165,11 +175,69 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
 
     @override
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
-        return records
+        """Create a data object from a record based on the data model definition."""
+        records_in_store_model: list[DataObject] = []
+        for record in records:
+            # Data fields
+            properties = {
+                field.name: record[field.name]
+                for field in self.data_model_definition.fields.values()
+                if isinstance(field, VectorStoreRecordDataField)
+            }
+            # Key field
+            key = (
+                record[self.data_model_definition.key_field.name] if self.data_model_definition.key_field.name else None
+            )
+            # Vector field
+            embedding_property_names: dict[str, str] = {
+                field.name: field.embedding_property_name
+                for field in self.data_model_definition.fields.values()
+                if isinstance(field, VectorStoreRecordDataField) and field.has_embedding
+            }
+            if embedding_property_names:
+                vector = {
+                    data_field_name: record[embedding_field_name]
+                    for data_field_name, embedding_field_name in embedding_property_names.items()
+                }
+            else:
+                if self.data_model_definition.vector_fields:
+                    vector = record[self.data_model_definition.vector_fields[0].name]
+                else:
+                    vector = None
+            records_in_store_model.append(DataObject(properties=properties, uuid=key, vector=vector))
+        return records_in_store_model
 
     @override
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
-        return records
+        assert all([isinstance(record, DataObject) for record in records])  # nosec
+
+        records_in_dict: list[dict[str, Any]] = []
+        for record in records:
+            assert isinstance(record, DataObject)  # nosec
+            # Data fields
+            data_fields = {
+                field.name: record.properties[field.name]
+                for field in self.data_model_definition.fields.values()
+                if isinstance(field, VectorStoreRecordDataField)
+            }
+            # Key field
+            if self.data_model_definition.key_field.name and record.uuid:
+                data_fields[self.data_model_definition.key_field.name] = record.uuid
+            # Vector field
+            embedding_property_names: dict[str, str] = {
+                field.name: field.embedding_property_name
+                for field in self.data_model_definition.fields.values()
+                if isinstance(field, VectorStoreRecordDataField) and field.has_embedding
+            }
+            if embedding_property_names:
+                for data_field_name, embedding_field_name in embedding_property_names.items():
+                    data_fields[embedding_field_name] = record.vector[data_field_name]
+            else:
+                if self.data_model_definition.vector_fields:
+                    data_fields[self.data_model_definition.vector_fields[0].name] = record.vector
+            records_in_dict.append(data_fields)
+
+        return records_in_dict
 
     @override
     async def create_collection(self, **kwargs) -> None:
@@ -182,7 +250,7 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
             try:
                 await self.async_client.collections.create(
                     self.collection_name,
-                    properties=self.data_model_definition_to_weaviate_properties(),
+                    properties=data_model_definition_to_weaviate_properties(self.data_model_definition),
                 )
             except Exception as ex:
                 raise MemoryConnectorException(f"Failed to create collection: {ex}")

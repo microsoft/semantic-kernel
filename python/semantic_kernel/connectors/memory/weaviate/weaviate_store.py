@@ -55,7 +55,7 @@ class WeaviateStore(VectorStore):
             env_file_path: The path to the environment file.
             env_file_encoding: The encoding of the environment file.
         """
-        self.settings = WeaviateSettings.create(
+        weaviate_settings = WeaviateSettings.create(
             url=url,
             api_key=api_key,
             local_host=local_host,
@@ -66,29 +66,34 @@ class WeaviateStore(VectorStore):
             env_file_encoding=env_file_encoding,
         )
 
-        try:
-            if async_client:
-                self.async_client = async_client
-            elif self.settings.url:
-                self.async_client = weaviate.use_async_with_weaviate_cloud(
-                    cluster_url=self.settings.url,
-                    auth_credentials=Auth.api_key(self.settings.api_key.get_secret_value()),
-                )
-            elif self.settings.local_host:
-                self.async_client = weaviate.use_async_with_local(
-                    host=self.settings.local_host,
-                    port=self.settings.local_port,
-                    grpc_port=self.settings.local_grpc_port,
-                )
-            elif self.settings.use_embed:
-                self.async_client = weaviate.use_async_with_embedded()
-            else:
-                raise NotImplementedError(
-                    "Weaviate settings must specify either a custom client, a Weaviate Cloud instance,",
-                    " a local Weaviate instance, or the client embedding options.",
-                )
-        except Exception as e:
-            raise MemoryConnectorInitializationError(f"Failed to initialize Weaviate client: {e}")
+        if not async_client:
+            try:
+                if weaviate_settings.url:
+                    async_client = weaviate.use_async_with_weaviate_cloud(
+                        cluster_url=weaviate_settings.url,
+                        auth_credentials=Auth.api_key(weaviate_settings.api_key.get_secret_value()),
+                    )
+                elif weaviate_settings.local_host:
+                    kwargs = {
+                        "port": weaviate_settings.local_port,
+                        "grpc_port": weaviate_settings.local_grpc_port,
+                    }
+                    kwargs = {k: v for k, v in kwargs.items() if v is not None}
+                    async_client = weaviate.use_async_with_local(
+                        host=weaviate_settings.local_host,
+                        **kwargs,
+                    )
+                elif weaviate_settings.use_embed:
+                    async_client = weaviate.use_async_with_embedded()
+                else:
+                    raise NotImplementedError(
+                        "Weaviate settings must specify either a custom client, a Weaviate Cloud instance,",
+                        " a local Weaviate instance, or the client embedding options.",
+                    )
+            except Exception as e:
+                raise MemoryConnectorInitializationError(f"Failed to initialize Weaviate client: {e}")
+
+        super().__init__(async_client=async_client)
 
     @override
     def get_collection(
