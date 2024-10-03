@@ -162,12 +162,33 @@ internal static class VectorStoreRecordPropertyVerification
         return collectionType switch
         {
             IEnumerable => typeof(object),
-            var enumerableType when enumerableType.IsGenericType && enumerableType.GetGenericTypeDefinition() == typeof(IEnumerable<>) => enumerableType.GetGenericArguments()[0],
+            var enumerableType when GetEnumerableInterface(enumerableType) is Type enumerableInterface => enumerableInterface.GetGenericArguments()[0],
             var arrayType when arrayType.IsArray => arrayType.GetElementType()!,
-            var interfaceType when interfaceType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type enumerableInterface =>
-                enumerableInterface.GetGenericArguments()[0],
             _ => collectionType
         };
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2070:UnrecognizedReflectionPattern",
+        Justification = "The 'IEnumerable<>' Type must exist and so trimmer kept it. In which case " +
+            "It also kept it on any type which implements it. The below call to GetInterfaces " +
+            "may return fewer results when trimmed but it will return 'IEnumerable<>' " +
+            "if the type implemented it, even after trimming.")]
+    public static Type? GetEnumerableInterface(Type type)
+    {
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+        {
+            return type;
+        }
+
+        foreach (Type typeToCheck in type.GetInterfaces())
+        {
+            if (typeToCheck.IsGenericType && typeToCheck.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            {
+                return typeToCheck;
+            }
+        }
+
+        return null;
     }
 
     //var interfaceType when interfaceType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type enumerableInterface => interfaceType.GetGenericArguments()[0],
