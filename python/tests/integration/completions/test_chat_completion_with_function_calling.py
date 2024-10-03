@@ -566,6 +566,74 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_tool_call_auto_complex_return_type",
         ),
+        pytest.param(
+            "bedrock",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=False, filters={"excluded_plugins": ["task_plugin"]}
+                )
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.SYSTEM,
+                        items=[TextContent(text="You're very bad at math. Don't attempt to do it yourself.")],
+                    ),
+                    ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 345 + 3?")]),
+                ]
+            ],
+            {"test_type": FunctionChoiceTestTypes.NON_AUTO},
+            id="bedrock_tool_call_non_auto",
+        ),
+        pytest.param(
+            "bedrock",
+            {
+                # This is required for Bedrock to have the tool config set when messages contain tool calls.
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=False, filters={"excluded_plugins": ["task_plugin"]}
+                )
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="What was our 2024 revenue?")],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        items=[
+                            FunctionCallContent(
+                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                            )
+                        ],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.TOOL,
+                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                    ),
+                ],
+            ],
+            {"test_type": FunctionChoiceTestTypes.FLOW},
+            id="bedrock_tool_call_flow",
+        ),
+        pytest.param(
+            "bedrock",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
+                )
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="Find the person whose id is 9b3f6e40.")],
+                    ),
+                ]
+            ],
+            {"test_type": FunctionChoiceTestTypes.AUTO},
+            id="bedrock_tool_call_auto_complex_return_type",
+        ),
     ],
 )
 

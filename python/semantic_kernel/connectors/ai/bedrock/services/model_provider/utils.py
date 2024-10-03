@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import json
 from collections.abc import Callable
 from functools import partial
 from typing import Any
@@ -9,6 +10,7 @@ from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings imp
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -105,8 +107,8 @@ def _format_assistant_message(message: ChatMessageContent) -> dict[str, Any]:
             contents.append({
                 "toolUse": {
                     "toolUseId": item.id,
-                    "name": item.name,
-                    "input": item.arguments,
+                    "name": item.custom_fully_qualified_name(BEDROCK_FUNCTION_NAME_SEPARATOR),
+                    "input": item.arguments if isinstance(item.arguments, dict) else json.loads(item.arguments or "{}"),
                 }
             })
         else:
@@ -138,7 +140,7 @@ def _format_tool_message(message: ChatMessageContent) -> dict[str, Any]:
             contents.append({
                 "toolResult": {
                     "toolUseId": item.id,
-                    # Image and document content are not supported in a tool message
+                    # Image and document content are not yet supported in a tool message by SK
                     "content": [{"text": str(item)}],
                 }
             })
@@ -148,7 +150,6 @@ def _format_tool_message(message: ChatMessageContent) -> dict[str, Any]:
     return {
         "role": "user",
         "content": contents,
-        "status": "success",
     }
 
 
@@ -158,6 +159,19 @@ MESSAGE_CONVERTERS: dict[AuthorRole, Callable[[ChatMessageContent], dict[str, An
     AuthorRole.ASSISTANT: _format_assistant_message,
     AuthorRole.TOOL: _format_tool_message,
 }
+
+# The separator used in the fully qualified name of the function instead of the default "-" separator.
+# This is required since Bedrock disallows "-" in the function name.
+# https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ToolSpecification.html#API_runtime_ToolSpecification_Contents
+BEDROCK_FUNCTION_NAME_SEPARATOR = "_"
+
+
+def format_bedrock_function_name_to_kernel_function_fully_qualified_name(bedrock_function_name: str) -> str:
+    """Format the Bedrock function name to the kernel function fully qualified name."""
+    if BEDROCK_FUNCTION_NAME_SEPARATOR in bedrock_function_name:
+        plugin_name, function_name = bedrock_function_name.split(BEDROCK_FUNCTION_NAME_SEPARATOR, 1)
+        return f"{plugin_name}{DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR}{function_name}"
+    return bedrock_function_name
 
 
 def update_settings_from_function_choice_configuration(
@@ -187,14 +201,16 @@ def update_settings_from_function_choice_configuration(
             else:
                 settings.tool_choice = {
                     "tool": {
-                        "name": function_choice_configuration.available_functions[0].fully_qualified_name,
+                        "name": function_choice_configuration.available_functions[0].custom_fully_qualified_name(
+                            BEDROCK_FUNCTION_NAME_SEPARATOR
+                        ),
                     }
                 }
 
         settings.tools = [
             {
                 "toolSpec": {
-                    "name": function.fully_qualified_name,
+                    "name": function.custom_fully_qualified_name(BEDROCK_FUNCTION_NAME_SEPARATOR),
                     "description": function.description or "",
                     "inputSchema": {
                         "json": {

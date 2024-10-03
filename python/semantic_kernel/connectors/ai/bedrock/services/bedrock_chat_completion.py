@@ -3,7 +3,7 @@
 import sys
 from collections.abc import AsyncGenerator, Callable
 from functools import partial
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import boto3
 
@@ -23,6 +23,7 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import (
     MESSAGE_CONVERTERS,
     finish_reason_from_bedrock_to_semantic_kernel,
+    format_bedrock_function_name_to_kernel_function_fully_qualified_name,
     remove_none_recursively,
     run_in_executor,
     update_settings_from_function_choice_configuration,
@@ -51,6 +52,8 @@ if TYPE_CHECKING:
 
 class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     """Amazon Bedrock Chat Completion Service."""
+
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
 
     def __init__(
         self,
@@ -97,7 +100,8 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, BedrockChatPromptExecutionSettings)  # nosec
 
-        response = await self._async_converse(**self._prepare_settings_for_request(chat_history, settings))
+        prepared_settings = self._prepare_settings_for_request(chat_history, settings)
+        response = await self._async_converse(**prepared_settings)
 
         return [self._create_chat_message_content(response)]
 
@@ -213,7 +217,9 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 items.append(
                     FunctionCallContent(
                         id=content["toolUse"]["toolUseId"],
-                        name=content["toolUse"]["name"],
+                        name=format_bedrock_function_name_to_kernel_function_fully_qualified_name(
+                            content["toolUse"]["name"]
+                        ),
                         arguments=content["toolUse"]["input"],
                     )
                 )
