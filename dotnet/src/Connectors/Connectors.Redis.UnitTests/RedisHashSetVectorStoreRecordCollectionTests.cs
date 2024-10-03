@@ -451,7 +451,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                 Filter = filter,
                 Top = 5,
                 Skip = 2
-            }).ToListAsync();
+            });
 
         // Assert.
         var expectedArgsPart1 = new object[]
@@ -490,18 +490,19 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                     It.Is<object[]>(x => x.Where(y => !(y is byte[])).SequenceEqual(expectedArgs.Where(y => !(y is byte[]))))),
                 Times.Once);
 
-        Assert.Single(actual);
-        Assert.Equal(TestRecordKey1, actual.First().Record.Key);
-        Assert.Equal(0.5d, actual.First().Score);
-        Assert.Equal("original data 1", actual.First().Record.OriginalNameData);
-        Assert.Equal("data 1", actual.First().Record.Data);
+        var results = await actual.Results.ToListAsync();
+        Assert.Single(results);
+        Assert.Equal(TestRecordKey1, results.First().Record.Key);
+        Assert.Equal(0.5d, results.First().Score);
+        Assert.Equal("original data 1", results.First().Record.OriginalNameData);
+        Assert.Equal("data 1", results.First().Record.Data);
         if (includeVectors)
         {
-            Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.First().Record.Vector!.Value.ToArray());
+            Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector!.Value.ToArray());
         }
         else
         {
-            Assert.False(actual.First().Record.Vector.HasValue);
+            Assert.False(results.First().Record.Vector.HasValue);
         }
     }
 

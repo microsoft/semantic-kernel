@@ -330,7 +330,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
 
@@ -352,7 +352,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
                 .SearchAsync(this._collectionName, query)).ConfigureAwait(false);
 
         // Loop through result and convert to the caller's data model.
-        foreach (var result in results.Documents)
+        var mappedResults = results.Documents.Select(result =>
         {
             var retrievedHashEntries = this._propertyReader.DataPropertyStoragePropertyNames
                 .Concat(this._propertyReader.VectorPropertyStoragePropertyNames)
@@ -369,8 +369,10 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
                     return this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(result.Id), retrievedHashEntries), new() { IncludeVectors = internalOptions.IncludeVectors });
                 });
 
-            yield return new VectorSearchResult<TRecord>(dataModel, result.Score);
-        }
+            return new VectorSearchResult<TRecord>(dataModel, result.Score);
+        });
+
+        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
     }
 
     /// <summary>

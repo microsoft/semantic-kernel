@@ -375,7 +375,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
 
@@ -396,7 +396,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
                 .SearchAsync(this._collectionName, query)).ConfigureAwait(false);
 
         // Loop through result and convert to the caller's data model.
-        foreach (var result in results.Documents)
+        var mappedResults = results.Documents.Select(result =>
         {
             var redisResultString = result["json"].ToString();
             var mappedRecord = VectorStoreErrorHandler.RunModelConversion(
@@ -411,8 +411,10 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
                         new() { IncludeVectors = internalOptions.IncludeVectors });
                 });
 
-            yield return new VectorSearchResult<TRecord>(mappedRecord, result.Score);
-        }
+            return new VectorSearchResult<TRecord>(mappedRecord, result.Score);
+        });
+
+        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
     }
 
     /// <summary>

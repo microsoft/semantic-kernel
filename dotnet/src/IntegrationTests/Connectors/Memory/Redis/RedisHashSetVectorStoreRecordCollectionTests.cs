@@ -63,10 +63,10 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         await sut.CreateCollectionAsync();
         var upsertResult = await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync("HUpsert-1", new GetRecordOptions { IncludeVectors = true });
-        var searchResult = await sut
+        var actual = await sut
             .VectorizedSearchAsync(
                 new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
-                new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 1), IncludeVectors = true }).ToListAsync();
+                new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 1), IncludeVectors = true });
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -82,8 +82,9 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.Equal(record.Description, getResult?.Description);
         Assert.Equal(record.DescriptionEmbedding?.ToArray(), getResult?.DescriptionEmbedding?.ToArray());
 
-        Assert.Single(searchResult);
-        var searchResultRecord = searchResult.First().Record;
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResultRecord = searchResults.First().Record;
         Assert.Equal(record.HotelId, searchResultRecord?.HotelId);
         Assert.Equal(record.HotelName, searchResultRecord?.HotelName);
         Assert.Equal(record.HotelCode, searchResultRecord?.HotelCode);
@@ -319,11 +320,12 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
             {
                 IncludeVectors = includeVectors,
                 Filter = filter
-            }).ToListAsync();
+            });
 
         // Assert
-        Assert.Single(actual);
-        var searchResult = actual.First().Record;
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResult = searchResults.First().Record;
         Assert.Equal("HBaseSet-1", searchResult?.HotelId);
         Assert.Equal("My Hotel 1", searchResult?.HotelName);
         Assert.Equal(1, searchResult?.HotelCode);
@@ -361,11 +363,12 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
             {
                 Top = 3,
                 Skip = 2
-            }).ToListAsync();
+            });
 
         // Assert
-        Assert.Equal(3, actual.Count);
-        Assert.True(actual.Select(x => x.Record.HotelId).SequenceEqual(["HTopSkip_3", "HTopSkip_4", "HTopSkip_5"]));
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Equal(3, searchResults.Count);
+        Assert.True(searchResults.Select(x => x.Record.HotelId).SequenceEqual(["HTopSkip_3", "HTopSkip_4", "HTopSkip_5"]));
     }
 
     [Theory(Skip = SkipReason)]
@@ -390,11 +393,12 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
             {
                 IncludeVectors = includeVectors,
                 Top = 1
-            }).ToListAsync();
+            });
 
         // Assert
-        Assert.Single(actual);
-        var searchResult = actual.First().Record;
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResult = searchResults.First().Record;
         Assert.Equal("HFloat64_2", searchResult?.HotelId);
         Assert.Equal("2", searchResult?.HotelName);
         Assert.Equal("Nice hotel", searchResult?.Description);

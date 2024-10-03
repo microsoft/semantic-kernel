@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Data;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
+using MongoDB.Driver.Search;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
@@ -244,13 +245,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         VectorSearchOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        const string OperationName = "Aggregate";
-
         Verify.NotNull(vector);
 
         Array vectorArray = vector switch
@@ -310,27 +309,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        var skipCounter = 0;
-
-        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
-        {
-            foreach (var response in cursor.Current)
-            {
-                if (skipCounter >= searchOptions.Skip)
-                {
-                    var score = response[ScorePropertyName].AsDouble;
-                    var record = VectorStoreErrorHandler.RunModelConversion(
-                        DatabaseName,
-                        this.CollectionName,
-                        OperationName,
-                        () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new()));
-
-                    yield return new VectorSearchResult<TRecord>(record, score);
-                }
-
-                skipCounter++;
-            }
-        }
+        return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions, cancellationToken));
     }
 
     #region private
@@ -389,6 +368,36 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             null;
 
         return await this._mongoCollection.FindAsync(filter, findOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> EnumerateAndMapSearchResultsAsync(
+        IAsyncCursor<BsonDocument> cursor,
+        VectorSearchOptions searchOptions,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        const string OperationName = "Aggregate";
+
+        var skipCounter = 0;
+
+        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        {
+            foreach (var response in cursor.Current)
+            {
+                if (skipCounter >= searchOptions.Skip)
+                {
+                    var score = response[ScorePropertyName].AsDouble;
+                    var record = VectorStoreErrorHandler.RunModelConversion(
+                        DatabaseName,
+                        this.CollectionName,
+                        OperationName,
+                        () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new()));
+
+                    yield return new VectorSearchResult<TRecord>(record, score);
+                }
+
+                skipCounter++;
+            }
+        }
     }
 
     private FilterDefinition<BsonDocument> GetFilterById(string id)

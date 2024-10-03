@@ -342,9 +342,10 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])).ToListAsync();
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]));
 
         // Assert
+        var searchResults = await actual.Results.ToListAsync();
         var ids = searchResults.Select(l => l.Record.HotelId).ToList();
 
         Assert.Equal("key1", ids[0]);
@@ -372,13 +373,14 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
             Top = 2,
             Skip = 2
-        }).ToListAsync();
+        });
 
         // Assert
+        var searchResults = await actual.Results.ToListAsync();
         var ids = searchResults.Select(l => l.Record.HotelId).ToList();
 
         Assert.Equal("key3", ids[0]);
@@ -404,12 +406,13 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
             Filter = new VectorSearchFilter().EqualTo(nameof(AzureCosmosDBMongoDBHotel.HotelName), "My Hotel key2")
-        }).ToListAsync();
+        });
 
         // Assert
+        var searchResults = await actual.Results.ToListAsync();
         var ids = searchResults.Select(l => l.Record.HotelId).ToList();
 
         Assert.Equal("key2", ids[0]);
