@@ -24,4 +24,12 @@ public sealed class SqliteVectorStoreRecordCollectionOptions<TRecord> where TRec
     /// See <see cref="VectorStoreRecordKeyAttribute"/>, <see cref="VectorStoreRecordDataAttribute"/> and <see cref="VectorStoreRecordVectorAttribute"/>.
     /// </remarks>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+
+    /// <summary>
+    /// Custom virtual table name to store vectors.
+    /// </summary>
+    /// <remarks>
+    /// If not provided, collection name with prefix will be used as virtual table name.
+    /// </remarks>
+    public string? VectorVirtualTableName { get; set; } = null;
 }

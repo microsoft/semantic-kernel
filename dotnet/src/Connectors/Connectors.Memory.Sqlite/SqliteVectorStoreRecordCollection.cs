@@ -89,11 +89,11 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         this.CollectionName = collectionName;
         this._vectorSearchExtensionName = vectorSearchExtensionName;
 
-        // Using prefix for vector table name to avoid name collisions.
-        this._dataTableName = this.CollectionName;
-        this._vectorTableName = $"vec_{this._dataTableName}";
-
         var collectionOptions = options ?? new();
+
+        this._dataTableName = this.CollectionName;
+        this._vectorTableName = GetVectorTableName(this._dataTableName, collectionOptions);
+
         this._propertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), collectionOptions.VectorStoreRecordDefinition, new()
         {
             RequiresAtLeastOneVector = false,
@@ -114,7 +114,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         this._dataTableStoragePropertyNames = new(() => [this._propertyReader.KeyPropertyStoragePropertyName, .. this._propertyReader.DataPropertyStoragePropertyNames]);
         this._vectorTableStoragePropertyNames = new(() => [this._propertyReader.KeyPropertyStoragePropertyName, .. this._propertyReader.VectorPropertyStoragePropertyNames]);
 
-        this._mapper = InitializeMapper(this._propertyReader, options);
+        this._mapper = InitializeMapper(this._propertyReader, collectionOptions);
 
         this._commandBuilder = new SqliteVectorStoreCollectionCommandBuilder(this._connection);
     }
@@ -507,14 +507,34 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
     private static IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> InitializeMapper(
         VectorStoreRecordPropertyReader propertyReader,
-        SqliteVectorStoreRecordCollectionOptions<TRecord>? options)
+        SqliteVectorStoreRecordCollectionOptions<TRecord> options)
     {
-        if (options?.DictionaryCustomMapper is not null)
+        if (options.DictionaryCustomMapper is not null)
         {
             return options.DictionaryCustomMapper;
         }
 
         return new SqliteVectorStoreRecordMapper<TRecord>(propertyReader);
+    }
+
+    /// <summary>
+    /// Gets vector table name.
+    /// </summary>
+    /// <remarks>
+    /// If custom vector table name is not provided, default one will be generated with a prefix to avoid name collisions.
+    /// </remarks>
+    private static string GetVectorTableName(
+        string dataTableName,
+        SqliteVectorStoreRecordCollectionOptions<TRecord> options)
+    {
+        const string DefaultVirtualTableNamePrefix = "vec_";
+
+        if (!string.IsNullOrWhiteSpace(options.VectorVirtualTableName))
+        {
+            return options.VectorVirtualTableName!;
+        }
+
+        return $"{DefaultVirtualTableNamePrefix}{dataTableName}";
     }
 
     #endregion
