@@ -7,12 +7,13 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Azure;
+using Azure.Identity;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -66,11 +67,14 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("Rating", typeof(double?))
             }
         };
-        OpenAIConfiguration? openAIConfig = s_configuration.GetSection("OpenAIEmbeddings").Get<OpenAIConfiguration>();
-        Assert.NotNull(openAIConfig);
-        Assert.NotEmpty(openAIConfig.ModelId);
-        Assert.NotEmpty(openAIConfig.ApiKey);
-        this.EmbeddingGenerator = new OpenAITextEmbeddingGenerationService(openAIConfig.ModelId, openAIConfig.ApiKey);
+        AzureOpenAIConfiguration? embeddingsConfig = s_configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(embeddingsConfig);
+        Assert.NotEmpty(embeddingsConfig.DeploymentName);
+        Assert.NotEmpty(embeddingsConfig.Endpoint);
+        this.EmbeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
+            deploymentName: embeddingsConfig.DeploymentName,
+            endpoint: embeddingsConfig.Endpoint,
+            credential: new AzureCliCredential());
     }
 
     /// <summary>

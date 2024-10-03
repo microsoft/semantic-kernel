@@ -130,7 +130,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         kernel.Plugins.Add(searchPlugin);
 
         // Act
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(searchPlugin) };
         KernelArguments arguments = new(settings);
         var result = await kernel.InvokePromptAsync(this.GetQuery(), arguments);
 
@@ -159,7 +159,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         kernel.Plugins.Add(searchPlugin);
 
         // Act
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(searchPlugin) };
         KernelArguments arguments = new(settings);
         var result = await kernel.InvokePromptAsync(this.GetQuery(), arguments);
 
@@ -188,7 +188,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         kernel.Plugins.Add(searchPlugin);
 
         // Act
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(searchPlugin) };
         KernelArguments arguments = new(settings);
         var result = await kernel.InvokePromptAsync(this.GetQuery(), arguments);
 

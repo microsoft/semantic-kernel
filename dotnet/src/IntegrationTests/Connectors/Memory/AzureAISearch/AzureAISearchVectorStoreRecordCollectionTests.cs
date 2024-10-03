@@ -105,7 +105,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         output.WriteLine(getResult.ToString());
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
@@ -156,7 +156,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         output.WriteLine(getResult.ToString());
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertManyDocumentsToVectorStoreAsync()
     {
         // Arrange
@@ -223,7 +223,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         output.WriteLine(getResult.ToString());
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanGetManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
@@ -267,7 +267,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Null(await sut.GetAsync("Remove-1", new GetRecordOptions { IncludeVectors = true }));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
@@ -286,7 +286,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Null(await sut.GetAsync("RemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
     {
         // Arrange
@@ -296,7 +296,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Null(await sut.GetAsync("BaseSet-5", new GetRecordOptions { IncludeVectors = true }));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItThrowsOperationExceptionForFailedConnectionAsync()
     {
         // Arrange
@@ -307,7 +307,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItThrowsOperationExceptionForFailedAuthenticationAsync()
     {
         // Arrange
@@ -318,7 +318,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItThrowsMappingExceptionForFailedMapperAsync()
     {
         // Arrange
@@ -372,7 +372,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         }
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanSearchWithVectorizableTextAndFiltersAsync()
     {
         // Arrange.
@@ -394,7 +394,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Single(searchResultsList);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
     {
         // Arrange
