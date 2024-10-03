@@ -1,9 +1,9 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
 contact: rogerbarreto
-date: 2024-10-02
-deciders: sergeymenshykh, markwallace, rogerbarreto, westey-m, dmytrostruk,
+date: 2024-10-03
+deciders: sergeymenshykh, markwallace, rogerbarreto, westey-m, dmytrostruk, evchaki
 consulted: crickman
 ---
 
@@ -221,4 +221,6 @@ Cons:
 
 ## Decision Outcome
 
-Chosen option: TBD
+Chosen option: **Keep as is**
+
+As the current AI landscape for SDK is a fast changing environment, we need to be able be update and at the same time avoid as much as possible mix our current versioning strategy also minimizing the impact on customers. We decided on **Keep As-Is** option for now, and we may reconsider **Preview + GA versioning** option in the future when that decision doesn't bring big impact of lack of important functionality already used by our customer base.
