@@ -14,7 +14,10 @@ Next, as an environment variable or in the .env file, add the `poolManagementEnd
 https://eastus.acasessions.io/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroup}}/sessionPools/{{sessionPool}}/python/execute
 ```
 
-It is possible to add the code interpreter plugin as follows:
+You can also provide the the `ACA_TOKEN_ENDPOINT` if you want to override the default value of `https://acasessions.io/.default`. If this token endpoint doesn't need to be overridden, then it is
+not necessary to include this as an environment variable, in the .env file, or via the plugin's constructor. Please follow the [Azure Container Apps Documentation](https://learn.microsoft.com/en-us/azure/container-apps/sessions-code-interpreter) to review the proper role required to authenticate with the `DefaultAzureCredential`.
+
+Next, let's move on to implementing the plugin in code. It is possible to add the code interpreter plugin as follows:
 
 ```python
 kernel = Kernel()

@@ -22,12 +22,6 @@ def test_init_empty_service_id(model_id):
     assert ollama.service_id == model_id
 
 
-def test_init_empty_ai_model_id():
-    """Test that the service initializes with a error if there is no ai_model_id."""
-    with pytest.raises(ServiceInitializationError):
-        _ = OllamaChatCompletion()
-
-
 def test_init_empty_string_ai_model_id():
     """Test that the service initializes with a error if there is no ai_model_id."""
     with pytest.raises(ServiceInitializationError):
@@ -41,7 +35,7 @@ def test_custom_client(model_id, custom_client):
 
 
 @pytest.mark.parametrize("exclude_list", [["OLLAMA_MODEL"]], indirect=True)
-def test_init_empty_model_id(ollama_unit_test_env):
+def test_init_empty_model_id_in_env(ollama_unit_test_env):
     """Test that the service initializes incorrectly with an empty model id."""
     with pytest.raises(ServiceInitializationError):
         _ = OllamaChatCompletion(env_file_path="fake_env_file_path.env")

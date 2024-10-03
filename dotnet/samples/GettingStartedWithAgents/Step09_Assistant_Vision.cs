@@ -23,12 +23,12 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
         OpenAIClientProvider provider = this.GetClientProvider();
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
                 provider,
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Metadata = AssistantSampleMetadata,
-                });
+                },
+                kernel: new Kernel());
 
         // Upload an image
         await using Stream imageStream = EmbeddedResource.ReadStream("cat.jpg")!;
