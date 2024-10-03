@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
 /// <param name="results">The list of records returned by the search operation.</param>
+[Experimental("SKEXP0001")]
 public class VectorSearchResults<TRecord>(IAsyncEnumerable<VectorSearchResult<TRecord>> results)
     where TRecord : class
 {
