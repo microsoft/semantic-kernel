@@ -52,7 +52,7 @@ public abstract class KernelFunction
         description: "Measures the duration of a function's streaming execution");
 
     /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</summary>
-    private readonly JsonSerializerOptions? _jsonSerializerOptions;
+    protected JsonSerializerOptions? JsonSerializerOptions { get; set; }
 
     /// <summary>
     /// Gets the name of the function.
@@ -204,7 +204,7 @@ public abstract class KernelFunction
                 entry => { var clone = entry.Value.Clone(); clone.Freeze(); return clone; });
         }
 
-        this._jsonSerializerOptions = jsonSerializerOptions;
+        this.JsonSerializerOptions = jsonSerializerOptions;
     }
 
     /// <summary>
@@ -514,9 +514,9 @@ public abstract class KernelFunction
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     private void LogFunctionArguments(ILogger logger, KernelArguments arguments)
     {
-        if (this._jsonSerializerOptions is not null)
+        if (this.JsonSerializerOptions is not null)
         {
-            logger.LogFunctionArguments(arguments, this._jsonSerializerOptions);
+            logger.LogFunctionArguments(arguments, this.JsonSerializerOptions);
         }
         else
         {
@@ -528,9 +528,9 @@ public abstract class KernelFunction
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     private void LogFunctionResult(ILogger logger, FunctionResult functionResult)
     {
-        if (this._jsonSerializerOptions is not null)
+        if (this.JsonSerializerOptions is not null)
         {
-            logger.LogFunctionResultValue(functionResult, this._jsonSerializerOptions);
+            logger.LogFunctionResultValue(functionResult, this.JsonSerializerOptions);
         }
         else
         {

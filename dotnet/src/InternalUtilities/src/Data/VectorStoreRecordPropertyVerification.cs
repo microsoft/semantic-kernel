@@ -129,7 +129,11 @@ internal static class VectorStoreRecordPropertyVerification
             return true;
         }
 
-        if (typeof(IList).IsAssignableFrom(type) && type.GetConstructor([]) != null)
+#if NET6_0_OR_GREATER
+        if (typeof(IList).IsAssignableFrom(type) && type.GetMemberWithSameMetadataDefinitionAs(s_objectGetDefaultConstructorInfo) != null)
+#else
+        if (typeof(IList).IsAssignableFrom(type) && type.GetConstructor(Type.EmptyTypes) != null)
+#endif
         {
             return true;
         }
@@ -165,6 +169,9 @@ internal static class VectorStoreRecordPropertyVerification
             _ => collectionType
         };
     }
+
+    //var interfaceType when interfaceType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type enumerableInterface => interfaceType.GetGenericArguments()[0],
+    // var interfaceType when interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>) => interfaceType.GetGenericArguments()[0],
 
     /// <summary>
     /// Checks that if the provided <paramref name="recordType"/> is a <see cref="VectorStoreGenericDataModel{T}"/> that the key type is supported by the default mappers.
@@ -221,4 +228,8 @@ internal static class VectorStoreRecordPropertyVerification
 
         throw new ArgumentException($"A {nameof(VectorStoreRecordDefinition)} must be provided when using '{nameof(VectorStoreGenericDataModel<string>)}'.");
     }
+
+#pragma warning disable CA1823 // Avoid unused private fields. The fields are used in preprocessor directives like NET6_0_OR_GREATER.
+    private static readonly ConstructorInfo s_objectGetDefaultConstructorInfo = typeof(object).GetConstructor(Type.EmptyTypes)!;
+#pragma warning restore CA1823 // Avoid unused private fields. The fields are used in preprocessor directives like NET6_0_OR_GREATER.
 }
