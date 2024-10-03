@@ -15,41 +15,18 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>
     where TRecord : class
 {
-    /// <summary>A dictionary that maps from a property name to the storage name.</summary>
-    private readonly Dictionary<string, string> _storagePropertyNames;
-
-    /// <summary>The public parameterless constructor for the current data model.</summary>
-    private readonly ConstructorInfo _constructorInfo;
-
-    /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
-    private readonly PropertyInfo _keyPropertyInfo;
-
-    /// <summary>A list of property info objects that point at the data properties in the current model, and allows easy reading and writing of these properties.</summary>
-    private readonly List<PropertyInfo> _dataPropertiesInfo;
-
-    /// <summary>A list of property info objects that point at the vector properties in the current model, and allows easy reading and writing of these properties.</summary>
-    private readonly List<PropertyInfo> _vectorPropertiesInfo;
+    /// <summary><see cref="VectorStoreRecordPropertyReader"/> with helpers for reading vector store model properties and their attributes.</summary>
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteVectorStoreRecordMapper{TRecord}"/> class.
     /// </summary>
-    /// <param name="vectorStoreRecordDefinition">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
-    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name.</param>
-    public SqliteVectorStoreRecordMapper(
-        VectorStoreRecordDefinition vectorStoreRecordDefinition,
-        Dictionary<string, string> storagePropertyNames)
+    /// <param name="propertyReader">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
+    public SqliteVectorStoreRecordMapper(VectorStoreRecordPropertyReader propertyReader)
     {
-        Verify.NotNull(vectorStoreRecordDefinition);
-        Verify.NotNull(storagePropertyNames);
+        Verify.NotNull(propertyReader);
 
-        this._constructorInfo = VectorStoreRecordPropertyReader.GetParameterlessConstructor(typeof(TRecord));
-
-        var (keyPropertyInfo, dataPropertiesInfo, vectorPropertiesInfo) = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: true);
-
-        this._keyPropertyInfo = keyPropertyInfo;
-        this._dataPropertiesInfo = dataPropertiesInfo;
-        this._vectorPropertiesInfo = vectorPropertiesInfo;
-        this._storagePropertyNames = storagePropertyNames;
+        this._propertyReader = propertyReader;
     }
 
     public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
@@ -57,17 +34,17 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         var properties = new Dictionary<string, object?>
         {
             // Add key property
-            { this._storagePropertyNames[this._keyPropertyInfo.Name], this._keyPropertyInfo.GetValue(dataModel) }
+            { this._propertyReader.KeyPropertyStoragePropertyName, this._propertyReader.KeyPropertyInfo.GetValue(dataModel) }
         };
 
         // Add data properties
-        foreach (var property in this._dataPropertiesInfo)
+        foreach (var property in this._propertyReader.DataPropertiesInfo)
         {
-            properties.Add(this._storagePropertyNames[property.Name], property.GetValue(dataModel));
+            properties.Add(this._propertyReader.StoragePropertyNamesMap[property.Name], property.GetValue(dataModel));
         }
 
         // Add vector properties
-        foreach (var property in this._vectorPropertiesInfo)
+        foreach (var property in this._propertyReader.VectorPropertiesInfo)
         {
             object? result = null;
             var propertyValue = property.GetValue(dataModel);
@@ -79,7 +56,7 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
                 result = serializedVector;
             }
 
-            properties.Add(this._storagePropertyNames[property.Name], result);
+            properties.Add(this._propertyReader.StoragePropertyNamesMap[property.Name], result);
         }
 
         return properties;
@@ -87,19 +64,23 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
 
     public TRecord MapFromStorageToDataModel(Dictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
     {
-        var record = (TRecord)this._constructorInfo.Invoke(null);
+        var record = (TRecord)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
 
         // Set key.
+        var keyPropertyValue = Convert.ChangeType(
+            storageModel[this._propertyReader.KeyPropertyStoragePropertyName],
+            this._propertyReader.KeyProperty.PropertyType);
+
         var keyPropertyInfoWithValue = new KeyValuePair<PropertyInfo, object?>(
-            this._keyPropertyInfo,
-            storageModel[this._storagePropertyNames[this._keyPropertyInfo.Name]]);
+            this._propertyReader.KeyPropertyInfo,
+            keyPropertyValue);
 
         VectorStoreRecordMapping.SetPropertiesOnRecord(record, [keyPropertyInfoWithValue]);
 
         // Process data properties.
         var dataPropertiesInfoWithValues = VectorStoreRecordMapping.BuildPropertiesInfoWithValues(
-            this._dataPropertiesInfo,
-            this._storagePropertyNames,
+            this._propertyReader.DataPropertiesInfo,
+            this._propertyReader.StoragePropertyNamesMap,
             storageModel);
 
         VectorStoreRecordMapping.SetPropertiesOnRecord(record, dataPropertiesInfoWithValues);
@@ -108,21 +89,9 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         {
             // Process vector properties.
             var vectorPropertiesInfoWithValues = VectorStoreRecordMapping.BuildPropertiesInfoWithValues(
-                this._vectorPropertiesInfo,
-                this._storagePropertyNames,
-                storageModel,
-                (object? vector, Type targetType) =>
-                {
-                    var vectorBytes = vector as byte[];
-
-                    if (vectorBytes is null)
-                    {
-                        return null;
-                    }
-
-                    var vectorArray = MemoryMarshal.Cast<byte, float>(vectorBytes).ToArray();
-                    return new ReadOnlyMemory<float>(vectorArray);
-                });
+                this._propertyReader.VectorPropertiesInfo,
+                this._propertyReader.StoragePropertyNamesMap,
+                storageModel);
 
             VectorStoreRecordMapping.SetPropertiesOnRecord(record, vectorPropertiesInfoWithValues);
         }

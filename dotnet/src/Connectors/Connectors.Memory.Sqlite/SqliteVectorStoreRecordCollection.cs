@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
@@ -23,14 +25,38 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "SQLite";
 
+    /// <summary><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</summary>
+    private readonly SqliteConnection _connection;
+
     /// <summary>The mapper to use when mapping between the consumer data model and the SQLite record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
 
     /// <summary>Command builder for queries in SQLite database.</summary>
     private readonly SqliteVectorStoreCollectionCommandBuilder _commandBuilder;
 
+    /// <summary>Contains helpers for reading vector store model properties and their attributes.</summary>
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
+
     /// <summary>Flag which indicates whether vector properties exist in the consumer data model.</summary>
     private readonly bool _vectorPropertiesExist;
+
+    /// <summary>Collection of properties to operate in SQLite data table.</summary>
+    private readonly Lazy<List<VectorStoreRecordProperty>> _dataTableProperties;
+
+    /// <summary>Collection of properties to operate in SQLite vector table.</summary>
+    private readonly Lazy<List<VectorStoreRecordProperty>> _vectorTableProperties;
+
+    /// <summary>Collection of property names to operate in SQLite data table.</summary>
+    private readonly Lazy<List<string>> _dataTableStoragePropertyNames;
+
+    /// <summary>Collection of property names to operate in SQLite vector table.</summary>
+    private readonly Lazy<List<string>> _vectorTableStoragePropertyNames;
+
+    /// <summary>Table name in SQLite for data properties.</summary>
+    private readonly string _dataTableName;
+
+    /// <summary>Table name in SQLite for vector properties.</summary>
+    private readonly string _vectorTableName;
 
     /// <inheritdoc />
     public string CollectionName { get; }
@@ -53,32 +79,37 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
+        this._connection = connection;
         this.CollectionName = collectionName;
+        this._dataTableName = this.CollectionName;
 
-        var vectorStoreRecordDefinition = options?.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), supportsMultipleVectors: true);
+        // Using prefix for vector table name to avoid name collisions.
+        this._vectorTableName = $"vec_{this._dataTableName}";
+
+        var collectionOptions = options ?? new();
+        this._propertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), collectionOptions.VectorStoreRecordDefinition, new()
+        {
+            RequiresAtLeastOneVector = false,
+            SupportsMultipleKeys = false,
+            SupportsMultipleVectors = true
+        });
 
         // Validate property types.
-        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes([properties.KeyProperty], SqliteConstants.SupportedKeyTypes, "Key");
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.DataProperties, SqliteConstants.SupportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.VectorProperties, SqliteConstants.SupportedVectorTypes, "Vector");
+        this._propertyReader.VerifyKeyProperties(SqliteConstants.SupportedKeyTypes);
+        this._propertyReader.VerifyDataProperties(SqliteConstants.SupportedDataTypes, supportEnumerable: false);
+        this._propertyReader.VerifyVectorProperties(SqliteConstants.SupportedVectorTypes);
 
-        this._vectorPropertiesExist = properties.VectorProperties.Count > 0;
+        this._vectorPropertiesExist = this._propertyReader.VectorProperties.Count > 0;
 
-        var storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
+        this._dataTableProperties = new(() => [this._propertyReader.KeyProperty, .. this._propertyReader.DataProperties]);
+        this._vectorTableProperties = new(() => [this._propertyReader.KeyProperty, .. this._propertyReader.VectorProperties]);
 
-        this._mapper = InitializeMapper(
-            vectorStoreRecordDefinition,
-            storagePropertyNames,
-            options);
+        this._dataTableStoragePropertyNames = new(() => [this._propertyReader.KeyPropertyStoragePropertyName, .. this._propertyReader.DataPropertyStoragePropertyNames]);
+        this._vectorTableStoragePropertyNames = new(() => [this._propertyReader.KeyPropertyStoragePropertyName, .. this._propertyReader.VectorPropertyStoragePropertyNames]);
 
-        this._commandBuilder = new SqliteVectorStoreCollectionCommandBuilder(
-            this.CollectionName,
-            connection,
-            properties.KeyProperty,
-            properties.DataProperties,
-            properties.VectorProperties,
-            storagePropertyNames);
+        this._mapper = InitializeMapper(this._propertyReader, options);
+
+        this._commandBuilder = new SqliteVectorStoreCollectionCommandBuilder(this._connection);
     }
 
     /// <inheritdoc />
@@ -86,7 +117,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     {
         const string OperationName = "TableCount";
 
-        var command = this._commandBuilder.BuildTableCountCommand();
+        using var command = this._commandBuilder.BuildTableCountCommand(this._dataTableName);
 
         var result = await this
             .RunOperationAsync(OperationName, () => command.ExecuteScalarAsync(cancellationToken))
@@ -114,11 +145,11 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     /// <inheritdoc />
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        List<Task> tasks = [this.DropTableAsync(cancellationToken)];
+        List<Task> tasks = [this.DropTableAsync(this._dataTableName, cancellationToken)];
 
         if (this._vectorPropertiesExist)
         {
-            tasks.Add(this.DropVirtualTableAsync(cancellationToken));
+            tasks.Add(this.DropTableAsync(this._vectorTableName, cancellationToken));
         }
 
         return Task.WhenAll(tasks);
@@ -133,27 +164,42 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     #region Implementation of IVectorStoreRecordCollection<ulong, TRecord>
 
     /// <inheritdoc />
-    public Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        return await this.InternalGetAsync([key], options, cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        await foreach (var record in this.InternalGetAsync(keys, options, cancellationToken).ConfigureAwait(false))
+        {
+            yield return record;
+        }
     }
 
     /// <inheritdoc />
-    public Task<ulong> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ulong> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        var key = await this.InternalUpsertBatchAsync<ulong?>([record], options, cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return key ?? throw new VectorStoreOperationException("Error occurred during upsert operation.");
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        await foreach (var key in this.InternalUpsertBatchAsync<ulong?>(records, options, cancellationToken).ConfigureAwait(false))
+        {
+            if (key.HasValue)
+            {
+                yield return key.Value;
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -173,15 +219,20 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     #region Implementation of IVectorStoreRecordCollection<string, TRecord>
 
     /// <inheritdoc />
-    public Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        return await this.InternalGetAsync([key], options, cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<string> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<string> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        await foreach (var record in this.InternalGetAsync(keys, options, cancellationToken).ConfigureAwait(false))
+        {
+            yield return record;
+        }
     }
 
     /// <inheritdoc />
@@ -197,15 +248,25 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    Task<string> IVectorStoreRecordCollection<string, TRecord>.UpsertAsync(TRecord record, UpsertRecordOptions? options, CancellationToken cancellationToken)
+    async Task<string> IVectorStoreRecordCollection<string, TRecord>.UpsertAsync(TRecord record, UpsertRecordOptions? options, CancellationToken cancellationToken)
     {
-        throw new System.NotImplementedException();
+        var key = await this.InternalUpsertBatchAsync<string>([record], options, cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return key ?? throw new VectorStoreOperationException("Error occurred during upsert operation.");
     }
 
     /// <inheritdoc />
-    IAsyncEnumerable<string> IVectorStoreRecordCollection<string, TRecord>.UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options, CancellationToken cancellationToken)
+    async IAsyncEnumerable<string> IVectorStoreRecordCollection<string, TRecord>.UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        throw new System.NotImplementedException();
+        await foreach (var key in this.InternalUpsertBatchAsync<string>(records, options, cancellationToken).ConfigureAwait(false))
+        {
+            if (key is not null)
+            {
+                yield return key;
+            }
+        }
     }
 
     #endregion
@@ -214,50 +275,175 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
     private Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)
     {
-        List<Task> tasks = [this.CreateTableAsync(ifNotExists, cancellationToken)];
+        List<SqliteColumn> dataTableColumns = SqliteVectorStoreRecordPropertyMapping.GetColumns(
+            this._dataTableProperties.Value,
+            this._propertyReader.StoragePropertyNamesMap);
+
+        List<Task> tasks = [this.CreateTableAsync(
+            this._dataTableName,
+            dataTableColumns,
+            ifNotExists,
+            cancellationToken)];
 
         if (this._vectorPropertiesExist)
         {
-            tasks.Add(this.CreateVirtualTableAsync(ifNotExists, cancellationToken));
+            List<SqliteColumn> vectorTableColumns = SqliteVectorStoreRecordPropertyMapping.GetColumns(
+                this._vectorTableProperties.Value,
+                this._propertyReader.StoragePropertyNamesMap);
+
+            tasks.Add(this.CreateVirtualTableAsync(
+                this._vectorTableName,
+                vectorTableColumns,
+                ifNotExists,
+                SqliteConstants.VectorSearchExtensionName,
+                cancellationToken));
         }
 
         return Task.WhenAll(tasks);
     }
 
-    private Task<int> CreateTableAsync(bool ifNotExists, CancellationToken cancellationToken)
+    private Task<int> CreateTableAsync(string tableName, List<SqliteColumn> columns, bool ifNotExists, CancellationToken cancellationToken)
     {
         const string OperationName = "CreateTable";
 
-        using var command = this._commandBuilder.BuildCreateTableCommand(ifNotExists);
+        using var command = this._commandBuilder.BuildCreateTableCommand(tableName, columns, ifNotExists);
 
         return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
     }
 
-    private Task<int> CreateVirtualTableAsync(bool ifNotExists, CancellationToken cancellationToken)
+    private Task<int> CreateVirtualTableAsync(string tableName, List<SqliteColumn> columns, bool ifNotExists, string extensionName, CancellationToken cancellationToken)
     {
         const string OperationName = "CreateVirtualTable";
 
-        using var command = this._commandBuilder.BuildCreateVirtualTableCommand(ifNotExists);
+        using var command = this._commandBuilder.BuildCreateVirtualTableCommand(tableName, columns, ifNotExists, extensionName);
 
         return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
     }
 
-    private Task<int> DropTableAsync(CancellationToken cancellationToken)
+    private Task<int> DropTableAsync(string tableName, CancellationToken cancellationToken)
     {
         const string OperationName = "DropTable";
 
-        using var command = this._commandBuilder.BuildDropTableCommand();
+        using var command = this._commandBuilder.BuildDropTableCommand(tableName);
 
         return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
     }
 
-    private Task<int> DropVirtualTableAsync(CancellationToken cancellationToken)
+    private async IAsyncEnumerable<TRecord> InternalGetAsync<TKey>(
+        IEnumerable<TKey> keys,
+        GetRecordOptions? options,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        const string OperationName = "DropVirtualTable";
+        Verify.NotNull(keys);
 
-        using var command = this._commandBuilder.BuildDropVirtualTableCommand();
+        const string OperationName = "Select";
 
-        return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
+        var includeVectors = options?.IncludeVectors is true && this._vectorPropertiesExist;
+
+        SqliteCommand command;
+        List<VectorStoreRecordProperty> properties = [this._propertyReader.KeyProperty, .. this._propertyReader.DataProperties];
+
+        if (includeVectors)
+        {
+            command = this._commandBuilder.BuildSelectLeftJoinCommand(
+                this._dataTableName,
+                this._vectorTableName,
+                this._propertyReader.KeyPropertyStoragePropertyName,
+                this._dataTableStoragePropertyNames.Value,
+                this._propertyReader.VectorPropertyStoragePropertyNames,
+                keys.ToList());
+
+            properties.AddRange(this._propertyReader.VectorProperties);
+        }
+        else
+        {
+            command = this._commandBuilder.BuildSelectCommand(
+                this._dataTableName,
+                this._propertyReader.KeyPropertyStoragePropertyName,
+                this._dataTableStoragePropertyNames.Value,
+                keys.ToList());
+        }
+
+        using (command)
+        {
+            using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var storageModel = new Dictionary<string, object?>();
+
+                foreach (var property in properties)
+                {
+                    var propertyName = this._propertyReader.StoragePropertyNamesMap[property.DataModelPropertyName];
+                    var propertyType = property.PropertyType;
+                    var propertyValue = SqliteVectorStoreRecordPropertyMapping.GetPropertyValue(reader, propertyName, propertyType);
+
+                    storageModel.Add(propertyName, propertyValue);
+                }
+
+                yield return VectorStoreErrorHandler.RunModelConversion(
+                    DatabaseName,
+                    this.CollectionName,
+                    OperationName,
+                    () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
+            }
+        }
+    }
+
+    private async IAsyncEnumerable<TKey?> InternalUpsertBatchAsync<TKey>(
+        IEnumerable<TRecord> records,
+        UpsertRecordOptions? options,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        Verify.NotNull(records);
+
+        const string OperationName = "InsertOrReplace";
+
+        var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
+            this.CollectionName,
+            OperationName,
+            () => this._mapper.MapFromDataToStorageModel(record))).ToList();
+
+//#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+//        using var transaction = await this._connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+//#else
+//        using var transaction = this._connection.BeginTransaction();
+//#endif
+
+        if (this._vectorPropertiesExist)
+        {
+            using var vectorCommand = this._commandBuilder.BuildInsertOrReplaceCommand(
+                this._vectorTableName,
+                this._vectorTableStoragePropertyNames.Value,
+                storageModels);
+
+            await vectorCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        using var dataCommand = this._commandBuilder.BuildInsertOrReplaceCommand(
+                this._dataTableName,
+                this._dataTableStoragePropertyNames.Value,
+                storageModels,
+                shouldReturnKey: true);
+
+        using var reader = await dataCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            var key = reader.GetFieldValue<TKey?>(0);
+
+            if (key is not null)
+            {
+                yield return key;
+            }
+        }
+
+//#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+//        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+//#else
+//        transaction.Commit();
+//#endif
     }
 
     private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
@@ -278,8 +464,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     private static IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> InitializeMapper(
-        VectorStoreRecordDefinition vectorStoreRecordDefinition,
-        Dictionary<string, string> storagePropertyNames,
+        VectorStoreRecordPropertyReader propertyReader,
         SqliteVectorStoreRecordCollectionOptions<TRecord>? options)
     {
         if (options?.DictionaryCustomMapper is not null)
@@ -287,9 +472,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
             return options.DictionaryCustomMapper;
         }
 
-        return new SqliteVectorStoreRecordMapper<TRecord>(
-            vectorStoreRecordDefinition,
-            storagePropertyNames);
+        return new SqliteVectorStoreRecordMapper<TRecord>(propertyReader);
     }
 
     #endregion
