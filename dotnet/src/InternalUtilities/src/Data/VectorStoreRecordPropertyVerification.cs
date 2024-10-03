@@ -162,7 +162,7 @@ internal static class VectorStoreRecordPropertyVerification
         return collectionType switch
         {
             IEnumerable => typeof(object),
-            var enumerableType when GetEnumerableInterface(enumerableType) is Type enumerableInterface => enumerableInterface.GetGenericArguments()[0],
+            var enumerableType when GetGenericEnumerableInterface(enumerableType) is Type enumerableInterface => enumerableInterface.GetGenericArguments()[0],
             var arrayType when arrayType.IsArray => arrayType.GetElementType()!,
             _ => collectionType
         };
@@ -173,7 +173,7 @@ internal static class VectorStoreRecordPropertyVerification
             "It also kept it on any type which implements it. The below call to GetInterfaces " +
             "may return fewer results when trimmed but it will return 'IEnumerable<>' " +
             "if the type implemented it, even after trimming.")]
-    public static Type? GetEnumerableInterface(Type type)
+    private static Type? GetGenericEnumerableInterface(Type type)
     {
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
         {
@@ -190,9 +190,6 @@ internal static class VectorStoreRecordPropertyVerification
 
         return null;
     }
-
-    //var interfaceType when interfaceType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type enumerableInterface => interfaceType.GetGenericArguments()[0],
-    // var interfaceType when interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>) => interfaceType.GetGenericArguments()[0],
 
     /// <summary>
     /// Checks that if the provided <paramref name="recordType"/> is a <see cref="VectorStoreGenericDataModel{T}"/> that the key type is supported by the default mappers.
