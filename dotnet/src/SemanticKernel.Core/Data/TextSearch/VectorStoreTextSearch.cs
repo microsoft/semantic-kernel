@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Data.TextSearch;
 using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Data;
@@ -36,8 +38,8 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
         this(
             vectorizedSearch,
             textEmbeddingGeneration,
-            new TextSearchStringMapper(stringMapper),
-            new TextSearchResultMapper(resultMapper),
+            stringMapper is null ? null : new TextSearchStringMapper(stringMapper),
+            resultMapper is null ? null : new TextSearchResultMapper(resultMapper),
             options)
     {
     }
@@ -55,19 +57,18 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
     public VectorStoreTextSearch(
         IVectorizedSearch<TRecord> vectorizedSearch,
         ITextEmbeddingGenerationService textEmbeddingGeneration,
-        ITextSearchStringMapper stringMapper,
-        ITextSearchResultMapper resultMapper,
+        ITextSearchStringMapper? stringMapper = null,
+        ITextSearchResultMapper? resultMapper = null,
         VectorStoreTextSearchOptions? options = null)
     {
         Verify.NotNull(vectorizedSearch);
         Verify.NotNull(textEmbeddingGeneration);
-        Verify.NotNull(stringMapper);
-        Verify.NotNull(resultMapper);
 
         this._vectorizedSearch = vectorizedSearch;
         this._textEmbeddingGeneration = textEmbeddingGeneration;
-        this._stringMapper = stringMapper;
-        this._resultMapper = resultMapper;
+        this._propertyReader = new TextSearchResultPropertyReader(typeof(TRecord));
+        this._stringMapper = stringMapper ?? this.CreateTextSearchStringMapper();
+        this._resultMapper = resultMapper ?? this.CreateTextSearchResultMapper();
     }
 
     /// <summary>
@@ -103,17 +104,16 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     public VectorStoreTextSearch(
         IVectorizableTextSearch<TRecord> vectorizableTextSearch,
-        ITextSearchStringMapper stringMapper,
-        ITextSearchResultMapper resultMapper,
+        ITextSearchStringMapper? stringMapper = null,
+        ITextSearchResultMapper? resultMapper = null,
         VectorStoreTextSearchOptions? options = null)
     {
         Verify.NotNull(vectorizableTextSearch);
-        Verify.NotNull(stringMapper);
-        Verify.NotNull(resultMapper);
 
         this._vectorizableTextSearch = vectorizableTextSearch;
-        this._stringMapper = stringMapper;
-        this._resultMapper = resultMapper;
+        this._propertyReader = new TextSearchResultPropertyReader(typeof(TRecord));
+        this._stringMapper = stringMapper ?? this.CreateTextSearchStringMapper();
+        this._resultMapper = resultMapper ?? this.CreateTextSearchResultMapper();
     }
 
     /// <inheritdoc/>
@@ -152,6 +152,47 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
     private readonly IVectorizableTextSearch<TRecord>? _vectorizableTextSearch;
     private readonly ITextSearchStringMapper _stringMapper;
     private readonly ITextSearchResultMapper _resultMapper;
+    private readonly TextSearchResultPropertyReader _propertyReader;
+
+    /// <summary>
+    /// Result mapper which converts a TRecord to a <see cref="TextSearchResult"/>.
+    /// </summary>
+    private TextSearchResultMapper CreateTextSearchResultMapper()
+    {
+        TextSearchResult MapFromResultToTextSearchResult(object result)
+        {
+            if (typeof(TRecord) != result.GetType())
+            {
+                throw new ArgumentException($"Expected result of type {typeof(TRecord).FullName} but got {result.GetType().FullName}.");
+            }
+
+            return new TextSearchResult(
+                name: this._propertyReader.GetName(result),
+                value: this._propertyReader.GetValue(result),
+                link: this._propertyReader.GetLink(result));
+        };
+
+        return new TextSearchResultMapper(MapFromResultToTextSearchResult);
+    }
+
+    /// <summary>
+    /// /// Result mapper which converts a TRecord to a <see cref="string"/>.
+    /// </summary>
+    private TextSearchStringMapper CreateTextSearchStringMapper()
+    {
+        string MapFromResultToString(object result)
+        {
+            if (typeof(TRecord) != result.GetType())
+            {
+                throw new ArgumentException($"Expected result of type {typeof(TRecord).FullName} but got {result.GetType().FullName}.");
+            }
+
+            var value = this._propertyReader.GetValue(result);
+            return (string?)value ?? throw new InvalidOperationException("Value property cannot be null.");
+        };
+
+        return new TextSearchStringMapper(MapFromResultToString);
+    }
 
     /// <summary>
     /// Execute a vector search and return the results.
