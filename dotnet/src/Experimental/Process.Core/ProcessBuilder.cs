@@ -151,7 +151,8 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         var builtSteps = this._steps.Select(step => step.BuildStep()).ToList();
 
         // Create the process
-        var process = new KernelProcess(this.Name, builtSteps, builtEdges);
+        var state = new KernelProcessState(this.Name);
+        var process = new KernelProcess(state, builtSteps, builtEdges);
         return process;
     }
 

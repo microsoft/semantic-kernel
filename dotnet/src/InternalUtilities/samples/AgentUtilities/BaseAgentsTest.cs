@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.ClientModel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Microsoft.SemanticKernel;
@@ -36,8 +38,8 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
     protected OpenAIClientProvider GetClientProvider()
         =>
             this.UseOpenAIConfig ?
-                OpenAIClientProvider.ForOpenAI(this.ApiKey) :
-                OpenAIClientProvider.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
+                OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey)) :
+                OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!));
 
     /// <summary>
     /// Common method to write formatted agent chat content to the console.
@@ -78,7 +80,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
-    protected async Task DownloadResponseContentAsync(FileClient client, ChatMessageContent message)
+    protected async Task DownloadResponseContentAsync(OpenAIFileClient client, ChatMessageContent message)
     {
         foreach (KernelContent item in message.Items)
         {
@@ -89,7 +91,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
-    protected async Task DownloadResponseImageAsync(FileClient client, ChatMessageContent message)
+    protected async Task DownloadResponseImageAsync(OpenAIFileClient client, ChatMessageContent message)
     {
         foreach (KernelContent item in message.Items)
         {
@@ -100,10 +102,10 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
-    private async Task DownloadFileContentAsync(FileClient client, string fileId, bool launchViewer = false)
+    private async Task DownloadFileContentAsync(OpenAIFileClient client, string fileId, bool launchViewer = false)
     {
-        OpenAIFileInfo fileInfo = client.GetFile(fileId);
-        if (fileInfo.Purpose == OpenAIFilePurpose.AssistantsOutput)
+        OpenAIFile fileInfo = client.GetFile(fileId);
+        if (fileInfo.Purpose == FilePurpose.AssistantsOutput)
         {
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(fileInfo.Filename));
             if (launchViewer)

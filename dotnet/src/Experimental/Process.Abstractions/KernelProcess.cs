@@ -17,14 +17,15 @@ public sealed record KernelProcess : KernelProcessStepInfo
     /// <summary>
     /// Creates a new instance of the <see cref="KernelProcess"/> class.
     /// </summary>
-    /// <param name="name">The human friendly name of the Process.</param>
+    /// <param name="state">The process state.</param>
     /// <param name="steps">The steps of the process.</param>
     /// <param name="edges">The edges of the process.</param>
-    public KernelProcess(string name, IList<KernelProcessStepInfo> steps, Dictionary<string, List<KernelProcessEdge>>? edges = null)
-        : base(typeof(KernelProcess), new KernelProcessState() { Name = name }, edges ?? [])
+    public KernelProcess(KernelProcessState state, IList<KernelProcessStepInfo> steps, Dictionary<string, List<KernelProcessEdge>>? edges = null)
+        : base(typeof(KernelProcess), state, edges ?? [])
     {
+        Verify.NotNull(state);
         Verify.NotNull(steps);
-        Verify.NotNullOrWhiteSpace(name);
+        Verify.NotNullOrWhiteSpace(state.Name);
 
         this.Steps = [];
         this.Steps.AddRange(steps);

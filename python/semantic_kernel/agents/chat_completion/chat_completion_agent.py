@@ -174,9 +174,13 @@ class ChatCompletionAgent(Agent):
             f"with message count: {message_count}."
         )
 
+        role = None
+        message_builder: list[str] = []
         async for message_list in messages:
             for message in message_list:
+                role = message.role
                 message.name = self.name
+                message_builder.append(message.content)
                 yield message
 
         # Capture mutated messages related function calling / tools
@@ -184,6 +188,13 @@ class ChatCompletionAgent(Agent):
             message = chat[message_index]  # type: ignore
             message.name = self.name
             history.add_message(message)
+
+        if role != AuthorRole.TOOL:
+            history.add_message(
+                ChatMessageContent(
+                    role=role if role else AuthorRole.ASSISTANT, content="".join(message_builder), name=self.name
+                )
+            )
 
     def _setup_agent_chat_history(self, history: ChatHistory) -> ChatHistory:
         """Setup the agent chat history."""

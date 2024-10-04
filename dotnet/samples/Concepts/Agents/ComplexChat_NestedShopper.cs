@@ -4,8 +4,9 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using OpenAI.Chat;
 using Resources;
+
+using ChatResponseFormat = OpenAI.Chat.ChatResponseFormat;
 
 namespace Agents;
 
@@ -96,7 +97,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
     {
         Console.WriteLine($"! {Model}");
 
-        OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatResponseFormat.JsonObject };
+        OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat() };
         OpenAIPromptExecutionSettings autoInvokeSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         ChatCompletionAgent internalLeaderAgent = CreateAgent(InternalLeaderName, InternalLeaderInstructions);
