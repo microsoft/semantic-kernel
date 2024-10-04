@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NoWarn>$(NoWarn);CS1591;CA2007;VSTHRD111;IDE1006;SKEXP0001;SKEXP0110;OPENAI001</NoWarn>
+    <UserSecretsId>BD97332E-A8A4-4761-86DB-0D1999BF212C</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.12.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.21.1-alpha" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.21.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../Common/Settings.cs" Link="Common/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../../dotnet/Samples/LearnResources/Plugins/GitHub/GitHubModels.cs"/>
+    <Compile Include="../../dotnet/Samples/LearnResources/Plugins/GitHub/GitHubPlugin.cs" />
+  </ItemGroup>
+
+
+</Project>

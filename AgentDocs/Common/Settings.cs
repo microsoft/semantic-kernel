@@ -28,7 +28,7 @@ public class Settings
         public string ApiKey { get; set; } = string.Empty;
     }
 
-    private TSettings GetSettings<TSettings>() =>
+    public TSettings GetSettings<TSettings>() =>
         this.configRoot.GetRequiredSection(typeof(TSettings).Name).Get<TSettings>()!;
 
     public Settings()
