@@ -71,7 +71,7 @@ public abstract class KernelAgent : Agent
     /// </summary>
     /// <param name="arguments">The override arguments</param>
     /// <remarks>
-    /// This merge perserves original <see cref="PromptExecutionSettings"/> and <see cref="KernelArguments"/> parameters.
+    /// This merge preserves original <see cref="PromptExecutionSettings"/> and <see cref="KernelArguments"/> parameters.
     /// and allows for incremental addition or replacement of specific parameters while also preserving the ability
     /// to override the execution settings.
     /// </remarks>
