@@ -37,4 +37,10 @@ internal sealed class MockAgent : ChatHistoryKernelAgent
         this.InvokeCount++;
         return this.Response.Select(m => new StreamingChatMessageContent(m.Role, m.Content)).ToAsyncEnumerable();
     }
+
+    // Expose protected method for testing
+    public new KernelArguments? MergeArguments(KernelArguments? arguments)
+    {
+        return base.MergeArguments(arguments);
+    }
 }
