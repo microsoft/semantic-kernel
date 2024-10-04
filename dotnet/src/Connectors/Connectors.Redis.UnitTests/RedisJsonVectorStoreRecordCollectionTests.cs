@@ -466,7 +466,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
                 Filter = filter,
                 Top = 5,
                 Skip = 2
-            }).ToListAsync();
+            });
 
         // Assert.
         var expectedArgs = new object[]
@@ -493,13 +493,14 @@ public class RedisJsonVectorStoreRecordCollectionTests
                     It.Is<object[]>(x => x.Where(y => !(y is byte[])).SequenceEqual(expectedArgs.Where(y => !(y is byte[]))))),
                 Times.Once);
 
-        Assert.Single(actual);
-        Assert.Equal(TestRecordKey1, actual.First().Record.Key);
-        Assert.Equal(0.5d, actual.First().Score);
-        Assert.Equal("data 1", actual.First().Record.Data1);
-        Assert.Equal("data 2", actual.First().Record.Data2);
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.First().Record.Vector1!.Value.ToArray());
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.First().Record.Vector2!.Value.ToArray());
+        var results = await actual.Results.ToListAsync();
+        Assert.Single(results);
+        Assert.Equal(TestRecordKey1, results.First().Record.Key);
+        Assert.Equal(0.5d, results.First().Score);
+        Assert.Equal("data 1", results.First().Record.Data1);
+        Assert.Equal("data 2", results.First().Record.Data2);
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector1!.Value.ToArray());
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector2!.Value.ToArray());
     }
 
     /// <summary>

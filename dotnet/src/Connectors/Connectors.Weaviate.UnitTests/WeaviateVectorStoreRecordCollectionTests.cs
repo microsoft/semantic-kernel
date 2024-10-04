@@ -479,12 +479,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
-        var results = await sut.VectorizedSearchAsync(vector, new()
+        var actual = await sut.VectorizedSearchAsync(vector, new()
         {
             IncludeVectors = includeVectors
-        }).ToListAsync();
+        });
 
         // Assert
+        var results = await actual.Results.ToListAsync();
         Assert.Single(results);
 
         var score = results[0].Score;
@@ -520,7 +521,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
-            await sut.VectorizedSearchAsync(new List<double>([1, 2, 3])).ToListAsync());
+            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]))).Results.ToListAsync());
     }
 
     [Fact]
@@ -533,7 +534,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), searchOptions).ToListAsync());
+            await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), searchOptions)).Results.ToListAsync());
     }
 
     public void Dispose()

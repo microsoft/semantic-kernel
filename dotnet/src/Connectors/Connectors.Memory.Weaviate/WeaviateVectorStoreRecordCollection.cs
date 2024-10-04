@@ -336,10 +336,10 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         VectorSearchOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorSearch";
 
@@ -392,21 +392,20 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             };
         }
 
-        foreach (var result in collectionResults)
+        var mappedResults = collectionResults.Where(x => x is not null).Select(result =>
         {
-            if (result is not null)
-            {
-                var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result);
+            var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result!);
 
-                var record = VectorStoreErrorHandler.RunModelConversion(
-                    DatabaseName,
-                    this.CollectionName,
-                    OperationName,
-                    () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = searchOptions.IncludeVectors }));
+            var record = VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this.CollectionName,
+                OperationName,
+                () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = searchOptions.IncludeVectors }));
 
-                yield return new VectorSearchResult<TRecord>(record, score);
-            }
-        }
+            return new VectorSearchResult<TRecord>(record, score);
+        });
+
+        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
     }
 
     #region private

@@ -47,7 +47,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     public async Task ItCanCreateACollectionUpsertGetAndSearchAsync(bool useRecordDefinition)
     {
         // Arrange
-        var hotel = await CreateTestHotelAsync("Upsert-1");
+        var hotel = await this.CreateTestHotelAsync("Upsert-1");
         var testCollectionName = $"{fixture.TestIndexName}-createtest";
         var options = new AzureAISearchVectorStoreRecordCollectionOptions<Hotel>
         {
@@ -62,13 +62,13 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var upsertResult = await sut.UpsertAsync(hotel);
         var getResult = await sut.GetAsync("Upsert-1");
         var embedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
-        var searchResult = await sut.VectorizedSearchAsync(
+        var actual = await sut.VectorizedSearchAsync(
             embedding,
             new VectorSearchOptions
             {
                 IncludeVectors = true,
                 Filter = new VectorSearchFilter().EqualTo("HotelName", "MyHotel Upsert-1")
-            }).ToListAsync();
+            });
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -88,8 +88,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Equal(hotel.LastRenovationDate, getResult.LastRenovationDate);
         Assert.Equal(hotel.Rating, getResult.Rating);
 
-        Assert.Single(searchResult);
-        var searchResultRecord = searchResult.First().Record;
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResultRecord = searchResults.First().Record;
         Assert.Equal(hotel.HotelName, searchResultRecord.HotelName);
         Assert.Equal(hotel.Description, searchResultRecord.Description);
         Assert.NotNull(searchResultRecord.DescriptionEmbedding);
@@ -133,7 +134,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
 
         // Act
-        var hotel = await CreateTestHotelAsync("Upsert-1");
+        var hotel = await this.CreateTestHotelAsync("Upsert-1");
         var upsertResult = await sut.UpsertAsync(hotel);
         var getResult = await sut.GetAsync("Upsert-1");
 
@@ -165,9 +166,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         // Act
         var results = sut.UpsertBatchAsync(
             [
-                await CreateTestHotelAsync("UpsertMany-1"),
-                await CreateTestHotelAsync("UpsertMany-2"),
-                await CreateTestHotelAsync("UpsertMany-3"),
+                await this.CreateTestHotelAsync("UpsertMany-1"),
+                await this.CreateTestHotelAsync("UpsertMany-2"),
+                await this.CreateTestHotelAsync("UpsertMany-3"),
             ]);
 
         // Assert
@@ -256,7 +257,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
         var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
-        await sut.UpsertAsync(await CreateTestHotelAsync("Remove-1"));
+        await sut.UpsertAsync(await this.CreateTestHotelAsync("Remove-1"));
 
         // Act
         await sut.DeleteAsync("Remove-1");
@@ -272,9 +273,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     {
         // Arrange
         var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
-        await sut.UpsertAsync(await CreateTestHotelAsync("RemoveMany-1"));
-        await sut.UpsertAsync(await CreateTestHotelAsync("RemoveMany-2"));
-        await sut.UpsertAsync(await CreateTestHotelAsync("RemoveMany-3"));
+        await sut.UpsertAsync(await this.CreateTestHotelAsync("RemoveMany-1"));
+        await sut.UpsertAsync(await this.CreateTestHotelAsync("RemoveMany-2"));
+        await sut.UpsertAsync(await this.CreateTestHotelAsync("RemoveMany-3"));
 
         // Act
         // Also include a non-existing key to test that the operation does not fail for these.
@@ -339,7 +340,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act.
         var filter = option == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "Hotel 3") : new VectorSearchFilter().AnyTagEqualTo("Tags", "bar");
-        var searchResults = sut.VectorizedSearchAsync(
+        var actual = await sut.VectorizedSearchAsync(
             await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel"),
             new()
             {
@@ -349,10 +350,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             });
 
         // Assert.
-        Assert.NotNull(searchResults);
-        var searchResultsList = await searchResults.ToListAsync();
-        Assert.Single(searchResultsList);
-        var searchResult = searchResultsList.First();
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResult = searchResults.First();
         Assert.Equal("BaseSet-3", searchResult.Record.HotelId);
         Assert.Equal("Hotel 3", searchResult.Record.HotelName);
         Assert.Equal("This is a great hotel", searchResult.Record.Description);
@@ -380,7 +380,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act.
         var filter = new VectorSearchFilter().EqualTo("HotelName", "Hotel 3");
-        var searchResults = sut.VectorizableTextSearchAsync(
+        var actual = await sut.VectorizableTextSearchAsync(
             "A hotel with great views.",
             new()
             {
@@ -389,9 +389,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             });
 
         // Assert.
-        Assert.NotNull(searchResults);
-        var searchResultsList = await searchResults.ToListAsync();
-        Assert.Single(searchResultsList);
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
     }
 
     [Fact(Skip = SkipReason)]

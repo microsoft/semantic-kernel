@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// Contains a method for doing a vector search using text that will be vectorized downstream.
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
+[Experimental("SKEXP0001")]
 public interface IVectorizableTextSearch<TRecord>
     where TRecord : class
 {
@@ -19,7 +21,7 @@ public interface IVectorizableTextSearch<TRecord>
     /// <param name="options">The options that control the behavior of the search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The records found by the vector search, including their result scores.</returns>
-    IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(
+    Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(
         string searchText,
         VectorSearchOptions? options = default,
         CancellationToken cancellationToken = default);
