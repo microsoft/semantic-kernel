@@ -42,7 +42,7 @@ public class KernelAgentTests
     }
 
     /// <summary>
-    /// Verify ability to merge <see cref="KernelArguments"/> paramters.
+    /// Verify ability to merge <see cref="KernelArguments"/> parameters.
     /// </summary>
     [Fact]
     public void VerifyArgumentParameterMerge()
