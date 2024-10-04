@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.Filters;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
@@ -31,12 +32,9 @@ public class AgentChatTests
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
-<<<<<<< main
         // Inject history
         chat.Add([new ChatMessageContent(AuthorRole.User, "More")]);
         chat.Add([new ChatMessageContent(AuthorRole.User, "And then some")]);
-=======
->>>>>>> ms/features/bugbash-prep
         // Act: Inject history
         chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, "More")]);
         chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, "And then some")]);
@@ -45,11 +43,8 @@ public class AgentChatTests
         await this.VerifyHistoryAsync(expectedCount: 2, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent hasn't joined
 
-<<<<<<< main
         // Invoke with input & verify (agent joins chat)
         chat.Add(new ChatMessageContent(AuthorRole.User, "hi"));
-=======
->>>>>>> ms/features/bugbash-prep
         // Act: Invoke with input & verify (agent joins chat)
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
         await chat.InvokeAsync().ToArrayAsync();
@@ -166,6 +161,33 @@ public class AgentChatTests
 
         // Add a system message
         Assert.Throws<KernelException>(() => chat.AddChatMessage(new ChatMessageContent(AuthorRole.System, "hi")));
+    /// Verify behavior of <see cref="AgentChat"/> usage of <see cref="IAgentChatFilter"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyAgentChatFiltersAsync()
+    {
+        // Create a filter
+        Mock<IAgentChatFilter> mockFilter = new();
+
+        // Create chat
+        TestChat chat = new()
+        {
+            Filters =
+            {
+                mockFilter.Object
+            }
+        };
+
+        // Verify initial state
+        mockFilter.Verify(f => f.OnAgentInvoking(It.IsAny<AgentChatFilterInvokingContext>()), Times.Never);
+        mockFilter.Verify(f => f.OnAgentInvoked(It.IsAny<AgentChatFilterInvokedContext>()), Times.Never);
+
+        // Invoke with input & verify (agent joins chat)
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
+        await chat.InvokeAsync().ToArrayAsync();
+        Assert.Equal(1, chat.Agent.InvokeCount);
+        mockFilter.Verify(f => f.OnAgentInvoking(It.IsAny<AgentChatFilterInvokingContext>()), Times.Once);
+        mockFilter.Verify(f => f.OnAgentInvoked(It.IsAny<AgentChatFilterInvokedContext>()), Times.Once);
     }
 
     private async Task VerifyHistoryAsync(int expectedCount, IAsyncEnumerable<ChatMessageContent> history)
@@ -183,32 +205,23 @@ public class AgentChatTests
             CancellationToken cancellationToken = default) =>
                 this.InvokeAgentAsync(this.Agent, cancellationToken);
 
-<<<<<<< main
-<<<<<<< main
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
-=======
         public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             ChatHistory history,
             IReadOnlyList<ChatMessageContent> history,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
->>>>>>> origin/PR
-=======
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
->>>>>>> ms/features/bugbash-prep
         {
             this.SetActivityOrThrow();
             return this.InvokeAgentAsync(this.Agent, cancellationToken);
         }
-<<<<<<< main
 
         public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(CancellationToken cancellationToken = default)
         {
             StreamingChatMessageContent[] messages = [new StreamingChatMessageContent(AuthorRole.Assistant, "sup")];
             return messages.ToAsyncEnumerable();
         }
-=======
->>>>>>> ms/features/bugbash-prep
     }
 }

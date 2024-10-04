@@ -1,18 +1,11 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-<<<<<<< main
-<<<<<<< main
 using Microsoft.SemanticKernel.Text;
-=======
 using Microsoft.SemanticKernel.Diagnostics;
->>>>>>> ms/feature-error-handling
-=======
-using Microsoft.SemanticKernel.Diagnostics;
->>>>>>> ms/feature-error-handling-part3
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
@@ -31,7 +24,6 @@ public class QdrantVectorRecord
     /// The embedding data.
     /// </summary>
     [JsonPropertyName("embedding")]
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float> Embedding { get; }
 
     /// <summary>
@@ -78,16 +70,10 @@ public class QdrantVectorRecord
     /// <param name="json"></param>
     /// <param name="tags"></param>
     /// <returns>Vector record</returns>
-<<<<<<< main
-<<<<<<< main
     /// <exception cref="KernelException">Qdrant exception</exception>
     public static QdrantVectorRecord FromJsonMetadata(string pointId, ReadOnlyMemory<float> embedding, string json, List<string>? tags = null)
-=======
-=======
->>>>>>> ms/feature-error-handling-part3
     /// <exception cref="SKException">Qdrant exception</exception>
     public static QdrantVectorRecord FromJsonMetadata(string pointId, IEnumerable<float> embedding, string json, List<string>? tags = null)
->>>>>>> ms/feature-error-handling
     {
         var payload = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
         if (payload is not null)
@@ -95,14 +81,7 @@ public class QdrantVectorRecord
             return new QdrantVectorRecord(pointId, embedding, payload, tags);
         }
 
-<<<<<<< main
-<<<<<<< main
         throw new KernelException("Unable to deserialize record payload");
-=======
         throw new SKException("Unable to deserialize record payload");
->>>>>>> ms/feature-error-handling
-=======
-        throw new SKException("Unable to deserialize record payload");
->>>>>>> ms/feature-error-handling-part3
     }
 }

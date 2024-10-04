@@ -21,6 +21,9 @@ Add Semantic Kernel Development Office Hours for Python and Java to your calenda
 * Java Development Office Hours: [Java Development Office Hours](https://aka.ms/sk-java-dev-sync)
 * Python Development Office Hours: [Python Development Office Hours](https://aka.ms/sk-python-dev-sync)
 
+* Americas timezone: download the [calendar.ics](https://aka.ms/sk-community-calendar) file.
+* Asia Pacific timezone: download the [calendar-APAC.ics](https://aka.ms/sk-community-calendar-apac) file.
+
 If you have any questions or if you would like to showcase your project(s), please email what you'd like us to cover here: skofficehours[at]microsoft.com.
 
 If you are unable to make it live, all meetings will be recorded and posted online.
