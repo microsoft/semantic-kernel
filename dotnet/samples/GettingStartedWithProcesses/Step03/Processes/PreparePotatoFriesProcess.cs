@@ -64,7 +64,7 @@ public enum PotatoFriesEvents
 /// 1. Add steps and other subprocess as steps of the SK Process.<br/>
 /// 2. Linking of internal process events: Link prorcess steps and subprocess own events with the created SK Process.<br/>
 /// 3. Define External Input Event triggers of the SK Process.<br/>
-/// 4. Define External Ouput Events of the SK Process that could be subscribed to by other SK Steps or Processes.<br/>
+/// 4. Define External Output Events of the SK Process that could be subscribed to by other SK Steps or Processes.<br/>
 ///
 /// For a visual reference of the FriedFishProcess check this <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#Fried_Fish_Preparation_Process" >diagram</see>
 /// </summary>
