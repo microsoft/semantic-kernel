@@ -19,7 +19,11 @@ You can also use environment variables if you prefer.
 
 To set your secrets with Secret Manager:
 
+<<<<<<< HEAD
 ```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
+=======
+```
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 cd dotnet/samples/KernelSyntaxExamples
 
 dotnet user-secrets init
@@ -87,7 +91,11 @@ dotnet user-secrets set "Kusto:ConnectionString" "..."
 
 To set your secrets with environment variables, use these names:
 
+<<<<<<< HEAD
 ```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
+=======
+```
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 # OpenAI
 OpenAI__ModelId
 OpenAI__ChatModelId
@@ -161,7 +169,11 @@ However, the Kernel needs to be able to authenticate outgoing requests per the r
 
 `AuthenticateRequestAsyncCallback` is a delegate type that serves as a callback function for adding authentication information to HTTP requests sent by the OpenAPI plugin.
 
+<<<<<<< HEAD
 ```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
+=======
+```csharp
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 public delegate Task AuthenticateRequestAsyncCallback(HttpRequestMessage request);
 ```
 
@@ -180,7 +192,11 @@ When the `AuthenticateRequestAsync` method is called, it retrieves the credentia
 
 The following code demonstrates how to use this provider:
 
+<<<<<<< HEAD
 ```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
+=======
+```csharp
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 var basicAuthProvider = new BasicAuthenticationProvider(() =>
 {
     // JIRA API expects credentials in the format "email:apikey"
@@ -198,7 +214,11 @@ When the `AuthenticateRequestAsync` method is called, it retrieves the token and
 
 The following code demonstrates how to use this provider:
 
+<<<<<<< HEAD
 ```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
+=======
+```csharp
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 var bearerAuthProvider = new BearerAuthenticationProvider(() =>
 {
     return Task.FromResult(Env.Var("AZURE_KEYVAULT_TOKEN"));
@@ -221,7 +241,11 @@ To construct this provider, the caller must specify:
 - _Scopes_ - permissions being requested
 - _Redirect URI_ - for redirecting the user back to the application. (When running locally, this is typically http://localhost.)
 
+<<<<<<< HEAD
 ```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
+=======
+```csharp
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 var msalAuthProvider = new InteractiveMsalAuthenticationProvider(
     Env.Var("AZURE_KEYVAULT_CLIENTID"), // clientId
     Env.Var("AZURE_KEYVAULT_TENANTID"), // tenantId

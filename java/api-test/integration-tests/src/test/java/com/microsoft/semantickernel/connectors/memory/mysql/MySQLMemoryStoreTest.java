@@ -26,6 +26,7 @@ import reactor.util.function.Tuple2;
 @Testcontainers
 public class MySQLMemoryStoreTest {
     @Container private static final MySQLContainer<?> CONTAINER = new MySQLContainer<>();
+    @Container private static final MySQLContainer CONTAINER = new MySQLContainer();
     private static final String MYSQL_USER = "test";
     private static final String MYSQL_PASSWORD = "test";
 

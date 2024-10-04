@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Created-By: Maven JAR Plugin 3.3.0
+Build-Jdk-Spec: 17
+Specification-Title: Maven Wrapper Jar
+Specification-Version: 3.2
+Specification-Vendor: The Apache Software Foundation
+Implementation-Title: Maven Wrapper Jar
+Implementation-Version: 3.2.0
+Implementation-Vendor: The Apache Software Foundation
+

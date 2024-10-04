@@ -5,6 +5,11 @@ import java.util.logging.Logger;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
+
+import java.util.logging.Logger;
+
 public class Main {
 
     private static final int PORT = 50051;
@@ -19,6 +24,7 @@ public class Main {
                 // allows the server to handle requests related to the functionality provided by the
                 // `RandomActivitySkill` class.
                 addService(new RandomActivitySkill()).build();
+                .addService(new RandomActivitySkill()).build();
 
         System.out.println("Starting server...");
         try {

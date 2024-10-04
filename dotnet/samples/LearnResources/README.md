@@ -2,14 +2,28 @@
 
 This folder contains a project with code snippets that are related to online documentation sources like Microsoft Learn, DevBlogs and others.
 
-| Subfolders        | Description                                                                                                   |
-| ----------------- | ------------------------------------------------------------------------------------------------------------- |
-| `MicrosoftLearn`  | Code snippets that are related to [Microsoft Learn Docs](https://learn.microsoft.com/en-us/semantic-kernel/). |
+| Subfolders             | Descriptio
+| ---------------------- | -----------------------------------------------------------------------------------------------------
+| `MicrosoftLearn`|de snippets that are related to[irsft Learn Docs](https://learn.microsoft.com/en-us/semantic-kernel/). |
 
 ## Running Examples with Filters
 
-You can run specific examples by using test filters (dotnet test --filter).
-Type "dotnet test --help" at the command line for more details.
+* [ ] * [ ] * [ ] * [ ] You can run specific examples by using test filters (dotnet test --filter).
+        Type "dotnet test --help" at th
+
+* col1col2col3
+
+e | col1 | col2 | col3 |
+  | ---- | ---- | ---- |
+  |      |      |      |
+  |      |      |      |
+
+  co| col1 | col2 | col3 |
+  | ---- | ---- | ---- |
+  |      |      |      |
+  |      |      |      |
+
+  mmand line for more details.
 
 ## Configuring Secrets
 
@@ -19,7 +33,7 @@ and other resources. We suggest using .NET
 to avoid the risk of leaking secrets into the repository, branches and pull requests.
 You can also use environment variables if you prefer.
 
-This project and KernelSyntaxExamples use the same pool of secrets. 
+This project and KernelSyntaxExamples use the same pool of secrets.
 
 To set your secrets with Secret Manager:
 

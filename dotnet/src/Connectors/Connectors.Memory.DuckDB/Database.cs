@@ -7,6 +7,8 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
+using DuckDB.NET;
+using DuckDB.NET;
 
 namespace Microsoft.SemanticKernel.Connectors.DuckDB;
 
@@ -95,7 +97,7 @@ internal sealed class Database(int? vectorSize)
     {
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-            SELECT DISTINCT collection 
+            SELECT DISTINCT collection
             FROM {TableName};";
 
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);

@@ -81,6 +81,9 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
         this._keyPropertyName = keyPropertyName;
         this._keyProperty = keyProperty;
 
+        this._keyPropertyName = propertyReader.KeyPropertyName;
+        this._keyProperty = propertyReader.KeyPropertyInfo;
+
         var conventionPack = new ConventionPack
         {
             new IgnoreExtraElementsConvention(ignoreExtraElements: true)

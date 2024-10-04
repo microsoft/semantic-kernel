@@ -1,0 +1,18 @@
+INSTURCTIONS:
+Provide a realistic value for the missing parameter. If you don't know the answer, provide a best guess using the limited information provided.
+Do not give a range of values. Do not give a value that is not realistic. Do not give a value that is not possible.
+
+OUTPUT FORMAT:
+{
+    "value": "<value>",
+    "reason": "<reason>",
+    "units": "<units>",
+}
+
+MISSING PARAMETER DESCRIPTION:
+{{$input}}
+
+PARAMETER UNITS:
+{{$units}}
+
+ANSWER:

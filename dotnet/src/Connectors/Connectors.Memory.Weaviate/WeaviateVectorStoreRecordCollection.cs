@@ -83,6 +83,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         }
     };
 
+    /// <summary>The default options for vector search.</summary>
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+
     /// <summary><see cref="HttpClient"/> that is used to interact with Weaviate API.</summary>
     private readonly HttpClient _httpClient;
 
@@ -368,27 +371,27 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 $"Supported types are: {string.Join(", ", s_supportedVectorTypes.Select(l => l.FullName))}");
         }
 
-        var searchOptions = options ?? VectorSearchOptions.Default;
-        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorFieldName);
+        var searchOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
 
         if (vectorProperty is null)
         {
             throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
         }
 
-        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
-        var fields = this._dataPropertyStorageNames;
+        var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName);
+        var fields = this._propertyReader.DataPropertyJsonNames;
 
         var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildSearchQuery(
             vector,
             this.CollectionName,
             vectorPropertyName,
-            this._keyProperty.DataModelPropertyName,
+            this._propertyReader.KeyPropertyName,
             s_jsonSerializerOptions,
             searchOptions,
-            this._storagePropertyNames,
-            this._vectorPropertyStorageNames,
-            this._dataPropertyStorageNames);
+            this._propertyReader.JsonPropertyNamesMap,
+            this._propertyReader.VectorPropertyJsonNames,
+            this._propertyReader.DataPropertyJsonNames);
 
         using var request = new WeaviateVectorSearchRequest(query).Build();
 
@@ -496,7 +499,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         if (!string.IsNullOrWhiteSpace(vectorFieldName))
         {
             // Check vector properties by data model property name.
-            var vectorProperty = this._vectorProperties
+            var vectorProperty = this._propertyReader.VectorProperties
                 .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
 
             if (vectorProperty is not null)
@@ -509,6 +512,10 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         // If vector property is not provided in options, return first vector property from schema.
         return this._firstVectorProperty;
+        return this._propertyReader.VectorProperty;
+    }
+
+    /// <summary>
     /// Returns custom mapper, generic data model mapper or default record mapper.
     /// </summary>
     private IVectorStoreRecordMapper<TRecord, JsonObject> InitializeMapper()
