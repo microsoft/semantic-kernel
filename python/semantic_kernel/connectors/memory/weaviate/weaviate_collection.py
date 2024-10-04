@@ -1,13 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import sys
 from collections.abc import Sequence
 from typing import Any, TypeVar
-
-from semantic_kernel.connectors.memory.weaviate.utils import data_model_definition_to_weaviate_properties
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField
-from semantic_kernel.kernel_types import OneOrMany
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -21,13 +16,24 @@ from weaviate.classes.query import Filter
 from weaviate.collections.classes.data import DataObject
 from weaviate.collections.collection import CollectionAsync
 
+from semantic_kernel.connectors.memory.weaviate.utils import (
+    data_model_definition_to_weaviate_properties,
+    extract_key_from_dict_record_based_on_data_model_definition,
+    extract_key_from_weaviate_object_based_on_data_model_definition,
+    extract_properties_from_dict_record_based_on_data_model_definition,
+    extract_properties_from_weaviate_object_based_on_data_model_definition,
+    extract_vectors_from_dict_record_based_on_data_model_definition,
+    extract_vectors_from_weaviate_object_based_on_data_model_definition,
+)
 from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
 )
+from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 TModel = TypeVar("TModel")
@@ -147,16 +153,25 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
 
     @override
     async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
-        include_vector = kwargs.get("include_vectors", False)
+        include_vectors: bool = kwargs.get("include_vectors", False)
+        named_vectors: list[str] = []
+        if include_vectors:
+            named_vectors = [
+                data_field.name
+                for data_field in self.data_model_definition.fields.values()
+                if isinstance(data_field, VectorStoreRecordDataField) and data_field.has_embedding
+            ]
 
         async with self.async_client:
             try:
                 collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
-                data_objects: list[DataObject] = await asyncio.gather(*[
-                    collection.query.fetch_object_by_id(key, include_vector=include_vector) for key in keys
-                ])
+                result = await collection.query.fetch_objects(
+                    filters=Filter.any_of([Filter.by_id().equal(key) for key in keys]),
+                    # Requires a list of named vectors if it is not empty. Otherwise, a boolean is sufficient.
+                    include_vector=named_vectors or include_vectors,
+                )
 
-                return data_objects
+                return result.objects
             except Exception as ex:
                 raise MemoryConnectorException(f"Failed to get records: {ex}")
 
@@ -165,11 +180,7 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
         async with self.async_client:
             try:
                 collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
-                await collection.data.delete_many(
-                    where=Filter.any_of([
-                        Filter.by_property(self.data_model_definition.key_field.name).equal(key) for key in keys
-                    ])
-                )
+                await collection.data.delete_many(where=Filter.any_of([Filter.by_id().equal(key) for key in keys]))
             except Exception as ex:
                 raise MemoryConnectorException(f"Failed to delete records: {ex}")
 
@@ -178,64 +189,31 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
         """Create a data object from a record based on the data model definition."""
         records_in_store_model: list[DataObject] = []
         for record in records:
-            # Data fields
-            properties = {
-                field.name: record[field.name]
-                for field in self.data_model_definition.fields.values()
-                if isinstance(field, VectorStoreRecordDataField)
-            }
-            # Key field
-            key = (
-                record[self.data_model_definition.key_field.name] if self.data_model_definition.key_field.name else None
+            properties = extract_properties_from_dict_record_based_on_data_model_definition(
+                record, self.data_model_definition
             )
+            # If key is None, Weaviate will generate a UUID
+            key = extract_key_from_dict_record_based_on_data_model_definition(record, self.data_model_definition)
             # Vector field
-            embedding_property_names: dict[str, str] = {
-                field.name: field.embedding_property_name
-                for field in self.data_model_definition.fields.values()
-                if isinstance(field, VectorStoreRecordDataField) and field.has_embedding
-            }
-            if embedding_property_names:
-                vector = {
-                    data_field_name: record[embedding_field_name]
-                    for data_field_name, embedding_field_name in embedding_property_names.items()
-                }
-            else:
-                if self.data_model_definition.vector_fields:
-                    vector = record[self.data_model_definition.vector_fields[0].name]
-                else:
-                    vector = None
-            records_in_store_model.append(DataObject(properties=properties, uuid=key, vector=vector))
+            vectors = extract_vectors_from_dict_record_based_on_data_model_definition(
+                record, self.data_model_definition
+            )
+            records_in_store_model.append(DataObject(properties=properties, uuid=key, vector=vectors))
         return records_in_store_model
 
     @override
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
-        assert all([isinstance(record, DataObject) for record in records])  # nosec
-
         records_in_dict: list[dict[str, Any]] = []
         for record in records:
-            assert isinstance(record, DataObject)  # nosec
-            # Data fields
-            data_fields = {
-                field.name: record.properties[field.name]
-                for field in self.data_model_definition.fields.values()
-                if isinstance(field, VectorStoreRecordDataField)
-            }
-            # Key field
-            if self.data_model_definition.key_field.name and record.uuid:
-                data_fields[self.data_model_definition.key_field.name] = record.uuid
-            # Vector field
-            embedding_property_names: dict[str, str] = {
-                field.name: field.embedding_property_name
-                for field in self.data_model_definition.fields.values()
-                if isinstance(field, VectorStoreRecordDataField) and field.has_embedding
-            }
-            if embedding_property_names:
-                for data_field_name, embedding_field_name in embedding_property_names.items():
-                    data_fields[embedding_field_name] = record.vector[data_field_name]
-            else:
-                if self.data_model_definition.vector_fields:
-                    data_fields[self.data_model_definition.vector_fields[0].name] = record.vector
-            records_in_dict.append(data_fields)
+            properties = extract_properties_from_weaviate_object_based_on_data_model_definition(
+                record, self.data_model_definition
+            )
+            key = extract_key_from_weaviate_object_based_on_data_model_definition(record, self.data_model_definition)
+            vectors = extract_vectors_from_weaviate_object_based_on_data_model_definition(
+                record, self.data_model_definition
+            )
+
+            records_in_dict.append(properties | key | vectors)
 
         return records_in_dict
 

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import platform
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Annotated
@@ -133,8 +134,10 @@ def store(request):
             yield QdrantStore(location=":memory:"), {}
         case "qdrant_grpc":
             yield QdrantStore(), {"prefer_grpc": True}
-        case "weaviate":
-            yield WeaviateStore(), {}
+        case "weaviate_local":
+            yield WeaviateStore(local_host="localhost"), {}
+        case "weaviate_embedded":
+            yield WeaviateStore(use_embed=True), {}
 
 
 @fixture
@@ -167,7 +170,14 @@ async def collection_and_data(store, collection_details):
         "qdrant",
         "qdrant_in_memory",
         "qdrant_grpc",
-        "weaviate",
+        "weaviate_local",
+        pytest.param(
+            "weaviate_embedded",
+            marks=pytest.mark.skipif(
+                platform.system() == "Windows",
+                reason="Weaviate embedded is not supported on Windows: https://github.com/weaviate/weaviate/issues/3315",
+            ),
+        ),
     ],
     indirect=True,
 )
