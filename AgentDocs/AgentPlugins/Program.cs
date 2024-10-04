@@ -101,9 +101,9 @@ public static class Program
 
             DateTime now = DateTime.Now;
             KernelArguments arguments =
-                new(new AzureOpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })
+                new(new AzureOpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }) // NOTE: Update after bug fix available
                 {
-                    { "repository", "microsoft/semantic-kernel" },
+                    { "repository", "microsoft/semantic-kernel" }, // NOTE: Remove after bug fix available
                     { "now", $"{now.ToShortDateString()} {now.ToShortTimeString()}" }
                 };
             await foreach (ChatMessageContent response in agent.InvokeAsync(history, arguments))
