@@ -19,14 +19,15 @@ public sealed class TestConfiguration
         s_instance = new TestConfiguration(configRoot);
     }
 
+    public static AzureOpenAIConfig? AzureOpenAI => null;
+    public static AzureOpenAIConfig? AzureOpenAIImages => null;
+    public static AzureOpenAIEmbeddingsConfig? AzureOpenAIEmbeddings => null;
+    public static AzureAISearchConfig? AzureAISearch => null;
+
     public static OllamaConfig Ollama => LoadSection<OllamaConfig>();
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
     public static OnnxConfig Onnx => LoadSection<OnnxConfig>();
-    public static AzureOpenAIConfig AzureOpenAI => LoadSection<AzureOpenAIConfig>();
     public static AzureAIInferenceConfig AzureAIInference => LoadSection<AzureAIInferenceConfig>();
-    public static AzureOpenAIConfig AzureOpenAIImages => LoadSection<AzureOpenAIConfig>();
-    public static AzureOpenAIEmbeddingsConfig AzureOpenAIEmbeddings => LoadSection<AzureOpenAIEmbeddingsConfig>();
-    public static AzureAISearchConfig AzureAISearch => LoadSection<AzureAISearchConfig>();
     public static QdrantConfig Qdrant => LoadSection<QdrantConfig>();
     public static WeaviateConfig Weaviate => LoadSection<WeaviateConfig>();
     public static KeyVaultConfig KeyVault => LoadSection<KeyVaultConfig>();
