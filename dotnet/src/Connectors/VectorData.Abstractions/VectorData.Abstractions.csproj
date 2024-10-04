@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.Extensions.VectorData.Abstractions</AssemblyName>
+    <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <VersionPrefix>1.21.1</VersionPrefix>
+    <VersionSuffix>alpha</VersionSuffix>
+    <EnablePackageValidation>true</EnablePackageValidation>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - Abstractions</Title>
+    <PackageId>$(AssemblyName)</PackageId>
+    <PackageDescription>Abstractions for vector database access.
+
+Commonly Used Types:
+Microsoft.Extensions.VectorData.IVectorStore
+Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt;</PackageDescription>
+    <PackageReadmeFile>PACKAGE.md</PackageReadmeFile>
+    <Product></Product>
+    <PackageTags>Vector, Database, SDK</PackageTags>
+    <Description>$(PackageDescription)</Description>
+    <PackageProjectUrl>https://dot.net/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/microsoft/semantic-kernel</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+  </ItemGroup>
+</Project>
