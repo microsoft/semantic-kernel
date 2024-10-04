@@ -122,8 +122,8 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
                 Process.Start(
                     new ProcessStartInfo
                     {
-                        FileName = "cmd.exe",
-                        Arguments = $"/C start {filePath}"
+                        FileName = filePath,
+                        UseShellExecute = true
                     });
             }
         }
