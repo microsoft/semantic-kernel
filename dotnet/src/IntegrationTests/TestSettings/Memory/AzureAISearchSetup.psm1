@@ -32,7 +32,7 @@ function New-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGro
     }
 
     # Create the ai search service if it doesn't exist.
-    $service = Get-AzSearchService -ResourceGroupName $resourceGroup -Name $aiSearchResourceName
+    $service = Get-AzSearchService -ResourceGroupName $overrideResourceGroup -Name $overrideAISearchResourceName
     if (-not $service) {
         Write-Host "Service does not exist, creating '$overrideAISearchResourceName' ..."
         New-AzSearchService -ResourceGroupName $overrideResourceGroup -Name $overrideAISearchResourceName -Sku "Basic" -Location "North Europe" -PartitionCount 1 -ReplicaCount 1 -HostingMode Default
