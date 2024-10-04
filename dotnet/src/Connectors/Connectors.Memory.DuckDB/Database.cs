@@ -183,6 +183,53 @@ internal sealed class Database(int? vectorSize)
         return null;
     }
 
+    public async IAsyncEnumerable<DatabaseEntry> ReadAllAsync(DuckDBConnection conn,
+    string collectionName,
+    string[] keys,
+    [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (keys.Length == 0)
+        {
+            yield break;
+        }
+
+        using var cmd = conn.CreateCommand();
+        var keyPlaceholders = string.Join(", ", keys.Select((k) => "?"));
+
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+        cmd.CommandText = $@"
+         SELECT key, metadata, timestamp, embedding 
+         FROM {TableName}
+         WHERE collection=? 
+           AND key IN ({keyPlaceholders});";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
+        cmd.Parameters.Add(new DuckDBParameter { Value = collectionName });
+        // Add the key parameters
+        foreach (var key in keys)
+        {
+            cmd.Parameters.Add(new DuckDBParameter { Value = key });
+        }
+
+        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            string key = dataReader.GetFieldValue<string>("key");
+            string metadata = dataReader.GetFieldValue<string>("metadata");
+            string timestamp = dataReader.GetFieldValue<string>("timestamp");
+            var embeddingFromSearch = dataReader.GetFieldValue<List<float>>("embedding").ToArray();
+
+            yield return new DatabaseEntry
+            {
+                Key = key,
+                MetadataString = metadata,
+                Embedding = embeddingFromSearch,
+                Timestamp = timestamp
+            };
+        }
+    }
+
     public async Task DeleteCollectionAsync(DuckDBConnection conn, string collectionName, CancellationToken cancellationToken = default)
     {
         using var cmd = conn.CreateCommand();

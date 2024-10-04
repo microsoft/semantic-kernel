@@ -144,17 +144,9 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        foreach (var key in keys)
+        await foreach (var memoryRecord in this.InternalGetBatchAsync(this._dbConnection, collectionName, keys.ToArray(), withEmbeddings, cancellationToken).ConfigureAwait(false))
         {
-            var result = await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (result is not null)
-            {
-                yield return result;
-            }
-            else
-            {
-                yield break;
-            }
+            yield return memoryRecord;
         }
     }
 
@@ -318,6 +310,31 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
             ReadOnlyMemory<float>.Empty,
             entry.Value.Key,
             ParseTimestamp(entry.Value.Timestamp));
+    }
+
+    private async IAsyncEnumerable<MemoryRecord> InternalGetBatchAsync(
+    DuckDBConnection connection,
+    string collectionName,
+    string[] keys,
+    bool withEmbedding,
+    [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var entry in this._dbConnector.ReadAllAsync(connection, collectionName, keys, cancellationToken).ConfigureAwait(false))
+        {
+            var memoryRecord = withEmbedding
+                ? MemoryRecord.FromJsonMetadata(
+                    json: entry.MetadataString,
+                    entry.Embedding,
+                    entry.Key,
+                    ParseTimestamp(entry.Timestamp))
+                : MemoryRecord.FromJsonMetadata(
+                    json: entry.MetadataString,
+                    ReadOnlyMemory<float>.Empty,
+                    entry.Key,
+                    ParseTimestamp(entry.Timestamp));
+
+            yield return memoryRecord;
+        }
     }
 
     #endregion
