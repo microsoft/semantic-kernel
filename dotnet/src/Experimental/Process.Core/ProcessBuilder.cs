@@ -153,7 +153,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
             throw new KernelException($"The process named '{this.Name}' does not expose an event with Id '{eventId}'.");
         }
 
-        // Targets for external events on a process should be scoped to the process iteself rather than the step inside the process.
+        // Targets for external events on a process should be scoped to the process itself rather than the step inside the process.
         var processTarget = target with { Step = this, TargetEventId = eventId };
         return processTarget;
     }

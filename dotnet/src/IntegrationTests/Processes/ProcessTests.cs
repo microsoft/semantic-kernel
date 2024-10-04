@@ -37,8 +37,8 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var procesHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
-        var processInfo = await procesHandle.GetStateAsync();
+        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processInfo = await processHandle.GetStateAsync();
 
         // Assert
         var repeatStepState = processInfo.Steps.Where(s => s.State.Name == nameof(RepeatStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
@@ -77,8 +77,8 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var procesHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
-        var processInfo = await procesHandle.GetStateAsync();
+        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processInfo = await processHandle.GetStateAsync();
 
         // Assert
         var innerProcess = processInfo.Steps.Where(s => s.State.Name == "Inner").Single() as KernelProcess;
@@ -123,8 +123,8 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var procesHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
-        var processInfo = await procesHandle.GetStateAsync();
+        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
+        var processInfo = await processHandle.GetStateAsync();
 
         // Assert
         var repeatStepState = processInfo.Steps.Where(s => s.State.Name == nameof(RepeatStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
@@ -167,8 +167,8 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var procesHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
-        var processInfo = await procesHandle.GetStateAsync();
+        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
+        var processInfo = await processHandle.GetStateAsync();
 
         // Assert
         var repeatStepState = processInfo.Steps.Where(s => s.State.Name == nameof(RepeatStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;

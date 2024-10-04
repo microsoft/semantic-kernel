@@ -313,7 +313,7 @@ internal class LocalStep : KernelProcessMessageChannel
                 }
 
                 // Parameters of type KernelProcessStepContext are injected by the process
-                // and are instanciated here.
+                // and are instantiated here.
                 if (param.ParameterType == typeof(KernelProcessStepContext))
                 {
                     inputs[kvp.Key]![param.Name] = new KernelProcessStepContext(this);
