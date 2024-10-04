@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.SemanticKernel.Data;
 using Qdrant.Client.Grpc;
 
@@ -123,44 +121,35 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         var outputRecord = (TRecord)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
 
         // Set Key.
-        var keyPropertyInfoWithValue = new KeyValuePair<PropertyInfo, object?>(
-                this._propertyReader.KeyPropertyInfo,
-                keyPropertyValue);
-        VectorStoreRecordMapping.SetPropertiesOnRecord(
-            outputRecord,
-            [keyPropertyInfoWithValue]);
+        this._propertyReader.KeyPropertyInfo.SetValue(outputRecord, keyPropertyValue);
 
         // Set each vector property if embeddings are included in the point.
         if (options?.IncludeVectors is true)
         {
             if (this._hasNamedVectors)
             {
-                var propertiesInfoWithValues = VectorStoreRecordMapping.BuildPropertiesInfoWithValues(
+                VectorStoreRecordMapping.SetValuesOnProperties(
+                    outputRecord,
                     this._propertyReader.VectorPropertiesInfo,
                     this._propertyReader.StoragePropertyNamesMap,
                     storageModel.Vectors.Vectors_.Vectors,
                     (Vector vector, Type targetType) => new ReadOnlyMemory<float>(vector.Data.ToArray()));
-                VectorStoreRecordMapping.SetPropertiesOnRecord(outputRecord, propertiesInfoWithValues);
             }
             else
             {
-                var propertyInfoWithValue = new KeyValuePair<PropertyInfo, object?>(
-                        this._propertyReader.FirstVectorPropertyInfo!,
-                        new ReadOnlyMemory<float>(storageModel.Vectors.Vector.Data.ToArray()));
-                VectorStoreRecordMapping.SetPropertiesOnRecord(
+                this._propertyReader.FirstVectorPropertyInfo!.SetValue(
                     outputRecord,
-                    [propertyInfoWithValue]);
+                    new ReadOnlyMemory<float>(storageModel.Vectors.Vector.Data.ToArray()));
             }
         }
 
         // Set each data property.
-        var dataPropertiesInfoWithValues = VectorStoreRecordMapping.BuildPropertiesInfoWithValues(
+        VectorStoreRecordMapping.SetValuesOnProperties(
+            outputRecord,
             this._propertyReader.DataPropertiesInfo,
             this._propertyReader.StoragePropertyNamesMap,
             storageModel.Payload,
-            (Value grpcValue, Type targetType) =>
-                QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToNativeType(grpcValue, targetType));
-        VectorStoreRecordMapping.SetPropertiesOnRecord(outputRecord, dataPropertiesInfoWithValues);
+            QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToNativeType);
 
         return outputRecord;
     }

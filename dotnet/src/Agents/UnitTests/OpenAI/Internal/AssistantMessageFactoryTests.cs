@@ -144,7 +144,7 @@ public class AssistantMessageFactoryTests
         // Assert
         Assert.NotNull(contents);
         Assert.Single(contents);
-        Assert.NotNull(contents.Single().ImageUrl);
+        Assert.NotNull(contents.Single().ImageUri);
     }
 
     /// <summary>
@@ -162,7 +162,7 @@ public class AssistantMessageFactoryTests
         // Assert
         Assert.NotNull(contents);
         Assert.Single(contents);
-        Assert.NotNull(contents.Single().ImageUrl);
+        Assert.NotNull(contents.Single().ImageUri);
     }
 
     /// <summary>
