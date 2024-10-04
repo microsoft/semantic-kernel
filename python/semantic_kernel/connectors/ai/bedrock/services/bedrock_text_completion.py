@@ -44,18 +44,28 @@ class BedrockTextCompletion(BedrockBase, TextCompletionClientBase):
     def __init__(
         self,
         model_id: str | None = None,
+        service_id: str | None = None,
         runtime_client: Any | None = None,
         client: Any | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initialize the Amazon Bedrock Text Completion Service.
 
         Args:
             model_id: The Amazon Bedrock text model ID to use.
+            service_id: The Service ID for the text completion service.
             runtime_client: The Amazon Bedrock runtime client to use.
             client: The Amazon Bedrock client to use.
+            env_file_path: The path to the .env file to load settings from.
+            env_file_encoding: The encoding of the .env file.
         """
         try:
-            bedrock_settings = BedrockSettings.create(text_model_id=model_id)
+            bedrock_settings = BedrockSettings.create(
+                text_model_id=model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
         except ValidationError as e:
             raise ServiceInitializationError("Failed to initialize the Amazon Bedrock Text Completion Service.") from e
 
@@ -64,6 +74,7 @@ class BedrockTextCompletion(BedrockBase, TextCompletionClientBase):
 
         super().__init__(
             ai_model_id=bedrock_settings.text_model_id,
+            service_id=service_id or bedrock_settings.text_model_id,
             bedrock_runtime_client=runtime_client or boto3.client("bedrock-runtime"),
             bedrock_client=client or boto3.client("bedrock"),
         )
@@ -85,6 +96,8 @@ class BedrockTextCompletion(BedrockBase, TextCompletionClientBase):
         if not isinstance(settings, BedrockTextPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, BedrockTextPromptExecutionSettings)  # nosec
+
+        # TODO(taochen@microsoft.com): make sure the model supports text completion
 
         request_body = get_text_completion_request_body(self.ai_model_id, prompt, settings)
         response_body = await self._async_invoke_model(request_body)

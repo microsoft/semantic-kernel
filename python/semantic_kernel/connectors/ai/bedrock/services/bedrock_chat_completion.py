@@ -60,18 +60,28 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     def __init__(
         self,
         model_id: str | None = None,
+        service_id: str | None = None,
         runtime_client: Any | None = None,
         client: Any | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initialize the Amazon Bedrock Chat Completion Service.
 
         Args:
             model_id: The Amazon Bedrock chat model ID to use.
+            service_id: The Service ID for the completion service.
             runtime_client: The Amazon Bedrock runtime client to use.
             client: The Amazon Bedrock client to use.
+            env_file_path: The path to the .env file.
+            env_file_encoding: The encoding of the .env file.
         """
         try:
-            bedrock_settings = BedrockSettings.create(chat_model_id=model_id)
+            bedrock_settings = BedrockSettings.create(
+                chat_model_id=model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
         except ValidationError as e:
             raise ServiceInitializationError("Failed to initialize the Amazon Bedrock Chat Completion Service.") from e
 
@@ -80,6 +90,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
 
         super().__init__(
             ai_model_id=bedrock_settings.chat_model_id,
+            service_id=service_id or bedrock_settings.chat_model_id,
             bedrock_runtime_client=runtime_client or boto3.client("bedrock-runtime"),
             bedrock_client=client or boto3.client("bedrock"),
         )
@@ -102,6 +113,8 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, BedrockChatPromptExecutionSettings)  # nosec
 
+        # TODO(taochen@microsoft.com): make sure the model supports chat
+
         prepared_settings = self._prepare_settings_for_request(chat_history, settings)
         response = await self._async_converse(**prepared_settings)
 
@@ -117,6 +130,8 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         if not isinstance(settings, BedrockChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, BedrockChatPromptExecutionSettings)  # nosec
+
+        # TODO(taochen@microsoft.com): make sure the model supports streaming
 
         prepared_settings = self._prepare_settings_for_request(chat_history, settings)
         response_stream = await self._async_converse_streaming(**prepared_settings)

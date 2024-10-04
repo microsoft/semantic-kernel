@@ -6,6 +6,7 @@ from typing import Any
 
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import (
     BedrockChatPromptExecutionSettings,
+    BedrockEmbeddingPromptExecutionSettings,
     BedrockTextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.bedrock.services.model_provider import (
@@ -111,6 +112,37 @@ def get_chat_completion_additional_model_request_fields(
     """Get the additional model request fields for chat completion for Amazon Bedrock models."""
     model_provider = BedrockModelProvider.to_model_provider(model_id)
     return CHAT_COMPLETION_ADDITIONAL_MODEL_REQUEST_FIELDS_MAPPING[model_provider](settings)
+
+
+# endregion
+
+# region Text Embedding
+
+TEXT_EMBEDDING_REQUEST_BODY_MAPPING: dict[
+    BedrockModelProvider, Callable[[str, BedrockEmbeddingPromptExecutionSettings], Any]
+] = {
+    BedrockModelProvider.AMAZON: bedrock_amazon_titan.get_text_embedding_request_body,
+    BedrockModelProvider.COHERE: bedrock_cohere.get_text_embedding_request_body,
+}
+
+TEXT_EMBEDDING_RESPONSE_MAPPING: dict[BedrockModelProvider, Callable[[dict], list[float]]] = {
+    BedrockModelProvider.AMAZON: bedrock_amazon_titan.parse_text_embedding_response,
+    BedrockModelProvider.COHERE: bedrock_cohere.parse_text_embedding_response,
+}
+
+
+def get_text_embedding_request_body(
+    model_id: str, text: str, settings: BedrockEmbeddingPromptExecutionSettings
+) -> dict:
+    """Get the request body for text embedding for Amazon Bedrock models."""
+    model_provider = BedrockModelProvider.to_model_provider(model_id)
+    return TEXT_EMBEDDING_REQUEST_BODY_MAPPING[model_provider](text, settings)
+
+
+def parse_text_embedding_response(model_id: str, response: dict) -> list[float]:
+    """Parse the response from text embedding for Amazon Bedrock models."""
+    model_provider = BedrockModelProvider.to_model_provider(model_id)
+    return TEXT_EMBEDDING_RESPONSE_MAPPING[model_provider](response)
 
 
 # endregion

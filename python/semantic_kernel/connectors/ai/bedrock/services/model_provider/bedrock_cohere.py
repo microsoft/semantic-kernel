@@ -4,10 +4,12 @@ from typing import Any
 
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import (
     BedrockChatPromptExecutionSettings,
+    BedrockEmbeddingPromptExecutionSettings,
     BedrockTextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import remove_none_recursively
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidResponseError
 
 # region Text Completion
 
@@ -71,6 +73,33 @@ def get_chat_completion_additional_model_request_fields(
         return None
 
     return additional_fields
+
+
+# endregion
+
+# region Text Embedding
+
+
+def get_text_embedding_request_body(text: str, settings: BedrockEmbeddingPromptExecutionSettings) -> Any:
+    """Get the request body for text embedding for Cohere Command models."""
+    return remove_none_recursively({
+        "texts": [text],
+        "input_type": settings.input_type if hasattr(settings, "input_type") else "search_document",
+        "truncate": settings.truncate if hasattr(settings, "truncate") else None,
+        "embedding_types": settings.embedding_types if hasattr(settings, "embedding_types") else None,
+    })
+
+
+def parse_text_embedding_response(response: dict[str, Any]) -> list[float]:
+    """Parse the response from text embedding for Cohere Command models."""
+    if "embeddings" not in response:
+        raise ServiceInvalidResponseError("The response from Cohere model does not contain embeddings.")
+    if not isinstance(response["embeddings"], list):
+        raise ServiceInvalidResponseError("The response from Cohere model does not contain a list of embeddings.")
+    if len(response["embeddings"]) == 0:
+        raise ServiceInvalidResponseError("The response from Cohere model contains an empty list of embeddings.")
+
+    return response.get("embeddings")[0]  # type: ignore
 
 
 # endregion
