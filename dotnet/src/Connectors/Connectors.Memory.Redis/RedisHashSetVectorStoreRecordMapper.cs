@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -19,66 +18,37 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : IVectorStoreRecordMapper<TConsumerDataModel, (string Key, HashEntry[] HashEntries)>
     where TConsumerDataModel : class
 {
-    /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
-    private readonly PropertyInfo _keyPropertyInfo;
-
-    /// <summary>The name of the temporary json property that the key field will be serialized / parsed from.</summary>
-    private readonly string _keyFieldJsonPropertyName;
-
-    /// <summary>A list of property info objects that point at the data properties in the current model, and allows easy reading and writing of these properties.</summary>
-    private readonly IEnumerable<PropertyInfo> _dataPropertiesInfo;
-
-    /// <summary>A list of property info objects that point at the vector properties in the current model, and allows easy reading and writing of these properties.</summary>
-    private readonly IEnumerable<PropertyInfo> _vectorPropertiesInfo;
-
-    /// <summary>A dictionary that maps from a property name to the configured name that should be used when storing it.</summary>
-    private readonly Dictionary<string, string> _storagePropertyNames;
-
-    /// <summary>A dictionary that maps from a property name to the configured name that should be used when serializing it to json for data and vector properties.</summary>
-    private readonly Dictionary<string, string> _jsonPropertyNames = new();
+    /// <summary>A helper to access property information for the current data model and record definition.</summary>
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetVectorStoreRecordMapper{TConsumerDataModel}"/> class.
     /// </summary>
-    /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
-    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the configured name that should be used when storing it.</param>
+    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
     public RedisHashSetVectorStoreRecordMapper(
-        VectorStoreRecordDefinition vectorStoreRecordDefinition,
-        Dictionary<string, string> storagePropertyNames)
+        VectorStoreRecordPropertyReader propertyReader)
     {
-        Verify.NotNull(vectorStoreRecordDefinition);
-        Verify.NotNull(storagePropertyNames);
-
-        (PropertyInfo keyPropertyInfo, List<PropertyInfo> dataPropertiesInfo, List<PropertyInfo> vectorPropertiesInfo) = VectorStoreRecordPropertyReader.FindProperties(typeof(TConsumerDataModel), vectorStoreRecordDefinition, supportsMultipleVectors: true);
-
-        this._keyPropertyInfo = keyPropertyInfo;
-        this._dataPropertiesInfo = dataPropertiesInfo;
-        this._vectorPropertiesInfo = vectorPropertiesInfo;
-        this._storagePropertyNames = storagePropertyNames;
-
-        this._keyFieldJsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(JsonSerializerOptions.Default, keyPropertyInfo);
-        foreach (var property in dataPropertiesInfo.Concat(vectorPropertiesInfo))
-        {
-            this._jsonPropertyNames[property.Name] = VectorStoreRecordPropertyReader.GetJsonPropertyName(JsonSerializerOptions.Default, property);
-        }
+        Verify.NotNull(propertyReader);
+        this._propertyReader = propertyReader;
     }
 
     /// <inheritdoc />
     public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(TConsumerDataModel dataModel)
     {
-        var keyValue = this._keyPropertyInfo.GetValue(dataModel) as string ?? throw new VectorStoreRecordMappingException($"Missing key property {this._keyPropertyInfo.Name} on provided record of type {typeof(TConsumerDataModel).FullName}.");
+        var keyValue = this._propertyReader.KeyPropertyInfo.GetValue(dataModel) as string ??
+            throw new VectorStoreRecordMappingException($"Missing key property {this._propertyReader.KeyPropertyName} on provided record of type {typeof(TConsumerDataModel).FullName}.");
 
         var hashEntries = new List<HashEntry>();
-        foreach (var property in this._dataPropertiesInfo)
+        foreach (var property in this._propertyReader.DataPropertiesInfo)
         {
-            var storageName = this._storagePropertyNames[property.Name];
+            var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
             var value = property.GetValue(dataModel);
             hashEntries.Add(new HashEntry(storageName, RedisValue.Unbox(value)));
         }
 
-        foreach (var property in this._vectorPropertiesInfo)
+        foreach (var property in this._propertyReader.VectorPropertiesInfo)
         {
-            var storageName = this._storagePropertyNames[property.Name];
+            var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
             var value = property.GetValue(dataModel);
             if (value is not null)
             {
@@ -109,10 +79,10 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
     {
         var jsonObject = new JsonObject();
 
-        foreach (var property in this._dataPropertiesInfo)
+        foreach (var property in this._propertyReader.DataPropertiesInfo)
         {
-            var storageName = this._storagePropertyNames[property.Name];
-            var jsonName = this._jsonPropertyNames[property.Name];
+            var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
+            var jsonName = this._propertyReader.GetJsonPropertyName(property.Name);
             var hashEntry = storageModel.HashEntries.FirstOrDefault(x => x.Name == storageName);
             if (hashEntry.Name.HasValue)
             {
@@ -124,10 +94,10 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 
         if (options.IncludeVectors)
         {
-            foreach (var property in this._vectorPropertiesInfo)
+            foreach (var property in this._propertyReader.VectorPropertiesInfo)
             {
-                var storageName = this._storagePropertyNames[property.Name];
-                var jsonName = this._jsonPropertyNames[property.Name];
+                var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
+                var jsonName = this._propertyReader.GetJsonPropertyName(property.Name);
 
                 var hashEntry = storageModel.HashEntries.FirstOrDefault(x => x.Name == storageName);
                 if (hashEntry.Name.HasValue)
@@ -151,13 +121,13 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         }
 
         // Check that the key field is not already present in the redis value.
-        if (jsonObject.ContainsKey(this._keyFieldJsonPropertyName))
+        if (jsonObject.ContainsKey(this._propertyReader.KeyPropertyJsonName))
         {
-            throw new VectorStoreRecordMappingException($"Invalid data format for document with key '{storageModel.Key}'. Key property '{this._keyFieldJsonPropertyName}' is already present on retrieved object.");
+            throw new VectorStoreRecordMappingException($"Invalid data format for document with key '{storageModel.Key}'. Key property '{this._propertyReader.KeyPropertyJsonName}' is already present on retrieved object.");
         }
 
         // Since the key is not stored in the redis value, add it back in before deserializing into the data model.
-        jsonObject.Add(this._keyFieldJsonPropertyName, storageModel.Key);
+        jsonObject.Add(this._propertyReader.KeyPropertyJsonName, storageModel.Key);
 
         return JsonSerializer.Deserialize<TConsumerDataModel>(jsonObject)!;
     }

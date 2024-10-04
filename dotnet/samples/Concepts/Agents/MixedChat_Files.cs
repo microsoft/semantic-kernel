@@ -21,9 +21,9 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
     {
         OpenAIClientProvider provider = this.GetClientProvider();
 
-        FileClient fileClient = provider.Client.GetFileClient();
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
 
-        OpenAIFileInfo uploadFile =
+        OpenAIFile uploadFile =
             await fileClient.UploadFileAsync(
                 new BinaryData(await EmbeddedResource.ReadAllAsync("30-user-context.txt")),
                 "30-user-context.txt",

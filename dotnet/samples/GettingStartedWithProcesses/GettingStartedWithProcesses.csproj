@@ -37,15 +37,11 @@
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />
 
   <ItemGroup>
-    <ProjectReference
-      Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-    <ProjectReference
-      Include="..\..\src\Experimental\Process.Abstractions\Process.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\..\src\Experimental\Process.Abstractions\Process.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Process.Core\Process.Core.csproj" />
-    <ProjectReference
-      Include="..\..\src\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj" />
-    <ProjectReference
-      Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj" />
+    <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 

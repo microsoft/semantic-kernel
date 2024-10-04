@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -22,6 +23,8 @@ using Moq;
 using OpenAI;
 using OpenAI.Chat;
 using Xunit;
+
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
 
@@ -151,7 +154,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     public void ConstructorWithOpenAIClientWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var client = new OpenAIClient("key");
+        var client = new OpenAIClient(new ApiKeyCredential("key"));
         var service = includeLoggerFactory ?
             new OpenAIChatCompletionService("model-id", client, loggerFactory: this._mockLoggerFactory.Object) :
             new OpenAIChatCompletionService("model-id", client);
@@ -321,6 +324,13 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         await enumerator.MoveNextAsync();
         Assert.Equal("Stop", enumerator.Current.Metadata?["FinishReason"]);
+
+        await enumerator.MoveNextAsync();
+        Assert.NotNull(enumerator.Current.Metadata?["Usage"]);
+        var serializedUsage = JsonSerializer.Serialize(enumerator.Current.Metadata?["Usage"])!;
+        Assert.Contains("\"OutputTokenCount\":8", serializedUsage);
+        Assert.Contains("\"InputTokenCount\":13", serializedUsage);
+        Assert.Contains("\"TotalTokenCount\":21", serializedUsage);
     }
 
     [Fact]
@@ -831,7 +841,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
                 format = JsonSerializer.Deserialize<JsonElement>(formatValue);
                 break;
             case "ChatResponseFormat":
-                format = formatValue == "text" ? ChatResponseFormat.Text : ChatResponseFormat.JsonObject;
+                format = formatValue == "text" ? ChatResponseFormat.CreateTextFormat() : ChatResponseFormat.CreateJsonObjectFormat();
                 break;
         }
 
@@ -1041,7 +1051,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         object responseFormat = typedResponseFormat ? typeof(MathReasoning) : ChatResponseFormat.CreateJsonSchemaFormat(
-            name: "MathReasoning",
+            jsonSchemaFormatName: "MathReasoning",
             jsonSchema: BinaryData.FromString("""
                 {
                     "type": "object",
@@ -1064,7 +1074,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
                     "additionalProperties": false
                 }
                 """),
-            strictSchemaEnabled: true);
+            jsonSchemaIsStrict: true);
 
         var executionSettings = new OpenAIPromptExecutionSettings { ResponseFormat = responseFormat };
 

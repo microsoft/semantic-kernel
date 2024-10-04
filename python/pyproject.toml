@@ -37,6 +37,9 @@ regex = ">=2023.6.3,<2025.0.0"
 
 # openapi and swagger
 openapi_core = ">=0.18,<0.20"
+    # azure identity
+    "azure-identity ~= 1.13",
+
     # embeddings
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",

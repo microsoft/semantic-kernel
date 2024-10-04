@@ -67,6 +67,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
         truncation_message_count: int | None = None,
+        token_endpoint: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize an Azure OpenAI Assistant Agent.
@@ -100,6 +101,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             max_prompt_tokens: The maximum prompt tokens. (optional)
             parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
             truncation_message_count: The truncation message count. (optional)
+            token_endpoint: The Azure AD token endpoint. (optional)
             **kwargs: Additional keyword arguments.
 
         Raises:
@@ -112,6 +114,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             api_version=api_version,
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
+            token_endpoint=token_endpoint,
         )
 
         if not azure_openai_settings.chat_deployment_name:
@@ -125,7 +128,18 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             )
             raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
 
-        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
+        if (
+            client is None
+            and azure_openai_settings.api_key is None
+            and ad_token_provider is None
+            and ad_token is None
+            and azure_openai_settings.token_endpoint
+        ):
+            ad_token = azure_openai_settings.get_azure_openai_auth_token(
+                token_endpoint=azure_openai_settings.token_endpoint
+            )
+
+        if not client and not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
 
         client = self._create_client(
@@ -140,6 +154,15 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
         )
+        if not client:
+            client = self._create_client(
+                api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
+                endpoint=azure_openai_settings.endpoint,
+                api_version=azure_openai_settings.api_version,
+                ad_token=ad_token,
+                ad_token_provider=ad_token_provider,
+                default_headers=default_headers,
+            )
         service_id = service_id if service_id else DEFAULT_SERVICE_NAME
 
         args: dict[str, Any] = {
@@ -360,6 +383,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         api_version: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        token_endpoint: str | None = None,
     ) -> AzureOpenAISettings:
         """Create the Azure OpenAI settings.
 
@@ -370,6 +394,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             api_version: The Azure OpenAI API version.
             env_file_path: The environment file path.
             env_file_encoding: The environment file encoding.
+            token_endpoint: The Azure AD token endpoint.
 
         Returns:
             An instance of the AzureOpenAISettings.
@@ -382,6 +407,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
                 api_version=api_version,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
+                token_endpoint=token_endpoint,
             )
         except ValidationError as ex:
             raise AgentInitializationError(

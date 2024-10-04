@@ -22,7 +22,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     /// </summary>
     [Experimental("SKEXP0010")]
     [JsonIgnore]
-    public AzureChatDataSource? AzureChatDataSource
+    public AzureSearchChatDataSource? AzureChatDataSource
     {
         get => this._azureChatDataSource;
 
@@ -104,8 +104,8 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     }
 
     #region private ================================================================================
-
-    private AzureChatDataSource? _azureChatDataSource;
+    [Experimental("SKEXP0010")]
+    private AzureSearchChatDataSource? _azureChatDataSource;
 
     #endregion
 }
