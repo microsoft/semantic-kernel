@@ -12,18 +12,43 @@ namespace Step03.Processes;
 /// </summary>
 public enum PrepareFishSandwichEvents
 {
+    /// <summary>
+    /// External input trigger event
+    /// </summary>
     PrepareFishSandwich,
+    /// <summary>
+    /// Event that triggers the preparation of fried fish
+    /// </summary>
     PrepareFriedFish,
+    /// <summary>
+    /// Output event from the step PrepareFriedFish
+    /// </summary>
     FriedFishReady,
+    /// <summary>
+    /// Event linked to the Add Buns Step
+    /// </summary>
     AddBuns,
+    /// <summary>
+    /// Output event of the Add Buns Step
+    /// </summary>
     BunsAdded,
+    /// <summary>
+    /// Event linked to the Add Special Sauce Step
+    /// </summary>
     AddSpecialSauce,
+    /// <summary>
+    /// Output event of the Add Special Sauce Step
+    /// </summary>
     SpecialSauceAdded,
+    /// <summary>
+    /// Event to be linked to the last step of the process -> External Output Event
+    /// </summary>
     FishSandwichReady,
 }
 
 /// <summary>
-/// Sample process that showcases how to create a selecting fan out process
+/// Sample process that showcases how to create a process with sequential steps
+/// Visual reference of this process can be found in the <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#Fish_Sandwich_Preparation_Process" >diagram</see>
 /// </summary>
 public class PrepareFishSandwichProcess : ProcessEventStepMapper<PrepareFishSandwichEvents>
 {

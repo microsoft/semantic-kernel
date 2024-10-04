@@ -119,7 +119,7 @@ flowchart LR
     PrepareFishSandwichEvent -->|Prepare Fried Fish| FriedFishStep -->|Fried Fish Ready| AddBunsStep --> |Buns Added  | AddSpecialSauceStep --> |Special Sauce Added | FishSandwichReadyEvent
 ```
 
-##### Fish & Chips Process
+##### Fish And Chips Preparation Process
 
 ``` mermaid
 flowchart LR
