@@ -123,16 +123,16 @@ flowchart LR
 
 ``` mermaid
 flowchart LR
-    PrepareFishAndChipsEvent([Prepare <br/> Fish & Chips <br/> Event])
-    FishAndChipsReadyEvent([Fish & Chips <br/> Ready Event])
+    PrepareFishAndChipsEvent([Prepare <br/> Fish And Chips <br/> Event])
+    FishAndChipsReadyEvent([Fish And Chips <br/> Ready Event])
 
     FriedFishStep[[Fried Fish <br/> Process Step]]
     PotatoFriesStep[[Potato Fries  <br/> Process Step]]
-    PlateStep[Plate <br/> Fish & Chips <br/> Step ]
+    AddCondiments[Add Condiments <br/> Step ]
 
-    PrepareFishAndChipsEvent -->|Prepare Fried Fish| FriedFishStep --> |Fried Fish Ready| PlateStep
-    PrepareFishAndChipsEvent -->|Prepare Potato Fries| PotatoFriesStep -->|Potato Fries Ready| PlateStep
-    PlateStep -->|Items Plated| FishAndChipsReadyEvent
+    PrepareFishAndChipsEvent -->|Prepare Fried Fish| FriedFishStep --> |Fried Fish Ready| AddCondiments
+    PrepareFishAndChipsEvent -->|Prepare Potato Fries| PotatoFriesStep -->|Potato Fries Ready| AddCondiments
+    AddCondiments -->|Condiments Added| FishAndChipsReadyEvent
 ```
 
 #### Single Order Preparation Process
@@ -161,8 +161,6 @@ graph TD
 
     SingleOrderReadyEvent-->PackFoodStep --> OrderPackedEvent
 ```
-
-
 
 ## Running Examples with Filters
 Examples may be explored and ran within _Visual Studio_ using _Test Explorer_.

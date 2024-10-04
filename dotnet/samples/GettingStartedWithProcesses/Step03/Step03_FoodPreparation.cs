@@ -16,28 +16,44 @@ public class Step03_FoodPreparation(ITestOutputHelper output) : BaseTest(output,
     [Fact]
     public async Task UsePrepareFriedFishProcessAsync()
     {
-        Kernel kernel = Kernel.CreateBuilder().Build();
-
         var process = new PrepareFriedFishProcess();
-        var kernelProcess = process.GetProcess().Build();
-
-        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent()
-        {
-            Id = process.GetExternalInputTriggerEvents().First(),
-        });
+        await UsePrepareSpecificProductAsync(process.GetProcess(), process.GetExternalInputTriggerEvents());
     }
 
     [Fact]
     public async Task UsePreparePotatoFriesProcessAsync()
     {
-        Kernel kernel = Kernel.CreateBuilder().Build();
-
         var process = new PreparePotatoFriesProcess();
-        var kernelProcess = process.GetProcess().Build();
+        await UsePrepareSpecificProductAsync(process.GetProcess(), process.GetExternalInputTriggerEvents());
+    }
 
+    [Fact]
+    public async Task UsePrepareFishSandwichProcessAsync()
+    {
+        var process = new PrepareFishSandwichProcess();
+        await UsePrepareSpecificProductAsync(process.GetProcess(), process.GetExternalInputTriggerEvents());
+    }
+
+    [Fact]
+    public async Task UsePrepareFishAndChipsProcessAsync()
+    {
+        var process = new PrepareFishAndChipsProcess();
+        await UsePrepareSpecificProductAsync(process.GetProcess(), process.GetExternalInputTriggerEvents());
+    }
+
+    protected async Task UsePrepareSpecificProductAsync(ProcessBuilder processBuilder, List<string> externalTriggerEvents)
+    {
+        // Arrange
+        Kernel kernel = CreateKernelWithChatCompletion();
+
+        // Act
+        KernelProcess kernelProcess = processBuilder.Build();
+
+        // Assert
+        Assert.Single(externalTriggerEvents);
         var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent()
         {
-            Id = process.GetExternalInputTriggerEvents().First(),
+            Id = externalTriggerEvents.First(),
         });
     }
 

@@ -3,6 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process;
 using Step03.Models;
+using Step03.Steps;
 
 namespace Step03.Processes;
 
@@ -43,35 +44,35 @@ public class PrepareSingleFoodItemProcess : ProcessEventStepMapper<PrepareSingle
                     { PrepareSingleOrderEvents.DispatchFishAndChips, DispatchSingleOrderStep.OutputEvents.PrepareFishAndChips },
             } } } });
 
-        this.AddStepFromType<MockPreparationFoodStep>(new() { {
+        this.AddStepFromType<MockPrepareFriedFishStep>(new() { {
             PrepareSingleOrderEvents.PrepareFriedFish, new () {
                 StepOutputEvents = {
                     { PrepareSingleOrderEvents.SingleOrderReady, MockPreparationFoodStep.OutputEvents.FoodReady },
-            } } } }, stepName: "MakeFriedFishStep");
+            } } } });
 
-        this.AddStepFromType<MockPreparationFoodStep>(new() { {
+        this.AddStepFromType<MockPreparePotatoFriesStep>(new() { {
             PrepareSingleOrderEvents.PreparePotatoFries, new () {
                 StepOutputEvents = {
                     { PrepareSingleOrderEvents.SingleOrderReady, MockPreparationFoodStep.OutputEvents.FoodReady },
-            } } } }, stepName: "MakePotatoFriesStep");
+            } } } });
 
-        this.AddStepFromType<MockPreparationFoodStep>(new() { {
+        this.AddStepFromType<MockPrepareFishSandwichStep>(new() { {
             PrepareSingleOrderEvents.PrepareFishSandwich, new () {
                 StepOutputEvents = {
                     { PrepareSingleOrderEvents.SingleOrderReady, MockPreparationFoodStep.OutputEvents.FoodReady },
-            } } } }, stepName: "MakeFishSandwichStep");
+            } } } });
 
-        this.AddStepFromType<MockPreparationFoodStep>(new() { {
+        this.AddStepFromType<MockPrepareFishAndChipsStep>(new() { {
             PrepareSingleOrderEvents.PrepareFishAndChips, new () {
                 StepOutputEvents = {
                     { PrepareSingleOrderEvents.SingleOrderReady, MockPreparationFoodStep.OutputEvents.FoodReady },
-            } } } }, stepName: "MakeFishAndChipsStep");
+            } } } });
 
         this.AddStepFromType<PackOrderStep>(new() { {
             PrepareSingleOrderEvents.PackFood, new () {
                 StepOutputEvents = {
                     { PrepareSingleOrderEvents.FoodPacked, PackOrderStep.OutputEvents.FoodPacked },
-            } } } }, stepName: "PackFoodStep");
+            } } } });
 
         // Linking internal events
         this.LinkInternalEvents(PrepareSingleOrderEvents.DispatchPotatoFries, PrepareSingleOrderEvents.PreparePotatoFries);
@@ -79,6 +80,7 @@ public class PrepareSingleFoodItemProcess : ProcessEventStepMapper<PrepareSingle
         this.LinkInternalEvents(PrepareSingleOrderEvents.DispatchFishSandwich, PrepareSingleOrderEvents.PrepareFishSandwich);
         this.LinkInternalEvents(PrepareSingleOrderEvents.DispatchFishAndChips, PrepareSingleOrderEvents.PrepareFishAndChips);
 
+        // When multiple steps output the same event, it is better to use the event linked to the source step instead of the output event name (ex: 'SingleOrderReady')
         this.LinkInternalEvents(PrepareSingleOrderEvents.PreparePotatoFries, PrepareSingleOrderEvents.PackFood);
         this.LinkInternalEvents(PrepareSingleOrderEvents.PrepareFriedFish, PrepareSingleOrderEvents.PackFood);
         this.LinkInternalEvents(PrepareSingleOrderEvents.PrepareFishSandwich, PrepareSingleOrderEvents.PackFood);
@@ -129,25 +131,6 @@ public class PrepareSingleFoodItemProcess : ProcessEventStepMapper<PrepareSingle
                 default:
                     break;
             }
-        }
-    }
-
-    private sealed class MockPreparationFoodStep : KernelProcessStep
-    {
-        public static class Functions
-        {
-            public const string PrepareFood = nameof(PrepareFood);
-        }
-        public static class OutputEvents
-        {
-            public const string FoodReady = nameof(FoodReady);
-        }
-
-        [KernelFunction(Functions.PrepareFood)]
-        public async Task PrepareFoodAsync(KernelProcessStepContext context, string foodName)
-        {
-            Console.WriteLine($"PREPARE_FOOD: Food {foodName} Ready!");
-            await context.EmitEventAsync(new() { Id = OutputEvents.FoodReady, Data = foodName });
         }
     }
 
