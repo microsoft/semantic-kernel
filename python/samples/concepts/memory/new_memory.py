@@ -150,7 +150,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--store", default="volatile", choices=stores.keys(), help="What store to use.")
     # Option of whether to use OpenAI or Azure OpenAI.
-    parser.add_argument("--use_azure_openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
+    parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     # Model
     parser.add_argument(
         "--model", default="text-embedding-3-small", help="The model or deployment to use for embeddings."
