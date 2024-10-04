@@ -35,7 +35,9 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -116,7 +118,23 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, BedrockChatPromptExecutionSettings)  # nosec
 
-        yield []
+        prepared_settings = self._prepare_settings_for_request(chat_history, settings)
+        response_stream = await self._async_converse_streaming(**prepared_settings)
+        for event in response_stream.get("stream"):
+            if "messageStart" in event:
+                yield [self._parse_message_start_event(event)]
+            elif "contentBlockStart" in event:
+                yield [self._parse_content_block_start_event(event)]
+            elif "contentBlockDelta" in event:
+                yield [self._parse_content_block_delta_event(event)]
+            elif "contentBlockStop" in event:
+                continue
+            elif "messageStop" in event:
+                yield [self._parse_message_stop_event(event)]
+            elif "metadata" in event:
+                yield [self._parse_metadata_event(event)]
+            else:
+                raise ServiceInvalidResponseError(f"Unknown event type in the response: {event}")
 
     @override
     def _update_function_choice_settings_callback(
@@ -235,6 +253,8 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             metadata={"usage": usage},
         )
 
+    # region async helper methods
+
     async def _async_converse(self, **kwargs) -> Any:
         """Invoke the model asynchronously."""
         return await run_in_executor(
@@ -244,3 +264,119 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 **kwargs,
             ),
         )
+
+    async def _async_converse_streaming(self, **kwargs) -> Any:
+        """Invoke the model asynchronously."""
+        return await run_in_executor(
+            None,
+            partial(
+                self.bedrock_runtime_client.converse_stream,
+                **kwargs,
+            ),
+        )
+
+    # endregion
+
+    # region streaming event parsing methods
+
+    def _parse_message_start_event(self, event: dict[str, Any]) -> StreamingChatMessageContent:
+        """Parse the message start event.
+
+        The message start event contains the role of the message.
+        https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_MessageStartEvent.html
+        """
+        return StreamingChatMessageContent(
+            ai_model_id=self.ai_model_id,
+            role=AuthorRole(event["messageStart"]["role"]),
+            items=[],
+            choice_index=0,
+            inner_content=event,
+        )
+
+    def _parse_content_block_start_event(self, event: dict[str, Any]) -> StreamingChatMessageContent:
+        """Parse the content block start event.
+
+        The content block start event contains tool information.
+        https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ContentBlockStartEvent.html
+        """
+        return StreamingChatMessageContent(
+            ai_model_id=self.ai_model_id,
+            role=AuthorRole.ASSISTANT,  # Assume the role is always assistant
+            items=[
+                FunctionCallContent(
+                    id=event["contentBlockStart"]["start"]["toolUse"]["toolUseId"],
+                    name=format_bedrock_function_name_to_kernel_function_fully_qualified_name(
+                        event["contentBlockStart"]["start"]["toolUse"]["name"]
+                    ),
+                )
+            ],
+            choice_index=0,
+            inner_content=event,
+        )
+
+    def _parse_content_block_delta_event(self, event: dict[str, Any]) -> StreamingChatMessageContent:
+        """Parse the content block delta event.
+
+        The content block delta event contains the completion.
+        https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ContentBlockDeltaEvent.html
+        """
+        items: list[STREAMING_ITEM_TYPES] = [
+            StreamingTextContent(
+                choice_index=0,
+                text=event["contentBlockDelta"]["delta"]["text"],
+                inner_content=event,
+            )
+            if "text" in event["contentBlockDelta"]["delta"]
+            else FunctionCallContent(
+                arguments=event["contentBlockDelta"]["delta"]["toolUse"]["input"],
+                inner_content=event,
+            )
+        ]
+
+        return StreamingChatMessageContent(
+            ai_model_id=self.ai_model_id,
+            role=AuthorRole.ASSISTANT,  # Assume the role is always assistant
+            items=items,
+            choice_index=0,
+            inner_content=event,
+        )
+
+    def _parse_message_stop_event(self, event: dict[str, Any]) -> StreamingChatMessageContent:
+        """Parse the message stop event.
+
+        The message stop event contains the finish reason.
+        https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_MessageStopEvent.html
+        """
+        metadata = event["messageStop"].get("additionalModelResponseFields", {})
+
+        return StreamingChatMessageContent(
+            ai_model_id=self.ai_model_id,
+            role=AuthorRole.ASSISTANT,  # Assume the role is always assistant
+            items=[],
+            choice_index=0,
+            inner_content=event,
+            finish_reason=finish_reason_from_bedrock_to_semantic_kernel(event["messageStop"]["stopReason"]),
+            metadata=metadata,
+        )
+
+    def _parse_metadata_event(self, event: dict[str, Any]) -> StreamingChatMessageContent:
+        """Parse the metadata event.
+
+        The metadata event contains additional information.
+        https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ConverseStreamMetadataEvent.html
+        """
+        usage = CompletionUsage(
+            prompt_tokens=event["metadata"]["usage"]["inputTokens"],
+            completion_tokens=event["metadata"]["usage"]["outputTokens"],
+        )
+
+        return StreamingChatMessageContent(
+            ai_model_id=self.ai_model_id,
+            role=AuthorRole.ASSISTANT,  # Assume the role is always assistant
+            items=[],
+            choice_index=0,
+            inner_content=event,
+            metadata={"usage": usage},
+        )
+
+    # endregion

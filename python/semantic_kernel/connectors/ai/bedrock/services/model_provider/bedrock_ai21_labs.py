@@ -56,6 +56,7 @@ def get_chat_completion_additional_model_request_fields(
     https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-jamba.html
     """
     additional_fields: dict[str, Any] = remove_none_recursively({
+        # TODO(taochen@microsoft.com): verify what a response that contains multiple completions looks like
         "n": settings.n if hasattr(settings, "n") else None,
         "frequency_penalty": settings.frequency_penalty if hasattr(settings, "frequency_penalty") else None,
         "presence_penalty": settings.presence_penalty if hasattr(settings, "presence_penalty") else None,

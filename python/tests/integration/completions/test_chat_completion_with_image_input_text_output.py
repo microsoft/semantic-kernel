@@ -201,7 +201,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
             {},
-            id="bedrock_image_input_uri",
+            id="bedrock_image_input_file",
         ),
     ],
 )
