@@ -19,7 +19,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
-    private readonly Queue<KernelProcessEvent> _eventQueue = new();
     private readonly Lazy<ValueTask> _initializeTask;
 
     internal readonly List<KernelProcessStepInfo> _stepsInfos;
@@ -168,47 +167,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         }
     }
 
-    /// <summary>
-    /// Gets the process information.
-    /// </summary>
-    /// <returns>An instance of <see cref="KernelProcess"/></returns>
-    internal async Task<KernelProcess> GetProcessInfoAsync()
-    {
-        return await this.ToKernelProcessAsync().ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Handles a <see cref="LocalMessage"/> that has been sent to the process. This happens only in the case
-    /// of a process (this one) running as a step within another process (this one's parent). In this case the
-    /// entire sub-process should be executed within a single superstep.
-    /// </summary>
-    /// <param name="message">The message to process.</param>
-    /// <returns>A <see cref="Task"/></returns>
-    /// <exception cref="KernelException"></exception>
-    internal override async Task HandleMessageAsync(LocalMessage message)
-    {
-        if (string.IsNullOrWhiteSpace(message.TargetEventId))
-        {
-            string errorMessage = "Internal Process Error: The target event id must be specified when sending a message to a step.";
-            this._logger.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
-        }
-
-        string eventId = message.TargetEventId!;
-        if (this._outputEdges!.TryGetValue(eventId, out List<KernelProcessEdge>? edges) && edges is not null)
-        {
-            foreach (var edge in edges)
-            {
-                // Create the external event that will be used to start the nested process. Since this event came
-                // from outside this processes, we set the visibility to internal so that it's not emitted back out again.
-                var nestedEvent = new KernelProcessEvent() { Id = eventId, Data = message.TargetEventData, Visibility = KernelProcessEventVisibility.Internal };
-
-                // Run the nested process completely within a single superstep.
-                await this.RunOnceAsync(nestedEvent, this._kernel).ConfigureAwait(false);
-            }
-        }
-    }
-
     #region Private Methods
 
     /// <summary>
@@ -272,30 +230,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     {
         // The process does not need any further initialization as it's already been initialized.
         // Override the base method to prevent it from being called.
-        return default;
-    }
-
-    /// <summary>
-    /// Initializes this process as a step within another process.
-    /// </summary>
-    /// <returns>A <see cref="ValueTask"/></returns>
-    /// <exception cref="KernelException"></exception>
-    protected override ValueTask InitializeStepAsync()
-    {
-        // The process does not need any further initialization as it's already been initialized.
-        // Override the base method to prevent it from being called.
-        return default;
-    }
-
-    /// <summary>
-    /// Emits an event from the step.
-    /// </summary>
-    /// <param name="processEvent">The event to emit.</param>
-    /// <returns>A <see cref="ValueTask"/></returns>
-    public override ValueTask EmitEventAsync(KernelProcessEvent processEvent)
-    {
-        var scopedEvent = processEvent with { Id = this.StepScopedEventId(processEvent.Id!) };
-        this._eventQueue.Enqueue(scopedEvent);
         return default;
     }
 
