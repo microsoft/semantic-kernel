@@ -114,7 +114,7 @@ internal partial class ClientCore
     {
         return new Dictionary<string, object?>
         {
-            { nameof(completionUpdate.Id), completionUpdate.Id },
+            { nameof(completionUpdate.CompletionId), completionUpdate.CompletionId },
             { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },
             { nameof(completionUpdate.SystemFingerprint), completionUpdate.SystemFingerprint },
             { nameof(completionUpdate.RefusalUpdate), completionUpdate.RefusalUpdate },
@@ -334,17 +334,17 @@ internal partial class ClientCore
                             {
                                 // Using the code below to distinguish and skip non - function call related updates.
                                 // The Kind property of updates can't be reliably used because it's only initialized for the first update.
-                                if (string.IsNullOrEmpty(functionCallUpdate.Id) &&
+                                if (string.IsNullOrEmpty(functionCallUpdate.ToolCallId) &&
                                     string.IsNullOrEmpty(functionCallUpdate.FunctionName) &&
-                                    string.IsNullOrEmpty(functionCallUpdate.FunctionArgumentsUpdate))
+                                    (functionCallUpdate.FunctionArgumentsUpdate is null || functionCallUpdate.FunctionArgumentsUpdate.ToMemory().IsEmpty))
                                 {
                                     continue;
                                 }
 
                                 openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
-                                    callId: functionCallUpdate.Id,
+                                    callId: functionCallUpdate.ToolCallId,
                                     name: functionCallUpdate.FunctionName,
-                                    arguments: functionCallUpdate.FunctionArgumentsUpdate,
+                                    arguments: functionCallUpdate.FunctionArgumentsUpdate?.ToString(),
                                     functionCallIndex: functionCallUpdate.Index));
                             }
                         }
@@ -717,7 +717,7 @@ internal partial class ClientCore
                             name.ValueKind == JsonValueKind.String &&
                             arguments.ValueKind == JsonValueKind.String)
                         {
-                            ftcs.Add(ChatToolCall.CreateFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
+                            ftcs.Add(ChatToolCall.CreateFunctionToolCall(id.GetString()!, name.GetString()!, BinaryData.FromString(arguments.GetString()!)));
                         }
                     }
                     tools = ftcs;
@@ -747,7 +747,7 @@ internal partial class ClientCore
 
                 var argument = JsonSerializer.Serialize(callRequest.Arguments);
 
-                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
+                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), BinaryData.FromString(argument ?? string.Empty)));
             }
 
             // This check is necessary to prevent an exception that will be thrown if the toolCalls collection is empty.

@@ -25,6 +25,7 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_function_result_content,
     generate_message_content,
     generate_streaming_message_content,
+    generate_streaming_tools_content,
     get_function_call_contents,
     get_message_contents,
 )
@@ -920,6 +921,10 @@ class OpenAIAssistantBase(Agent):
                             message_id = event.data.step_details.message_creation.message_id
                             if message_id not in active_messages:
                                 active_messages[message_id] = event.data
+                        elif hasattr(event.data.step_details, "tool_calls"):
+                            tool_content = generate_streaming_tools_content(self.name, event.data.step_details)
+                            if tool_content:
+                                yield tool_content
                     elif event.event == "thread.run.requires_action":
                         run = event.data
                         function_action_result = await self._handle_streaming_requires_action(run, function_steps)
