@@ -50,7 +50,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
-        arguments ??= this.Arguments;
+        arguments = this.MergeArguments(arguments);
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
@@ -95,7 +95,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
-        arguments ??= this.Arguments;
+        arguments = this.MergeArguments(arguments);
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
