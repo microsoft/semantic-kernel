@@ -13,6 +13,16 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </summary>
 internal static class SqliteVectorStoreRecordPropertyMapping
 {
+    public static string MapVector<TVector>(TVector vector)
+    {
+        if (vector is ReadOnlyMemory<float> memoryFloat)
+        {
+            return $"[{string.Join(", ", memoryFloat.ToArray())}]";
+        }
+
+        throw new NotSupportedException($"Mapping for type {typeof(TVector).FullName} is not supported.");
+    }
+
     public static List<SqliteColumn> GetColumns(
         List<VectorStoreRecordProperty> properties,
         IReadOnlyDictionary<string, string> storagePropertyNames)
@@ -48,6 +58,18 @@ internal static class SqliteVectorStoreRecordPropertyMapping
         }
 
         return columns;
+    }
+
+    public static TPropertyType? GetPropertyValue<TPropertyType>(SqliteDataReader reader, string propertyName)
+    {
+        int propertyIndex = reader.GetOrdinal(propertyName);
+
+        if (reader.IsDBNull(propertyIndex))
+        {
+            return default;
+        }
+
+        return reader.GetFieldValue<TPropertyType>(propertyIndex);
     }
 
     public static object? GetPropertyValue(SqliteDataReader reader, string propertyName, Type propertyType)

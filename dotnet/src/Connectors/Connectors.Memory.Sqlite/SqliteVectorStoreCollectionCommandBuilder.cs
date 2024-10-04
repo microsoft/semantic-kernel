@@ -52,9 +52,7 @@ internal class SqliteVectorStoreCollectionCommandBuilder
         builder.AppendLine(string.Join(",\n", columns.Select(GetColumnDefinition)));
         builder.Append(");");
 
-        var query = builder.ToString();
-
-        return new SqliteCommand(query, this._connection);
+        return new SqliteCommand(builder.ToString(), this._connection);
     }
 
     public SqliteCommand BuildCreateVirtualTableCommand(
@@ -70,9 +68,7 @@ internal class SqliteVectorStoreCollectionCommandBuilder
         builder.AppendLine(string.Join(",\n", columns.Select(GetColumnDefinition)));
         builder.Append(");");
 
-        var query = builder.ToString();
-
-        return new SqliteCommand(query, this._connection);
+        return new SqliteCommand(builder.ToString(), this._connection);
     }
 
     public SqliteCommand BuildDropTableCommand(string tableName)
@@ -84,8 +80,8 @@ internal class SqliteVectorStoreCollectionCommandBuilder
 
     public SqliteCommand BuildInsertCommand(
         string tableName,
-        string keyStoragePropertyName,
-        IReadOnlyList<string> propertyNames,
+        string rowIdentifier,
+        IReadOnlyList<string> columnNames,
         IReadOnlyList<Dictionary<string, object?>> records,
         bool replaceIfExists = false)
     {
@@ -96,16 +92,16 @@ internal class SqliteVectorStoreCollectionCommandBuilder
 
         for (var recordIndex = 0; recordIndex < records.Count; recordIndex++)
         {
-            var keyParameterName = GetParameterName(keyStoragePropertyName, recordIndex);
+            var rowIdentifierParameterName = GetParameterName(rowIdentifier, recordIndex);
 
             var (columns, parameters, values) = GetQueryParts(
-                propertyNames,
+                columnNames,
                 records[recordIndex],
                 recordIndex);
 
             builder.AppendLine($"INSERT{replacePlaceholder} INTO {tableName} ({string.Join(", ", columns)})");
             builder.AppendLine($"VALUES ({string.Join(", ", parameters)})");
-            builder.AppendLine($"RETURNING {keyStoragePropertyName};");
+            builder.AppendLine($"RETURNING {rowIdentifier};");
 
             for (var i = 0; i < parameters.Count; i++)
             {
@@ -113,84 +109,96 @@ internal class SqliteVectorStoreCollectionCommandBuilder
             }
         }
 
-        var query = builder.ToString();
-
-        command.CommandText = query;
+        command.CommandText = builder.ToString();
         command.Connection = this._connection;
 
         return command;
     }
 
-    public SqliteCommand BuildSelectCommand<TKey>(
+    public SqliteCommand BuildSelectCommand(
         string tableName,
-        string keyStoragePropertyName,
-        IReadOnlyList<string> propertyNames,
-        IReadOnlyList<TKey> keys)
+        IReadOnlyList<string> columnNames,
+        List<SqliteWhereCondition> conditions,
+        string? orderByPropertyName = null)
     {
-        var (command, parameterNames) = GetCommandWithParameterNames(keyStoragePropertyName, keys);
+        var builder = new StringBuilder();
 
-        var equalityClause = GetEqualityClause(keyStoragePropertyName, parameterNames);
+        var (command, whereClause) = GetCommandWithWhereClause(conditions);
 
-        var query =
-            $"SELECT {string.Join(", ", propertyNames)} " +
-            $"FROM {tableName} " +
-            $"WHERE {equalityClause}";
+        builder.AppendLine($"SELECT {string.Join(", ", columnNames)}");
+        builder.AppendLine($"FROM {tableName}");
 
-        command.CommandText = query;
+        if (!string.IsNullOrWhiteSpace(whereClause))
+        {
+            builder.AppendLine($"WHERE {whereClause}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(orderByPropertyName))
+        {
+            builder.AppendLine($"ORDER BY {orderByPropertyName}");
+        }
+
+        command.CommandText = builder.ToString();
         command.Connection = this._connection;
 
         return command;
     }
 
-    public SqliteCommand BuildSelectLeftJoinCommand<TKey>(
+    public SqliteCommand BuildSelectLeftJoinCommand(
         string leftTable,
         string rightTable,
-        string keyStoragePropertyName,
+        string joinColumnName,
         IReadOnlyList<string> leftTablePropertyNames,
         IReadOnlyList<string> rightTablePropertyNames,
-        IReadOnlyList<TKey> keys)
+        List<SqliteWhereCondition> conditions,
+        string? orderByPropertyName = null)
     {
-        const string LeftTableIdentifier = "l";
-        const string RightTableIdentifier = "r";
+        var builder = new StringBuilder();
 
         List<string> propertyNames =
         [
-            .. leftTablePropertyNames.Select(property => $"{LeftTableIdentifier}.{property}"),
-            .. rightTablePropertyNames.Select(property => $"{RightTableIdentifier}.{property}"),
+            .. leftTablePropertyNames.Select(property => $"{leftTable}.{property}"),
+            .. rightTablePropertyNames.Select(property => $"{rightTable}.{property}"),
         ];
 
-        var (command, parameterNames) = GetCommandWithParameterNames(keyStoragePropertyName, keys);
+        var (command, whereClause) = GetCommandWithWhereClause(conditions);
 
-        var equalityClause = GetEqualityClause(
-            $"{LeftTableIdentifier}.{keyStoragePropertyName}",
-            parameterNames);
+        builder.AppendLine($"SELECT {string.Join(", ", propertyNames)}");
+        builder.AppendLine($"FROM {leftTable} ");
+        builder.AppendLine($"LEFT JOIN {rightTable} ON {leftTable}.{joinColumnName} = {rightTable}.{joinColumnName}");
 
-        var query =
-            $"SELECT {string.Join(", ", propertyNames)} " +
-            $"FROM {leftTable} {LeftTableIdentifier} " +
-            $"LEFT JOIN {rightTable} {RightTableIdentifier} ON {LeftTableIdentifier}.{keyStoragePropertyName} = {RightTableIdentifier}.{keyStoragePropertyName} " +
-            $"WHERE {equalityClause}";
+        if (!string.IsNullOrWhiteSpace(whereClause))
+        {
+            builder.AppendLine($"WHERE {whereClause}");
+        }
 
-        command.CommandText = query;
+        if (!string.IsNullOrWhiteSpace(orderByPropertyName))
+        {
+            builder.AppendLine($"ORDER BY {orderByPropertyName}");
+        }
+
+        command.CommandText = builder.ToString();
         command.Connection = this._connection;
 
         return command;
     }
 
-    public SqliteCommand BuildDeleteCommand<TKey>(
+    public SqliteCommand BuildDeleteCommand(
         string tableName,
-        string keyStoragePropertyName,
-        IReadOnlyList<TKey> keys)
+        List<SqliteWhereCondition> conditions)
     {
-        var (command, parameterNames) = GetCommandWithParameterNames(keyStoragePropertyName, keys);
+        var builder = new StringBuilder();
 
-        var equalityClause = GetEqualityClause(keyStoragePropertyName, parameterNames);
+        var (command, whereClause) = GetCommandWithWhereClause(conditions);
 
-        var query =
-            $"DELETE FROM {tableName} " +
-            $"WHERE {equalityClause}";
+        builder.AppendLine($"DELETE FROM {tableName}");
 
-        command.CommandText = query;
+        if (!string.IsNullOrWhiteSpace(whereClause))
+        {
+            builder.AppendLine($"WHERE {whereClause}");
+        }
+
+        command.CommandText = builder.ToString();
         command.Connection = this._connection;
 
         return command;
@@ -218,51 +226,54 @@ internal class SqliteVectorStoreCollectionCommandBuilder
         return string.Join(" ", columnDefinitionParts);
     }
 
-    private static string GetEqualityClause(string propertyName, List<string> parameterNames)
+    private static (SqliteCommand Command, string WhereClause) GetCommandWithWhereClause(List<SqliteWhereCondition> conditions)
     {
-        return parameterNames.Count == 1 ?
-            $"{propertyName} = {parameterNames[0]}" :
-            $"{propertyName} IN ({string.Join(", ", parameterNames)})";
-    }
+        const string WhereClauseOperator = " AND ";
 
-    private static (SqliteCommand Command, List<string> ParameterNames) GetCommandWithParameterNames<TParameter>(
-        string propertyName,
-        IReadOnlyList<TParameter> parameters)
-    {
         var command = new SqliteCommand();
-        var parameterNames = new List<string>();
+        var whereClauseParts = new List<string>();
 
-        for (var parameterIndex = 0; parameterIndex < parameters.Count; parameterIndex++)
+        foreach (var condition in conditions)
         {
-            var parameterName = GetParameterName(propertyName, parameterIndex);
-            parameterNames.Add(parameterName);
+            var parameterNames = new List<string>();
 
-            command.Parameters.AddWithValue(parameterName, parameters[parameterIndex]);
+            for (var parameterIndex = 0; parameterIndex < condition.Values.Count; parameterIndex++)
+            {
+                var parameterName = GetParameterName(condition.Operand, parameterIndex);
+
+                parameterNames.Add(parameterName);
+
+                command.Parameters.AddWithValue(parameterName, condition.Values[parameterIndex]);
+            }
+
+            whereClauseParts.Add(condition.Build(parameterNames));
         }
 
-        return (command, parameterNames);
+        var whereClause = string.Join(WhereClauseOperator, whereClauseParts);
+
+        return (command, whereClause);
     }
 
-    private static (List<string> Columns, List<string> Parameters, List<object?> Values) GetQueryParts(
+    private static (List<string> Columns, List<string> ParameterNames, List<object?> ParameterValues) GetQueryParts(
         IReadOnlyList<string> propertyNames,
         Dictionary<string, object?> record,
         int index)
     {
         var columns = new List<string>();
-        var parameters = new List<string>();
-        var values = new List<object?>();
+        var parameterNames = new List<string>();
+        var parameterValues = new List<object?>();
 
         foreach (var propertyName in propertyNames)
         {
             if (record.TryGetValue(propertyName, out var value))
             {
                 columns.Add(propertyName);
-                parameters.Add(GetParameterName(propertyName, index));
-                values.Add(value ?? DBNull.Value);
+                parameterNames.Add(GetParameterName(propertyName, index));
+                parameterValues.Add(value ?? DBNull.Value);
             }
         }
 
-        return (columns, parameters, values);
+        return (columns, parameterNames, parameterValues);
     }
 
     private static string GetParameterName(string propertyName, int index)

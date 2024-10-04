@@ -36,6 +36,6 @@ public record SqliteHotel<TKey>()
     public DateTime Timestamp { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]
+    [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

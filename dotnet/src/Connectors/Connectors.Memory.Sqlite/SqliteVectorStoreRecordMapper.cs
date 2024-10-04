@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
@@ -52,8 +51,7 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
             if (propertyValue is not null)
             {
                 var vector = (ReadOnlyMemory<float>)propertyValue;
-                var serializedVector = $"[{string.Join(", ", vector.ToArray())}]";
-                result = serializedVector;
+                result = SqliteVectorStoreRecordPropertyMapping.MapVector(vector);
             }
 
             properties.Add(this._propertyReader.StoragePropertyNamesMap[property.Name], result);
