@@ -67,7 +67,7 @@ class PostgresStore(VectorStore):
                 db_schema=self.db_schema,
                 collection_name=collection_name,
                 data_model_type=data_model_type,
-                # data model definition will be validatedin the collection
+                # data model definition will be validated in the collection
                 data_model_definition=data_model_definition,  # type: ignore
                 **kwargs,
             )
