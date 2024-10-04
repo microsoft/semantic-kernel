@@ -79,7 +79,7 @@ def DataModelPandas(record) -> tuple:
     return definition, df
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture(scope="session")
 async def vector_store() -> AsyncGenerator[PostgresStore, None]:
     async with await pg_settings.create_connection_pool() as pool:
         yield PostgresStore(connection_pool=pool)
