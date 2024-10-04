@@ -70,7 +70,7 @@ public sealed class ProcessTests
 
         // Route the last step of the outer process to trigger the external event that starts the inner process
         processBuilder.Steps[1].OnEvent(ProcessTestsEvents.OutputReadyInternal)
-            .SendEventTo(nestedProcessStep.GetTargetForExternalEvent(ProcessTestsEvents.StartProcess));
+            .SendEventTo(nestedProcessStep.WhereInputEventIs(ProcessTestsEvents.StartProcess));
 
         // Build the outer process
         var process = processBuilder.Build();
@@ -111,8 +111,8 @@ public sealed class ProcessTests
         var nestedProcessStep = processBuilder.AddStepFromProcess(this.CreateLinearProcess("Inner"));
 
         // Add a new external event to start the outer process and handoff to the inner process directly
-        processBuilder.OnExternalEvent(ProcessTestsEvents.StartInnerProcess)
-            .SendEventTo(nestedProcessStep.GetTargetForExternalEvent(ProcessTestsEvents.StartProcess));
+        processBuilder.OnInputEvent(ProcessTestsEvents.StartInnerProcess)
+            .SendEventTo(nestedProcessStep.WhereInputEventIs(ProcessTestsEvents.StartProcess));
 
         // Route the last step of the inner process to trigger the echo step of the outer process
         nestedProcessStep.OnEvent(ProcessTestsEvents.OutputReadyPublic)
@@ -155,8 +155,8 @@ public sealed class ProcessTests
         var nestedProcessStep = processBuilder.AddStepFromProcess(this.CreateLinearProcess("Inner"));
 
         // Add a new external event to start the outer process and handoff to the inner process directly
-        processBuilder.OnExternalEvent(ProcessTestsEvents.StartInnerProcess)
-            .SendEventTo(nestedProcessStep.GetTargetForExternalEvent(ProcessTestsEvents.StartProcess));
+        processBuilder.OnInputEvent(ProcessTestsEvents.StartInnerProcess)
+            .SendEventTo(nestedProcessStep.WhereInputEventIs(ProcessTestsEvents.StartProcess));
 
         // Route the last step of the inner process to trigger the echo step of the outer process
         nestedProcessStep.OnEvent(ProcessTestsEvents.OutputReadyInternal)
@@ -185,7 +185,7 @@ public sealed class ProcessTests
         var echoStep = processBuilder.AddStepFromType<EchoStep>();
         var repeatStep = processBuilder.AddStepFromType<RepeatStep>();
 
-        processBuilder.OnExternalEvent(ProcessTestsEvents.StartProcess)
+        processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
 
         echoStep.OnFunctionResult(nameof(EchoStep.Echo))

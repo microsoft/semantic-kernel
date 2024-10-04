@@ -38,7 +38,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
 
         // Define the behavior when the process receives an external event
         process
-            .OnExternalEvent(ChatBotEvents.StartProcess)
+            .OnInputEvent(ChatBotEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(introStep));
 
         // When the intro is complete, notify the userInput step

@@ -133,7 +133,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     /// <param name="eventId">The Id of the external event.</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/></returns>
-    public ProcessEdgeBuilder OnExternalEvent(string eventId)
+    public ProcessEdgeBuilder OnInputEvent(string eventId)
     {
         return new ProcessEdgeBuilder(this, eventId);
     }
@@ -144,7 +144,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <param name="eventId">The Id of the event</param>
     /// <returns>An instance of <see cref="ProcessFunctionTargetBuilder"/></returns>
     /// <exception cref="KernelException"></exception>
-    public ProcessFunctionTargetBuilder GetTargetForExternalEvent(string eventId)
+    public ProcessFunctionTargetBuilder WhereInputEventIs(string eventId)
     {
         Verify.NotNullOrWhiteSpace(eventId);
 
