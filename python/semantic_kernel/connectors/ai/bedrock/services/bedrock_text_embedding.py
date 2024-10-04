@@ -8,27 +8,25 @@ from typing import TYPE_CHECKING, Any
 
 import boto3
 from numpy import array, ndarray
-
-from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import (
-    BedrockEmbeddingPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import (
-    get_text_embedding_request_body,
-    parse_text_embedding_response,
-)
-from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import run_in_executor
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from pydantic import ValidationError
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-from pydantic import ValidationError
-
+from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import (
+    BedrockEmbeddingPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.bedrock.bedrock_settings import BedrockSettings
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_base import BedrockBase
+from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import (
+    get_text_embedding_request_body,
+    parse_text_embedding_response,
+)
+from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import run_in_executor
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 if TYPE_CHECKING:

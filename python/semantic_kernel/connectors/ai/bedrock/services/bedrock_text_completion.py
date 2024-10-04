@@ -7,19 +7,14 @@ from functools import partial
 from typing import TYPE_CHECKING, Any
 
 import boto3
-
-from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockTextPromptExecutionSettings
-from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import run_in_executor
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
-from semantic_kernel.contents.text_content import TextContent
+from pydantic import ValidationError
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-from pydantic import ValidationError
-
+from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.bedrock.bedrock_settings import BedrockSettings
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_base import BedrockBase
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import (
@@ -27,7 +22,10 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
     parse_streaming_text_completion_response,
     parse_text_completion_response,
 )
+from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import run_in_executor
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_streaming_text_completion,
