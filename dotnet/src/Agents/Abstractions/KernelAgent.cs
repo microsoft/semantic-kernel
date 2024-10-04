@@ -105,9 +105,7 @@ public abstract class KernelAgent : Agent
                 .GroupBy(entry => entry.Key)
                 .ToDictionary(entry => entry.Key, entry => entry.First().Value);
 
-        KernelArguments copy = new(parameters, settings);
-
-        return copy;
+        return new KernelArguments(parameters, settings);
     }
 
     private static readonly Dictionary<string, PromptExecutionSettings> s_emptySettings = [];
