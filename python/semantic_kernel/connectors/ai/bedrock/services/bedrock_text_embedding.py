@@ -85,6 +85,7 @@ class BedrockTextEmbedding(BedrockBase, EmbeddingGeneratorBase):
     ) -> ndarray:
         model_info = await self.get_foundation_model_info(self.ai_model_id)
         if "TEXT" not in model_info.get("inputModalities", []):
+            # Image embedding is not supported yet in SK
             raise ServiceInvalidRequestError(f"The model {self.ai_model_id} does not support text input.")
         if "EMBEDDING" not in model_info.get("outputModalities", []):
             raise ServiceInvalidRequestError(f"The model {self.ai_model_id} does not support embedding output.")

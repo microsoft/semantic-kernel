@@ -97,8 +97,6 @@ class BedrockTextCompletion(BedrockBase, TextCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, BedrockTextPromptExecutionSettings)  # nosec
 
-        # TODO(taochen@microsoft.com): make sure the model supports text completion
-
         request_body = get_text_completion_request_body(self.ai_model_id, prompt, settings)
         response_body = await self._async_invoke_model(request_body)
         return parse_text_completion_response(

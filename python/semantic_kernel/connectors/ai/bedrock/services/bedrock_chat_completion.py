@@ -41,7 +41,11 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
+from semantic_kernel.exceptions.service_exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidRequestError,
+    ServiceInvalidResponseError,
+)
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,
@@ -113,8 +117,6 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, BedrockChatPromptExecutionSettings)  # nosec
 
-        # TODO(taochen@microsoft.com): make sure the model supports chat
-
         prepared_settings = self._prepare_settings_for_request(chat_history, settings)
         response = await self._async_converse(**prepared_settings)
 
@@ -127,11 +129,14 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
+        # Not all models support streaming: check if the model supports streaming before proceeding
+        model_info = await self.get_foundation_model_info(self.ai_model_id)
+        if not model_info.get("responseStreamingSupported"):
+            raise ServiceInvalidRequestError(f"The model {self.ai_model_id} does not support streaming.")
+
         if not isinstance(settings, BedrockChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, BedrockChatPromptExecutionSettings)  # nosec
-
-        # TODO(taochen@microsoft.com): make sure the model supports streaming
 
         prepared_settings = self._prepare_settings_for_request(chat_history, settings)
         response_stream = await self._async_converse_streaming(**prepared_settings)
