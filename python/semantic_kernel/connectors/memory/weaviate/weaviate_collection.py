@@ -194,7 +194,6 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
             )
             # If key is None, Weaviate will generate a UUID
             key = extract_key_from_dict_record_based_on_data_model_definition(record, self.data_model_definition)
-            # Vector field
             vectors = extract_vectors_from_dict_record_based_on_data_model_definition(
                 record, self.data_model_definition
             )
