@@ -126,3 +126,14 @@ async def test_text_completion_stream(model_name, task, input_str):
     output = str(summary).strip()
     print(f"Completion using input string: '{output}'")
     assert len(output) > 0
+    try:
+        assert len(output) > 0
+    except AssertionError:
+        pytest.xfail("The output is empty, but completed invoke")
+
+    stream_summary = ""
+    async for text in kernel.invoke_stream(test_func, arguments):
+        stream_summary += str(text[0])
+
+    stream_output = str(stream_summary).strip()
+    assert len(stream_output) > 0

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -48,5 +48,6 @@ public abstract class BaseTest
     protected void Write(object? target = null)
     {
         this.Output.Write(target ?? string.Empty);
+        this.Output.WriteLine(target ?? string.Empty);
     }
 }

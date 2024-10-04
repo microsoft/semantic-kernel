@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "description": "If the request does not provide an explicit number for a parameter, use this function to make up a logical value; do not make up a value yourself.",
+  "type": "completion",
+  "completion": {
+    "max_tokens": 1000,
+    "temperature": 0.9,
+    "top_p": 0.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0
+  },
+  "input": {
+    "parameters": [
+      {
+        "name": "input",
+        "description": "A detailed description (2-3 sentences) of the missing value; provide all the context the user provided to get the best results.",
+        "defaultValue": ""
+      },
+      {
+        "name": "units",
+        "description": "The units used to measure the value (e.g., 'meters', 'seconds', 'dollars', etc.). (required)",
+        "defaultValue": ""
+      }
+    ]
+  }
+}

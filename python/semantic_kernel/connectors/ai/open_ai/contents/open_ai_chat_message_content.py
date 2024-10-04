@@ -7,6 +7,13 @@ from openai.types.chat import ChatCompletion
 
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
+from xml.etree.ElementTree import Element
+
+from defusedxml import ElementTree
+from openai.types.chat import ChatCompletion
+
+from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
 
@@ -33,6 +40,7 @@ class OpenAIChatMessageContent(ChatMessageContent):
     inner_content: Optional[ChatCompletion] = None
     function_call: Optional[FunctionCall] = None
     tool_calls: Optional[List[ToolCall]] = None
+    tool_call_id: Optional[str] = None
 
     @staticmethod
     def ToolIdProperty():
@@ -54,6 +62,11 @@ class OpenAIChatMessageContent(ChatMessageContent):
             root.set("tool_calls", ",".join([call.model_dump_json(exclude_none=True) for call in self.tool_calls]))
         root.text = self.content or ""
         return ElementTree.tostring(root, encoding=self.encoding or "unicode")
+            root.set("tool_calls", "|".join([call.model_dump_json(exclude_none=True) for call in self.tool_calls]))
+        if self.tool_call_id:
+            root.set("tool_call_id", self.tool_call_id)
+        root.text = self.content or ""
+        return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
 
     @classmethod
     def from_element(cls, element: Element) -> "ChatMessageContent":
@@ -70,4 +83,7 @@ class OpenAIChatMessageContent(ChatMessageContent):
             args["function_call"] = FunctionCall.model_validate_json(function_call)
         if tool_calls := element.get("tool_calls"):
             args["tool_calls"] = [ToolCall.model_validate_json(call) for call in tool_calls.split(",")]
+            args["tool_calls"] = [ToolCall.model_validate_json(call) for call in tool_calls.split("|")]
+        if tool_call_id := element.get("tool_call_id"):
+            args["tool_call_id"] = tool_call_id
         return cls(**args)

@@ -53,6 +53,7 @@ public class ActionPlanner {
     // means that the code needs to be modified to enable the injection of a skill store, likely for
     // dependency injection or other design considerations.
     TODO: allow to inject skill store
+    // TODO: allow to inject skill store
 
     /**
      * Initialize a new instance of the ActionPlanner class

@@ -5,6 +5,7 @@
 		"ghcr.io/jayree/devcontainer-features/npm-registry:1": {},
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
 		"ghcr.io/devcontainers/features/dotnet:2.1.3": {
+		"ghcr.io/devcontainers/features/dotnet:2.0.6": {
 			"version": "8"
 		},
 		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {}
@@ -26,6 +27,8 @@
 				"hangxingliu.vscode-coding-tracker",
 				"micoloth.reactive-jupyter",
 				"ms-vscode-remote.remote-containers"
+				"ms-dotnettools.csdevkit",
+				"franneck94.c-cpp-runner"
 			]
 		}
 	},

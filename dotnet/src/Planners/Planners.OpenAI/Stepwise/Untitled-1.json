@@ -1,0 +1,269 @@
+{
+    "Id": "70321253a1095ee6151132d1d4a4c4e6dbe446b28153c7345865ae787be9dbc1",
+    "Created": "2024-05-14T13:05:26.743507095Z",
+    "Path": "/bin/sh",
+    "Args": [
+        "-c",
+        "/service"
+    ],
+    "State": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 989,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2024-05-25T05:32:47.605710557Z",
+        "FinishedAt": "2024-05-25T05:32:41.121952639Z"
+    },
+    "Image": "sha256:f468fa9a7bba75de12af215e107089356ff816e2c5269911b9a7173d438b3f80",
+    "ResolvConfPath": "/var/lib/docker/containers/70321253a1095ee6151132d1d4a4c4e6dbe446b28153c7345865ae787be9dbc1/resolv.conf",
+    "HostnamePath": "/var/lib/docker/containers/70321253a1095ee6151132d1d4a4c4e6dbe446b28153c7345865ae787be9dbc1/hostname",
+    "HostsPath": "/var/lib/docker/containers/70321253a1095ee6151132d1d4a4c4e6dbe446b28153c7345865ae787be9dbc1/hosts",
+    "LogPath": "/var/lib/docker/containers/70321253a1095ee6151132d1d4a4c4e6dbe446b28153c7345865ae787be9dbc1/70321253a1095ee6151132d1d4a4c4e6dbe446b28153c7345865ae787be9dbc1-json.log",
+    "Name": "/signaloneagent",
+    "RestartCount": 0,
+    "Driver": "overlayfs",
+    "Platform": "linux",
+    "MountLabel": "",
+    "ProcessLabel": "",
+    "AppArmorProfile": "",
+    "ExecIDs": null,
+    "HostConfig": {
+        "Binds": [
+            "/var/run/docker.sock:/var/run/docker.sock:rw",
+            "/run/guest-services/signaloneai_signalone-extension:/run/guest-services:rw"
+        ],
+        "ContainerIDFile": "",
+        "LogConfig": {
+            "Type": "json-file",
+            "Config": {}
+        },
+        "NetworkMode": "signaloneai_signalone-extension-desktop-extension_default",
+        "PortBindings": {
+            "37002/tcp": [
+                {
+                    "HostIp": "",
+                    "HostPort": "37002"
+                }
+            ]
+        },
+        "RestartPolicy": {
+            "Name": "always",
+            "MaximumRetryCount": 0
+        },
+        "AutoRemove": false,
+        "VolumeDriver": "",
+        "VolumesFrom": null,
+        "ConsoleSize": [
+            0,
+            0
+        ],
+        "CapAdd": null,
+        "CapDrop": null,
+        "CgroupnsMode": "host",
+        "Dns": [],
+        "DnsOptions": [],
+        "DnsSearch": [],
+        "ExtraHosts": [],
+        "GroupAdd": null,
+        "IpcMode": "private",
+        "Cgroup": "",
+        "Links": null,
+        "OomScoreAdj": 0,
+        "PidMode": "",
+        "Privileged": false,
+        "PublishAllPorts": false,
+        "ReadonlyRootfs": false,
+        "SecurityOpt": null,
+        "UTSMode": "",
+        "UsernsMode": "",
+        "ShmSize": 67108864,
+        "Runtime": "runc",
+        "Isolation": "",
+        "CpuShares": 0,
+        "Memory": 0,
+        "NanoCpus": 0,
+        "CgroupParent": "",
+        "BlkioWeight": 0,
+        "BlkioWeightDevice": null,
+        "BlkioDeviceReadBps": null,
+        "BlkioDeviceWriteBps": null,
+        "BlkioDeviceReadIOps": null,
+        "BlkioDeviceWriteIOps": null,
+        "CpuPeriod": 0,
+        "CpuQuota": 0,
+        "CpuRealtimePeriod": 0,
+        "CpuRealtimeRuntime": 0,
+        "CpusetCpus": "",
+        "CpusetMems": "",
+        "Devices": null,
+        "DeviceCgroupRules": null,
+        "DeviceRequests": null,
+        "MemoryReservation": 0,
+        "MemorySwap": 0,
+        "MemorySwappiness": null,
+        "OomKillDisable": false,
+        "PidsLimit": null,
+        "Ulimits": null,
+        "CpuCount": 0,
+        "CpuPercent": 0,
+        "IOMaximumIOps": 0,
+        "IOMaximumBandwidth": 0,
+        "MaskedPaths": [
+            "/proc/asound",
+            "/proc/acpi",
+            "/proc/kcore",
+            "/proc/keys",
+            "/proc/latency_stats",
+            "/proc/timer_list",
+            "/proc/timer_stats",
+            "/proc/sched_debug",
+            "/proc/scsi",
+            "/sys/firmware",
+            "/sys/devices/virtual/powercap"
+        ],
+        "ReadonlyPaths": [
+            "/proc/bus",
+            "/proc/fs",
+            "/proc/irq",
+            "/proc/sys",
+            "/proc/sysrq-trigger"
+        ]
+    },
+    "GraphDriver": {
+        "Data": null,
+        "Name": "overlayfs"
+    },
+    "Mounts": [
+        {
+            "Type": "bind",
+            "Source": "/run/guest-services/signaloneai_signalone-extension",
+            "Destination": "/run/guest-services",
+            "Mode": "rw",
+            "RW": true,
+            "Propagation": "rprivate"
+        },
+        {
+            "Type": "bind",
+            "Source": "/var/run/docker.sock",
+            "Destination": "/var/run/docker.sock",
+            "Mode": "rw",
+            "RW": true,
+            "Propagation": "rprivate"
+        }
+    ],
+    "Config": {
+        "Hostname": "70321253a109",
+        "Domainname": "",
+        "User": "",
+        "AttachStdin": false,
+        "AttachStdout": true,
+        "AttachStderr": true,
+        "ExposedPorts": {
+            "37002/tcp": {}
+        },
+        "Tty": false,
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "Env": [
+            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "Cmd": [
+            "/bin/sh",
+            "-c",
+            "/service"
+        ],
+        "Image": "signaloneai/signalone-extension:0.0.9",
+        "Volumes": null,
+        "WorkingDir": "",
+        "Entrypoint": null,
+        "OnBuild": null,
+        "Labels": {
+            "com.docker.compose.config-hash": "16d97c07b30b2bc95b10f2cded4d21c13cb0657ebd7ac8e15ad24b9daf253bd9",
+            "com.docker.compose.container-number": "1",
+            "com.docker.compose.depends_on": "",
+            "com.docker.compose.image": "sha256:f468fa9a7bba75de12af215e107089356ff816e2c5269911b9a7173d438b3f80",
+            "com.docker.compose.oneoff": "False",
+            "com.docker.compose.project": "signaloneai_signalone-extension-desktop-extension",
+            "com.docker.compose.project.config_files": "C:\\Users\\Administrator\\AppData\\Roaming\\Docker\\extensions\\signaloneai_signalone-extension\\vm\\docker-compose.yaml",
+            "com.docker.compose.project.working_dir": "C:\\Users\\Administrator\\AppData\\Roaming\\Docker\\extensions\\signaloneai_signalone-extension\\vm",
+            "com.docker.compose.service": "signaloneagent",
+            "com.docker.compose.version": "2.26.1",
+            "com.docker.desktop.extension": "true",
+            "com.docker.desktop.extension.api.version": "0.3.4",
+            "com.docker.desktop.extension.icon": "https://signaloneai.com/online-assets/Signal0ne_min.jpg",
+            "com.docker.desktop.extension.name": "Signal0ne",
+            "com.docker.extension.additional-urls": "[{\"title\":\"Demo Video\",\"url\":\"https://youtu.be/LWOUSr9s_Zw\"},{\"title\":\"Discord\",\"url\":\"https://discord.gg/vAZrxKs5f6\"},{\"title\":\"Linkedin\",\"url\":\"https://www.linkedin.com/company/signal0ne/\"}]",
+            "com.docker.extension.categories": "utility-tools",
+            "com.docker.extension.changelog": "<li>False positives discovery bug resolved</li><li>Improved overall agent stability</li>",
+            "com.docker.extension.detailed-description": "The magic of the Signal0ne Docker Extension is its very short feedback loop for working with and developing containerized applications. Register new account and forget endless log diving – the extension offers a clear and concise summary of what's happening inside your containers, pinpointing potential issues and even suggesting solutions.",
+            "com.docker.extension.publisher-url": "https://signaloneai.com/",
+            "com.docker.extension.screenshots": "[{\"alt\":\"Main Screen\",\"url\":\"https://signaloneai.com/online-assets/screen2.PNG\"},{\"alt\":\"Login Screen\", \"url\": \"https://signaloneai.com/online-assets/screen3.png\"}]",
+            "org.opencontainers.image.description": "Painless AI powered debugging for containerized apps.",
+            "org.opencontainers.image.title": "Signal0ne",
+            "org.opencontainers.image.vendor": "signalone"
+        }
+    },
+    "NetworkSettings": {
+        "Bridge": "",
+        "SandboxID": "a794578a5eaf61003c1bcc2ef3f15cc245ae8d827e11be3fafe349c21cdb4def",
+        "SandboxKey": "/var/run/docker/netns/a794578a5eaf",
+        "Ports": {
+            "37002/tcp": [
+                {
+                    "HostIp": "0.0.0.0",
+                    "HostPort": "37002"
+                }
+            ]
+        },
+        "HairpinMode": false,
+        "LinkLocalIPv6Address": "",
+        "LinkLocalIPv6PrefixLen": 0,
+        "SecondaryIPAddresses": null,
+        "SecondaryIPv6Addresses": null,
+        "EndpointID": "",
+        "Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "IPAddress": "",
+        "IPPrefixLen": 0,
+        "IPv6Gateway": "",
+        "MacAddress": "",
+        "Networks": {
+            "signaloneai_signalone-extension-desktop-extension_default": {
+                "IPAMConfig": null,
+                "Links": null,
+                "Aliases": [
+                    "signaloneagent",
+                    "signaloneagent"
+                ],
+                "MacAddress": "02:42:ac:16:00:02",
+                "NetworkID": "cfa38d1611d8fb00a84ad11af8f1fe6fcba38c078eaf28bbc75e26a34cd0bd20",
+                "EndpointID": "ebe73890d161a5d99169b43fd65cba2bb4e956309aee0b4d45022a1161efb03b",
+                "Gateway": "172.22.0.1",
+                "IPAddress": "172.22.0.2",
+                "IPPrefixLen": 16,
+                "IPv6Gateway": "",
+                "GlobalIPv6Address": "",
+                "GlobalIPv6PrefixLen": 0,
+                "DriverOpts": null,
+                "DNSNames": [
+                    "signaloneagent",
+                    "70321253a109"
+                ]
+            }
+        }
+    },
+    "Ports": [
+        {
+            "IP": "0.0.0.0",
+            "PrivatePort": 37002,
+            "PublicPort": 37002,
+            "Type": "tcp"
+        }
+    ]
+}

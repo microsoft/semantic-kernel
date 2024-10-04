@@ -1,0 +1,10 @@
+[History]
+{{$history}}
+
+User: {{$input}}
+
+---------------------------------------------
+
+Provide the intent of the user. The intent should be one of the following: {{$options}}
+
+INTENT: 

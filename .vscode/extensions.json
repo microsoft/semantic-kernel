@@ -7,5 +7,7 @@
     "ms-toolsai.jupyter",
     "geequlim.godot-tools",
     "ms-vscode.powershell"
+    "ms-dotnettools.csharp",
+    "franneck94.c-cpp-runner"
   ]
 }

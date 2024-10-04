@@ -14,6 +14,12 @@ from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as
 logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
+import semantic_kernel as sk
+import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
+
+logging.basicConfig(level=logging.WARNING)
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -60,6 +66,19 @@ prompt_template_config = sk.PromptTemplateConfig(
         InputVariable(name="chat_history", description="The history of the conversation", is_required=True),
     ],
     execution_settings=req_settings,
+req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+req_settings.max_tokens = 2000
+req_settings.temperature = 0.7
+req_settings.top_p = 0.8
+req_settings.auto_invoke_kernel_functions = True
+## The third method is the most specific as the returned request settings class is the one that is registered for the service and has some fields already filled in, like the service_id and ai_model_id. # noqa: E501 E266
+
+
+chat_function = kernel.create_function_from_prompt(
+    prompt=system_message + """{{$chat_history}}{{$user_input}}""",
+    function_name="chat",
+    plugin_name="chat",
+    prompt_execution_settings=req_settings,
 )
 
 history = ChatHistory()
@@ -88,6 +107,7 @@ async def chat() -> bool:
         answer = kernel.invoke_stream(
             chat_function,
             request=user_input,
+            user_input=user_input,
             chat_history=history,
         )
         print("Mosscap:> ", end="")
@@ -98,6 +118,7 @@ async def chat() -> bool:
     answer = await kernel.invoke(
         chat_function,
         request=user_input,
+        user_input=user_input,
         chat_history=history,
     )
     print(f"Mosscap:> {answer}")

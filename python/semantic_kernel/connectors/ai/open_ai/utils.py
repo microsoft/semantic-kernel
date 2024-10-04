@@ -14,6 +14,10 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+import logging
+from typing import Dict, List, Optional
+
+from semantic_kernel import Kernel
 from semantic_kernel.functions.kernel_function import KernelFunction
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -40,6 +44,12 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
         "function": {
             "name": f"{func_view.plugin_name}-{func_view.name}",
             "description": func_view.description,
+    func_metadata = function.metadata
+    return {
+        "type": "function",
+        "function": {
+            "name": f"{func_metadata.plugin_name}-{func_metadata.name}",
+            "description": func_metadata.description,
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -52,6 +62,9 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
                     if param.expose
                 },
                 "required": [p.name for p in func_view.parameters if p.required and p.expose],
+                    for param in func_metadata.parameters
+                },
+                "required": [p.name for p in func_metadata.parameters if p.is_required],
             },
         },
     }
@@ -74,6 +87,10 @@ def _describe_function(function: KernelFunction) -> Dict[str, str]:
     return {
         "name": f"{func_view.plugin_name}-{func_view.name}",
         "description": func_view.description,
+    func_metadata = function.metadata
+    return {
+        "name": f"{func_metadata.plugin_name}-{func_metadata.name}",
+        "description": func_metadata.description,
         "parameters": {
             "type": "object",
             "properties": {
@@ -82,6 +99,9 @@ def _describe_function(function: KernelFunction) -> Dict[str, str]:
                 if param.expose
             },
             "required": [p.name for p in func_view.parameters if p.required],
+                for param in func_metadata.parameters
+            },
+            "required": [p.name for p in func_metadata.parameters if p.is_required],
         },
     }
 
