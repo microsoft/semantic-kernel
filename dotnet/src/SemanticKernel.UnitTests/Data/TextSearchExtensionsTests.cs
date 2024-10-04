@@ -35,9 +35,9 @@ public class TextSearchExtensionsTests
 
     public static TheoryData<KernelFunction, int> FunctionsWithCount => new()
        {
-            { TextSearch.CreateSearch(searchOptions: new() { Count = 10 }), 10 },
-            { TextSearch.CreateGetTextSearchResults(searchOptions: new() { Count = 10 }), 10 },
-            { TextSearch.CreateGetSearchResults(searchOptions: new() { Count = 10 }), 10 },
+            { TextSearch.CreateSearch(searchOptions: new() { Top = 10 }), 10 },
+            { TextSearch.CreateGetTextSearchResults(searchOptions: new() { Top = 10 }), 10 },
+            { TextSearch.CreateGetSearchResults(searchOptions: new() { Top = 10 }), 10 },
        };
 
     [Theory]

@@ -58,6 +58,53 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
         var database = (Database)vectorStore.GetType().GetField("_database", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(vectorStore)!;
         Assert.Equal(HttpHeaderConstant.Values.UserAgent, database.Client.ClientOptions.ApplicationName);
     }
+<<<<<<< main
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+=======
+
+    [Fact]
+    public void AddVectorStoreRecordCollectionRegistersClass()
+    {
+        // Arrange
+        this._serviceCollection.AddSingleton<Database>(Mock.Of<Database>());
+
+        // Act
+        this._serviceCollection.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TestRecord>("testcollection");
+
+        // Assert
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
+
+    [Fact]
+    public void AddVectorStoreRecordCollectionWithConnectionStringRegistersClass()
+    {
+        // Act
+        this._serviceCollection.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TestRecord>("testcollection", "AccountEndpoint=https://test.documents.azure.com:443/;AccountKey=mock;", "mydb");
+
+        // Assert
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
+
+    private void AssertVectorStoreRecordCollectionCreated()
+    {
+        var serviceProvider = this._serviceCollection.BuildServiceProvider();
+
+        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
+        Assert.NotNull(collection);
+        Assert.IsType<AzureCosmosDBNoSQLVectorStoreRecordCollection<TestRecord>>(collection);
+
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        Assert.NotNull(vectorizedSearch);
+        Assert.IsType<AzureCosmosDBNoSQLVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
+    }
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    private sealed class TestRecord
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; } = string.Empty;
+    }
+>>>>>>> upstream/feature-vector-search
 }

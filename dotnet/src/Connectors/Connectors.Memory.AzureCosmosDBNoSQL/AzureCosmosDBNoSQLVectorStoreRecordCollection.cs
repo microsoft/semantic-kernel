@@ -74,6 +74,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         typeof(ReadOnlyMemory<sbyte>?),
     ];
 
+    /// <summary>The default options for vector search.</summary>
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     private readonly Database _database;
 
@@ -91,15 +94,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
     /// <summary>The storage name of the key field for the collections that this class is used with.</summary>
     private readonly string _keyStoragePropertyName;
-
-    /// <summary>The key property of the current storage model.</summary>
-    private readonly VectorStoreRecordKeyProperty _keyProperty;
-
-    /// <summary>Collection of record vector properties.</summary>
-    private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
-
-    /// <summary>First vector property for the collections that this class is used with.</summary>
-    private readonly VectorStoreRecordVectorProperty? _firstVectorProperty = null;
 
     /// <summary>The property name to use as partition key.</summary>
     private readonly string _partitionKeyPropertyName;
@@ -172,13 +166,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             .Concat([this._propertyReader.KeyProperty])
             .Select(x => this._storagePropertyNames[x.DataModelPropertyName])
             .ToList();
-
-        this._vectorProperties = properties.VectorProperties;
-
-        if (this._vectorProperties.Count > 0)
-        {
-            this._firstVectorProperty = this._vectorProperties[0];
-        }
     }
 
     /// <inheritdoc />
@@ -395,8 +382,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
                 $"Supported types are: {string.Join(", ", s_supportedVectorTypes.Select(l => l.FullName))}");
         }
 
-        var searchOptions = options ?? VectorSearchOptions.Default;
-        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorFieldName);
+        var searchOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
 
         if (vectorProperty is null)
         {
@@ -748,7 +735,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         if (!string.IsNullOrWhiteSpace(vectorFieldName))
         {
             // Check vector properties by data model property name.
-            var vectorProperty = this._vectorProperties
+            var vectorProperty = this._propertyReader.VectorProperties
                 .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
 
             if (vectorProperty is not null)
@@ -761,6 +748,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         // If vector property is not provided in options, return first vector property from schema.
         return this._firstVectorProperty;
+        return this._propertyReader.VectorProperty;
     }
 
     /// <summary>

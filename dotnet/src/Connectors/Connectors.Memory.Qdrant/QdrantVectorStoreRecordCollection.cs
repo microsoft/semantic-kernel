@@ -29,6 +29,9 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         typeof(Guid)
     ];
 
+    /// <summary>The default options for vector search.</summary>
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "Qdrant";
 
@@ -52,12 +55,6 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 
     /// <summary>A mapper to use for converting between qdrant point and consumer models.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, PointStruct> _mapper;
-
-    /// <summary>A dictionary that maps from a property name to the configured name that should be used when storing it.</summary>
-    private readonly Dictionary<string, string> _storagePropertyNames = new();
-
-    /// <summary>The name of the first vector field for the collections that this class is used with.</summary>
-    private readonly string? _firstVectorPropertyName = null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
@@ -461,7 +458,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     {
         Verify.NotNull(vector);
 
-        if (this._firstVectorPropertyName is null)
+        if (this._propertyReader.FirstVectorPropertyName is null)
         {
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
@@ -471,16 +468,16 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
             throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Qdrant connector.");
         }
 
-        var internalOptions = options ?? Data.VectorSearchOptions.Default;
+        var internalOptions = options ?? s_defaultVectorSearchOptions;
 
         // Build filter object.
-        var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._storagePropertyNames);
+        var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._propertyReader.StoragePropertyNamesMap);
 
         // Specify the vector name if named vectors are used.
         string? vectorName = null;
         if (this._options.HasNamedVectors)
         {
-            vectorName = this.ResolveVectorFieldName(internalOptions.VectorFieldName);
+            vectorName = this.ResolveVectorFieldName(internalOptions.VectorPropertyName);
         }
 
         // Specify whether to include vectors in the search results.
@@ -500,8 +497,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                 query: query,
                 usingVector: vectorName,
                 filter: filter,
-                limit: (ulong)internalOptions.Limit,
-                offset: (ulong)internalOptions.Offset,
+                limit: (ulong)internalOptions.Top,
+                offset: (ulong)internalOptions.Skip,
                 vectorsSelector: vectorsSelector,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
 
@@ -530,14 +527,14 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         string? vectorFieldName;
         if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
         {
-            if (!this._storagePropertyNames.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
+            if (!this._propertyReader.StoragePropertyNamesMap.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
             {
                 throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
             }
         }
         else
         {
-            vectorFieldName = this._firstVectorPropertyName;
+            vectorFieldName = this._propertyReader.FirstVectorPropertyStoragePropertyName;
         }
 
         return vectorFieldName!;

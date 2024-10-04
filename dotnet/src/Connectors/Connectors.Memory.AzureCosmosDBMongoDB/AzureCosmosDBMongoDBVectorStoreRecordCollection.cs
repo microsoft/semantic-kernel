@@ -31,6 +31,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>Property name to be used for search document value.</summary>
     private const string DocumentPropertyName = "document";
 
+    /// <summary>The default options for vector search.</summary>
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
 
@@ -109,6 +112,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         this._mapper = this._options.BsonDocumentCustomMapper ??
             new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, this._storagePropertyNames);
         this._mapper = this.InitializeMapper(properties.KeyProperty);
+        this._vectorStoragePropertyNames = this._propertyReader.VectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
+
+
         this._vectorStoragePropertyNames = this._propertyReader.VectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
 
         this._mapper = this.InitializeMapper();
@@ -287,8 +293,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
                     typeof(ReadOnlyMemory<double>).FullName])}")
         };
 
-        var searchOptions = options ?? VectorSearchOptions.Default;
-        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorFieldName);
+        var searchOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
 
         if (vectorProperty is null)
         {
@@ -301,9 +307,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             searchOptions.Filter,
             this._storagePropertyNames);
 
-        // Constructing a query to fetch "offset + limit" total items
-        // to perform offset logic locally, since offset parameter is not part of API. 
-        var itemsAmount = searchOptions.Offset + searchOptions.Limit;
+        // Constructing a query to fetch "skip + top" total items
+        // to perform skip logic locally, since skip option is not part of API. 
+        var itemsAmount = searchOptions.Skip + searchOptions.Top;
 
         var searchQuery = vectorProperty.IndexKind switch
         {
@@ -333,13 +339,13 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        var offsetCounter = 0;
+        var skipCounter = 0;
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
         {
             foreach (var response in cursor.Current)
             {
-                if (offsetCounter >= searchOptions.Offset)
+                if (skipCounter >= searchOptions.Skip)
                 {
                     var score = response[ScorePropertyName].AsDouble;
                     var record = VectorStoreErrorHandler.RunModelConversion(
@@ -351,7 +357,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
                     yield return new VectorSearchResult<TRecord>(record, score);
                 }
 
-                offsetCounter++;
+                skipCounter++;
             }
         }
     }
@@ -367,14 +373,14 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         var indexArray = new BsonArray();
 
         indexArray.AddRange(AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping.GetVectorIndexes(
-            this._vectorProperties,
+            this._propertyReader.VectorProperties,
             this._storagePropertyNames,
             uniqueIndexes,
             this._options.NumLists,
             this._options.EfConstruction));
 
         indexArray.AddRange(AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping.GetFilterableDataIndexes(
-            this._dataProperties,
+            this._propertyReader.DataProperties,
             this._storagePropertyNames,
             uniqueIndexes));
     #region private
@@ -586,7 +592,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         if (!string.IsNullOrWhiteSpace(vectorFieldName))
         {
             // Check vector properties by data model property name.
-            var vectorProperty = this._vectorProperties
+            var vectorProperty = this._propertyReader.VectorProperties
                 .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
 
             if (vectorProperty is not null)
@@ -599,6 +605,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         // If vector property is not provided in options, return first vector property from schema.
         return this._firstVectorProperty;
+        return this._propertyReader.VectorProperty;
     }
 
     /// <summary>

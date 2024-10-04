@@ -74,9 +74,9 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
 
         var searchOptions = new VectorSearchOptions
         {
-            Offset = 2,
-            Limit = 3,
-            VectorFieldName = "DescriptionEmbedding"
+            Skip = 2,
+            Top = 3,
+            VectorPropertyName = "DescriptionEmbedding"
         };
 
         // Act
@@ -104,9 +104,9 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         // Arrange
         var searchOptions = new VectorSearchOptions
         {
-            Offset = 2,
-            Limit = 3,
-            VectorFieldName = "DescriptionEmbedding",
+            Skip = 2,
+            Top = 3,
+            VectorPropertyName = "DescriptionEmbedding",
             IncludeVectors = true
         };
 
@@ -135,9 +135,9 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
 
         var searchOptions = new VectorSearchOptions
         {
-            Offset = 2,
-            Limit = 3,
-            VectorFieldName = "DescriptionEmbedding",
+            Skip = 2,
+            Top = 3,
+            VectorPropertyName = "DescriptionEmbedding",
             Filter = new VectorSearchFilter()
                 .EqualTo("HotelName", "Test Name")
                 .AnyTagEqualTo("Tags", "t1")
@@ -166,9 +166,9 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         // Arrange
         var searchOptions = new VectorSearchOptions
         {
-            Offset = 2,
-            Limit = 3,
-            VectorFieldName = "DescriptionEmbedding",
+            Skip = 2,
+            Top = 3,
+            VectorPropertyName = "DescriptionEmbedding",
             Filter = new VectorSearchFilter().EqualTo("HotelName", new TestFilterValue())
         };
 
@@ -191,9 +191,9 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         // Arrange
         var searchOptions = new VectorSearchOptions
         {
-            Offset = 2,
-            Limit = 3,
-            VectorFieldName = "DescriptionEmbedding",
+            Skip = 2,
+            Top = 3,
+            VectorPropertyName = "DescriptionEmbedding",
             Filter = new VectorSearchFilter().EqualTo("NonExistentProperty", "value")
         };
 

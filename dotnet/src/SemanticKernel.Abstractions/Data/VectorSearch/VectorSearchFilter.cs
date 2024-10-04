@@ -49,30 +49,30 @@ public sealed class VectorSearchFilter
     /// <summary>
     /// Add an equal to clause to the filter options.
     /// </summary>
-    /// <param name="field">Name of the field.</param>
-    /// <param name="value">Value of the field</param>
+    /// <param name="propertyName">Name of the property to check against. Use the name of the property from your data model or as provided in the record definition.</param>
+    /// <param name="value">Value that the property should match.</param>
     /// <returns><see cref="VectorSearchFilter"/> instance to allow fluent configuration.</returns>
     /// <remarks>
-    /// This clause will check if a field is equal to a specific value.
+    /// This clause will check if a property is equal to a specific value.
     /// </remarks>
-    public VectorSearchFilter EqualTo(string field, object value)
+    public VectorSearchFilter EqualTo(string propertyName, object value)
     {
-        this._filterClauses.Add(new EqualToFilterClause(field, value));
+        this._filterClauses.Add(new EqualToFilterClause(propertyName, value));
         return this;
     }
 
     /// <summary>
     /// Add an any tag equal to clause to the filter options.
     /// </summary>
-    /// <param name="field">Name of the field consisting of a list of values.</param>
+    /// <param name="propertyName">Name of the property consisting of a list of values to check against. Use the name of the property from your data model or as provided in the record definition.</param>
     /// <param name="value">Value that the list should contain.</param>
     /// <returns><see cref="VectorSearchFilter"/> instance to allow fluent configuration.</returns>
     /// <remarks>
-    /// This clause will check if a field consisting of a list of values contains a specific value.
+    /// This clause will check if a property consisting of a list of values contains a specific value.
     /// </remarks>
-    public VectorSearchFilter AnyTagEqualTo(string field, string value)
+    public VectorSearchFilter AnyTagEqualTo(string propertyName, string value)
     {
-        this._filterClauses.Add(new AnyTagEqualToFilterClause(field, value));
+        this._filterClauses.Add(new AnyTagEqualToFilterClause(propertyName, value));
         return this;
     }
 }

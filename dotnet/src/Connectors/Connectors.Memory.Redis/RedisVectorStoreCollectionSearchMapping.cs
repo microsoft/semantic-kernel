@@ -50,18 +50,18 @@ internal static class RedisVectorStoreCollectionSearchMapping
     /// <param name="firstVectorPropertyName">The name of the first vector property in the data model.</param>
     /// <param name="selectFields">The set of fields to limit the results to. Null for all.</param>
     /// <returns>The <see cref="Query"/>.</returns>
-    public static Query BuildQuery(byte[] vectorBytes, VectorSearchOptions options, Dictionary<string, string> storagePropertyNames, string firstVectorPropertyName, string[]? selectFields)
+    public static Query BuildQuery(byte[] vectorBytes, VectorSearchOptions options, IReadOnlyDictionary<string, string> storagePropertyNames, string firstVectorPropertyName, string[]? selectFields)
     {
         // Resolve options.
-        var vectorPropertyName = ResolveVectorFieldName(options.VectorFieldName, storagePropertyNames, firstVectorPropertyName);
+        var vectorPropertyName = ResolveVectorFieldName(options.VectorPropertyName, storagePropertyNames, firstVectorPropertyName);
 
         // Build search query.
-        var redisLimit = options.Limit + options.Offset;
+        var redisLimit = options.Top + options.Skip;
         var filter = RedisVectorStoreCollectionSearchMapping.BuildFilter(options.Filter, storagePropertyNames);
         var query = new Query($"{filter}=>[KNN {redisLimit} @{vectorPropertyName} $embedding AS vector_score]")
             .AddParam("embedding", vectorBytes)
             .SetSortBy("vector_score")
-            .Limit(options.Offset, redisLimit)
+            .Limit(options.Skip, redisLimit)
             .SetWithScores(true)
             .Dialect(2);
 
@@ -80,7 +80,7 @@ internal static class RedisVectorStoreCollectionSearchMapping
     /// <param name="storagePropertyNames">A mapping of data model property names to the names under which they are stored.</param>
     /// <returns>The Redis filter string.</returns>
     /// <exception cref="InvalidOperationException">Thrown when a provided filter value is not supported.</exception>
-    public static string BuildFilter(VectorSearchFilter? basicVectorSearchFilter, Dictionary<string, string> storagePropertyNames)
+    public static string BuildFilter(VectorSearchFilter? basicVectorSearchFilter, IReadOnlyDictionary<string, string> storagePropertyNames)
     {
         if (basicVectorSearchFilter == null)
         {
@@ -126,7 +126,7 @@ internal static class RedisVectorStoreCollectionSearchMapping
     /// <param name="firstVectorPropertyName">The name of the first vector property in the data model.</param>
     /// <returns>The resolved vector field name.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private static string ResolveVectorFieldName(string? optionsVectorFieldName, Dictionary<string, string> storagePropertyNames, string firstVectorPropertyName)
+    private static string ResolveVectorFieldName(string? optionsVectorFieldName, IReadOnlyDictionary<string, string> storagePropertyNames, string firstVectorPropertyName)
     {
         string? vectorFieldName;
         if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
@@ -151,7 +151,7 @@ internal static class RedisVectorStoreCollectionSearchMapping
     /// <param name="fieldName">The name of the property in the data model.</param>
     /// <returns>The name that the property os stored under.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the property name is not found.</exception>
-    private static string GetStoragePropertyName(Dictionary<string, string> storagePropertyNames, string fieldName)
+    private static string GetStoragePropertyName(IReadOnlyDictionary<string, string> storagePropertyNames, string fieldName)
     {
         if (!storagePropertyNames.TryGetValue(fieldName, out var storageFieldName))
         {

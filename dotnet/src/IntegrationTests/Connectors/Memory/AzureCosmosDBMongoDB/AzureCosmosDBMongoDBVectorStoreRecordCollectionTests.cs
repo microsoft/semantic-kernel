@@ -380,8 +380,8 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         // Act
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
-            Limit = 2,
-            Offset = 2
+            Top = 2,
+            Skip = 2
         }).ToListAsync();
 
         // Assert
@@ -428,6 +428,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     #region private
 
     private AzureCosmosDBMongoDBHotel CreateTestHotel(string hotelId, ReadOnlyMemory<float>? embedding = null)
+    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
     {
         // Arrange
@@ -488,6 +489,8 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
             Timestamp = new DateTime(2024, 09, 23, 15, 32, 33),
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+            Timestamp = new DateTime(2024, 09, 23, 15, 32, 33),
+            DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
         };
     }
 

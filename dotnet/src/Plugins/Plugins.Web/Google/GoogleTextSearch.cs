@@ -135,8 +135,8 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
     /// <exception cref="NotSupportedException"></exception>
     private async Task<global::Google.Apis.CustomSearchAPI.v1.Data.Search> ExecuteSearchAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken)
     {
-        var count = searchOptions.Count;
-        var offset = searchOptions.Offset;
+        var count = searchOptions.Top;
+        var offset = searchOptions.Skip;
 
         if (count is <= 0 or > MaxCount)
         {

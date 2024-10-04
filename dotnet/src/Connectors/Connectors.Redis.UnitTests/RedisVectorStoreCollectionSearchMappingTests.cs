@@ -70,7 +70,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var firstVectorPropertyName = "storage_Vector";
 
         // Act.
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, VectorSearchOptions.Default, storagePropertyNames, firstVectorPropertyName, null);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, new VectorSearchOptions(), storagePropertyNames, firstVectorPropertyName, null);
 
         // Assert.
         Assert.NotNull(query);
@@ -86,7 +86,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         // Arrange.
         var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
         var byteArray = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
-        var vectorSearchOptions = new VectorSearchOptions { Limit = 5, Offset = 3, VectorFieldName = "Vector" };
+        var vectorSearchOptions = new VectorSearchOptions { Top = 5, Skip = 3, VectorPropertyName = "Vector" };
         var storagePropertyNames = new Dictionary<string, string>()
         {
             { "Vector", "storage_Vector" },
@@ -108,7 +108,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         // Arrange.
         var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
         var byteArray = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
-        var vectorSearchOptions = new VectorSearchOptions { VectorFieldName = "UnknownVector" };
+        var vectorSearchOptions = new VectorSearchOptions { VectorPropertyName = "UnknownVector" };
         var storagePropertyNames = new Dictionary<string, string>()
         {
             { "Vector", "storage_Vector" },
