@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI;
 using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
@@ -32,6 +33,18 @@ internal static class AssistantThreadActions
         RunStatus.Failed,
         RunStatus.Cancelled,
     ];
+        [
+            RunStatus.Queued,
+            RunStatus.InProgress,
+            RunStatus.Cancelling,
+        ];
+
+    private static readonly HashSet<RunStatus> s_terminalStatuses =
+        [
+            RunStatus.Expired,
+            RunStatus.Failed,
+            RunStatus.Cancelled,
+        ];
 
     /// <summary>
     /// Create a new assistant thread.
@@ -57,6 +70,7 @@ internal static class AssistantThreadActions
                     content: AssistantMessageFactory.GetMessageContents(message));
 
 
+                ThreadInitializationMessage threadMessage = new(AssistantMessageFactory.GetMessageContents(message));
                 createOptions.InitialMessages.Add(threadMessage);
             }
         }
@@ -114,11 +128,16 @@ internal static class AssistantThreadActions
         {
             foreach (ThreadMessage message in page.Values)
             foreach (var message in page.Values)
+        await foreach (ThreadMessage message in client.GetMessagesAsync(threadId, ListOrder.NewestFirst, cancellationToken).ConfigureAwait(false))
+        {
+            AuthorRole role = new(message.Role.ToString());
+
             string? assistantName = null;
             if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
                 !agentNames.TryGetValue(message.AssistantId, out assistantName))
             {
                 Assistant assistant = await client.GetAssistantAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
+                Assistant assistant = await client.GetAssistantAsync(message.AssistantId).ConfigureAwait(false); // SDK BUG - CANCEL TOKEN (https://github.com/microsoft/semantic-kernel/issues/7431)
                 if (!string.IsNullOrWhiteSpace(assistant.Name))
                 {
                     agentNames.Add(assistant.Id, assistant.Name);
@@ -179,6 +198,7 @@ internal static class AssistantThreadActions
         string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, instructions, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, invocationOptions);
 
         options.ToolsOverride.AddRange(tools);
 
@@ -191,6 +211,7 @@ internal static class AssistantThreadActions
         Dictionary<string, FunctionResultContent> functionSteps = [];
         Dictionary<string, FunctionCallContent> functionSteps = [];
         Dictionary<string, FunctionResultContent> functionSteps = [];
+        Dictionary<string, FunctionCallContent> functionSteps = [];
 
         do
         {
@@ -210,6 +231,7 @@ internal static class AssistantThreadActions
                 steps.AddRange(page.Values);
             };
             IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run, cancellationToken).ConfigureAwait(false);
+            RunStep[] steps = await client.GetRunStepsAsync(run).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
             // Is tool action required?
             if (run.Status == RunStatus.RequiresAction)
@@ -288,6 +310,8 @@ internal static class AssistantThreadActions
                             content = GenerateFunctionResultContent(agent.GetName(), functionStep, toolCall.FunctionOutput);
                             FunctionResultContent functionStep = functionSteps[toolCall.ToolCallId]; // Function step always captured on invocation
                             content = GenerateFunctionResultContent(agent.GetName(), [functionStep]);
+                            FunctionCallContent functionStep = functionSteps[toolCall.ToolCallId]; // Function step always captured on invocation
+                            content = GenerateFunctionResultContent(agent.GetName(), functionStep, toolCall.FunctionOutput);
                         }
 
                         if (content is not null)
@@ -307,6 +331,7 @@ internal static class AssistantThreadActions
                     if (message is not null)
                     {
                         ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, completedStep);
+                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message);
 
                         if (content.Items.Count > 0)
                         {
@@ -615,6 +640,10 @@ internal static class AssistantThreadActions
                 } :
                 null;
 
+    private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message)
+    {
+        AuthorRole role = new(message.Role.ToString());
+
         ChatMessageContent content =
             new(role, content: null)
             {
@@ -628,6 +657,7 @@ internal static class AssistantThreadActions
             if (!string.IsNullOrEmpty(itemContent.Text))
             {
                 content.Items.Add(new TextContent(itemContent.Text));
+                content.Items.Add(new TextContent(itemContent.Text.Trim()));
 
                 foreach (TextAnnotation annotation in itemContent.TextAnnotations)
                 {
@@ -758,6 +788,7 @@ internal static class AssistantThreadActions
                 AuthorRole.Assistant,
                 [
                     new TextContent(pythonCode)
+                    new TextContent(code)
                 ])
             {
                 AuthorName = agentName,
@@ -840,6 +871,7 @@ internal static class AssistantThreadActions
         for (int index = 0; index < functionCalls.Length; ++index)
         {
             functionTasks[index] = ExecuteFunctionStep(agent, functionCalls[index], cancellationToken);
+
         functionCallContent.Items.Add(
             new FunctionResultContent(
                 functionStep.FunctionName,
