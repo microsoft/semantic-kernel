@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
@@ -21,7 +22,7 @@ public sealed class OpenAIFunctionToolCallTests
     {
         // Arrange
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
-        var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, args);
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, BinaryData.FromString(args));
         var openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
 
         // Act & Assert
@@ -33,7 +34,7 @@ public sealed class OpenAIFunctionToolCallTests
     public void ToStringReturnsCorrectValue()
     {
         // Arrange
-        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}");
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", BinaryData.FromString("{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}"));
         var openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
 
         // Act & Assert
@@ -79,6 +80,6 @@ public sealed class OpenAIFunctionToolCallTests
 
         Assert.Equal("test-id", toolCall.Id);
         Assert.Equal("test-function", toolCall.FunctionName);
-        Assert.Equal("test-argument", toolCall.FunctionArguments);
+        Assert.Equal("test-argument", toolCall.FunctionArguments.ToString());
     }
 }
