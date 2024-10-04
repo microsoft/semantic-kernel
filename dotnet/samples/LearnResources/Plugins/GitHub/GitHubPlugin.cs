@@ -9,14 +9,14 @@ using Microsoft.SemanticKernel;
 
 namespace Plugins;
 
-public class GitHubSettings
+internal class GitHubSettings
 {
     public string BaseUrl { get; set; } = "https://api.github.com";
 
     public string Token { get; set; } = string.Empty;
 }
 
-internal class GitHubPlugin(GitHubSettings settings)
+internal sealed class GitHubPlugin(GitHubSettings settings)
 {
     [KernelFunction]
     public async Task<GitHubModels.User> GetUserProfile()

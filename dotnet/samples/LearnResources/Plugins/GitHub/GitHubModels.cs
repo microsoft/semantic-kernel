@@ -8,7 +8,7 @@ namespace Plugins;
 /// Models for GitHub REST API GET responses:
 /// https://docs.github.com/en/rest
 /// </summary>
-public static class GitHubModels
+internal static class GitHubModels
 {
     public class Repo
     {
