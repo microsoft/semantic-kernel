@@ -10,7 +10,7 @@ namespace Plugins;
 /// </summary>
 internal static class GitHubModels
 {
-    public class Repo
+    public sealed class Repo
     {
         [JsonPropertyName("id")]
         public long Id { get; set; }
@@ -25,7 +25,7 @@ internal static class GitHubModels
         public string Url { get; set; }
     }
 
-    public class User
+    public sealed class User
     {
         [JsonPropertyName("id")]
         public long Id { get; set; }
@@ -43,7 +43,7 @@ internal static class GitHubModels
         public string Url { get; set; }
     }
 
-    public class Issue
+    public sealed class Issue
     {
         [JsonPropertyName("id")]
         public long Id { get; set; }
@@ -70,13 +70,13 @@ internal static class GitHubModels
         public string WhenClosed { get; set; }
     }
 
-    public class IssueDetail : Issue
+    public sealed class IssueDetail : Issue
     {
         [JsonPropertyName("body")]
         public string Body { get; set; }
     }
 
-    public class Label
+    public sealed class Label
     {
         [JsonPropertyName("id")]
         public long Id { get; set; }

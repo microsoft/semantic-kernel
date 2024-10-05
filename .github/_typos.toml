@@ -17,7 +17,9 @@ extend-exclude = [
     "*response.json",
     "test_content.txt",
     "serializedChatHistoryV1_15_1.json",
-    "MultipleFunctionsVsParameters.cs"
+    "MultipleFunctionsVsParameters.cs",
+	"PopulationByCountry.csv",
+	"PopulationByAdmin1.csv",
 ]
 
 [default.extend-words]

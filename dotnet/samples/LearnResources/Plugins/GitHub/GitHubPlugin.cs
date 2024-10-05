@@ -19,10 +19,10 @@ internal class GitHubSettings
 internal sealed class GitHubPlugin(GitHubSettings settings)
 {
     [KernelFunction]
-    public async Task<GitHubModels.User> GetUserProfile()
+    public async Task<GitHubModels.User> GetUserProfileAsync()
     {
         using HttpClient client = this.CreateClient();
-        JsonDocument response = await MakeRequest(client, $"/user");
+        JsonDocument response = await MakeRequestAsync(client, $"/user");
         return response.Deserialize<GitHubModels.User>();
     }
 
@@ -30,13 +30,13 @@ internal sealed class GitHubPlugin(GitHubSettings settings)
     public async Task<GitHubModels.Repo> GetRepositoryAsync(string organization, string repo)
     {
         using HttpClient client = this.CreateClient();
-        JsonDocument response = await MakeRequest(client, $"/repos/{organization}/{repo}");
+        JsonDocument response = await MakeRequestAsync(client, $"/repos/{organization}/{repo}");
 
         return response.Deserialize<GitHubModels.Repo>();
     }
 
     [KernelFunction]
-    public async Task<GitHubModels.Issue[]> GetIssues(
+    public async Task<GitHubModels.Issue[]> GetIssuesAsync(
         string organization,
         string repo,
         [Description("default count is 30")]
@@ -54,19 +54,19 @@ internal sealed class GitHubPlugin(GitHubSettings settings)
         path = BuildQuery(path, "labels", label);
         path = BuildQuery(path, "per_page", maxResults?.ToString() ?? string.Empty);
 
-        JsonDocument response = await MakeRequest(client, path);
+        JsonDocument response = await MakeRequestAsync(client, path);
 
         return response.Deserialize<GitHubModels.Issue[]>();
     }
 
     [KernelFunction]
-    public async Task<GitHubModels.IssueDetail> GetIssueDetail(string organization, string repo, int issueId)
+    public async Task<GitHubModels.IssueDetail> GetIssueDetailAsync(string organization, string repo, int issueId)
     {
         using HttpClient client = this.CreateClient();
 
         string path = $"/repos/{organization}/{repo}/issues/{issueId}";
 
-        JsonDocument response = await MakeRequest(client, path);
+        JsonDocument response = await MakeRequestAsync(client, path);
 
         return response.Deserialize<GitHubModels.IssueDetail>();
     }
@@ -97,7 +97,7 @@ internal sealed class GitHubPlugin(GitHubSettings settings)
         return path;
     }
 
-    private static async Task<JsonDocument> MakeRequest(HttpClient client, string path)
+    private static async Task<JsonDocument> MakeRequestAsync(HttpClient client, string path)
     {
         Console.WriteLine($"REQUEST: {path}");
         Console.WriteLine();
