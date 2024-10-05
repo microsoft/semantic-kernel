@@ -204,6 +204,13 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
             new SqliteWhereEqualsCondition(LimitPropertyName, limit)
         };
 
+        var filterConditions = this.GetFilterConditions(searchOptions.Filter, this._dataTableName);
+
+        if (filterConditions is { Count: > 0 })
+        {
+            conditions.AddRange(filterConditions);
+        }
+
         using var command = this._commandBuilder.BuildSelectLeftJoinCommand(
             this._vectorTableName,
             this._dataTableName,
@@ -681,6 +688,43 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         }
 
         return new SqliteVectorStoreRecordMapper<TRecord>(propertyReader);
+    }
+
+    private List<SqliteWhereCondition>? GetFilterConditions(VectorSearchFilter? filter, string? tableName = null)
+    {
+        var filterClauses = filter?.FilterClauses.ToList();
+
+        if (filterClauses is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var conditions = new List<SqliteWhereCondition>();
+
+        foreach (var filterClause in filterClauses)
+        {
+            if (filterClause is EqualToFilterClause equalToFilterClause)
+            {
+                if (!this._propertyReader.StoragePropertyNamesMap.TryGetValue(equalToFilterClause.FieldName, out var storagePropertyName))
+                {
+                    throw new InvalidOperationException($"Property name '{equalToFilterClause.FieldName}' provided as part of the filter clause is not a valid property name.");
+                }
+
+                conditions.Add(new SqliteWhereEqualsCondition(
+                    storagePropertyName,
+                    equalToFilterClause.Value,
+                    tableName));
+            }
+            else
+            {
+                throw new NotSupportedException(
+                    $"Unsupported filter clause type '{filterClause.GetType().Name}'. " +
+                    $"Supported filter clause types are: {string.Join(", ", [
+                        nameof(EqualToFilterClause)])}");
+            }
+        }
+
+        return conditions;
     }
 
     /// <summary>

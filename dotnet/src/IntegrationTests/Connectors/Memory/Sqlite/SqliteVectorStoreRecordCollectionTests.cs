@@ -324,6 +324,37 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         Assert.DoesNotContain("key2", ids);
     }
 
+    [Fact(Skip = SkipReason)]
+    public async Task VectorizedSearchReturnsValidResultsWithFilterAsync()
+    {
+        // Arrange
+        var hotel1 = CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
+        var hotel2 = CreateTestHotel(hotelId: "key2", embedding: new[] { 31f, 32f, 33f, 34f });
+        var hotel3 = CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
+        var hotel4 = CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
+
+        var sut = fixture.GetCollection<SqliteHotel<string>>("VectorizedSearchWithFilter");
+
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+
+        // Act
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        {
+            Filter = new VectorSearchFilter().EqualTo(nameof(SqliteHotel<string>.HotelName), "My Hotel key2")
+        }).ToListAsync();
+
+        // Assert
+        var ids = searchResults.Select(l => l.Record.HotelId).ToList();
+
+        Assert.Equal("key2", ids[0]);
+
+        Assert.DoesNotContain("key1", ids);
+        Assert.DoesNotContain("key3", ids);
+        Assert.DoesNotContain("key4", ids);
+    }
+
     #region
 
     private static VectorStoreRecordDefinition GetVectorStoreRecordDefinition<TKey>() => new()
