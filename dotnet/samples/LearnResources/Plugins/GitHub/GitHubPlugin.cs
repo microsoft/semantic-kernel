@@ -20,7 +20,7 @@ internal sealed class GitHubPlugin(GitHubSettings settings)
     {
         using HttpClient client = this.CreateClient();
         JsonDocument response = await MakeRequestAsync(client, "/user");
-        return response.Deserialize<GitHubModels.User>();
+        return response.Deserialize<GitHubModels.User>() ?? throw new InvalidDataException($"Request failed: {nameof(GetUserProfileAsync)}");
     }
 
     [KernelFunction]
@@ -29,7 +29,7 @@ internal sealed class GitHubPlugin(GitHubSettings settings)
         using HttpClient client = this.CreateClient();
         JsonDocument response = await MakeRequestAsync(client, $"/repos/{organization}/{repo}");
 
-        return response.Deserialize<GitHubModels.Repo>();
+        return response.Deserialize<GitHubModels.Repo>() ?? throw new InvalidDataException($"Request failed: {nameof(GetRepositoryAsync)}");
     }
 
     [KernelFunction]
@@ -39,9 +39,9 @@ internal sealed class GitHubPlugin(GitHubSettings settings)
         [Description("default count is 30")]
         int? maxResults = null,
         [Description("open, closed, or all")]
-        string state = null,
-        string label = null,
-        string assignee = null)
+        string state = "",
+        string label = "",
+        string assignee = "")
     {
         using HttpClient client = this.CreateClient();
 
@@ -53,7 +53,7 @@ internal sealed class GitHubPlugin(GitHubSettings settings)
 
         JsonDocument response = await MakeRequestAsync(client, path);
 
-        return response.Deserialize<GitHubModels.Issue[]>();
+        return response.Deserialize<GitHubModels.Issue[]>() ?? throw new InvalidDataException($"Request failed: {nameof(GetIssuesAsync)}");
     }
 
     [KernelFunction]
@@ -65,7 +65,7 @@ internal sealed class GitHubPlugin(GitHubSettings settings)
 
         JsonDocument response = await MakeRequestAsync(client, path);
 
-        return response.Deserialize<GitHubModels.IssueDetail>();
+        return response.Deserialize<GitHubModels.IssueDetail>() ?? throw new InvalidDataException($"Request failed: {nameof(GetIssueDetailAsync)}");
     }
 
     private HttpClient CreateClient()
