@@ -1,0 +1,65 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.SemanticKernel;
+using Step03.Models;
+
+namespace Step03.Processes;
+
+/// <summary>
+/// Sample process that showcases how to create a process with a fan in/fan out behavior and use of existing processes as steps.<br/>
+/// Visual reference of this process can be found in the <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#Fish_And_Chips_Preparation_Process" >diagram</see>
+/// </summary>
+public static class FishAndChipsProcess
+{
+    public static class ProcessEvents
+    {
+        public const string PrepareFishAndChips = nameof(PrepareFishAndChips);
+        public const string FishAndChipsReady = AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded;
+    }
+
+    public static ProcessBuilder CreateProcess(string processName = "FishAndChipsProcess")
+    {
+        var processBuilder = new ProcessBuilder(processName);
+        var makeFriedFishStep = processBuilder.AddStepFromProcess(FriedFishProcess.CreateProcess());
+        var makePotatoFriesStep = processBuilder.AddStepFromProcess(PotatoFriesProcess.CreateProcess());
+        var addCondimentsStep = processBuilder.AddStepFromType<AddFishAndChipsCondimentsStep>();
+
+        processBuilder
+            .OnInputEvent(ProcessEvents.PrepareFishAndChips)
+            .SendEventTo(makeFriedFishStep.WhereInputEventIs(FriedFishProcess.ProcessEvents.PrepareFriedFish));
+
+        processBuilder
+            .OnInputEvent(ProcessEvents.PrepareFishAndChips)
+            .SendEventTo(makePotatoFriesStep.WhereInputEventIs(PotatoFriesProcess.ProcessEvents.PreparePotatoFries));
+
+        makeFriedFishStep
+            .OnEvent(FriedFishProcess.ProcessEvents.FriedFishReady)
+            .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "fishPrepared"));
+
+        makePotatoFriesStep
+            .OnEvent(PotatoFriesProcess.ProcessEvents.PotatoFriesReady)
+            .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "potatoFriesPrepared"));
+
+        return processBuilder;
+    }
+
+    private sealed class AddFishAndChipsCondimentsStep : KernelProcessStep
+    {
+        public static class Functions
+        {
+            public const string AddCondiments = nameof(AddCondiments);
+        }
+
+        public static class OutputEvents
+        {
+            public const string CondimentsAdded = nameof(CondimentsAdded);
+        }
+
+        [KernelFunction(Functions.AddCondiments)]
+        public async Task AddCondimentsAsync(KernelProcessStepContext context, FoodIngredients fishPrepared, FoodIngredients potatoFriesPrepared)
+        {
+            Console.WriteLine("ADD_CONDIMENTS: Added condiments to Fish & Chips");
+            await context.EmitEventAsync(new() { Id = OutputEvents.CondimentsAdded, Visibility = KernelProcessEventVisibility.Public });
+        }
+    }
+}

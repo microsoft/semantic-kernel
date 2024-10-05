@@ -41,6 +41,6 @@ public class FryFoodStep : KernelProcessStep
         }
 
         Console.WriteLine($"FRYING_STEP: Ingredient {foodToBeFried.ToFriendlyString()} is ready!");
-        await context.EmitEventAsync(new() { Id = OutputEvents.FriedFoodReady, Data = foodToBeFried });
+        await context.EmitEventAsync(new() { Id = OutputEvents.FriedFoodReady, Data = foodToBeFried, Visibility = KernelProcessEventVisibility.Public });
     }
 }

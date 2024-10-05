@@ -16,32 +16,32 @@ public class Step03_FoodPreparation(ITestOutputHelper output) : BaseTest(output,
     [Fact]
     public async Task UsePrepareFriedFishProcessAsync()
     {
-        var process = new PrepareFriedFishProcess();
-        await UsePrepareSpecificProductAsync(process.GetProcess(), process.GetExternalInputTriggerEvents());
+        var process = FriedFishProcess.CreateProcess();
+        await UsePrepareSpecificProductAsync(process, FriedFishProcess.ProcessEvents.PrepareFriedFish);
     }
 
     [Fact]
     public async Task UsePreparePotatoFriesProcessAsync()
     {
-        var process = new PreparePotatoFriesProcess();
-        await UsePrepareSpecificProductAsync(process.GetProcess(), process.GetExternalInputTriggerEvents());
+        var process = PotatoFriesProcess.CreateProcess();
+        await UsePrepareSpecificProductAsync(process, PotatoFriesProcess.ProcessEvents.PreparePotatoFries);
     }
 
     [Fact]
     public async Task UsePrepareFishSandwichProcessAsync()
     {
-        var process = new PrepareFishSandwichProcess();
-        await UsePrepareSpecificProductAsync(process.GetProcess(), process.GetExternalInputTriggerEvents());
+        var process = FishSandwichProcess.CreateProcess();
+        await UsePrepareSpecificProductAsync(process, FishSandwichProcess.ProcessEvents.PrepareFishSandwich);
     }
 
     [Fact]
     public async Task UsePrepareFishAndChipsProcessAsync()
     {
-        var process = new PrepareFishAndChipsProcess();
-        await UsePrepareSpecificProductAsync(process.GetProcess(), process.GetExternalInputTriggerEvents());
+        var process = FishAndChipsProcess.CreateProcess();
+        await UsePrepareSpecificProductAsync(process, FishAndChipsProcess.ProcessEvents.PrepareFishAndChips);
     }
 
-    protected async Task UsePrepareSpecificProductAsync(ProcessBuilder processBuilder, List<string> externalTriggerEvents)
+    protected async Task UsePrepareSpecificProductAsync(ProcessBuilder processBuilder, string externalTriggerEvent)
     {
         // Arrange
         Kernel kernel = CreateKernelWithChatCompletion();
@@ -50,10 +50,9 @@ public class Step03_FoodPreparation(ITestOutputHelper output) : BaseTest(output,
         KernelProcess kernelProcess = processBuilder.Build();
 
         // Assert
-        Assert.Single(externalTriggerEvents);
         var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent()
         {
-            Id = externalTriggerEvents.First(),
+            Id = externalTriggerEvent,
         });
     }
 
@@ -84,12 +83,11 @@ public class Step03_FoodPreparation(ITestOutputHelper output) : BaseTest(output,
     protected async Task UsePrepareFoodOrderProcessSingleItemAsync(FoodItem foodItem)
     {
         Kernel kernel = CreateKernelWithChatCompletion();
-        var process = new PrepareSingleFoodItemProcess();
-        KernelProcess kernelProcess = process.GetProcess().Build();
+        KernelProcess kernelProcess = SingleFoodItemProcess.CreateProcess().Build();
 
         var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent()
         {
-            Id = process.GetExternalInputTriggerEvents().First(),
+            Id = SingleFoodItemProcess.ProcessEvents.SingleOrderReceived,
             Data = foodItem
         });
     }

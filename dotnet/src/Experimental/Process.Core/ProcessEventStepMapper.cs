@@ -88,6 +88,14 @@ public class ProcessEventStepMapper<TEvent> where TEvent : Enum
         }
     }
 
+    protected void AddStepFromProcess(ProcessBuilder kernelProcess)
+    {
+        var subprocessBuilder = this._process.AddStepFromProcess(kernelProcess);
+        var stepId = subprocessBuilder.Id!;
+
+        this._stepBuilderMap[stepId] = subprocessBuilder;
+    }
+
     /// <summary>
     /// Links SK Process previously defined events
     /// </summary>
@@ -145,7 +153,7 @@ public class ProcessEventStepMapper<TEvent> where TEvent : Enum
             this._stepBuilderMap.TryGetValue(targetStepDetails.StepId, out var targetStepBuilder))
         {
             this._process
-                .OnExternalEvent(this.GetEventName(externalSourceEvent))
+                .OnInputEvent(this.GetEventName(externalSourceEvent))
                 .SendEventTo(new ProcessFunctionTargetBuilder(targetStepBuilder, functionName: targetStepDetails.FunctionName, parameterName: targetStepDetails.ParameterName));
 
             this._linkedEvents[externalSourceEvent] = true;

@@ -33,7 +33,7 @@ public class CutFoodStep : KernelProcessStep
     [KernelFunction(Functions.SliceFood)]
     public async Task SliceFoodAsync(KernelProcessStepContext context, FoodIngredients foodToBeCut)
     {
-        Console.WriteLine($"CUTTING_STEP:: Ingredient {foodToBeCut.ToFriendlyString()} has been sliced!");
+        Console.WriteLine($"CUTTING_STEP: Ingredient {foodToBeCut.ToFriendlyString()} has been sliced!");
         await context.EmitEventAsync(new() { Id = OutputEvents.SlicingReady, Data = foodToBeCut });
     }
 }
