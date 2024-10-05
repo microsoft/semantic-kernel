@@ -128,15 +128,8 @@ internal class SqliteVectorStoreCollectionCommandBuilder
         builder.AppendLine($"SELECT {string.Join(", ", columnNames)}");
         builder.AppendLine($"FROM {tableName}");
 
-        if (!string.IsNullOrWhiteSpace(whereClause))
-        {
-            builder.AppendLine($"WHERE {whereClause}");
-        }
-
-        if (!string.IsNullOrWhiteSpace(orderByPropertyName))
-        {
-            builder.AppendLine($"ORDER BY {orderByPropertyName}");
-        }
+        AppendWhereClauseIfExists(builder, whereClause);
+        AppendOrderByIfExists(builder, orderByPropertyName);
 
         command.CommandText = builder.ToString();
         command.Connection = this._connection;
@@ -167,15 +160,8 @@ internal class SqliteVectorStoreCollectionCommandBuilder
         builder.AppendLine($"FROM {leftTable} ");
         builder.AppendLine($"LEFT JOIN {rightTable} ON {leftTable}.{joinColumnName} = {rightTable}.{joinColumnName}");
 
-        if (!string.IsNullOrWhiteSpace(whereClause))
-        {
-            builder.AppendLine($"WHERE {whereClause}");
-        }
-
-        if (!string.IsNullOrWhiteSpace(orderByPropertyName))
-        {
-            builder.AppendLine($"ORDER BY {orderByPropertyName}");
-        }
+        AppendWhereClauseIfExists(builder, whereClause);
+        AppendOrderByIfExists(builder, orderByPropertyName);
 
         command.CommandText = builder.ToString();
         command.Connection = this._connection;
@@ -193,10 +179,7 @@ internal class SqliteVectorStoreCollectionCommandBuilder
 
         builder.AppendLine($"DELETE FROM {tableName}");
 
-        if (!string.IsNullOrWhiteSpace(whereClause))
-        {
-            builder.AppendLine($"WHERE {whereClause}");
-        }
+        AppendWhereClauseIfExists(builder, whereClause);
 
         command.CommandText = builder.ToString();
         command.Connection = this._connection;
@@ -205,6 +188,22 @@ internal class SqliteVectorStoreCollectionCommandBuilder
     }
 
     #region private
+
+    private static void AppendWhereClauseIfExists(StringBuilder builder, string? whereClause)
+    {
+        if (!string.IsNullOrWhiteSpace(whereClause))
+        {
+            builder.AppendLine($"WHERE {whereClause}");
+        }
+    }
+
+    private static void AppendOrderByIfExists(StringBuilder builder, string? propertyName)
+    {
+        if (!string.IsNullOrWhiteSpace(propertyName))
+        {
+            builder.AppendLine($"ORDER BY {propertyName}");
+        }
+    }
 
     private static string GetColumnDefinition(SqliteColumn column)
     {

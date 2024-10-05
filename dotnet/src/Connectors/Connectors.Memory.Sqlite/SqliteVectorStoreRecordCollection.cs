@@ -194,10 +194,14 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         var mappedArray = SqliteVectorStoreRecordPropertyMapping.MapVector(vector);
 
+        // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
+        // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
+        var limit = searchOptions.Top + searchOptions.Skip;
+
         var conditions = new List<SqliteWhereCondition>()
         {
             new SqliteWhereMatchCondition(this._propertyReader.StoragePropertyNamesMap[vectorProperty.DataModelPropertyName], mappedArray),
-            new SqliteWhereEqualsCondition(LimitPropertyName, searchOptions.Top)
+            new SqliteWhereEqualsCondition(LimitPropertyName, limit)
         };
 
         using var command = this._commandBuilder.BuildSelectLeftJoinCommand(
@@ -218,17 +222,20 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
-        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        for (var recordCounter = 0; await reader.ReadAsync(cancellationToken).ConfigureAwait(false); recordCounter++)
         {
-            var score = SqliteVectorStoreRecordPropertyMapping.GetPropertyValue<double>(reader, DistancePropertyName);
+            if (recordCounter >= searchOptions.Skip)
+            {
+                var score = SqliteVectorStoreRecordPropertyMapping.GetPropertyValue<double>(reader, DistancePropertyName);
 
-            var record = this.GetAndMapRecord(
-                OperationName,
-                reader,
-                properties,
-                searchOptions.IncludeVectors);
+                var record = this.GetAndMapRecord(
+                    OperationName,
+                    reader,
+                    properties,
+                    searchOptions.IncludeVectors);
 
-            yield return new VectorSearchResult<TRecord>(record, score);
+                yield return new VectorSearchResult<TRecord>(record, score);
+            }
         }
     }
 
