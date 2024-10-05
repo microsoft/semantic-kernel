@@ -1,15 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ComponentModel;
-using System.Net.Http;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
 namespace Plugins;
 
-internal class GitHubSettings
+internal sealed class GitHubSettings
 {
     public string BaseUrl { get; set; } = "https://api.github.com";
 
@@ -22,7 +19,7 @@ internal sealed class GitHubPlugin(GitHubSettings settings)
     public async Task<GitHubModels.User> GetUserProfileAsync()
     {
         using HttpClient client = this.CreateClient();
-        JsonDocument response = await MakeRequestAsync(client, $"/user");
+        JsonDocument response = await MakeRequestAsync(client, "/user");
         return response.Deserialize<GitHubModels.User>();
     }
 
