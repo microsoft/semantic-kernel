@@ -20,6 +20,7 @@ public class FryFoodStep : KernelProcessStep
     {
         public const string FoodRuined = nameof(FoodRuined);
         public const string FriedFoodReady = nameof(FriedFoodReady);
+        public const string FriedFoodReadyInternal = nameof(FriedFoodReadyInternal);
     }
 
     private readonly Random _randomSeed = new();
@@ -41,6 +42,7 @@ public class FryFoodStep : KernelProcessStep
         }
 
         Console.WriteLine($"FRYING_STEP: Ingredient {foodToBeFried.ToFriendlyString()} is ready!");
+        await context.EmitEventAsync(new() { Id = OutputEvents.FriedFoodReadyInternal, Data = foodToBeFried, Visibility = KernelProcessEventVisibility.Internal });
         await context.EmitEventAsync(new() { Id = OutputEvents.FriedFoodReady, Data = foodToBeFried, Visibility = KernelProcessEventVisibility.Public });
     }
 }

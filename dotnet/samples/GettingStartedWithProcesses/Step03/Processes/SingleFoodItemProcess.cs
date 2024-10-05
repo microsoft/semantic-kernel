@@ -53,11 +53,11 @@ public static class SingleFoodItemProcess
             .SendEventTo(new ProcessFunctionTargetBuilder(packOrderStep));
 
         makePotatoFriesStep
-            .OnEvent(FriedFishProcess.ProcessEvents.FriedFishReady)
+            .OnEvent(PotatoFriesProcess.ProcessEvents.PotatoFriesReady)
             .SendEventTo(new ProcessFunctionTargetBuilder(packOrderStep));
 
         makeFishSandwichStep
-            .OnEvent(FriedFishProcess.ProcessEvents.FriedFishReady)
+            .OnEvent(FishSandwichProcess.ProcessEvents.FishSandwichReady)
             .SendEventTo(new ProcessFunctionTargetBuilder(packOrderStep));
 
         makeFishAndChipsStep
