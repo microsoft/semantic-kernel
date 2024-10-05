@@ -43,7 +43,7 @@ internal static class GitHubModels
         public string Url { get; set; }
     }
 
-    public sealed class Issue
+    public class Issue
     {
         [JsonPropertyName("id")]
         public long Id { get; set; }

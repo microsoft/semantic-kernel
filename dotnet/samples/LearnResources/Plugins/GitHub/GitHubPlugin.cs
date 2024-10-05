@@ -99,7 +99,7 @@ internal sealed class GitHubPlugin(GitHubSettings settings)
         Console.WriteLine($"REQUEST: {path}");
         Console.WriteLine();
 
-        HttpResponseMessage response = await client.GetAsync(path);
+        HttpResponseMessage response = await client.GetAsync(new Uri(path));
         response.EnsureSuccessStatusCode();
         string content = await response.Content.ReadAsStringAsync();
         return JsonDocument.Parse(content);
