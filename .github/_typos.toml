@@ -18,8 +18,8 @@ extend-exclude = [
     "test_content.txt",
     "serializedChatHistoryV1_15_1.json",
     "MultipleFunctionsVsParameters.cs",
-	"PopulationByCountry.csv",
-	"PopulationByAdmin1.csv",
+    "PopulationByCountry.csv",
+    "PopulationByAdmin1.csv",
 ]
 
 [default.extend-words]
