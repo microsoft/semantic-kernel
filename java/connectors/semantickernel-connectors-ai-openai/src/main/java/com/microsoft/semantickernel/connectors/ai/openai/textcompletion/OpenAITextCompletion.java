@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.textcompletion;
 
-import com.azure.ai.openai.OpenAIAsyncClient;
+import // `com.azure.ai.openai.OpenAIAsyncClient` is a class that likely serves as a client for
+// interacting with the OpenAI API asynchronously. It may provide methods for sending requests
+// to the OpenAI API to perform text completion tasks and handle responses in an asynchronous
+// manner using reactive programming concepts like Mono and Flux from Project Reactor.
+com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.Choice;
 import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
@@ -14,7 +18,7 @@ import com.microsoft.semantickernel.exceptions.NotSupportedException.ErrorCodes;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.CompletionType;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +46,12 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
     /// <param name="handlerFactory">Retry handler factory for HTTP
     /// requests.</param>
     /// <param name="log">Application logger</param>
+    // `@Inject` is an annotation used in Java to indicate that a constructor, field, or method should
+    // be injected with dependencies by a dependency injection framework. In the context of the
+    // provided code snippet, the `@Inject` annotation is used on the constructor of the
+    // `OpenAITextCompletion` class to signal that the constructor should be used for dependency
+    // injection, specifically to inject an instance of `OpenAIAsyncClient` and a `String` representing
+    // the model ID when creating an instance of `OpenAITextCompletion`.
     @Inject
     public OpenAITextCompletion(OpenAIAsyncClient client, String modelId) {
         super(client, modelId);

@@ -1,5 +1,0 @@
-[report]
-# Regexes for lines to exclude from consideration
-exclude_lines =
-    # Don't complain if non-runnable code isn't run
-    if __name__ == .__main__.:

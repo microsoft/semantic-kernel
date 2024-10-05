@@ -1,5 +1,0 @@
-^dist/.*
-^build/.*
-^docs/_build/.*
-^MANIFEST$
-\.pyc$

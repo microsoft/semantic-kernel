@@ -1,5 +1,0 @@
-This directory contains library code used by gsutil. Users are cautioned not
-to write programs that call the internal interfaces defined in here; these
-interfaces were defined only for use by gsutil, and are subject to change
-without notice. Moreover, Google supports this library only when used by
-gsutil, not when the library interfaces are called directly by other programs.

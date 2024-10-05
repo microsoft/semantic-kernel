@@ -1,9 +1,0 @@
-project:
-  name: project
-  collection: translate.projects
-  attributes:
-  - &project
-    parameter_name: projectsId
-    attribute_name: project
-    help: The project name of {resource}.
-    property: core/project

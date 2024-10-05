@@ -1,5 +1,0 @@
-export OAUTH2CLIENT_TEST_JSON_KEY_PATH="tests/data/gcloud/application_default_credentials.json"
-export OAUTH2CLIENT_TEST_P12_KEY_PATH="tests/data/privatekey.p12"
-export OAUTH2CLIENT_TEST_P12_KEY_EMAIL="project-foo@developer.gserviceaccount.com"
-export OAUTH2CLIENT_TEST_USER_KEY_PATH="tests/data/gcloud/application_default_credentials_authorized_user.json"
-export OAUTH2CLIENT_TEST_USER_KEY_EMAIL="foo@gmail.com"

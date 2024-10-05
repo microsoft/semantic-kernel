@@ -1,8 +1,0 @@
-author: mmuller@google.com
-name: python
-description: Official Google Python runtime definition.
-api_version: 0.1
-detect:
-  python: bin/detect
-generate_configs:
-  python: bin/generate_configs

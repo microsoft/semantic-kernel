@@ -1,6 +1,0 @@
-.dockerignore
-Dockerfile
-.git
-.hg
-.svn
-app.yaml

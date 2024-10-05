@@ -1,8 +1,0 @@
-project:
-  name: project
-  collection: cloudresourcemanager.projects
-  attributes:
-  - parameter_name: projectId
-    attribute_name: project_id
-    help: |
-      The project name.

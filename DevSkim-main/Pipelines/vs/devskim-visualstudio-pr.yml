@@ -1,0 +1,68 @@
+# Azure Pipelines
+# https://aka.ms/yaml
+
+name: DevSkim_VisualStudio_PR_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+trigger: none
+pr:
+  branches:
+    include:
+    - main
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: SecurityEngineering/OSS-Tools-Pipeline-Templates
+      ref: refs/tags/v2.0.0
+    - repository: 1esPipelines
+      type: git
+      name: 1ESPipelineTemplates/1ESPipelineTemplates
+      ref: refs/tags/release
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  parameters:
+    pool:
+      name: MSSecurity-1ES-Build-Agents-Pool
+      image: MSSecurity-1ES-Windows-2022
+      os: windows
+    stages:
+    - stage: Build
+      dependsOn: []
+      jobs:
+      - template: dotnet-build-job.yml@templates
+        parameters:
+          buildTool: 'msbuild'
+          buildConfiguration: 'Release'
+          dotnetVersion: '8.0.x'
+          targetFramework: 'net47'
+          projectPath: 'DevSkim-DotNet/Microsoft.DevSkim.VisualStudio/Microsoft.DevSkim.VisualStudio.csproj'
+          projectName: 'DevSkim_VS'
+          poolName: MSSecurity-1ES-Build-Agents-Pool
+          poolImage: MSSecurity-1ES-Windows-2022
+          poolOs: windows
+          artifactName: 'vs-archive'
+          extraArtifactName: 'Unsigned_Extension'
+          extraArtifactLocation: 'extension'
+          preBuild:
+          - template: nbgv-set-version-steps.yml@templates
+          # Workaround: Using the .NET 8 SDK doesn't install the right version of MSBuild for .NET 8
+          #   Using the .NET 7 SDK doesn't include the .NET 8 SDK so it can't build the project
+          #   Install both for now until the right version of MSBuild is included with .NET 8
+          - task: UseDotNet@2
+            displayName: Install Dotnet 7 SDK
+            inputs:
+              packageType: 'sdk'
+              version: '7.0.x'
+          onEnd:
+          - task: PowerShell@2
+            displayName: Mkdir for Extension
+            inputs:
+              targetType: 'inline'
+              script: mkdir extension
+              workingDirectory: '$(Build.StagingDirectory)'
+          - task: PowerShell@2
+            displayName: Move Extension File
+            inputs:
+              targetType: 'inline'
+              script: 'mv $env:BUILD_STAGINGDIRECTORY/bin/dotnetapp/DevSkim_VS_dotnetapp_$(ReleaseVersion)/*.vsix $env:BUILD_STAGINGDIRECTORY/extension'

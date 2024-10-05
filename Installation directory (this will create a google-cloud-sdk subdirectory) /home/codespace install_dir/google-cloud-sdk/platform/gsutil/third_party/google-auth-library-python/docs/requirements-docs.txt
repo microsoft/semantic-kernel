@@ -1,5 +1,0 @@
-cryptography
-sphinx-docstring-typing
-urllib3
-requests
-requests-oauthlib

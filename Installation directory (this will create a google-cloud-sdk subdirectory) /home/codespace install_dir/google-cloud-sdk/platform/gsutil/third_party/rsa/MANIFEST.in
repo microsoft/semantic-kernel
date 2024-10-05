@@ -1,6 +1,0 @@
-include README.md
-include CHANGELOG.txt
-include LICENSE
-include *.py
-recursive-include rsa *.py
-recursive-include tests *.py *.pem
