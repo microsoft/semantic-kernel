@@ -1,0 +1,99 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/lookup/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 9,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 15,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 21,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-lookup"
+			],
+			"targetId" : "llama-lookup::@ff141f20f192e68f9a10",
+			"targetIndex" : 51,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-lookup-create"
+			],
+			"targetId" : "llama-lookup-create::@ff141f20f192e68f9a10",
+			"targetIndex" : 52,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-lookup-merge"
+			],
+			"targetId" : "llama-lookup-merge::@ff141f20f192e68f9a10",
+			"targetIndex" : 53,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 4,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-lookup-stats"
+			],
+			"targetId" : "llama-lookup-stats::@ff141f20f192e68f9a10",
+			"targetIndex" : 54,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/lookup",
+		"source" : "examples/lookup"
+	}
+}

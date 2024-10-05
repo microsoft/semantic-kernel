@@ -1,0 +1,201 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "bin/llama-batched-bench"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"install",
+			"target_link_libraries",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"examples/batched-bench/CMakeLists.txt",
+			"src/CMakeLists.txt",
+			"examples/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 2,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			},
+			{
+				"file" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 28,
+				"parent" : 4
+			},
+			{
+				"file" : 2
+			},
+			{
+				"command" : 3,
+				"file" : 2,
+				"line" : 11,
+				"parent" : 6
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 7,
+					"path" : "/home/broe/Desktop/semantic-kernel/llama.cpp/examples"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/home/broe/Desktop/semantic-kernel/llama.cpp/common/."
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/home/broe/Desktop/semantic-kernel/llama.cpp/src/."
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/home/broe/Desktop/semantic-kernel/llama.cpp/src/../include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/home/broe/Desktop/semantic-kernel/llama.cpp/ggml/src/../include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 3,
+			"id" : "ggml::@64c2a4576bf370762041"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "llama::@145eef247bfb46b6828c"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "build_info::@bfc844598bd03e848b3c"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "common::@bfc844598bd03e848b3c"
+		}
+	],
+	"id" : "llama-batched-bench::@71afe11632f99ebb9e5a",
+	"install" : 
+	{
+		"destinations" : 
+		[
+			{
+				"backtrace" : 2,
+				"path" : "bin"
+			}
+		],
+		"prefix" : 
+		{
+			"path" : "/usr/local"
+		}
+	},
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-g",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "-Wl,-rpath,/home/broe/Desktop/semantic-kernel/build/src:/home/broe/Desktop/semantic-kernel/build/ggml/src:",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "common/libcommon.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "src/libllama.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 5,
+				"fragment" : "ggml/src/libggml.so",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "llama-batched-bench",
+	"nameOnDisk" : "llama-batched-bench",
+	"paths" : 
+	{
+		"build" : "examples/batched-bench",
+		"source" : "examples/batched-bench"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "examples/batched-bench/batched-bench.cpp",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "EXECUTABLE"
+}

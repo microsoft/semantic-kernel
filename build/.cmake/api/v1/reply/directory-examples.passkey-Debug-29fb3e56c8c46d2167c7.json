@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/passkey/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-passkey"
+			],
+			"targetId" : "llama-passkey::@83f456cb398c4e2bb8cf",
+			"targetIndex" : 57,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/passkey",
+		"source" : "examples/passkey"
+	}
+}

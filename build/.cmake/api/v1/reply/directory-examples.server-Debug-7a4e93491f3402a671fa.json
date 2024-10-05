@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/server/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 48,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-server"
+			],
+			"targetId" : "llama-server::@c58c5eba9c521975edee",
+			"targetIndex" : 64,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/server",
+		"source" : "examples/server"
+	}
+}

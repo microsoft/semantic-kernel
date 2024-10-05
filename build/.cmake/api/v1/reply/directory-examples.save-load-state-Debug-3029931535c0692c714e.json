@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/save-load-state/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-save-load-state"
+			],
+			"targetId" : "llama-save-load-state::@9f5119d6cb6018ccaac0",
+			"targetIndex" : 63,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/save-load-state",
+		"source" : "examples/save-load-state"
+	}
+}
