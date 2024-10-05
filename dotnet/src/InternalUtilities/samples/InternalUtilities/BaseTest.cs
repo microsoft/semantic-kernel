@@ -25,19 +25,19 @@ public abstract class BaseTest : TextWriter
     /// </summary>
     public BaseTest Console => this;
 
-    protected bool UseOpenAIConfig => this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI?.Endpoint);
+    protected bool UseOpenAIConfig => this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint);
 
     protected string ApiKey =>
         this.UseOpenAIConfig ?
             TestConfiguration.OpenAI.ApiKey :
-            TestConfiguration.AzureOpenAI?.ApiKey ?? string.Empty;
+            TestConfiguration.AzureOpenAI.ApiKey;
 
-    protected string? Endpoint => UseOpenAIConfig ? null : TestConfiguration.AzureOpenAI?.Endpoint;
+    protected string? Endpoint => UseOpenAIConfig ? null : TestConfiguration.AzureOpenAI.Endpoint;
 
     protected string Model =>
         this.UseOpenAIConfig ?
             TestConfiguration.OpenAI.ChatModelId :
-            TestConfiguration.AzureOpenAI?.ChatDeploymentName ?? string.Empty;
+            TestConfiguration.AzureOpenAI.ChatDeploymentName;
 
     protected Kernel CreateKernelWithChatCompletion()
     {
@@ -52,9 +52,9 @@ public abstract class BaseTest : TextWriter
         else
         {
             builder.AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI?.ChatDeploymentName ?? string.Empty,
-                TestConfiguration.AzureOpenAI?.Endpoint ?? string.Empty,
-                TestConfiguration.AzureOpenAI?.ApiKey ?? string.Empty);
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
         }
 
         return builder.Build();
