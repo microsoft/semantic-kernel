@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -62,4 +64,48 @@ public abstract class KernelAgent : Agent
 
         return await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Provide a merged instance of <see cref="KernelArguments"/> with precedence for override arguments.
+    /// </summary>
+    /// <param name="arguments">The override arguments</param>
+    /// <remarks>
+    /// This merge preserves original <see cref="PromptExecutionSettings"/> and <see cref="KernelArguments"/> parameters.
+    /// and allows for incremental addition or replacement of specific parameters while also preserving the ability
+    /// to override the execution settings.
+    /// </remarks>
+    protected KernelArguments? MergeArguments(KernelArguments? arguments)
+    {
+        // Avoid merge when default arguments are not set.
+        if (this.Arguments == null)
+        {
+            return arguments;
+        }
+
+        // Avoid merge when override arguments are not set.
+        if (arguments == null)
+        {
+            return this.Arguments;
+        }
+
+        // Both instances are not null, merge with precedence for override arguments.
+
+        // Merge execution settings with precedence for override arguments.
+        Dictionary<string, PromptExecutionSettings>? settings =
+            (arguments.ExecutionSettings ?? s_emptySettings)
+                .Concat(this.Arguments.ExecutionSettings ?? s_emptySettings)
+                .GroupBy(entry => entry.Key)
+                .ToDictionary(entry => entry.Key, entry => entry.First().Value);
+
+        // Merge parameters with precedence for override arguments.
+        Dictionary<string, object?>? parameters =
+            arguments
+                .Concat(this.Arguments)
+                .GroupBy(entry => entry.Key)
+                .ToDictionary(entry => entry.Key, entry => entry.First().Value);
+
+        return new KernelArguments(parameters, settings);
+    }
+
+    private static readonly Dictionary<string, PromptExecutionSettings> s_emptySettings = [];
 }
