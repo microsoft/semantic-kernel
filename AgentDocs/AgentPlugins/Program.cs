@@ -59,20 +59,20 @@ public static class Program
                 Name = "SampleAssistantAgent",
                 Instructions =
                         """
-                        You are an agent designed to query and retrieve information from a single GitHub repository in a read-only manner.
-                        You are also able to access the profile of the active user.
+                            You are an agent designed to query and retrieve information from a single GitHub repository in a read-only manner.
+                            You are also able to access the profile of the active user.
 
-                        Use the current date and time to provide up-to-date details or time-sensitive responses.
+                            Use the current date and time to provide up-to-date details or time-sensitive responses.
                         
-                        The repository you are querying is a public repository with the following name: {{$repository}}
+                            The repository you are querying is a public repository with the following name: {{$repository}}
 
-                        The current date and time is: {{$now}}. 
-                        """,
+                            The current date and time is: {{$now}}. 
+                            """,
                 Kernel = kernel,
                 Arguments =
                     new KernelArguments(new AzureOpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })
                     {
-                        { "repository", "microsoft/semantic-kernel" }
+                            { "repository", "microsoft/semantic-kernel" }
                     }
             };
 
