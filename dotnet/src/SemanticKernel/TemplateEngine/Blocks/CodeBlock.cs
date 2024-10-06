@@ -4,7 +4,47 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 using Microsoft.SemanticKernel.Diagnostics;
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+using Microsoft.SemanticKernel.Diagnostics;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using Microsoft.SemanticKernel.Diagnostics;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -73,7 +113,49 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         if (!this._validated && !this.IsValid(out var error))
         {
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, error);
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, error);
+=======
             throw new SKException(error);
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            throw new SKException(error);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         }
 
         this.Log.LogTrace("Rendering code: `{0}`", this.Content);
@@ -88,7 +170,51 @@ internal sealed class CodeBlock : Block, ICodeRendering
                 return await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], context).ConfigureAwait(false);
         }
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType,
+            $"Unexpected first token type: {this._tokens[0].Type:G}");
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+        throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType,
+            $"Unexpected first token type: {this._tokens[0].Type:G}");
+=======
         throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}");
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}");
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     }
 
     #region private ================================================================================
@@ -100,7 +226,53 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         if (context.Skills == null)
         {
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+            throw new KernelException(
+                KernelException.ErrorCodes.SkillCollectionNotSet,
+                "Skill collection not found in the context");
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+            throw new KernelException(
+                KernelException.ErrorCodes.SkillCollectionNotSet,
+                "Skill collection not found in the context");
+=======
             throw new SKException("Skill collection not found in the context");
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            throw new SKException("Skill collection not found in the context");
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         }
 
         if (!this.GetFunctionFromSkillCollection(context.Skills!, fBlock, out ISKFunction? function))
@@ -108,10 +280,54 @@ internal sealed class CodeBlock : Block, ICodeRendering
             var errorMsg = $"Function `{fBlock.Content}` not found";
             this.Log.LogError(errorMsg);
             throw new TemplateException(TemplateException.ErrorCodes.FunctionNotFound, errorMsg);
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
             this.Logger.LogError(errorMsg);
             throw new SKException(errorMsg);
             this.Logger.LogError(errorMsg);
             throw new SKException(errorMsg);
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         ContextVariables variablesClone = context.Variables.Clone();
@@ -139,9 +355,51 @@ internal sealed class CodeBlock : Block, ICodeRendering
             var errorMsg = $"Function `{fBlock.Content}` execution failed. {result.LastException?.GetType().FullName}: {result.LastErrorDescription}";
             this.Log.LogError(errorMsg);
             throw new TemplateException(TemplateException.ErrorCodes.RuntimeError, errorMsg, result.LastException);
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
             var errorMsg = $"Function `{fBlock.Content}` execution failed. {contextClone.LastException?.GetType().FullName}: {contextClone.LastException?.Message}";
             this.Logger.LogError(errorMsg);
             throw new SKException(errorMsg, contextClone.LastException);
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            var errorMsg = $"Function `{fBlock.Content}` execution failed. {contextClone.LastException?.GetType().FullName}: {contextClone.LastException?.Message}";
+            this.Logger.LogError(errorMsg);
+            throw new SKException(errorMsg, contextClone.LastException);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         }
 
         return result.Result;

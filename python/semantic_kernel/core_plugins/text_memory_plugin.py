@@ -1,7 +1,47 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import logging
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 <<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 from typing import Annotated, Any, Final
 
 from pydantic import Field
@@ -9,7 +49,31 @@ from pydantic import Field
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 import sys
 import typing as t
 from typing import Final, Optional
@@ -24,10 +88,62 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 if t.TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 DEFAULT_COLLECTION: Final[str] = "generic"
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+COLLECTION_PARAM: Final[str] = "collection"
+DEFAULT_RELEVANCE: Final[float] = 0.75
+RELEVANCE_PARAM: Final[str] = "relevance"
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+COLLECTION_PARAM: Final[str] = "collection"
+DEFAULT_RELEVANCE: Final[float] = 0.75
+RELEVANCE_PARAM: Final[str] = "relevance"
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 COLLECTION_PARAM: Final[str] = "collection"
 DEFAULT_RELEVANCE: Final[float] = 0.75
@@ -35,11 +151,72 @@ RELEVANCE_PARAM: Final[str] = "relevance"
 =======
 DEFAULT_RELEVANCE: Final[float] = 0.75
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 DEFAULT_LIMIT: Final[int] = 1
 
 
 class TextMemoryPlugin(KernelBaseModel):
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 <<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
     """A plugin to interact with a Semantic Text Memory."""
 
     memory: SemanticTextMemoryBase
@@ -56,8 +233,49 @@ class TextMemoryPlugin(KernelBaseModel):
         """
         super().__init__(memory=memory, embeddings_kwargs=embeddings_kwargs)
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
 =======
 >>>>>>> ms/small_fixes
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     @kernel_function(
         description="Recall a fact from the long term memory",
         name="recall",
@@ -65,7 +283,47 @@ class TextMemoryPlugin(KernelBaseModel):
     async def recall(
         self,
         ask: Annotated[str, "The information to retrieve"],
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 <<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         collection: Annotated[
             str, "The collection to search for information."
         ] = DEFAULT_COLLECTION,
@@ -77,7 +335,31 @@ class TextMemoryPlugin(KernelBaseModel):
         ] = DEFAULT_LIMIT,
     ) -> str:
         """Recall a fact from the long term memory.
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+=======
+>>>>>>> Stashed changes
         kernel: Annotated["Kernel", "The kernel"],
         collection: Annotated[Optional[str], "The collection to search for information."] = DEFAULT_COLLECTION,
         relevance: Annotated[
@@ -88,26 +370,158 @@ class TextMemoryPlugin(KernelBaseModel):
         """
         Recall a fact from the long term memory.
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         Example:
             {{memory.recall $ask}} => "Paris"
 
         Args:
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 <<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
             ask: The question to ask the memory
             collection: The collection to search for information
             relevance: The relevance score, from 0.0 to 1.0; 1.0 means perfect match
             limit: The maximum number of relevant memories to recall
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+=======
+>>>>>>> Stashed changes
             ask -- The question to ask the memory
             collection -- The collection to search for information
             relevance -- The relevance score, from 0.0 to 1.0; 1.0 means perfect match
             limit -- The maximum number of relevant memories to recall
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         Returns:
             The nearest item from the memory store as a string or empty string if not found.
         """
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        results = await self.memory.search(
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+        results = await self.memory.search(
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        results = await self.memory.search(
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         results = await self.memory.search(
 =======
@@ -116,6 +530,27 @@ class TextMemoryPlugin(KernelBaseModel):
 
         results = await kernel.memory.search(
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             collection=collection,
             query=ask,
             limit=limit,
@@ -134,7 +569,47 @@ class TextMemoryPlugin(KernelBaseModel):
     async def save(
         self,
         text: Annotated[str, "The information to save."],
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 <<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         key: Annotated[str, "The unique key to associate with the information."],
         collection: Annotated[
             str, "The collection to save the information."
@@ -155,6 +630,29 @@ class TextMemoryPlugin(KernelBaseModel):
             id=key,
             embeddings_kwargs=self.embeddings_kwargs,
         )
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
         kernel: Annotated["Kernel", "The kernel"],
         key: Annotated[str, "The unique key to associate with the information."],
@@ -176,3 +674,24 @@ class TextMemoryPlugin(KernelBaseModel):
 
         await kernel.memory.save_information(collection, text=text, id=key)
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

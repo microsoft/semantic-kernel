@@ -41,7 +41,49 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 
         // Initialize ChatResponseFormat object with JSON schema of desired response format.
         ChatResponseFormat chatResponseFormat = ChatResponseFormat.CreateJsonSchemaFormat(
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+            name: "movie_result",
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+            name: "movie_result",
+=======
             jsonSchemaFormatName: "movie_result",
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            jsonSchemaFormatName: "movie_result",
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             jsonSchema: BinaryData.FromString("""
                 {
                     "type": "object",
@@ -67,7 +109,49 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
                     "additionalProperties": false
                 }
                 """),
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+            strictSchemaEnabled: true);
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+            strictSchemaEnabled: true);
+=======
             jsonSchemaIsStrict: true);
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            jsonSchemaIsStrict: true);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         // Specify response format by setting ChatResponseFormat object in prompt execution settings.
         var executionSettings = new OpenAIPromptExecutionSettings

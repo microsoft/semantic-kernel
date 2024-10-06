@@ -192,16 +192,96 @@ class ChromaMemoryStore(MemoryStoreBase):
         return [await self.upsert(collection_name, record) for record in records]
 
 <<<<<<< main
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
     async def get(
         self, collection_name: str, key: str, with_embedding: bool
     ) -> MemoryRecord:
 =======
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
 =======
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
 >>>>>>> ms/features/bugbash-prep
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         """Gets a record.
 
         Args:
@@ -222,19 +302,115 @@ class ChromaMemoryStore(MemoryStoreBase):
 
     async def get_batch(
 <<<<<<< main
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        self, collection_name: str, keys: list[str], with_embeddings: bool
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+        self, collection_name: str, keys: list[str], with_embeddings: bool
+=======
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         self, collection_name: str, keys: list[str], with_embeddings: bool
 =======
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
         self, 
         collection_name: str, 
         keys: list[str], 
         with_embeddings: bool = False
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> upstream/main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 >>>>>>> upstream/main
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
     ) -> list[MemoryRecord]:
         """Gets a batch of records.
 

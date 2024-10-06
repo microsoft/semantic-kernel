@@ -8,7 +8,47 @@ import numpy as np
 import pytest
 import pytest_asyncio
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 <<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     ApiKeyAuthentication,
     AzureAISearchDataSource,
@@ -29,6 +69,29 @@ from semantic_kernel.contents.streaming_chat_message_content import (
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
@@ -39,6 +102,27 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -52,6 +136,37 @@ try:
 except ImportError:
     azure_ai_search_installed = False
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get(
+    "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
+):
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get(
+    "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
+):
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get(
     "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
@@ -59,6 +174,27 @@ if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get(
 =======
 if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get("AZURE_COGNITIVE_SEARCH_ADMIN_KEY"):
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     azure_ai_search_settings = True
 else:
     azure_ai_search_settings = False
@@ -123,7 +259,47 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
                 )
             ]
         )
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 <<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         chat_service = AzureChatCompletion(
             service_id="chat-gpt-extensions",
         )
@@ -152,7 +328,31 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
             prompt_template_config=prompt_template_config,
         )
         chat_function = kernel.get_function("plugin", "chat")
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 
         chat_service = sk_oai.AzureChatCompletion(
             service_id="chat-gpt-extensions",
@@ -179,6 +379,27 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
         chat_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
 
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         return chat_function, kernel, collection, memory_store
     except Exception as e:
         await memory_store.delete_collection(collection)
@@ -202,6 +423,35 @@ async def test_azure_e2e_chat_completion_with_extensions(
     # TODO: get streaming working for this test
     use_streaming = False
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    try:
+        result: StreamingChatMessageContent = None
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+    try:
+        result: StreamingChatMessageContent = None
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    try:
+        result: StreamingChatMessageContent = None
+=======
+>>>>>>> Stashed changes
     arguments = KernelArguments(input="who are Emily and David?")
 
     # TODO: get streaming working for this test
@@ -213,23 +463,129 @@ async def test_azure_e2e_chat_completion_with_extensions(
 =======
         result = None
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         if use_streaming:
             async for message in kernel.invoke_stream(chat_function, arguments):
                 result = message[0] if not result else result + message[0]
                 print(message, end="")
 
             print(f"Answer using input string: '{result}'")
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 <<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
             for item in result.items:
                 if isinstance(item, FunctionResultContent):
                     print(f"Content: {item.result}")
                     assert "two passionate scientists" in item.result
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+=======
+>>>>>>> Stashed changes
             print(f"Tool message: {result.tool_message}")
             assert result.tool_message is not None
             assert "two passionate scientists" in result.tool_message
             assert len(result.content) > 1
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         else:
             result = await kernel.invoke(chat_function, arguments)
             print(f"Answer using input string: '{result}'")

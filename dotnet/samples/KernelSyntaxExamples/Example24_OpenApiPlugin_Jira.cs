@@ -21,6 +21,37 @@ using RepoUtils;
 public static class Example24_OpenApiPlugin_Jira
 {
     public static async Task RunAsync()
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    {
+        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        var contextVariables = new ContextVariables();
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+    {
+        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        var contextVariables = new ContextVariables();
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
         var contextVariables = new ContextVariables();
@@ -77,11 +108,74 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     public async Task RunAsync()
     {
         Kernel kernel = new();
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 
         // Change <your-domain> to a jira instance you have access to with your authentication credentials
         string serverUrl = $"https://{TestConfiguration.Jira.Domain}.atlassian.net/rest/api/latest/";
+        contextVariables.Set("server-url", serverUrl);
 
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        IDictionary<string, ISKFunction> jiraFunctions;
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+        IDictionary<string, ISKFunction> jiraFunctions;
+=======
         KernelPlugin jiraFunctions;
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        KernelPlugin jiraFunctions;
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
             string s = $"{TestConfiguration.Jira.Email}:{TestConfiguration.Jira.ApiKey}";
@@ -96,6 +190,30 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         {
             var apiPluginFile = "./../../../Plugins/JiraPlugin/openapi.json";
             jiraFunctions = await kernel.ImportPluginFunctionsAsync("jiraPlugin", apiPluginFile, new OpenApiFunctionExecutionParameters(authCallbackProvider: (_) => tokenProvider.AuthenticateRequestAsync));
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
             jiraFunctions = await kernel.ImportPluginFromOpenApiAsync(
                 "jiraPlugin",
                 apiPluginFile,
@@ -104,11 +222,52 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
                     serverUrlOverride: new Uri(serverUrl)
                 )
             );
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         }
         else
         {
             var apiPluginRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
             jiraFunctions = await kernel.ImportPluginFunctionsAsync("jiraPlugin", apiPluginRawFileURL, new OpenApiFunctionExecutionParameters(authCallbackProvider: (_) => tokenProvider.AuthenticateRequestAsync));
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
         }
 
         // GetIssue Function
@@ -146,35 +305,179 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
                     serverUrlOverride: new Uri(serverUrl)
                 )
             );
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         }
 
-        var arguments = new KernelArguments();
-
         // GetIssue Function
-        // Set Properties for the Get Issue operation in the openAPI.swagger.json
-        // Make sure the issue exists in your Jira instance or it will return a 404
-        arguments["issueKey"] = "TEST-1";
+        {
+            // Set Properties for the Get Issue operation in the openAPI.swagger.json
+            contextVariables.Set("issueKey", "SKTES-2");
 
-        // Run operation via the semantic kernel
-        var result = await kernel.InvokeAsync(jiraFunctions["GetIssue"], arguments);
+            // Run operation via the semantic kernel
+            var result = await kernel.RunAsync(contextVariables, jiraFunctions["GetIssue"]);
 
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+            Console.WriteLine("\n\n\n");
+            var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.GetValue<string>()!), Formatting.Indented);
+            Console.WriteLine("GetIssue jiraPlugin response: \n{0}", formattedContent);
+        }
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
         WriteLine("\n\n\n");
         var formattedContent = JsonSerializer.Serialize(
             result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
         WriteLine($"GetIssue jiraPlugin response: \n{formattedContent}");
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 
         // AddComment Function
-        arguments["issueKey"] = "TEST-2";
-        arguments[RestApiOperation.PayloadArgumentName] = "{\"body\": \"Here is a rad comment\"}";
+        {
+            // Set Properties for the AddComment operation in the openAPI.swagger.json
+            contextVariables.Set("issueKey", "SKTES-1");
+            contextVariables.Set("body", "Here is a rad comment");
 
-        // Run operation via the semantic kernel
-        result = await kernel.InvokeAsync(jiraFunctions["AddComment"], arguments);
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+            // Run operation via the semantic kernel
+            var result = await kernel.RunAsync(contextVariables, jiraFunctions["AddComment"]);
 
+<<<<<<< head
+=======
+<<<<<<< main
+            // Run operation via the semantic kernel
+            var result = await kernel.RunAsync(contextVariables, jiraFunctions["AddComment"]);
+
+>>>>>>> Stashed changes
+            Console.WriteLine("\n\n\n");
+            var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.GetValue<string>()!), Formatting.Indented);
+            Console.WriteLine("AddComment jiraPlugin response: \n{0}", formattedContent);
+        }
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
         WriteLine("\n\n\n");
 
         formattedContent = JsonSerializer.Serialize(result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
         WriteLine($"AddComment jiraPlugin response: \n{formattedContent}");
     }
+<<<<<<< Updated upstream
+<<<<<<< head
+=======
+>>>>>>> Stashed changes
 
     #region Example of authentication providers
 
@@ -216,6 +519,52 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     {
         private readonly Func<Task<string>> _bearerToken;
 
+<<<<<<< Updated upstream
+=======
+
+    #region Example of authentication providers
+
+    /// <summary>
+    /// Retrieves authentication content (e.g. username/password, API key) via the provided delegate and
+    /// applies it to HTTP requests using the "basic" authentication scheme.
+    /// </summary>
+    public class BasicAuthenticationProvider
+    {
+        private readonly Func<Task<string>> _credentials;
+
+        /// <summary>
+        /// Creates an instance of the <see cref="BasicAuthenticationProvider"/> class.
+        /// </summary>
+        /// <param name="credentials">Delegate for retrieving credentials.</param>
+        public BasicAuthenticationProvider(Func<Task<string>> credentials)
+        {
+            this._credentials = credentials;
+        }
+
+        /// <summary>
+        /// Applies the authentication content to the provided HTTP request message.
+        /// </summary>
+        /// <param name="request">The HTTP request message.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        public async Task AuthenticateRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
+        {
+            // Base64 encode
+            string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials().ConfigureAwait(false)));
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", encodedContent);
+        }
+    }
+
+    /// <summary>
+    /// Retrieves a token via the provided delegate and applies it to HTTP requests using the
+    /// "bearer" authentication scheme.
+    /// </summary>
+    public class BearerAuthenticationProvider
+    {
+        private readonly Func<Task<string>> _bearerToken;
+
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         /// <summary>
         /// Creates an instance of the <see cref="BearerAuthenticationProvider"/> class.
         /// </summary>
@@ -271,12 +620,27 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             IEnumerable<IAccount> accounts = await app.GetAccountsAsync().ConfigureAwait(false);
             AuthenticationResult result;
             try
+<<<<<<< Updated upstream
+<<<<<<< head
             {
                 result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
                     .ExecuteAsync().ConfigureAwait(false);
             }
             catch (MsalUiRequiredException)
             {
+=======
+=======
+>>>>>>> Stashed changes
+            {
+                result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
+                    .ExecuteAsync().ConfigureAwait(false);
+            }
+            catch (MsalUiRequiredException)
+            {
+<<<<<<< Updated upstream
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
                 // A MsalUiRequiredException happened on AcquireTokenSilent.
                 // This indicates you need to call AcquireTokenInteractive to acquire a token
                 result = await app.AcquireTokenInteractive(scopes)
@@ -322,5 +686,25 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 
     public Example24_OpenApiPlugin_Jira(ITestOutputHelper output) : base(output)
     {
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
     }
 }

@@ -93,6 +93,46 @@ async def test_trace_chat_completion(
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
 
 <<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     with patch.object(MockChatCompletion, "_inner_get_chat_message_contents", return_value=mock_response):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
         MockChatCompletion._inner_get_chat_message_contents = trace_chat_completion(
@@ -101,6 +141,29 @@ async def test_trace_chat_completion(
 
         results: list[ChatMessageContent] = await chat_completion.get_chat_message_contents(
             chat_history, execution_settings
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
     with patch.object(MockChatCompletion, "get_chat_message_contents", return_value=mock_response):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
@@ -111,6 +174,27 @@ async def test_trace_chat_completion(
         results: list[ChatMessageContent] = await chat_completion.get_chat_message_contents(
             chat_history=chat_history, settings=execution_settings
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         )
 
         assert results == mock_response
@@ -168,6 +252,46 @@ async def test_trace_chat_completion_exception(
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
 
 <<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     with patch.object(MockChatCompletion, "_inner_get_chat_message_contents", side_effect=ServiceResponseException()):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
         MockChatCompletion._inner_get_chat_message_contents = trace_chat_completion(
@@ -176,6 +300,29 @@ async def test_trace_chat_completion_exception(
 
         with pytest.raises(ServiceResponseException):
             await chat_completion.get_chat_message_contents(chat_history, execution_settings)
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
     with patch.object(MockChatCompletion, "get_chat_message_contents", side_effect=ServiceResponseException()):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
@@ -186,6 +333,27 @@ async def test_trace_chat_completion_exception(
         with pytest.raises(ServiceResponseException):
             await chat_completion.get_chat_message_contents(chat_history=chat_history, settings=execution_settings)
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         exception = ServiceResponseException()
         mock_span.set_attribute.assert_any_call(gen_ai_attributes.ERROR_TYPE, str(type(exception)))

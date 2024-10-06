@@ -12,7 +12,47 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Block(KernelBaseModel):
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     """A block."""
 
     type: ClassVar[BlockTypes] = BlockTypes.UNDEFINED
@@ -60,7 +100,32 @@ class Block(ABC):
     @property
     def content(self) -> str:
         return self._content
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
     type: ClassVar[BlockTypes] = BlockTypes.UNDEFINED
     content: str
 
@@ -69,3 +134,23 @@ class Block(ABC):
     def content_strip(cls, content: str):
         return content.strip()
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main

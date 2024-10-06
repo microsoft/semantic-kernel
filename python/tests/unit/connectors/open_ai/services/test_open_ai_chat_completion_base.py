@@ -402,6 +402,29 @@ async def test_cmc_no_fcc_in_response(
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 async def test_cmc_structured_output_no_fcc(
     mock_create,
     kernel: Kernel,
@@ -428,6 +451,27 @@ async def test_cmc_structured_output_no_fcc(
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 async def test_cmc_run_out_of_auto_invoke_loop(
     mock_create: MagicMock,
     kernel: Kernel,
@@ -499,7 +543,47 @@ async def test_scmc_prompt_execution_settings(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
         stream_options={"include_usage": True},
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        stream_options={"include_usage": True},
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        stream_options={"include_usage": True},
+>>>>>>> main
+>>>>>>> Stashed changes
         messages=openai_chat_completion._prepare_chat_history_for_request(chat_history),
     )
 
@@ -754,8 +838,49 @@ async def test_process_tool_calls_with_continuation_on_malformed_arguments():
         messages=openai_chat_completion._prepare_chat_history_for_request(
             orig_chat_history
         ),
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
         stream_options={"include_usage": True},
         messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        stream_options={"include_usage": True},
+        messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     )
 
 
@@ -810,6 +935,32 @@ async def test_scmc_singular(
         messages=openai_chat_completion._prepare_chat_history_for_request(
             orig_chat_history
         ),
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    )
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+    )
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    )
+=======
+>>>>>>> Stashed changes
         stream_options={"include_usage": True},
         messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
     )
@@ -857,6 +1008,27 @@ async def test_scmc_structured_output_no_fcc(
     ):
         assert isinstance(msg, StreamingChatMessageContent)
     mock_create.assert_awaited_once()
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio
@@ -894,8 +1066,49 @@ async def test_scmc_function_call_behavior(
             messages=openai_chat_completion._prepare_chat_history_for_request(
                 orig_chat_history
             ),
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
             stream_options={"include_usage": True},
             messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            stream_options={"include_usage": True},
+            messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         )
 
 
@@ -934,8 +1147,49 @@ async def test_scmc_function_choice_behavior(
             messages=openai_chat_completion._prepare_chat_history_for_request(
                 orig_chat_history
             ),
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
             stream_options={"include_usage": True},
             messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            stream_options={"include_usage": True},
+            messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         )
 
 
@@ -1009,8 +1263,49 @@ async def test_scmc_no_fcc_in_response(
         messages=openai_chat_completion._prepare_chat_history_for_request(
             orig_chat_history
         ),
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
         stream_options={"include_usage": True},
         messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        stream_options={"include_usage": True},
+        messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     )
 
 

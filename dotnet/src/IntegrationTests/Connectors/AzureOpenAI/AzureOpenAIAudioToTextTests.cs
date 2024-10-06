@@ -1,5 +1,45 @@
 // Copyright (c) Microsoft. All rights reserved.
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 // Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.IO;

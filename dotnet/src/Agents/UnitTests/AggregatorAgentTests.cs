@@ -60,11 +60,61 @@ public class AggregatorAgentTests
         // Assert
         Assert.Empty(messages); // Agent hasn't joined chat, no broadcast
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        // Add message to inner chat (not visible to parent)
+        groupChat.Add(new ChatMessageContent(AuthorRole.User, "test inner"));
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+        // Add message to inner chat (not visible to parent)
+        groupChat.Add(new ChatMessageContent(AuthorRole.User, "test inner"));
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        // Add message to inner chat (not visible to parent)
+        groupChat.Add(new ChatMessageContent(AuthorRole.User, "test inner"));
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         // Add message to inner chat (not visible to parent)
         groupChat.Add(new ChatMessageContent(AuthorRole.User, "test inner"));
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         // Arrange: Add message to inner chat (not visible to parent)
         groupChat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test inner"));
 

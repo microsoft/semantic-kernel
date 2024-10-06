@@ -34,8 +34,41 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
     <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> origin/main
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
   </ItemGroup>
 
   <ItemGroup>
@@ -44,6 +77,36 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Experimental.Assistants" />
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
+  </ItemGroup>
+
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
+=======
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
   </ItemGroup>
 
   <ItemGroup>
@@ -52,4 +115,23 @@
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/JsonOptionsCache.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 </Project>

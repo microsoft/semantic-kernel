@@ -6,6 +6,29 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.data.filters.any_tags_equal_to_filter_clause import AnyTagsEqualTo
 from semantic_kernel.data.filters.equal_to_filter_clause import EqualTo
 from semantic_kernel.data.filters.not_equal_to_filter_clause import NotEqualTo
@@ -13,6 +36,27 @@ from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search_options import VectorSearchOptions
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -21,7 +65,47 @@ else:
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import SearchIndex
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 from azure.search.documents.models import VectorizedQuery
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+from azure.search.documents.models import VectorizedQuery
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+from azure.search.documents.models import VectorizedQuery
+>>>>>>> main
+>>>>>>> Stashed changes
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_ai_search.utils import (
@@ -41,9 +125,55 @@ from semantic_kernel.exceptions import (
     MemoryConnectorInitializationError,
 )
 =======
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+=======
 from semantic_kernel.data.const import VectorSearchQueryTypes
 from semantic_kernel.data.vector_search import VectorSearch
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+from semantic_kernel.data.const import VectorSearchQueryTypes
+from semantic_kernel.data.vector_search import VectorSearch
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
 >>>>>>> upstream/main
@@ -58,7 +188,47 @@ TModel = TypeVar("TModel")
 class AzureAISearchCollection(
     VectorStoreRecordCollection[str, TModel], Generic[TModel]
 ):
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
+>>>>>>> main
+>>>>>>> Stashed changes
     """Azure AI Search collection implementation."""
 
     search_client: SearchClient
@@ -191,13 +361,100 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
             selected_fields = ["*"]
 
         result = await asyncio.gather(
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             *[
                 client.get_document(
                     key=key, selected_fields=kwargs.get("selected_fields", ["*"])
                 )
                 for key in keys
             ],
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
             *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],
+>>>>>>> upstream/main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+            *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],
+>>>>>>> upstream/main
+=======
+            *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             return_exceptions=True,
         )
         return [res for res in result if not isinstance(res, BaseException)]
@@ -258,6 +515,29 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
     @override
     async def delete_collection(self, **kwargs) -> None:
         await self.search_index_client.delete_index(self.collection_name, **kwargs)
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
     @override
     async def _inner_search(
@@ -348,3 +628,24 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
     @override
     def _get_score_from_result(self, result: dict[str, Any]) -> float | None:
         return result.get("@search.score")
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

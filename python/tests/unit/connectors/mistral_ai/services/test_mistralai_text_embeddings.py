@@ -55,16 +55,98 @@ def test_embedding_with_model(mistralai_unit_test_env):
 
 
 <<<<<<< main
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 <<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 @pytest.mark.parametrize(
     "exclude_list", [["MISTRALAI_EMBEDDING_MODEL_ID"]], indirect=True
 )
 =======
 @pytest.mark.parametrize("exclude_list", [["MISTRALAI_EMBEDDING_MODEL_ID"]], indirect=True)
 >>>>>>> upstream/main
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
 =======
 @pytest.mark.parametrize("exclude_list", [["MISTRALAI_EMBEDDING_MODEL_ID"]], indirect=True)
 >>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+@pytest.mark.parametrize("exclude_list", [["MISTRALAI_EMBEDDING_MODEL_ID"]], indirect=True)
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 def test_embedding_with_model_without_env(mistralai_unit_test_env):
     text_embedding = MistralAITextEmbedding(ai_model_id="overwrite-model")
     assert text_embedding.ai_model_id == "overwrite-model"

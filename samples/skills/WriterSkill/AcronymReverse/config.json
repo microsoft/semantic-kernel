@@ -1,6 +1,43 @@
 {
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  "schema": 1,
+  "type": "completion",
+  "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
+  "completion": {
+=======
   "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
   "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
+  "default_settings": {
+>>>>>>> origin/main
+=======
+  "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 256,
     "temperature": 0.5,
     "top_p": 1.0,
@@ -13,6 +50,47 @@
   "default_backends": [
     "text-davinci-003"
   ]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
     "stop_sequences": ["#END#"]
   }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    "stop_sequences": ["#END#"]
+  }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 }

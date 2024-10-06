@@ -1,0 +1,211 @@
+﻿{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Repair Service",
+    "description": "A simple service to manage repairs for various items",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://fakerepairsapi.azurewebsites.net/"
+    }
+  ],
+  "paths": {
+    "/repairs": {
+      "get": {
+        "operationId": "listRepairs",
+        "summary": "List all repairs",
+        "description": "Returns a list of repairs with their details and images",
+        "parameters": [
+          {
+            "name": "assignedTo",
+            "in": "query",
+            "description": "Filter repairs by who they're assigned to",
+            "schema": {
+              "type": "string"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "description": "The unique identifier of the repair"
+                      },
+                      "title": {
+                        "type": "string",
+                        "description": "The short summary of the repair"
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "The detailed description of the repair"
+                      },
+                      "assignedTo": {
+                        "type": "string",
+                        "description": "The user who is responsible for the repair"
+                      },
+                      "date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The date and time when the repair is scheduled or completed"
+                      },
+                      "image": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "The URL of the image of the item to be repaired or the repair process"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createRepair",
+        "summary": "Create a new repair",
+        "description": "Adds a new repair to the list with the given details and image URL",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "The short summary of the repair"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "The detailed description of the repair"
+                  },
+                  "assignedTo": {
+                    "type": "string",
+                    "description": "The user who is responsible for the repair"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The optional date and time when the repair is scheduled or completed"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL of the image of the item to be repaired or the repair process"
+                  }
+                },
+                "required": [
+                  "title",
+                  "description",
+                  "assignedTo"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "A successful response indicating that the repair was created"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateRepair",
+        "summary": "Update an existing repair",
+        "description": "Update an existing repair to the list with the new updated details and image URL",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "The unique identifier of the repair to update"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "The short summary of the repair"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "The detailed description of the repair"
+                  },
+                  "assignedTo": {
+                    "type": "string",
+                    "description": "The user who is responsible for the repair"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The date and time when the repair is scheduled or completed"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL of the image of the item to be repaired or the repair process"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Repair updated"
+          },
+          "404": {
+            "description": "Repair not found"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteRepair",
+        "summary": "Delete an existing repair",
+        "description": "Delete an existing repair from the list using its ID",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "The unique identifier of the repair to delete"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Repair deleted"
+          },
+          "404": {
+            "description": "Repair not found"
+          }
+        }
+      }
+    }
+  }
+}

@@ -26,6 +26,69 @@ internal static class AssistantToolResourcesFactory
 
         if (hasVectorStore || hasCodeInterpreterFiles)
         {
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+            toolResources =
+                new ToolResources()
+                {
+                    FileSearch =
+                        hasVectorStore ?
+                            new FileSearchToolResources()
+                            {
+                                VectorStoreIds = [vectorStoreId!],
+                            } :
+                            null,
+                    CodeInterpreter =
+                        hasCodeInterpreterFiles ?
+                            new CodeInterpreterToolResources()
+                            {
+                                FileIds = (IList<string>)codeInterpreterFileIds!,
+                            } :
+                            null,
+                };
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
             FileSearchToolResources? fileSearch =
                 hasVectorStore ?
                     new()
@@ -45,6 +108,27 @@ internal static class AssistantToolResourcesFactory
                 FileSearch = fileSearch,
                 CodeInterpreter = codeInterpreter
             };
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         return toolResources;

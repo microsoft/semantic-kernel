@@ -1,6 +1,43 @@
 {
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  "schema": 1,
+  "description": "A chat bot that plays a persona or role",
+  "type": "completion",
+  "completion": {
+=======
   "description": "A chat bot that plays a persona or role",
   "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "A chat bot that plays a persona or role",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "A chat bot that plays a persona or role",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "A chat bot that plays a persona or role",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "A chat bot that plays a persona or role",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "A chat bot that plays a persona or role",
+  "default_settings": {
+>>>>>>> origin/main
+=======
+  "description": "A chat bot that plays a persona or role",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 150,
     "temperature": 0.9,
     "top_p": 0.0,
@@ -14,6 +51,47 @@
   "default_backends": [
     "text-davinci-003"
   ]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
     "stop_sequences": ["Human:", "AI:"]
   }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    "stop_sequences": ["Human:", "AI:"]
+  }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 }

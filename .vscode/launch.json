@@ -1,11 +1,193 @@
 {
+  "program": "",
   "version": "0.2.0",
   "configurations": [
+  {
+    "name": ".NET Core Attach",
+    "type": "coreclr",
+    "request": "attach"
+  },
     {
+<<<<<<< head
+      "name": "Python Debugger: Flask",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+        "FLASK_APP": "app.py",
+        "FLASK_DEBUG": "1"
+      },
+      "args": [
+        "run",
+        "--no-debugger",
+        "--no-reload"
+      ],
+
+
+    },
+    {
+      "name": "Python Debugger: Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "com.microsoft.semantickernel.skills.random.Main",
+      "projectName": "JavaReferenceSkill"
+    },
+    {
+      "name": "RobotCode: Run All",
+      "type": "robotcode",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "target": "."
+      "name": "C#: Concept Samples",
+      "name": ".NET Core Launch (dotnet-kernel-syntax-examples)",
+      "type": "coreclr",
+      "type": "java",
+      "name": "Main",
+      "type": "clr",
+      "request": "launch",
+      "preLaunchTask": "build (Concepts)",
+      "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
+      "preLaunchTask": "build (KernelSyntaxExamples)",
+      "program": "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/bin/Debug/net6.0/KernelSyntaxExamples.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples",
+      "console": "internalConsole",
+      "stopAtEntry": false
+      "mainClass": "com.microsoft.semantickernel.skills.random.Main",
+      "projectName": "JavaReferenceSkill"
+    },
+    {
+      "name": "Attach to .NET Functions",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:azureFunctions.pickProcess}"
+    },
+    {
+      "cwd": "${workspaceFolder}/python",
+      "name": "Python: Test Module",
+      "type": "debugpy",
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "console": "internalConsole"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Launch",
+      "program": "${workspaceFolder}/path/to/your/program",
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "PowerShell: Binary Module Pester Tests",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "Invoke-Pester",
+      "createTemporaryIntegratedConsole": true,
+      "attachDotnetDebugger": true
+    },
+    {
+      "name": "C#: Concept Samples",
+          "type": "lldb",
+          "request": "launch",
+          "preLaunchTask": "build (Concepts)",
+          "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
+          "args": [],
+          "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
+          "console": "internalConsole"
+    },
+    {
+      "name": ".NET Core Attach",
+      "type": "lldb",
+      "request": "attach"
+    },
+    {
+      "name": "C#: HuggingFaceImageToText Demo",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/dotnet/samples/Demos/bin/Debug/net6.0/HuggingFaceImageToText.dll"
+    },
+    {
+      "name": "C#: GettingStarted Samples",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/dotnet/samples/GettingStarted/bin/Debug/net6.0/GettingStarted.dll"
+      "name": "Attach to .NET Functions",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:azureFunctions.pickProcess}"
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/Bryan/semantic-kernel",
+      "program": "c:/Users/Bryan/semantic-kernel/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "cwd": "/workspaces/semantic-kernel",
+      "program": "/workspaces/semantic-kernel/build/Release/outRelease",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "cwd": "/workspaces/semantic-kernel",
+      "program": "/workspaces/semantic-kernel/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+=======
       "name": "Attach to .NET Functions",
       "type": "coreclr",
       "request": "attach",
       "processId": "${command:azureFunctions.pickProcess}"
     }
   ]
+>>>>>>> origin/main
 }

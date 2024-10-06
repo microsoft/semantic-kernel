@@ -1,4 +1,46 @@
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+﻿<Project Sdk="Microsoft.NET.Sdk">
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+﻿<Project Sdk="Microsoft.NET.Sdk">
+=======
 <Project Sdk="Microsoft.NET.Sdk">
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<Project Sdk="Microsoft.NET.Sdk">
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
   <PropertyGroup>
     <AssemblyName>GettingStartedWithAgents</AssemblyName>
@@ -44,7 +86,47 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
     <ProjectReference Include="..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    <ProjectReference Include="..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    <ProjectReference Include="..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
+>>>>>>> main
+>>>>>>> Stashed changes
   </ItemGroup>
 
   <ItemGroup>
@@ -59,12 +141,59 @@
   </ItemGroup>
 
   <ItemGroup>
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    <None Remove="Resources\travelinfo.txt" />
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+    <None Remove="Resources\travelinfo.txt" />
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    <None Remove="Resources\travelinfo.txt" />
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     <None Remove="Resources\*" />
     <None Remove="Resources\travelinfo.txt" />
 =======
     <None Remove="Resources\*" />
 >>>>>>> ms/main
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
   </ItemGroup>
 
 </Project>

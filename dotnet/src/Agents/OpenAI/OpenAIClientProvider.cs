@@ -1,4 +1,46 @@
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
 // Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
@@ -79,7 +121,49 @@ public sealed class OpenAIClientProvider
     public static OpenAIClientProvider ForOpenAI(Uri? endpoint = null, HttpClient? httpClient = null)
     {
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        return new(new OpenAIClient(SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+        return new(new OpenAIClient(SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
+=======
         return new(new OpenAIClient(new ApiKeyCredential(SingleSpaceKey), clientOptions), CreateConfigurationKeys(endpoint, httpClient));
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        return new(new OpenAIClient(new ApiKeyCredential(SingleSpaceKey), clientOptions), CreateConfigurationKeys(endpoint, httpClient));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -92,11 +176,58 @@ public sealed class OpenAIClientProvider
     {
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);
 <<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        return new(new OpenAIClient(apiKey ?? SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+        return new(new OpenAIClient(apiKey ?? SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        return new(new OpenAIClient(apiKey ?? SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
         return new(new OpenAIClient(apiKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
         return new(new OpenAIClient(apiKey ?? SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
 =======
         return new(new OpenAIClient(apiKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
 >>>>>>> ms/main
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -111,7 +242,49 @@ public sealed class OpenAIClientProvider
     {
         AzureOpenAIClientOptions options = new()
         {
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+            ApplicationId = HttpHeaderConstant.Values.UserAgent
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+            ApplicationId = HttpHeaderConstant.Values.UserAgent
+=======
             UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         };
 
         ConfigureClientOptions(httpClient, options);
@@ -123,7 +296,49 @@ public sealed class OpenAIClientProvider
     {
         OpenAIClientOptions options = new()
         {
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+=======
             UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             Endpoint = endpoint ?? httpClient?.BaseAddress,
         };
 

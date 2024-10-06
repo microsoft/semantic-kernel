@@ -4,7 +4,47 @@ import json
 import logging
 from collections.abc import Mapping
 from typing import Any
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
 from typing import Dict, Mapping, Optional, overload
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+from typing import Dict, Mapping, Optional, overload
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -39,6 +79,25 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
     @overload
     def __init__(
         self,
@@ -105,6 +164,137 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
             ),
             org_id=openai_settings.org_id,
 
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+    @overload
+    def __init__(
+        self,
+        ai_model_id: str,
+<<<<<<< Updated upstream
+<<<<<<< head
+        async_client: AsyncOpenAI,
+        service_id: Optional[str] = None,
+=======
+        api_key: Optional[str] = None,
+        service_id: Optional[str] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+>>>>>>> origin/main
+=======
+        async_client: AsyncOpenAI,
+        service_id: Optional[str] = None,
+>>>>>>> Stashed changes
+    ) -> None:
+        """
+        Initialize an OpenAITextCompletion service.
+
+        Arguments:
+            ai_model_id {str} -- OpenAI model name, see
+                https://platform.openai.com/docs/models
+<<<<<<< Updated upstream
+<<<<<<< head
+=======
+>>>>>>> Stashed changes
+            async_client {AsyncOpenAI} -- An existing client to use.
+        """
+
+    @overload
+<<<<<<< Updated upstream
+=======
+            api_key {Optional[str]} -- OpenAI API key, see
+                https://platform.openai.com/account/api-keys (Optional)
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
+        """
+
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+    def __init__(
+        self,
+        ai_model_id: str,
+        api_key: Optional[str] = None,
+        org_id: Optional[str] = None,
+        service_id: Optional[str] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+    ) -> None:
+        """Initialize an OpenAITextCompletion service.
+
+        Args:
+            ai_model_id (str | None): OpenAI model name, see
+                https://platform.openai.com/docs/models
+            service_id (str | None): Service ID tied to the execution settings.
+            api_key (str | None): The optional API key to use. If provided will override,
+                the env vars or .env file value.
+            org_id (str | None): The optional org ID to use. If provided will override,
+                the env vars or .env file value.
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
+            async_client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
+            env_file_path (str | None): Use the environment settings file as a fallback to
+                environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
+        """
+        try:
+            openai_settings = OpenAISettings.create(
+                api_key=api_key,
+                org_id=org_id,
+                text_model_id=ai_model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise ServiceInitializationError(
+                "Failed to create OpenAI settings.", ex
+            ) from ex
+        if not openai_settings.text_model_id:
+            raise ServiceInitializationError("The OpenAI text model ID is required.")
+        super().__init__(
+            ai_model_id=openai_settings.text_model_id,
+            service_id=service_id,
+            api_key=(
+                openai_settings.api_key.get_secret_value()
+                if openai_settings.api_key
+                else None
+            ),
+            org_id=openai_settings.org_id,
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+
     @overload
     def __init__(
         self,
@@ -112,6 +302,12 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         api_key: Optional[str] = None,
         service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+<<<<<<< Updated upstream
+=======
+        async_client: Optional[AsyncOpenAI] = None,
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     ) -> None:
         """
         Initialize an OpenAITextCompletion service.
@@ -121,6 +317,10 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
                 https://platform.openai.com/docs/models
             api_key {Optional[str]} -- OpenAI API key, see
                 https://platform.openai.com/account/api-keys (Optional)
+<<<<<<< Updated upstream
+<<<<<<< head
+=======
+>>>>>>> Stashed changes
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
         """
@@ -133,27 +333,96 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
+>>>>>>> origin/main
     ) -> None:
-        """
-        Initialize an OpenAITextCompletion service.
+        """Initialize an OpenAITextCompletion service.
 
-        Arguments:
-            ai_model_id {str} -- OpenAI model name, see
+        Args:
+            ai_model_id (str | None): OpenAI model name, see
                 https://platform.openai.com/docs/models
+<<<<<<< main
+            service_id (str | None): Service ID tied to the execution settings.
+            api_key (str | None): The optional API key to use. If provided will override,
+                the env vars or .env file value.
+            org_id (str | None): The optional org ID to use. If provided will override,
+                the env vars or .env file value.
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
+            async_client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
+            env_file_path (str | None): Use the environment settings file as a fallback to
+                environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
+=======
             api_key {Optional[str]} -- OpenAI API key, see
                 https://platform.openai.com/account/api-keys (Optional)
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
             org_id {Optional[str]} -- OpenAI organization ID.
                 This is usually optional unless your
                 account belongs to multiple organizations.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
         """
+        try:
+            openai_settings = OpenAISettings.create(
+                api_key=api_key,
+                org_id=org_id,
+                text_model_id=ai_model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise ServiceInitializationError(
+                "Failed to create OpenAI settings.", ex
+            ) from ex
+        if not openai_settings.text_model_id:
+            raise ServiceInitializationError("The OpenAI text model ID is required.")
         super().__init__(
+<<<<<<< main
+            ai_model_id=openai_settings.text_model_id,
+            service_id=service_id,
+            api_key=(
+                openai_settings.api_key.get_secret_value()
+                if openai_settings.api_key
+                else None
+            ),
+            org_id=openai_settings.org_id,
+=======
             ai_model_id=ai_model_id,
             api_key=api_key,
             org_id=org_id,
             service_id=service_id,
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
             ai_model_type=OpenAIModelTypes.TEXT,
             default_headers=default_headers,
             client=async_client,
