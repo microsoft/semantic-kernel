@@ -6,6 +6,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -35,6 +36,11 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -67,6 +73,7 @@ PromptExecutionSettingsT = TypeVar(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -84,6 +91,10 @@ PromptExecutionSettingsT = TypeVar(
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 import json
 import logging
 from typing import Dict, List, Optional, TypeVar, Union
@@ -99,6 +110,7 @@ from semantic_kernel.prompt_template.input_variable import InputVariable
 PromptExecutionSettingsT = TypeVar("PromptExecutionSettingsT", bound=PromptExecutionSettings)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -116,6 +128,9 @@ PromptExecutionSettingsT = TypeVar("PromptExecutionSettingsT", bound=PromptExecu
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -131,6 +146,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -160,6 +176,11 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -204,6 +225,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -221,6 +243,9 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
     name: Optional[str] = ""
     description: Optional[str] = ""
     template: Optional[str] = None
@@ -228,6 +253,7 @@ class PromptTemplateConfig(KernelBaseModel):
     input_variables: List[InputVariable] = Field(default_factory=list)
     execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -246,6 +272,9 @@ class PromptTemplateConfig(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -261,6 +290,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -290,6 +320,11 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -308,6 +343,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -326,11 +362,16 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
         settings: Optional[
             Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
         ],
     ) -> Dict[str, PromptExecutionSettings]:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -349,6 +390,9 @@ class PromptTemplateConfig(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -363,6 +407,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -392,6 +437,11 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -419,6 +469,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -436,6 +487,10 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
             return {settings.service_id or "default": settings}
         if isinstance(settings, list):
             return {s.service_id or "default": s for s in settings}
@@ -450,6 +505,7 @@ class PromptTemplateConfig(KernelBaseModel):
 
     def get_kernel_parameter_metadata(self) -> List[KernelParameterMetadata]:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -468,6 +524,9 @@ class PromptTemplateConfig(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -484,6 +543,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 type_=variable.json_schema,  # TODO (moonbox3): update to handle complex JSON schemas
                 is_required=variable.is_required,
 =======
@@ -506,6 +566,11 @@ class PromptTemplateConfig(KernelBaseModel):
                 is_required=variable.is_required,
 =======
 >>>>>>> Stashed changes
+=======
+                type_=variable.json_schema,  # TODO (moonbox3): update to handle complex JSON schemas
+                is_required=variable.is_required,
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 type_=variable.json_schema,  # TODO (moonbox3): update to handle complex JSON schemas
                 is_required=variable.is_required,
@@ -514,6 +579,7 @@ class PromptTemplateConfig(KernelBaseModel):
                 required=variable.is_required,
                 expose=True,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -532,6 +598,9 @@ class PromptTemplateConfig(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -551,6 +620,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -580,6 +650,11 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -599,6 +674,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -616,6 +692,10 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 
         try:
             parsed_json = json.loads(json_str)
@@ -634,6 +714,7 @@ class PromptTemplateConfig(KernelBaseModel):
         return config
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -651,6 +732,9 @@ class PromptTemplateConfig(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -668,6 +752,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -697,6 +782,11 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -713,6 +803,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -730,10 +821,15 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
         template_format: Literal["semantic-kernel"] = "semantic-kernel",
         input_variables: List[InputVariable] = [],
         execution_settings: Dict[str, PromptExecutionSettings] = {},
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -752,6 +848,9 @@ class PromptTemplateConfig(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -769,6 +868,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -798,6 +898,11 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -814,6 +919,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -831,9 +937,13 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
             input_variables: The input variables for the prompt.
             execution_settings: The execution settings for the prompt.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -852,6 +962,9 @@ class PromptTemplateConfig(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -873,6 +986,7 @@ class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             allow_dangerously_set_content=allow_dangerously_set_content,
 =======
 =======
@@ -892,10 +1006,15 @@ class PromptTemplateConfig(KernelBaseModel):
             allow_dangerously_set_content=allow_dangerously_set_content,
 =======
 >>>>>>> Stashed changes
+=======
+            allow_dangerously_set_content=allow_dangerously_set_content,
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             allow_dangerously_set_content=allow_dangerously_set_content,
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -914,6 +1033,9 @@ class PromptTemplateConfig(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

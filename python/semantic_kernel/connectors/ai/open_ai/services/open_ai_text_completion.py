@@ -5,6 +5,7 @@ import logging
 from collections.abc import Mapping
 from typing import Any
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -12,6 +13,8 @@ from typing import Any
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -31,6 +34,7 @@ from typing import Dict, Mapping, Optional, overload
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -43,6 +47,8 @@ from typing import Dict, Mapping, Optional, overload
 =======
 from typing import Dict, Mapping, Optional, overload
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -80,6 +86,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -98,6 +105,10 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
 <<<<<<< main
 =======
 =======
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
     @overload
     def __init__(
         self,
@@ -164,15 +175,19 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
             ),
             org_id=openai_settings.org_id,
 
+<<<<<<< Updated upstream
 >>>>>>> origin/main
 =======
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     @overload
     def __init__(
         self,
         ai_model_id: str,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
         async_client: AsyncOpenAI,
@@ -186,6 +201,11 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         async_client: AsyncOpenAI,
         service_id: Optional[str] = None,
 >>>>>>> Stashed changes
+=======
+        api_key: Optional[str] = None,
+        service_id: Optional[str] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+>>>>>>> Stashed changes
     ) -> None:
         """
         Initialize an OpenAITextCompletion service.
@@ -193,6 +213,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         Arguments:
             ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 =======
@@ -203,12 +224,15 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
     @overload
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
             api_key {Optional[str]} -- OpenAI API key, see
                 https://platform.openai.com/account/api-keys (Optional)
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
         """
 
+<<<<<<< Updated upstream
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
@@ -325,6 +349,8 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
                 string values for HTTP requests. (Optional)
         """
 
+=======
+>>>>>>> Stashed changes
     def __init__(
         self,
         ai_model_id: str,
@@ -356,8 +382,11 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
             api_key {Optional[str]} -- OpenAI API key, see
                 https://platform.openai.com/account/api-keys (Optional)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             org_id {Optional[str]} -- OpenAI organization ID.
@@ -367,9 +396,12 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -404,6 +436,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
             org_id=org_id,
             service_id=service_id,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -420,6 +453,8 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

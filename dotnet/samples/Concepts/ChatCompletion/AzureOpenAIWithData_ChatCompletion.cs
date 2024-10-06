@@ -134,6 +134,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -163,6 +164,11 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 =======
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -184,6 +190,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -213,6 +220,11 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 =======
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

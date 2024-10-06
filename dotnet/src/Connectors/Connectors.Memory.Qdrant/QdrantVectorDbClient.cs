@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -30,6 +31,8 @@ using Microsoft.SemanticKernel.Http;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -37,11 +40,14 @@ using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Http;
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< main
 using Microsoft.SemanticKernel.Http;
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
@@ -49,6 +55,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Verify = Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics.Verify;
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -65,6 +72,8 @@ using Verify = Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics.Ver
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -111,6 +120,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -127,11 +137,14 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
 =======
             throw new ArgumentException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
 >>>>>>> ms/feature-error-handling
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -155,6 +168,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -182,6 +197,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         try
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -206,6 +222,9 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -215,6 +234,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         {
             this._logger.LogError(e, "Vectors not found {Message}", e.Message);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -232,6 +252,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -242,6 +264,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             this._logger.LogDebug("Vectors not found {0}", e.Message);
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -258,6 +281,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             throw;
@@ -307,6 +332,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         try
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -331,6 +357,9 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -340,6 +369,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         {
             return null;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -357,6 +387,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -368,6 +400,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -384,6 +417,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -436,6 +471,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         try
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -463,6 +499,9 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
             (_, responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException e)
@@ -472,6 +511,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
 
         var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -494,6 +534,10 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -515,6 +559,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         {
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -531,6 +576,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             this._logger.LogDebug("Vector being deleted");
@@ -564,6 +611,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         try
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -588,6 +636,9 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -601,6 +652,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -620,6 +672,10 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -646,6 +702,9 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -663,6 +722,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
         else
         {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -688,6 +748,9 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 =======
 >>>>>>> ms/feature-error-handling
 >>>>>>> origin/main
+=======
+>>>>>>> ms/feature-error-handling
+>>>>>>> Stashed changes
 =======
 >>>>>>> ms/feature-error-handling
 >>>>>>> Stashed changes
@@ -711,6 +774,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         try
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -735,6 +799,9 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -744,6 +811,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         {
             this._logger.LogError(e, "Vector upserts request failed: {Message}", e.Message);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -761,6 +829,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -771,6 +841,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             this._logger.LogError(e, "Vector upserts request failed: {0}", e.Message);
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -787,6 +858,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             throw;
@@ -839,6 +912,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -856,6 +930,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -872,6 +948,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -888,6 +965,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -941,6 +1020,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.BadRequest)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -965,6 +1045,9 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -977,6 +1060,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             this._logger.LogError(e, "Collection creation failed: {Message}, {Response}", e.Message, e.ResponseContent);
             throw;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1013,6 +1097,11 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             response.EnsureSuccess(responseContent, this._logger);
 >>>>>>> ms/feature-error-handling
 >>>>>>> origin/main
+=======
+=======
+            response.EnsureSuccess(responseContent, this._logger);
+>>>>>>> ms/feature-error-handling
+>>>>>>> Stashed changes
 =======
 =======
             response.EnsureSuccess(responseContent, this._logger);
@@ -1040,6 +1129,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.NotFound)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1078,12 +1168,17 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             return; // Deletion is idempotent, ignore error
 =======
             response.EnsureSuccess(responseContent, this._logger);
 >>>>>>> ms/feature-error-handling
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -1127,6 +1222,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         using var request = ListCollectionsRequest.Create().Build();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1151,6 +1247,9 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -1166,6 +1265,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1183,6 +1283,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1199,6 +1301,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1215,6 +1318,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -13,6 +14,8 @@ using System.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Memory;
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -30,11 +33,14 @@ namespace Microsoft.SemanticKernel.Memory;
 =======
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 
 namespace Microsoft.SemanticKernel.Memory;
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Diagnostics;
@@ -43,6 +49,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 namespace Microsoft.SemanticKernel.Memory.Collections;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -60,6 +67,8 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -74,6 +83,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     private const int MinCapacity = 0;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -95,6 +105,11 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    private static readonly T[] s_emptyBuffer = [];
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
     private static readonly T[] s_emptyBuffer = [];
@@ -106,6 +121,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     private static readonly T[] s_emptyBuffer = Array.Empty<T>();
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -122,6 +138,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -130,6 +148,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     private int _count;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -154,6 +173,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -163,6 +185,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// <param name="minValue">Heap minimum value, which will be used as first item in collection.</param>
     /// <param name="capacity">Number of elements that collection can hold.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -193,6 +216,10 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
@@ -212,6 +239,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -236,6 +264,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -245,6 +276,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// <param name="minValue">Heap minimum value, which will be used as first item in collection.</param>
     /// <param name="items">List of items to add.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -275,6 +307,10 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
@@ -286,6 +322,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -306,6 +343,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -315,6 +354,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -331,6 +371,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public int Count
@@ -344,6 +386,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -368,6 +411,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -380,6 +426,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// Gets the element at the specified index.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -397,6 +444,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -404,6 +453,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -420,6 +470,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public T this[int index]
@@ -429,6 +481,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -453,6 +506,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -470,6 +526,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// Sets collection item count to zero.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -487,6 +544,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -496,6 +555,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -512,6 +572,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public void Clear()
@@ -520,6 +582,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -544,12 +607,15 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <summary>
     /// Sets collection item count to zero and removes all items in collection.
     /// </summary>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -567,6 +633,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public void Erase()
@@ -576,6 +644,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -596,6 +665,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -605,6 +676,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -621,6 +693,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public T[] DetachBuffer()
@@ -632,6 +706,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -656,6 +731,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -664,6 +742,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     /// <param name="item">Item to add.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -694,6 +773,10 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
@@ -711,6 +794,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -735,6 +819,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -743,6 +830,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     /// <param name="items">Items to add.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -773,6 +861,10 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
@@ -786,6 +878,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -810,6 +903,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -819,6 +915,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// <param name="items">Items to add.</param>
     /// <param name="startAt">Starting point of items to add.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -849,6 +946,10 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
@@ -877,6 +978,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -901,12 +1003,15 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <summary>
     /// Removes first item in collection and returns it.
     /// </summary>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -924,6 +1029,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public T RemoveTop()
@@ -940,6 +1047,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -960,6 +1068,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -969,6 +1079,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -985,6 +1096,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public IEnumerable<T> RemoveAll()
@@ -996,6 +1109,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1020,6 +1134,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1028,6 +1145,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     /// <param name="capacity">Number of elements that collection can hold.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1058,6 +1176,10 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
@@ -1078,6 +1200,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1098,6 +1221,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -1107,6 +1232,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1123,6 +1249,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public void EnsureCapacity()
@@ -1187,6 +1315,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1207,6 +1336,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -1216,6 +1347,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1232,6 +1364,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public IEnumerator<T> GetEnumerator()

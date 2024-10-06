@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -78,6 +84,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -91,10 +98,13 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -114,6 +124,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -141,6 +153,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 =======
@@ -155,12 +168,15 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 =======
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -179,6 +195,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -192,6 +210,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>A dictionary that maps from a property name to the configured name that should be used when storing it.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames = new();
 
@@ -207,11 +226,14 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// <summary>A dictionary that maps from a property name to the configured name that should be used when storing it.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames = new();
 
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -228,6 +250,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <summary>
@@ -263,6 +287,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -276,9 +301,12 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.PointStructCustomMapper is not null, s_supportedKeyTypes);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -297,6 +325,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.PointStructCustomMapper is not null, s_supportedKeyTypes);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -311,6 +341,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
 =======
 =======
@@ -330,6 +361,10 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
 =======
 >>>>>>> Stashed changes
+=======
+        this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
+=======
+>>>>>>> Stashed changes
         this._propertyReader = new VectorStoreRecordPropertyReader(
             typeof(TRecord),
             this._options.VectorStoreRecordDefinition,
@@ -339,6 +374,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                 SupportsMultipleKeys = false,
                 SupportsMultipleVectors = this._options.HasNamedVectors
             });
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -357,6 +393,9 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -374,6 +413,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -390,11 +430,15 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         if (properties.VectorProperties.Count > 0)
         {
             this._firstVectorPropertyName = this._storagePropertyNames[properties.VectorProperties.First().DataModelPropertyName];
         }
         this._propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -413,6 +457,9 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -434,6 +481,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 this._vectorStoreRecordDefinition,
 =======
 =======
@@ -447,10 +495,13 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 this._vectorStoreRecordDefinition,
 =======
                 this._propertyReader,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -468,6 +519,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 =======
                 this._propertyReader,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 this._options.HasNamedVectors);
@@ -483,6 +536,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 this._vectorStoreRecordDefinition,
                 this._options.HasNamedVectors,
                 this._storagePropertyNames);
@@ -498,6 +552,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 this._vectorStoreRecordDefinition,
                 this._options.HasNamedVectors,
                 this._storagePropertyNames);
@@ -505,6 +561,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                 this._propertyReader,
                 this._options.HasNamedVectors);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -523,6 +580,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                 this._propertyReader,
                 this._options.HasNamedVectors);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -552,6 +611,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             var singleVectorProperty = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>().First();
 =======
 =======
@@ -565,10 +625,13 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             var singleVectorProperty = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>().First();
 =======
             var singleVectorProperty = this._propertyReader.VectorProperty;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -586,6 +649,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 =======
             var singleVectorProperty = this._propertyReader.VectorProperty;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -610,6 +675,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -624,6 +690,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -631,6 +699,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 
             // Map the named vectors to the qdrant config.
             var vectorParamsMap = QdrantVectorStoreCollectionCreateMapping.MapNamedVectors(vectorProperties, this._storagePropertyNames);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -652,10 +721,14 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
             var vectorProperties = this._propertyReader.VectorProperties;
 
             // Map the named vectors to the qdrant config.
             var vectorParamsMap = QdrantVectorStoreCollectionCreateMapping.MapNamedVectors(vectorProperties, this._propertyReader.StoragePropertyNamesMap);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -674,6 +747,9 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -695,6 +771,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -709,6 +786,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -716,6 +795,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         foreach (var dataProperty in dataProperties)
         {
             var storageFieldName = this._storagePropertyNames[dataProperty.DataModelPropertyName];
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -737,10 +817,14 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         var dataProperties = this._propertyReader.DataProperties.Where(x => x.IsFilterable);
         foreach (var dataProperty in dataProperties)
         {
             var storageFieldName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -759,6 +843,9 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -781,6 +868,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         dataProperties = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordDataProperty>().Where(x => x.IsFullTextSearchable);
 =======
 =======
@@ -794,10 +882,13 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         dataProperties = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordDataProperty>().Where(x => x.IsFullTextSearchable);
 =======
         dataProperties = this._propertyReader.DataProperties.Where(x => x.IsFullTextSearchable);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -815,6 +906,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 =======
         dataProperties = this._propertyReader.DataProperties.Where(x => x.IsFullTextSearchable);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         foreach (var dataProperty in dataProperties)
@@ -831,6 +924,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             var storageFieldName = this._storagePropertyNames[dataProperty.DataModelPropertyName];
 =======
 =======
@@ -844,10 +938,13 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             var storageFieldName = this._storagePropertyNames[dataProperty.DataModelPropertyName];
 =======
             var storageFieldName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -865,6 +962,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 =======
             var storageFieldName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -1121,6 +1220,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1134,6 +1234,9 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1225,6 +1328,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1242,6 +1346,9 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

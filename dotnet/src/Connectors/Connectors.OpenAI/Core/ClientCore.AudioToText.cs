@@ -60,6 +60,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             Granularities = AudioTimestampGranularities.Default,
 =======
 =======
@@ -73,10 +74,13 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             Granularities = AudioTimestampGranularities.Default,
 =======
             TimestampGranularities = AudioTimestampGranularities.Default,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -94,6 +98,8 @@ internal partial class ClientCore
 =======
             TimestampGranularities = AudioTimestampGranularities.Default,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             Language = executionSettings.Language,
@@ -111,6 +117,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -127,11 +134,15 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         if (responseFormat is null)
         {
             return null;
         }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -150,6 +161,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -166,6 +180,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             null => null,
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
 =======
@@ -180,11 +195,14 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             null => null,
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
 =======
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported.")
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -202,6 +220,8 @@ internal partial class ClientCore
 =======
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported.")
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         };

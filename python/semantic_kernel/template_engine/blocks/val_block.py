@@ -3,6 +3,7 @@
 import logging
 from re import S, compile
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -18,6 +19,8 @@ from re import S, compile
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -26,6 +29,7 @@ from re import S, compile
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -41,12 +45,15 @@ from re import S, compile
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import model_validator
 
 from semantic_kernel.exceptions import ValBlockSyntaxError
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,6 +62,8 @@ from semantic_kernel.exceptions import ValBlockSyntaxError
 <<<<<<< Updated upstream
 from semantic_kernel.template_engine.blocks.block import Block
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -81,6 +90,7 @@ from semantic_kernel.template_engine.blocks.block_errors import ValBlockSyntaxEr
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -100,6 +110,8 @@ from pydantic import model_validator
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import ValBlockSyntaxError
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -141,6 +153,7 @@ class ValBlock(Block):
 
     type: ClassVar[BlockTypes] = BlockTypes.VALUE
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -160,13 +173,18 @@ class ValBlock(Block):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     value: str | None = ""
     quote: str | None = "'"
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -177,6 +195,7 @@ class ValBlock(Block):
     quote: Optional[str] = "'"
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -193,6 +212,8 @@ class ValBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -218,6 +239,7 @@ class ValBlock(Block):
         return fields
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -238,14 +260,19 @@ class ValBlock(Block):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the value block."""
         return self.value or ""
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -257,6 +284,7 @@ class ValBlock(Block):
         return self.value
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -273,6 +301,8 @@ class ValBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

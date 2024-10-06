@@ -2,6 +2,7 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,13 +22,18 @@ from copy import copy
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from collections.abc import Mapping
 from copy import copy
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -37,6 +43,7 @@ from copy import copy
 from typing import Dict, Mapping, Optional
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -53,6 +60,8 @@ from typing import Dict, Mapping, Optional
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -87,6 +96,7 @@ class OpenAIConfigBase(OpenAIHandler):
         self,
         ai_model_id: str = Field(min_length=1),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -104,6 +114,8 @@ class OpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -113,6 +125,7 @@ class OpenAIConfigBase(OpenAIHandler):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -125,6 +138,8 @@ class OpenAIConfigBase(OpenAIHandler):
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         api_key: str | None = Field(min_length=1),
@@ -134,6 +149,7 @@ class OpenAIConfigBase(OpenAIHandler):
         default_headers: Mapping[str, str] | None = None,
         client: AsyncOpenAI | None = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -154,6 +170,11 @@ class OpenAIConfigBase(OpenAIHandler):
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -167,6 +188,7 @@ class OpenAIConfigBase(OpenAIHandler):
         async_client: Optional[AsyncOpenAI] = None,
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -183,6 +205,8 @@ class OpenAIConfigBase(OpenAIHandler):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -206,6 +230,7 @@ class OpenAIConfigBase(OpenAIHandler):
                 for HTTP requests. (Optional)
             client (AsyncOpenAI): An existing OpenAI client, optional.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 
 <<<<<<< Updated upstream
@@ -221,6 +246,9 @@ class OpenAIConfigBase(OpenAIHandler):
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+
 >>>>>>> Stashed changes
 =======
 
@@ -258,6 +286,7 @@ class OpenAIConfigBase(OpenAIHandler):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -270,6 +299,8 @@ class OpenAIConfigBase(OpenAIHandler):
 =======
 
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         """
@@ -290,6 +321,7 @@ class OpenAIConfigBase(OpenAIHandler):
         args = {
             "ai_model_id": ai_model_id,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -308,6 +340,8 @@ class OpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -316,6 +350,7 @@ class OpenAIConfigBase(OpenAIHandler):
             "client": async_client,
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -334,12 +369,15 @@ class OpenAIConfigBase(OpenAIHandler):
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             "ai_model_type": ai_model_type,
         }
         if service_id:
             args["service_id"] = service_id
         super().__init__(**args)
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -360,6 +398,8 @@ class OpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -372,6 +412,7 @@ class OpenAIConfigBase(OpenAIHandler):
         """
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -388,6 +429,8 @@ class OpenAIConfigBase(OpenAIHandler):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

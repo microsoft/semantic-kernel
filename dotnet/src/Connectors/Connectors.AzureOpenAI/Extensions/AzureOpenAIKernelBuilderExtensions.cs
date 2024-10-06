@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -19,6 +20,8 @@
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -28,6 +31,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Azure;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -49,6 +53,9 @@ using Azure;
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 // Copyright (c) Microsoft. All rights reserved.
 =======
@@ -59,6 +66,7 @@ using System;
 using System.ClientModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -77,6 +85,9 @@ using System.Net.Http;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -139,6 +150,7 @@ public static class AzureOpenAIKernelBuilderExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 new AzureKeyCredential(apiKey),
 =======
 =======
@@ -152,10 +164,13 @@ public static class AzureOpenAIKernelBuilderExtensions
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 new AzureKeyCredential(apiKey),
 =======
                 new ApiKeyCredential(apiKey),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -173,6 +188,8 @@ public static class AzureOpenAIKernelBuilderExtensions
 =======
                 new ApiKeyCredential(apiKey),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
@@ -374,6 +391,7 @@ public static class AzureOpenAIKernelBuilderExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -403,6 +421,11 @@ public static class AzureOpenAIKernelBuilderExtensions
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -452,6 +475,7 @@ public static class AzureOpenAIKernelBuilderExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -465,9 +489,12 @@ public static class AzureOpenAIKernelBuilderExtensions
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -486,6 +513,8 @@ public static class AzureOpenAIKernelBuilderExtensions
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     #endregion
@@ -682,6 +711,7 @@ public static class AzureOpenAIKernelBuilderExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 new AzureKeyCredential(apiKey),
 =======
 =======
@@ -695,10 +725,13 @@ public static class AzureOpenAIKernelBuilderExtensions
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 new AzureKeyCredential(apiKey),
 =======
                 new ApiKeyCredential(apiKey),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -716,6 +749,8 @@ public static class AzureOpenAIKernelBuilderExtensions
 =======
                 new ApiKeyCredential(apiKey),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
@@ -804,6 +839,7 @@ public static class AzureOpenAIKernelBuilderExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
 =======
 =======
@@ -817,10 +853,13 @@ public static class AzureOpenAIKernelBuilderExtensions
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
 =======
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient) =>
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -838,6 +877,8 @@ public static class AzureOpenAIKernelBuilderExtensions
 =======
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient) =>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient));

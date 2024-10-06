@@ -12,6 +12,7 @@ using System.Reflection;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -41,6 +42,11 @@ using System.Text.Json.Nodes;
 =======
 using System.Text.Json.Nodes;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.Text.Json.Nodes;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using System.Text.Json.Nodes;
@@ -57,6 +63,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.AI;
 =======
 =======
@@ -86,6 +93,11 @@ using Microsoft.SemanticKernel.AI;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+using Microsoft.SemanticKernel.AI;
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 using Microsoft.SemanticKernel.AI;
 =======
@@ -111,6 +123,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -124,9 +137,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class SKFunction : ISKFunction
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -145,6 +161,8 @@ public sealed class SKFunction : ISKFunction
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class SKFunction : ISKFunction
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 {
@@ -168,6 +186,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public CompleteRequestSettings RequestSettings
     {
         get { return this._aiRequestSettings; }
@@ -183,6 +202,8 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public CompleteRequestSettings RequestSettings
     {
         get { return this._aiRequestSettings; }
@@ -191,6 +212,7 @@ public sealed class SKFunction : ISKFunction
     {
         get { return this._aiServiceSettings; }
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -210,6 +232,8 @@ public sealed class SKFunction : ISKFunction
     {
         get { return this._aiServiceSettings; }
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -322,6 +346,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -335,9 +360,12 @@ public sealed class SKFunction : ISKFunction
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
             JsonObject serviceSettings,
             SKContext context)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -356,6 +384,8 @@ public sealed class SKFunction : ISKFunction
             JsonObject serviceSettings,
             SKContext context)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         {
@@ -373,10 +403,14 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
                 context.Variables.Update(completion);
             }
             catch (AIException ex)
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -397,10 +431,13 @@ public sealed class SKFunction : ISKFunction
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 string completion = await client.CompleteAsync(prompt, serviceSettings, context.CancellationToken).ConfigureAwait(false);
                 context.Variables.Update(completion);
             }
             catch (SKException ex)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -419,6 +456,9 @@ public sealed class SKFunction : ISKFunction
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -434,6 +474,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -447,9 +488,12 @@ public sealed class SKFunction : ISKFunction
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
                 logger?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Message);
                 throw;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -468,6 +512,8 @@ public sealed class SKFunction : ISKFunction
                 logger?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Message);
                 throw;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             }
@@ -519,6 +565,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         CompleteRequestSettings? settings = null,
 =======
 =======
@@ -532,10 +579,13 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         CompleteRequestSettings? settings = null,
 =======
         JsonObject? settings = null,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -553,6 +603,8 @@ public sealed class SKFunction : ISKFunction
 =======
         JsonObject? settings = null,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         ILogger? log = null,
@@ -578,6 +630,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -591,6 +644,9 @@ public sealed class SKFunction : ISKFunction
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -622,6 +678,7 @@ public sealed class SKFunction : ISKFunction
             ? await InvokeSemanticAsync(context, textCompletionService, settings).ConfigureAwait(false)
             : await InvokeNativeAsync(context, settings).ConfigureAwait(false);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -639,6 +696,9 @@ public sealed class SKFunction : ISKFunction
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -656,6 +716,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         CompleteRequestSettings? settings = null,
 =======
 =======
@@ -669,10 +730,13 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         CompleteRequestSettings? settings = null,
 =======
         JsonObject? settings = null,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -690,6 +754,8 @@ public sealed class SKFunction : ISKFunction
 =======
         JsonObject? settings = null,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         ILogger? log = null,
@@ -728,6 +794,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -742,6 +809,8 @@ public sealed class SKFunction : ISKFunction
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -753,6 +822,7 @@ public sealed class SKFunction : ISKFunction
         Verify.NotNull(settings);
         this.VerifyIsSemantic();
         this._aiRequestSettings = settings;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -771,6 +841,9 @@ public sealed class SKFunction : ISKFunction
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -799,6 +872,7 @@ public sealed class SKFunction : ISKFunction
         this.VerifyIsSemantic();
         this._aiServiceSettings = settings;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -816,6 +890,9 @@ public sealed class SKFunction : ISKFunction
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -840,6 +917,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -856,6 +934,9 @@ public sealed class SKFunction : ISKFunction
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     /// JSON serialized string representation of the function.
     /// </summary>
     public override string ToString()
@@ -863,6 +944,7 @@ public sealed class SKFunction : ISKFunction
 
     /// <summary>
     /// JSON serialized string representation of the function.
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -881,6 +963,9 @@ public sealed class SKFunction : ISKFunction
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -907,6 +992,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -936,6 +1022,11 @@ public sealed class SKFunction : ISKFunction
 =======
     private JsonObject _aiServiceSettings = new();
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    private JsonObject _aiServiceSettings = new();
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     private JsonObject _aiServiceSettings = new();
@@ -1026,6 +1117,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <exception cref="KernelException"></exception>
 =======
 =======
@@ -1039,10 +1131,13 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// <exception cref="KernelException"></exception>
 =======
     /// <exception cref="SKException"></exception>
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1060,6 +1155,8 @@ public sealed class SKFunction : ISKFunction
 =======
     /// <exception cref="SKException"></exception>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     private void VerifyIsSemantic()
@@ -1077,6 +1174,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1090,9 +1188,12 @@ public sealed class SKFunction : ISKFunction
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         this._logger.LogError("The function is not semantic");
         throw new SKException("Invalid operation, the method requires a semantic function");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1111,6 +1212,8 @@ public sealed class SKFunction : ISKFunction
         this._logger.LogError("The function is not semantic");
         throw new SKException("Invalid operation, the method requires a semantic function");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -1127,6 +1230,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1156,6 +1260,11 @@ public sealed class SKFunction : ISKFunction
 =======
     private async Task<SKContext> InvokeSemanticAsync(SKContext context, JsonObject? settings)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    private async Task<SKContext> InvokeSemanticAsync(SKContext context, JsonObject? settings)
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     private async Task<SKContext> InvokeSemanticAsync(SKContext context, JsonObject? settings)
@@ -1173,6 +1282,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         settings ??= this._aiRequestSettings;
 =======
 =======
@@ -1186,10 +1296,13 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         settings ??= this._aiRequestSettings;
 =======
         settings ??= this._aiServiceSettings;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1207,6 +1320,8 @@ public sealed class SKFunction : ISKFunction
 =======
         settings ??= this._aiServiceSettings;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -1242,6 +1357,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1255,9 +1371,12 @@ public sealed class SKFunction : ISKFunction
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         var callable = (Func<ITextCompletion?, JsonObject?, SKContext, Task<SKContext>>)this._function;
         context.Variables.Update((await callable(this._aiService, settings, context).ConfigureAwait(false)).Variables);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1276,6 +1395,8 @@ public sealed class SKFunction : ISKFunction
         var callable = (Func<ITextCompletion?, JsonObject?, SKContext, Task<SKContext>>)this._function;
         context.Variables.Update((await callable(this._aiService, settings, context).ConfigureAwait(false)).Variables);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         return context;
@@ -1522,6 +1643,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1535,6 +1657,9 @@ public sealed class SKFunction : ISKFunction
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1590,6 +1715,7 @@ public sealed class SKFunction : ISKFunction
             return (parameterFunc, parameterView);
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1607,6 +1733,9 @@ public sealed class SKFunction : ISKFunction
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1692,6 +1821,7 @@ public sealed class SKFunction : ISKFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1705,6 +1835,9 @@ public sealed class SKFunction : ISKFunction
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1727,6 +1860,7 @@ public sealed class SKFunction : ISKFunction
     {
         if (condition)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1744,6 +1878,9 @@ public sealed class SKFunction : ISKFunction
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

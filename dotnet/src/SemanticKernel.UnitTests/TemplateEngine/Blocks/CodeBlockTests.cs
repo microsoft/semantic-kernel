@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,6 +21,8 @@ using System.Collections.Generic;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
@@ -34,6 +37,7 @@ using System.Text.Json.Nodes;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -53,12 +57,15 @@ using System.Text.Json.Nodes;
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TextGeneration;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -83,6 +90,10 @@ using Microsoft.SemanticKernel.TextGeneration;
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -96,6 +107,9 @@ using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -125,6 +139,7 @@ public class CodeBlockTests
         // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(async () => await target.RenderCodeAsync(this._kernel));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -152,6 +167,9 @@ public class CodeBlockTests
 =======
         await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
 >>>>>>> Stashed changes
+=======
+        await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -160,6 +178,7 @@ public class CodeBlockTests
         // Arrange
         static void method() => throw new FormatException("error");
         var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -180,6 +199,10 @@ public class CodeBlockTests
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -195,6 +218,7 @@ public class CodeBlockTests
         this._skills.Setup(x => x.GetFunction("functionName")).Returns(function.Object);
         var target = new CodeBlock("functionName", this._log.Object);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -211,6 +235,8 @@ public class CodeBlockTests
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -222,6 +248,7 @@ public class CodeBlockTests
         // Act & Assert
         await Assert.ThrowsAsync<FormatException>(async () => await target.RenderCodeAsync(this._kernel));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -252,6 +279,10 @@ public class CodeBlockTests
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
 >>>>>>> origin/main
+=======
+        // Act & Assert
+        await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
+>>>>>>> Stashed changes
 =======
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
@@ -393,6 +424,7 @@ public class CodeBlockTests
 
     [Fact]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -410,6 +442,8 @@ public class CodeBlockTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public async Task ItInvokesFunctionCloningAllVariablesAsync()
@@ -462,6 +496,7 @@ public class CodeBlockTests
 
     [Fact]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -478,6 +513,8 @@ public class CodeBlockTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public async Task ItInvokesFunctionWithCustomVariableAsync()
@@ -500,6 +537,7 @@ public class CodeBlockTests
 
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -519,6 +557,10 @@ public class CodeBlockTests
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -538,6 +580,7 @@ public class CodeBlockTests
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -554,6 +597,8 @@ public class CodeBlockTests
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -586,6 +631,7 @@ public class CodeBlockTests
 
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -605,6 +651,10 @@ public class CodeBlockTests
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -624,6 +674,7 @@ public class CodeBlockTests
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -640,6 +691,8 @@ public class CodeBlockTests
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -709,6 +762,7 @@ public class CodeBlockTests
             canary = p1;
         }, "f")]);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -728,6 +782,10 @@ public class CodeBlockTests
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -763,6 +821,7 @@ public class CodeBlockTests
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -779,6 +838,8 @@ public class CodeBlockTests
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -830,6 +891,7 @@ public class CodeBlockTests
         // Assert
         Assert.Equal(2, arguments.Count);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -837,6 +899,8 @@ public class CodeBlockTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1044,6 +1108,9 @@ public class CodeBlockTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1096,7 +1163,10 @@ public class CodeBlockTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1129,6 +1199,9 @@ public class CodeBlockTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1195,6 +1268,7 @@ public class CodeBlockTests
         await codeBlock.RenderCodeAsync(kernel);
     }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
     }
@@ -1305,6 +1379,8 @@ public class CodeBlockTests
     }
 
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     [Fact]
@@ -1408,6 +1484,7 @@ public class CodeBlockTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1430,6 +1507,8 @@ public class CodeBlockTests
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

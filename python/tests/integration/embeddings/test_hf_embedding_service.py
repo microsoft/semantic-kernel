@@ -14,6 +14,7 @@ async def test_hf_embeddings_with_memories():
     model_id = "sentence-transformers/all-MiniLM-L6-v2"
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,8 @@ async def test_hf_embeddings_with_memories():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -40,6 +43,7 @@ async def test_hf_embeddings_with_memories():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -52,6 +56,8 @@ async def test_hf_embeddings_with_memories():
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     embedding_gen = sk_hf.HuggingFaceTextEmbedding(
@@ -73,6 +79,7 @@ async def test_hf_embeddings_with_memories():
         external_source_name="external source",
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -90,6 +97,8 @@ async def test_hf_embeddings_with_memories():
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -107,11 +116,14 @@ async def test_hf_embeddings_with_memories():
     await memory.save_information("test", id="info4", text="Dolphins are mammals.")
     await memory.save_information("test", id="info5", text="Flies are insects.")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -131,8 +143,11 @@ async def test_hf_embeddings_with_memories():
     await memory.save_information("test", id="info4", text="Dolphins are mammals.")
     await memory.save_information("test", id="info5", text="Flies are insects.")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 

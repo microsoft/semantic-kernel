@@ -10,6 +10,7 @@ using Azure.AI.OpenAI.Chat;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel;
 =======
 =======
@@ -29,10 +30,15 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel;
 =======
 >>>>>>> Stashed changes
+=======
+using Microsoft.SemanticKernel;
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.SemanticKernel;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -51,6 +57,9 @@ using Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -88,6 +97,7 @@ public class OpenAIPromptExecutionSettingsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -117,6 +127,11 @@ public class OpenAIPromptExecutionSettingsTests
 =======
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -135,6 +150,7 @@ public class OpenAIPromptExecutionSettingsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -164,6 +180,11 @@ public class OpenAIPromptExecutionSettingsTests
 =======
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -185,6 +206,7 @@ public class OpenAIPromptExecutionSettingsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -214,6 +236,11 @@ public class OpenAIPromptExecutionSettingsTests
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -242,6 +269,7 @@ public class OpenAIPromptExecutionSettingsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -255,9 +283,12 @@ public class OpenAIPromptExecutionSettingsTests
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -276,6 +307,8 @@ public class OpenAIPromptExecutionSettingsTests
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)

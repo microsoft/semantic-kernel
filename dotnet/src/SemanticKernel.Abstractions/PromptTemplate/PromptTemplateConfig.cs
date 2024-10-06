@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -14,6 +15,8 @@ using System.Text.Json.Serialization;
 <<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Text;
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -34,6 +37,7 @@ using System.Text.Json.Serialization.Metadata;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -46,6 +50,8 @@ using System.Text.Json.Serialization.Metadata;
 =======
 using System.Text.Json.Serialization.Metadata;
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -77,6 +83,7 @@ public sealed class PromptTemplateConfig
     private Dictionary<string, PromptExecutionSettings>? _executionSettings;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,6 +110,9 @@ public sealed class PromptTemplateConfig
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
     /// </summary>
@@ -111,7 +121,10 @@ public sealed class PromptTemplateConfig
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <summary>
@@ -181,6 +194,7 @@ public sealed class PromptTemplateConfig
     /// Gets or sets the function name to use by default when creating prompt functions using this configuration.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class using the specified prompt template string.
@@ -225,6 +239,8 @@ public sealed class PromptTemplateConfig
     /// Gets or sets the function name to use by default when creating prompt functions using this configuration.
     /// </summary>
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <remarks>
@@ -324,7 +340,10 @@ public sealed class PromptTemplateConfig
         }
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -369,8 +388,11 @@ public sealed class PromptTemplateConfig
 
         var key = serviceId ?? settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -412,6 +434,7 @@ public sealed class PromptTemplateConfig
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -438,6 +461,8 @@ public sealed class PromptTemplateConfig
     /// <summary>
 <<<<<<< head
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
@@ -447,12 +472,16 @@ public sealed class PromptTemplateConfig
     }
 
     /// <summary>
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class using the specified prompt template string.
     /// </summary>
     /// <param name="template">The prompt template string that defines the prompt.</param>
     /// <exception cref="ArgumentNullException"><paramref name="template"/> is null.</exception>
     public PromptTemplateConfig(string template)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
     /// Gets the default execution settings from <see cref="ExecutionSettings"/>.
@@ -494,11 +523,16 @@ public sealed class PromptTemplateConfig
     /// <summary>
 <<<<<<< head
 =======
+=======
+>>>>>>> Stashed changes
     {
         this.Template = template;
     }
 
     /// <summary>
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
     /// </summary>
@@ -736,6 +770,7 @@ public sealed class PromptTemplateConfig
     /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
     /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
     /// </summary>
@@ -795,6 +830,8 @@ public sealed class PromptTemplateConfig
     /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
     /// </summary>
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
@@ -885,6 +922,7 @@ public sealed class PromptTemplateConfig
             config ??
             throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json), innerException);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -901,6 +939,8 @@ public sealed class PromptTemplateConfig
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

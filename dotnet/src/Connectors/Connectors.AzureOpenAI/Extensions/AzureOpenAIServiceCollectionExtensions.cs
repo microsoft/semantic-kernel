@@ -8,6 +8,7 @@ using System;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Azure;
@@ -23,6 +24,8 @@ using Azure;
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Azure;
@@ -31,6 +34,7 @@ using System.ClientModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -50,6 +54,8 @@ using System.ClientModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Azure.AI.OpenAI;
@@ -109,6 +115,7 @@ public static class AzureOpenAIServiceCollectionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 new AzureKeyCredential(apiKey),
 =======
 =======
@@ -122,10 +129,13 @@ public static class AzureOpenAIServiceCollectionExtensions
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 new AzureKeyCredential(apiKey),
 =======
                 new ApiKeyCredential(apiKey),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -143,6 +153,8 @@ public static class AzureOpenAIServiceCollectionExtensions
 =======
                 new ApiKeyCredential(apiKey),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 HttpClientProvider.GetHttpClient(serviceProvider));
@@ -507,6 +519,7 @@ public static class AzureOpenAIServiceCollectionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 new AzureKeyCredential(apiKey),
 =======
 =======
@@ -520,10 +533,13 @@ public static class AzureOpenAIServiceCollectionExtensions
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 new AzureKeyCredential(apiKey),
 =======
                 new ApiKeyCredential(apiKey),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -541,6 +557,8 @@ public static class AzureOpenAIServiceCollectionExtensions
 =======
                 new ApiKeyCredential(apiKey),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 HttpClientProvider.GetHttpClient(serviceProvider));
@@ -627,6 +645,7 @@ public static class AzureOpenAIServiceCollectionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
 =======
 =======
@@ -640,10 +659,13 @@ public static class AzureOpenAIServiceCollectionExtensions
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
 =======
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient) =>
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -661,6 +683,8 @@ public static class AzureOpenAIServiceCollectionExtensions
 =======
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient) =>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient));

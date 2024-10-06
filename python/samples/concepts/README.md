@@ -29,6 +29,7 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -58,6 +59,11 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 =======
 | Structured Output | How to leverage OpenAI's json_schema structured output functionality. |
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+| Structured Output | How to leverage OpenAI's json_schema structured output functionality. |
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 | Structured Output | How to leverage OpenAI's json_schema structured output functionality. |
@@ -88,6 +94,7 @@ In Semantic Kernel for Python, we leverage Pydantic Settings to manage configura
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -104,12 +111,16 @@ In Semantic Kernel for Python, we leverage Pydantic Settings to manage configura
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 ## Microsoft Entra Token Authentication
 
 To authenticate to your Azure resources using a Microsoft Entra Authentication Token, the `AzureChatCompletion` AI Service connector now supports this as a built-in feature. If you do not provide an API key -- either through an environment variable, a `.env` file, or the constructor -- and you also do not provide a custom `AsyncAzureOpenAI` client, an `ad_token`, or an `ad_token_provider`, the `AzureChatCompletion` connector will attempt to retrieve a token using the [`DefaultAzureCredential`](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python).
 
 To successfully retrieve and use the Entra Auth Token, you need the `Cognitive Services OpenAI Contributor` role assigned to your Azure OpenAI resource. By default, the `https://cognitiveservices.azure.com` token endpoint is used. You can override this endpoint by setting an environment variable `.env` variable as `AZURE_OPENAI_TOKEN_ENDPOINT` or by passing a new value to the `AzureChatCompletion` constructor as part of the `AzureOpenAISettings`.
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -128,6 +139,9 @@ To successfully retrieve and use the Entra Auth Token, you need the `Cognitive S
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

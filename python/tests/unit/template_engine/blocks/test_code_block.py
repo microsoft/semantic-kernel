@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -30,6 +31,9 @@
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -58,6 +62,7 @@ from semantic_kernel.functions.kernel_function_from_method import (
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -78,6 +83,11 @@ from semantic_kernel.kernel import Kernel
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -104,6 +114,7 @@ from semantic_kernel.template_engine.blocks.block_errors import (
 )
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -120,6 +131,8 @@ from semantic_kernel.template_engine.blocks.block_errors import (
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -141,6 +154,7 @@ def test_init():
     assert target.tokens[2] == NamedArgBlock(content="arg1=$arg1")
     assert target.type == BlockTypes.CODE
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -166,6 +180,11 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 
@@ -184,6 +203,7 @@ class TestCodeBlockRendering:
     def setup_method(self):
         self.kernel = Kernel()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 =======
 
@@ -196,6 +216,8 @@ class TestCodeBlockRendering:
         with raises(CodeBlockRenderError, match="Plugin collection not set in kernel"):
             await target.render_code(self.kernel, KernelArguments())
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -217,6 +239,7 @@ class TestCodeBlockRendering:
     async def test_it_throws_if_a_function_doesnt_exist(self):
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -233,6 +256,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -241,6 +266,7 @@ class TestCodeBlockRendering:
         )
         assert target.tokens[0].type == BlockTypes.FUNCTION_ID
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -280,18 +306,28 @@ class TestCodeBlockRendering:
 <<<<<<< main
 >>>>>>> origin/main
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
 >>>>>>> Stashed changes
         with raises(
             CodeBlockRenderException, match="Function `functionName` not found"
         ):
             await target.render_code(kernel, KernelArguments())
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -357,6 +393,7 @@ class TestCodeBlockRendering:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -402,6 +439,8 @@ class TestCodeBlockRendering:
 
 <<<<<<< Updated upstream
 =======
+>>>>>>> Stashed changes
+=======
 
     @mark.asyncio
     async def test_it_throws_if_a_function_doesnt_exist(self, kernel: Kernel):
@@ -433,7 +472,10 @@ class TestCodeBlockRendering:
         kernel = Kernel()
         kernel.plugins = plugins
 
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> ms/small_fixes
@@ -488,6 +530,7 @@ class TestCodeBlockRendering:
         result = await code_block.render_code(self.kernel, KernelArguments(var="foo"))
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -504,6 +547,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -512,6 +557,7 @@ class TestCodeBlockRendering:
 
     @mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -551,6 +597,12 @@ class TestCodeBlockRendering:
 <<<<<<< main
 >>>>>>> origin/main
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
 >>>>>>> Stashed changes
     async def test_it_renders_code_block_consisting_of_just_a_val_block1(
         self, kernel: Kernel
@@ -560,6 +612,7 @@ class TestCodeBlockRendering:
         )
         result = await code_block.render_code(kernel, KernelArguments())
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -580,6 +633,11 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -592,6 +650,7 @@ class TestCodeBlockRendering:
         result = await code_block.render_code(self.kernel, KernelArguments())
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -610,11 +669,14 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
         assert result == "ciao"
 
     @mark.asyncio
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -637,6 +699,11 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    async def test_it_invokes_function_cloning_all_variables(self, kernel: Kernel):
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
     async def test_it_invokes_function_cloning_all_variables(self, kernel: Kernel):
@@ -648,6 +715,7 @@ class TestCodeBlockRendering:
     async def test_it_invokes_function_cloning_all_variables(self):
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -664,6 +732,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -679,6 +749,7 @@ class TestCodeBlockRendering:
         # Define the function to be invoked, which modifies the canary
         # and context variables
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -700,6 +771,11 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         @kernel_function(name="funcName")
@@ -710,6 +786,7 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -726,6 +803,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -741,6 +820,7 @@ class TestCodeBlockRendering:
 
         # Create an KernelFunction with the invoke function as its delegate
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -748,6 +828,8 @@ class TestCodeBlockRendering:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -772,6 +854,7 @@ class TestCodeBlockRendering:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -786,12 +869,15 @@ class TestCodeBlockRendering:
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         function = KernelFunctionFromMethod(
             method=invoke,
             plugin_name="pluginName",
         )
 
         kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -810,6 +896,8 @@ class TestCodeBlockRendering:
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -828,6 +916,7 @@ class TestCodeBlockRendering:
         kernel.plugins.add(dkp)
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -844,6 +933,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -885,6 +976,7 @@ class TestCodeBlockRendering:
 
         # Define the function to be invoked, which modifies the canary variable
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -904,13 +996,18 @@ class TestCodeBlockRendering:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         @kernel_function(name="funcName")
         def invoke(arguments: "KernelArguments"):
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -920,6 +1017,7 @@ class TestCodeBlockRendering:
         def invoke(arguments):
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -936,6 +1034,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -945,12 +1045,16 @@ class TestCodeBlockRendering:
 
         # Create an KernelFunction with the invoke function as its delegate
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -981,6 +1085,7 @@ class TestCodeBlockRendering:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -993,6 +1098,9 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1019,6 +1127,7 @@ class TestCodeBlockRendering:
         kernel.plugins.add(dkp)
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1035,6 +1144,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1066,6 +1177,7 @@ class TestCodeBlockRendering:
 
         # Define the function to be invoked, which modifies the canary variable
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1087,6 +1199,11 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         @kernel_function(name="funcName")
@@ -1097,6 +1214,7 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1113,6 +1231,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1123,12 +1243,16 @@ class TestCodeBlockRendering:
 
         # Create an KernelFunction with the invoke function as its delegate
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -1159,6 +1283,7 @@ class TestCodeBlockRendering:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1171,6 +1296,9 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1197,6 +1325,7 @@ class TestCodeBlockRendering:
         kernel.plugins.add(dkp)
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1213,6 +1342,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1232,6 +1363,7 @@ class TestCodeBlockRendering:
 
     @mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1253,6 +1385,11 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    async def test_it_invokes_function_with_multiple_arguments(self, kernel: Kernel):
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
     async def test_it_invokes_function_with_multiple_arguments(self, kernel: Kernel):
@@ -1264,6 +1401,7 @@ class TestCodeBlockRendering:
     async def test_it_invokes_function_with_multiple_arguments(self):
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1280,6 +1418,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1290,6 +1430,7 @@ class TestCodeBlockRendering:
             content=" ",
             tokens=[
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1321,6 +1462,9 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -1335,6 +1479,7 @@ class TestCodeBlockRendering:
                     validated=True,
                 ),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1342,6 +1487,8 @@ class TestCodeBlockRendering:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1363,6 +1510,7 @@ class TestCodeBlockRendering:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1377,6 +1525,8 @@ class TestCodeBlockRendering:
                 FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName", validated=True),
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 ValBlock(content=f'"{VALUE}"'),
@@ -1389,6 +1539,7 @@ class TestCodeBlockRendering:
 
         # Define the function to be invoked, which modifies the canary variable
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1410,6 +1561,11 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         @kernel_function(name="funcName")
@@ -1420,6 +1576,7 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1436,6 +1593,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1446,6 +1605,7 @@ class TestCodeBlockRendering:
 
         # Create an KernelFunction with the invoke function as its delegate
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1477,6 +1637,9 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -1491,6 +1654,7 @@ class TestCodeBlockRendering:
 
         kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1511,6 +1675,11 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1535,6 +1704,7 @@ class TestCodeBlockRendering:
         kernel.plugins.add(dkp)
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1551,6 +1721,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1566,6 +1738,7 @@ class TestCodeBlockRendering:
 
     @mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1583,6 +1756,8 @@ class TestCodeBlockRendering:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -1592,6 +1767,7 @@ class TestCodeBlockRendering:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1604,6 +1780,8 @@ class TestCodeBlockRendering:
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     async def test_it_invokes_function_with_only_named_arguments(self, kernel: Kernel):
@@ -1616,6 +1794,7 @@ class TestCodeBlockRendering:
                     function_name="funcName",
                 ),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1636,6 +1815,11 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1648,6 +1832,7 @@ class TestCodeBlockRendering:
                 FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName"),
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1664,6 +1849,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1676,6 +1863,7 @@ class TestCodeBlockRendering:
 
         # Define the function to be invoked, which modifies the canary variable
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1697,6 +1885,11 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         @kernel_function(name="funcName")
@@ -1707,6 +1900,7 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1723,6 +1917,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1733,6 +1929,7 @@ class TestCodeBlockRendering:
 
         # Create an KernelFunction with the invoke function as its delegate
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1750,6 +1947,8 @@ class TestCodeBlockRendering:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -1759,6 +1958,7 @@ class TestCodeBlockRendering:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1771,6 +1971,8 @@ class TestCodeBlockRendering:
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         function = KernelFunctionFromMethod(
@@ -1780,6 +1982,7 @@ class TestCodeBlockRendering:
 
         kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1800,6 +2003,11 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1823,6 +2031,7 @@ class TestCodeBlockRendering:
         kernel.plugins.add(dkp)
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1839,6 +2048,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1854,6 +2065,7 @@ class TestCodeBlockRendering:
 
     @mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1885,6 +2097,9 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -1902,6 +2117,7 @@ class TestCodeBlockRendering:
                     function_name="funcName",
                 ),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1922,6 +2138,11 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1934,6 +2155,7 @@ class TestCodeBlockRendering:
                 FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName"),
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1952,12 +2174,15 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
                 NamedArgBlock(content="arg1=$arg1"),
                 NamedArgBlock(content='arg2="arg2"'),
             ],
         )
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -1980,6 +2205,11 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         @kernel_function(name="funcName")
@@ -1990,6 +2220,7 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -2006,6 +2237,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -2014,6 +2247,7 @@ class TestCodeBlockRendering:
 
         # Create an KernelFunction with the invoke function as its delegate
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2029,6 +2263,8 @@ class TestCodeBlockRendering:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -2037,6 +2273,7 @@ class TestCodeBlockRendering:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2052,6 +2289,8 @@ class TestCodeBlockRendering:
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         function = KernelFunctionFromMethod(
             method=invoke,
             plugin_name="test",
@@ -2059,6 +2298,7 @@ class TestCodeBlockRendering:
 
         kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2079,6 +2319,11 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -2099,6 +2344,7 @@ class TestCodeBlockRendering:
         kernel.plugins.add(dkp)
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -2117,11 +2363,14 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
         # Create a CodeBlock with the FunctionIdBlock and ValBlock,
         # and render it with the context
         with raises(
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -2144,6 +2393,11 @@ class TestCodeBlockRendering:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+            CodeBlockRenderException,
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
             CodeBlockRenderException,
@@ -2155,6 +2409,7 @@ class TestCodeBlockRendering:
             CodeBlockRenderError,
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -2171,6 +2426,8 @@ class TestCodeBlockRendering:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -2296,6 +2553,7 @@ def test_block_validation(token0, token1, token2):
     ],
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2316,14 +2574,19 @@ def test_positional_validation(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 def test_positional_validation(
     token0, token0valid, token1, token1valid, token2, token2valid
 ):
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -2334,6 +2597,7 @@ def test_positional_validation(
 def test_positional_validation(token0, token0valid, token1, token1valid, token2, token2valid):
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -2350,6 +2614,8 @@ def test_positional_validation(token0, token0valid, token1, token1valid, token2,
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

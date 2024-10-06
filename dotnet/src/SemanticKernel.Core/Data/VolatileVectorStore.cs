@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -23,10 +24,14 @@
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System;
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -45,6 +50,9 @@ using System;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -72,6 +80,7 @@ public sealed class VolatileVectorStore : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -88,12 +97,16 @@ public sealed class VolatileVectorStore : IVectorStore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <summary>The data type of each collection, to enforce a single type per collection.</summary>
     private readonly ConcurrentDictionary<string, Type> _internalCollectionTypes = new();
 
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -112,6 +125,9 @@ public sealed class VolatileVectorStore : IVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -144,6 +160,7 @@ public sealed class VolatileVectorStore : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var collection = new VolatileVectorStoreRecordCollection<TKey, TRecord>(this._internalCollection, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
 =======
 =======
@@ -159,6 +176,10 @@ public sealed class VolatileVectorStore : IVectorStore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        var collection = new VolatileVectorStoreRecordCollection<TKey, TRecord>(this._internalCollection, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+=======
+>>>>>>> Stashed changes
 =======
         var collection = new VolatileVectorStoreRecordCollection<TKey, TRecord>(this._internalCollection, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
 =======
@@ -178,6 +199,7 @@ public sealed class VolatileVectorStore : IVectorStore
         var collection = new VolatileVectorStoreRecordCollection<TKey, TRecord>(this._internalCollection, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -195,6 +217,9 @@ public sealed class VolatileVectorStore : IVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

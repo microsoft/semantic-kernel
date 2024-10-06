@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Reflection;
 =======
 =======
@@ -26,10 +27,15 @@ using System.Reflection;
 using System.Reflection;
 =======
 >>>>>>> Stashed changes
+=======
+using System.Reflection;
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System.Reflection;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -48,6 +54,9 @@ using System.Reflection;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -63,6 +72,7 @@ using Microsoft.SemanticKernel.Data;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Http;
 =======
 =======
@@ -82,10 +92,15 @@ using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Http;
 =======
 >>>>>>> Stashed changes
+=======
+using Microsoft.SemanticKernel.Http;
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Http;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -104,6 +119,9 @@ using Microsoft.SemanticKernel.Http;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -142,6 +160,7 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -171,6 +190,11 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -199,6 +223,7 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -212,6 +237,9 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -265,6 +293,7 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
     }
 >>>>>>> upstream/feature-vector-search
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -282,6 +311,9 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -27,6 +28,9 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -38,6 +42,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Chroma;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -57,6 +62,10 @@ using Microsoft.SemanticKernel.Connectors.Chroma;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -66,6 +75,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 using Microsoft.SemanticKernel.Diagnostics;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -82,6 +92,8 @@ using Microsoft.SemanticKernel.Diagnostics;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -184,6 +196,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             .Setup(client => client.DeleteCollectionAsync(CollectionName, CancellationToken.None))
             .Throws(new HttpOperationException { ResponseContent = CollectionDoesNotExistErrorMessage });
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -201,6 +214,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         const string collectionName = "non-existent-collection";
@@ -210,6 +225,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             .Setup(client => client.DeleteCollectionAsync(collectionName, CancellationToken.None))
             .Throws(new SKException(collectionDoesNotExistErrorMessage));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -226,6 +242,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -238,6 +256,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.IsType<KernelException>(exception);
         Assert.Equal(ExpectedExceptionMessage, exception.Message);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -255,6 +274,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         Assert.IsType<SKException>(exception);
@@ -262,6 +283,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.IsType<SKException>(exception);
         Assert.Equal(expectedExceptionMessage, exception.Message);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -278,6 +300,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -306,6 +330,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             .Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None))
             .Throws(new HttpOperationException { ResponseContent = CollectionDoesNotExistErrorMessage });
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -342,6 +367,11 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             .Throws(new HttpOperationException() { ResponseContent = collectionDoesNotExistErrorMessage });
             .Throws(new SKException(collectionDoesNotExistErrorMessage));
 >>>>>>> origin/main
+=======
+            .Setup(client => client.GetCollectionAsync(collectionName, CancellationToken.None))
+            .Throws(new HttpOperationException() { ResponseContent = collectionDoesNotExistErrorMessage });
+            .Throws(new SKException(collectionDoesNotExistErrorMessage));
+>>>>>>> Stashed changes
 =======
             .Setup(client => client.GetCollectionAsync(collectionName, CancellationToken.None))
             .Throws(new HttpOperationException() { ResponseContent = collectionDoesNotExistErrorMessage });
@@ -409,6 +439,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             .Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None))
             .Throws(new KernelException(CollectionDoesNotExistErrorMessage));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -439,6 +470,10 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             .Setup(client => client.GetCollectionAsync(collectionName, CancellationToken.None))
             .Throws(new SKException(collectionDoesNotExistErrorMessage));
 >>>>>>> origin/main
+=======
+            .Setup(client => client.GetCollectionAsync(collectionName, CancellationToken.None))
+            .Throws(new SKException(collectionDoesNotExistErrorMessage));
+>>>>>>> Stashed changes
 =======
             .Setup(client => client.GetCollectionAsync(collectionName, CancellationToken.None))
             .Throws(new SKException(collectionDoesNotExistErrorMessage));
@@ -453,6 +488,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.IsType<KernelException>(exception);
         Assert.Equal(CollectionDoesNotExistErrorMessage, exception.Message);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -483,6 +519,10 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.IsType<SKException>(exception);
         Assert.Equal(collectionDoesNotExistErrorMessage, exception.Message);
 >>>>>>> origin/main
+=======
+        Assert.IsType<SKException>(exception);
+        Assert.Equal(collectionDoesNotExistErrorMessage, exception.Message);
+>>>>>>> Stashed changes
 =======
         Assert.IsType<SKException>(exception);
         Assert.Equal(collectionDoesNotExistErrorMessage, exception.Message);

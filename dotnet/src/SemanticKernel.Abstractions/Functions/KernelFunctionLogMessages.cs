@@ -10,6 +10,7 @@ using System;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Text.Json;
 =======
 =======
@@ -23,12 +24,15 @@ using System.Text.Json;
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 using System.Text.Json;
 =======
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -48,6 +52,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.Extensions.Logging;
@@ -80,6 +86,7 @@ internal static partial class KernelFunctionLogMessages
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// Logs arguments to a <see cref="KernelFunction"/>.
 =======
 =======
@@ -93,10 +100,13 @@ internal static partial class KernelFunctionLogMessages
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// Logs arguments to a <see cref="KernelFunction"/>.
 =======
     /// Logs arguments of a <see cref="KernelFunction"/>.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -114,6 +124,8 @@ internal static partial class KernelFunctionLogMessages
 =======
     /// Logs arguments of a <see cref="KernelFunction"/>.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// The action provides the benefit of caching the template parsing result for better performance.
@@ -131,6 +143,7 @@ internal static partial class KernelFunctionLogMessages
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public static void LogFunctionArguments(this ILogger logger, KernelArguments arguments)
     {
 =======
@@ -148,6 +161,11 @@ internal static partial class KernelFunctionLogMessages
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    public static void LogFunctionArguments(this ILogger logger, KernelArguments arguments)
+    {
+=======
+>>>>>>> Stashed changes
 =======
     public static void LogFunctionArguments(this ILogger logger, KernelArguments arguments)
     {
@@ -179,6 +197,7 @@ internal static partial class KernelFunctionLogMessages
     private static void LogFunctionArgumentsInternal(this ILogger logger, KernelArguments arguments, JsonSerializerOptions? jsonSerializerOptions = null)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -196,6 +215,9 @@ internal static partial class KernelFunctionLogMessages
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -210,6 +232,7 @@ internal static partial class KernelFunctionLogMessages
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 var jsonString = JsonSerializer.Serialize(arguments);
 =======
 =======
@@ -225,6 +248,10 @@ internal static partial class KernelFunctionLogMessages
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+                var jsonString = JsonSerializer.Serialize(arguments);
+=======
+>>>>>>> Stashed changes
 =======
                 var jsonString = JsonSerializer.Serialize(arguments);
 =======
@@ -242,6 +269,7 @@ internal static partial class KernelFunctionLogMessages
                 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -259,6 +287,9 @@ internal static partial class KernelFunctionLogMessages
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -297,6 +328,7 @@ internal static partial class KernelFunctionLogMessages
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
     public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue)
     {
@@ -312,13 +344,18 @@ internal static partial class KernelFunctionLogMessages
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
     public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue)
     {
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     [RequiresUnreferencedCode("Uses reflection to serialize function result, making it incompatible with AOT scenarios.")]
@@ -346,6 +383,7 @@ internal static partial class KernelFunctionLogMessages
     private static void LogFunctionResultValueInternal(this ILogger logger, FunctionResult? resultValue, JsonSerializerOptions? jsonSerializerOptions = null)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -363,6 +401,9 @@ internal static partial class KernelFunctionLogMessages
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -386,6 +427,7 @@ internal static partial class KernelFunctionLogMessages
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 s_logFunctionResultValue(logger, JsonSerializer.Serialize(resultValue?.Value), null);
 =======
 =======
@@ -401,6 +443,10 @@ internal static partial class KernelFunctionLogMessages
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+                s_logFunctionResultValue(logger, JsonSerializer.Serialize(resultValue?.Value), null);
+=======
+>>>>>>> Stashed changes
 =======
                 s_logFunctionResultValue(logger, JsonSerializer.Serialize(resultValue?.Value), null);
 =======
@@ -419,6 +465,7 @@ internal static partial class KernelFunctionLogMessages
 
                 s_logFunctionResultValue(logger, jsonString, null);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -436,6 +483,9 @@ internal static partial class KernelFunctionLogMessages
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

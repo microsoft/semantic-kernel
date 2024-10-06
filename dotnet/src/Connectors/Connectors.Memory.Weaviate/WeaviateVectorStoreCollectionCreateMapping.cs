@@ -33,6 +33,7 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Dictionary<string, string> storagePropertyNames)
 =======
 =======
@@ -46,10 +47,13 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         Dictionary<string, string> storagePropertyNames)
 =======
         IReadOnlyDictionary<string, string> storagePropertyNames)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -67,6 +71,8 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
 =======
         IReadOnlyDictionary<string, string> storagePropertyNames)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     {

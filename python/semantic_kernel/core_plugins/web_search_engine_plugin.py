@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -34,6 +35,11 @@
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -52,6 +58,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -69,6 +76,9 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
 import sys
 from typing import TYPE_CHECKING, Optional
 
@@ -79,6 +89,7 @@ else:
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -97,6 +108,9 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -130,6 +144,7 @@ class WebSearchEnginePlugin:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -159,6 +174,11 @@ class WebSearchEnginePlugin:
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -182,6 +202,7 @@ class WebSearchEnginePlugin:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -195,6 +216,9 @@ class WebSearchEnginePlugin:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -219,6 +243,7 @@ class WebSearchEnginePlugin:
         return str(result)
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -236,6 +261,9 @@ class WebSearchEnginePlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

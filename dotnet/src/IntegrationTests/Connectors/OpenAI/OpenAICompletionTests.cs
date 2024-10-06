@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -27,6 +28,9 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -45,6 +49,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -64,6 +69,10 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -73,6 +82,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -89,6 +99,8 @@ using Microsoft.SemanticKernel.SkillDefinition;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -383,6 +395,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -400,6 +413,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         // Assert
@@ -407,6 +422,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         Assert.IsType<HttpOperationException>(context.LastException);
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -423,6 +439,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -451,6 +469,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -468,6 +487,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         // Assert
@@ -475,6 +496,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         Assert.IsType<HttpOperationException>(context.LastException);
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -491,6 +513,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -518,6 +542,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         // Assert
         await Assert.ThrowsAsync<HttpOperationException>(() => plugins["SummarizePlugin"]["Summarize"].InvokeAsync(target, new() { [InputParameterName] = string.Join('.', Enumerable.Range(1, 40000)) }));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -525,6 +550,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -544,6 +571,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -556,6 +584,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 =======
         await Assert.ThrowsAsync<HttpOperationException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000))));
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -768,6 +798,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         // Assert
         if (logprobs is true)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -775,6 +806,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -798,6 +831,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -834,6 +868,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         {

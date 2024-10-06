@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -36,6 +37,11 @@ using System;
 =======
 using System;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using System;
@@ -90,6 +96,7 @@ public static class WeaviateServiceCollectionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -103,6 +110,9 @@ public static class WeaviateServiceCollectionExtensions
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -161,6 +171,7 @@ public static class WeaviateServiceCollectionExtensions
             });
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -178,6 +189,9 @@ public static class WeaviateServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

@@ -20,6 +20,7 @@ from openai.types.beta.threads.text_content_block import TextContentBlock
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 =======
@@ -42,10 +43,16 @@ from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistan
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 =======
 >>>>>>> Stashed changes
+=======
+from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -64,6 +71,9 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -197,6 +207,7 @@ async def test_invoke_agent():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -210,6 +221,9 @@ async def test_invoke_agent():
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -272,6 +286,7 @@ async def test_invoke_streaming_agent_invalid_instance_throws():
 
 @pytest.mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -289,6 +304,9 @@ async def test_invoke_streaming_agent_invalid_instance_throws():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -314,6 +332,7 @@ async def test_invoke_agent_deleted():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -327,6 +346,9 @@ async def test_invoke_agent_deleted():
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -346,6 +368,7 @@ async def test_invoke_streaming_agent_deleted():
 
 @pytest.mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -363,6 +386,9 @@ async def test_invoke_streaming_agent_deleted():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -480,6 +506,7 @@ async def test_reset_channel_error_throws_exception(mock_thread_messages, mock_a
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -496,6 +523,9 @@ async def test_reset_channel_error_throws_exception(mock_thread_messages, mock_a
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio
@@ -509,6 +539,7 @@ async def test_channel_receive_fcc_skipped(openai_unit_test_env):
     channel = OpenAIAssistantChannel(client=client, thread_id="test_thread")
 
     await channel.receive([message])
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -527,6 +558,9 @@ async def test_channel_receive_fcc_skipped(openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -57,6 +63,7 @@ using Microsoft.SemanticKernel.Data;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -86,6 +93,11 @@ using Microsoft.SemanticKernel.Embeddings;
 =======
 using Microsoft.SemanticKernel.Embeddings;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using Microsoft.SemanticKernel.Embeddings;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using Microsoft.SemanticKernel.Embeddings;
@@ -133,6 +145,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -147,6 +160,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -154,6 +169,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     {
         // Arrange
         var hotel = CreateTestHotel("Upsert-1");
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,11 +191,15 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     public async Task ItCanCreateACollectionUpsertGetAndSearchAsync(bool useRecordDefinition)
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool useRecordDefinition)
     {
         // Arrange
         var hotel = await CreateTestHotelAsync("Upsert-1");
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -198,6 +218,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -221,6 +244,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -237,6 +261,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         var embedding = new ReadOnlyMemory<float>(AzureAISearchVectorStoreFixture.CreateTestEmbedding());
         var embedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var searchResult = await sut.VectorizedSearchAsync(
@@ -246,6 +273,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
                 IncludeVectors = true,
                 Filter = new VectorSearchFilter().EqualTo("HotelName", "MyHotel Upsert-1")
             }).ToListAsync();
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -264,6 +292,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -293,6 +324,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -309,6 +341,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         Assert.Single(searchResult);
         var searchResultRecord = searchResult.First().Record;
         Assert.Equal(hotel.HotelName, searchResultRecord.HotelName);
@@ -320,6 +355,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Equal(hotel.LastRenovationDate, searchResultRecord.LastRenovationDate);
         Assert.Equal(hotel.Rating, searchResultRecord.Rating);
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -338,6 +374,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -382,6 +421,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var hotel = CreateTestHotel("Upsert-1");
 =======
 =======
@@ -395,10 +435,13 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var hotel = CreateTestHotel("Upsert-1");
 =======
         var hotel = await CreateTestHotelAsync("Upsert-1");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -416,6 +459,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 =======
         var hotel = await CreateTestHotelAsync("Upsert-1");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var upsertResult = await sut.UpsertAsync(hotel);
@@ -456,6 +501,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 CreateTestHotel("UpsertMany-1"),
                 CreateTestHotel("UpsertMany-2"),
                 CreateTestHotel("UpsertMany-3"),
@@ -471,6 +517,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 CreateTestHotel("UpsertMany-1"),
                 CreateTestHotel("UpsertMany-2"),
                 CreateTestHotel("UpsertMany-3"),
@@ -479,6 +527,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
                 await CreateTestHotelAsync("UpsertMany-2"),
                 await CreateTestHotelAsync("UpsertMany-3"),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -498,6 +547,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
                 await CreateTestHotelAsync("UpsertMany-2"),
                 await CreateTestHotelAsync("UpsertMany-3"),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             ]);
@@ -550,6 +601,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             Assert.Equal(new[] { 30f, 31f, 32f, 33f }, getResult.DescriptionEmbedding!.Value.ToArray());
 =======
 =======
@@ -569,10 +621,15 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             Assert.Equal(new[] { 30f, 31f, 32f, 33f }, getResult.DescriptionEmbedding!.Value.ToArray());
 =======
 >>>>>>> Stashed changes
+=======
+            Assert.Equal(new[] { 30f, 31f, 32f, 33f }, getResult.DescriptionEmbedding!.Value.ToArray());
+=======
+>>>>>>> Stashed changes
             Assert.Equal(AzureAISearchVectorStoreFixture.CreateTestEmbedding(), getResult.DescriptionEmbedding!.Value.ToArray());
             Assert.Equal(new[] { 30f, 31f, 32f, 33f }, getResult.DescriptionEmbedding!.Value.ToArray());
             var embedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
             Assert.Equal(embedding, getResult.DescriptionEmbedding!.Value.ToArray());
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -591,6 +648,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -644,6 +704,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         await sut.UpsertAsync(CreateTestHotel("Remove-1"));
 =======
 =======
@@ -657,10 +718,13 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         await sut.UpsertAsync(CreateTestHotel("Remove-1"));
 =======
         await sut.UpsertAsync(await CreateTestHotelAsync("Remove-1"));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -678,6 +742,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 =======
         await sut.UpsertAsync(await CreateTestHotelAsync("Remove-1"));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -702,6 +768,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-1"));
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-2"));
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-3"));
@@ -717,6 +784,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-1"));
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-2"));
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-3"));
@@ -725,6 +794,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         await sut.UpsertAsync(await CreateTestHotelAsync("RemoveMany-2"));
         await sut.UpsertAsync(await CreateTestHotelAsync("RemoveMany-3"));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -744,6 +814,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         await sut.UpsertAsync(await CreateTestHotelAsync("RemoveMany-2"));
         await sut.UpsertAsync(await CreateTestHotelAsync("RemoveMany-3"));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -807,6 +879,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -820,6 +893,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -889,6 +965,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -906,6 +983,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -928,6 +1008,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -941,9 +1022,12 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         var baseSetEmbedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
         var genericMapperEmbedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a generic mapper hotel");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -962,6 +1046,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var baseSetEmbedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
         var genericMapperEmbedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a generic mapper hotel");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<string>("GenericMapper-1")
@@ -984,6 +1070,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 { "DescriptionEmbedding", new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }) }
 =======
 =======
@@ -997,10 +1084,13 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 { "DescriptionEmbedding", new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }) }
 =======
                 { "DescriptionEmbedding", genericMapperEmbedding }
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1018,6 +1108,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 =======
                 { "DescriptionEmbedding", genericMapperEmbedding }
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             }
@@ -1039,6 +1131,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)baseSetGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
 =======
 =======
@@ -1052,10 +1145,13 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)baseSetGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
 =======
         Assert.Equal(baseSetEmbedding, (ReadOnlyMemory<float>)baseSetGetResult.Vectors["DescriptionEmbedding"]!);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1073,6 +1169,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 =======
         Assert.Equal(baseSetEmbedding, (ReadOnlyMemory<float>)baseSetGetResult.Vectors["DescriptionEmbedding"]!);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -1093,6 +1191,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1107,6 +1206,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1114,6 +1215,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     }
 
     private static Hotel CreateTestHotel(string hotelId) => new()
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1135,11 +1237,15 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         Assert.Equal(genericMapperEmbedding, (ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!);
     }
 
     private static Hotel CreateTestHotel(string hotelId) => new()
     private async Task<Hotel> CreateTestHotelAsync(string hotelId) => new()
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1158,6 +1264,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1172,6 +1281,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
 =======
 =======
@@ -1185,12 +1295,15 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
 =======
         DescriptionEmbedding = AzureAISearchVectorStoreFixture.CreateTestEmbedding(),
         DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
         DescriptionEmbedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("My hotel is great"),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1210,6 +1323,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
         DescriptionEmbedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("My hotel is great"),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         Tags = ["pool", "air conditioning", "concierge"],

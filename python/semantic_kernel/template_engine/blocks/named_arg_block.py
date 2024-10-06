@@ -13,6 +13,7 @@ from pydantic import model_validator
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import NamedArgBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
 =======
@@ -35,6 +36,11 @@ from semantic_kernel.exceptions import NamedArgBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
 =======
 >>>>>>> Stashed changes
+=======
+from semantic_kernel.exceptions import NamedArgBlockSyntaxError
+from semantic_kernel.template_engine.blocks.block import Block
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.exceptions import NamedArgBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
@@ -42,6 +48,7 @@ from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import NamedArgBlockSyntaxError
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -60,6 +67,9 @@ from semantic_kernel.template_engine.blocks.block_errors import NamedArgBlockSyn
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -117,10 +127,14 @@ class NamedArgBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     name: str | None = None
     value: ValBlock | None = None
     variable: VarBlock | None = None
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -141,6 +155,8 @@ class NamedArgBlock(Block):
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     name: str | None = None
     value: ValBlock | None = None
@@ -150,6 +166,7 @@ class NamedArgBlock(Block):
     value: Optional[ValBlock] = None
     variable: Optional[VarBlock] = None
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -168,6 +185,9 @@ class NamedArgBlock(Block):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -185,6 +205,7 @@ class NamedArgBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Otherwise, the content is parsed using a regex to extract the name and value.
 =======
 =======
@@ -204,11 +225,16 @@ class NamedArgBlock(Block):
         Otherwise, the content is parsed using a regex to extract the name and value.
 =======
 >>>>>>> Stashed changes
+=======
+        Otherwise, the content is parsed using a regex to extract the name and value.
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Otherwise, the content is parsed using a regex to extract the name and value.
 =======
         Otherwise the content is parsed using a regex to extract the name and value.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -227,6 +253,9 @@ class NamedArgBlock(Block):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -242,10 +271,14 @@ class NamedArgBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
         if isinstance(fields, Block) or (
             "name" in fields and ("value" in fields or "variable" in fields)
         ):
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -266,6 +299,8 @@ class NamedArgBlock(Block):
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         if isinstance(fields, Block) or (
             "name" in fields and ("value" in fields or "variable" in fields)
@@ -273,6 +308,7 @@ class NamedArgBlock(Block):
 =======
         if isinstance(fields, Block) or ("name" in fields and ("value" in fields or "variable" in fields)):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -291,6 +327,9 @@ class NamedArgBlock(Block):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -311,6 +350,7 @@ class NamedArgBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -340,6 +380,11 @@ class NamedArgBlock(Block):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -369,6 +414,7 @@ class NamedArgBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -383,6 +429,10 @@ class NamedArgBlock(Block):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -397,6 +447,7 @@ class NamedArgBlock(Block):
             return self.value.render(kernel, arguments)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -414,6 +465,9 @@ class NamedArgBlock(Block):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -428,6 +482,7 @@ class NamedArgBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         return None
 =======
 =======
@@ -447,10 +502,15 @@ class NamedArgBlock(Block):
         return None
 =======
 >>>>>>> Stashed changes
+=======
+        return None
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         return None
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -469,6 +529,9 @@ class NamedArgBlock(Block):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

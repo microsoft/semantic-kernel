@@ -2,6 +2,7 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,6 +20,8 @@ import logging
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -28,6 +31,7 @@ import logging
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -40,6 +44,8 @@ import logging
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -48,6 +54,7 @@ from semantic_kernel.exceptions import (
     CodeBlockTokenError,
     TemplateSyntaxError,
 )
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -77,12 +84,17 @@ from typing import List
 >>>>>>> origin/main
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 from typing import List
 
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
 from semantic_kernel.template_engine.blocks.block import Block
@@ -95,6 +107,7 @@ from semantic_kernel.template_engine.blocks.block_errors import (
     VarBlockSyntaxError,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -111,6 +124,8 @@ from semantic_kernel.template_engine.blocks.block_errors import (
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -132,6 +147,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [any-char]       ::= any char
 class TemplateTokenizer:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,6 +165,8 @@ class TemplateTokenizer:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -158,6 +176,7 @@ class TemplateTokenizer:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -170,6 +189,8 @@ class TemplateTokenizer:
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     """Tokenize the template text into blocks."""
@@ -178,6 +199,7 @@ class TemplateTokenizer:
     def tokenize(text: str) -> list[Block]:
         """Tokenize the template text into blocks."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -218,12 +240,17 @@ class TemplateTokenizer:
 >>>>>>> Stashed changes
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
     @staticmethod
     def tokenize(text: str) -> List[Block]:
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
         code_tokenizer = CodeTokenizer()
@@ -244,6 +271,7 @@ class TemplateTokenizer:
             return [TextBlock.from_text(text)]
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -265,6 +293,11 @@ class TemplateTokenizer:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        blocks: list[Block] = []
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         blocks: list[Block] = []
@@ -276,6 +309,7 @@ class TemplateTokenizer:
         blocks: List[Block] = []
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -292,6 +326,8 @@ class TemplateTokenizer:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -349,6 +385,7 @@ class TemplateTokenizer:
                 blocks.extend(
                     TemplateTokenizer._extract_blocks(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -366,6 +403,8 @@ class TemplateTokenizer:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -375,6 +414,7 @@ class TemplateTokenizer:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -387,6 +427,8 @@ class TemplateTokenizer:
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                         text,
@@ -395,6 +437,7 @@ class TemplateTokenizer:
                         end_of_last_block,
                         next_char_pos,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -402,6 +445,8 @@ class TemplateTokenizer:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -423,6 +468,7 @@ class TemplateTokenizer:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -437,6 +483,8 @@ class TemplateTokenizer:
                         text, code_tokenizer, block_start_pos, end_of_last_block, next_char_pos
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                     )
@@ -453,6 +501,7 @@ class TemplateTokenizer:
     @staticmethod
     def _extract_blocks(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -468,6 +517,8 @@ class TemplateTokenizer:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -476,6 +527,7 @@ class TemplateTokenizer:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -491,6 +543,8 @@ class TemplateTokenizer:
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         text: str,
         code_tokenizer: CodeTokenizer,
         block_start_pos: int,
@@ -498,6 +552,7 @@ class TemplateTokenizer:
         next_char_pos: int,
     ) -> list[Block]:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -538,12 +593,17 @@ class TemplateTokenizer:
 >>>>>>> Stashed changes
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
         text: str, code_tokenizer: CodeTokenizer, block_start_pos: int, end_of_last_block: int, next_char_pos: int
     ) -> List[Block]:
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
         """Extract the blocks from the found code.
@@ -557,6 +617,7 @@ class TemplateTokenizer:
         return just that, instead of the CodeBlock.
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -578,6 +639,11 @@ class TemplateTokenizer:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        new_blocks: list[Block] = []
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         new_blocks: list[Block] = []
@@ -589,6 +655,7 @@ class TemplateTokenizer:
         new_blocks: List[Block] = []
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -605,6 +672,8 @@ class TemplateTokenizer:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -618,6 +687,7 @@ class TemplateTokenizer:
             )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -639,6 +709,11 @@ class TemplateTokenizer:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        content_with_delimiters = text[block_start_pos : next_char_pos + 1]
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         content_with_delimiters = text[block_start_pos : next_char_pos + 1]
@@ -650,6 +725,7 @@ class TemplateTokenizer:
         content_with_delimiters = text[block_start_pos : next_char_pos + 1]  # noqa: E203
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -666,6 +742,8 @@ class TemplateTokenizer:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -680,6 +758,7 @@ class TemplateTokenizer:
         try:
             code_blocks = code_tokenizer.tokenize(content_without_delimiters)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -701,6 +780,11 @@ class TemplateTokenizer:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        except BlockSyntaxError as e:
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         except BlockSyntaxError as e:
@@ -718,6 +802,7 @@ class TemplateTokenizer:
         ) as e:
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -734,6 +819,8 @@ class TemplateTokenizer:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -749,6 +836,7 @@ class TemplateTokenizer:
             return new_blocks
         try:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -769,14 +857,19 @@ class TemplateTokenizer:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             new_blocks.append(
                 CodeBlock(content=content_without_delimiters, tokens=code_blocks)
             )
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -787,6 +880,7 @@ class TemplateTokenizer:
             new_blocks.append(CodeBlock(content=content_without_delimiters, tokens=code_blocks))
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -803,6 +897,8 @@ class TemplateTokenizer:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

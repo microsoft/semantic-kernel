@@ -6,6 +6,7 @@
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
 		"ghcr.io/devcontainers/features/dotnet:2.1.3": {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -13,6 +14,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -32,6 +35,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -44,6 +48,8 @@
 =======
 		"ghcr.io/devcontainers/features/dotnet:2.0.6": {
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 			"version": "8"
@@ -61,6 +67,7 @@
 				"GitHub.copilot",
 				"franneck94.c-cpp-runner",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
@@ -81,6 +88,10 @@
 <<<<<<< main
 >>>>>>> Stashed changes
 =======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 <<<<<<< main
 >>>>>>> Stashed changes
 =======
@@ -105,6 +116,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -120,6 +132,9 @@
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 				"ms-python.debugpy",
 				"atariq11700.debugpy-old",
 				"ms-vscode.powershell"
@@ -129,6 +144,7 @@
 				"ms-vscode-remote.remote-containers"
 				"ms-dotnettools.csdevkit",
 				"franneck94.c-cpp-runner"
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -146,6 +162,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -180,6 +198,7 @@
   "postCreateCommand": "sudo chmod a+rwx /usr/share/dotnet" // avoids needing to run as 'sudo' when starting KernelHttpServer
 }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -187,6 +206,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -206,6 +227,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -218,5 +240,7 @@
 =======
 }
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

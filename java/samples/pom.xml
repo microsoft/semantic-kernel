@@ -11,6 +11,7 @@
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>samples</artifactId>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +36,9 @@
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -45,6 +49,7 @@
     <version>1.1.6-SNAPSHOT</version>
 >>>>>>> main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,6 +57,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -73,6 +80,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -87,6 +95,8 @@
     <version>1.0.0-alpha.1-SNAPSHOT</version>
 >>>>>>> origin/dsgrieve/java-v1-api
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     <packaging>pom</packaging>
@@ -95,6 +105,7 @@
 
     <modules>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -134,12 +145,19 @@
 <<<<<<< main
 >>>>>>> origin/main
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
 >>>>>>> Stashed changes
         <module>semantickernel-concepts</module>
         <module>semantickernel-demos</module>
         <module>semantickernel-learn-resources</module>
         <module>semantickernel-sample-plugins</module>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -160,6 +178,11 @@
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -175,6 +198,7 @@
         <module>06-Assistants</module>
 >>>>>>> origin/dsgrieve/java-v1-api
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -191,6 +215,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

@@ -21,6 +21,7 @@ public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord> where TR
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public IVectorStoreRecordMapper<TRecord, JsonNode>? JsonNodeCustomMapper { get; init; } = null;
 =======
 =======
@@ -34,10 +35,13 @@ public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord> where TR
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public IVectorStoreRecordMapper<TRecord, JsonNode>? JsonNodeCustomMapper { get; init; } = null;
 =======
     public IVectorStoreRecordMapper<TRecord, JsonObject>? JsonObjectCustomMapper { get; init; } = null;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,6 +59,8 @@ public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord> where TR
 =======
     public IVectorStoreRecordMapper<TRecord, JsonObject>? JsonObjectCustomMapper { get; init; } = null;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 

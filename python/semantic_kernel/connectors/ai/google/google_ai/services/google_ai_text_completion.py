@@ -106,6 +106,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -135,6 +136,11 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -153,6 +159,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -170,9 +177,13 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
     @trace_text_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
     async def get_text_contents(
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -191,6 +202,9 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

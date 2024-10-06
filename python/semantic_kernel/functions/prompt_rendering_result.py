@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -36,6 +37,11 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -58,6 +64,7 @@ class PromptRenderingResult(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -71,6 +78,9 @@ class PromptRenderingResult(KernelBaseModel):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -88,6 +98,7 @@ class PromptRenderingResult(KernelBaseModel):
     Represents the result of rendering a prompt template.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -105,6 +116,9 @@ class PromptRenderingResult(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -119,6 +133,7 @@ class PromptRenderingResult(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -148,6 +163,11 @@ class PromptRenderingResult(KernelBaseModel):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -168,6 +188,7 @@ class PromptRenderingResult(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -185,6 +206,9 @@ class PromptRenderingResult(KernelBaseModel):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
         prompt_template (PromptTemplateConfig): The prompt template used to render the prompt.
     """
 
@@ -192,6 +216,7 @@ class PromptRenderingResult(KernelBaseModel):
     ai_service: Any
     execution_settings: Optional[PromptExecutionSettings] = Field(default_factory=PromptExecutionSettings)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -210,6 +235,9 @@ class PromptRenderingResult(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

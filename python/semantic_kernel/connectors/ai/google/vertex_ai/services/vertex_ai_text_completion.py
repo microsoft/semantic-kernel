@@ -96,6 +96,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -125,6 +126,11 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -143,6 +149,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -160,9 +167,13 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
     @trace_text_completion(VertexAIBase.MODEL_PROVIDER_NAME)
     async def get_text_contents(
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -181,6 +192,9 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

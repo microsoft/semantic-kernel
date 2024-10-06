@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -27,6 +28,9 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -37,6 +41,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -56,6 +61,10 @@ using Microsoft.SemanticKernel.Connectors.Pinecone;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -65,6 +74,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 using Microsoft.SemanticKernel.Diagnostics;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -81,6 +91,8 @@ using Microsoft.SemanticKernel.Diagnostics;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -140,6 +152,7 @@ public class PineconeMemoryStoreTests
         // Act
         var exception = await Assert.ThrowsAsync<KernelException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -170,6 +183,10 @@ public class PineconeMemoryStoreTests
         var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
         var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
 >>>>>>> origin/main
+=======
+        var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+        var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+>>>>>>> Stashed changes
 =======
         var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
         var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));

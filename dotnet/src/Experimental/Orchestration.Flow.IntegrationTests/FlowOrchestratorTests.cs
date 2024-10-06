@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -11,6 +12,8 @@ using System.Collections.Generic;
 <<<<<<< Updated upstream
 using System.Linq;
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -27,6 +30,7 @@ using System.Linq;
 <<<<<<< HEAD
 using System.Linq;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 using System.Linq;
@@ -39,10 +43,13 @@ using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Memory;
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 using Microsoft.SemanticKernel.Memory;
@@ -61,6 +68,11 @@ using Microsoft.SemanticKernel.Memory;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using Microsoft.SemanticKernel.Memory;
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -70,8 +82,11 @@ using Microsoft.SemanticKernel.Experimental.Orchestration;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Memory;
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -93,6 +108,7 @@ using Microsoft.SemanticKernel.Plugins.Memory;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -106,6 +122,8 @@ using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -114,6 +132,7 @@ using SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests.TestSettin
 using xRetry;
 using Xunit;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -133,6 +152,10 @@ using Xunit;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -155,6 +178,9 @@ using Xunit.Abstractions;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -181,7 +207,10 @@ public sealed class FlowOrchestratorTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -199,6 +228,7 @@ public sealed class FlowOrchestratorTests
 
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -215,6 +245,8 @@ public sealed class FlowOrchestratorTests
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -236,6 +268,7 @@ public sealed class FlowOrchestratorTests
     {
         // Arrange
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -257,6 +290,11 @@ public sealed class FlowOrchestratorTests
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        IKernelBuilder builder = this.InitializeKernelBuilder();
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         IKernelBuilder builder = this.InitializeKernelBuilder();
@@ -268,6 +306,7 @@ public sealed class FlowOrchestratorTests
         KernelBuilder builder = this.InitializeKernelBuilder();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -284,6 +323,8 @@ public sealed class FlowOrchestratorTests
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -301,6 +342,7 @@ public sealed class FlowOrchestratorTests
 goal: answer question and sent email
 steps:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -322,6 +364,11 @@ steps:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+  - goal: What is the tallest mountain in Asia? How tall is it divided by 2?
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
   - goal: What is the tallest mountain in Asia? How tall is it divided by 2?
@@ -333,6 +380,7 @@ steps:
   - goal: What is the tallest mountain on Earth? How tall is it divided by 2?
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -349,6 +397,8 @@ steps:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -379,6 +429,7 @@ steps:
 
         // Act
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -386,6 +437,8 @@ steps:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -410,6 +463,7 @@ steps:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -424,12 +478,15 @@ steps:
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "What is the tallest mountain in Asia? How tall is it divided by 2?");
 
         // Assert
         // Loose assertion -- make sure that the plan was executed and pause when it needs interact with user to get more input
         var response = result.GetValue<List<string>>()!.First();
         Assert.Contains("email", response, StringComparison.InvariantCultureIgnoreCase);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -448,6 +505,8 @@ steps:
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -458,6 +517,7 @@ steps:
         Assert.Contains("email", result.ToString(), StringComparison.InvariantCultureIgnoreCase);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -476,12 +536,15 @@ steps:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
         // Act
         result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, $"my email is {dummyAddress}");
 
         // Assert
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -504,6 +567,11 @@ steps:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        var emailPayload = result.Metadata!["email"] as string;
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         var emailPayload = result.Metadata!["email"] as string;
@@ -515,6 +583,7 @@ steps:
         var emailPayload = result["email"];
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -533,11 +602,14 @@ steps:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
         Assert.Contains(dummyAddress, emailPayload, StringComparison.InvariantCultureIgnoreCase);
         Assert.Contains("Everest", emailPayload, StringComparison.InvariantCultureIgnoreCase);
     }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -560,6 +632,11 @@ steps:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    private IKernelBuilder InitializeKernelBuilder()
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
     private IKernelBuilder InitializeKernelBuilder()
@@ -571,6 +648,7 @@ steps:
     private KernelBuilder InitializeKernelBuilder()
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -587,6 +665,8 @@ steps:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -595,6 +675,7 @@ steps:
         Assert.NotNull(azureOpenAIConfiguration);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -602,6 +683,8 @@ steps:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -621,6 +704,7 @@ steps:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -633,6 +717,8 @@ steps:
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         return Kernel.CreateBuilder()
@@ -643,6 +729,7 @@ steps:
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -664,6 +751,11 @@ steps:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    private readonly IConfigurationRoot _configuration;
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
     private readonly IConfigurationRoot _configuration;
@@ -712,6 +804,7 @@ steps:
     }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -728,6 +821,8 @@ steps:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

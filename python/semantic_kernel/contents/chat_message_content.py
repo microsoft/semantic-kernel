@@ -6,6 +6,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -35,6 +36,11 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -66,6 +72,7 @@ from semantic_kernel.contents.const import (
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -79,9 +86,12 @@ from semantic_kernel.contents.const import (
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
     STREAMING_ANNOTATION_CONTENT_TAG,
     STREAMING_FILE_REFERENCE_CONTENT_TAG,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -100,6 +110,8 @@ from semantic_kernel.contents.const import (
     STREAMING_ANNOTATION_CONTENT_TAG,
     STREAMING_FILE_REFERENCE_CONTENT_TAG,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     TEXT_CONTENT_TAG,
@@ -117,6 +129,7 @@ from semantic_kernel.contents.kernel_content import KernelContent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -130,9 +143,12 @@ from semantic_kernel.contents.kernel_content import KernelContent
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -151,6 +167,8 @@ from semantic_kernel.contents.streaming_file_reference_content import StreamingF
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 from semantic_kernel.contents.text_content import TextContent
@@ -172,6 +190,7 @@ TAG_CONTENT_MAP = {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -186,6 +205,8 @@ TAG_CONTENT_MAP = {
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -193,6 +214,7 @@ TAG_CONTENT_MAP = {
 
 ITEM_TYPES = (
     AnnotationContent | ImageContent | TextContent | FunctionResultContent | FunctionCallContent | FileReferenceContent
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -214,6 +236,9 @@ ITEM_TYPES = (
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     STREAMING_FILE_REFERENCE_CONTENT_TAG: StreamingFileReferenceContent,
     STREAMING_ANNOTATION_CONTENT_TAG: StreamingAnnotationContent,
 }
@@ -227,6 +252,7 @@ ITEM_TYPES = (
     | FileReferenceContent
     | StreamingAnnotationContent
     | StreamingFileReferenceContent
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -245,6 +271,9 @@ ITEM_TYPES = (
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -264,6 +293,7 @@ class ChatMessageContent(KernelContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -281,6 +311,10 @@ class ChatMessageContent(KernelContent):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 from typing import Optional
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
@@ -294,6 +328,7 @@ class ChatMessageContent(KernelContent):
 
     All Chat Completion Services should return a instance of this class as response.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -312,6 +347,9 @@ class ChatMessageContent(KernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -338,6 +376,7 @@ class ChatMessageContent(KernelContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -367,6 +406,11 @@ class ChatMessageContent(KernelContent):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -593,6 +637,7 @@ class ChatMessageContent(KernelContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -610,6 +655,9 @@ class ChatMessageContent(KernelContent):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
     role: ChatRole
     content: Optional[str] = None
     encoding: Optional[str] = None
@@ -619,6 +667,7 @@ class ChatMessageContent(KernelContent):
 
     def to_prompt(self, root_key: str) -> str:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -637,6 +686,9 @@ class ChatMessageContent(KernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -652,6 +704,7 @@ class ChatMessageContent(KernelContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -681,6 +734,11 @@ class ChatMessageContent(KernelContent):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -750,6 +808,7 @@ class ChatMessageContent(KernelContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -764,6 +823,10 @@ class ChatMessageContent(KernelContent):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -788,6 +851,7 @@ class ChatMessageContent(KernelContent):
         return cls(**args)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -805,6 +869,9 @@ class ChatMessageContent(KernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

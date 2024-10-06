@@ -2,6 +2,7 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,13 +22,18 @@ from typing import Any
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from collections.abc import Mapping
 from typing import Any
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -37,6 +43,7 @@ from typing import Any
 from typing import Dict, Mapping, Optional, overload
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -53,6 +60,8 @@ from typing import Dict, Mapping, Optional, overload
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -76,6 +85,7 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -108,6 +118,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 =======
 
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+
+>>>>>>> Stashed changes
 logger: logging.Logger = logging.getLogger(__name__)
 >>>>>>> origin/main
 
@@ -122,6 +137,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -133,6 +149,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 @experimental_class
@@ -142,6 +160,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
     def __init__(
         self,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -181,6 +200,12 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 <<<<<<< main
 >>>>>>> origin/main
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
 >>>>>>> Stashed changes
         service_id: str | None = None,
         api_key: str | None = None,
@@ -194,12 +219,16 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -281,6 +310,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -332,6 +362,8 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
     def __init__(
         self,
         deployment_name: str,
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -377,7 +409,10 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         self,
         deployment_name: str,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         endpoint: Optional[str] = None,
@@ -467,6 +502,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             api_key=api_key,
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -483,6 +519,8 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -504,6 +542,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         """
         return AzureTextEmbedding(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -543,6 +582,12 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 <<<<<<< main
 >>>>>>> origin/main
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
 >>>>>>> Stashed changes
             service_id=settings.get("service_id"),
             api_key=settings.get("api_key"),
@@ -551,6 +596,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             base_url=settings.get("base_url"),
             api_version=settings.get("api_version"),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -571,6 +617,11 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -583,6 +634,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             service_id=settings.get("service_id"),
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -599,6 +651,8 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

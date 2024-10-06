@@ -54,6 +54,7 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 definition: new(this.Model)
@@ -69,6 +70,8 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 definition: new(this.Model)
@@ -76,6 +79,7 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -94,6 +98,8 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 {
@@ -107,6 +113,7 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
 =======
 =======
@@ -120,11 +127,14 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 });
 =======
                 },
                 kernel: new Kernel());
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -143,6 +153,8 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
                 },
                 kernel: new Kernel());
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 

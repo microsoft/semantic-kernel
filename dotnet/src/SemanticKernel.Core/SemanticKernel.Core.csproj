@@ -35,6 +35,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -69,6 +70,10 @@
     <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="System.Text.Json" />
 >>>>>>> Stashed changes
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
   </ItemGroup>
 
   <ItemGroup>
@@ -77,6 +82,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Experimental.Assistants" />
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -88,6 +94,8 @@
   </ItemGroup>
 
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -103,8 +111,11 @@
 =======
 >>>>>>> origin/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   </ItemGroup>
@@ -115,6 +126,7 @@
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/JsonOptionsCache.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -132,6 +144,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 </Project>

@@ -4,6 +4,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Experimental.Orchestration.Flow</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Experimental.Orchestration</RootNamespace>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -13,6 +14,8 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -28,8 +31,11 @@
     <VersionSuffix>alpha</VersionSuffix>
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -39,6 +45,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>Latest</LangVersion>
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -56,6 +63,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -78,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -99,6 +109,11 @@
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    <ProjectReference Include="..\..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
     <ProjectReference Include="..\..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
@@ -113,6 +128,7 @@
     <ProjectReference Include="..\..\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -129,6 +145,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

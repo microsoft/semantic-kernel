@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,6 +22,10 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -33,9 +38,12 @@ using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
@@ -45,6 +53,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -59,6 +68,8 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -75,6 +86,7 @@ internal static class PromptTemplateConfigExtensions
     internal static void SetMaxTokens(this PromptTemplateConfig config, int maxTokens)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,6 +94,8 @@ internal static class PromptTemplateConfigExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -108,6 +122,7 @@ internal static class PromptTemplateConfigExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -122,6 +137,8 @@ internal static class PromptTemplateConfigExtensions
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var executionSettings = config.ExecutionSettings;
         foreach (var setting in executionSettings)
         {
@@ -130,6 +147,7 @@ internal static class PromptTemplateConfigExtensions
                 setting.Value.ExtensionData["max_tokens"] = maxTokens;
             }
         }
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -148,6 +166,8 @@ internal static class PromptTemplateConfigExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -159,6 +179,7 @@ internal static class PromptTemplateConfigExtensions
         requestSettings.ExtensionData["max_tokens"] = maxTokens;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -175,6 +196,8 @@ internal static class PromptTemplateConfigExtensions
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

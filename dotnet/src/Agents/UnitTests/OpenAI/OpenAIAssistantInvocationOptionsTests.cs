@@ -29,6 +29,7 @@ public class OpenAIAssistantInvocationOptionsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Null(options.AdditionalInstructions);
 =======
 =======
@@ -48,10 +49,15 @@ public class OpenAIAssistantInvocationOptionsTests
         Assert.Null(options.AdditionalInstructions);
 =======
 >>>>>>> Stashed changes
+=======
+        Assert.Null(options.AdditionalInstructions);
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Null(options.AdditionalInstructions);
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -70,6 +76,9 @@ public class OpenAIAssistantInvocationOptionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -106,6 +115,7 @@ public class OpenAIAssistantInvocationOptionsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 AdditionalInstructions = "test instructions",
 =======
 =======
@@ -125,10 +135,15 @@ public class OpenAIAssistantInvocationOptionsTests
                 AdditionalInstructions = "test instructions",
 =======
 >>>>>>> Stashed changes
+=======
+                AdditionalInstructions = "test instructions",
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 AdditionalInstructions = "test instructions",
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -147,6 +162,9 @@ public class OpenAIAssistantInvocationOptionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -171,6 +189,7 @@ public class OpenAIAssistantInvocationOptionsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Equal("test instructions", options.AdditionalInstructions);
 =======
 =======
@@ -190,10 +209,15 @@ public class OpenAIAssistantInvocationOptionsTests
         Assert.Equal("test instructions", options.AdditionalInstructions);
 =======
 >>>>>>> Stashed changes
+=======
+        Assert.Equal("test instructions", options.AdditionalInstructions);
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Equal("test instructions", options.AdditionalInstructions);
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -212,6 +236,9 @@ public class OpenAIAssistantInvocationOptionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

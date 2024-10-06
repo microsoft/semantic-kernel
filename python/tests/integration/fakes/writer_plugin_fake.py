@@ -6,6 +6,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 from typing import Annotated
 =======
@@ -28,6 +29,11 @@ from typing import Annotated
 from typing import Annotated
 =======
 >>>>>>> Stashed changes
+=======
+
+from typing import Annotated
+=======
+>>>>>>> Stashed changes
 import sys
 
 <<<<<<< main
@@ -38,6 +44,7 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -56,6 +63,9 @@ else:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -87,6 +97,7 @@ class WriterPluginFake:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -116,6 +127,11 @@ class WriterPluginFake:
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -134,6 +150,7 @@ class WriterPluginFake:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -170,11 +187,16 @@ class WriterPluginFake:
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 =======
+>>>>>>> Stashed changes
+=======
 =======
         description: Annotated[str, "The marker to use to end each chapter"] = "Write an outline for a novel.",
         default_value: Annotated[str, "The default value used for the function"] = "<!--===ENDPART===-->",
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ) -> str:
         return f"Novel outline: {input}"

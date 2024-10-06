@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -36,6 +37,11 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -64,6 +70,7 @@ import os
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> upstream/main
 =======
@@ -79,9 +86,12 @@ import os
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 >>>>>>> upstream/main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -98,6 +108,8 @@ import os
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 import sys
@@ -114,6 +126,7 @@ from semantic_kernel import Kernel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -143,6 +156,11 @@ from semantic_kernel import Kernel
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -182,6 +200,7 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -211,6 +230,11 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -232,6 +256,7 @@ from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 =======
@@ -261,6 +286,11 @@ from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -278,6 +308,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
 =======
 =======
@@ -307,6 +338,11 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> origin/PR
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/PR
 =======
@@ -341,6 +377,7 @@ from semantic_kernel.contents.image_content import ImageContent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -355,6 +392,8 @@ from semantic_kernel.contents.image_content import ImageContent
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -364,6 +403,7 @@ from semantic_kernel.contents import ChatMessageContent, TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
 >>>>>>> upstream/main
 from semantic_kernel.contents.utils.author_role import AuthorRole
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -385,11 +425,15 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import ChatMessageContent, TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -408,6 +452,9 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -433,6 +480,7 @@ else:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -462,6 +510,11 @@ else:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -488,6 +541,7 @@ except KeyError:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -517,6 +571,11 @@ except KeyError:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -553,6 +612,7 @@ def history() -> ChatHistory:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -567,6 +627,8 @@ def history() -> ChatHistory:
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -578,6 +640,7 @@ def services() -> (
 def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]:
 def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]]:
 >>>>>>> origin/PR
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -599,11 +662,15 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 def services() -> (
     dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]
 ):
 def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]:
 def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]]:
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -622,6 +689,9 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -674,6 +744,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 =======
@@ -703,6 +774,11 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -721,6 +797,7 @@ except KeyError:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -735,6 +812,8 @@ except KeyError:
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -743,6 +822,7 @@ except KeyError:
 
 =======
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -764,6 +844,9 @@ except KeyError:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 
 
 
@@ -777,6 +860,7 @@ class Reasoning(KernelBaseModel):
     final_answer: str
 
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -795,6 +879,9 @@ class Reasoning(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -819,6 +906,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -848,6 +936,11 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -970,6 +1063,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -984,6 +1078,8 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -991,6 +1087,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             id="openai_text_input",
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1012,6 +1109,9 @@ pytestmark = pytest.mark.parametrize(
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
             {},
             id="openai_text_input",
         ),
@@ -1024,6 +1124,7 @@ pytestmark = pytest.mark.parametrize(
             ],
             {},
             id="openai_json_schema_response_format",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1042,6 +1143,9 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1064,6 +1168,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -1093,6 +1198,11 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1155,6 +1265,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -1184,6 +1295,11 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1200,6 +1316,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 =======
@@ -1229,6 +1346,11 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -1267,6 +1389,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
 =======
 =======
@@ -1296,6 +1419,11 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> origin/PR
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/PR
 =======
@@ -1376,6 +1504,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1390,6 +1519,8 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1403,7 +1534,10 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1423,6 +1557,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1436,6 +1571,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             id="azure_text_input",
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         ),
@@ -1471,6 +1608,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -1500,6 +1638,11 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1629,6 +1772,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1643,6 +1787,8 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1656,7 +1802,10 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1676,6 +1825,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1689,6 +1839,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             id="azure_ai_inference_text_input",
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         ),
@@ -1733,6 +1885,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
          pytest.param(
 =======
 =======
@@ -1746,10 +1899,13 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
          pytest.param(
 =======
         pytest.param(
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1767,6 +1923,8 @@ pytestmark = pytest.mark.parametrize(
 =======
         pytest.param(
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             "anthropic",
@@ -1787,6 +1945,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -1816,6 +1975,11 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1892,6 +2056,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1906,6 +2071,8 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1919,7 +2086,10 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1939,6 +2109,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1952,6 +2123,8 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
             id="anthropic_text_input",
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         ),
@@ -1966,6 +2139,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -1995,6 +2169,11 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -2031,6 +2210,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -2045,6 +2225,8 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2058,7 +2240,10 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2078,6 +2263,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2091,6 +2277,8 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             ],
@@ -2120,6 +2308,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -2149,6 +2338,11 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -2255,6 +2449,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> upstream/main
 =======
@@ -2270,9 +2465,12 @@ pytestmark = pytest.mark.parametrize(
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 >>>>>>> upstream/main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2289,6 +2487,8 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     ],
@@ -2303,6 +2503,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -2332,6 +2533,11 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -2370,6 +2576,7 @@ async def test_chat_completion(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 =======
@@ -2399,6 +2606,11 @@ async def test_chat_completion(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -2434,6 +2646,7 @@ class TestChatCompletion(ChatCompletionTestBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
 =======
 =======
@@ -2463,6 +2676,11 @@ class TestChatCompletion(ChatCompletionTestBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> upstream/main
 =======
@@ -2522,6 +2740,7 @@ class TestChatCompletion(ChatCompletionTestBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -2551,6 +2770,11 @@ class TestChatCompletion(ChatCompletionTestBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -2574,6 +2798,7 @@ class TestChatCompletion(ChatCompletionTestBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> upstream/main
 =======
@@ -2589,9 +2814,12 @@ class TestChatCompletion(ChatCompletionTestBase):
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 >>>>>>> upstream/main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2608,6 +2836,8 @@ class TestChatCompletion(ChatCompletionTestBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -2631,6 +2861,7 @@ class TestChatCompletion(ChatCompletionTestBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -2645,6 +2876,8 @@ class TestChatCompletion(ChatCompletionTestBase):
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2656,6 +2889,7 @@ async def execute_invoke(
     kernel: Kernel, history: ChatHistory, output: str, stream: bool
 ) -> "ChatMessageContent":
 >>>>>>> origin/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2677,10 +2911,14 @@ async def execute_invoke(
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 async def execute_invoke(kernel: Kernel, history: ChatHistory, output: str, stream: bool) -> "ChatMessageContent":
 async def execute_invoke(
     kernel: Kernel, history: ChatHistory, output: str, stream: bool
 ) -> "ChatMessageContent":
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2699,6 +2937,9 @@ async def execute_invoke(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2735,6 +2976,7 @@ async def execute_invoke(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -2749,6 +2991,8 @@ async def execute_invoke(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2763,7 +3007,10 @@ async def execute_invoke(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2784,6 +3031,7 @@ async def execute_invoke(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2798,6 +3046,8 @@ async def execute_invoke(
         raise AssertionError(f"Unexpected output: response: {invocation}, type: {type(invocation)}")
         self.evaluate(history.messages, inputs=inputs)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     with pytest.raises(
@@ -2814,6 +3064,7 @@ async def execute_invoke(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -2828,6 +3079,8 @@ async def execute_invoke(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2835,6 +3088,7 @@ async def execute_invoke(
         self.evaluate(history.messages, inputs=inputs)
 >>>>>>> upstream/main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2869,6 +3123,11 @@ async def execute_invoke(
 =======
         self.evaluate(history.messages, inputs=inputs)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        self.evaluate(history.messages, inputs=inputs)
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         self.evaluate(history.messages, inputs=inputs)

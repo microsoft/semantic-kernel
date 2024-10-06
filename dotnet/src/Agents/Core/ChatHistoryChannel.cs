@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -19,6 +20,8 @@
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -29,6 +32,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -50,6 +54,9 @@ using Microsoft.SemanticKernel.Agents.Extensions;
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
@@ -60,6 +67,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.Agents.Serialization;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -78,6 +86,9 @@ using Microsoft.SemanticKernel.Agents.Serialization;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -95,6 +106,7 @@ namespace Microsoft.SemanticKernel.Agents;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 public sealed class ChatHistoryChannel : AgentChannel
 =======
 =======
@@ -108,10 +120,13 @@ public sealed class ChatHistoryChannel : AgentChannel
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 public sealed class ChatHistoryChannel : AgentChannel
 =======
 internal sealed class ChatHistoryChannel : AgentChannel
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -129,6 +144,8 @@ internal sealed class ChatHistoryChannel : AgentChannel
 =======
 internal sealed class ChatHistoryChannel : AgentChannel
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 {
@@ -246,6 +263,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -259,9 +277,12 @@ internal sealed class ChatHistoryChannel : AgentChannel
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
     protected override string Serialize()
         => JsonSerializer.Serialize(ChatMessageReference.Prepare(this._history));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -280,6 +301,8 @@ internal sealed class ChatHistoryChannel : AgentChannel
     protected override string Serialize()
         => JsonSerializer.Serialize(ChatMessageReference.Prepare(this._history));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -293,6 +316,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public ChatHistoryChannel()
     {
         this._history = [];
@@ -308,6 +332,8 @@ internal sealed class ChatHistoryChannel : AgentChannel
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public ChatHistoryChannel()
     {
         this._history = [];
@@ -316,6 +342,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
     {
         this._history = history ?? [];
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -335,6 +362,8 @@ internal sealed class ChatHistoryChannel : AgentChannel
     {
         this._history = history ?? [];
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }

@@ -6,6 +6,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -29,6 +30,10 @@ import io.grpc.ServerBuilder;
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
@@ -38,6 +43,9 @@ import io.grpc.ServerBuilder;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -64,6 +72,7 @@ public class Main {
                 // `RandomActivitySkill` class.
                 addService(new RandomActivitySkill()).build();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -99,10 +108,15 @@ public class Main {
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
                 .addService(new RandomActivitySkill()).build();
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         System.out.println("Starting server...");

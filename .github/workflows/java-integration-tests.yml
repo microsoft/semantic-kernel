@@ -58,6 +58,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -93,10 +94,15 @@ jobs:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         uses: actions/checkout@v3
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
       # Need to use JDK 11 to build for JDK 8
@@ -120,6 +126,7 @@ jobs:
       - name: Build with Maven
         run: ./mvnw -B -Pwith-samples -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -143,6 +150,10 @@ jobs:
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
         working-directory: java
         if: ${{ matrix.java-versions >= 17 }}
         run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
@@ -152,6 +163,9 @@ jobs:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

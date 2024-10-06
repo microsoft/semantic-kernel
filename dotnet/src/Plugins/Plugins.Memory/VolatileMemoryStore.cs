@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -33,10 +34,14 @@ using System.Linq;
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -47,6 +52,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Memory;
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -62,8 +69,11 @@ namespace Microsoft.SemanticKernel.Memory;
 namespace Microsoft.SemanticKernel.Memory;
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -80,6 +90,7 @@ using Microsoft.SemanticKernel.Memory.Collections;
 namespace Microsoft.SemanticKernel.Plugins.Memory;
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -96,6 +107,8 @@ namespace Microsoft.SemanticKernel.Plugins.Memory;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -132,6 +145,7 @@ public class VolatileMemoryStore : IMemoryStore
         if (!this._store.TryRemove(collectionName, out _))
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -148,11 +162,14 @@ public class VolatileMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             return Task.FromException(new KernelException($"Could not delete collection {collectionName}"));
 =======
             return Task.FromException(new SKException($"Could not delete collection {collectionName}"));
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -176,6 +193,8 @@ public class VolatileMemoryStore : IMemoryStore
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -197,6 +216,7 @@ public class VolatileMemoryStore : IMemoryStore
         else
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -215,6 +235,8 @@ public class VolatileMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -223,6 +245,7 @@ public class VolatileMemoryStore : IMemoryStore
             return Task.FromException<string>(new SKException($"Attempted to access a memory collection that does not exist: {collectionName}"));
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -239,6 +262,8 @@ public class VolatileMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -284,6 +309,7 @@ public class VolatileMemoryStore : IMemoryStore
             var record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -305,6 +331,11 @@ public class VolatileMemoryStore : IMemoryStore
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+            if (record is not null)
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
             if (record is not null)
@@ -316,6 +347,7 @@ public class VolatileMemoryStore : IMemoryStore
             if (record != null)
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -332,6 +364,8 @@ public class VolatileMemoryStore : IMemoryStore
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -347,6 +381,7 @@ public class VolatileMemoryStore : IMemoryStore
         if (this.TryGetCollection(collectionName, out var collectionDict))
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -365,6 +400,8 @@ public class VolatileMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -373,6 +410,7 @@ public class VolatileMemoryStore : IMemoryStore
             collectionDict.TryRemove(key, out MemoryRecord _);
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -389,6 +427,8 @@ public class VolatileMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -403,6 +443,7 @@ public class VolatileMemoryStore : IMemoryStore
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -427,6 +468,9 @@ public class VolatileMemoryStore : IMemoryStore
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -441,6 +485,7 @@ public class VolatileMemoryStore : IMemoryStore
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>An asynchronous enumerable of memory records and their relevance scores.</returns>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -471,6 +516,10 @@ public class VolatileMemoryStore : IMemoryStore
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
@@ -495,6 +544,7 @@ public class VolatileMemoryStore : IMemoryStore
         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -516,6 +566,11 @@ public class VolatileMemoryStore : IMemoryStore
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        if (embeddingCollection is null || embeddingCollection.Count == 0)
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         if (embeddingCollection is null || embeddingCollection.Count == 0)
@@ -527,6 +582,7 @@ public class VolatileMemoryStore : IMemoryStore
         if (embeddingCollection == null || embeddingCollection.Count == 0)
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -545,6 +601,8 @@ public class VolatileMemoryStore : IMemoryStore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
         {
             return AsyncEnumerable.Empty<(MemoryRecord, double)>();
@@ -554,6 +612,7 @@ public class VolatileMemoryStore : IMemoryStore
 
         foreach (var record in embeddingCollection)
         {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -575,14 +634,19 @@ public class VolatileMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             if (record is not null)
@@ -596,6 +660,7 @@ public class VolatileMemoryStore : IMemoryStore
                     .CosineSimilarity(record.Embedding.Span);
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -612,6 +677,8 @@ public class VolatileMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 if (similarity >= minRelevanceScore)
@@ -625,6 +692,7 @@ public class VolatileMemoryStore : IMemoryStore
         embeddings.SortByScore();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -643,6 +711,8 @@ public class VolatileMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -651,6 +721,7 @@ public class VolatileMemoryStore : IMemoryStore
         return embeddings.Select(x => (x.Value, x.Score.Value)).ToAsyncEnumerable();
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -667,6 +738,8 @@ public class VolatileMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -690,6 +763,7 @@ public class VolatileMemoryStore : IMemoryStore
 
     #region protected ================================================================================
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -714,6 +788,9 @@ public class VolatileMemoryStore : IMemoryStore
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -725,6 +802,7 @@ public class VolatileMemoryStore : IMemoryStore
     /// <param name="create">Whether to create the collection if it does not exist.</param>
     /// <returns>True if the collection was found or created, false otherwise.</returns>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -761,6 +839,11 @@ public class VolatileMemoryStore : IMemoryStore
 
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+=======
+
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
 =======
 =======
 

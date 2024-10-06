@@ -10,6 +10,7 @@ using System.Net.Http;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -39,6 +40,11 @@ using System.Text;
 =======
 using System.Text;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.Text;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using System.Text;
@@ -55,6 +61,7 @@ using Microsoft.SemanticKernel.Services;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Moq;
 =======
 =======
@@ -68,12 +75,15 @@ using Moq;
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 using Moq;
 =======
 using Microsoft.SemanticKernel.TextToImage;
 using Moq;
 using OpenAI.Images;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -93,6 +103,8 @@ using Microsoft.SemanticKernel.TextToImage;
 using Moq;
 using OpenAI.Images;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Xunit;
@@ -121,6 +133,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.txt"))
 =======
 =======
@@ -134,10 +147,13 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.txt"))
 =======
                 Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -155,6 +171,8 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 =======
                 Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             }
@@ -174,6 +192,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new OpenAITextToImageService("apikey", "organization", "model");
 =======
 =======
@@ -187,10 +206,13 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var sut = new OpenAITextToImageService("apikey", "organization", "model");
 =======
         var sut = new OpenAITextToImageService("apiKey", "organization", "model");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -208,6 +230,8 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 =======
         var sut = new OpenAITextToImageService("apiKey", "organization", "model");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -246,6 +270,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -259,6 +284,9 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -444,6 +472,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -461,6 +490,9 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

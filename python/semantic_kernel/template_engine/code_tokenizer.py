@@ -2,6 +2,7 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -22,13 +23,18 @@ from semantic_kernel.template_engine.blocks.block import Block
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
 from semantic_kernel.exceptions import CodeBlockSyntaxError
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -39,6 +45,7 @@ from typing import List
 
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 from semantic_kernel.template_engine.blocks.block import Block
@@ -60,6 +67,11 @@ from semantic_kernel.template_engine.blocks.block_errors import CodeBlockSyntaxE
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import CodeBlockSyntaxError
 >>>>>>> origin/main
+=======
+>>>>>>> origin/main
+from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import CodeBlockSyntaxError
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 from semantic_kernel.template_engine.blocks.block import Block
@@ -85,6 +97,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [parameter]      ::= [variable] | [value]
 class CodeTokenizer:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -122,12 +135,16 @@ class CodeTokenizer:
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 >>>>>>> origin/main
     """Tokenize the code text into blocks."""
 
     @staticmethod
     def tokenize(text: str) -> list[Block]:
         """Tokenize the code text into blocks."""
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -168,6 +185,14 @@ class CodeTokenizer:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+<<<<<<< main
+=======
+=======
+    @staticmethod
+    def tokenize(text: str) -> List[Block]:
+>>>>>>> ms/small_fixes
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -191,6 +216,7 @@ class CodeTokenizer:
 
         # Track the content of the current token
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -212,6 +238,11 @@ class CodeTokenizer:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        current_token_content: list[str] = []
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         current_token_content: list[str] = []
@@ -223,6 +254,7 @@ class CodeTokenizer:
         current_token_content: List[str] = []
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -241,6 +273,8 @@ class CodeTokenizer:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
         # Other state we need to track
@@ -248,6 +282,7 @@ class CodeTokenizer:
         space_separator_found = False
         skip_next_char = False
         next_char = ""
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -270,6 +305,11 @@ class CodeTokenizer:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        blocks: list[Block] = []
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         blocks: list[Block] = []
@@ -281,6 +321,7 @@ class CodeTokenizer:
         blocks: List[Block] = []
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -297,6 +338,8 @@ class CodeTokenizer:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -361,6 +404,7 @@ class CodeTokenizer:
                 elif current_token_type == BlockTypes.FUNCTION_ID:
                     if Symbols.NAMED_ARG_BLOCK_SEPARATOR.value in current_token_content:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -392,6 +436,9 @@ class CodeTokenizer:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -407,6 +454,7 @@ class CodeTokenizer:
                             FunctionIdBlock(content="".join(current_token_content))
                         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -427,6 +475,11 @@ class CodeTokenizer:
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -437,6 +490,7 @@ class CodeTokenizer:
                         blocks.append(FunctionIdBlock(content="".join(current_token_content)))
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -453,6 +507,8 @@ class CodeTokenizer:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -469,6 +525,7 @@ class CodeTokenizer:
             if current_token_type is None:
                 if not space_separator_found:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -489,14 +546,19 @@ class CodeTokenizer:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
                     raise CodeBlockSyntaxError(
                         "Tokens must be separated by one space least"
                     )
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -507,6 +569,7 @@ class CodeTokenizer:
                     raise CodeBlockSyntaxError("Tokens must be separated by one space least")
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -523,6 +586,8 @@ class CodeTokenizer:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

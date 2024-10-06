@@ -13,6 +13,7 @@ This project contains a step by step guide to get started with _Semantic Kernel 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -42,6 +43,11 @@ This project contains a step by step guide to get started with _Semantic Kernel 
 =======
 - For the use of Streaming OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.11.0
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+- For the use of Streaming OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.11.0
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 - For the use of Streaming OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.11.0

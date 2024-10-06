@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -23,10 +24,14 @@
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 // Source copied from https://github.com/eiriktsarpalis/stj-schema-mapper
 // It should be kept in sync with any changes made in that repo,
 // and should be removed once the relevant replacements are available in STJv9.
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -45,6 +50,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -129,6 +137,7 @@ internal
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -158,6 +167,11 @@ internal
 =======
             JsonSchema.EnsureMutable(ref paramSchema);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+            JsonSchema.EnsureMutable(ref paramSchema);
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
             JsonSchema.EnsureMutable(ref paramSchema);
@@ -339,6 +353,7 @@ internal
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 if (typeInfo.UnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
 =======
 =======
@@ -352,11 +367,14 @@ internal
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 if (typeInfo.UnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
 =======
                 JsonUnmappedMemberHandling effectiveUnmappedMemberHandling = typeInfo.UnmappedMemberHandling ?? typeInfo.Options.UnmappedMemberHandling;
                 if (effectiveUnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -375,6 +393,8 @@ internal
                 JsonUnmappedMemberHandling effectiveUnmappedMemberHandling = typeInfo.UnmappedMemberHandling ?? typeInfo.Options.UnmappedMemberHandling;
                 if (effectiveUnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 {
@@ -468,6 +488,7 @@ internal
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -497,6 +518,11 @@ internal
 =======
                         JsonSchema.EnsureMutable(ref propertySchema);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                        JsonSchema.EnsureMutable(ref propertySchema);
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                         JsonSchema.EnsureMutable(ref propertySchema);

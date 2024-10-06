@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -52,6 +58,7 @@ using System.Text.Json;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -81,6 +88,11 @@ using Json.Schema.Generation;
 =======
 using Json.Schema.Generation;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using Json.Schema.Generation;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using Json.Schema.Generation;
@@ -143,6 +155,7 @@ public class KernelParameterMetadataTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -172,6 +185,11 @@ public class KernelParameterMetadataTests
 =======
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{\"type\":\"object\",\"properties\":{\"Value1\":{\"type\":\"string\"},\"Value2\":{\"type\":\"integer\"},\"Value3\":{\"type\":\"number\", \"description\":\"This is the Value3 field.\"},\"Value4\":{\"type\":\"number\", \"description\":\"This is the Value4 property.\"}}}")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(Example) }.Schema));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{\"type\":\"object\",\"properties\":{\"Value1\":{\"type\":\"string\"},\"Value2\":{\"type\":\"integer\"},\"Value3\":{\"type\":\"number\", \"description\":\"This is the Value3 field.\"},\"Value4\":{\"type\":\"number\", \"description\":\"This is the Value4 property.\"}}}")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(Example) }.Schema));
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{\"type\":\"object\",\"properties\":{\"Value1\":{\"type\":\"string\"},\"Value2\":{\"type\":\"integer\"},\"Value3\":{\"type\":\"number\", \"description\":\"This is the Value3 field.\"},\"Value4\":{\"type\":\"number\", \"description\":\"This is the Value4 property.\"}}}")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(Example) }.Schema));
@@ -276,6 +294,7 @@ public class KernelParameterMetadataTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -292,12 +311,16 @@ public class KernelParameterMetadataTests
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         public string? Value1;
         public int Value2;
         [System.ComponentModel.Description("This is the Value3 field.")]
         public double Value3;
         [System.ComponentModel.Description("This is the Value4 property.")]
         public double Value4 { get; set; }
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -316,6 +339,9 @@ public class KernelParameterMetadataTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

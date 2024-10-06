@@ -25,6 +25,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/FunctionCalling/FunctionCallingUtilities.props" />
 =======
 =======
@@ -44,10 +45,15 @@
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/FunctionCalling/FunctionCallingUtilities.props" />
 =======
 >>>>>>> Stashed changes
+=======
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/FunctionCalling/FunctionCallingUtilities.props" />
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/FunctionCalling/FunctionCallingUtilities.props" />
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -66,6 +72,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -94,6 +103,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <PackageReference Include="System.ClientModel" />
 =======
 =======
@@ -123,6 +133,11 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    <PackageReference Include="System.ClientModel" />
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
     <PackageReference Include="System.ClientModel" />
 =======

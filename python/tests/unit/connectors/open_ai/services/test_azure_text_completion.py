@@ -17,6 +17,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -31,6 +32,8 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -46,7 +49,10 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -67,6 +73,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -81,6 +88,8 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 from semantic_kernel.contents.text_content import TextContent
@@ -110,6 +119,7 @@ def test_init(azure_openai_unit_test_env) -> None:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -124,6 +134,8 @@ def test_init(azure_openai_unit_test_env) -> None:
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -131,6 +143,7 @@ def test_init(azure_openai_unit_test_env) -> None:
         azure_text_completion.ai_model_id
         == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
     )
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -165,6 +178,11 @@ def test_init(azure_openai_unit_test_env) -> None:
 =======
     assert azure_text_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    assert azure_text_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     assert azure_text_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
@@ -191,6 +209,7 @@ def test_init_with_custom_header(azure_openai_unit_test_env) -> None:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -205,6 +224,8 @@ def test_init_with_custom_header(azure_openai_unit_test_env) -> None:
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -212,6 +233,7 @@ def test_init_with_custom_header(azure_openai_unit_test_env) -> None:
         azure_text_completion.ai_model_id
         == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
     )
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -246,6 +268,11 @@ def test_init_with_custom_header(azure_openai_unit_test_env) -> None:
 =======
     assert azure_text_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    assert azure_text_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     assert azure_text_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
@@ -264,6 +291,7 @@ def test_init_with_custom_header(azure_openai_unit_test_env) -> None:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -278,6 +306,8 @@ def test_init_with_custom_header(azure_openai_unit_test_env) -> None:
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -296,6 +326,7 @@ def test_azure_text_completion_init_with_empty_deployment_name(monkeypatch, azur
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -308,6 +339,9 @@ def test_azure_text_completion_init_with_empty_deployment_name(monkeypatch, azur
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -328,6 +362,7 @@ def test_azure_text_embedding_generates_no_token_with_api_key_in_env(azure_opena
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True)
 def test_init_with_empty_deployment_name(monkeypatch, azure_openai_unit_test_env) -> None:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -348,6 +383,9 @@ def test_init_with_empty_deployment_name(monkeypatch, azure_openai_unit_test_env
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     monkeypatch.delenv("AZURE_OPENAI_TEXT_DEPLOYMENT_NAME", raising=False)
     with pytest.raises(ServiceInitializationError):
         AzureTextCompletion(
@@ -362,6 +400,7 @@ def test_init_with_empty_deployment_name(monkeypatch, azure_openai_unit_test_env
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -376,6 +415,8 @@ def test_init_with_empty_deployment_name(monkeypatch, azure_openai_unit_test_env
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -396,6 +437,7 @@ def test_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> main
@@ -418,6 +460,10 @@ def test_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main
@@ -437,6 +483,7 @@ def test_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> No
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -451,6 +498,8 @@ def test_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> No
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -459,6 +508,7 @@ def test_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> No
     [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}],
     indirect=True,
 )
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -493,6 +543,11 @@ def test_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> No
 =======
 @pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+@pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 @pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)
@@ -521,6 +576,7 @@ async def test_call_with_parameters(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -535,6 +591,8 @@ async def test_call_with_parameters(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -543,6 +601,7 @@ async def test_call_with_parameters(
     mock_create,
     azure_openai_unit_test_env,
     mock_text_completion_response,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -577,6 +636,11 @@ async def test_call_with_parameters(
 =======
     mock_text_content, mock_metadata, mock_create, azure_openai_unit_test_env, mock_text_completion_response
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    mock_text_content, mock_metadata, mock_create, azure_openai_unit_test_env, mock_text_completion_response
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     mock_text_content, mock_metadata, mock_create, azure_openai_unit_test_env, mock_text_completion_response
@@ -595,6 +659,7 @@ async def test_call_with_parameters(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     await azure_text_completion.get_text_contents(
         prompt=prompt, settings=complete_prompt_execution_settings
     )
@@ -610,12 +675,15 @@ async def test_call_with_parameters(
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     await azure_text_completion.get_text_contents(
         prompt=prompt, settings=complete_prompt_execution_settings
     )
 =======
     await azure_text_completion.get_text_contents(prompt=prompt, settings=complete_prompt_execution_settings)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -633,6 +701,8 @@ async def test_call_with_parameters(
 =======
     await azure_text_completion.get_text_contents(prompt=prompt, settings=complete_prompt_execution_settings)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -662,6 +732,7 @@ async def test_call_with_parameters_logit_bias_not_none(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -676,6 +747,8 @@ async def test_call_with_parameters_logit_bias_not_none(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -684,6 +757,7 @@ async def test_call_with_parameters_logit_bias_not_none(
     mock_create,
     azure_openai_unit_test_env,
     mock_text_completion_response,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -718,6 +792,11 @@ async def test_call_with_parameters_logit_bias_not_none(
 =======
     mock_text_content, mock_metadata, mock_create, azure_openai_unit_test_env, mock_text_completion_response
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    mock_text_content, mock_metadata, mock_create, azure_openai_unit_test_env, mock_text_completion_response
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     mock_text_content, mock_metadata, mock_create, azure_openai_unit_test_env, mock_text_completion_response
@@ -740,6 +819,7 @@ async def test_call_with_parameters_logit_bias_not_none(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     await azure_text_completion.get_text_contents(
         prompt=prompt, settings=complete_prompt_execution_settings
     )
@@ -755,12 +835,15 @@ async def test_call_with_parameters_logit_bias_not_none(
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     await azure_text_completion.get_text_contents(
         prompt=prompt, settings=complete_prompt_execution_settings
     )
 =======
     await azure_text_completion.get_text_contents(prompt=prompt, settings=complete_prompt_execution_settings)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -778,6 +861,8 @@ async def test_call_with_parameters_logit_bias_not_none(
 =======
     await azure_text_completion.get_text_contents(prompt=prompt, settings=complete_prompt_execution_settings)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -802,6 +887,7 @@ def test_serialize(azure_openai_unit_test_env) -> None:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         "deployment_name": azure_openai_unit_test_env[
             "AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"
         ],
@@ -817,12 +903,15 @@ def test_serialize(azure_openai_unit_test_env) -> None:
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         "deployment_name": azure_openai_unit_test_env[
             "AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"
         ],
 =======
         "deployment_name": azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -840,6 +929,8 @@ def test_serialize(azure_openai_unit_test_env) -> None:
 =======
         "deployment_name": azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         "endpoint": azure_openai_unit_test_env["AZURE_OPENAI_ENDPOINT"],

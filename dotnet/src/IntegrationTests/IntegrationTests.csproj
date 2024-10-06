@@ -6,6 +6,7 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -14,6 +15,8 @@
 <<<<<<< Updated upstream
     <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0005,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0110</NoWarn>
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -34,6 +37,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -46,6 +50,8 @@
 =======
     <NoWarn>$(NoWarn);CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0080,SKEXP0110</NoWarn>
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
@@ -82,6 +88,7 @@
     <None Remove="skills\FunSkill\Joke\config.json" />
     <None Remove="skills\FunSkill\Joke\skprompt.txt" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,6 +96,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -108,6 +117,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -120,6 +130,8 @@
 =======
     <None Remove="TestData\semantic-kernel-info.txt" />
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   </ItemGroup>
@@ -150,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
@@ -176,12 +189,17 @@
 <<<<<<< main
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+<<<<<<< main
+>>>>>>> Stashed changes
     <ProjectReference Include="..\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
 =======
     <ProjectReference Include="..\Connectors\Connectors.AssemblyAI\Connectors.AssemblyAI.csproj" />
 >>>>>>> origin/PR
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -207,6 +225,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -243,6 +263,7 @@
     <ProjectReference Include="..\Connectors\Connectors.Memory.SqlServer\Connectors.Memory.SqlServer.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -250,6 +271,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -271,6 +294,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -285,6 +309,8 @@
     <ProjectReference Include="..\Experimental\Process.Core\Process.Core.csproj" />
     <ProjectReference Include="..\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj" />
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     <ProjectReference Include="..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
@@ -298,6 +324,7 @@
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -317,6 +344,10 @@
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -331,6 +362,7 @@
     <ProjectReference Include="..\Skills\Skills.Web\Skills.Web.csproj" />
     <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -347,6 +379,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -430,6 +464,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -437,6 +472,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -458,6 +495,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -472,6 +510,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   </ItemGroup>

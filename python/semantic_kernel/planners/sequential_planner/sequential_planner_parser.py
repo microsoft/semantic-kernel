@@ -8,6 +8,7 @@ import re
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -37,6 +38,11 @@ import re
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -62,6 +68,7 @@ from semantic_kernel.planners.plan import Plan
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -80,6 +87,10 @@ from semantic_kernel.planners.plan import Plan
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
 from typing import Callable, Optional, Tuple
 from xml.etree import ElementTree as ET
 
@@ -90,6 +101,7 @@ from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.planning_exception import PlanningException
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -108,6 +120,9 @@ from semantic_kernel.planners.planning_exception import PlanningException
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -128,6 +143,7 @@ class SequentialPlanParser:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     """Parser for Sequential planners."""
 =======
 =======
@@ -143,6 +159,10 @@ class SequentialPlanParser:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    """Parser for Sequential planners."""
+=======
+>>>>>>> Stashed changes
 =======
     """Parser for Sequential planners."""
 =======
@@ -167,6 +187,7 @@ class SequentialPlanParser:
         return function
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -184,6 +205,9 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -199,6 +223,7 @@ class SequentialPlanParser:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -228,6 +253,11 @@ class SequentialPlanParser:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -245,6 +275,7 @@ class SequentialPlanParser:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -262,10 +293,14 @@ class SequentialPlanParser:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
         get_plugin_function: Callable[[str, str], Optional[KernelFunction]],
         allow_missing_functions: bool = False,
     ):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -284,6 +319,9 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -307,6 +345,7 @@ class SequentialPlanParser:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -336,6 +375,11 @@ class SequentialPlanParser:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -354,6 +398,7 @@ class SequentialPlanParser:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -372,6 +417,10 @@ class SequentialPlanParser:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
                     raise PlanningException(
                         PlanningException.ErrorCodes.InvalidPlan,
                         f"Failed to parse plan xml strings: '{xml_string}' or '{plan_xml}'",
@@ -381,6 +430,7 @@ class SequentialPlanParser:
                     PlanningException.ErrorCodes.InvalidPlan,
                     f"Failed to parse plan xml string: '{xml_string}'",
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -399,6 +449,9 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -416,6 +469,7 @@ class SequentialPlanParser:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -445,6 +499,11 @@ class SequentialPlanParser:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -520,6 +579,7 @@ class SequentialPlanParser:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -534,6 +594,10 @@ class SequentialPlanParser:
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -587,6 +651,7 @@ class SequentialPlanParser:
                             )
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -604,6 +669,9 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -618,6 +686,7 @@ class SequentialPlanParser:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -647,6 +716,11 @@ class SequentialPlanParser:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -670,6 +744,7 @@ class SequentialPlanParser:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -687,11 +762,16 @@ class SequentialPlanParser:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
     def get_plugin_function_names(plugin_function_name: str) -> Tuple[str, str]:
         plugin_function_name_parts = plugin_function_name.split(".")
         plugin_name = plugin_function_name_parts[0] if len(plugin_function_name_parts) > 0 else ""
         function_name = plugin_function_name_parts[1] if len(plugin_function_name_parts) > 1 else plugin_function_name
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -710,6 +790,9 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

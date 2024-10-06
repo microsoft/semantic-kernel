@@ -147,6 +147,7 @@ internal sealed partial class MistralFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return KernelJsonSchemaBuilder.Build(null, typeof(string), description);
 =======
 =======
@@ -160,10 +161,13 @@ internal sealed partial class MistralFunction
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             return KernelJsonSchemaBuilder.Build(null, typeof(string), description);
 =======
             return KernelJsonSchemaBuilder.Build(typeof(string), description);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -181,6 +185,8 @@ internal sealed partial class MistralFunction
 =======
             return KernelJsonSchemaBuilder.Build(typeof(string), description);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }

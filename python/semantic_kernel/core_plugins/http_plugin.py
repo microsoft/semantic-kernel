@@ -8,6 +8,7 @@ import json
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -37,6 +38,11 @@ import json
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -54,6 +60,7 @@ from semantic_kernel.exceptions import FunctionExecutionException
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -72,6 +79,10 @@ from semantic_kernel.exceptions import FunctionExecutionException
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
 import sys
 from typing import Any, Dict, Optional
 
@@ -83,6 +94,7 @@ else:
     from typing_extensions import Annotated
 
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -101,6 +113,9 @@ else:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -128,6 +143,7 @@ class HttpPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -157,6 +173,11 @@ class HttpPlugin(KernelBaseModel):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -177,6 +198,7 @@ class HttpPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -194,6 +216,9 @@ class HttpPlugin(KernelBaseModel):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
     @kernel_function(description="Makes a GET request to a uri", name="getAsync")
     async def get(self, url: Annotated[str, "The URI to send the request to."]) -> str:
         """
@@ -203,6 +228,7 @@ class HttpPlugin(KernelBaseModel):
             uri: The URI to send the request to.
         returns:
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -221,6 +247,9 @@ class HttpPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -246,6 +275,7 @@ class HttpPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -275,6 +305,11 @@ class HttpPlugin(KernelBaseModel):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -292,6 +327,7 @@ class HttpPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -310,6 +346,10 @@ class HttpPlugin(KernelBaseModel):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
         body: Annotated[Optional[Dict[str, Any]], "The body of the request"] = {},
     ) -> str:
         """
@@ -317,6 +357,7 @@ class HttpPlugin(KernelBaseModel):
         the response body as a string.
         params:
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -335,6 +376,9 @@ class HttpPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -351,6 +395,7 @@ class HttpPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             raise FunctionExecutionException("url cannot be `None` or empty")
 =======
 =======
@@ -370,11 +415,16 @@ class HttpPlugin(KernelBaseModel):
             raise FunctionExecutionException("url cannot be `None` or empty")
 =======
 >>>>>>> Stashed changes
+=======
+            raise FunctionExecutionException("url cannot be `None` or empty")
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             raise FunctionExecutionException("url cannot be `None` or empty")
 =======
             raise ValueError("url cannot be `None` or empty")
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -393,6 +443,9 @@ class HttpPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -418,6 +471,7 @@ class HttpPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -447,6 +501,11 @@ class HttpPlugin(KernelBaseModel):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -464,6 +523,7 @@ class HttpPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -482,6 +542,10 @@ class HttpPlugin(KernelBaseModel):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
         body: Annotated[Optional[Dict[str, Any]], "The body of the request"] = {},
     ) -> str:
         """
@@ -489,6 +553,7 @@ class HttpPlugin(KernelBaseModel):
         the response body as a string.
         params:
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -507,6 +572,9 @@ class HttpPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -524,6 +592,7 @@ class HttpPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             raise FunctionExecutionException("url cannot be `None` or empty")
 =======
 =======
@@ -543,11 +612,16 @@ class HttpPlugin(KernelBaseModel):
             raise FunctionExecutionException("url cannot be `None` or empty")
 =======
 >>>>>>> Stashed changes
+=======
+            raise FunctionExecutionException("url cannot be `None` or empty")
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             raise FunctionExecutionException("url cannot be `None` or empty")
 =======
             raise ValueError("url cannot be `None` or empty")
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -566,6 +640,9 @@ class HttpPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -588,6 +665,7 @@ class HttpPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -617,6 +695,11 @@ class HttpPlugin(KernelBaseModel):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -638,6 +721,7 @@ class HttpPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -655,6 +739,9 @@ class HttpPlugin(KernelBaseModel):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
     async def delete(self, url: Annotated[str, "The URI to send the request to."]) -> str:
         """
         Sends an HTTP DELETE request to the specified URI and returns
@@ -663,6 +750,7 @@ class HttpPlugin(KernelBaseModel):
             uri: The URI to send the request to.
         returns:
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -681,6 +769,9 @@ class HttpPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Data;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Http;
 =======
 =======
@@ -29,10 +30,15 @@ using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Http;
 =======
 >>>>>>> Stashed changes
+=======
+using Microsoft.SemanticKernel.Http;
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Http;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -51,6 +57,9 @@ using Microsoft.SemanticKernel.Http;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -122,6 +131,7 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
 
 =======
@@ -144,11 +154,17 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 
 =======
 >>>>>>> Stashed changes
+=======
+                settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
+
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
 
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -167,6 +183,9 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -187,6 +206,7 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -200,6 +220,9 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -294,6 +317,7 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
             });
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -311,6 +335,9 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

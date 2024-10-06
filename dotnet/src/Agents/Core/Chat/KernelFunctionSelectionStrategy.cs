@@ -9,6 +9,7 @@ using System.Linq;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 using System.Text.Json;
@@ -25,18 +26,24 @@ using System.Threading.Tasks;
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.Agents.Internal;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -55,6 +62,9 @@ using Microsoft.SemanticKernel.Agents.Internal;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -76,6 +86,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// The default value for <see cref="KernelFunctionTerminationStrategy.AgentVariableName"/>.
 =======
 =======
@@ -89,10 +100,13 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// The default value for <see cref="KernelFunctionTerminationStrategy.AgentVariableName"/>.
 =======
     /// The default value for <see cref="KernelFunctionSelectionStrategy.AgentsVariableName"/>.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -110,6 +124,8 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 =======
     /// The default value for <see cref="KernelFunctionSelectionStrategy.AgentsVariableName"/>.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// </summary>
@@ -123,6 +139,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// The default value for <see cref="KernelFunctionTerminationStrategy.HistoryVariableName"/>.
 =======
 =======
@@ -136,10 +153,13 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// The default value for <see cref="KernelFunctionTerminationStrategy.HistoryVariableName"/>.
 =======
     /// The default value for <see cref="KernelFunctionSelectionStrategy.HistoryVariableName"/>.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -157,6 +177,8 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 =======
     /// The default value for <see cref="KernelFunctionSelectionStrategy.HistoryVariableName"/>.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// </summary>
@@ -187,6 +209,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -203,11 +226,15 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
     /// </summary>
     public Kernel Kernel => kernel;
 
     /// <summary>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -226,6 +253,9 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -241,6 +271,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -255,6 +286,8 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -266,6 +299,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
     /// </summary>
     public Kernel Kernel => kernel;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -287,6 +321,9 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     /// Optionally specify a <see cref="IChatHistoryReducer"/> to reduce the history.
     /// </summary>
     public IChatHistoryReducer? HistoryReducer { get; init; }
@@ -295,6 +332,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     /// When set, will use <see cref="SelectionStrategy.InitialAgent"/> in the event of a failure to select an agent.
     /// </summary>
     public bool UseInitialAgentAsFallback { get; init; }
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -313,6 +351,9 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -333,6 +374,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -346,9 +388,12 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         history = await history.ReduceAsync(this.HistoryReducer, cancellationToken).ConfigureAwait(false);
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -367,6 +412,8 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
         history = await history.ReduceAsync(this.HistoryReducer, cancellationToken).ConfigureAwait(false);
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         KernelArguments originalArguments = this.Arguments ?? [];
@@ -381,6 +428,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
 =======
 =======
@@ -394,10 +442,13 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
 =======
                 { this.HistoryVariableName, ChatMessageForPrompt.Format(history) },
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -415,6 +466,8 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 =======
                 { this.HistoryVariableName, ChatMessageForPrompt.Format(history) },
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             };

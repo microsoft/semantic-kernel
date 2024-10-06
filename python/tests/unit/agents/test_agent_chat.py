@@ -140,6 +140,7 @@ async def test_invoke_agent(agent_chat, agent, chat_message):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -153,6 +154,9 @@ async def test_invoke_agent(agent_chat, agent, chat_message):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -182,6 +186,7 @@ async def test_invoke_streaming_agent(agent_chat, agent, chat_message):
 
 @pytest.mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -199,6 +204,9 @@ async def test_invoke_streaming_agent(agent_chat, agent, chat_message):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

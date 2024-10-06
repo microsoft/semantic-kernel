@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 =======
 =======
@@ -29,10 +30,13 @@ namespace Microsoft.SemanticKernel;
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 =======
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -50,6 +54,8 @@ namespace Microsoft.SemanticKernel;
 =======
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: nameof(TextContent))]
@@ -65,6 +71,7 @@ namespace Microsoft.SemanticKernel;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -94,6 +101,11 @@ namespace Microsoft.SemanticKernel;
 =======
 [JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+[JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 [JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]

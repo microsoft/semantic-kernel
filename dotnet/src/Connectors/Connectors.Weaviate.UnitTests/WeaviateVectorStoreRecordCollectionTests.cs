@@ -343,6 +343,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonNode>>();
 =======
 =======
@@ -356,10 +357,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonNode>>();
 =======
         var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonObject>>();
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -377,6 +381,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 =======
         var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonObject>>();
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -401,6 +407,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             new() { JsonNodeCustomMapper = mockMapper.Object });
 =======
 =======
@@ -414,10 +421,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             new() { JsonNodeCustomMapper = mockMapper.Object });
 =======
             new() { JsonObjectCustomMapper = mockMapper.Object });
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -435,6 +445,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 =======
             new() { JsonObjectCustomMapper = mockMapper.Object });
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -475,6 +487,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -489,6 +502,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -496,6 +511,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 
         mockMapper
             .Setup(l => l.MapFromStorageToDataModel(It.IsAny<JsonNode>(), It.IsAny<StorageToDataModelMapperOptions>()))
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -517,10 +533,14 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonObject>>();
 
         mockMapper
             .Setup(l => l.MapFromStorageToDataModel(It.IsAny<JsonObject>(), It.IsAny<StorageToDataModelMapperOptions>()))
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -539,6 +559,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -554,6 +577,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             new() { JsonNodeCustomMapper = mockMapper.Object });
 =======
 =======
@@ -567,10 +591,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             new() { JsonNodeCustomMapper = mockMapper.Object });
 =======
             new() { JsonObjectCustomMapper = mockMapper.Object });
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -588,6 +615,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 =======
             new() { JsonObjectCustomMapper = mockMapper.Object });
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -632,6 +661,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -645,6 +675,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -756,6 +789,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -773,6 +807,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

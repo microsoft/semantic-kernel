@@ -2,6 +2,7 @@
 
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,6 +33,10 @@ __all__ = ["QdrantCollection", "QdrantMemoryStore", "QdrantSettings", "QdrantSto
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.memory.qdrant.qdrant_memory_store import (
     QdrantMemoryStore,
 )
@@ -45,6 +50,9 @@ __all__ = ["QdrantCollection", "QdrantMemoryStore", "QdrantSettings", "QdrantSto
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

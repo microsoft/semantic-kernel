@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -27,6 +28,9 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -40,6 +44,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -47,6 +52,8 @@ using Microsoft.SemanticKernel.Http;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -68,6 +75,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -82,6 +90,8 @@ using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
 using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -122,6 +132,7 @@ public class ChromaClient : IChromaClient
         {
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -139,6 +150,8 @@ public class ChromaClient : IChromaClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <param name="logger">Optional logger instance.</param>
@@ -149,6 +162,7 @@ public class ChromaClient : IChromaClient
         {
             throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -165,6 +179,8 @@ public class ChromaClient : IChromaClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -307,6 +323,7 @@ public class ChromaClient : IChromaClient
             this._logger.LogError(e, "{Method} {Path} operation failed: {Message}, {Response}", request.Method.Method, operationName, e.Message, e.ResponseContent);
             throw;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -325,6 +342,8 @@ public class ChromaClient : IChromaClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             this._logger.LogError(e, "{0} {1} operation failed: {2}, {3}", request.Method.Method, operationName, e.Message, responseContent);
@@ -332,6 +351,7 @@ public class ChromaClient : IChromaClient
         }
         response.EnsureSuccess(responseContent, this._logger);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -348,6 +368,8 @@ public class ChromaClient : IChromaClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 

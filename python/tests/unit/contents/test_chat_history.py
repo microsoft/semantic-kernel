@@ -10,6 +10,7 @@ import pytest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -39,6 +40,11 @@ import pytest
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -62,6 +68,7 @@ from semantic_kernel.prompt_template.input_variable import InputVariable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -80,6 +87,10 @@ from semantic_kernel.prompt_template.input_variable import InputVariable
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -88,6 +99,7 @@ from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -106,6 +118,9 @@ from semantic_kernel.kernel import Kernel
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -128,6 +143,7 @@ def test_init_with_messages_only():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -157,6 +173,11 @@ def test_init_with_messages_only():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -177,6 +198,7 @@ def test_init_with_messages_only():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -194,10 +216,15 @@ def test_init_with_messages_only():
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
     msgs = [ChatMessageContent(role=ChatRole.USER, content=f"Message {i}") for i in range(3)]
     chat_history = ChatHistory(messages=msgs)
     assert chat_history.messages == msgs, "Chat history should contain exactly the provided messages"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -216,6 +243,9 @@ def test_init_with_messages_only():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -230,6 +260,7 @@ def test_init_with_messages_and_system_message():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -259,6 +290,11 @@ def test_init_with_messages_and_system_message():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -406,6 +442,7 @@ def test_remove_message(chat_history: ChatHistory):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -420,6 +457,10 @@ def test_remove_message(chat_history: ChatHistory):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -507,6 +548,7 @@ def test_remove_message():
     role = ChatRole.USER
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -524,6 +566,9 @@ def test_remove_message():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -541,6 +586,7 @@ def test_remove_message():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def test_remove_message_invalid(chat_history: ChatHistory):
     content = "Message to remove"
     role = AuthorRole.USER
@@ -556,13 +602,18 @@ def test_remove_message_invalid(chat_history: ChatHistory):
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 def test_remove_message_invalid(chat_history: ChatHistory):
     content = "Message to remove"
     role = AuthorRole.USER
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -575,6 +626,7 @@ def test_remove_message_invalid():
     content = "Message to remove"
     role = ChatRole.USER
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -593,6 +645,9 @@ def test_remove_message_invalid():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -609,6 +664,7 @@ def test_remove_message_invalid():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def test_len(chat_history: ChatHistory):
 =======
 =======
@@ -628,12 +684,17 @@ def test_len(chat_history: ChatHistory):
 def test_len(chat_history: ChatHistory):
 =======
 >>>>>>> Stashed changes
+=======
+def test_len(chat_history: ChatHistory):
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 def test_len(chat_history: ChatHistory):
 =======
 def test_len():
     chat_history = ChatHistory()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -652,6 +713,9 @@ def test_len():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -668,6 +732,7 @@ def test_len():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def test_getitem(chat_history: ChatHistory):
 =======
 =======
@@ -687,12 +752,17 @@ def test_getitem(chat_history: ChatHistory):
 def test_getitem(chat_history: ChatHistory):
 =======
 >>>>>>> Stashed changes
+=======
+def test_getitem(chat_history: ChatHistory):
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 def test_getitem(chat_history: ChatHistory):
 =======
 def test_getitem():
     chat_history = ChatHistory()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -711,6 +781,9 @@ def test_getitem():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -726,6 +799,7 @@ def test_getitem():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def test_contains(chat_history: ChatHistory):
     content = "Message to check"
     role = AuthorRole.USER
@@ -741,13 +815,18 @@ def test_contains(chat_history: ChatHistory):
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 def test_contains(chat_history: ChatHistory):
     content = "Message to check"
     role = AuthorRole.USER
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -760,6 +839,7 @@ def test_contains():
     content = "Message to check"
     role = ChatRole.USER
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -778,6 +858,9 @@ def test_contains():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -794,6 +877,7 @@ def test_contains():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def test_iter(chat_history: ChatHistory):
 =======
 =======
@@ -813,12 +897,17 @@ def test_iter(chat_history: ChatHistory):
 def test_iter(chat_history: ChatHistory):
 =======
 >>>>>>> Stashed changes
+=======
+def test_iter(chat_history: ChatHistory):
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 def test_iter(chat_history: ChatHistory):
 =======
 def test_iter():
     chat_history = ChatHistory()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -837,6 +926,9 @@ def test_iter():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -860,6 +952,7 @@ def test_eq():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     messages = [("Message 1", AuthorRole.USER), ("Message 2", AuthorRole.ASSISTANT)]
 =======
 =======
@@ -879,11 +972,16 @@ def test_eq():
     messages = [("Message 1", AuthorRole.USER), ("Message 2", AuthorRole.ASSISTANT)]
 =======
 >>>>>>> Stashed changes
+=======
+    messages = [("Message 1", AuthorRole.USER), ("Message 2", AuthorRole.ASSISTANT)]
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     messages = [("Message 1", AuthorRole.USER), ("Message 2", AuthorRole.ASSISTANT)]
 =======
     messages = [("Message 1", ChatRole.USER), ("Message 2", ChatRole.ASSISTANT)]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -902,6 +1000,9 @@ def test_eq():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -924,6 +1025,7 @@ def test_eq():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -953,6 +1055,11 @@ def test_eq():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -1004,6 +1111,7 @@ def test_serialize():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1017,6 +1125,9 @@ def test_serialize():
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1040,6 +1151,7 @@ def test_serialize():  # ignore: E501
     )
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1057,6 +1169,9 @@ def test_serialize():  # ignore: E501
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1071,6 +1186,7 @@ def test_serialize():  # ignore: E501
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         == '{\n  "messages": [\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "system",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "a test system prompt"\n        }\n      ]\n    },\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "user",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "Message"\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "uri": "http://test.com/image.jpg",\n          "data_uri": ""\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "data_uri": "data:image/jpeg;base64,dGVzdF9kYXRh"\n        }\n      ]\n    }\n  ]\n}'  # noqa: E501
 =======
 =======
@@ -1086,6 +1202,10 @@ def test_serialize():  # ignore: E501
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        == '{\n  "messages": [\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "system",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "a test system prompt"\n        }\n      ]\n    },\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "user",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "Message"\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "uri": "http://test.com/image.jpg",\n          "data_uri": ""\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "data_uri": "data:image/jpeg;base64,dGVzdF9kYXRh"\n        }\n      ]\n    }\n  ]\n}'  # noqa: E501
+=======
+>>>>>>> Stashed changes
 =======
         == '{\n  "messages": [\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "system",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "a test system prompt"\n        }\n      ]\n    },\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "user",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "Message"\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "uri": "http://test.com/image.jpg",\n          "data_uri": ""\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "data_uri": "data:image/jpeg;base64,dGVzdF9kYXRh"\n        }\n      ]\n    }\n  ]\n}'  # noqa: E501
 =======
@@ -1103,6 +1223,7 @@ def test_serialize():  # ignore: E501
 "encoding": null\n        }\n    ]\n}'
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1120,6 +1241,9 @@ def test_serialize():  # ignore: E501
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1135,6 +1259,7 @@ def test_serialize_and_deserialize_to_chat_history():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1164,6 +1289,11 @@ def test_serialize_and_deserialize_to_chat_history():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -1180,6 +1310,7 @@ def test_serialize_and_deserialize_to_chat_history():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1193,10 +1324,13 @@ def test_serialize_and_deserialize_to_chat_history():
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 =======
     msgs = [ChatMessageContent(role=ChatRole.USER, content=f"Message {i}") for i in range(3)]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1216,6 +1350,8 @@ def test_serialize_and_deserialize_to_chat_history():
     msgs = [ChatMessageContent(role=ChatRole.USER, content=f"Message {i}") for i in range(3)]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     chat_history = ChatHistory(messages=msgs, system_message=system_msg)
@@ -1234,6 +1370,7 @@ def test_deserialize_invalid_json_raises_exception():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1263,6 +1400,11 @@ def test_deserialize_invalid_json_raises_exception():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -1291,6 +1433,7 @@ def test_chat_history_to_prompt(chat_history: ChatHistory):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1305,6 +1448,10 @@ def test_chat_history_to_prompt(chat_history: ChatHistory):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -1329,6 +1476,7 @@ def test_chat_history_to_prompt():
         == '<message role="system">I am an AI assistant</message>\n<message role="user">What can you do?</message>'
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1346,6 +1494,9 @@ def test_chat_history_to_prompt():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1366,6 +1517,7 @@ def test_chat_history_from_rendered_prompt():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1395,6 +1547,11 @@ def test_chat_history_from_rendered_prompt():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -1414,6 +1571,7 @@ def test_chat_history_from_rendered_prompt():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1431,6 +1589,9 @@ def test_chat_history_from_rendered_prompt():
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
     rendered = '<message role="system">I am an AI assistant</message>\n<message role="user">What can you do?</message>'
 
     chat_history = ChatHistory.from_rendered_prompt(rendered)
@@ -1439,6 +1600,7 @@ def test_chat_history_from_rendered_prompt():
     assert chat_history.messages[1].content == "What can you do?"
     assert chat_history.messages[1].role == ChatRole.USER
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1457,6 +1619,9 @@ def test_chat_history_from_rendered_prompt():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1476,6 +1641,7 @@ stuff</message>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1505,6 +1671,11 @@ stuff</message>
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -1554,6 +1725,7 @@ async def test_template_safe(chat_history: ChatHistory):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1568,6 +1740,10 @@ async def test_template_safe(chat_history: ChatHistory):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -1583,6 +1759,7 @@ async def test_template():
     chat_history = ChatHistory()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1600,6 +1777,9 @@ async def test_template():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1614,6 +1794,7 @@ async def test_template():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
         prompt_template_config=PromptTemplateConfig(
@@ -1630,12 +1811,17 @@ async def test_template():
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template
         )
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -1645,6 +1831,7 @@ async def test_template():
 =======
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1663,6 +1850,9 @@ async def test_template():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1677,6 +1867,7 @@ async def test_template():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1706,6 +1897,11 @@ async def test_template():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -1729,6 +1925,7 @@ async def test_template():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1747,6 +1944,10 @@ async def test_template():
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
     assert rendered == 'system stuff<message role="assistant">I am an AI assistant</message>What can you do?'
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
@@ -1757,6 +1958,7 @@ async def test_template():
     assert chat_history_2.messages[2].content == "What can you do?"
     assert chat_history_2.messages[2].role == ChatRole.USER
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1775,6 +1977,9 @@ async def test_template():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1796,6 +2001,7 @@ async def test_template_two_histories():  # ignore: E501
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1825,6 +2031,11 @@ async def test_template_two_histories():  # ignore: E501
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -1861,6 +2072,7 @@ async def test_template_two_histories():  # ignore: E501
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1875,6 +2087,10 @@ async def test_template_two_histories():  # ignore: E501
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -1901,6 +2117,7 @@ What can you do?<message role="assistant">I like to be added later on</message>'
     assert chat_history_out.messages[3].role == ChatRole.ASSISTANT
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1918,6 +2135,9 @@ What can you do?<message role="assistant">I like to be added later on</message>'
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1933,6 +2153,7 @@ async def test_template_two_histories_one_empty():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1962,6 +2183,11 @@ async def test_template_two_histories_one_empty():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -1989,6 +2215,7 @@ async def test_template_two_histories_one_empty():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2003,6 +2230,10 @@ async def test_template_two_histories_one_empty():
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -2018,6 +2249,7 @@ async def test_template_two_histories_one_empty():
         arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -2035,6 +2267,9 @@ async def test_template_two_histories_one_empty():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2049,6 +2284,7 @@ async def test_template_two_histories_one_empty():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2078,6 +2314,11 @@ async def test_template_two_histories_one_empty():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -2099,6 +2340,7 @@ async def test_template_history_only(chat_history: ChatHistory):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2112,6 +2354,9 @@ async def test_template_history_only(chat_history: ChatHistory):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -2128,6 +2373,7 @@ async def test_template_history_only():
     chat_history = ChatHistory()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -2145,6 +2391,9 @@ async def test_template_history_only():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2159,10 +2408,14 @@ async def test_template_history_only():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template
         )
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -2183,6 +2436,8 @@ async def test_template_history_only():
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template
@@ -2190,6 +2445,7 @@ async def test_template_history_only():
 =======
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2208,6 +2464,9 @@ async def test_template_history_only():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2222,6 +2481,7 @@ async def test_template_history_only():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     assert chat_history_2.messages[0].role == AuthorRole.ASSISTANT
 =======
 =======
@@ -2241,11 +2501,16 @@ async def test_template_history_only():
     assert chat_history_2.messages[0].role == AuthorRole.ASSISTANT
 =======
 >>>>>>> Stashed changes
+=======
+    assert chat_history_2.messages[0].role == AuthorRole.ASSISTANT
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     assert chat_history_2.messages[0].role == AuthorRole.ASSISTANT
 =======
     assert chat_history_2.messages[0].role == ChatRole.ASSISTANT
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2264,6 +2529,9 @@ async def test_template_history_only():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2280,6 +2548,7 @@ async def test_template_without_chat_history():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
         prompt_template_config=PromptTemplateConfig(
@@ -2296,12 +2565,17 @@ async def test_template_without_chat_history():
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template
         )
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -2311,6 +2585,7 @@ async def test_template_without_chat_history():
 =======
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2329,6 +2604,9 @@ async def test_template_without_chat_history():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2343,6 +2621,7 @@ async def test_template_without_chat_history():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     assert chat_history.messages[0].role == AuthorRole.USER
 =======
 =======
@@ -2362,11 +2641,16 @@ async def test_template_without_chat_history():
     assert chat_history.messages[0].role == AuthorRole.USER
 =======
 >>>>>>> Stashed changes
+=======
+    assert chat_history.messages[0].role == AuthorRole.USER
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     assert chat_history.messages[0].role == AuthorRole.USER
 =======
     assert chat_history.messages[0].role == ChatRole.SYSTEM
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2385,6 +2669,9 @@ async def test_template_without_chat_history():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2401,6 +2688,7 @@ async def test_handwritten_xml():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2430,6 +2718,11 @@ async def test_handwritten_xml():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -2463,6 +2756,7 @@ async def test_empty_text_content_message():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2480,12 +2774,16 @@ async def test_empty_text_content_message():
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(kernel=Kernel(), arguments=KernelArguments())
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "test content"
     assert chat_history.messages[0].role == ChatRole.USER
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2504,6 +2802,9 @@ async def test_empty_text_content_message():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2520,6 +2821,7 @@ async def test_handwritten_xml_invalid():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2549,6 +2851,11 @@ async def test_handwritten_xml_invalid():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -2601,6 +2908,7 @@ async def test_handwritten_xml_as_arg_unsafe_template():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2615,6 +2923,10 @@ async def test_handwritten_xml_as_arg_unsafe_template():
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -2633,6 +2945,7 @@ async def test_handwritten_xml_as_arg():
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -2650,6 +2963,9 @@ async def test_handwritten_xml_as_arg():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2666,6 +2982,7 @@ async def test_handwritten_xml_as_arg():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2695,6 +3012,11 @@ async def test_handwritten_xml_as_arg():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -2804,6 +3126,7 @@ def test_chat_history_serialize(chat_history: ChatHistory):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2817,6 +3140,9 @@ def test_chat_history_serialize(chat_history: ChatHistory):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -2847,6 +3173,7 @@ async def test_history_openai_cmc():
     assert chat_history.messages[0].function_call.name == "test-test"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -2864,6 +3191,9 @@ async def test_history_openai_cmc():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

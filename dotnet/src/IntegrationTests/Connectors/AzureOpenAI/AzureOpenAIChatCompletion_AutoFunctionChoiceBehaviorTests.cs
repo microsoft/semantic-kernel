@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -43,6 +44,11 @@ using Azure.Identity;
 =======
 using Azure.Identity;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using Azure.Identity;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using Azure.Identity;
@@ -105,6 +111,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
 =======
@@ -134,6 +141,11 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.Single(invokedFunctions);
 =======
@@ -181,6 +193,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
 =======
@@ -210,6 +223,11 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.Single(invokedFunctions);
 =======
@@ -254,6 +272,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionCalls);
 =======
 =======
@@ -267,10 +286,13 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         Assert.Single(functionCalls);
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -288,6 +310,8 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -333,6 +357,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
 =======
@@ -362,6 +387,11 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.Single(invokedFunctions);
 =======
@@ -414,6 +444,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -428,6 +459,8 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -436,6 +469,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
     }
 
     [Fact(Skip = "Temporarily disabled to unblock PR pipeline.")]
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -457,10 +491,14 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
     [Fact]
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -479,6 +517,9 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -519,6 +560,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionsForManualInvocation);
 =======
 =======
@@ -548,6 +590,11 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(functionsForManualInvocation);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.Single(functionsForManualInvocation);
 =======
@@ -594,6 +641,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionCalls);
 =======
 =======
@@ -607,10 +655,13 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         Assert.Single(functionCalls);
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -628,6 +679,8 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -674,6 +727,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionsForManualInvocation);
 =======
 =======
@@ -703,6 +757,11 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(functionsForManualInvocation);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.Single(functionsForManualInvocation);
 =======
@@ -725,6 +784,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
 =======
 =======
@@ -754,6 +814,11 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
 =======
@@ -774,6 +839,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             apiKey: azureOpenAIConfiguration.ApiKey);
 =======
 =======
@@ -787,10 +853,13 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             apiKey: azureOpenAIConfiguration.ApiKey);
 =======
             credentials: new AzureCliCredential());
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -808,6 +877,8 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 =======
             credentials: new AzureCliCredential());
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 

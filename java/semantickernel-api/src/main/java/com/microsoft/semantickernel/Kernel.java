@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,6 +22,10 @@ package com.microsoft.semantickernel;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -38,6 +43,7 @@ import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 >>>>>>> origin/dsgrieve/java-v1-api
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -54,6 +60,8 @@ import com.microsoft.semantickernel.builders.BuildersSingleton;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -66,6 +74,7 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 <<<<<<< AI
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -84,6 +93,8 @@ import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 =======
@@ -98,6 +109,7 @@ import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -134,6 +146,8 @@ import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 =======
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -168,6 +182,7 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -187,6 +202,10 @@ import javax.annotation.Nullable;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -222,6 +241,9 @@ import reactor.core.publisher.Mono;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -264,6 +286,7 @@ public class Kernel {
      *                                {@code null}, an empty collection will be used.
      */
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -283,6 +306,10 @@ public class Kernel {
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -304,6 +331,7 @@ public class Kernel {
      */
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -320,6 +348,8 @@ public class Kernel {
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -350,6 +380,7 @@ public class Kernel {
         this.globalKernelHooks = new KernelHooks(globalKernelHooks);
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -389,6 +420,14 @@ public class Kernel {
 =======
 >>>>>>> Stashed changes
 =======
+=======
+<<<<<<< main
+=======
+=======
+    @Deprecated
+    default PromptTemplateEngine getPromptTemplateEngine() { throw new UnsupportedOperationException(); }
+>>>>>>> origin/dsgrieve/java-v1-api
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -405,6 +444,7 @@ public class Kernel {
      * @return The fluent builder for creating a new instance of {@code Kernel}.
      */
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -425,14 +465,19 @@ public class Kernel {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     public static Builder builder() {
         return new Kernel.Builder();
     }
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -444,6 +489,7 @@ public class Kernel {
     default SemanticTextMemory getMemory() { throw new UnsupportedOperationException(); }
 >>>>>>> origin/dsgrieve/java-v1-api
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -460,6 +506,8 @@ public class Kernel {
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -472,6 +520,7 @@ public class Kernel {
      * @return A Builder that can create a copy of the instance of {@code Kernel}.
      */
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -489,6 +538,8 @@ public class Kernel {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -498,6 +549,7 @@ public class Kernel {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -510,6 +562,8 @@ public class Kernel {
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public static Builder from(Kernel kernel) {
@@ -519,6 +573,7 @@ public class Kernel {
             kernel.plugins);
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -559,12 +614,17 @@ public class Kernel {
 >>>>>>> Stashed changes
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
     @Deprecated
     default Mono<KernelResult> runAsync(SKFunction... pipeline) { throw new UnsupportedOperationException(); }
 >>>>>>> origin/dsgrieve/java-v1-api
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
 
@@ -575,6 +635,7 @@ public class Kernel {
      * @return A Builder that can create a copy of the current instance of {@code Kernel}.
      */
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -595,14 +656,19 @@ public class Kernel {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     public Builder toBuilder() {
         return new Builder(services, serviceSelectorProvider, plugins);
     }
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -614,6 +680,7 @@ public class Kernel {
     default Mono<KernelResult> runAsync(String input, SKFunction... pipeline) { throw new UnsupportedOperationException(); }
 >>>>>>> origin/dsgrieve/java-v1-api
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -630,6 +697,8 @@ public class Kernel {
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -688,6 +757,7 @@ public class Kernel {
      * @see KernelFunction#invokeAsync(Kernel)
      */
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -708,14 +778,19 @@ public class Kernel {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     public <T> FunctionInvocation<T> invokePromptAsync(@Nonnull String prompt) {
         return invokeAsync(KernelFunction.<T>createFromPrompt(prompt).build());
     }
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -729,6 +804,7 @@ public class Kernel {
         { throw new UnsupportedOperationException(); }
 >>>>>>> origin/dsgrieve/java-v1-api
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -745,6 +821,8 @@ public class Kernel {
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -768,12 +846,16 @@ public class Kernel {
 >>>>>>> origin/main-auto-tune
      */
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -813,6 +895,7 @@ public class Kernel {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -825,6 +908,9 @@ public class Kernel {
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -854,6 +940,7 @@ public class Kernel {
             throws KernelException { throw new UnsupportedOperationException(); }
 >>>>>>> origin/dsgrieve/java-v1-api
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -870,6 +957,8 @@ public class Kernel {
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -881,6 +970,7 @@ public class Kernel {
      * @return The plugin with the specified name, or {@code null} if no such plugin exists.
      */
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -898,6 +988,8 @@ public class Kernel {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -907,6 +999,7 @@ public class Kernel {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -919,6 +1012,8 @@ public class Kernel {
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     @Nullable
@@ -926,6 +1021,7 @@ public class Kernel {
         return plugins.getPlugin(pluginName);
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -946,6 +1042,11 @@ public class Kernel {
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -956,6 +1057,7 @@ public class Kernel {
             FunctionType semanticFunctionDefinition) { throw new UnsupportedOperationException(); }
 >>>>>>> origin/dsgrieve/java-v1-api
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -972,6 +1074,8 @@ public class Kernel {
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -983,6 +1087,7 @@ public class Kernel {
      * @see Kernel#getPlugins()
      */
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1003,14 +1108,19 @@ public class Kernel {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     public Collection<KernelPlugin> getPlugins() {
         return Collections.unmodifiableCollection(plugins.getPlugins());
     }
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -1022,6 +1132,7 @@ public class Kernel {
     default SKFunction getFunction(String skill, String function) { throw new UnsupportedOperationException(); }
 >>>>>>> origin/dsgrieve/java-v1-api
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1038,6 +1149,8 @@ public class Kernel {
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1058,6 +1171,7 @@ public class Kernel {
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1073,6 +1187,8 @@ public class Kernel {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -1081,6 +1197,7 @@ public class Kernel {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1096,6 +1213,8 @@ public class Kernel {
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     /**
      * Gets the functions available through the kernel. Functions are collected from all plugins
      * available through the kernel.
@@ -1121,6 +1240,7 @@ public class Kernel {
         return globalKernelHooks;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1128,6 +1248,8 @@ public class Kernel {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1183,6 +1305,9 @@ public class Kernel {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1219,6 +1344,7 @@ public class Kernel {
                 null,
                 null);
 
+<<<<<<< Updated upstream
 =======
 =======
     @Deprecated
@@ -1260,10 +1386,13 @@ public class Kernel {
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         if (selector == null) {
             throw new ServiceNotFoundException("Unable to find service of type " + clazz.getName());
         }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -1287,6 +1416,8 @@ public class Kernel {
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

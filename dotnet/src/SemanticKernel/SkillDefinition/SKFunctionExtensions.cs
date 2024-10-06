@@ -8,6 +8,7 @@ using System;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -42,6 +43,11 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Nodes;
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+using System.Text.Json.Nodes;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -63,6 +69,7 @@ public static class SKFunctionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -77,6 +84,8 @@ public static class SKFunctionExtensions
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -157,6 +166,7 @@ public static class SKFunctionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> main
@@ -179,6 +189,10 @@ public static class SKFunctionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main
@@ -211,6 +225,7 @@ public static class SKFunctionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -224,6 +239,9 @@ public static class SKFunctionExtensions
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -252,6 +270,7 @@ public static class SKFunctionExtensions
         var inputInContext = context.Variables.Input;
         if (!string.IsNullOrEmpty(inputInContext) && !string.Equals(input, inputInContext, StringComparison.Ordinal))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -269,6 +288,9 @@ public static class SKFunctionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -292,6 +314,7 @@ public static class SKFunctionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -308,6 +331,9 @@ public static class SKFunctionExtensions
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
             return function.InvokeAsync(context, textCompletionService, settings);
         }
 
@@ -318,6 +344,7 @@ public static class SKFunctionExtensions
         contextClone.Variables.Update(input);
 
         return function.InvokeAsync(contextClone, textCompletionService, settings);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -336,6 +363,9 @@ public static class SKFunctionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

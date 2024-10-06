@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15,10 +16,14 @@ using System.Linq;
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 =======
@@ -36,6 +41,8 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Diagnostics;
@@ -46,6 +53,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -62,6 +70,8 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -120,6 +130,7 @@ public class FlowValidator : IFlowValidator
         var steps = flow.Steps
             .Select(step => step as ReferenceFlowStep)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -141,6 +152,11 @@ public class FlowValidator : IFlowValidator
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+            .Where(step => step is not null);
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
             .Where(step => step is not null);
@@ -152,6 +168,7 @@ public class FlowValidator : IFlowValidator
             .Where(step => step != null);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -168,6 +185,8 @@ public class FlowValidator : IFlowValidator
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

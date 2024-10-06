@@ -15,6 +15,7 @@ import torch
 from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,6 +35,10 @@ from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -43,6 +48,7 @@ from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 from semantic_kernel.connectors.ai.ai_exception import AIException
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -59,6 +65,8 @@ from semantic_kernel.connectors.ai.ai_exception import AIException
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -75,6 +83,7 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -90,6 +99,8 @@ from semantic_kernel.contents.text_content import TextContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -98,6 +109,7 @@ from semantic_kernel.contents.text_content import TextContent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -113,6 +125,8 @@ from semantic_kernel.contents.text_content import TextContent
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.exceptions import (
     ServiceInvalidExecutionSettingsError,
     ServiceResponseException,
@@ -122,6 +136,7 @@ from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, Ser
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -144,14 +159,19 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
 logger: logging.Logger = logging.getLogger(__name__)
 =======
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -159,9 +179,12 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -178,6 +201,9 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -199,7 +225,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -215,6 +244,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -243,6 +273,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     task: Literal["summarization", "text-generation", "text2text-generation"]
@@ -253,6 +285,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         self,
         ai_model_id: str,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -270,6 +303,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -279,6 +314,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -291,6 +327,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         task: str | None = "text2text-generation",
@@ -299,6 +337,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         model_kwargs: dict[str, Any] | None = None,
         pipeline_kwargs: dict[str, Any] | None = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -319,6 +358,11 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -331,6 +375,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         pipeline_kwargs: Optional[Dict[str, Any]] = None,
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -347,6 +392,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -357,6 +404,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             ai_model_id (str): Hugging Face model card string, see
                 https://huggingface.co/models
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -372,6 +420,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -380,6 +430,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -395,6 +446,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
             device (int): Device to run the model on, defaults to CPU, 0+ for GPU,
                 -- None if using device_map instead. (If both device and device_map
                 are specified, device overrides device_map. If unintended,
@@ -402,6 +455,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             service_id (str): Service ID for the AI service. (optional)
             task (str): Model completion task type, options are:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -422,6 +476,11 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -435,6 +494,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             task {Optional[str]} -- Model completion task type, options are:
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -451,6 +511,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -486,12 +548,16 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
     # region Overriding base class methods
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -533,6 +599,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -547,6 +614,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 
 >>>>>>> origin/main
+=======
+=======
+
+>>>>>>> Stashed changes
 =======
 =======
 
@@ -556,7 +627,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return HuggingFacePromptExecutionSettings
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 
     @override
     @trace_text_completion(MODEL_PROVIDER_NAME)
@@ -571,6 +645,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         assert isinstance(settings, HuggingFacePromptExecutionSettings)  # nosec
 
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 
@@ -591,6 +666,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
         settings: HuggingFacePromptExecutionSettings,
     ) -> List[TextContent]:
         """
@@ -605,6 +682,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         """
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -621,6 +699,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -633,7 +713,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             return [self._create_text_content(results, result) for result in results]
         return [self._create_text_content(results, results)]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 
 <<<<<<< main
     def _create_text_content(
@@ -647,6 +730,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             ],
         )
 
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -665,6 +749,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
 <<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     async def get_streaming_text_contents(
@@ -675,6 +761,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -690,6 +777,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -698,6 +787,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -713,6 +803,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         if not isinstance(settings, HuggingFacePromptExecutionSettings):
@@ -720,6 +812,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         assert isinstance(settings, HuggingFacePromptExecutionSettings)  # nosec
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -740,6 +833,11 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -760,6 +858,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         """
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -776,6 +875,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

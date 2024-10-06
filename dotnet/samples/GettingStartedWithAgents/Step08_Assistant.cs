@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using System.ComponentModel;
@@ -53,6 +59,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -66,10 +73,13 @@ using Microsoft.SemanticKernel.ChatCompletion;
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 using Resources;
 6d73513a859ab2d05e01db3bc1d405827799e34b
 using Resources;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,6 +99,8 @@ using Resources;
 6d73513a859ab2d05e01db3bc1d405827799e34b
 using Resources;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -116,6 +128,7 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 new(this.Model)
@@ -131,13 +144,18 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 new(this.Model)
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 clientProvider: this.GetClientProvider(),
@@ -148,6 +166,7 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
  6d73513a859ab2d05e01db3bc1d405827799e34b
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -166,6 +185,9 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -180,6 +202,7 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
 =======
 =======
@@ -199,12 +222,17 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
                 });
 =======
 >>>>>>> Stashed changes
+=======
+                });
+=======
+>>>>>>> Stashed changes
                 },
                 kernel: new Kernel());
                 });
  6d73513a859ab2d05e01db3bc1d405827799e34b
                 },
                 kernel: new Kernel());
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -223,6 +251,9 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -269,6 +300,7 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -282,6 +314,9 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -342,6 +377,7 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 
  6d73513a859ab2d05e01db3bc1d405827799e34b
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -359,6 +395,9 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

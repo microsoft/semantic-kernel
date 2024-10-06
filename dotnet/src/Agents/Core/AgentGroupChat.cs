@@ -40,6 +40,7 @@ public sealed class AgentGroupChat : AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
 =======
 =======
@@ -53,10 +54,13 @@ public sealed class AgentGroupChat : AgentChat
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
 =======
     public override IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -74,6 +78,8 @@ public sealed class AgentGroupChat : AgentChat
 =======
     public override IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -112,6 +118,7 @@ public sealed class AgentGroupChat : AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -125,9 +132,12 @@ public sealed class AgentGroupChat : AgentChat
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         bool isComplete = false;
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -146,6 +156,8 @@ public sealed class AgentGroupChat : AgentChat
         bool isComplete = false;
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
@@ -199,6 +211,7 @@ public sealed class AgentGroupChat : AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -213,6 +226,8 @@ public sealed class AgentGroupChat : AgentChat
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -220,6 +235,7 @@ public sealed class AgentGroupChat : AgentChat
             }
 
             if (this.IsComplete)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -241,6 +257,9 @@ public sealed class AgentGroupChat : AgentChat
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
                 if (message.Role == AuthorRole.Assistant)
                 {
                     var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken);
@@ -251,6 +270,7 @@ public sealed class AgentGroupChat : AgentChat
             }
 
             if (isComplete)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -269,6 +289,9 @@ public sealed class AgentGroupChat : AgentChat
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -284,6 +307,7 @@ public sealed class AgentGroupChat : AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -297,9 +321,12 @@ public sealed class AgentGroupChat : AgentChat
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         this.IsComplete = isComplete;
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -318,6 +345,8 @@ public sealed class AgentGroupChat : AgentChat
         this.IsComplete = isComplete;
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         this.Logger.LogAgentGroupChatYield(nameof(InvokeAsync), this.IsComplete);
@@ -348,6 +377,7 @@ public sealed class AgentGroupChat : AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< main
 >>>>>>> origin/main
@@ -364,10 +394,13 @@ public sealed class AgentGroupChat : AgentChat
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 <<<<<<< main
 >>>>>>> origin/main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -386,6 +419,8 @@ public sealed class AgentGroupChat : AgentChat
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         if (isJoining)
         {
             this.Add(agent);
@@ -397,6 +432,7 @@ public sealed class AgentGroupChat : AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -411,6 +447,8 @@ public sealed class AgentGroupChat : AgentChat
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -426,7 +464,10 @@ public sealed class AgentGroupChat : AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -447,6 +488,7 @@ public sealed class AgentGroupChat : AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -461,6 +503,8 @@ public sealed class AgentGroupChat : AgentChat
 =======
         this.AddAgent(agent);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -512,6 +556,7 @@ public sealed class AgentGroupChat : AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -525,6 +570,9 @@ public sealed class AgentGroupChat : AgentChat
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -554,6 +602,7 @@ public sealed class AgentGroupChat : AgentChat
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -571,6 +620,9 @@ public sealed class AgentGroupChat : AgentChat
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

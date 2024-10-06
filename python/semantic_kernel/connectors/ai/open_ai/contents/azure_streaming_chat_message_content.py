@@ -45,6 +45,7 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -74,6 +75,11 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
 =======
     def __add__(self, other: "AzureStreamingChatMessageContent") -> "AzureStreamingChatMessageContent":
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    def __add__(self, other: "AzureStreamingChatMessageContent") -> "AzureStreamingChatMessageContent":
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     def __add__(self, other: "AzureStreamingChatMessageContent") -> "AzureStreamingChatMessageContent":
@@ -113,6 +119,7 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -129,6 +136,9 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:
             raise ContentAdditionException("Cannot add StreamingChatMessageContent from different ai_model_id")
@@ -137,6 +147,7 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
         if self.role and other.role and self.role != other.role:
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
         fc = (self.function_call + other.function_call) if self.function_call else other.function_call
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -155,6 +166,9 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

@@ -16,6 +16,7 @@ else:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from pydantic import Field, field_validator, model_validator
 =======
 =======
@@ -29,10 +30,13 @@ from pydantic import Field, field_validator, model_validator
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 from pydantic import Field, field_validator, model_validator
 =======
 from pydantic import BaseModel, Field, field_validator, model_validator
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -50,6 +54,8 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 =======
 from pydantic import BaseModel, Field, field_validator, model_validator
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -118,6 +124,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     response_format: dict[Literal["type"], Literal["text", "json_object"]] | None = None
 =======
 =======
@@ -131,12 +138,15 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     response_format: dict[Literal["type"], Literal["text", "json_object"]] | None = None
 =======
     response_format: (
         dict[Literal["type"], Literal["text", "json_object"]] | dict[str, Any] | type[BaseModel] | type | None
     ) = None
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -156,6 +166,8 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         dict[Literal["type"], Literal["text", "json_object"]] | dict[str, Any] | type[BaseModel] | type | None
     ) = None
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     function_call: str | None = None
@@ -178,6 +190,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -194,11 +207,15 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     structured_json_response: bool = Field(False, description="Do not set this manually. It is set by the service.")
     stream_options: dict[str, Any] | None = Field(
         None,
         description="Additional options to pass when streaming is used. Do not set this manually.",
     )
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -217,6 +234,9 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -239,6 +259,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -252,6 +273,9 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -287,6 +311,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 
     @model_validator(mode="before")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -304,6 +329,9 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

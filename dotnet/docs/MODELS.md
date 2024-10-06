@@ -14,6 +14,7 @@ In the core Semantic Kernel repo, we plan on supporting up to four deployment ty
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 - Azure AI deployments via the [model catalog](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/model-catalog)
 =======
 =======
@@ -27,10 +28,13 @@ In the core Semantic Kernel repo, we plan on supporting up to four deployment ty
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 - Azure AI deployments via the [model catalog](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/model-catalog)
 =======
 - Azure AI deployments via the [model catalog][aiCatalogLink]
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -48,6 +52,8 @@ In the core Semantic Kernel repo, we plan on supporting up to four deployment ty
 =======
 - Azure AI deployments via the [model catalog][aiCatalogLink]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 - Local deployments via [Ollama](https://ollama.ai/library)
@@ -184,6 +190,7 @@ Please note that not all of the model interfaces are defined yet. As part of con
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -197,9 +204,12 @@ Please note that not all of the model interfaces are defined yet. As part of con
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 
 [aiCatalogLink]: https://learn.microsoft.com/en-us/azure/ai-studio/how-to/model-catalog
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -218,5 +228,7 @@ Please note that not all of the model interfaces are defined yet. As part of con
 
 [aiCatalogLink]: https://learn.microsoft.com/en-us/azure/ai-studio/how-to/model-catalog
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

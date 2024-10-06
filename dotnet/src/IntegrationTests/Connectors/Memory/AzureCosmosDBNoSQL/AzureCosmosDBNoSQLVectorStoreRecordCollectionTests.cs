@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -145,6 +151,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -174,6 +181,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 =======
         Assert.Equal(record.Timestamp, getResult.Timestamp);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        Assert.Equal(record.Timestamp, getResult.Timestamp);
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         Assert.Equal(record.Timestamp, getResult.Timestamp);
@@ -347,6 +359,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -360,6 +373,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -561,6 +577,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
     };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -578,6 +595,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -601,6 +621,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
 =======
 =======
@@ -614,12 +635,15 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
 =======
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
             Timestamp = new DateTimeOffset(2024, 9, 24, 17, 28, 32, TimeSpan.Zero),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -639,6 +663,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
             Timestamp = new DateTimeOffset(2024, 9, 24, 17, 28, 32, TimeSpan.Zero),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         };
@@ -664,6 +690,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.CosineDistance }
 =======
 =======
@@ -677,11 +704,14 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.CosineDistance }
 =======
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.CosineSimilarity }
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -700,6 +730,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.CosineSimilarity }
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             ]

@@ -8,6 +8,7 @@ using System;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -37,6 +38,11 @@ using System.ClientModel;
 =======
 using System.ClientModel;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using System.ClientModel;
@@ -100,6 +106,7 @@ public class AzureOpenAITextToImageService : ITextToImageService
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -114,6 +121,8 @@ public class AzureOpenAITextToImageService : ITextToImageService
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -128,7 +137,10 @@ public class AzureOpenAITextToImageService : ITextToImageService
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -149,6 +161,7 @@ public class AzureOpenAITextToImageService : ITextToImageService
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -163,6 +176,8 @@ public class AzureOpenAITextToImageService : ITextToImageService
 
         var azureOpenAIClient = new AzureOpenAIClient(new Uri(connectorEndpoint), new ApiKeyCredential(apiKey), options);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -202,6 +217,7 @@ public class AzureOpenAITextToImageService : ITextToImageService
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -216,6 +232,8 @@ public class AzureOpenAITextToImageService : ITextToImageService
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -234,6 +252,7 @@ public class AzureOpenAITextToImageService : ITextToImageService
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -249,10 +268,14 @@ public class AzureOpenAITextToImageService : ITextToImageService
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         var connectorEndpoint = (!string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri)
             ?? throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
 
         var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // DALL-E 3 is supported in the latest API releases - https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#image-generation
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -271,6 +294,9 @@ public class AzureOpenAITextToImageService : ITextToImageService
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -316,6 +342,7 @@ public class AzureOpenAITextToImageService : ITextToImageService
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._client.GenerateImageAsync(this._client.DeploymentName, description, width, height, cancellationToken);
 =======
@@ -330,12 +357,15 @@ public class AzureOpenAITextToImageService : ITextToImageService
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._client.GenerateImageAsync(this._client.DeploymentName, description, width, height, cancellationToken);
 =======
     public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(TextContent input, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._client.GetImageContentsAsync(this._client.DeploymentName, input, executionSettings, kernel, cancellationToken);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -354,6 +384,8 @@ public class AzureOpenAITextToImageService : ITextToImageService
     public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(TextContent input, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._client.GetImageContentsAsync(this._client.DeploymentName, input, executionSettings, kernel, cancellationToken);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 }

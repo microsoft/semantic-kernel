@@ -1,5 +1,6 @@
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +39,10 @@
   "description": "Given text, annotate all recognized entities. You specify the tags to use.",
   "default_settings": {
 >>>>>>> Stashed changes
+=======
+  "description": "Given text, annotate all recognized entities. You specify the tags to use.",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 256,
     "temperature": 0.0,
     "top_p": 0.0,
@@ -51,6 +56,7 @@
     "text-davinci-003"
   ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -58,6 +64,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -78,6 +86,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -91,6 +100,8 @@
     "stop_sequences": ["[done]"]
   }
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 }

@@ -8,12 +8,16 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -42,6 +46,7 @@ using Microsoft.SemanticKernel.Experimental.Orchestration.Extensions;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -54,6 +59,9 @@ using Microsoft.SemanticKernel.Experimental.Orchestration.Extensions;
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -71,6 +79,7 @@ using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -87,6 +96,8 @@ using Microsoft.SemanticKernel.TemplateEngine.Basic;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -106,6 +117,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 /// And both chatMode and completionMode could be supported.
 /// </remarks>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -127,6 +139,11 @@ internal partial class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+internal partial class FlowExecutor : IFlowExecutor
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 internal partial class FlowExecutor : IFlowExecutor
@@ -138,6 +155,7 @@ internal partial class FlowExecutor : IFlowExecutor
 internal class FlowExecutor : IFlowExecutor
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -156,11 +174,14 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 {
     /// <summary>
     /// The kernel builder
     /// </summary>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -183,6 +204,11 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    private readonly IKernelBuilder _kernelBuilder;
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
     private readonly IKernelBuilder _kernelBuilder;
@@ -194,6 +220,7 @@ internal class FlowExecutor : IFlowExecutor
     private readonly KernelBuilder _kernelBuilder;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -210,6 +237,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -218,6 +247,7 @@ internal class FlowExecutor : IFlowExecutor
     /// The logger
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -234,11 +264,14 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private readonly ILogger _logger;
 =======
     private readonly ILogger<FlowExecutor> _logger;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -262,6 +295,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -284,6 +319,7 @@ internal class FlowExecutor : IFlowExecutor
     /// System kernel for flow execution
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -302,6 +338,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -310,6 +348,7 @@ internal class FlowExecutor : IFlowExecutor
     private readonly IKernel _systemKernel;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -326,6 +365,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -343,6 +384,7 @@ internal class FlowExecutor : IFlowExecutor
     /// The regex for parsing the final answer response
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -350,6 +392,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -369,6 +413,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -381,6 +426,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 #if NET
@@ -391,6 +438,7 @@ internal class FlowExecutor : IFlowExecutor
     private static readonly Regex s_finalAnswerRegex = new(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline | RegexOptions.Compiled);
 #endif
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -431,12 +479,17 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
     private static readonly Regex s_finalAnswerRegex =
         new(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
 
@@ -444,6 +497,7 @@ internal class FlowExecutor : IFlowExecutor
     /// The regex for parsing the question
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -451,6 +505,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -470,6 +526,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -482,6 +539,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 #if NET
@@ -492,6 +551,7 @@ internal class FlowExecutor : IFlowExecutor
     private static readonly Regex s_questionRegex = new(@"\[QUESTION\](?<question>.+)", RegexOptions.Singleline | RegexOptions.Compiled);
 #endif
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -532,12 +592,17 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
     private static readonly Regex s_questionRegex =
         new(@"\[QUESTION\](?<question>.+)", RegexOptions.Singleline);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
 
@@ -545,6 +610,7 @@ internal class FlowExecutor : IFlowExecutor
     /// The regex for parsing the thought response
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -552,6 +618,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -571,6 +639,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -583,6 +652,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 #if NET
@@ -593,6 +664,7 @@ internal class FlowExecutor : IFlowExecutor
     private static readonly Regex s_thoughtRegex = new(@"\[THOUGHT\](?<thought>.+)", RegexOptions.Singleline | RegexOptions.Compiled);
 #endif
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -633,12 +705,17 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
     private static readonly Regex s_thoughtRegex =
         new(@"\[THOUGHT\](?<thought>.+)", RegexOptions.Singleline);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
 
@@ -646,6 +723,7 @@ internal class FlowExecutor : IFlowExecutor
     /// Check repeat step function
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -683,13 +761,18 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private readonly KernelFunction _checkRepeatStepFunction;
 =======
     private readonly ISKFunction _checkRepeatStepFunction;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -697,6 +780,7 @@ internal class FlowExecutor : IFlowExecutor
     /// Check start step function
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -721,6 +805,9 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -738,6 +825,7 @@ internal class FlowExecutor : IFlowExecutor
 
     internal FlowExecutor(IKernelBuilder kernelBuilder, IFlowStatusProvider statusProvider, Dictionary<object, string?> globalPluginCollection, FlowOrchestratorConfig? config = null)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -763,10 +851,16 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
     private readonly ISKFunction _checkStartStepFunction;
 
     internal FlowExecutor(KernelBuilder kernelBuilder, IFlowStatusProvider statusProvider, Dictionary<object, string?> globalPluginCollection, FlowOrchestratorConfig? config = null)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -818,11 +912,22 @@ internal class FlowExecutor : IFlowExecutor
         this._logger = this._systemKernel.LoggerFactory.CreateLogger(typeof(FlowExecutor)) ?? NullLogger.Instance;
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+    {
+        this._kernelBuilder = kernelBuilder;
+        this._systemKernel = kernelBuilder.Build();
+
+<<<<<<< main
+        this._logger = this._systemKernel.LoggerFactory.CreateLogger(typeof(FlowExecutor)) ?? NullLogger.Instance;
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         this._logger = this._systemKernel.LoggerFactory.CreateLogger(typeof(FlowExecutor)) ?? NullLogger.Instance;
 =======
         this._logger = this._systemKernel.LoggerFactory.CreateLogger<FlowExecutor>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -840,6 +945,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -849,6 +956,7 @@ internal class FlowExecutor : IFlowExecutor
         this._globalPluginCollection = globalPluginCollection;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -856,6 +964,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -879,6 +989,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -891,6 +1002,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var checkRepeatStepConfig = this.ImportPromptTemplateConfig("CheckRepeatStep");
@@ -940,6 +1053,7 @@ internal class FlowExecutor : IFlowExecutor
         ExecutionState executionState = await this._flowStatusProvider.GetExecutionStateAsync(sessionId).ConfigureAwait(false);
         List<string> outputs = [];
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -957,6 +1071,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -968,9 +1084,12 @@ internal class FlowExecutor : IFlowExecutor
         var checkStartStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckStartStep.config.json")!);
         this._checkStartStepFunction = this.ImportSemanticFunction(this._systemKernel, "CheckStartStep", checkStartStepPrompt, checkStartStepConfig);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1020,6 +1139,7 @@ internal class FlowExecutor : IFlowExecutor
         List<string> outputs = new();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1036,6 +1156,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1048,6 +1170,7 @@ internal class FlowExecutor : IFlowExecutor
             foreach (var kv in executionState.Variables)
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1069,6 +1192,11 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+                rootContext[kv.Key] = kv.Value;
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
                 rootContext[kv.Key] = kv.Value;
@@ -1080,6 +1208,7 @@ internal class FlowExecutor : IFlowExecutor
                 rootContext.Set(kv.Key, kv.Value);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1096,6 +1225,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1106,6 +1237,7 @@ internal class FlowExecutor : IFlowExecutor
             // init step execution state
             string stepKey = $"{stepIndex}_{step.Goal}";
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1142,10 +1274,15 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< HEAD
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             if (!executionState.StepStates.TryGetValue(stepKey, out ExecutionState.StepExecutionState? stepState))
 =======
 <<<<<<< HEAD
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             if (!executionState.StepStates.TryGetValue(stepKey, out ExecutionState.StepExecutionState? stepState))
             {
@@ -1161,6 +1298,7 @@ internal class FlowExecutor : IFlowExecutor
             {
                 // On the first iteration of an Optional or ZeroOrMore step, we need to check whether the user wants to start the step
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1178,6 +1316,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1200,6 +1340,7 @@ internal class FlowExecutor : IFlowExecutor
                 // On the first iteration of an Optional or ZeroOrMore step, we need to check whether the user wants to start the stepstep
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1216,6 +1357,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1240,6 +1383,7 @@ internal class FlowExecutor : IFlowExecutor
                         stepState.Status = ExecutionState.Status.InProgress;
                         await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1247,6 +1391,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1266,6 +1412,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1278,6 +1425,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -1286,6 +1435,7 @@ internal class FlowExecutor : IFlowExecutor
                             this._logger.LogInformation("Need to start step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
                         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1293,6 +1443,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1314,6 +1466,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1328,6 +1481,8 @@ internal class FlowExecutor : IFlowExecutor
                         this._logger?.LogInformation("Need to start step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                     }
@@ -1341,6 +1496,7 @@ internal class FlowExecutor : IFlowExecutor
 
                         await this.CompleteStepAsync(rootContext, sessionId, executionState, step, stepState).ConfigureAwait(false);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1348,6 +1504,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1367,6 +1525,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1379,6 +1538,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -1388,6 +1549,7 @@ internal class FlowExecutor : IFlowExecutor
                         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1395,6 +1557,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1416,6 +1580,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1430,6 +1595,8 @@ internal class FlowExecutor : IFlowExecutor
                         this._logger?.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                         continue;
@@ -1438,6 +1605,7 @@ internal class FlowExecutor : IFlowExecutor
 
                 // execute step
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1445,6 +1613,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1464,6 +1634,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1476,6 +1647,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
@@ -1485,6 +1658,7 @@ internal class FlowExecutor : IFlowExecutor
                         stepState.ExecutionCount, step.Goal, input);
                 }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1506,6 +1680,9 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 
                 Kernel stepKernel = this._kernelBuilder.Build();
                 var stepArguments = new KernelArguments();
@@ -1513,6 +1690,7 @@ internal class FlowExecutor : IFlowExecutor
                 {
                     stepArguments[key] = rootContext[key];
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -1530,12 +1708,15 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
                 Kernel stepKernel = this._kernelBuilder.Build();
                 var stepArguments = new KernelArguments();
                 foreach (var key in step.Requires)
                 {
                     stepArguments[key] = rootContext[key];
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1554,6 +1735,9 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1568,6 +1752,7 @@ internal class FlowExecutor : IFlowExecutor
                     stepContext.Variables.Set(key, rootContext[key]);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1584,6 +1769,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1594,6 +1781,7 @@ internal class FlowExecutor : IFlowExecutor
                     if (rootContext.TryGetValue(key, out var val))
                     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1601,6 +1789,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1620,6 +1810,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1634,6 +1825,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                         stepArguments[key] = val;
                     }
                 }
@@ -1642,6 +1835,7 @@ internal class FlowExecutor : IFlowExecutor
                 if (step is Flow flowStep)
                 {
                     stepResult = await this.ExecuteFlowAsync(flowStep, $"{sessionId}_{stepId}", input, stepArguments).ConfigureAwait(false);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -1665,6 +1859,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
                         stepContext.Variables.Set(key, val);
 >>>>>>> origin/main
                     }
@@ -1674,7 +1870,10 @@ internal class FlowExecutor : IFlowExecutor
                 if (step is Flow flowStep)
                 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -1688,6 +1887,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1701,6 +1901,8 @@ internal class FlowExecutor : IFlowExecutor
                     stepResult = await this.ExecuteAsync(flowStep, $"{sessionId}_{stepId}", input, stepContext.Variables).ConfigureAwait(false);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 }
@@ -1710,6 +1912,7 @@ internal class FlowExecutor : IFlowExecutor
                     foreach (var plugin in stepPlugins)
                     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1737,10 +1940,14 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
                         stepKernel.ImportPluginFromObject(plugin, plugin.GetType().Name);
                     }
 
                     stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input, stepKernel, stepArguments).ConfigureAwait(false);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -1762,6 +1969,11 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1773,6 +1985,7 @@ internal class FlowExecutor : IFlowExecutor
                     stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input, stepKernel, stepContext).ConfigureAwait(false);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1789,6 +2002,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1797,6 +2012,7 @@ internal class FlowExecutor : IFlowExecutor
                 if (!string.IsNullOrEmpty(stepResult.ToString()) && (stepResult.IsPromptInput() || stepResult.IsTerminateFlow()))
                 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1804,6 +2020,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1823,6 +2041,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1837,11 +2056,14 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                     if (stepResult.ValueType == typeof(List<string>))
                     {
                         outputs.AddRange(stepResult.GetValue<List<string>>()!);
                     }
                     else
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -1860,6 +2082,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1874,6 +2098,7 @@ internal class FlowExecutor : IFlowExecutor
                     catch (JsonException)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1890,6 +2115,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1898,6 +2125,7 @@ internal class FlowExecutor : IFlowExecutor
                     }
                 }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1905,6 +2133,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1924,6 +2154,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1936,6 +2167,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 else if (stepResult.TryGetExitLoopResponse(out string? exitResponse))
@@ -1963,6 +2196,7 @@ internal class FlowExecutor : IFlowExecutor
                         this._logger.LogInformation("Exiting loop for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
                     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1980,6 +2214,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2013,6 +2249,7 @@ internal class FlowExecutor : IFlowExecutor
                     this._logger?.LogInformation("Exiting loop for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -2029,6 +2266,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -2037,6 +2276,7 @@ internal class FlowExecutor : IFlowExecutor
                 {
                     continueLoop = true;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2044,6 +2284,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2063,6 +2305,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2075,6 +2318,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -2083,6 +2328,7 @@ internal class FlowExecutor : IFlowExecutor
                         this._logger.LogInformation("Continuing to the next loop iteration for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
                     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2111,6 +2357,10 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -2123,6 +2373,7 @@ internal class FlowExecutor : IFlowExecutor
                 {
                     if (!stepResult.Metadata!.ContainsKey(variable))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2140,6 +2391,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2157,6 +2410,7 @@ internal class FlowExecutor : IFlowExecutor
                     if (!stepResult.ContainsKey(variable))
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -2175,12 +2429,15 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
                     {
                         completed = false;
                     }
                     else
                     {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -2191,6 +2448,8 @@ internal class FlowExecutor : IFlowExecutor
                         executionState.Variables[variable] = (string)stepResult.Metadata[variable]!;
                         stepState.AddOrUpdateVariable(stepState.ExecutionCount, variable, (string)stepResult.Metadata[variable]!);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2206,8 +2465,11 @@ internal class FlowExecutor : IFlowExecutor
                         stepState.AddOrUpdateVariable(stepState.ExecutionCount, variable, (string)stepResult.Metadata[variable]!);
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -2219,6 +2481,7 @@ internal class FlowExecutor : IFlowExecutor
                             stepResult[variable]);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -2235,6 +2498,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -2244,6 +2509,7 @@ internal class FlowExecutor : IFlowExecutor
                 foreach (var variable in step.Passthrough)
                 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2251,6 +2517,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2270,6 +2538,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2284,12 +2553,15 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                     if (stepResult.Metadata!.TryGetValue(variable, out object? variableValue))
                     {
                         executionState.Variables[variable] = (string)variableValue!;
                         stepState.AddOrUpdateVariable(stepState.ExecutionCount, variable, (string)variableValue!);
 
                         // propagate arguments to root context, needed if Flow itself is a step
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -2308,6 +2580,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2323,6 +2597,7 @@ internal class FlowExecutor : IFlowExecutor
                         // propagate variables to root context, needed if Flow itself is a step
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -2341,11 +2616,14 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
                         this.PropagateVariable(rootContext, stepResult, variable);
                     }
                 }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -2368,6 +2646,11 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+                // propagate arguments to root context, needed if Flow itself is a step
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
                 // propagate arguments to root context, needed if Flow itself is a step
@@ -2379,6 +2662,7 @@ internal class FlowExecutor : IFlowExecutor
                 // propagate variables to root context, needed if Flow itself is a step
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -2395,6 +2679,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -2407,6 +2693,7 @@ internal class FlowExecutor : IFlowExecutor
             if (completed)
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2414,6 +2701,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2433,6 +2722,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2445,6 +2735,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
@@ -2452,6 +2744,7 @@ internal class FlowExecutor : IFlowExecutor
                     this._logger.LogInformation("Completed step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
                 }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2459,6 +2752,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2480,6 +2775,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2494,6 +2790,8 @@ internal class FlowExecutor : IFlowExecutor
                 this._logger?.LogInformation("Completed step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -2514,6 +2812,7 @@ internal class FlowExecutor : IFlowExecutor
                         // unconfirmed, prompt user
                         outputs.Add(repeatStep.Prompt!);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2521,6 +2820,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2540,6 +2841,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2552,6 +2854,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -2561,6 +2865,7 @@ internal class FlowExecutor : IFlowExecutor
                         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2568,6 +2873,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2589,6 +2896,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2603,6 +2911,8 @@ internal class FlowExecutor : IFlowExecutor
                         this._logger?.LogInformation("Unclear intention, need follow up to check whether to repeat the step");
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                         await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
@@ -2614,6 +2924,7 @@ internal class FlowExecutor : IFlowExecutor
                         foreach (var variable in step.Provides)
                         {
                             executionState.Variables.Remove(variable);
+<<<<<<< Updated upstream
                         }
 
                         stepState.ExecutionCount++;
@@ -2659,11 +2970,22 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+                        }
+
+                        stepState.ExecutionCount++;
+                        await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
+<<<<<<< main
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
                         if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
                         {
                             this._logger.LogInformation("Need repeat step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
                         }
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -2672,6 +2994,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2693,6 +3017,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2707,6 +3032,8 @@ internal class FlowExecutor : IFlowExecutor
                         this._logger?.LogInformation("Need repeat step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                     }
@@ -2715,6 +3042,7 @@ internal class FlowExecutor : IFlowExecutor
                         // completed
                         await this.CompleteStepAsync(rootContext, sessionId, executionState, step, stepState).ConfigureAwait(false);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2722,6 +3050,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2741,6 +3071,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2753,6 +3084,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -2761,6 +3094,7 @@ internal class FlowExecutor : IFlowExecutor
                             this._logger.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
                         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2768,6 +3102,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2789,6 +3125,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2803,6 +3140,8 @@ internal class FlowExecutor : IFlowExecutor
                         this._logger?.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                     }
@@ -2820,6 +3159,7 @@ internal class FlowExecutor : IFlowExecutor
         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2827,6 +3167,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2846,6 +3188,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2858,6 +3201,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
@@ -2875,6 +3220,7 @@ internal class FlowExecutor : IFlowExecutor
     {
         if (stepResult.Metadata!.ContainsKey(variableName))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 =======
         {
@@ -2886,6 +3232,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
         foreach (var output in outputs)
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         {
@@ -2900,7 +3248,10 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2938,6 +3289,7 @@ internal class FlowExecutor : IFlowExecutor
     private async Task CompleteStepAsync(ContextVariables context, string sessionId, ExecutionState state, FlowStep step, ExecutionState.StepExecutionState stepState)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -2954,6 +3306,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -2970,6 +3324,7 @@ internal class FlowExecutor : IFlowExecutor
             else
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2991,6 +3346,11 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+                // kvp.Value may contain empty strings when the loop was exited and the arguments the step provides weren't set
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
                 // kvp.Value may contain empty strings when the loop was exited and the arguments the step provides weren't set
@@ -3002,6 +3362,7 @@ internal class FlowExecutor : IFlowExecutor
                 // kvp.Value may contain empty strings when the loop was exited and the variables the step provides weren't set
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -3018,6 +3379,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -3034,6 +3397,7 @@ internal class FlowExecutor : IFlowExecutor
     }
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3045,6 +3409,9 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+
 >>>>>>> Stashed changes
 =======
 
@@ -3056,6 +3423,7 @@ internal class FlowExecutor : IFlowExecutor
     private void ValidateStep(FlowStep step, KernelArguments context)
 =======
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3093,6 +3461,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     private void ValidateStep(FlowStep step, KernelArguments context)
     {
         if (step.Requires.Any(p => !context.ContainsName(p)))
@@ -3112,7 +3482,10 @@ internal class FlowExecutor : IFlowExecutor
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     private async Task<RepeatOrStartStepResult?> CheckRepeatStepAsync(KernelArguments context, FlowStep step, string sessionId, string nextStepId, string input)
@@ -3130,6 +3503,7 @@ internal class FlowExecutor : IFlowExecutor
         var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, checkRepeatOrStartStepId).ConfigureAwait(false);
         if (chatHistory is not null)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3147,6 +3521,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -3156,7 +3532,10 @@ internal class FlowExecutor : IFlowExecutor
         if (step.Requires.Any(p => !context.ContainsName(p)))
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -3165,9 +3544,12 @@ internal class FlowExecutor : IFlowExecutor
             throw new SKException($"Step {step.Goal} requires variables {string.Join(",", step.Requires.Where(p => !context.ContainsKey(p)))} that are not provided. ");
 >>>>>>> origin/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
             throw new SKException($"Step {step.Goal} requires variables {string.Join(",", step.Requires.Where(p => !context.ContainsKey(p)))} that are not provided. ");
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -3194,7 +3576,10 @@ internal class FlowExecutor : IFlowExecutor
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -3204,8 +3589,11 @@ internal class FlowExecutor : IFlowExecutor
         if (chatHistory is not null)
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     private async Task<RepeatOrStartStepResult?> CheckRepeatOrStartStepAsync(ContextVariables context, ISKFunction function, string sessionId, string checkRepeatOrStartStepId, string input)
@@ -3213,6 +3601,7 @@ internal class FlowExecutor : IFlowExecutor
         var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, checkRepeatOrStartStepId).ConfigureAwait(false);
         if (chatHistory != null)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -3230,6 +3619,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -3239,6 +3630,7 @@ internal class FlowExecutor : IFlowExecutor
         else
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3246,6 +3638,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -3265,6 +3659,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -3277,6 +3672,8 @@ internal class FlowExecutor : IFlowExecutor
             chatHistory = [];
 =======
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             chatHistory = [];
@@ -3318,6 +3715,7 @@ internal class FlowExecutor : IFlowExecutor
         string llmResponseText = llmResponse.GetValue<string>()?.Trim() ?? string.Empty;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         if (this._logger.IsEnabled(LogLevel.Information))
         {
             this._logger.LogInformation("Response from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
@@ -3357,6 +3755,8 @@ internal class FlowExecutor : IFlowExecutor
 
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         if (this._logger.IsEnabled(LogLevel.Information))
         {
@@ -3367,6 +3767,7 @@ internal class FlowExecutor : IFlowExecutor
 =======
         Match finalAnswerMatch = s_finalAnswerRegex.Match(llmResponseText);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -3386,6 +3787,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
         if (finalAnswerMatch.Success)
         {
@@ -3398,6 +3801,7 @@ internal class FlowExecutor : IFlowExecutor
         }
 
         // Extract thought
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -3483,11 +3887,32 @@ internal class FlowExecutor : IFlowExecutor
         Match questionMatch = QuestionRegex().Match(llmResponseText);
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+        Match thoughtMatch = ThoughtRegex().Match(llmResponseText);
+=======
+<<<<<<< HEAD
+        Match thoughtMatch = ThoughtRegex().Match(llmResponseText);
+=======
+        Match thoughtMatch = s_thoughtRegex.Match(llmResponseText);
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
+        if (thoughtMatch.Success)
+        {
+            string thoughtString = thoughtMatch.Groups[1].Value.Trim();
+            chatHistory.AddSystemMessage(thoughtString);
+        }
+
+<<<<<<< main
+        Match questionMatch = QuestionRegex().Match(llmResponseText);
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Match questionMatch = QuestionRegex().Match(llmResponseText);
 =======
         Match questionMatch = s_questionRegex.Match(llmResponseText);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -3505,6 +3930,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -3518,6 +3945,7 @@ internal class FlowExecutor : IFlowExecutor
         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3527,6 +3955,8 @@ internal class FlowExecutor : IFlowExecutor
         this._logger.LogWarning("Missing result tag from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
         chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER].");
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -3542,8 +3972,11 @@ internal class FlowExecutor : IFlowExecutor
         chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER].");
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -3553,6 +3986,7 @@ internal class FlowExecutor : IFlowExecutor
         this._logger?.LogWarning("Missing result tag from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
         chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER]");
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -3570,6 +4004,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -3596,6 +4032,7 @@ internal class FlowExecutor : IFlowExecutor
             }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3617,6 +4054,11 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+            scratchPadLines.Add(message.Content!);
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
             scratchPadLines.Add(message.Content!);
@@ -3628,6 +4070,7 @@ internal class FlowExecutor : IFlowExecutor
             scratchPadLines.Add(message.Content);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -3644,6 +4087,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -3653,6 +4098,7 @@ internal class FlowExecutor : IFlowExecutor
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3660,6 +4106,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -3683,6 +4131,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -3697,11 +4146,14 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     private async Task<FunctionResult> ExecuteStepAsync(FlowStep step, string sessionId, string stepId, string input, Kernel kernel, KernelArguments arguments)
     {
         var stepsTaken = await this._flowStatusProvider.GetReActStepsAsync(sessionId, stepId).ConfigureAwait(false);
         var lastStep = stepsTaken.LastOrDefault();
         if (lastStep is not null)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -3720,6 +4172,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -3730,6 +4184,7 @@ internal class FlowExecutor : IFlowExecutor
         if (lastStep != null)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -3746,6 +4201,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -3758,6 +4215,7 @@ internal class FlowExecutor : IFlowExecutor
         foreach (var variable in step.Requires)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3772,6 +4230,8 @@ internal class FlowExecutor : IFlowExecutor
                 question += $"\n - {variable}: {JsonSerializer.Serialize(arguments[variable])}";
 =======
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -3802,6 +4262,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -3817,6 +4278,8 @@ internal class FlowExecutor : IFlowExecutor
                 question += $"\n - {variable}: {JsonSerializer.Serialize(context.Variables[variable])}";
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             }
@@ -3825,6 +4288,7 @@ internal class FlowExecutor : IFlowExecutor
         for (int i = stepsTaken.Count; i < this._config.MaxStepIterations; i++)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3846,6 +4310,11 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+            var actionStep = await this._reActEngine.GetNextStepAsync(kernel, arguments, question, stepsTaken).ConfigureAwait(false);
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
             var actionStep = await this._reActEngine.GetNextStepAsync(kernel, arguments, question, stepsTaken).ConfigureAwait(false);
@@ -3857,6 +4326,7 @@ internal class FlowExecutor : IFlowExecutor
             var actionStep = await this._reActEngine.GetNextStepAsync(context, question, stepsTaken).ConfigureAwait(false);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -3873,6 +4343,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -3886,6 +4358,7 @@ internal class FlowExecutor : IFlowExecutor
             stepsTaken.Add(actionStep);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3893,6 +4366,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -3912,6 +4387,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -3924,6 +4400,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
@@ -3941,6 +4419,7 @@ internal class FlowExecutor : IFlowExecutor
             }
             else if (!string.IsNullOrEmpty(actionStep.Action!))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3981,12 +4460,17 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
             this._logger?.LogInformation("Thought: {Thought}", actionStep.Thought);
             if (!string.IsNullOrEmpty(actionStep.Action!))
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
             {
@@ -3994,6 +4478,7 @@ internal class FlowExecutor : IFlowExecutor
                 {
                     string prompt = actionStep.ActionVariables![Constants.StopAndPromptParameterName];
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4001,6 +4486,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -4020,6 +4507,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -4032,6 +4520,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                     arguments.TerminateFlow();
@@ -4046,6 +4536,7 @@ internal class FlowExecutor : IFlowExecutor
                     {
                         actionContextVariables[kvp.Key] = kvp.Value;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4063,6 +4554,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -4080,6 +4573,7 @@ internal class FlowExecutor : IFlowExecutor
                         actionContext.Variables[kvp.Key] = kvp.Value;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4098,6 +4592,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                     }
                 }
 
@@ -4105,6 +4601,7 @@ internal class FlowExecutor : IFlowExecutor
                 var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, stepId).ConfigureAwait(false);
                 if (chatHistory is null)
                 {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -4127,6 +4624,11 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+                    chatHistory = [];
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
                     chatHistory = [];
@@ -4138,6 +4640,7 @@ internal class FlowExecutor : IFlowExecutor
                     chatHistory = new ChatHistory();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -4154,6 +4657,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -4164,6 +4669,7 @@ internal class FlowExecutor : IFlowExecutor
                 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4211,6 +4717,9 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
                 string? actionResult;
                 try
                 {
@@ -4220,10 +4729,13 @@ internal class FlowExecutor : IFlowExecutor
                     if (string.IsNullOrEmpty(actionResult))
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 try
                 {
                     await Task.Delay(this._config.MinIterationTimeMs).ConfigureAwait(false);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -4239,13 +4751,17 @@ internal class FlowExecutor : IFlowExecutor
                 {
                     await Task.Delay(this._config.MinIterationTimeMs).ConfigureAwait(false);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                     var result = await this._reActEngine.InvokeActionAsync(actionStep, input, chatHistory, kernel, actionContext).ConfigureAwait(false);
 
                     if (string.IsNullOrEmpty(result))
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -4291,13 +4807,24 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+                    {
+                        actionStep.Observation = "Got no result from action";
+                    }
+                    else
+                    {
+>>>>>>> Stashed changes
 <<<<<<< main
                         actionStep.Observation = $"{AuthorRole.Assistant.Label}: {actionResult}\n";
                         chatHistory.AddAssistantMessage(actionResult);
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -4309,6 +4836,7 @@ internal class FlowExecutor : IFlowExecutor
                         chatHistory.AddAssistantMessage(result);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -4325,6 +4853,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -4333,6 +4863,7 @@ internal class FlowExecutor : IFlowExecutor
                         foreach (var passthroughParam in step.Passthrough)
                         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4358,12 +4889,18 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
                             if (actionContextVariables.TryGetValue(passthroughParam, out object? paramValue) && paramValue is string paramStringValue && !string.IsNullOrEmpty(paramStringValue))
                             {
                                 arguments[passthroughParam] = actionContextVariables[passthroughParam];
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -4372,8 +4909,11 @@ internal class FlowExecutor : IFlowExecutor
                                 arguments[passthroughParam] = actionContextVariables[passthroughParam];
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                             if (actionContext.Variables.TryGetValue(passthroughParam, out string? paramValue) && !string.IsNullOrEmpty(paramValue))
@@ -4381,6 +4921,7 @@ internal class FlowExecutor : IFlowExecutor
                                 context.Variables.Set(passthroughParam, actionContext.Variables[passthroughParam]);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -4397,6 +4938,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -4406,6 +4949,7 @@ internal class FlowExecutor : IFlowExecutor
                         foreach (var providedParam in step.Provides)
                         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4431,12 +4975,18 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
                             if (actionContextVariables.TryGetValue(providedParam, out object? paramValue) && paramValue is string paramStringValue && !string.IsNullOrEmpty(paramStringValue))
                             {
                                 arguments[providedParam] = actionContextVariables[providedParam];
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -4454,6 +5004,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -4469,6 +5020,8 @@ internal class FlowExecutor : IFlowExecutor
                                 context.Variables.Set(providedParam, actionContext.Variables[providedParam]);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                             }
@@ -4477,6 +5030,7 @@ internal class FlowExecutor : IFlowExecutor
                         foreach (var variable in Constants.ChatPluginVariables.ControlVariables)
                         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4497,14 +5051,19 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
                             if (actionContextVariables.TryGetValue(variable, out object? variableValue))
                             {
                                 arguments[variable] = variableValue;
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -4517,6 +5076,7 @@ internal class FlowExecutor : IFlowExecutor
                                 context.Variables.Set(variable, variableValue);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -4533,6 +5093,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -4549,6 +5111,7 @@ internal class FlowExecutor : IFlowExecutor
                     continue;
                 }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4570,6 +5133,11 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+                catch (Exception ex) when (!ex.IsNonRetryable())
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
                 catch (Exception ex) when (!ex.IsNonRetryable())
@@ -4581,6 +5149,7 @@ internal class FlowExecutor : IFlowExecutor
                 catch (Exception ex) when (!ex.IsCriticalException())
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -4597,6 +5166,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -4608,6 +5179,7 @@ internal class FlowExecutor : IFlowExecutor
                 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4615,6 +5187,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -4634,6 +5208,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -4646,6 +5221,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
@@ -4654,6 +5231,7 @@ internal class FlowExecutor : IFlowExecutor
                 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4661,6 +5239,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -4687,6 +5267,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -4700,6 +5281,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 await this._flowStatusProvider.SaveReActStepsAsync(sessionId, stepId, stepsTaken).ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(actionResult))
@@ -4709,6 +5292,7 @@ internal class FlowExecutor : IFlowExecutor
                         // Terminate the flow without another round of reasoning, to save the LLM reasoning calls.
                         // This is not suggested unless plugin has performance requirement and has explicitly set the control variable.
                         return new FunctionResult(this._executeStepFunction, actionResult, metadata: arguments);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -4727,6 +5311,8 @@ internal class FlowExecutor : IFlowExecutor
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -4742,6 +5328,7 @@ internal class FlowExecutor : IFlowExecutor
                         return context.Variables;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -4758,6 +5345,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -4766,6 +5355,7 @@ internal class FlowExecutor : IFlowExecutor
                     foreach (var variable in Constants.ChatPluginVariables.ControlVariables)
                     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4773,6 +5363,8 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -4792,6 +5384,7 @@ internal class FlowExecutor : IFlowExecutor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -4804,6 +5397,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                         if (arguments.ContainsName(variable))
@@ -4818,6 +5413,7 @@ internal class FlowExecutor : IFlowExecutor
                         // step is complete
                         return new FunctionResult(this._executeStepFunction, actionResult, metadata: arguments);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4838,6 +5434,11 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -4856,6 +5457,7 @@ internal class FlowExecutor : IFlowExecutor
                         return context.Variables;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -4874,6 +5476,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
                     }
 
@@ -4881,6 +5485,7 @@ internal class FlowExecutor : IFlowExecutor
                     continue;
                 }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -4903,6 +5508,11 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+                this._logger?.LogWarning("Action: No result from action");
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
                 this._logger?.LogWarning("Action: No result from action");
@@ -4922,6 +5532,7 @@ internal class FlowExecutor : IFlowExecutor
                 }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -4940,11 +5551,14 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
             }
             else
             {
                 actionStep.Observation = "ACTION $JSON_BLOB must be provided as part of thought process.";
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -4967,6 +5581,11 @@ internal class FlowExecutor : IFlowExecutor
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+                this._logger?.LogWarning("Action: No action to take");
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
                 this._logger?.LogWarning("Action: No action to take");
@@ -4978,6 +5597,7 @@ internal class FlowExecutor : IFlowExecutor
                 this._logger?.LogInformation("Action: No action to take");
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -4994,6 +5614,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -5004,6 +5626,7 @@ internal class FlowExecutor : IFlowExecutor
         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5031,10 +5654,14 @@ internal class FlowExecutor : IFlowExecutor
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         throw new KernelException($"Failed to complete step {stepId} for session {sessionId}.");
     }
 
     private sealed class RepeatOrStartStepResult(bool? execute, string? prompt = null)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -5047,6 +5674,8 @@ internal class FlowExecutor : IFlowExecutor
 
         public string? Prompt { get; } = prompt;
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -5070,6 +5699,7 @@ internal class FlowExecutor : IFlowExecutor
     private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
     {
         public bool? Execute { get; } = execute;
@@ -5082,6 +5712,8 @@ internal class FlowExecutor : IFlowExecutor
     private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var factory = new BasicPromptTemplateFactory(kernel.LoggerFactory);
@@ -5101,6 +5733,7 @@ internal class FlowExecutor : IFlowExecutor
         public string? Prompt { get; }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -5117,6 +5750,8 @@ internal class FlowExecutor : IFlowExecutor
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

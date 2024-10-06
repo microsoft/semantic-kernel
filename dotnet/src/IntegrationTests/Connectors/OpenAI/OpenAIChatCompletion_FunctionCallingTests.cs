@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -64,6 +70,7 @@ using Xunit;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -77,9 +84,12 @@ using Xunit;
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -98,6 +108,8 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
@@ -172,6 +184,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -188,6 +201,9 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         var kernel = this.CreateAndInitializeKernel();
         kernel.ImportPluginFromFunctions("HelperFunctions",
         [
@@ -201,6 +217,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
                 throw new NotSupportedException($"Weather in {parameters.City.Name} ({parameters.City.Country}) is not supported.");
             }, "Get_Current_Temperature", "Get current temperature."),
         ]);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -219,6 +236,9 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -334,6 +354,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     [Fact(Skip = "Temporarily disabled to unblock PR pipeline.")]
 =======
 =======
@@ -347,10 +368,13 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     [Fact(Skip = "Temporarily disabled to unblock PR pipeline.")]
 =======
     [Fact]
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -368,6 +392,8 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 =======
     [Fact]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public async Task ConnectorSpecificChatMessageContentClassesCanBeUsedForManualFunctionCallingAsync()
@@ -673,6 +699,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     [Fact(Skip = "Weather in Boston (USA) is not supported.")]
 =======
 =======
@@ -686,10 +713,13 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     [Fact(Skip = "Weather in Boston (USA) is not supported.")]
 =======
     [Fact]
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -707,6 +737,8 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 =======
     [Fact]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForManualFunctionCallingForStreamingAsync()
@@ -1100,6 +1132,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday, "GetDayOfWeek", "Retrieves the current day of the week.");
 =======
 =======
@@ -1113,10 +1146,13 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday, "GetDayOfWeek", "Retrieves the current day of the week.");
 =======
         var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1134,6 +1170,8 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 =======
         var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
@@ -1166,6 +1204,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday, "GetDayOfWeek", "Retrieves the current day of the week.");
 =======
 =======
@@ -1179,10 +1218,13 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday, "GetDayOfWeek", "Retrieves the current day of the week.");
 =======
         var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1200,6 +1242,8 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 =======
         var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
@@ -1254,6 +1298,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1268,6 +1313,8 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1285,6 +1332,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
                     double temperatureInCelsius = (temperatureInFahrenheit - 32) * 5 / 9;
                     return Task.FromResult(temperatureInCelsius);
                 }, "Convert_Temperature_From_Fahrenheit_To_Celsius", "Convert temperature from Fahrenheit to Celsius.")
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1313,6 +1361,10 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main

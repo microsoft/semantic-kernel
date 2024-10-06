@@ -3,6 +3,7 @@
 from semantic_kernel.kernel import Kernel
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -11,6 +12,8 @@ from semantic_kernel.kernel import Kernel
 <<<<<<< Updated upstream
 __version__ = "1.9.0"
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -31,6 +34,7 @@ __version__ = "1.11.0"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -43,6 +47,8 @@ __version__ = "1.11.0"
 =======
 __version__ = "1.11.0"
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 __all__ = ["Kernel", "__version__"]
@@ -63,6 +69,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,6 +89,10 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -97,6 +108,7 @@ from semantic_kernel.prompt_template.prompt_template_config import (
 )
 from semantic_kernel.utils.logging import setup_logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -113,6 +125,8 @@ from semantic_kernel.utils.logging import setup_logging
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -139,6 +153,7 @@ __all__ = [
     "SKFunctionBase",
     "SKContext",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -158,6 +173,8 @@ __all__ = [
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     "KernelArguments",
@@ -166,6 +183,7 @@ __all__ = [
 __version__ = "1.8.1"
 __all__ = ["Kernel", "__version__"]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -182,5 +200,7 @@ __all__ = ["Kernel", "__version__"]
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.Agents;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -42,6 +43,11 @@ using Microsoft.SemanticKernel.Agents.Filters;
 =======
 using Microsoft.SemanticKernel.Agents.Filters;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using Microsoft.SemanticKernel.Agents.Filters;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using Microsoft.SemanticKernel.Agents.Filters;
@@ -197,6 +203,7 @@ public class AgentChatTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -210,6 +217,9 @@ public class AgentChatTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -254,6 +264,7 @@ public class AgentChatTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -271,6 +282,9 @@ public class AgentChatTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -290,6 +304,7 @@ public class AgentChatTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -303,9 +318,12 @@ public class AgentChatTests
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         public override IReadOnlyList<Agent> Agents => [this.Agent];
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -324,6 +342,8 @@ public class AgentChatTests
         public override IReadOnlyList<Agent> Agents => [this.Agent];
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
@@ -337,6 +357,7 @@ public class AgentChatTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -351,6 +372,8 @@ public class AgentChatTests
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -364,7 +387,10 @@ public class AgentChatTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -384,6 +410,7 @@ public class AgentChatTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -397,6 +424,8 @@ public class AgentChatTests
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
@@ -410,6 +439,7 @@ public class AgentChatTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
 =======
 =======
@@ -423,11 +453,14 @@ public class AgentChatTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/PR
 =======
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -446,6 +479,8 @@ public class AgentChatTests
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         {

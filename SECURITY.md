@@ -23,6 +23,7 @@ Microsoft takes the security of our software products and services seriously, wh
 
 If you believe you have found a security vulnerability in any Microsoft-owned repository that meets [Microsoft's definition of a security vulnerability](https://aka.ms/opensource/security/definition), please report it to us as described below.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -53,6 +54,10 @@ If you believe you have found a security vulnerability in any Microsoft-owned re
 :
 
 >>>>>>> origin/main
+=======
+:
+
+>>>>>>> Stashed changes
 =======
 :
 
@@ -68,6 +73,7 @@ If you prefer to submit without logging in, send email to [secure@microsoft.com]
 
 You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Additional information can be found at [microsoft.com/msrc](https://www.microsoft.com/en-us/msrc?rtc=2).
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -92,6 +98,9 @@ You should receive a response within 24 hours. If for some reason you do not, pl
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 
 Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
 
@@ -128,7 +137,10 @@ If you are reporting for a bug bounty, more complete reports can contribute to a
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -169,6 +181,7 @@ This information will help us triage your report more quickly.
 If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://www.microsoft.com/en-us/msrc/bounty?rtc=2) page for more details about our active programs.
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -220,6 +233,8 @@ If you are reporting for a bug bounty, more complete reports can contribute to a
 
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 If you prefer to submit without logging in, send email to [secure@microsoft.com](mailto:secure@microsoft.com). If possible, encrypt your message with our PGP key; please download it from the [Microsoft Security Response Center PGP Key page](https://aka.ms/opensource/security/pgpkey).
 
 You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Additional information can be found at [microsoft.com/msrc](https://aka.ms/opensource/security/msrc).
@@ -227,7 +242,10 @@ You should receive a response within 24 hours. If for some reason you do not, pl
 Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 -   Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
@@ -254,6 +272,7 @@ Microsoft follows the principle of [Coordinated Vulnerability Disclosure](https:
 Microsoft follows the principle of [Coordinated Vulnerability Disclosure](https://aka.ms/opensource/security/cvd).
 <!-- END MICROSOFT SECURITY.MD BLOCK -->
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -261,6 +280,8 @@ Microsoft follows the principle of [Coordinated Vulnerability Disclosure](https:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -281,6 +302,7 @@ Microsoft follows the principle of [Coordinated Vulnerability Disclosure](https:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -294,5 +316,7 @@ Microsoft follows the principle of [Coordinated Vulnerability Disclosure](https:
 <!-- END MICROSOFT SECURITY.MD BLOCK -->
 <!-- END MICROSOFT SECURITY.MD BLOCK -->
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

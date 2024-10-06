@@ -6,6 +6,7 @@ from openai import AsyncOpenAI
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,6 +38,9 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -54,12 +58,16 @@ from semantic_kernel.contents.chat_history import ChatHistory
 async def test_oai_chat_service_with_yaml_jinja2(setup_tldr_function_for_oai_models):
     kernel, _, _ = setup_tldr_function_for_oai_models
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -134,6 +142,7 @@ async def test_oai_chat_service_with_yaml_handlebars(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -151,10 +160,15 @@ async def test_oai_chat_service_with_yaml_handlebars(
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 
@@ -182,6 +196,8 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -202,6 +218,7 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
 
     kernel.add_service(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -219,6 +236,8 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -228,6 +247,7 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -240,6 +260,8 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         sk_oai.OpenAIChatCompletion(
@@ -253,12 +275,16 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
     plugins_directory = os.path.join(
         os.path.dirname(__file__), "../../assets/test_plugins"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -290,7 +316,10 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -315,6 +344,7 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
         service_id="chat-gpt", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
     )
 
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -335,6 +365,8 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
 
 <<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     prompt_template_config = PromptTemplateConfig(
@@ -353,6 +385,7 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
     assert len(output) < 100
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -371,12 +404,15 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
     chat_history = ChatHistory()
     chat_history.add_system_message("Assistant is a large language model")
     chat_history.add_user_message("I love parrots.")
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -388,6 +424,8 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
         plugin["TestFunctionHandlebars"], chat_history=chat_history
     )
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -404,8 +442,11 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
     )
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -528,6 +569,7 @@ async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_
         plugin["TestFunctionHandlebars"], chat_history=chat_history
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -544,6 +586,8 @@ async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

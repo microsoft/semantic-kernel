@@ -8,6 +8,7 @@ using System;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -37,6 +38,11 @@ using System.ClientModel;
 =======
 using System.ClientModel;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using System.ClientModel;
@@ -88,6 +94,7 @@ public class KernelBuilderExtensionsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient("key"))
 =======
 =======
@@ -101,10 +108,13 @@ public class KernelBuilderExtensionsTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient("key"))
 =======
         var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient(new ApiKeyCredential("key")))
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -122,6 +132,8 @@ public class KernelBuilderExtensionsTests
 =======
         var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient(new ApiKeyCredential("key")))
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             .Build()
@@ -190,6 +202,7 @@ public class KernelBuilderExtensionsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var service = sut.AddOpenAIAudioToText("model", new OpenAIClient("key"))
 =======
 =======
@@ -203,10 +216,13 @@ public class KernelBuilderExtensionsTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var service = sut.AddOpenAIAudioToText("model", new OpenAIClient("key"))
 =======
         var service = sut.AddOpenAIAudioToText("model", new OpenAIClient(new ApiKeyCredential("key")))
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -224,6 +240,8 @@ public class KernelBuilderExtensionsTests
 =======
         var service = sut.AddOpenAIAudioToText("model", new OpenAIClient(new ApiKeyCredential("key")))
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             .Build()
@@ -261,6 +279,7 @@ public class KernelBuilderExtensionsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var client = new OpenAIClient("key");
 =======
 =======
@@ -274,10 +293,13 @@ public class KernelBuilderExtensionsTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var client = new OpenAIClient("key");
 =======
         var client = new OpenAIClient(new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -295,6 +317,8 @@ public class KernelBuilderExtensionsTests
 =======
         var client = new OpenAIClient(new ApiKeyCredential("key"));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var builder = Kernel.CreateBuilder();

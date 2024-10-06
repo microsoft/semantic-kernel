@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -36,6 +37,11 @@ using System.Text;
 =======
 using System.Text;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.Text;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using System.Text;
@@ -64,6 +70,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public Task StreamOpenAIChatAsync()
     {
 =======
@@ -86,11 +93,17 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     {
 =======
 >>>>>>> Stashed changes
+=======
+    public Task StreamOpenAIChatAsync()
+    {
+=======
+>>>>>>> Stashed changes
     public async Task StreamServicePromptAsync()
     {
         Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -109,6 +122,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -123,6 +139,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -137,6 +154,8 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -164,6 +183,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -176,6 +196,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -199,6 +222,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         // Second assistant message
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -219,6 +243,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -234,6 +261,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -248,6 +276,8 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -267,6 +297,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -282,6 +313,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     public async Task StreamServicePromptTextAsync()
     {
         Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
@@ -291,6 +325,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         // Create chat completion service
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -309,6 +344,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -337,6 +375,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -350,6 +389,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -446,6 +488,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -463,6 +506,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -480,6 +526,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -493,10 +540,13 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -516,6 +566,8 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         Console.WriteLine("======== Stream Function Call Content ========");
@@ -558,6 +610,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -572,6 +625,8 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -610,6 +665,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -622,6 +678,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -632,6 +691,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         await foreach (var chatUpdate in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -648,6 +708,8 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         {
@@ -663,6 +725,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
                 Console.Write(chatUpdate.Content);
             }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -680,6 +743,8 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -690,6 +755,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
                 Console.WriteLine(chatUpdate.Metadata["Usage"]?.AsJson());
             }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -706,6 +772,8 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -714,6 +782,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         chatHistory.AddMessage(authorRole, fullMessage);
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -731,6 +800,8 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -740,10 +811,14 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         string fullMessage = string.Empty;
         await foreach (var chatUpdate in kernel.InvokePromptStreamingAsync<StreamingChatMessageContent>(prompt))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -755,12 +830,18 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             }
 <<<<<<< HEAD
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 
 =======
 >>>>>>> main
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 
 =======
@@ -773,7 +854,10 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             }
 <<<<<<< HEAD
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -782,8 +866,11 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         chatHistory.AddMessage(authorRole, fullMessage);
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -886,6 +973,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         }
         Console.WriteLine("------------------------");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
     }
@@ -905,6 +993,10 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
     }
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+    }
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
     }

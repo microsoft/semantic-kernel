@@ -23,6 +23,7 @@ from pydantic import ValidationError
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 =======
@@ -45,12 +46,18 @@ from semantic_kernel.connectors.ai.function_call_choice_configuration import Fun
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 =======
 >>>>>>> Stashed changes
+=======
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 =======
 from semantic_kernel.connectors.ai.function_calling_utils import merge_function_results
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -69,6 +76,9 @@ from semantic_kernel.connectors.ai.function_calling_utils import merge_function_
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -107,6 +117,7 @@ from semantic_kernel.contents.utils.finish_reason import FinishReason
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -123,11 +134,15 @@ from semantic_kernel.contents.utils.finish_reason import FinishReason
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -146,6 +161,9 @@ from semantic_kernel.kernel import Kernel
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -240,6 +258,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -269,6 +288,11 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -287,6 +311,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -301,9 +326,13 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
     @trace_chat_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
     async def get_chat_message_contents(
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -327,6 +356,9 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
     @trace_chat_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
     async def get_chat_message_contents(
 >>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
 >>>>>>> main
 >>>>>>> Stashed changes
         self,
@@ -372,6 +404,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -401,6 +434,11 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -428,6 +466,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -441,10 +480,13 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 =======
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -464,6 +506,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             if (fc_count := len(function_calls)) == 0:
@@ -494,6 +538,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -523,6 +568,11 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -554,6 +604,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -571,12 +622,17 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
             if any(result.terminate for result in results if result is not None):
                 return merge_function_results(chat_history.messages[-len(results) :])
         else:
             # do a final call without auto function calling
             return await self._send_chat_request(chat_history, settings)
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -595,6 +651,9 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

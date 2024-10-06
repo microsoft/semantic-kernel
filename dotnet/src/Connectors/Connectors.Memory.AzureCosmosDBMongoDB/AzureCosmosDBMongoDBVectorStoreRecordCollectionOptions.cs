@@ -45,6 +45,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public int? EfConstruction { get; set; } = null;
 =======
 =======
@@ -64,6 +65,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
     public int? EfConstruction { get; set; } = null;
 =======
 >>>>>>> Stashed changes
+=======
+    public int? EfConstruction { get; set; } = null;
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public int EfConstruction { get; set; } = 64;
 
@@ -75,6 +80,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
 =======
     public int? EfConstruction { get; set; } = null;
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -93,6 +99,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

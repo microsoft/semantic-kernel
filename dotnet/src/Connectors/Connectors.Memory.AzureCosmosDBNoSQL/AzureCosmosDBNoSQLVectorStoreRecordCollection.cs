@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -80,6 +86,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>A set of types that a key on the provided model may have.</summary>
 =======
 =======
@@ -93,10 +100,13 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// <summary>A set of types that a key on the provided model may have.</summary>
 =======
     /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -116,6 +126,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     private static readonly HashSet<Type> s_supportedKeyTypes =
     [
         typeof(string)
@@ -128,6 +140,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -142,6 +155,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -170,6 +185,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -182,6 +198,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -205,6 +224,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
     /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have, based on <see cref="VectorDataType"/> enumeration.</summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -222,6 +242,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -250,6 +273,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -263,10 +287,13 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -286,6 +313,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
@@ -301,6 +330,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 =======
@@ -315,12 +345,15 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 =======
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -339,6 +372,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -358,6 +393,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>The key property of the current storage model.</summary>
     private readonly VectorStoreRecordKeyProperty _keyProperty;
 
@@ -373,11 +409,14 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// <summary>The key property of the current storage model.</summary>
     private readonly VectorStoreRecordKeyProperty _keyProperty;
 
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -394,6 +433,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <summary>The property name to use as partition key.</summary>
@@ -429,6 +470,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -442,9 +484,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.JsonObjectCustomMapper is not null, s_supportedKeyTypes);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -465,6 +510,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
         // Assign.
         this._database = database;
@@ -477,6 +524,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -491,6 +539,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -522,6 +572,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -534,6 +585,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -560,6 +614,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         // Use Azure CosmosDB NoSQL reserved key property name as storage key property name.
         this._storagePropertyNames[this._propertyReader.KeyPropertyName] = AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -580,6 +635,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         this._keyStoragePropertyName = AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName;
 
         // If partition key is not provided, use key property as a partition key.
@@ -592,6 +650,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -606,6 +665,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -624,6 +685,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -639,6 +701,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
             this._propertyReader.KeyPropertyName;
 
         VerifyPartitionKeyProperty(this._partitionKeyPropertyName, this._propertyReader.Properties);
@@ -648,6 +713,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         this._nonVectorStoragePropertyNames = this._propertyReader.DataProperties
             .Cast<VectorStoreRecordProperty>()
             .Concat([this._propertyReader.KeyProperty])
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -666,6 +732,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -874,6 +943,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -887,6 +957,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -947,6 +1020,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -964,6 +1038,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -995,6 +1072,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private static void VerifyPartitionKeyProperty(string partitionKeyPropertyName, VectorStoreRecordDefinition definition)
     {
         var partitionKeyProperty = definition.Properties
@@ -1010,6 +1088,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     private static void VerifyPartitionKeyProperty(string partitionKeyPropertyName, VectorStoreRecordDefinition definition)
     {
         var partitionKeyProperty = definition.Properties
@@ -1018,6 +1098,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     {
         var partitionKeyProperty = properties
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1037,6 +1118,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     {
         var partitionKeyProperty = properties
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             .FirstOrDefault(l => l.DataModelPropertyName.Equals(partitionKeyPropertyName, StringComparison.Ordinal));
@@ -1069,6 +1152,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         foreach (var property in this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>())
 =======
 =======
@@ -1082,10 +1166,13 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         foreach (var property in this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>())
 =======
         foreach (var property in this._propertyReader.VectorProperties)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1103,6 +1190,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
         foreach (var property in this._propertyReader.VectorProperties)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         {
@@ -1151,6 +1240,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             foreach (var property in this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordDataProperty>())
 =======
 =======
@@ -1164,10 +1254,13 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             foreach (var property in this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordDataProperty>())
 =======
             foreach (var property in this._propertyReader.DataProperties)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1185,6 +1278,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
             foreach (var property in this._propertyReader.DataProperties)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             {
@@ -1274,6 +1369,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1290,6 +1386,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSelectQuery(
             this._keyStoragePropertyName,
             this._partitionKeyStoragePropertyName,
@@ -1297,6 +1396,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             fields);
 
         await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken).ConfigureAwait(false))
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1315,6 +1415,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1356,6 +1459,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             throw new VectorStoreOperationException($"Key property {this._keyProperty.DataModelPropertyName} is not initialized.");
 =======
 =======
@@ -1369,10 +1473,13 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             throw new VectorStoreOperationException($"Key property {this._keyProperty.DataModelPropertyName} is not initialized.");
 =======
             throw new VectorStoreOperationException($"Key property {this._propertyReader.KeyPropertyName} is not initialized.");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1390,6 +1497,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
             throw new VectorStoreOperationException($"Key property {this._propertyReader.KeyPropertyName} is not initialized.");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -1433,6 +1542,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1449,11 +1559,15 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     private async IAsyncEnumerable<T> GetItemsAsync<T>(QueryDefinition queryDefinition, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var iterator = this._database
             .GetContainer(this.CollectionName)
             .GetItemQueryIterator<T>(queryDefinition);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1472,6 +1586,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1541,6 +1658,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1554,6 +1672,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1608,6 +1729,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1625,6 +1747,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

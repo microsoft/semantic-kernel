@@ -6,6 +6,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 from typing import Annotated
 =======
@@ -23,6 +24,11 @@ from typing import Annotated
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+
+from typing import Annotated
+=======
+>>>>>>> Stashed changes
 =======
 
 from typing import Annotated
@@ -40,6 +46,7 @@ else:
     from typing_extensions import Annotated
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -57,6 +64,9 @@ else:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -72,6 +82,7 @@ class MathPlugin:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     """Description: MathPlugin provides a set of functions to make Math calculations.
 =======
 =======
@@ -91,12 +102,17 @@ class MathPlugin:
     """Description: MathPlugin provides a set of functions to make Math calculations.
 =======
 >>>>>>> Stashed changes
+=======
+    """Description: MathPlugin provides a set of functions to make Math calculations.
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     """Description: MathPlugin provides a set of functions to make Math calculations.
 =======
     """
     Description: MathPlugin provides a set of functions to make Math calculations.
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -115,6 +131,9 @@ class MathPlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -147,6 +166,7 @@ class MathPlugin:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     @kernel_function(name="Subtract")
 =======
 =======
@@ -166,6 +186,10 @@ class MathPlugin:
     @kernel_function(name="Subtract")
 =======
 >>>>>>> Stashed changes
+=======
+    @kernel_function(name="Subtract")
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     @kernel_function(name="Subtract")
 =======
@@ -174,6 +198,7 @@ class MathPlugin:
         name="Subtract",
     )
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -192,6 +217,9 @@ class MathPlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -207,6 +235,7 @@ class MathPlugin:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Returns the difference of numbers provided."""
 =======
 =======
@@ -222,6 +251,10 @@ class MathPlugin:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        """Returns the difference of numbers provided."""
+=======
+>>>>>>> Stashed changes
 =======
         """Returns the difference of numbers provided."""
 =======
@@ -238,6 +271,7 @@ class MathPlugin:
         """
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -255,6 +289,9 @@ class MathPlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -273,6 +310,7 @@ class MathPlugin:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Helper function to perform addition or subtraction based on the add flag."""
 =======
 =======
@@ -292,6 +330,10 @@ class MathPlugin:
         """Helper function to perform addition or subtraction based on the add flag."""
 =======
 >>>>>>> Stashed changes
+=======
+        """Helper function to perform addition or subtraction based on the add flag."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         """Helper function to perform addition or subtraction based on the add flag."""
 =======
@@ -304,6 +346,7 @@ class MathPlugin:
         :return: The resulting sum or subtraction as a string
         """
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -322,6 +365,9 @@ class MathPlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

@@ -61,6 +61,7 @@ public class ChatMessageContent : KernelContent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -75,6 +76,8 @@ public class ChatMessageContent : KernelContent
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -84,6 +87,7 @@ public class ChatMessageContent : KernelContent
                     metadata: this.Metadata
                 )
                 { MimeType = this.MimeType });
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -105,12 +109,16 @@ public class ChatMessageContent : KernelContent
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
                 ////modelId: this.ModelId, // %%% REDUNDANT
                 ////innerContent: this.InnerContent, // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION / MUTATION RISK (IGNORED FOR SERIALIZATION)
                     encoding: this.Encoding // %%% WEIRD, BUT WHO CARES (IGNORED FOR SERIALIZATION)
                 ////metadata: this.Metadata, // %%% CARDINALITY MISMATCH / MUTATION RISK
                 )
                 { MimeType = this.MimeType }); // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -129,6 +137,9 @@ public class ChatMessageContent : KernelContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -185,6 +196,7 @@ public class ChatMessageContent : KernelContent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// The property is intended to be used by agents to associate themselves with the messages they generate.
 =======
 =======
@@ -198,10 +210,13 @@ public class ChatMessageContent : KernelContent
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// The property is intended to be used by agents to associate themselves with the messages they generate.
 =======
     /// The property is intended to be used by agents to associate themselves with the messages they generate or by a user who created it.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -219,6 +234,8 @@ public class ChatMessageContent : KernelContent
 =======
     /// The property is intended to be used by agents to associate themselves with the messages they generate or by a user who created it.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// </remarks>

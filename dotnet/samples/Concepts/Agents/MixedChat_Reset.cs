@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
@@ -74,6 +80,7 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel: new(),
                 provider,
                 new(this.Model)
@@ -89,13 +96,18 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 kernel: new(),
                 provider,
                 new(this.Model)
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 provider,
@@ -108,6 +120,7 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
                 kernel: new(),
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -126,6 +139,9 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -140,6 +156,7 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -153,9 +170,12 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
                 },
                 kernel: new Kernel());
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -174,6 +194,8 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
                 },
                 kernel: new Kernel());
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 

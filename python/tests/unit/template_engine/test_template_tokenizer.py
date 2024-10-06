@@ -3,6 +3,7 @@
 from pytest import mark, raises
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +25,11 @@ from semantic_kernel.exceptions import TemplateSyntaxError
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+from semantic_kernel.exceptions import TemplateSyntaxError
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 from semantic_kernel.exceptions import TemplateSyntaxError
@@ -37,6 +43,7 @@ from semantic_kernel.template_engine.blocks.block_errors import (
 )
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -53,6 +60,8 @@ from semantic_kernel.template_engine.blocks.block_errors import (
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -156,6 +165,7 @@ def test_invalid_syntax(template, error):
     with raises(error):
         TemplateTokenizer.tokenize(template)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,13 +185,18 @@ def test_invalid_syntax(template, error):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
 
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -192,6 +207,7 @@ def test_invalid_syntax(template, error):
 
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -208,6 +224,8 @@ def test_invalid_syntax(template, error):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -268,6 +286,7 @@ def test_it_tokenizes_edge_cases_correctly_4(template):
 
 def test_it_tokenizes_a_typical_prompt():
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -289,6 +308,11 @@ def test_it_tokenizes_a_typical_prompt():
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    template = "this is a {{ $prompt }} with {{$some}} variables and {{function $calls}} {{ and 'values' }}"
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
     template = "this is a {{ $prompt }} with {{$some}} variables and {{function $calls}} {{ and 'values' }}"
@@ -300,6 +324,7 @@ def test_it_tokenizes_a_typical_prompt():
     template = "this is a {{ $prompt }} with {{$some}} variables " "and {{function $calls}} {{ and 'values' }}"
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -316,6 +341,8 @@ def test_it_tokenizes_a_typical_prompt():
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

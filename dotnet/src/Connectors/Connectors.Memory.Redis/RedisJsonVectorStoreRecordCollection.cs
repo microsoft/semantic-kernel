@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -93,6 +99,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -106,10 +113,13 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -129,6 +139,8 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <summary>The Redis database to read/write records from.</summary>
@@ -147,6 +159,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 =======
@@ -161,12 +174,15 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 =======
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -185,6 +201,8 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -198,6 +216,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it to json for data and vector properties.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames = new();
 
@@ -213,11 +232,14 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it to json for data and vector properties.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames = new();
 
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -234,6 +256,8 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
@@ -261,6 +285,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -274,9 +299,12 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.JsonNodeCustomMapper is not null, s_supportedKeyTypes);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -297,6 +325,8 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
         // Assign.
         this._database = database;
@@ -310,6 +340,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -324,6 +355,8 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -342,6 +375,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -354,6 +388,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -372,6 +409,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         this._propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
         this._propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -389,6 +427,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -406,6 +447,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -422,6 +464,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         var keyJsonPropertyName = this._storagePropertyNames[properties.KeyProperty.DataModelPropertyName];
 
         if (properties.VectorProperties.Count > 0)
@@ -429,6 +474,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
             this._firstVectorPropertyName = this._storagePropertyNames[properties.VectorProperties.First().DataModelPropertyName];
         }
         this._dataStoragePropertyNames = this._propertyReader.DataPropertyJsonNames.ToArray();
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -447,6 +493,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -468,6 +517,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 this._vectorStoreRecordDefinition,
 =======
 =======
@@ -481,10 +531,13 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 this._vectorStoreRecordDefinition,
 =======
                 this._propertyReader.Properties,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -502,6 +555,8 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 =======
                 this._propertyReader.Properties,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 this._jsonSerializerOptions);
@@ -516,6 +571,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(keyJsonPropertyName, this._jsonSerializerOptions);
 =======
 =======
@@ -535,12 +591,17 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
             this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(keyJsonPropertyName, this._jsonSerializerOptions);
 =======
 >>>>>>> Stashed changes
+=======
+            this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(keyJsonPropertyName, this._jsonSerializerOptions);
+=======
+>>>>>>> Stashed changes
             this._mapper = this._options.JsonNodeCustomMapper;
         }
         else
         {
             this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(keyJsonPropertyName, this._jsonSerializerOptions);
             this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(this._propertyReader.KeyPropertyJsonName, this._jsonSerializerOptions);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -559,6 +620,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -603,6 +667,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -619,12 +684,16 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._vectorStoreRecordDefinition.Properties, this._storagePropertyNames);
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._propertyReader.Properties, this._propertyReader.JsonPropertyNamesMap, useDollarPrefix: true);
 =======
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._propertyReader.Properties, this._propertyReader.JsonPropertyNamesMap, useDollarPrefix: true);
 >>>>>>> upstream/feature-vector-search
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -643,6 +712,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -870,6 +942,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -883,6 +956,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -928,6 +1004,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -945,6 +1022,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -971,6 +1051,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -984,6 +1065,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1005,6 +1089,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1022,6 +1107,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

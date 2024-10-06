@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -39,6 +40,11 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 =======
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -55,6 +61,7 @@ using Xunit;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -68,9 +75,12 @@ using Xunit;
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 #pragma warning disable CS0618 // Type or member is obsolete
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,6 +99,8 @@ using Xunit;
 #pragma warning disable CS0618 // Type or member is obsolete
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
@@ -139,6 +151,7 @@ public sealed class OpenAITextToImageTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: null)
 =======
 =======
@@ -152,10 +165,13 @@ public sealed class OpenAITextToImageTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: null)
 =======
             .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -173,6 +189,8 @@ public sealed class OpenAITextToImageTests
 =======
             .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             .Build();
@@ -193,6 +211,7 @@ public sealed class OpenAITextToImageTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -206,6 +225,9 @@ public sealed class OpenAITextToImageTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -232,6 +254,7 @@ public sealed class OpenAITextToImageTests
         Assert.NotEmpty(result[0].Uri!.ToString());
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -249,6 +272,9 @@ public sealed class OpenAITextToImageTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

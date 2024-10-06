@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -36,6 +37,11 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -84,6 +90,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -113,6 +120,11 @@ from semantic_kernel.kernel_types import OptionalOneOrMany
 =======
 from semantic_kernel.kernel_types import OptionalOneOrMany
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+from semantic_kernel.kernel_types import OptionalOneOrMany
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 from semantic_kernel.kernel_types import OptionalOneOrMany
@@ -145,6 +157,7 @@ class KernelPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -159,6 +172,10 @@ class KernelPlugin(KernelBaseModel):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -187,6 +204,7 @@ class KernelPlugin(KernelBaseModel):
     Represents a Kernel Plugin with functions.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -204,6 +222,9 @@ class KernelPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -221,6 +242,7 @@ class KernelPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -250,6 +272,11 @@ class KernelPlugin(KernelBaseModel):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -304,6 +331,7 @@ class KernelPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -318,6 +346,8 @@ class KernelPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -334,6 +364,7 @@ class KernelPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
         functions: (OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE]) = None,
@@ -362,6 +393,11 @@ class KernelPlugin(KernelBaseModel):
 =======
         functions: (OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE]) = None,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        functions: (OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE]) = None,
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         functions: (OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE]) = None,
@@ -378,6 +414,7 @@ class KernelPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -392,6 +429,8 @@ class KernelPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -406,7 +445,10 @@ class KernelPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -427,6 +469,7 @@ class KernelPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -441,6 +484,8 @@ class KernelPlugin(KernelBaseModel):
             description: The description of the plugin.
             functions: The functions in the plugin, will be rewritten to a dictionary of functions.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -863,6 +908,7 @@ class KernelPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -877,6 +923,8 @@ class KernelPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -887,6 +935,7 @@ class KernelPlugin(KernelBaseModel):
             | "KernelPlugin"
             | None
         ),
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -921,6 +970,11 @@ class KernelPlugin(KernelBaseModel):
 =======
         functions: OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE],
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        functions: OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE],
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         functions: OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE],
@@ -979,6 +1033,7 @@ class KernelPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -995,10 +1050,14 @@ class KernelPlugin(KernelBaseModel):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
                     functions_dict.update({
                         name: KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
                         for name, function in function.functions.items()
                     })
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1017,6 +1076,9 @@ class KernelPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1050,6 +1112,7 @@ class KernelPlugin(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1067,6 +1130,10 @@ class KernelPlugin(KernelBaseModel):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
     """
 
     name: Annotated[str, StringConstraints(pattern=PLUGIN_NAME_REGEX, min_length=1)]
@@ -1161,6 +1228,7 @@ class KernelPlugin(KernelBaseModel):
         return [func.metadata for func in self.functions.values()]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1178,6 +1246,9 @@ class KernelPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

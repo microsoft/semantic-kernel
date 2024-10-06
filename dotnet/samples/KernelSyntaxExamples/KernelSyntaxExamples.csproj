@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -8,6 +9,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 <Project Sdk="Microsoft.NET.Sdk.Web">
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -23,8 +26,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -34,6 +40,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -50,6 +57,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -58,6 +67,7 @@
   </PropertyGroup>
   <PropertyGroup>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,6 +92,9 @@
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -98,6 +111,7 @@
   </ItemGroup>
   <ItemGroup>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -105,6 +119,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -125,6 +141,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -138,6 +155,8 @@
 =======
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     <AssemblyName>KernelSyntaxExamples</AssemblyName>
@@ -175,6 +194,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Http" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -182,6 +202,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -201,6 +223,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -213,6 +236,8 @@
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
@@ -228,6 +253,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -235,6 +261,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -255,6 +283,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -268,6 +297,8 @@
 =======
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
@@ -293,6 +324,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -300,6 +332,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -319,6 +353,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -331,6 +366,8 @@
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     <ProjectReference Include="..\..\src\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
@@ -339,6 +376,7 @@
     <ProjectReference Include="..\..\src\Extensions\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -349,6 +387,8 @@
     <ProjectReference Include="..\..\src\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -365,8 +405,11 @@
     <ProjectReference Include="..\..\src\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     <ProjectReference Include="..\..\src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
@@ -374,6 +417,7 @@
     <ProjectReference Include="..\..\src\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -391,6 +435,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -412,6 +458,7 @@
     <EmbeddedResource Include="Resources\30-system-prompt.txt" />
     <EmbeddedResource Include="Resources\30-user-context.txt" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -419,6 +466,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -440,6 +489,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -454,6 +504,8 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     <ProjectReference Include="..\..\src\Experimental\Agents\Experimental.Agents.csproj" />

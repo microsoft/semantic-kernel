@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -36,6 +37,11 @@ import logging
 =======
 import logging
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+import logging
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 import logging
@@ -57,6 +63,7 @@ else:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 =======
@@ -79,11 +86,17 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 =======
 >>>>>>> Stashed changes
+=======
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.exceptions.content_exceptions import ContentAdditionException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -102,6 +115,9 @@ logger: logging.Logger = logging.getLogger(__name__)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -125,6 +141,7 @@ class StreamingContentMixin(KernelBaseModel, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -138,6 +155,9 @@ class StreamingContentMixin(KernelBaseModel, ABC):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -195,6 +215,7 @@ class StreamingContentMixin(KernelBaseModel, ABC):
 
         return new_inner_contents_list
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -212,6 +233,9 @@ class StreamingContentMixin(KernelBaseModel, ABC):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

@@ -1,5 +1,6 @@
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -22,11 +23,14 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
   "description": "Translate the input into a language of your choice",
   "completion": {
     "max_tokens": 256,
 <<<<<<< main
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
   "description": "Translate the input into a language of your choice",
@@ -48,6 +52,11 @@
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+  "default_settings": {
+    "max_tokens": 2000,
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
   "default_settings": {
@@ -66,6 +75,7 @@
     "text-davinci-002"
   ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -73,6 +83,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -93,6 +105,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -106,6 +119,8 @@
     "stop_sequences": ["[done]"]
   }
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 }

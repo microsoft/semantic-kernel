@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -45,13 +46,18 @@ using System.Text.Json;
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using System.Threading;
@@ -83,6 +89,7 @@ public abstract class KernelFunction
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
         name: "semantic_kernel.function.invocation.duration",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -109,6 +116,9 @@ public abstract class KernelFunction
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
         unit: "s",
         description: "Measures the duration of a function's execution");
 
@@ -122,6 +132,7 @@ public abstract class KernelFunction
         unit: "s",
         description: "Measures the duration of a function's streaming execution");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -129,6 +140,8 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -161,6 +174,7 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -175,6 +189,8 @@ public abstract class KernelFunction
     /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</summary>
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -220,6 +236,7 @@ public abstract class KernelFunction
     /// </remarks>
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -239,6 +256,10 @@ public abstract class KernelFunction
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -262,6 +283,7 @@ public abstract class KernelFunction
     {
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -280,6 +302,9 @@ public abstract class KernelFunction
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -293,7 +318,10 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -313,6 +341,9 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -335,9 +366,12 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
         : this(name, null, description, parameters, returnParameter, executionSettings)
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -355,6 +389,7 @@ public abstract class KernelFunction
     internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, JsonSerializerOptions jsonSerializerOptions, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
         : this(name, null, description, parameters, jsonSerializerOptions, returnParameter, executionSettings)
 >>>>>>> origin/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -392,6 +427,8 @@ public abstract class KernelFunction
         : this(name, null, description, parameters, jsonSerializerOptions, returnParameter, executionSettings)
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     {
     }
 
@@ -400,7 +437,10 @@ public abstract class KernelFunction
     /// </summary>
     /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <param name="pluginName">The name of the plugin this function instance has been added to.</param>
@@ -413,6 +453,7 @@ public abstract class KernelFunction
     /// </param>
     /// <param name="additionalMetadata">Properties/metadata associated with the function itself rather than its parameters and return type.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -420,6 +461,8 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -440,6 +483,7 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -453,6 +497,8 @@ public abstract class KernelFunction
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
@@ -469,6 +515,7 @@ public abstract class KernelFunction
             AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary,
         };
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -476,6 +523,8 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -496,6 +545,7 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -509,6 +559,8 @@ public abstract class KernelFunction
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
         if (executionSettings is not null)
         {
@@ -519,6 +571,7 @@ public abstract class KernelFunction
     }
 
     /// <summary>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -537,6 +590,8 @@ public abstract class KernelFunction
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -570,9 +625,12 @@ public abstract class KernelFunction
         if (executionSettings is not null)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -585,9 +643,12 @@ public abstract class KernelFunction
 
         this._jsonSerializerOptions = jsonSerializerOptions;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
     }
 
@@ -597,6 +658,7 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -611,6 +673,8 @@ public abstract class KernelFunction
 
     /// <summary>
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// Invokes the <see cref="KernelFunction"/>.
@@ -621,6 +685,7 @@ public abstract class KernelFunction
     /// <returns>The result of the function's execution.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -628,6 +693,8 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -648,6 +715,7 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -661,6 +729,8 @@ public abstract class KernelFunction
     [RequiresUnreferencedCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public async Task<FunctionResult> InvokeAsync(
@@ -677,6 +747,7 @@ public abstract class KernelFunction
         arguments ??= [];
         logger.LogFunctionInvoking(this.Name);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -695,6 +766,8 @@ public abstract class KernelFunction
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         logger.LogFunctionArguments(arguments);
 =======
@@ -702,6 +775,7 @@ public abstract class KernelFunction
         if (this._jsonSerializerOptions is not null)
         {
             logger.LogFunctionArguments(arguments, this._jsonSerializerOptions);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
 
@@ -715,6 +789,8 @@ public abstract class KernelFunction
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         }
         else
         {
@@ -726,6 +802,9 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -783,6 +862,7 @@ public abstract class KernelFunction
 
             logger.LogFunctionInvokedSuccess(this.Name);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -809,6 +889,11 @@ public abstract class KernelFunction
             logger.LogFunctionResultValue(functionResult);
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+            logger.LogFunctionResultValue(functionResult);
+=======
+>>>>>>> Stashed changes
 
             if (this._jsonSerializerOptions is not null)
             {
@@ -824,6 +909,9 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -863,6 +951,7 @@ public abstract class KernelFunction
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
     /// <exception cref="InvalidCastException">The function's result could not be cast to <typeparamref name="TResult"/>.</exception>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -870,6 +959,8 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -890,6 +981,7 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -903,6 +995,8 @@ public abstract class KernelFunction
     [RequiresUnreferencedCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public async Task<TResult?> InvokeAsync<TResult>(
@@ -926,6 +1020,7 @@ public abstract class KernelFunction
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -933,6 +1028,8 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -953,6 +1050,7 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -966,6 +1064,8 @@ public abstract class KernelFunction
     [RequiresUnreferencedCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection, if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public IAsyncEnumerable<StreamingKernelContent> InvokeStreamingAsync(
@@ -988,6 +1088,7 @@ public abstract class KernelFunction
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -995,6 +1096,8 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1015,6 +1118,7 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1030,6 +1134,8 @@ public abstract class KernelFunction
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public async IAsyncEnumerable<TResult> InvokeStreamingAsync<TResult>(
         Kernel kernel,
         KernelArguments? arguments = null,
@@ -1039,6 +1145,7 @@ public abstract class KernelFunction
 
         using var activity = s_activitySource.StartActivity(this.Name);
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 
@@ -1062,6 +1169,12 @@ public abstract class KernelFunction
 <<<<<<< main
 >>>>>>> Stashed changes
 =======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+
+        arguments ??= [];
+        logger.LogFunctionStreamingInvoking(this.Name);
 <<<<<<< main
 >>>>>>> Stashed changes
 =======
@@ -1081,7 +1194,10 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1112,6 +1228,9 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1153,7 +1272,10 @@ public abstract class KernelFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1187,6 +1309,7 @@ public abstract class KernelFunction
             }
 
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1317,6 +1440,8 @@ public abstract class KernelFunction
                 {
                     // Invoke the function and get its streaming enumerable.
                     var enumerable = this.InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
+=======
+>>>>>>> Stashed changes
 
                     // Update context with enumerable as result value.
                     context.Result = new FunctionResult(this, enumerable, kernel.Culture);
@@ -1338,6 +1463,10 @@ public abstract class KernelFunction
                 throw;
             }
 
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
@@ -1373,7 +1502,10 @@ public abstract class KernelFunction
             logger.LogFunctionStreamingComplete(duration.TotalSeconds);
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }

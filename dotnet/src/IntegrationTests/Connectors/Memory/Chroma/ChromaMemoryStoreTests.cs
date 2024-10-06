@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -27,6 +28,9 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -36,6 +40,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Chroma;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -43,6 +48,8 @@ using Microsoft.SemanticKernel.Connectors.Chroma;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -64,6 +71,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -78,6 +86,8 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Memory;
@@ -191,6 +201,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         // Act
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -220,6 +231,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var exception = await Assert.ThrowsAsync<HttpOperationException>(() => this._chromaMemoryStore.DeleteCollectionAsync(collectionName));
 
         // Assert
@@ -228,6 +241,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Contains(
             $"Collection {collectionName} does not exist.",
             exception.ResponseContent,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -246,6 +260,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             $"Collection {collectionName} does not exist.",
             exception.ResponseContent,
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             StringComparison.InvariantCulture);

@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.Data;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Http;
 =======
 =======
@@ -31,10 +32,15 @@ using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Http;
 =======
 >>>>>>> Stashed changes
+=======
+using Microsoft.SemanticKernel.Http;
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Http;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -53,6 +59,9 @@ using Microsoft.SemanticKernel.Http;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -92,6 +101,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 =======
 =======
@@ -111,10 +121,15 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 
 =======
 >>>>>>> Stashed changes
+=======
+
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -133,6 +148,9 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -173,6 +191,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     ApplicationName = HttpHeaderConstant.Values.UserAgent,
 =======
 =======
@@ -192,10 +211,15 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
                     ApplicationName = HttpHeaderConstant.Values.UserAgent,
 =======
 >>>>>>> Stashed changes
+=======
+                    ApplicationName = HttpHeaderConstant.Values.UserAgent,
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                     ApplicationName = HttpHeaderConstant.Values.UserAgent,
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -214,6 +238,9 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -229,6 +256,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 =======
 =======
@@ -248,10 +276,15 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 
 =======
 >>>>>>> Stashed changes
+=======
+
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -270,6 +303,9 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -285,6 +321,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -298,6 +335,9 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -393,6 +433,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
             });
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -410,6 +451,9 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

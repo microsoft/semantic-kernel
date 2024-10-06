@@ -12,6 +12,7 @@ if TYPE_CHECKING:
         PromptExecutionSettings,
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,6 +33,8 @@ if TYPE_CHECKING:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     from semantic_kernel.contents import StreamingTextContent, TextContent
 =======
@@ -54,6 +57,7 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -75,6 +79,8 @@ if TYPE_CHECKING:
 
 
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 class TextCompletionClientBase(AIServiceClientBase, ABC):
@@ -96,6 +102,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             list[TextContent]: A string or list of strings representing the response(s) from the LLM.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,6 +110,8 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -122,6 +131,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -134,6 +144,8 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 =======
     ) -> List["TextContent"]:
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         """
@@ -150,6 +162,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             prompt (str): The prompt to send to the LLM.
             settings (PromptExecutionSettings): Settings for the request.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -157,6 +170,8 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -178,6 +193,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -194,6 +210,8 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
         Yields:
             list[StreamingTextContent]: A stream representing the response(s) from the LLM.
@@ -205,6 +223,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 
     # endregion
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 
     # region Public methods
@@ -214,6 +233,11 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
     # region Public methods
 
 >>>>>>> origin/main
+=======
+
+    # region Public methods
+
+>>>>>>> Stashed changes
 =======
 
     # region Public methods
@@ -233,6 +257,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             list[TextContent]: A string or list of strings representing the response(s) from the LLM.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -255,6 +280,9 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
         """
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
@@ -273,7 +301,10 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             TextContent: A string or list of strings representing the response(s) from the LLM.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         """
@@ -322,6 +353,9 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -352,9 +386,12 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             TextContent: A string or list of strings representing the response(s) from the LLM.
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
         """
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         result = await self.get_text_contents(prompt=prompt, settings=settings)
@@ -373,6 +410,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Args:
             prompt (str): The prompt to send to the LLM.
             settings (PromptExecutionSettings): Settings for the request.
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -448,6 +486,8 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         Arguments:

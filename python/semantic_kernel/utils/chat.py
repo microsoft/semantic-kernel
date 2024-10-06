@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from typing import TYPE_CHECKING
 
 =======
@@ -29,6 +30,11 @@ from typing import TYPE_CHECKING
 
 =======
 >>>>>>> Stashed changes
+=======
+from typing import TYPE_CHECKING
+
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from typing import TYPE_CHECKING
 
@@ -37,6 +43,7 @@ from typing import TYPE_CHECKING, List
 
 from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -55,6 +62,9 @@ from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content i
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -71,6 +81,7 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 def store_results(chat_history: ChatHistory, results: list["ChatMessageContent"]):
@@ -87,12 +98,17 @@ def store_results(chat_history: ChatHistory, results: list["ChatMessageContent"]
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 def store_results(chat_history: ChatHistory, results: list["ChatMessageContent"]):
     """Stores specific results in the context and chat prompt."""
     for message in results:
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -106,6 +122,7 @@ def store_results(chat_history: ChatHistory, results: List["ChatMessageContent"]
         if isinstance(message, AzureChatMessageContent) and message.tool_message is not None:
             chat_history.add_tool_message(content=message.tool_message)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -124,6 +141,9 @@ def store_results(chat_history: ChatHistory, results: List["ChatMessageContent"]
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

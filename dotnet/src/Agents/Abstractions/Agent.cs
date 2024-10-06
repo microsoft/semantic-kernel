@@ -79,6 +79,7 @@ public abstract class Agent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -95,6 +96,9 @@ public abstract class Agent
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     /// <summary>
     /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type based on the provided state.
     /// </summary>
@@ -107,6 +111,7 @@ public abstract class Agent
     /// </remarks>
     protected internal abstract Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken);
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -125,6 +130,9 @@ public abstract class Agent
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,6 +21,11 @@
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+<Project Sdk="Microsoft.NET.Sdk">
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 <Project Sdk="Microsoft.NET.Sdk">
@@ -31,6 +37,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 >>>>>>> ms/feature-feature-flow-planner
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -47,6 +54,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

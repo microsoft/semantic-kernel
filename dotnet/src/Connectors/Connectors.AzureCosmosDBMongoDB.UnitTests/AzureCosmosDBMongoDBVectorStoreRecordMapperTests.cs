@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -82,6 +88,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -95,6 +102,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -116,6 +126,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
         this._sut = new(definition, storagePropertyNames);
         this._sut = new(new VectorStoreRecordPropertyReader(typeof(AzureCosmosDBMongoDBHotelModel), definition, null));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -133,6 +144,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -168,6 +182,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -197,6 +212,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 =======
         Assert.Equal([1f, 2f, 3f], document["description_embedding"].AsBsonArray);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        Assert.Equal([1f, 2f, 3f], document["description_embedding"].AsBsonArray);
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         Assert.Equal([1f, 2f, 3f], document["description_embedding"].AsBsonArray);
@@ -222,6 +242,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -251,6 +272,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 =======
             ["description_embedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+            ["description_embedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
             ["description_embedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })

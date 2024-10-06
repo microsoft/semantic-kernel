@@ -32,6 +32,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -46,6 +47,8 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -59,7 +62,10 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -80,6 +86,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -94,6 +101,8 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     {
         // Arrange
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var kernel = this.CreateAndInitializeKernel();
@@ -121,6 +130,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
 =======
@@ -134,10 +144,13 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -155,6 +168,8 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 =======
         // Arrange
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var kernel = this.CreateAndInitializeKernel();
@@ -185,6 +200,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
 =======
@@ -198,10 +214,13 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -219,6 +238,8 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 =======
         // Arrange
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         List<HttpStatusCode?> statusCodes = [];
@@ -271,6 +292,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
 =======
@@ -284,10 +306,13 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -305,6 +330,8 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 =======
         // Arrange
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var kernel = this.CreateAndInitializeKernel();
@@ -329,6 +356,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -343,6 +371,8 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -351,6 +381,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         Assert.NotEqual(0, promptTokens);
 
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -372,11 +403,15 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         Assert.True(jsonObject.TryGetProperty("InputTokenCount", out JsonElement promptTokensJson));
         Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
         Assert.NotEqual(0, promptTokens);
 
         Assert.True(jsonObject.TryGetProperty("OutputTokenCount", out JsonElement completionTokensJson));
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -395,6 +430,9 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -414,6 +452,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
 =======
@@ -427,10 +466,13 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -448,6 +490,8 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 =======
         // Arrange
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var prompt =
@@ -476,6 +520,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
 =======
@@ -489,10 +534,13 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -510,6 +558,8 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 =======
         // Arrange
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var kernel = this.CreateAndInitializeKernel();
@@ -533,6 +583,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
 =======
@@ -546,10 +597,13 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -567,6 +621,8 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 =======
         // Arrange
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         using var defaultHandler = new HttpClientHandler();
@@ -598,6 +654,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
 =======
@@ -611,10 +668,13 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -632,6 +692,8 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 =======
         // Arrange
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var settings = new OpenAIPromptExecutionSettings { Logprobs = logprobs, TopLogprobs = topLogprobs };
@@ -648,6 +710,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityInfo>;
 =======
 =======
@@ -661,10 +724,13 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityInfo>;
 =======
         var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityDetails>;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -682,6 +748,8 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 =======
         var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityDetails>;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 

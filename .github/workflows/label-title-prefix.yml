@@ -17,6 +17,7 @@ jobs:
     steps:
       - uses: actions/github-script@v7
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,10 +53,15 @@ jobs:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
       - uses: actions/github-script@v6
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         name: "Issue/PR: update title"
         with:

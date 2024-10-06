@@ -47,6 +47,7 @@ public record AzureCosmosDBNoSQLHotel()
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -63,10 +64,14 @@ public record AzureCosmosDBNoSQLHotel()
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     /// <summary>A datetime field.</summary>
     [VectorStoreRecordData]
     public DateTimeOffset Timestamp { get; set; }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -85,6 +90,9 @@ public record AzureCosmosDBNoSQLHotel()
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -40,6 +41,11 @@ using Microsoft.SemanticKernel.Diagnostics;
 =======
 using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using Microsoft.SemanticKernel.Diagnostics;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using Microsoft.SemanticKernel.Diagnostics;
@@ -120,6 +126,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, error);
 =======
 =======
@@ -133,10 +140,13 @@ internal sealed class CodeBlock : Block, ICodeRendering
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, error);
 =======
             throw new SKException(error);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -154,6 +164,8 @@ internal sealed class CodeBlock : Block, ICodeRendering
 =======
             throw new SKException(error);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -177,6 +189,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType,
             $"Unexpected first token type: {this._tokens[0].Type:G}");
 =======
@@ -191,11 +204,14 @@ internal sealed class CodeBlock : Block, ICodeRendering
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType,
             $"Unexpected first token type: {this._tokens[0].Type:G}");
 =======
         throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -213,6 +229,8 @@ internal sealed class CodeBlock : Block, ICodeRendering
 =======
         throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -233,6 +251,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             throw new KernelException(
                 KernelException.ErrorCodes.SkillCollectionNotSet,
                 "Skill collection not found in the context");
@@ -248,12 +267,15 @@ internal sealed class CodeBlock : Block, ICodeRendering
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             throw new KernelException(
                 KernelException.ErrorCodes.SkillCollectionNotSet,
                 "Skill collection not found in the context");
 =======
             throw new SKException("Skill collection not found in the context");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -271,6 +293,8 @@ internal sealed class CodeBlock : Block, ICodeRendering
 =======
             throw new SKException("Skill collection not found in the context");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -287,6 +311,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -303,10 +328,14 @@ internal sealed class CodeBlock : Block, ICodeRendering
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
             this.Logger.LogError(errorMsg);
             throw new SKException(errorMsg);
             this.Logger.LogError(errorMsg);
             throw new SKException(errorMsg);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -325,6 +354,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -362,6 +394,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -375,10 +408,13 @@ internal sealed class CodeBlock : Block, ICodeRendering
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
             var errorMsg = $"Function `{fBlock.Content}` execution failed. {contextClone.LastException?.GetType().FullName}: {contextClone.LastException?.Message}";
             this.Logger.LogError(errorMsg);
             throw new SKException(errorMsg, contextClone.LastException);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -398,6 +434,8 @@ internal sealed class CodeBlock : Block, ICodeRendering
             this.Logger.LogError(errorMsg);
             throw new SKException(errorMsg, contextClone.LastException);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }

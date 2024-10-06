@@ -29,6 +29,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -45,6 +46,9 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     /// Initializes a new instance of the <see cref="ChatMessageContentItemCollection"/> class.
     /// </summary>
     public ChatMessageContentItemCollection(IReadOnlyList<KernelContent> items)
@@ -53,6 +57,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     }
 
     /// <summary>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -71,6 +76,9 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

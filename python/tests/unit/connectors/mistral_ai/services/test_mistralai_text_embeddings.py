@@ -62,6 +62,7 @@ def test_embedding_with_model(mistralai_unit_test_env):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -91,6 +92,11 @@ def test_embedding_with_model(mistralai_unit_test_env):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -109,6 +115,7 @@ def test_embedding_with_model(mistralai_unit_test_env):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -122,10 +129,13 @@ def test_embedding_with_model(mistralai_unit_test_env):
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 =======
 @pytest.mark.parametrize("exclude_list", [["MISTRALAI_EMBEDDING_MODEL_ID"]], indirect=True)
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -145,6 +155,8 @@ def test_embedding_with_model(mistralai_unit_test_env):
 @pytest.mark.parametrize("exclude_list", [["MISTRALAI_EMBEDDING_MODEL_ID"]], indirect=True)
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 def test_embedding_with_model_without_env(mistralai_unit_test_env):

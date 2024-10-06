@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 =======
@@ -19,6 +20,8 @@ using System;
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 =======
@@ -26,6 +29,7 @@ using System;
 using System;
 using System.ClientModel;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -45,6 +49,8 @@ using System.ClientModel;
 using System;
 using System.ClientModel;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using System.Net.Http;
@@ -58,6 +64,7 @@ using Moq;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -71,10 +78,13 @@ using Moq;
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 using OpenAI;
 6d73513a859ab2d05e01db3bc1d405827799e34b
 using OpenAI;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -94,6 +104,8 @@ using OpenAI;
 6d73513a859ab2d05e01db3bc1d405827799e34b
 using OpenAI;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Xunit;
@@ -116,6 +128,9 @@ public class OpenAIClientProviderTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public void VerifyOpenAIClientFactoryTargetAzureByKey()
@@ -123,6 +138,7 @@ public class OpenAIClientProviderTests
         // Arrange
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI("key", new Uri("https://localhost"));
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
@@ -142,6 +158,8 @@ public class OpenAIClientProviderTests
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public void VerifyOpenAIClientProviderTargetAzureByKey()
     {
         // Act
@@ -154,6 +172,7 @@ public class OpenAIClientProviderTests
         // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI("key", new Uri("https://localhost"));
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential("key"), new Uri("https://localhost"));
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -172,6 +191,9 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -191,6 +213,7 @@ public class OpenAIClientProviderTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -207,12 +230,16 @@ public class OpenAIClientProviderTests
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     public void VerifyOpenAIClientProviderTargetAzureByCredential()
     {
         // Arrange
         Mock<TokenCredential> mockCredential = new();
 
         // Act
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -231,6 +258,9 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -245,6 +275,7 @@ public class OpenAIClientProviderTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -261,6 +292,9 @@ public class OpenAIClientProviderTests
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
  6d73513a859ab2d05e01db3bc1d405827799e34b
     public void VerifyOpenAIClientProviderTargetAzureByCredential()
     {
@@ -268,6 +302,7 @@ public class OpenAIClientProviderTests
         Mock<TokenCredential> mockCredential = new();
 
         // Act
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -286,6 +321,9 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -308,12 +346,16 @@ public class OpenAIClientProviderTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public void VerifyOpenAIClientFactoryTargetOpenAINoKey(string? endpoint)
     {
         // Arrange
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
@@ -332,6 +374,8 @@ public class OpenAIClientProviderTests
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public void VerifyOpenAIClientProviderTargetOpenAINoKey(string? endpoint)
     {
         // Act
@@ -342,6 +386,7 @@ public class OpenAIClientProviderTests
     public void VerifyOpenAIClientProviderTargetOpenAINoKey(string? endpoint)
     {
         // Act
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -360,6 +405,9 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -382,11 +430,15 @@ public class OpenAIClientProviderTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     public void VerifyOpenAIClientFactoryTargetOpenAIByKey(string key, string? endpoint)
     {
         // Arrange
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(key, endpoint != null ? new Uri(endpoint) : null);
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -408,6 +460,8 @@ public class OpenAIClientProviderTests
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public void VerifyOpenAIClientProviderTargetOpenAIByKey(string key, string? endpoint)
     {
         // Act
@@ -420,6 +474,7 @@ public class OpenAIClientProviderTests
         // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(key, endpoint != null ? new Uri(endpoint) : null);
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(key), endpoint != null ? new Uri(endpoint) : null);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -438,6 +493,9 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -457,6 +515,7 @@ public class OpenAIClientProviderTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -473,12 +532,16 @@ public class OpenAIClientProviderTests
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     public void VerifyOpenAIClientProviderWithHttpClient()
     {
         // Arrange
         using HttpClient httpClient = new() { BaseAddress = new Uri("http://myproxy:9819") };
 
         // Act
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -497,6 +560,9 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -511,6 +577,7 @@ public class OpenAIClientProviderTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -524,6 +591,9 @@ public class OpenAIClientProviderTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -564,6 +634,7 @@ public class OpenAIClientProviderTests
 
         // Act
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -581,6 +652,9 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -596,6 +670,7 @@ public class OpenAIClientProviderTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -609,6 +684,9 @@ public class OpenAIClientProviderTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -629,6 +707,7 @@ public class OpenAIClientProviderTests
  6d73513a859ab2d05e01db3bc1d405827799e34b
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -646,6 +725,9 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

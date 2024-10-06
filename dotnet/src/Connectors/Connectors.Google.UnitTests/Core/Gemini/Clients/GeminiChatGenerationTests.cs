@@ -41,6 +41,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -54,6 +55,9 @@ public sealed class GeminiChatGenerationTests : IDisposable
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -76,6 +80,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
 
     [Fact]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -93,6 +98,9 @@ public sealed class GeminiChatGenerationTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -486,6 +494,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -500,6 +509,8 @@ public sealed class GeminiChatGenerationTests : IDisposable
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -509,6 +520,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
                 bearerTokenProvider: () => bearerTokenGenerator.GetBearerToken(),
                 location: "fake-location",
                 projectId: "fake-project-id");
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -530,12 +542,16 @@ public sealed class GeminiChatGenerationTests : IDisposable
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
             httpClient: httpClient,
             modelId: "fake-model",
             apiVersion: VertexAIVersion.V1,
             bearerTokenProvider: () => bearerTokenGenerator.GetBearerToken(),
             location: "fake-location",
             projectId: "fake-project-id");
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -554,6 +570,9 @@ public sealed class GeminiChatGenerationTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

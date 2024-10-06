@@ -5,12 +5,16 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
@@ -29,10 +33,13 @@ using System;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -51,6 +58,9 @@ using System.ClientModel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -83,6 +93,7 @@ using Xunit;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -96,9 +107,12 @@ using Xunit;
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -117,6 +131,8 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
@@ -254,6 +270,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var client = new OpenAIClient("key");
 =======
 =======
@@ -267,10 +284,13 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var client = new OpenAIClient("key");
 =======
         var client = new OpenAIClient(new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -288,6 +308,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 =======
         var client = new OpenAIClient(new ApiKeyCredential("key"));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var service = includeLoggerFactory ?
@@ -466,6 +488,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -482,6 +505,9 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 
         await enumerator.MoveNextAsync();
         Assert.NotNull(enumerator.Current.Metadata?["Usage"]);
@@ -489,6 +515,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Contains("\"OutputTokenCount\":8", serializedUsage);
         Assert.Contains("\"InputTokenCount\":13", serializedUsage);
         Assert.Contains("\"TotalTokenCount\":21", serializedUsage);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -507,6 +534,9 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -749,6 +779,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -765,10 +796,14 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
         using var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(ChatCompletionResponse) };
         this._messageHandlerStub.ResponseToReturn = response;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -787,6 +822,9 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1071,6 +1109,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 format = formatValue == "text" ? ChatResponseFormat.Text : ChatResponseFormat.JsonObject;
 =======
 =======
@@ -1084,10 +1123,13 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 format = formatValue == "text" ? ChatResponseFormat.Text : ChatResponseFormat.JsonObject;
 =======
                 format = formatValue == "text" ? ChatResponseFormat.CreateTextFormat() : ChatResponseFormat.CreateJsonObjectFormat();
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1105,6 +1147,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 =======
                 format = formatValue == "text" ? ChatResponseFormat.CreateTextFormat() : ChatResponseFormat.CreateJsonObjectFormat();
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 break;
@@ -1323,6 +1367,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             name: "MathReasoning",
 =======
 =======
@@ -1336,10 +1381,13 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             name: "MathReasoning",
 =======
             jsonSchemaFormatName: "MathReasoning",
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1357,6 +1405,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 =======
             jsonSchemaFormatName: "MathReasoning",
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             jsonSchema: BinaryData.FromString("""
@@ -1388,6 +1438,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             strictSchemaEnabled: true);
 =======
 =======
@@ -1401,10 +1452,13 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             strictSchemaEnabled: true);
 =======
             jsonSchemaIsStrict: true);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1422,6 +1476,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 =======
             jsonSchemaIsStrict: true);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 

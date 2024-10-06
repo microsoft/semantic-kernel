@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using System.Collections.Generic;
@@ -56,6 +62,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 public sealed class OpenAIAssistantDefinition
 =======
 =======
@@ -69,10 +76,13 @@ public sealed class OpenAIAssistantDefinition
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 public sealed class OpenAIAssistantDefinition
 =======
 public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -90,6 +100,8 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 =======
 public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 {
@@ -129,6 +141,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -142,6 +155,9 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -164,6 +180,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
         }
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -181,6 +198,9 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -215,6 +235,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -229,6 +250,8 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -236,6 +259,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     /// storing additional information about that object in a structured format.Keys
     /// may be up to 64 characters in length and values may be up to 512 characters in length.
     /// </summary>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -257,12 +281,16 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     /// Initializes a new instance of the <see cref="OpenAIAssistantDefinition"/> class.
     /// </summary>
     /// <param name="modelId">The targeted model</param>
     [JsonConstructor]
     public OpenAIAssistantDefinition(string modelId)
         : base(modelId) { }
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -281,6 +309,9 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -299,6 +330,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -313,6 +345,8 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -345,6 +379,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -357,6 +392,9 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -379,6 +417,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
         }
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -396,6 +435,9 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -418,6 +460,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -447,6 +490,11 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 =======
         : base(modelId) { }
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        : base(modelId) { }
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         : base(modelId) { }

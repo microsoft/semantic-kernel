@@ -2,6 +2,7 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,6 +22,8 @@ from typing import Annotated
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -29,12 +32,15 @@ from typing import Annotated
 
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< main
 from typing import Annotated
 
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 import sys
@@ -48,6 +54,7 @@ else:
     from typing_extensions import Annotated
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -66,11 +73,14 @@ else:
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 import google.generativeai as palm
 from google.generativeai.types import Completion
 from google.generativeai.types.text_types import TextCompletion
 from pydantic import StringConstraints, ValidationError
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -81,6 +91,8 @@ from pydantic import StringConstraints, ValidationError
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import GooglePalmTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -96,8 +108,11 @@ from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings impo
 from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -110,6 +125,7 @@ from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings impo
 )
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -126,6 +142,8 @@ from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings impo
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -134,6 +152,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceResponseException
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -163,6 +182,8 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 
@@ -187,6 +208,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -202,6 +224,8 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     def __init__(
@@ -213,6 +237,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
     ):
         """Initializes a new instance of the GooglePalmTextCompletion class.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -220,6 +245,8 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -259,8 +286,11 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 =======
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     def __init__(self, ai_model_id: str, api_key: str):
@@ -268,6 +298,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         Initializes a new instance of the GooglePalmTextCompletion class.
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -284,6 +315,8 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -291,6 +324,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             ai_model_id (str): GooglePalm model name, see
                 https://developers.generativeai.google/models/language
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -315,6 +349,9 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -327,6 +364,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         Raises:
             ServiceInitializationError: When the Google Palm settings cannot be read.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -344,6 +382,8 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -355,6 +395,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
     async def complete(self, prompt: str, settings: GooglePalmTextPromptExecutionSettings) -> List[TextContent]:
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -371,6 +412,8 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         """
@@ -387,6 +430,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             raise ServiceInitializationError("The Google Palm text model ID is required.")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -409,6 +453,8 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

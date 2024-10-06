@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System;
 =======
 =======
@@ -26,10 +27,15 @@ using System;
 using System;
 =======
 >>>>>>> Stashed changes
+=======
+using System;
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -48,6 +54,9 @@ using System;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -200,6 +209,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -229,6 +239,11 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -245,6 +260,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -258,10 +274,13 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 =======
     /// Possible values are: "json_object", "text", <see cref="ChatResponseFormat"/> object.
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -281,6 +300,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Possible values are: "json_object", "text", <see cref="ChatResponseFormat"/> object.
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// </remarks>
@@ -480,6 +501,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -509,6 +531,11 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -525,6 +552,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -538,10 +566,13 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 =======
         return openAIExecutionSettings!;
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -561,6 +592,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         return openAIExecutionSettings!;
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -593,6 +626,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             FunctionChoiceBehavior = this.FunctionChoiceBehavior,
 =======
 =======
@@ -612,10 +646,15 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             FunctionChoiceBehavior = this.FunctionChoiceBehavior,
 =======
 >>>>>>> Stashed changes
+=======
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             FunctionChoiceBehavior = this.FunctionChoiceBehavior,
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -634,6 +673,9 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

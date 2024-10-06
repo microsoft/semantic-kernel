@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -102,6 +108,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -131,6 +138,11 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 =======
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
@@ -159,6 +171,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -175,6 +188,9 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         var cursor = await this.MongoDatabase.ListCollectionNamesAsync();
 
         while (await cursor.MoveNextAsync().ConfigureAwait(false))
@@ -183,6 +199,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
             {
                 await this.MongoDatabase.DropCollectionAsync(collection);
             }
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -201,6 +218,9 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -225,6 +245,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -254,6 +275,11 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 =======
         [VectorStoreRecordData(IsFilterable = true)]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        [VectorStoreRecordData(IsFilterable = true)]
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         [VectorStoreRecordData(IsFilterable = true)]
@@ -289,6 +315,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -305,10 +332,14 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         /// <summary>A datetime metadata field.</summary>
         [VectorStoreRecordData]
         public DateTime Timestamp { get; set; }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -327,6 +358,9 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

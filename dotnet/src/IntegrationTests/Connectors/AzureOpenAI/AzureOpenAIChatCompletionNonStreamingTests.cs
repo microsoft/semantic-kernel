@@ -74,6 +74,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -88,6 +89,8 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -96,6 +99,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.NotEqual(0, promptTokens);
 
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -117,11 +121,15 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         Assert.True(jsonObject.TryGetProperty("InputTokenCount", out JsonElement promptTokensJson));
         Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
         Assert.NotEqual(0, promptTokens);
 
         Assert.True(jsonObject.TryGetProperty("OutputTokenCount", out JsonElement completionTokensJson));
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -140,6 +148,9 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -157,6 +168,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
 =======
 =======
@@ -170,10 +182,13 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
 =======
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityDetails>)!);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -191,6 +206,8 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 =======
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityDetails>)!);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -246,6 +263,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -260,6 +278,8 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -268,6 +288,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.NotEqual(0, promptTokens);
 
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -289,11 +310,15 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         Assert.True(jsonObject.TryGetProperty("InputTokenCount", out JsonElement promptTokensJson));
         Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
         Assert.NotEqual(0, promptTokens);
 
         Assert.True(jsonObject.TryGetProperty("OutputTokenCount", out JsonElement completionTokensJson));
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -312,6 +337,9 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -329,6 +357,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
 =======
 =======
@@ -342,10 +371,13 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
 =======
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityDetails>)!);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -363,6 +395,8 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 =======
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityDetails>)!);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }

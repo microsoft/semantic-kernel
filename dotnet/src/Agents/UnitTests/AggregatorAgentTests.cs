@@ -67,6 +67,7 @@ public class AggregatorAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // Add message to inner chat (not visible to parent)
         groupChat.Add(new ChatMessageContent(AuthorRole.User, "test inner"));
 =======
@@ -89,11 +90,17 @@ public class AggregatorAgentTests
         groupChat.Add(new ChatMessageContent(AuthorRole.User, "test inner"));
 =======
 >>>>>>> Stashed changes
+=======
+        // Add message to inner chat (not visible to parent)
+        groupChat.Add(new ChatMessageContent(AuthorRole.User, "test inner"));
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         // Add message to inner chat (not visible to parent)
         groupChat.Add(new ChatMessageContent(AuthorRole.User, "test inner"));
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -112,6 +119,9 @@ public class AggregatorAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

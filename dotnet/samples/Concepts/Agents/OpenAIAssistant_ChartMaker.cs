@@ -28,6 +28,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         FileClient fileClient = provider.Client.GetFileClient();
 =======
 =======
@@ -41,10 +42,13 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         FileClient fileClient = provider.Client.GetFileClient();
 =======
         OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -62,6 +66,8 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 =======
         OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -75,6 +81,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
                 kernel: new(),
@@ -91,12 +98,17 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                 kernel: new(),
                 provider,
                 new(this.Model)
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 provider,
@@ -106,6 +118,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
                 new(this.Model)
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -124,6 +137,9 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -139,6 +155,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
 =======
 =======
@@ -158,11 +175,16 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
                 });
 =======
 >>>>>>> Stashed changes
+=======
+                });
+=======
+>>>>>>> Stashed changes
                 },
                 kernel: new());
                 });
                 },
                 kernel: new());
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -181,6 +203,9 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -221,6 +246,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -235,6 +261,8 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -250,7 +278,10 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -271,6 +302,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -285,6 +317,8 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             ChatMessageContent message = new(AuthorRole.User, input);

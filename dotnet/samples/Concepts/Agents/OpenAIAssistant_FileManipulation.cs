@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -19,6 +20,8 @@
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -34,7 +37,10 @@ using System.Text;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -55,6 +61,7 @@ using System.Text;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -69,6 +76,8 @@ using System.Text;
 // Copyright (c) Microsoft. All rights reserved.
 using System.Text;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
@@ -98,6 +107,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         FileClient fileClient = provider.Client.GetFileClient();
 
         OpenAIFileInfo uploadFile =
@@ -113,6 +123,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         FileClient fileClient = provider.Client.GetFileClient();
 
         OpenAIFileInfo uploadFile =
@@ -121,6 +133,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 
         OpenAIFile uploadFile =
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -140,6 +153,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 
         OpenAIFile uploadFile =
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             await fileClient.UploadFileAsync(
@@ -157,12 +172,16 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 kernel: new(),
                 provider,
                 new(this.Model)
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
@@ -181,6 +200,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
                 kernel: new(),
@@ -188,6 +209,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
                 new(this.Model)
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -206,6 +228,9 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -220,6 +245,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
 =======
 =======
@@ -239,11 +265,16 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
                 });
 =======
 >>>>>>> Stashed changes
+=======
+                });
+=======
+>>>>>>> Stashed changes
                 },
                 kernel: new Kernel());
                 });
                 },
                 kernel: new Kernel());
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -262,6 +293,9 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -299,6 +333,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -313,6 +348,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -326,7 +363,10 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -346,6 +386,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -359,6 +400,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
                 this.WriteAgentChatMessage(response);
                 await this.DownloadResponseContentAsync(fileClient, response);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
@@ -382,6 +425,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
 =======
 =======
@@ -395,11 +439,14 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/PR
 =======
                 this.WriteAgentChatMessage(response);
                 await this.DownloadResponseContentAsync(fileClient, response);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -418,6 +465,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
                 this.WriteAgentChatMessage(response);
                 await this.DownloadResponseContentAsync(fileClient, response);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             }

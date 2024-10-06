@@ -14,6 +14,7 @@ ANNOTATION_CONTENT_TAG: Final[str] = "annotation"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 BINARY_CONTENT_TAG: Final[str] = "binary"
@@ -30,12 +31,17 @@ BINARY_CONTENT_TAG: Final[str] = "binary"
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 BINARY_CONTENT_TAG: Final[str] = "binary"
 FILE_REFERENCE_CONTENT_TAG: Final[str] = "file_reference"
 BINARY_CONTENT_TAG: Final[str] = "binary"
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 STREAMING_ANNOTATION_CONTENT_TAG: Final[str] = "streaming_annotation"
@@ -43,6 +49,7 @@ BINARY_CONTENT_TAG: Final[str] = "binary"
 FILE_REFERENCE_CONTENT_TAG: Final[str] = "file_reference"
 BINARY_CONTENT_TAG: Final[str] = "binary"
 STREAMING_FILE_REFERENCE_CONTENT_TAG: Final[str] = "streaming_file_reference"
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -61,6 +68,9 @@ STREAMING_FILE_REFERENCE_CONTENT_TAG: Final[str] = "streaming_file_reference"
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -89,6 +99,7 @@ class ContentTypes(str, Enum):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -102,9 +113,12 @@ class ContentTypes(str, Enum):
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
     STREAMING_ANNOTATION_CONTENT = STREAMING_ANNOTATION_CONTENT_TAG
     STREAMING_FILE_REFERENCE_CONTENT = STREAMING_FILE_REFERENCE_CONTENT_TAG
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,6 +137,8 @@ class ContentTypes(str, Enum):
     STREAMING_ANNOTATION_CONTENT = STREAMING_ANNOTATION_CONTENT_TAG
     STREAMING_FILE_REFERENCE_CONTENT = STREAMING_FILE_REFERENCE_CONTENT_TAG
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     TEXT_CONTENT = TEXT_CONTENT_TAG
