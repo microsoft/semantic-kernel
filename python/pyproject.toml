@@ -176,7 +176,11 @@ redis = { version = "^5.0.7", extras=['hiredis']}
 pandas = {version = "^2.2.2"}
 transformers = { version = "^4.28.1", extras=["torch"]}
 sentence-transformers = "^2.2.2"
+<<<<<<< main
 torch = "^2.2.0"
+=======
+torch = "2.1.0"
+>>>>>>> origin/dependabot/pip/python/torch-2.1.0
 
 [tool.poetry.group.tests]
 optional = true
