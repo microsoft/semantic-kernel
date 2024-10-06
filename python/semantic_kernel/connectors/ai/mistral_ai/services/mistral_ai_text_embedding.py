@@ -65,10 +65,13 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             env_file_path (str | None): The path to the environment file.
             env_file_encoding (str | None): The encoding of the environment file.
             client (MistralAsyncClient | None): The Mistral AI client to use.
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -90,6 +93,9 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -121,10 +127,13 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             raise ServiceInitializationError(
                 "The MistralAI embedding model ID is required."
             )
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -150,6 +159,9 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -192,9 +204,12 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
             embedding_response: EmbeddingResponse = await self.client.embeddings(
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -214,6 +229,9 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

@@ -3,10 +3,15 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "Given text, annotate all recognized entities. You specify the tags to use.",
   "type": "completion",
   "completion": {
+=======
+  "description": "Given text, annotate all recognized entities. You specify the tags to use.",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "Given text, annotate all recognized entities. You specify the tags to use.",
   "default_settings": {
@@ -39,7 +44,10 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -54,6 +62,9 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

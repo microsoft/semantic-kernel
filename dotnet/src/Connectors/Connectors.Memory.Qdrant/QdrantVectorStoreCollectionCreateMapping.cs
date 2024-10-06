@@ -79,8 +79,11 @@ internal static class QdrantVectorStoreCollectionCreateMapping
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public static VectorParamsMap MapNamedVectors(IEnumerable<VectorStoreRecordVectorProperty> vectorProperties, Dictionary<string, string> storagePropertyNames)
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -95,6 +98,9 @@ internal static class QdrantVectorStoreCollectionCreateMapping
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

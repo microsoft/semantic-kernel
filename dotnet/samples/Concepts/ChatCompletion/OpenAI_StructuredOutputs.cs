@@ -45,8 +45,11 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             name: "movie_result",
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -61,6 +64,9 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -97,8 +103,11 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             strictSchemaEnabled: true);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -113,6 +122,9 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

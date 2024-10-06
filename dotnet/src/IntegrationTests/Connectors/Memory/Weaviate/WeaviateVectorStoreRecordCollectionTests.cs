@@ -210,10 +210,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     #region private
 
     private WeaviateHotel CreateTestHotel(Guid hotelId, string? hotelName = null)
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -507,6 +510,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -528,8 +534,11 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -544,6 +553,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -572,8 +584,11 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -588,6 +603,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

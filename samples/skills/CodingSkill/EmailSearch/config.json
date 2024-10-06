@@ -3,10 +3,15 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "Search the Microsoft Graph for Email",
   "type": "completion",
   "completion": {
+=======
+  "description": "Search the Microsoft Graph for Email",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "Search the Microsoft Graph for Email",
   "default_settings": {
@@ -39,7 +44,10 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -54,6 +62,9 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

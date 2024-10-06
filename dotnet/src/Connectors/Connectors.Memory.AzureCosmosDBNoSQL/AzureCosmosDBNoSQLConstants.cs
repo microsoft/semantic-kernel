@@ -8,9 +8,12 @@ internal static class AzureCosmosDBNoSQLConstants
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>Reserved key property name in Azure CosmosDB NoSQL.</summary>
     internal const string ReservedKeyPropertyName = "id";
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -40,6 +43,9 @@ internal static class AzureCosmosDBNoSQLConstants
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

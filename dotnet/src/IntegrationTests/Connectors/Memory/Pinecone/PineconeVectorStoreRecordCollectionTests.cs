@@ -414,8 +414,11 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             $"No vector property found on type {typeof(PineconeRecordNoEmbedding).FullName}.",
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -430,6 +433,9 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -464,8 +470,11 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             $"Multiple vector properties found on type {typeof(PineconeRecordMultipleEmbeddings).FullName} while only one is supported.",
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -480,6 +489,9 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

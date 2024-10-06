@@ -11,10 +11,13 @@ ANNOTATION_CONTENT_TAG: Final[str] = "annotation"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 BINARY_CONTENT_TAG: Final[str] = "binary"
 FILE_REFERENCE_CONTENT_TAG: Final[str] = "file_reference"
 BINARY_CONTENT_TAG: Final[str] = "binary"
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -35,6 +38,9 @@ STREAMING_FILE_REFERENCE_CONTENT_TAG: Final[str] = "streaming_file_reference"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -64,7 +70,10 @@ class ContentTypes(str, Enum):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -79,6 +88,9 @@ class ContentTypes(str, Enum):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

@@ -3,10 +3,15 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "Ask the AI for answers contextually relevant to you based on your name, address and pertinent information retrieved from your personal secondary memory",
   "type": "completion",
   "completion": {
+=======
+  "description": "Ask the AI for answers contextually relevant to you based on your name, address and pertinent information retrieved from your personal secondary memory",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "Ask the AI for answers contextually relevant to you based on your name, address and pertinent information retrieved from your personal secondary memory",
   "default_settings": {
@@ -39,7 +44,10 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -54,6 +62,9 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

@@ -15,6 +15,10 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -48,7 +52,10 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -78,6 +85,9 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -103,10 +113,13 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public async Task UseStreamingChatCompletionAgentWithPluginAsync()
     {
         const string MenuInstructions = "Answer questions about the menu.";
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -126,6 +139,9 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -143,6 +159,10 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -163,7 +183,10 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -179,6 +202,9 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -208,7 +234,10 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -251,6 +280,9 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -272,8 +304,11 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(threadId, history))
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -289,6 +324,9 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -306,7 +344,10 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -326,6 +367,9 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

@@ -2,11 +2,14 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -26,6 +29,9 @@ using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -121,6 +127,11 @@ public class FunctionIdBlockTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+        var target2 = new FunctionIdBlock("skillName.functionName");
+        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+>>>>>>> Stashed changes
 =======
         var target2 = new FunctionIdBlock("skillName.functionName");
         Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));

@@ -4,6 +4,10 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+using System.Collections.Generic;
+>>>>>>> Stashed changes
 =======
 using System.Collections.Generic;
 >>>>>>> Stashed changes
@@ -34,8 +38,14 @@ public interface ITextToImageService : IAIService
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// Generate an image matching the given description
     /// </summary>
+=======
+    /// Given a prompt and/or an input text, the model will generate a new image.
+    /// </summary>
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
     /// Given a prompt and/or an input text, the model will generate a new image.
     /// </summary>
@@ -71,7 +81,10 @@ public interface ITextToImageService : IAIService
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -92,6 +105,9 @@ public interface ITextToImageService : IAIService
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

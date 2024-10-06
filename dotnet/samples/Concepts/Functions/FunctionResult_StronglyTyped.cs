@@ -86,10 +86,13 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 completionTokens: usage?.OutputTokens ?? 0,
                 promptTokens: usage?.InputTokens ?? 0,
                 totalTokens: usage?.TotalTokens ?? 0);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -108,6 +111,9 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

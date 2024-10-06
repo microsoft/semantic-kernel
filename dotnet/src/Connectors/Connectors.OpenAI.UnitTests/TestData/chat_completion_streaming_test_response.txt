@@ -6,7 +6,10 @@ data: {"id":"chatcmpl-96fqQVHGjG9Yzs4ZMB1K6nfy2oEoo","object":"chat.completion.c
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -21,6 +24,9 @@ data: {"id":"chatcmpl-96fqQVHGjG9Yzs4ZMB1K6nfy2oEoo","object":"chat.completion.c
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

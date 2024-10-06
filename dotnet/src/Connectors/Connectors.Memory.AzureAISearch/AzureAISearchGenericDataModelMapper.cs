@@ -15,8 +15,11 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 /// A mapper that maps between the generic semantic kernel data model and the model that the data is stored in in Azure AI Search.
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -31,6 +34,9 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
