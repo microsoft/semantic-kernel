@@ -21,6 +21,9 @@ extend-exclude = [
     "serializedChatHistoryV1_15_1.json",
     "MultipleFunctionsVsParameters.cs"
     "serializedChatHistoryV1_15_1.json"
+    "MultipleFunctionsVsParameters.cs",
+    "PopulationByCountry.csv",
+    "PopulationByAdmin1.csv",
 ]
 
 [default.extend-words]
