@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -49,6 +50,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -57,6 +60,7 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -71,6 +75,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
 {
@@ -222,6 +228,7 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -254,6 +261,8 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
         var kernelBuilder = base.CreateKernelBuilder();
@@ -262,6 +271,7 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -295,6 +305,9 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            credentials: new AzureCliCredential());
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         return kernelBuilder.Build();
     }

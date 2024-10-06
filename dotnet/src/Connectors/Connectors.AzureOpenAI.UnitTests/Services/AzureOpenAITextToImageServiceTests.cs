@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,10 +22,13 @@ using System.Net.Http;
 using System.IO;
 using System.Net.Http;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.ClientModel;
 using System.IO;
 using System.Net.Http;
 using System.Text;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@ using System.Text;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -46,6 +52,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -66,6 +73,8 @@ using Moq;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToImage;
@@ -73,6 +82,7 @@ using Moq;
 using OpenAI.Images;
 
 #pragma warning disable CS0618 // Type or member is obsolete
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -87,6 +97,8 @@ using OpenAI.Images;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
@@ -105,6 +117,7 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         {
             ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -138,6 +151,9 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             }
         };
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
@@ -158,6 +174,7 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
 
         // Case #3
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -191,6 +208,9 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        sut = new AzureOpenAITextToImageService("deployment", new AzureOpenAIClient(new Uri("https://api-host/"), new ApiKeyCredential("api-key")), "model", loggerFactory: this._mockLoggerFactory.Object);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Assert.Equal("deployment", sut.Attributes[AzureClientCore.DeploymentNameKey]);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
     }
@@ -219,6 +239,7 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         Assert.NotNull(request);
         Assert.Equal("description", request["prompt"]?.ToString());
         Assert.Equal("deployment", request["model"]?.ToString());
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -252,6 +273,9 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        Assert.Null(request["response_format"]);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Assert.Equal($"{width}x{height}", request["size"]?.ToString());
     }
 
@@ -314,6 +338,7 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         }
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -330,6 +355,8 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Theory]
     [InlineData(null, null)]
     [InlineData("uri", "url")]
@@ -517,6 +544,7 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         Assert.Equal("my prompt", breakingGlass!.RevisedPrompt);
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -531,6 +559,8 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public void Dispose()
     {
         this._httpClient.Dispose();

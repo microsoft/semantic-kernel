@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System;
 using System.Collections.Generic;
@@ -100,6 +104,7 @@ public sealed class QdrantVectorStore : IVectorStore
         var recordCollection = new QdrantVectorStoreRecordCollection<TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition });
         var castRecordCollection = recordCollection as IVectorStoreRecordCollection<TKey, TRecord>;
         return castRecordCollection!;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -116,12 +121,15 @@ public sealed class QdrantVectorStore : IVectorStore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
         var directlyCreatedStore = new QdrantVectorStoreRecordCollection<TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition });
         var castCreatedStore = directlyCreatedStore as IVectorStoreRecordCollection<TKey, TRecord>;
         return castCreatedStore!;
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -136,6 +144,8 @@ public sealed class QdrantVectorStore : IVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <inheritdoc />

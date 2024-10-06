@@ -3,6 +3,7 @@ from enum import Enum
 
 
 class Symbols(str, Enum):
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -23,11 +24,14 @@ class Symbols(str, Enum):
     """Symbols used in the template engine."""
 
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< main
     """Symbols used in the template engine."""
 
 =======
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,6 +46,8 @@ class Symbols(str, Enum):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     BLOCK_STARTER = "{"
     BLOCK_ENDER = "}"
 

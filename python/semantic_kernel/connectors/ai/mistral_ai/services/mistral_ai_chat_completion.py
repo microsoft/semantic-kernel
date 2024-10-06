@@ -2,6 +2,7 @@
 
 import logging
 import sys
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -33,6 +34,9 @@ import sys
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from collections.abc import AsyncGenerator, Callable
 from typing import Any, ClassVar
 
@@ -40,6 +44,7 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -57,6 +62,8 @@ else:
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 from collections.abc import AsyncGenerator
 from typing import Any
 >>>>>>> ms/features/bugbash-prep
@@ -65,6 +72,7 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -79,6 +87,8 @@ else:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 from mistralai.async_client import MistralAsyncClient
 from mistralai.models.chat_completion import (
@@ -106,6 +116,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -137,12 +148,16 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import (
     MistralAISettings,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,6 +190,10 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_base import MistralAIBase
 from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -198,6 +217,7 @@ from semantic_kernel.contents.text_content import TextContent
 >>>>>>> upstream/main
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -252,6 +272,9 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 
@@ -262,6 +285,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
     """Mistral Chat completion class."""
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -280,6 +304,8 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 <<<<<<< HEAD
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
 =======
@@ -287,6 +313,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
     completion_tokens: int = 0
     total_tokens: int = 0
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -301,6 +328,8 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     def __init__(
         self,
@@ -351,6 +380,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
             ai_model_id=ai_model_id or mistralai_settings.chat_model_id,
         )
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -382,6 +412,9 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     # region Overriding base class methods
 
     # Override from AIServiceClientBase
@@ -397,6 +430,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
     ) -> list["ChatMessageContent"]:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -413,6 +447,8 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
     @override
     @trace_chat_completion(MistralAIBase.MODEL_PROVIDER_NAME)
@@ -434,6 +470,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
             List[ChatMessageContent]: The completion result(s).
         """
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -448,6 +485,8 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         if not isinstance(settings, MistralAIChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, MistralAIChatPromptExecutionSettings)  # nosec
@@ -463,6 +502,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
                 ex,
             ) from ex
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -479,10 +519,13 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 =======
         self.store_usage(response)
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -497,12 +540,15 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         response_metadata = self._get_metadata_from_response(response)
         return [
             self._create_chat_message_content(response, choice, response_metadata)
             for choice in response.choices
         ]
         return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -519,6 +565,8 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 =======
 
@@ -530,6 +578,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Executes a streaming chat completion request and returns the result.
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -544,6 +593,8 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     @override
     async def _inner_get_streaming_chat_message_contents(
@@ -668,6 +719,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
     ) -> list[FunctionCallContent]:
         """Get tool calls from a chat choice."""
         content: ChatMessage | DeltaMessage
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -699,11 +751,15 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         content = (
             choice.message
             if isinstance(choice, ChatCompletionResponseChoice)
             else choice.delta
         )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -736,6 +792,10 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         content = choice.message if isinstance(choice, ChatCompletionResponseChoice) else choice.delta
         if content.tool_calls is None:
             return []

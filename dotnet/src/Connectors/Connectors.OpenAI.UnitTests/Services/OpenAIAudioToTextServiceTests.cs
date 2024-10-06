@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,10 +21,13 @@ using System;
 
 using System;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +42,8 @@ using System.ClientModel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -71,6 +77,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -102,6 +109,9 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var service = includeLoggerFactory ? new OpenAIAudioToTextService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) : new OpenAIAudioToTextService("model-id", "api-key", "organization");
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var service = includeLoggerFactory ?
             new OpenAIAudioToTextService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) :
             new OpenAIAudioToTextService("model-id", "api-key", "organization");
@@ -116,6 +126,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new OpenAIAudioToTextService(" ", "apikey"));
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -156,11 +167,14 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Assert.Throws<ArgumentException>(() => new OpenAIAudioToTextService(" ", openAIClient: new(new ApiKeyCredential("apikey"))));
         Assert.Throws<ArgumentException>(() => new OpenAIAudioToTextService("", "apikey"));
         Assert.Throws<ArgumentException>(() => new OpenAIAudioToTextService("", openAIClient: new(new ApiKeyCredential("apikey"))));
         Assert.Throws<ArgumentNullException>(() => new OpenAIAudioToTextService(null!, "apikey"));
         Assert.Throws<ArgumentNullException>(() => new OpenAIAudioToTextService(null!, openAIClient: new(new ApiKeyCredential("apikey"))));
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,6 +189,8 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     [Theory]
@@ -184,6 +200,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     {
         // Arrange & Act
         var client = new OpenAIClient("key");
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -216,6 +233,10 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var service = includeLoggerFactory ? new OpenAIAudioToTextService("model-id", client, loggerFactory: this._mockLoggerFactory.Object) : new OpenAIAudioToTextService("model-id", client);
+        var client = new OpenAIClient(new ApiKeyCredential("key"));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var service = includeLoggerFactory ?
             new OpenAIAudioToTextService("model-id", client, loggerFactory: this._mockLoggerFactory.Object) :
             new OpenAIAudioToTextService("model-id", client);

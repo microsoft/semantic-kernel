@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import threading
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -40,6 +41,9 @@ from collections.abc import AsyncGenerator, AsyncIterable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+from collections.abc import AsyncGenerator, AsyncIterable
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 from pydantic import Field, PrivateAttr
 
@@ -58,6 +62,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -114,6 +119,8 @@ class AgentChatProtocol(Protocol):
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 class AgentChat(KernelBaseModel):
     """A base class chat interface for agents."""
 
@@ -246,6 +253,7 @@ class AgentChat(KernelBaseModel):
         finally:
             self.clear_activity_signal()
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -262,6 +270,8 @@ class AgentChat(KernelBaseModel):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     async def invoke_agent_stream(self, agent: Agent) -> AsyncIterable[ChatMessageContent]:
         """Invoke an agent stream asynchronously."""
         self.set_activity_or_throw()
@@ -285,6 +295,7 @@ class AgentChat(KernelBaseModel):
         finally:
             self.clear_activity_signal()
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -299,6 +310,8 @@ class AgentChat(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     async def reset(self) -> None:
         """Reset the agent chat."""
         self.set_activity_or_throw()

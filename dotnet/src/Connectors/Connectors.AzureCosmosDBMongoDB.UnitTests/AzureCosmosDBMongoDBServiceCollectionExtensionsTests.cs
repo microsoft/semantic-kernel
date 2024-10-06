@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
@@ -84,6 +88,7 @@ public sealed class AzureCosmosDBMongoDBServiceCollectionExtensionsTests
         var database = (IMongoDatabase)vectorStore.GetType().GetField("_mongoDatabase", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(vectorStore)!;
         Assert.Equal(HttpHeaderConstant.Values.UserAgent, database.Client.Settings.ApplicationName);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -100,6 +105,8 @@ public sealed class AzureCosmosDBMongoDBServiceCollectionExtensionsTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 =======
 
@@ -147,6 +154,7 @@ public sealed class AzureCosmosDBMongoDBServiceCollectionExtensionsTests
         public string Id { get; set; } = string.Empty;
     }
 >>>>>>> upstream/feature-vector-search
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -161,4 +169,6 @@ public sealed class AzureCosmosDBMongoDBServiceCollectionExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

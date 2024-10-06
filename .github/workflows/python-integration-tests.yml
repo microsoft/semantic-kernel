@@ -20,6 +20,7 @@ permissions:
 env:
   # Configure a constant location for the uv cache
   UV_CACHE_DIR: /tmp/.uv-cache
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,10 +37,13 @@ env:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 
 env:
   # Configure a constant location for the uv cache
   UV_CACHE_DIR: /tmp/.uv-cache
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -54,6 +58,8 @@ env:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 jobs:
   paths-filter:
@@ -79,6 +85,7 @@ jobs:
 
   python-merge-gate:
     name: Python Pre-Merge Integration Tests
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -95,10 +102,13 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
     needs: paths-filter
     if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     needs: paths-filter
     if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -113,6 +123,8 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     needs: paths-filter
     if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     strategy:
@@ -135,6 +147,7 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: irm https://astral.sh/uv/install.ps1 | iex
         shell: powershell
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -151,10 +164,13 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
         run: pipx install poetry
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -169,6 +185,8 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -179,6 +197,7 @@ jobs:
         with:
           path: ${{  env.UV_CACHE_DIR  }}
           key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -210,11 +229,15 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+          cache: "poetry"
+>>>>>>> origin/main
       - name: Install dependencies with hnswlib native disabled
         if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
         run: |
           export HNSWLIB_NO_NATIVE=1
           uv sync --all-extras --dev
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -280,6 +303,8 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
@@ -327,6 +352,7 @@ jobs:
           AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
           AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
           AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -341,6 +367,8 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
           BING_API_KEY: ${{ secrets.BING_API_KEY }}
           OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
           OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
@@ -533,6 +561,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -549,6 +578,8 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
         os: [ubuntu-latest, windows-latest, macos-latest]
     defaults:
       run:
@@ -587,6 +618,7 @@ jobs:
     environment: "integration"
     steps:
       - uses: actions/checkout@v4
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -645,6 +677,10 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+      - name: Install poetry
+        run: pipx install poetry
+>>>>>>> origin/main
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -655,6 +691,7 @@ jobs:
         with:
           path: ${{ env.UV_CACHE_DIR }}
           key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -686,11 +723,15 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+          cache: "poetry"
+>>>>>>> origin/main
       - name: Install dependencies with hnswlib native disabled
         if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
         run: |
           export HNSWLIB_NO_NATIVE=1
           uv sync --all-extras --dev
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -756,6 +797,8 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
@@ -796,6 +839,7 @@ jobs:
         id: run_tests
         shell: bash
         env:
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -810,6 +854,8 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         uses: google-github-actions/setup-gcloud@v2      
       - name: Setup Redis Stack Server
         if: matrix.os == 'ubuntu-latest'
@@ -818,6 +864,7 @@ jobs:
         id: run_tests
         shell: bash
         env: 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -831,6 +878,8 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
           HNSWLIB_NO_NATIVE: 1
           Python_Integration_Tests: Python_Integration_Tests
           AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
@@ -838,6 +887,7 @@ jobs:
           AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
           AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
           AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -852,6 +902,8 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
           BING_API_KEY: ${{ secrets.BING_API_KEY }}
           OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
           OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
@@ -1023,6 +1075,7 @@ jobs:
         run: uv cache prune --ci
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1039,10 +1092,13 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
           cd python
           poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/integration -v
           poetry run pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1059,6 +1115,8 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
           poetry run pytest ./tests/integration -v
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1111,6 +1169,7 @@ jobs:
         id: check_tests_failed
         if: contains(join(needs.*.result, ','), 'failure')
         uses: actions/github-script@v7
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1127,6 +1186,8 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
         uses: actions/github-script@v6
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1149,6 +1210,7 @@ jobs:
         id: check_tests_cancelled
         if: contains(join(needs.*.result, ','), 'cancelled')
         uses: actions/github-script@v7
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1165,6 +1227,8 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
         uses: actions/github-script@v6
 >>>>>>> origin/main
 <<<<<<< Updated upstream

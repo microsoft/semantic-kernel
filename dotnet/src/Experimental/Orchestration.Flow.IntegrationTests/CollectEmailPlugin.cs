@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -30,6 +31,9 @@
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -68,6 +72,7 @@ public sealed partial class CollectEmailPlugin
         {
             MaxTokens = this.MaxTokens,
             StopSequences = ["Observation:"],
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,6 +87,8 @@ public sealed partial class CollectEmailPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 =======
 using System.Collections.Generic;
 >>>>>>> origin/main
@@ -99,6 +106,9 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Orchestration;
+<<<<<<< head
+>>>>>>> origin/main
+=======
 >>>>>>> origin/main
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
@@ -126,9 +136,14 @@ public sealed partial class CollectEmailPlugin
 
     public CollectEmailPlugin(IKernel kernel)
     {
+<<<<<<< head
 <<<<<<< main
         this._chat = kernel.GetRequiredService<IChatCompletionService>();
         this._chatRequestSettings = new OpenAIPromptExecutionSettings
+=======
+        this._chat = kernel.GetService<IChatCompletion>();
+        this._chatRequestSettings = new OpenAIRequestSettings
+>>>>>>> origin/main
         {
             MaxTokens = this.MaxTokens,
             StopSequences = ["Observation:"],
@@ -139,6 +154,7 @@ public sealed partial class CollectEmailPlugin
             MaxTokens = this.MaxTokens,
             StopSequences = new List<string>() { "Observation:" },
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -153,10 +169,13 @@ public sealed partial class CollectEmailPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
             Temperature = 0
         };
     }
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -177,6 +196,9 @@ public sealed partial class CollectEmailPlugin
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
     [KernelFunction("ConfigureEmailAddress")]
     [Description("Useful to assist in configuration of email address, must be called after email provided")]
     public async Task<string> CollectEmailAsync(
@@ -186,6 +208,7 @@ public sealed partial class CollectEmailPlugin
         string email_address,
 #pragma warning restore CA1707 // Identifiers should not contain underscores
         KernelArguments arguments)
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -211,6 +234,7 @@ public sealed partial class CollectEmailPlugin
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
     {
         var chat = new ChatHistory(SystemPrompt);
         chat.AddUserMessage(Goal);
@@ -221,6 +245,52 @@ public sealed partial class CollectEmailPlugin
             chat.AddRange(chatHistory);
         }
 
+        if (!string.IsNullOrEmpty(email_address) && EmailRegex().IsMatch(email_address))
+        {
+            return "Thanks for providing the info, the following email would be used in subsequent steps: " + email_address;
+        }
+
+        // invalid email, prompt user to provide a valid email
+        arguments["email_address"] = string.Empty;
+        arguments.PromptInput();
+
+        var response = await this._chat.GetChatMessageContentAsync(chat).ConfigureAwait(false);
+
+        return response.Content ?? string.Empty;
+    }
+
+#if NET
+    [GeneratedRegex(EmailPattern)]
+    private static partial Regex EmailRegex();
+#else
+    private static Regex EmailRegex() => s_emailRegex;
+    private static readonly Regex s_emailRegex = new(EmailPattern, RegexOptions.Compiled);
+#endif
+=======
+    [SKFunction]
+    [Description("Useful to assist in configuration of email address, must be called after email provided")]
+    [SKName("ConfigureEmailAddress")]
+    public async Task<string> CollectEmailAsync(
+        [SKName("email_address")] [Description("The email address provided by the user, pass no matter what the value is")]
+        string email,
+        SKContext context)
+>>>>>>> origin/main
+    {
+        var chat = new ChatHistory(SystemPrompt);
+        chat.AddUserMessage(Goal);
+
+<<<<<<< head
+        ChatHistory? chatHistory = arguments.GetChatHistory();
+        if (chatHistory?.Count > 0)
+=======
+        ChatHistory? chatHistory = context.GetChatHistory();
+        if (chatHistory?.Any() ?? false)
+>>>>>>> origin/main
+        {
+            chat.Messages.AddRange(chatHistory);
+        }
+
+<<<<<<< head
         if (!string.IsNullOrEmpty(email_address) && EmailRegex().IsMatch(email_address))
         {
             return "Thanks for providing the info, the following email would be used in subsequent steps: " + email_address;
@@ -298,6 +368,16 @@ public sealed partial class CollectEmailPlugin
         }
 
         // invalid email, prompt user to provide a valid email
+=======
+        if (!string.IsNullOrEmpty(email) && IsValidEmail(email))
+        {
+            context.Variables["email_address"] = email;
+
+            return "Thanks for providing the info, the following email would be used in subsequent steps: " + email;
+        }
+
+        // invalid email, prompt user to provide a valid email
+>>>>>>> origin/main
         context.Variables["email_address"] = string.Empty;
         context.PromptInput();
         return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
@@ -308,6 +388,7 @@ public sealed partial class CollectEmailPlugin
 
         return response.Content ?? string.Empty;
     }
+<<<<<<< head
 <<<<<<< main
 
 #if NET
@@ -333,4 +414,7 @@ public sealed partial class CollectEmailPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
 }

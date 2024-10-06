@@ -2,6 +2,7 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Experimental.Orchestration.Flow.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Experimental.Orchestration.Flow.UnitTests</RootNamespace>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,12 +21,15 @@
 <<<<<<< main
     <TargetFramework>net8.0</TargetFramework>
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
     <TargetFramework>net8.0</TargetFramework>
 =======
     <TargetFramework>net6.0</TargetFramework>
     <RollForward>LatestMajor</RollForward>
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -40,10 +44,13 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -62,11 +69,14 @@
 <<<<<<< main
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101</NoWarn>
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101</NoWarn>
 =======
     <NoWarn>CA2007,VSTHRD111</NoWarn>
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -81,6 +91,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

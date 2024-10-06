@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@ using System;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using System;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -76,6 +80,7 @@ public class PineconeKernelBuilderExtensionsTests
         this.AssertVectorStoreCreated();
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -92,6 +97,8 @@ public class PineconeKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public void AddVectorStoreRecordCollectionRegistersClass()
     {
@@ -116,6 +123,7 @@ public class PineconeKernelBuilderExtensionsTests
         this.AssertVectorStoreRecordCollectionCreated();
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -130,6 +138,8 @@ public class PineconeKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private void AssertVectorStoreCreated()
     {
         var kernel = this._kernelBuilder.Build();
@@ -137,6 +147,7 @@ public class PineconeKernelBuilderExtensionsTests
         Assert.NotNull(vectorStore);
         Assert.IsType<PineconeVectorStore>(vectorStore);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -153,6 +164,8 @@ public class PineconeKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     private void AssertVectorStoreRecordCollectionCreated()
     {
@@ -177,6 +190,7 @@ public class PineconeKernelBuilderExtensionsTests
         [VectorStoreRecordVector(4)]
         public ReadOnlyMemory<float> Vector { get; set; }
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -191,4 +205,6 @@ public class PineconeKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

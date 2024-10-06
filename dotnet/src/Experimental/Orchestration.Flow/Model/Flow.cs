@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,10 +22,16 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 <<<<<<< HEAD
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
+=======
+<<<<<<< HEAD
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+=======
+>>>>>>> origin/main
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +45,8 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 /// <summary>
 /// Flow data model
@@ -50,6 +59,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 /// </remarks>
 public sealed class Flow : FlowStep
 {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -66,11 +76,14 @@ public sealed class Flow : FlowStep
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
 =======
     private List<FlowStep> _steps;
 
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -85,6 +98,8 @@ public sealed class Flow : FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     /// <summary>
     /// Initializes a new instance of the <see cref="Flow"/> class.
     /// </summary>
@@ -93,6 +108,7 @@ public sealed class Flow : FlowStep
     public Flow(string name, string goal) : base(goal, null)
     {
         this.Name = name;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -111,11 +127,14 @@ public sealed class Flow : FlowStep
 <<<<<<< main
         this.Steps = [];
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
         this.Steps = [];
 =======
         this._steps = new List<FlowStep>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -130,11 +149,14 @@ public sealed class Flow : FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     }
 
     /// <summary>
     /// Steps of the flow
     /// </summary>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -153,6 +175,8 @@ public sealed class Flow : FlowStep
 <<<<<<< main
     public List<FlowStep> Steps { get; set; }
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
     public List<FlowStep> Steps { get; set; }
 =======
@@ -162,6 +186,7 @@ public sealed class Flow : FlowStep
         set => this._steps = value;
     }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -176,6 +201,8 @@ public sealed class Flow : FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
     /// <summary>
     /// Friendly name and identifier of the flow
@@ -188,6 +215,7 @@ public sealed class Flow : FlowStep
     /// <param name="step">the <see cref="FlowStep"/> instance</param>
     public void AddStep(FlowStep step)
     {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -206,11 +234,14 @@ public sealed class Flow : FlowStep
 <<<<<<< main
         this.Steps.Add(step);
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
         this.Steps.Add(step);
 =======
         this._steps.Add(step);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -225,6 +256,8 @@ public sealed class Flow : FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     }
 
     /// <summary>
@@ -233,6 +266,7 @@ public sealed class Flow : FlowStep
     /// <param name="steps">the array of <see cref="FlowStep"/> instance to be add</param>
     public void AddSteps(params FlowStep[] steps)
     {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -251,11 +285,14 @@ public sealed class Flow : FlowStep
 <<<<<<< main
         this.Steps.AddRange(steps);
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
         this.Steps.AddRange(steps);
 =======
         this._steps.AddRange(steps);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -270,6 +307,8 @@ public sealed class Flow : FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     }
 
     /// <inheritdoc/>
@@ -278,6 +317,7 @@ public sealed class Flow : FlowStep
         get
         {
             var requires = new List<string>();
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -296,11 +336,14 @@ public sealed class Flow : FlowStep
 <<<<<<< main
             foreach (var step in this.Steps)
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
             foreach (var step in this.Steps)
 =======
             foreach (var step in this._steps)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -315,10 +358,13 @@ public sealed class Flow : FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
             {
                 requires.AddRange(step.Requires);
             }
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -337,11 +383,14 @@ public sealed class Flow : FlowStep
 <<<<<<< main
             foreach (var step in this.Steps)
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
             foreach (var step in this.Steps)
 =======
             foreach (var step in this._steps)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -356,6 +405,8 @@ public sealed class Flow : FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
             {
                 requires.RemoveAll(r => step.Provides.Contains(r));
             }

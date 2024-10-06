@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
@@ -56,6 +60,7 @@ def kernel() -> "Kernel":
 @fixture(scope="session")
 def service() -> "AIServiceClientBase":
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -72,6 +77,8 @@ def service() -> "AIServiceClientBase":
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 =======
 from __future__ import annotations
 
@@ -124,6 +131,7 @@ def enable_debug_mode():
         )
         return
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -138,10 +146,13 @@ def enable_debug_mode():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
     return AIServiceClientBase(service_id="service", ai_model_id="ai_model_id")
 
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -173,6 +184,9 @@ def enable_debug_mode():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
 @fixture(scope="session")
 def default_service() -> "AIServiceClientBase":
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
@@ -191,6 +205,7 @@ def kernel_with_default_service(
     kernel: "Kernel", default_service: "AIServiceClientBase"
 ) -> "Kernel":
     kernel.add_service(default_service)
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -235,6 +250,8 @@ def not_decorated_native_function() -> Callable:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> origin/main
     return kernel
 
 
@@ -264,6 +281,7 @@ def get_aoai_config():
         deployment_name, api_key, endpoint = azure_openai_settings_from_dot_env()
         deployment_name = "text-embedding-ada-002"
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -278,12 +296,15 @@ def get_aoai_config():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 
 @fixture(scope="session")
 def decorated_native_function() -> Callable:
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -306,6 +327,8 @@ def decorated_native_function() -> Callable:
     def decorated_native_function(arg1: str) -> str:
         return "test"
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< main
     @kernel_function(name="getLightStatus")
     def decorated_native_function(arg1: str) -> str:
@@ -320,6 +343,7 @@ def get_oai_config():
         # Load credentials from .env file
         api_key, org_id = openai_settings_from_dot_env()
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -334,10 +358,13 @@ def get_oai_config():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
     return decorated_native_function
 
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -369,6 +396,9 @@ def get_oai_config():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
 @fixture(scope="session")
 def custom_plugin_class():
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -622,6 +652,7 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     if override_env_param_dict is None:
         override_env_param_dict = {}
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -654,12 +685,17 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+<<<<<<< Updated upstream
+>>>>>>> origin/main
     env_vars = {"ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id", "ANTHROPIC_API_KEY": "test_api_key"}
 =======
     env_vars = {
         "ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id",
         "ANTHROPIC_API_KEY": "test_api_key"
     }
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -693,6 +729,11 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+    env_vars = {"ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id", "ANTHROPIC_API_KEY": "test_api_key"}
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> origin/main
 
     env_vars.update(override_env_param_dict)
 
@@ -846,6 +887,7 @@ def redis_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
             monkeypatch.setenv(key, value)
         else:
             monkeypatch.delenv(key, raising=False)
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -863,6 +905,8 @@ def redis_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 <<<<<<< main
 =======
 =======
+>>>>>>> origin/main
+=======
 @pytest.fixture(scope="session")
 def get_gp_config():
     if "Python_Integration_Tests" in os.environ:
@@ -871,6 +915,7 @@ def get_gp_config():
         # Load credentials from .env file
         api_key = google_palm_settings_from_dot_env()
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -885,5 +930,7 @@ def get_gp_config():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
     return env_vars

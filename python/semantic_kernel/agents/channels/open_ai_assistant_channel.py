@@ -4,6 +4,7 @@ import sys
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +39,8 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -48,6 +51,7 @@ from openai import AsyncOpenAI
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.assistant_content_generation import create_chat_message, generate_message_content
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -83,11 +87,17 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.exceptions.agent_exceptions import AgentChatException
+from semantic_kernel.utils.experimental_decorator import experimental_class
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
 
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -119,6 +129,9 @@ if TYPE_CHECKING:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+@experimental_class
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 class OpenAIAssistantChannel(AgentChannel):
     """OpenAI Assistant Channel."""
 
@@ -161,6 +174,7 @@ class OpenAIAssistantChannel(AgentChannel):
             yield is_visible, message
 
     @override
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -177,6 +191,8 @@ class OpenAIAssistantChannel(AgentChannel):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     async def invoke_stream(
         self, agent: "Agent", messages: list[ChatMessageContent]
     ) -> AsyncIterable["ChatMessageContent"]:
@@ -201,6 +217,7 @@ class OpenAIAssistantChannel(AgentChannel):
             yield message
 
     @override
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -215,6 +232,8 @@ class OpenAIAssistantChannel(AgentChannel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     async def get_history(self) -> AsyncIterable["ChatMessageContent"]:
         """Get the conversation history.
 

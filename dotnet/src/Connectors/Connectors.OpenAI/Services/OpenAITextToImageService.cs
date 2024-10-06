@@ -36,6 +36,7 @@ public class OpenAITextToImageService : ITextToImageService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -77,6 +78,8 @@ public class OpenAITextToImageService : ITextToImageService
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this._client = new(modelId ?? "dall-e-2", apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(this.GetType()));
     }
 
@@ -87,6 +90,7 @@ public class OpenAITextToImageService : ITextToImageService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
         => this._client.GetImageContentsAsync(this._client.ModelId, input, executionSettings, kernel, cancellationToken);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -101,4 +105,6 @@ public class OpenAITextToImageService : ITextToImageService
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,10 +36,16 @@ using System.ClientModel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+using System;
+using System.ClientModel;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Net.Http;
 using Azure.Core;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Moq;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -72,6 +79,11 @@ using OpenAI;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using OpenAI;
+6d73513a859ab2d05e01db3bc1d405827799e34b
+using OpenAI;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
@@ -85,6 +97,7 @@ public class OpenAIClientProviderTests
     /// Verify that provisioning of client for Azure OpenAI.
     /// </summary>
     [Fact]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -109,6 +122,8 @@ public class OpenAIClientProviderTests
         // Arrange
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI("key", new Uri("https://localhost"));
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public void VerifyOpenAIClientProviderTargetAzureByKey()
     {
         // Act
@@ -121,6 +136,7 @@ public class OpenAIClientProviderTests
         // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI("key", new Uri("https://localhost"));
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential("key"), new Uri("https://localhost"));
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -135,6 +151,8 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Assert
         Assert.NotNull(provider.Client);
@@ -144,6 +162,7 @@ public class OpenAIClientProviderTests
     /// Verify that provisioning of client for Azure OpenAI.
     /// </summary>
     [Fact]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -160,12 +179,15 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public void VerifyOpenAIClientProviderTargetAzureByCredential()
     {
         // Arrange
         Mock<TokenCredential> mockCredential = new();
 
         // Act
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -180,10 +202,13 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public void VerifyOpenAIClientFactoryTargetAzureByCredential()
     {
         // Arrange
         Mock<TokenCredential> mockCredential = new();
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -200,6 +225,8 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
  6d73513a859ab2d05e01db3bc1d405827799e34b
     public void VerifyOpenAIClientProviderTargetAzureByCredential()
     {
@@ -207,6 +234,7 @@ public class OpenAIClientProviderTests
         Mock<TokenCredential> mockCredential = new();
 
         // Act
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -221,6 +249,8 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI(mockCredential.Object, new Uri("https://localhost"));
 
         // Assert
@@ -233,6 +263,7 @@ public class OpenAIClientProviderTests
     [Theory]
     [InlineData(null)]
     [InlineData("http://myproxy:9819")]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -255,6 +286,8 @@ public class OpenAIClientProviderTests
     {
         // Arrange
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public void VerifyOpenAIClientProviderTargetOpenAINoKey(string? endpoint)
     {
         // Act
@@ -265,6 +298,7 @@ public class OpenAIClientProviderTests
     public void VerifyOpenAIClientProviderTargetOpenAINoKey(string? endpoint)
     {
         // Act
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -279,6 +313,8 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(endpoint != null ? new Uri(endpoint) : null);
 
         // Assert
@@ -291,6 +327,7 @@ public class OpenAIClientProviderTests
     [Theory]
     [InlineData("key", null)]
     [InlineData("key", "http://myproxy:9819")]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -315,6 +352,8 @@ public class OpenAIClientProviderTests
         // Arrange
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(key, endpoint != null ? new Uri(endpoint) : null);
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public void VerifyOpenAIClientProviderTargetOpenAIByKey(string key, string? endpoint)
     {
         // Act
@@ -327,6 +366,7 @@ public class OpenAIClientProviderTests
         // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(key, endpoint != null ? new Uri(endpoint) : null);
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(key), endpoint != null ? new Uri(endpoint) : null);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -341,6 +381,8 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Assert
         Assert.NotNull(provider.Client);
@@ -350,6 +392,7 @@ public class OpenAIClientProviderTests
     /// Verify that the factory can create a client with http proxy.
     /// </summary>
     [Fact]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -366,12 +409,15 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public void VerifyOpenAIClientProviderWithHttpClient()
     {
         // Arrange
         using HttpClient httpClient = new() { BaseAddress = new Uri("http://myproxy:9819") };
 
         // Act
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -386,10 +432,13 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public void VerifyOpenAIClientFactoryWithHttpClient()
     {
         // Arrange
         using HttpClient httpClient = new() { BaseAddress = new Uri("http://myproxy:9819") };
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -406,6 +455,8 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
  6d73513a859ab2d05e01db3bc1d405827799e34b
     public void VerifyOpenAIClientProviderWithHttpClient()
     {
@@ -442,6 +493,7 @@ public class OpenAIClientProviderTests
         httpClient.DefaultRequestHeaders.Add("X-Test", "Test");
 
         // Act
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -456,11 +508,14 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(httpClient: httpClient);
 
         // Assert
         Assert.NotNull(provider.Client);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -477,6 +532,8 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Verify that the factory can accept an client that already exists.
@@ -493,6 +550,7 @@ public class OpenAIClientProviderTests
         Assert.Equal(mockClient.Object, provider.Client);
  6d73513a859ab2d05e01db3bc1d405827799e34b
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -507,4 +565,6 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

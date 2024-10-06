@@ -63,6 +63,7 @@ chat_completion = AzureChatCompletion(service_id="test", env_file_path=env_file_
 
 - Manually configure the `api_key` or required parameters on either the `OpenAIChatCompletion` or `AzureChatCompletion` constructor with keyword arguments.
 - This requires the user to manage their own keys/secrets as they aren't relying on the underlying environment variables or `.env` file.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -97,3 +98,9 @@ To learn how to use a Microsoft Entra Authentication token to authenticate to yo
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+
+### 4. Microsoft Entra Authentication
+
+To learn how to use a Microsoft Entra Authentication token to authenticate to your Azure OpenAI resource, please navigate to the following [guide](../concepts/README.md#microsoft-entra-token-authentication).
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75

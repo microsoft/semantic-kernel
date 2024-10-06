@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Data;
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -50,12 +51,15 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Redis when using JSON.
 /// </summary>
 internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, (string Key, JsonNode Node)>
 {
     /// <summary>All the properties from the record definition.</summary>
     private readonly IReadOnlyList<VectorStoreRecordProperty> _properties;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -70,6 +74,8 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>The JSON serializer options to use when converting between the data model and the Redis record.</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -80,6 +86,7 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisJsonGenericDataModelMapper"/> class.
     /// </summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -129,6 +136,8 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <param name="properties">All the properties from the record definition.</param>
     /// <param name="jsonSerializerOptions">The JSON serializer options to use when converting between the data model and the Redis record.</param>
     public RedisJsonGenericDataModelMapper(
@@ -143,6 +152,7 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 
         // Create a dictionary that maps from the data model property name to the storage property name.
         this._storagePropertyNames = properties.Select(x =>
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -157,6 +167,8 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         {
             if (x.StoragePropertyName is not null)
             {
@@ -183,6 +195,7 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
     {
         var jsonObject = new JsonObject();
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -216,6 +229,9 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        foreach (var property in this._properties)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         {
             var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
             var sourceDictionary = property is VectorStoreRecordDataProperty ? dataModel.Data : dataModel.Vectors;
@@ -259,6 +275,7 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
             throw new VectorStoreRecordMappingException($"Invalid data format for document with key '{storageModel.Key}'");
         }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -292,6 +309,9 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        foreach (var property in this._properties)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         {
             var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
             var targetDictionary = property is VectorStoreRecordDataProperty ? dataModel.Data : dataModel.Vectors;

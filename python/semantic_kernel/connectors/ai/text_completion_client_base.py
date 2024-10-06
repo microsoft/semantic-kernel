@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import (
         PromptExecutionSettings,
     )
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -58,6 +59,18 @@ if TYPE_CHECKING:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, AsyncIterable, List
+
+from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.contents import StreamingTextContent, TextContent
+
+
+>>>>>>> origin/main
 class TextCompletionClientBase(AIServiceClientBase, ABC):
     """Base class for text completion AI services."""
 
@@ -76,6 +89,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 
         Returns:
             list[TextContent]: A string or list of strings representing the response(s) from the LLM.
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -107,6 +121,9 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    ) -> List["TextContent"]:
+>>>>>>> origin/main
         """
         raise NotImplementedError("The _inner_get_text_contents method is not implemented.")
 
@@ -120,6 +137,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Args:
             prompt (str): The prompt to send to the LLM.
             settings (PromptExecutionSettings): Settings for the request.
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -153,6 +171,11 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {PromptExecutionSettings} -- Settings for the request.
+>>>>>>> origin/main
 
         Yields:
             list[StreamingTextContent]: A stream representing the response(s) from the LLM.
@@ -163,9 +186,15 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             yield
 
     # endregion
+<<<<<<< head
 
     # region Public methods
 
+=======
+
+    # region Public methods
+
+>>>>>>> origin/main
     async def get_text_contents(
         self,
         prompt: str,
@@ -179,6 +208,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 
         Returns:
             list[TextContent]: A string or list of strings representing the response(s) from the LLM.
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -194,6 +224,9 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
+=======
+    ) -> AsyncIterable[List["StreamingTextContent"]]:
+>>>>>>> origin/main
         """
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
@@ -211,6 +244,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 
         Returns:
             TextContent: A string or list of strings representing the response(s) from the LLM.
+<<<<<<< head
         """
         result = await self.get_text_contents(prompt=prompt, settings=settings)
         if result:
@@ -283,6 +317,9 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             TextContent: A string or list of strings representing the response(s) from the LLM.
         """
+=======
+        """
+>>>>>>> origin/main
         result = await self.get_text_contents(prompt=prompt, settings=settings)
         if result:
             return result[0]
@@ -299,6 +336,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Args:
             prompt (str): The prompt to send to the LLM.
             settings (PromptExecutionSettings): Settings for the request.
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -371,6 +409,33 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+=======
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {PromptExecutionSettings} -- Settings for the request.
+
+        Yields:
+            list[StreamingTextContent]: A stream representing the response(s) from the LLM.
+        """
+        # Create a copy of the settings to avoid modifying the original settings
+        settings = copy.deepcopy(settings)
+
+        async for contents in self._inner_get_streaming_text_contents(prompt, settings):
+            yield contents
+
+    async def get_streaming_text_content(
+        self, prompt: str, settings: "PromptExecutionSettings"
+    ) -> AsyncGenerator["StreamingTextContent | None", Any]:
+        """This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
+
+        Args:
+            prompt (str): The prompt to send to the LLM.
+            settings (PromptExecutionSettings): Settings for the request.
+
+        Returns:
+            StreamingTextContent: A stream representing the response(s) from the LLM.
+        """
+>>>>>>> origin/main
         async for contents in self.get_streaming_text_contents(prompt, settings):
             if contents:
                 yield contents[0]

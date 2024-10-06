@@ -19,6 +19,7 @@ public abstract class AgentChannel
     public ILogger Logger { get; set; } = NullLogger.Instance;
 
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,11 +36,14 @@ public abstract class AgentChannel
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Responsible for providing the serialized representation of the channel.
     /// </summary>
     protected internal abstract string Serialize();
 
     /// <summary>
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -54,6 +58,8 @@ public abstract class AgentChannel
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Receive the conversation messages.  Used when joining a conversation and also during each agent interaction..
     /// </summary>
     /// <param name="history">The chat history at the point the channel is created.</param>

@@ -9,6 +9,7 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInvalidAuthErro
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +42,10 @@ logging.basicConfig(level=logging.DEBUG)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+logging.basicConfig(level=logging.DEBUG)
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 def get_entra_auth_token(token_endpoint: str) -> str | None:
     """Retrieve a Microsoft Entra Auth Token for a given token endpoint.
@@ -67,6 +72,7 @@ def get_entra_auth_token(token_endpoint: str) -> str | None:
         logger.error(f"Failed to retrieve Azure token for the specified endpoint: `{token_endpoint}`.")
         return None
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -99,4 +105,8 @@ def get_entra_auth_token(token_endpoint: str) -> str | None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    logger.info(f"Successfully retrieved Azure token for the specified endpoint: `{token_endpoint}`.")
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     return auth_token.token if auth_token else None

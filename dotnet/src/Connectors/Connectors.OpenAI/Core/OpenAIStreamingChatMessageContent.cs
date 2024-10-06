@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,6 +21,8 @@ using System;
 
 using System;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 // Copyright (c) Microsoft. All rights reserved.
 
@@ -27,6 +30,7 @@ using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +45,8 @@ using System;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -75,6 +81,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(
             null,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -107,6 +114,10 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
+            null,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             null,
             chatUpdate,
             choiceIndex,
@@ -139,6 +150,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             // Temporary workaround for OpenAI SDK Bug here: https://github.com/openai/openai-dotnet/issues/198
             // TODO: Remove this try-catch block once the bug is fixed.
         }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -155,11 +167,14 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
         this.FinishReason = chatUpdate.FinishReason;
         this.Items = CreateContentItems(chatUpdate.ContentUpdate);
             // TODO: Remove this try-catch block once the bug is fixed.
         }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -174,6 +189,8 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <summary>

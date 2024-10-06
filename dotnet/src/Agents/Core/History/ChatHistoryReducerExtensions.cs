@@ -163,6 +163,7 @@ internal static class ChatHistoryReducerExtensions
 
         return true;
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -179,6 +180,8 @@ internal static class ChatHistoryReducerExtensions
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Reduce the history using the provided reducer without mutating the source history.
@@ -196,6 +199,7 @@ internal static class ChatHistoryReducerExtensions
 
         return history;
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -210,4 +214,6 @@ internal static class ChatHistoryReducerExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

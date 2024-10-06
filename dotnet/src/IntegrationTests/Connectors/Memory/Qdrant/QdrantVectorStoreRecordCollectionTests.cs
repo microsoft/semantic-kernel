@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,10 +20,13 @@ using System.Collections.Generic;
 <<<<<<< HEAD
 using System.Collections.Generic;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 using System.Collections.Generic;
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,6 +41,8 @@ using System.Collections.Generic;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -77,6 +83,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -95,11 +102,14 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 <<<<<<< HEAD
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     public async Task ItCanCreateACollectionUpsertGetAndSearchAsync(bool hasNamedVectors, bool useRecordDefinition)
 =======
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -114,6 +124,8 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     {
         // Arrange
         var collectionNamePostfix1 = useRecordDefinition ? "WithDefinition" : "WithType";
@@ -133,6 +145,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         await sut.CreateCollectionAsync();
         var upsertResult = await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(30, new GetRecordOptions { IncludeVectors = true });
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,12 +162,15 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         var searchResult = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
             new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 30) }).ToListAsync();
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -169,6 +185,8 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -184,6 +202,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal(record.Tags.ToArray(), getResult?.Tags.ToArray());
         Assert.Equal(record.Description, getResult?.Description);
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -200,6 +219,8 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         Assert.Single(searchResult);
         var searchResultRecord = searchResult.First().Record;
@@ -213,6 +234,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -227,6 +249,8 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         // Output
         output.WriteLine(collectionExistResult.ToString());
         output.WriteLine(upsertResult.ToString(CultureInfo.InvariantCulture));
@@ -502,6 +526,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync(11, new GetRecordOptions { IncludeVectors = true }));
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -518,6 +543,8 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     [Theory]
     [InlineData(true, "singleVectorHotels", false, "equality")]
@@ -562,6 +589,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal("This is a great hotel.", searchResultRecord?.Description);
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -576,6 +604,8 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
     {
@@ -632,6 +662,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.IsType<ReadOnlyMemory<float>>(localGetResult.Vectors["DescriptionEmbedding"]);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -664,6 +695,10 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private HotelInfo CreateTestHotel(uint hotelId)
     {
         return new HotelInfo

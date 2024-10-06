@@ -1,3 +1,4 @@
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,11 +32,19 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+﻿<Project Sdk="Microsoft.NET.Sdk">
+=======
+<Project Sdk="Microsoft.NET.Sdk">
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> origin/main
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Plugins.Memory</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -56,12 +65,15 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
 =======
     <TargetFramework>netstandard2.0</TargetFramework>
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -76,6 +88,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -88,6 +102,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -108,12 +123,16 @@
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -128,6 +147,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 =======
     <InternalsVisibleTo Include="SemanticKernel.Plugins.Memory.UnitTests" />
   </ItemGroup>
@@ -140,6 +161,7 @@
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -153,6 +175,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
   </ItemGroup>
 
 </Project>

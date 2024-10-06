@@ -10,6 +10,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>samples</artifactId>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -30,12 +31,16 @@
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
     <version>0.2.10-alpha-SNAPSHOT</version>
 <<<<<<< AI
 =======
     <artifactId>semantickernel-samples-parent</artifactId>
     <version>1.1.6-SNAPSHOT</version>
 >>>>>>> main
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -69,11 +74,17 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/dsgrieve/java-v1-api
+>>>>>>> origin/main
     <packaging>pom</packaging>
     <name>Semantic Kernel Samples Parent</name>
     <description>Parent pom for sample code for using the Semantic Kernel project</description>
 
     <modules>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -105,10 +116,14 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
         <module>semantickernel-concepts</module>
         <module>semantickernel-demos</module>
         <module>semantickernel-learn-resources</module>
         <module>semantickernel-sample-plugins</module>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -125,6 +140,8 @@
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 =======
         <!-- <module>sample-code</module>
         <module>semantickernel-samples-guice</module> -->
@@ -135,6 +152,7 @@
         <module>05-MultiModal</module>
         <module>06-Assistants</module>
 >>>>>>> origin/dsgrieve/java-v1-api
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,6 +167,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     </modules>
 
     <properties>

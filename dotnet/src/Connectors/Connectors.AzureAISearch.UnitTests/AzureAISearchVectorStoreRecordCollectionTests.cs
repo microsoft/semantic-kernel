@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System;
 using System.Collections.Generic;
@@ -238,6 +242,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Arrange.
         var storageObject = JsonSerializer.SerializeToNode(CreateModel(TestRecordKey1, false))!.AsObject();
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -271,6 +276,9 @@ public class AzureAISearchVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "key", "storage_data1", "data2" } : new[] { "Key", "storage_data1", "Data2" };
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this._searchClientMock.Setup(
             x => x.GetDocumentAsync<MultiPropsModel>(
                 TestRecordKey1,
@@ -616,6 +624,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             new() { VectorStoreRecordDefinition = definition, JsonObjectCustomMapper = Mock.Of<IVectorStoreRecordMapper<MultiPropsModel, JsonObject>>() });
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -632,6 +641,8 @@ public class AzureAISearchVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public async Task CanSearchWithVectorAndFilterAsync()
     {
@@ -717,6 +728,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             Times.Once);
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -731,6 +743,8 @@ public class AzureAISearchVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private AzureAISearchVectorStoreRecordCollection<MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)
     {
         return new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
@@ -779,6 +793,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         public string Key { get; set; } = string.Empty;
 
         [JsonPropertyName("storage_data1")]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -810,6 +825,9 @@ public class AzureAISearchVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        [VectorStoreRecordData(IsFilterable = true)]
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         [VectorStoreRecordData]
         public string Data1 { get; set; } = string.Empty;
 

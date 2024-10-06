@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System;
 using System.Collections.Generic;
@@ -49,6 +53,7 @@ using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -81,6 +86,10 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
 public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrationTest
@@ -145,6 +154,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
     public async Task CanAutoInvokeKernelFunctionsWithComplexTypeParametersAsync()
     {
         // Arrange
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -163,6 +173,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 <<<<<<< HEAD
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var kernel = this.CreateAndInitializeKernel();
         kernel.ImportPluginFromFunctions("HelperFunctions",
         [
@@ -178,6 +190,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
                 throw new NotSupportedException($"Weather in {parameters.City.Name} ({parameters.City.Country}) is not supported.");
             }, "Get_Current_Temperature", "Get current temperature."),
         ]);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -192,6 +205,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -239,6 +254,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
     public async Task CanAutoInvokeKernelFunctionFromPromptAsync()
     {
         // Arrange
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -278,6 +294,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var invokedFunctions = new List<string>();
 
         var filter = new FakeFunctionFilter(async (context, next) =>
@@ -291,6 +309,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 
         var promptFunction = KernelFunctionFactory.CreateFromPrompt(
             "Hey LLM, give me one news title that's hot off the press!",
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -305,6 +324,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             functionName: "FindLatestNews",
             description: "Searches for the latest news.");
 
@@ -316,6 +337,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -356,11 +378,14 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var result = await kernel.InvokePromptAsync("Show me the latest news.", new(settings));
 
         // Assert
         Assert.Contains(invokedFunctions, functionName => functionName.Contains("InvokePromptAsync"));
         Assert.Contains(invokedFunctions, functionName => functionName.Contains("FindLatestNews"));
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -375,12 +400,15 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     [Fact]
     public async Task CanAutoInvokeKernelFunctionFromPromptStreamingAsync()
     {
         // Arrange
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -420,6 +448,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var invokedFunctions = new List<string>();
 
         var filter = new FakeFunctionFilter(async (context, next) =>
@@ -433,6 +463,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 
         var promptFunction = KernelFunctionFactory.CreateFromPrompt(
             "Hey LLM, give me one news title that's hot off the press!",
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -447,6 +478,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             functionName: "FindLatestNews",
             description: "Searches for the latest news.");
 
@@ -458,6 +491,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -507,6 +541,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var streamingResult = kernel.InvokePromptStreamingAsync("Show me the latest news.", new(settings));
         await foreach (var update in streamingResult)
         {
@@ -515,6 +551,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         // Assert
         Assert.Contains(invokedFunctions, functionName => functionName.Contains("InvokePromptStreamingAsync"));
         Assert.Contains(invokedFunctions, functionName => functionName.Contains("FindLatestNews"));
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -529,6 +566,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     [Fact]
@@ -827,6 +866,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -860,6 +900,9 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    [Fact]
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForManualFunctionCallingForStreamingAsync()
     {
         // Arrange
@@ -1161,6 +1204,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         string? emailBody = null, emailRecipient = null;
 
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1200,6 +1244,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         kernel.ImportPluginFromFunctions("EmailPlugin", [
             KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail"),
             KernelFunctionFactory.CreateFromMethod(() => "abc@domain.com", "GetMyEmail")
@@ -1207,6 +1253,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 
         // The deserialized chat history contains a list of function calls and the final answer to the question regarding the color of the sky in Boston.
         chatHistory.AddUserMessage("Send the exact answer to my email.");
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1221,6 +1268,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -1253,6 +1302,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         string? emailBody = null, emailRecipient = null;
 
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1292,6 +1342,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         kernel.ImportPluginFromFunctions("EmailPlugin", [
             KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail"),
             KernelFunctionFactory.CreateFromMethod(() => "abc@domain.com", "GetMyEmail")
@@ -1299,6 +1351,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 
         // The deserialized chat history contains a list of function calls and the final answer to the question regarding the color of the sky in Boston.
         chatHistory.AddUserMessage("Send the exact answer to my email.");
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1313,6 +1366,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -1321,6 +1376,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 
         // Assert
         Assert.Equal("abc@domain.com", emailRecipient);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1354,6 +1410,9 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        Assert.Contains("61", emailBody);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <summary>
@@ -1388,6 +1447,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1421,6 +1481,9 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
 
         var chatHistory = new ChatHistory();
@@ -1444,6 +1507,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1477,6 +1541,9 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
 
         var chatHistory = new ChatHistory();
@@ -1524,6 +1591,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
                         _ => "31 and snowing",
                     };
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1583,6 +1651,8 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             ]);
         }
 

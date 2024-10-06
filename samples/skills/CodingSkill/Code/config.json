@@ -1,4 +1,5 @@
 {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -28,6 +29,10 @@
   "description": "Turn natural language into code",
   "default_settings": {
 >>>>>>> Stashed changes
+=======
+  "description": "Turn natural language into code",
+  "default_settings": {
+>>>>>>> origin/main
     "max_tokens": 256,
     "temperature": 0.0,
     "top_p": 0.0,
@@ -37,6 +42,7 @@
   "default_backends": [
     "code-davinci-002"
   ]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -68,4 +74,7 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+  }
+>>>>>>> origin/main
 }

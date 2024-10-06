@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -23,6 +24,8 @@ using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Data;
 
@@ -31,6 +34,7 @@ namespace Microsoft.SemanticKernel;
 
 namespace Microsoft.SemanticKernel.Data;
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -45,6 +49,8 @@ namespace Microsoft.SemanticKernel.Data;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 /// <summary>
 /// Extension methods to register Data services on the <see cref="IKernelBuilder"/>.
@@ -63,6 +69,7 @@ public static class KernelBuilderExtensions
         builder.Services.AddVolatileVectorStore(serviceId);
         return builder;
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -79,6 +86,8 @@ public static class KernelBuilderExtensions
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Register a <see cref="VectorStoreTextSearch{TRecord}"/> instance with the specified service ID.
@@ -130,6 +139,7 @@ public static class KernelBuilderExtensions
             serviceId);
         return builder;
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -144,4 +154,6 @@ public static class KernelBuilderExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

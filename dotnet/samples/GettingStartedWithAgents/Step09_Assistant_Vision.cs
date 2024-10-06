@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -55,6 +59,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
         OpenAIClientProvider provider = this.GetClientProvider();
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -96,6 +101,8 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
                 {
@@ -111,6 +118,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
  6d73513a859ab2d05e01db3bc1d405827799e34b
                 },
                 kernel: new Kernel());
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -125,6 +133,8 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Upload an image
         await using Stream imageStream = EmbeddedResource.ReadStream("cat.jpg")!;
@@ -146,6 +156,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
         {
             await agent.DeleteThreadAsync(threadId);
             await agent.DeleteAsync();
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -179,6 +190,9 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            await provider.Client.GetOpenAIFileClient().DeleteFileAsync(fileId);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         // Local function to invoke agent and display the conversation messages.

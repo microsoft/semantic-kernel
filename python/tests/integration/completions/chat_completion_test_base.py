@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -33,6 +34,9 @@ import logging
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+import logging
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 import sys
 from functools import reduce
 from typing import Annotated, Any
@@ -88,6 +92,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -104,10 +109,13 @@ else:
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 logger: logging.Logger = logging.getLogger(__name__)
 
 logging.basicConfig(level=logging.DEBUG)
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -122,6 +130,8 @@ logging.basicConfig(level=logging.DEBUG)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 mistral_ai_setup: bool = False
 try:
     MistralAIChatCompletion()

@@ -1,3 +1,4 @@
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -18,6 +19,10 @@
 
 <<<<<<< main
 =======
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+>>>>>>> origin/main
 using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -53,6 +58,7 @@ internal static class ChatHistorySerializer
 
         var messages = JsonSerializer.Deserialize<SerializableChatMessage[]>(input) ?? [];
         ChatHistory history = [];
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -69,6 +75,8 @@ internal static class ChatHistorySerializer
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
         var messages = JsonSerializer.Deserialize<SerializableChatMessage[]>(input) ?? Array.Empty<SerializableChatMessage>();
         ChatHistory history = new();
 >>>>>>> origin/main
@@ -101,6 +109,7 @@ internal static class ChatHistorySerializer
         }
 
         var messages = history.Select(m => new SerializableChatMessage()
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -121,6 +130,9 @@ internal static class ChatHistorySerializer
 =======
         var messages = history.Messages.Select(m => new SerializableChatMessage()
 >>>>>>> Stashed changes
+=======
+        var messages = history.Messages.Select(m => new SerializableChatMessage()
+>>>>>>> origin/main
         {
             Role = m.Role.Label,
             Content = m.Content,
@@ -130,6 +142,7 @@ internal static class ChatHistorySerializer
     }
 
     private sealed class SerializableChatMessage
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -146,6 +159,8 @@ internal static class ChatHistorySerializer
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
     private class SerializableChatMessage
 >>>>>>> origin/main
 <<<<<<< Updated upstream

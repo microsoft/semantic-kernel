@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -40,6 +41,8 @@ using Microsoft.SemanticKernel.Agents.Extensions;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 // Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
@@ -50,6 +53,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.Agents.Serialization;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -64,6 +68,8 @@ using Microsoft.SemanticKernel.Agents.Serialization;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -71,6 +77,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for that acts upon a <see cref="ChatHistoryKernelAgent"/>.
 /// </summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -104,6 +111,9 @@ internal sealed class ChatHistoryChannel : AgentChannel
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+internal sealed class ChatHistoryChannel : AgentChannel
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 {
     private readonly ChatHistory _history;
 
@@ -212,6 +222,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
 
         return Task.CompletedTask;
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -244,10 +255,15 @@ internal sealed class ChatHistoryChannel : AgentChannel
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    protected override string Serialize()
+        => JsonSerializer.Serialize(ChatMessageReference.Prepare(this._history));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryChannel"/> class.
     /// </summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -287,5 +303,10 @@ internal sealed class ChatHistoryChannel : AgentChannel
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    public ChatHistoryChannel(ChatHistory? history = null)
+    {
+        this._history = history ?? [];
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 }

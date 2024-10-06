@@ -6,6 +6,7 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,11 +38,15 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
 <<<<<<< HEAD
         <version>0.2.10-alpha-SNAPSHOT</version>
 =======
         <version>0.2.9-alpha-SNAPSHOT</version>
 >>>>>>> main
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -75,6 +80,11 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+        <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/dsgrieve/java-v1-api
+>>>>>>> origin/main
         <relativePath>../../pom.xml</relativePath>
     </parent>
 

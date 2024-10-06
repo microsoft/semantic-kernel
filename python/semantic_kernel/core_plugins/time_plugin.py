@@ -2,6 +2,7 @@
 
 import datetime
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,10 +21,13 @@ from semantic_kernel.exceptions import FunctionExecutionException
 <<<<<<< HEAD
 from semantic_kernel.exceptions import FunctionExecutionException
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 from semantic_kernel.exceptions import FunctionExecutionException
 =======
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +42,8 @@ from semantic_kernel.exceptions import FunctionExecutionException
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 

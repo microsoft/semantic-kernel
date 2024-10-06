@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,10 +40,13 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from unittest.mock import Mock
 
 import pytest
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -71,6 +78,9 @@ import pytest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
@@ -79,6 +89,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -95,6 +106,8 @@ from semantic_kernel.kernel import Kernel
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -105,6 +118,7 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -119,10 +133,13 @@ from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryB
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
 )
 from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import (
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -139,10 +156,13 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_extensions i
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 =======
     SequentialPlannerFunctionViewExtension,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -157,6 +177,8 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_extensions i
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     SequentialPlannerKernelExtension,
 )
 
@@ -165,6 +187,7 @@ async def _async_generator(query_result):
     yield query_result
 
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -196,6 +219,9 @@ async def _async_generator(query_result):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 def create_mock_function(
     kernel_function_metadata: KernelFunctionMetadata, return_value: FunctionResult
 ) -> KernelFunction:
@@ -214,6 +240,7 @@ def create_mock_function(
 @pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_no_functions(kernel: Kernel):
     arguments = KernelArguments()
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -230,6 +257,8 @@ async def test_can_call_get_available_functions_with_no_functions(kernel: Kernel
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 @pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_no_functions():
@@ -251,6 +280,7 @@ async def test_can_call_get_available_functions_with_no_functions():
     async_enumerable = _async_generator(memory_query_result)
     memory.search.return_value = async_enumerable
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -265,12 +295,15 @@ async def test_can_call_get_available_functions_with_no_functions():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     # Arrange GetAvailableFunctionsAsync parameters
     config = SequentialPlannerConfig()
     semantic_query = "test"
 
     # Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -302,6 +335,9 @@ async def test_can_call_get_available_functions_with_no_functions():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     result = await SequentialPlannerKernelExtension.get_available_functions(
         kernel, arguments, config, semantic_query
     )
@@ -313,6 +349,7 @@ async def test_can_call_get_available_functions_with_no_functions():
 @pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_functions(kernel: Kernel):
     arguments = KernelArguments()
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -329,6 +366,8 @@ async def test_can_call_get_available_functions_with_functions(kernel: Kernel):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
     result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
 
@@ -343,6 +382,7 @@ async def test_can_call_get_available_functions_with_functions():
     kernel = Kernel()
     functions_list = []
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -357,6 +397,8 @@ async def test_can_call_get_available_functions_with_functions():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     kernel_function_metadata = KernelFunctionMetadata(
         name="functionName",
         plugin_name="pluginName",
@@ -373,6 +415,7 @@ async def test_can_call_get_available_functions_with_functions():
         is_prompt=False,
         is_asynchronous=False,
     )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -404,6 +447,9 @@ async def test_can_call_get_available_functions_with_functions():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     kernel.add_function(
         "pluginName", create_mock_function(kernel_function_metadata, None)
     )
@@ -411,6 +457,7 @@ async def test_can_call_get_available_functions_with_functions():
         "pluginName", create_mock_function(native_kernel_function_metadata, None)
     )
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -427,6 +474,8 @@ async def test_can_call_get_available_functions_with_functions():
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
     functions_list.append(kernel_function_metadata)
     functions_list.append(native_kernel_function_metadata)
@@ -452,6 +501,7 @@ async def test_can_call_get_available_functions_with_functions():
     memory.search.return_value = async_enumerable
 
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -466,11 +516,14 @@ async def test_can_call_get_available_functions_with_functions():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     # Arrange GetAvailableFunctionsAsync parameters
     config = SequentialPlannerConfig()
     semantic_query = "test"
 
     # Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -493,6 +546,8 @@ async def test_can_call_get_available_functions_with_functions():
         kernel, arguments, config, semantic_query
     )
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     result = await SequentialPlannerKernelExtension.get_available_functions(
         kernel, arguments, config, semantic_query
@@ -500,6 +555,7 @@ async def test_can_call_get_available_functions_with_functions():
 =======
     result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -514,6 +570,8 @@ async def test_can_call_get_available_functions_with_functions():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     # Assert
     assert result is not None
@@ -524,6 +582,7 @@ async def test_can_call_get_available_functions_with_functions():
     config.included_functions.append(["nativeFunctionName"])
 
     # Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -546,12 +605,15 @@ async def test_can_call_get_available_functions_with_functions():
         kernel, arguments, config, semantic_query
     )
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     result = await SequentialPlannerKernelExtension.get_available_functions(
         kernel, arguments, config, semantic_query
     )
 =======
     result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -565,6 +627,8 @@ async def test_can_call_get_available_functions_with_functions():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     # Assert
     assert result is not None
@@ -574,6 +638,7 @@ async def test_can_call_get_available_functions_with_functions():
 
 
 @pytest.mark.asyncio
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -588,6 +653,8 @@ async def test_can_call_get_available_functions_with_functions():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_can_call_get_available_functions_with_functions_and_relevancy():
     # Arrange FunctionView
     functions_list = []
@@ -651,7 +718,10 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
     # Act
     result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     # Assert
     assert result is not None
@@ -662,6 +732,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
 
 @pytest.mark.asyncio
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
@@ -678,10 +749,13 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_can_call_get_available_functions_with_default_relevancy(kernel: Kernel):
     # Arrange
     arguments = KernelArguments()
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -698,6 +772,8 @@ async def test_can_call_get_available_functions_with_default_relevancy(kernel: K
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 async def test_can_call_get_available_functions_with_default_relevancy():
     # Arrange
@@ -722,6 +798,7 @@ async def test_can_call_get_available_functions_with_default_relevancy():
     kernel.memory = memory
 
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -736,11 +813,14 @@ async def test_can_call_get_available_functions_with_default_relevancy():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     # Arrange GetAvailableFunctionsAsync parameters
     config = SequentialPlannerConfig(relevancy_threshold=0.78)
     semantic_query = "test"
 
     # Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -772,12 +852,16 @@ async def test_can_call_get_available_functions_with_default_relevancy():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     result = await SequentialPlannerKernelExtension.get_available_functions(
         kernel, arguments, config, semantic_query
     )
 
     # Assert
     assert result is not None
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -794,6 +878,8 @@ async def test_can_call_get_available_functions_with_default_relevancy():
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
     result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
 
@@ -801,6 +887,7 @@ async def test_can_call_get_available_functions_with_default_relevancy():
     assert result is not None
     memory.search.assert_called_once()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -815,3 +902,5 @@ async def test_can_call_get_available_functions_with_default_relevancy():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75

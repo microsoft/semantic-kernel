@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,10 +20,13 @@ using System.Linq;
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 using System.Runtime.InteropServices;
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,6 +41,8 @@ using System.Runtime.InteropServices;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -472,6 +478,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -488,6 +495,8 @@ public class RedisJsonVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     [Theory]
     [InlineData(true)]
@@ -554,6 +563,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
 
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -568,6 +578,8 @@ public class RedisJsonVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
     /// In this case, the expectation is that a custom mapper will be provided to map between the
@@ -630,6 +642,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
             .ReturnsAsync(RedisResult.Create(results));
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -646,6 +659,8 @@ public class RedisJsonVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, IEnumerable<RedisResult> redisResultStrings)
     {
@@ -662,6 +677,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
 
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -676,6 +692,8 @@ public class RedisJsonVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, string redisResultString)
     {
         redisDatabaseMock

@@ -26,6 +26,7 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
                 Instructions = HostInstructions,
                 Name = HostName,
                 Kernel = this.CreateKernelWithChatCompletion(),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -44,11 +45,14 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
 <<<<<<< HEAD
                 Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
                 Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
 =======
                 Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -63,6 +67,8 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).

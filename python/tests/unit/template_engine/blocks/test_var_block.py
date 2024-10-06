@@ -4,6 +4,7 @@ import logging
 
 from pytest import mark, raises
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,10 +36,14 @@ from pytest import mark, raises
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
 from semantic_kernel.exceptions import VarBlockSyntaxError
 from semantic_kernel.exceptions.template_engine_exceptions import VarBlockRenderError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,11 +60,14 @@ from semantic_kernel.kernel import Kernel
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 =======
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxError
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -74,6 +82,8 @@ from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxEr
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
@@ -116,6 +126,7 @@ def test_valid_syntax(name):
 @mark.parametrize(
     "content",
     ["$", "$test-var", "test_var", "$a>b", "$."],
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -147,6 +158,9 @@ def test_valid_syntax(name):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
     ids=[
         "prefix_only",
         "invalid_characters",
@@ -157,6 +171,7 @@ def test_valid_syntax(name):
 )
 def test_syntax_errors(content):
     match = content.replace("$", "\\$") if "$" in content else content
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -174,6 +189,8 @@ def test_syntax_errors(content):
 <<<<<<< main
 =======
 =======
+>>>>>>> origin/main
+=======
     ids=["prefix_only", "invalid_characters", "no_prefix", "invalid_characters2", "invalid_characters3"],
 )
 def test_syntax_errors(content):
@@ -182,6 +199,7 @@ def test_syntax_errors(content):
     else:
         match = content
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -196,6 +214,8 @@ def test_syntax_errors(content):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     with raises(VarBlockSyntaxError, match=rf".*{match}.*"):
         VarBlock(content=content)
 
@@ -216,6 +236,7 @@ def test_render_no_args():
     target = VarBlock(content="$var")
     result = target.render(Kernel())
     assert result == ""
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -236,6 +257,9 @@ def test_render_no_args():
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
 
 
 class MockNonString(str):
@@ -247,6 +271,7 @@ def test_not_string():
     target = VarBlock(content="$var")
     with raises(VarBlockRenderError):
         target.render(Kernel(), KernelArguments(var=MockNonString("1")))
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -279,3 +304,7 @@ def test_not_string():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main

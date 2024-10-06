@@ -1,3 +1,4 @@
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,6 +20,9 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> origin/main
 
 using System;
 using System.Collections.Generic;
@@ -27,6 +31,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Chroma;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -60,6 +65,11 @@ using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+using Microsoft.SemanticKernel.Diagnostics;
+>>>>>>> origin/main
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
@@ -170,16 +180,22 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var collectionName = this.GetRandomCollectionName();
 
         // Act
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
         var exception = await Record.ExceptionAsync(() => this._chromaMemoryStore.DeleteCollectionAsync(collectionName));
+=======
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => this._chromaMemoryStore.DeleteCollectionAsync(collectionName));
+>>>>>>> origin/main
 
         // Assert
         Assert.IsType<KernelException>(exception);
+        Assert.IsType<SKException>(exception);
         Assert.Contains(
+<<<<<<< head
             $"Cannot delete non-existent collection {collectionName}",
             exception.Message,
 =======
@@ -212,6 +228,10 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            $"Collection {collectionName} does not exist.",
+            exception.ResponseContent,
+>>>>>>> origin/main
             StringComparison.InvariantCulture);
     }
 

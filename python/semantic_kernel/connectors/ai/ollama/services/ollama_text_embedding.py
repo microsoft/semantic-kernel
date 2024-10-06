@@ -34,6 +34,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -54,12 +55,15 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
 @experimental_class
 class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 @experimental_class
 class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
 =======
 class OllamaTextEmbedding(EmbeddingGeneratorBase):
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -74,6 +78,8 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     """Ollama embeddings client.
 
     Make sure to have the ollama service running either locally or remotely.

@@ -38,6 +38,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
     /// maximum value is 1000). Higher ef_construction will result in better index quality and higher accuracy, but it will
     /// also increase the time required to build the index. EfConstruction has to be at least 2 * m
     /// </summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -56,6 +57,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
 <<<<<<< HEAD
     public int? EfConstruction { get; set; } = null;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     public int EfConstruction { get; set; } = 64;
 
@@ -67,6 +70,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
 =======
     public int? EfConstruction { get; set; } = null;
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -81,4 +85,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

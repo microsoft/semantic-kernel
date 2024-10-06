@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,10 +21,13 @@ using System.Diagnostics.CodeAnalysis;
 <<<<<<< main
 using System.Diagnostics.CodeAnalysis;
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
 using System.Diagnostics.CodeAnalysis;
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,12 +42,15 @@ using System.Diagnostics.CodeAnalysis;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -65,10 +72,16 @@ using Microsoft.SemanticKernel.Memory;
 >>>>>>> origin/main
 using Microsoft.SemanticKernel.Memory;
 =======
+=======
+<<<<<<< HEAD
+using Microsoft.SemanticKernel.Memory;
+=======
+>>>>>>> origin/main
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,10 +95,13 @@ using Microsoft.SemanticKernel.SkillDefinition;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 namespace Microsoft.SemanticKernel.Plugins.Memory;
 
 /// <summary>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,10 +119,13 @@ namespace Microsoft.SemanticKernel.Plugins.Memory;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
 /// TextMemoryPlugin provides a plugin to save or recall information from the long or short term memory.
 /// </summary>
 [Experimental("SKEXP0001")]
+<<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -144,6 +163,8 @@ public sealed class TextMemoryPlugin
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> origin/main
 public sealed class TextMemoryPlugin
 {
     /// <summary>
@@ -166,6 +187,7 @@ public sealed class TextMemoryPlugin
     /// <summary>
     /// Name of the context variable used to specify which memory collection to use.
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -180,10 +202,13 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     /// </summary>
     public const string CollectionParam = "collection";
 
     /// <summary>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -202,11 +227,14 @@ public sealed class TextMemoryPlugin
 <<<<<<< main
     /// Name used to specify memory search relevance score.
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
     /// Name used to specify memory search relevance score.
 =======
     /// Name of the context variable used to specify memory search relevance score.
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -221,10 +249,13 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     /// </summary>
     public const string RelevanceParam = "relevance";
 
     /// <summary>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -243,11 +274,14 @@ public sealed class TextMemoryPlugin
 <<<<<<< main
     /// Name used to specify a unique key associated with stored information.
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
     /// Name used to specify a unique key associated with stored information.
 =======
     /// Name of the context variable used to specify a unique key associated with stored information.
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -262,10 +296,13 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     /// </summary>
     public const string KeyParam = "key";
 
     /// <summary>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -284,11 +321,14 @@ public sealed class TextMemoryPlugin
 <<<<<<< main
     /// Name used to specify the number of memories to recall
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
     /// Name used to specify the number of memories to recall
 =======
     /// Name of the context variable used to specify the number of memories to recall
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -303,6 +343,8 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     /// </summary>
     public const string LimitParam = "limit";
 
@@ -310,6 +352,7 @@ public sealed class TextMemoryPlugin
     private const double DefaultRelevance = 0.0;
     private const int DefaultLimit = 1;
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -330,12 +373,16 @@ public sealed class TextMemoryPlugin
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
     private readonly ISemanticTextMemory _memory;
     private readonly ILogger _logger;
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TextMemoryPlugin"/> class.
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -361,6 +408,7 @@ public sealed class TextMemoryPlugin
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
     /// </summary>
     /// <param name="memory">The <see cref="ISemanticTextMemory"/> instance to use for retrieving and saving memories to and from storage.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
@@ -371,6 +419,25 @@ public sealed class TextMemoryPlugin
         JsonSerializerOptions? jsonSerializerOptions = null)
     {
         this._memory = memory;
+        this._logger = loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)) ?? NullLogger.Instance;
+        this._jsonSerializerOptions = jsonSerializerOptions ?? JsonSerializerOptions.Default;
+=======
+    private ISemanticTextMemory _memory;
+
+    /// <summary>
+    /// Creates a new instance of the TextMemorySkill
+>>>>>>> origin/main
+    /// </summary>
+    /// <param name="memory">The <see cref="ISemanticTextMemory"/> instance to use for retrieving and saving memories to and from storage.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="jsonSerializerOptions">An optional <see cref="JsonSerializerOptions"/> to use when turning multiple memories into json text. If null, <see cref="JsonSerializerOptions.Default"/> is used.</param>
+    public TextMemoryPlugin(
+        ISemanticTextMemory memory,
+        ILoggerFactory? loggerFactory = null,
+        JsonSerializerOptions? jsonSerializerOptions = null)
+    {
+        this._memory = memory;
+<<<<<<< head
         this._logger = loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)) ?? NullLogger.Instance;
         this._jsonSerializerOptions = jsonSerializerOptions ?? JsonSerializerOptions.Default;
 <<<<<<< Updated upstream
@@ -422,11 +489,15 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> origin/main
     }
 
     /// <summary>
     /// Key-based lookup for a specific memory
     /// </summary>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -448,6 +519,17 @@ public sealed class TextMemoryPlugin
 <<<<<<< main
 >>>>>>> Stashed changes
     /// <param name="key">The key associated with the memory to retrieve.</param>
+=======
+<<<<<<< HEAD
+    /// <param name="key">The key associated with the memory to retrieve.</param>
+    /// <param name="collection">Memories collection associated with the memory to retrieve</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    [KernelFunction, Description("Key-based lookup for a specific memory")]
+    public async Task<string> RetrieveAsync(
+        [Description("The key associated with the memory to retrieve")] string key,
+        [Description("Memories collection associated with the memory to retrieve")] string? collection = DefaultCollection,
+=======
+>>>>>>> origin/main
     /// <param name="collection">Memories collection associated with the memory to retrieve</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     [KernelFunction, Description("Key-based lookup for a specific memory")]
@@ -471,6 +553,7 @@ public sealed class TextMemoryPlugin
 =======
 <<<<<<< HEAD
     /// <param name="key">The key associated with the memory to retrieve.</param>
+<<<<<<< head
     /// <param name="collection">Memories collection associated with the memory to retrieve</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     [KernelFunction, Description("Key-based lookup for a specific memory")]
@@ -480,6 +563,8 @@ public sealed class TextMemoryPlugin
 =======
     /// <param name="collection">Memories collection associated with the memory to retrieve</param>
     /// <param name="key">The key associated with the memory to retrieve.</param>
+=======
+>>>>>>> origin/main
     /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <example>
@@ -492,6 +577,7 @@ public sealed class TextMemoryPlugin
         [SKName(KeyParam), Description("The key associated with the memory to retrieve")] string key,
         ILogger? logger,
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -506,10 +592,13 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -574,6 +663,19 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
+        }
+=======
+        logger ??= NullLogger.Instance;
+
+        logger.LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> origin/main
 
         var memory = await this._memory.GetAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -583,6 +685,7 @@ public sealed class TextMemoryPlugin
     /// <summary>
     /// Semantic search and return up to N memories related to the input text
     /// </summary>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -599,6 +702,8 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
 =======
     /// <example>
@@ -606,6 +711,7 @@ public sealed class TextMemoryPlugin
     /// {{memory.recall $input }} => "Paris"
     /// </example>
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -620,10 +726,13 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     /// <param name="input">The input text to find related memories for.</param>
     /// <param name="collection">Memories collection to search.</param>
     /// <param name="relevance">The relevance score, from 0.0 to 1.0, where 1.0 means perfect match.</param>
     /// <param name="limit">The maximum number of relevant memories to recall.</param>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -655,6 +764,9 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     [KernelFunction, Description("Semantic search and return up to N memories related to the input text")]
     public async Task<string> RecallAsync(
@@ -674,6 +786,7 @@ public sealed class TextMemoryPlugin
         {
             this._logger.LogDebug("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
         }
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -690,6 +803,8 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 =======
     /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -709,6 +824,7 @@ public sealed class TextMemoryPlugin
 
         logger.LogDebug("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -723,6 +839,8 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
         // Search memory
         List<MemoryQueryResult> memories = await this._memory
@@ -732,6 +850,7 @@ public sealed class TextMemoryPlugin
 
         if (memories.Count == 0)
         {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -763,10 +882,14 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
             if (this._logger.IsEnabled(LogLevel.Warning))
             {
                 this._logger.LogWarning("Memories not found in collection: {0}", collection);
             }
+<<<<<<< head
             return string.Empty;
         }
 
@@ -809,11 +932,26 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            return string.Empty;
+        }
+
+        return limit == 1 ? memories[0].Metadata.Text : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text), this._jsonSerializerOptions);
+=======
+            logger.LogWarning("Memories not found in collection: {0}", collection);
+            return string.Empty;
+        }
+
+        logger.LogTrace("Done looking for memories in collection '{0}')", collection);
+        return limit == 1 ? memories[0].Metadata.Text : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text));
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> origin/main
     }
 
     /// <summary>
     /// Save information to semantic memory
     /// </summary>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -844,6 +982,9 @@ public sealed class TextMemoryPlugin
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
     /// <param name="input">The information to save</param>
     /// <param name="key">The key associated with the information to save</param>
     /// <param name="collection">Memories collection associated with the information to save</param>
@@ -853,6 +994,7 @@ public sealed class TextMemoryPlugin
         [Description("The information to save")] string input,
         [Description("The key associated with the information to save")] string key,
         [Description("Memories collection associated with the information to save")] string collection = DefaultCollection,
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -867,6 +1009,8 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 =======
     /// <example>
     /// SKContext.Variables["input"] = "the capital of France is Paris"
@@ -876,8 +1020,12 @@ public sealed class TextMemoryPlugin
 >>>>>>> origin/main
     /// <param name="input">The information to save</param>
     /// <param name="key">The key associated with the information to save</param>
+<<<<<<< head
 <<<<<<< main
     /// <param name="collection">Memories collection associated with the information to save</param>
+=======
+    /// <param name="logger">Application logger</param>
+>>>>>>> origin/main
 =======
     /// <param name="logger">Application logger</param>
 >>>>>>> origin/main
@@ -885,14 +1033,18 @@ public sealed class TextMemoryPlugin
     [SKFunction, Description("Save information to semantic memory")]
     public async Task SaveAsync(
         [Description("The information to save")] string input,
+<<<<<<< head
 <<<<<<< main
         [Description("The key associated with the information to save")] string key,
         [Description("Memories collection associated with the information to save")] string collection = DefaultCollection,
 =======
+=======
+>>>>>>> origin/main
         [SKName(CollectionParam), Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)] string collection,
         [SKName(KeyParam), Description("The key associated with the information to save")] string key,
         ILogger? logger,
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -907,10 +1059,13 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -931,11 +1086,15 @@ public sealed class TextMemoryPlugin
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
 
         if (this._logger.IsEnabled(LogLevel.Debug))
         {
             this._logger.LogDebug("Saving memory to collection '{0}'", collection);
         }
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -975,6 +1134,13 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+        logger ??= NullLogger.Instance;
+
+        logger.LogDebug("Saving memory to collection '{0}'", collection);
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> origin/main
 
         await this._memory.SaveInformationAsync(collection, text: input, id: key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
@@ -982,6 +1148,7 @@ public sealed class TextMemoryPlugin
     /// <summary>
     /// Remove specific memory
     /// </summary>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1014,6 +1181,9 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
     /// <param name="key">The key associated with the information to save</param>
     /// <param name="collection">Memories collection associated with the information to save</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -1021,6 +1191,7 @@ public sealed class TextMemoryPlugin
     public async Task RemoveAsync(
         [Description("The key associated with the information to save")] string key,
         [Description("Memories collection associated with the information to save")] string collection = DefaultCollection,
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1035,6 +1206,8 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 =======
     /// <example>
     /// SKContext.Variables[TextMemorySkill.KeyParam] = "countryInfo1"
@@ -1043,6 +1216,7 @@ public sealed class TextMemoryPlugin
     /// <param name="collection">Memories collection associated with the information to save</param>
     /// <param name="key">The key associated with the information to save</param>
     /// <param name="logger">Application logger</param>
+<<<<<<< head
 >>>>>>> origin/main
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     [SKFunction, Description("Remove specific memory")]
@@ -1051,10 +1225,16 @@ public sealed class TextMemoryPlugin
         [Description("The key associated with the information to save")] string key,
         [Description("Memories collection associated with the information to save")] string collection = DefaultCollection,
 =======
+=======
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    [SKFunction, Description("Remove specific memory")]
+    public async Task RemoveAsync(
+>>>>>>> origin/main
         [SKName(CollectionParam), Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)] string collection,
         [SKName(KeyParam), Description("The key associated with the information to save")] string key,
         ILogger? logger,
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1069,10 +1249,13 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1146,6 +1329,19 @@ public sealed class TextMemoryPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug("Removing memory from collection '{0}'", collection);
+        }
+=======
+        logger ??= NullLogger.Instance;
+
+        logger.LogDebug("Removing memory from collection '{0}'", collection);
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> origin/main
 
         await this._memory.RemoveAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@ using System;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using System;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
@@ -62,6 +66,7 @@ public class KernelBuilderExtensionsTests
         Assert.NotNull(vectorStore);
         Assert.IsType<VolatileVectorStore>(vectorStore);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -78,6 +83,8 @@ public class KernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     [Fact]
     public void AddVolatileVectorStoreTextSearchRegistersClass()
@@ -164,6 +171,7 @@ public class KernelBuilderExtensionsTests
         [VectorStoreRecordVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -178,4 +186,6 @@ public class KernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

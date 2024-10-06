@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System;
 using Azure;
@@ -40,6 +44,7 @@ using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -73,6 +78,11 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using Microsoft.SemanticKernel.Data;
+
+namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 /// <summary>
 /// Extension methods to register Azure AI Search <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
@@ -121,6 +131,7 @@ public static class AzureAISearchKernelBuilderExtensions
         builder.Services.AddAzureAISearchVectorStore(endpoint, credential, options, serviceId);
         return builder;
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -137,6 +148,8 @@ public static class AzureAISearchKernelBuilderExtensions
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Register an Azure AI Search <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>, <see cref="IVectorizedSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
@@ -208,6 +221,7 @@ public static class AzureAISearchKernelBuilderExtensions
         builder.Services.AddAzureAISearchVectorStoreRecordCollection<TRecord>(collectionName, endpoint, credential, options, serviceId);
         return builder;
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -222,4 +236,6 @@ public static class AzureAISearchKernelBuilderExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

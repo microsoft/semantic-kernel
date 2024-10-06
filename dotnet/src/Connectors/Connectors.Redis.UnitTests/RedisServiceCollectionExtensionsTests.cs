@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,10 +20,13 @@ using Microsoft.SemanticKernel;
 <<<<<<< HEAD
 using Microsoft.SemanticKernel;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 using Microsoft.SemanticKernel;
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,6 +41,8 @@ using Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Data;
 using Moq;
@@ -70,6 +76,7 @@ public class RedisServiceCollectionExtensionsTests
         this.AssertVectorStoreCreated();
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -86,6 +93,8 @@ public class RedisServiceCollectionExtensionsTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public void AddRedisHashSetVectorStoreRecordCollectionRegistersClass()
     {
@@ -112,6 +121,7 @@ public class RedisServiceCollectionExtensionsTests
         this.AssertJsonVectorStoreRecordCollectionCreated<TestRecord>();
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -126,6 +136,8 @@ public class RedisServiceCollectionExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private void AssertVectorStoreCreated()
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
@@ -133,6 +145,7 @@ public class RedisServiceCollectionExtensionsTests
         Assert.NotNull(vectorStore);
         Assert.IsType<RedisVectorStore>(vectorStore);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,6 +162,8 @@ public class RedisServiceCollectionExtensionsTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     private void AssertHashSetVectorStoreRecordCollectionCreated<TRecord>() where TRecord : class
     {
@@ -173,6 +188,7 @@ public class RedisServiceCollectionExtensionsTests
         [VectorStoreRecordKey]
         public string Id { get; set; } = string.Empty;
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -187,4 +203,6 @@ public class RedisServiceCollectionExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

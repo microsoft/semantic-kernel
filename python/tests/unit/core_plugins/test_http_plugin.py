@@ -6,6 +6,7 @@ import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,10 +25,13 @@ from semantic_kernel.exceptions import FunctionExecutionException
 <<<<<<< HEAD
 from semantic_kernel.exceptions import FunctionExecutionException
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 from semantic_kernel.exceptions import FunctionExecutionException
 =======
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,6 +46,8 @@ from semantic_kernel.exceptions import FunctionExecutionException
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
@@ -97,6 +103,7 @@ async def test_post(mock_post):
     mock_post.return_value.__aenter__.return_value.status = 200
 
     plugin = HttpPlugin()
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -119,6 +126,8 @@ async def test_post(mock_post):
         url="https://example.org/post", body="{message: 'Hello, world!'}"
     )
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
     arguments = KernelArguments(
         url="https://example.org/post", body="{message: 'Hello, world!'}"
@@ -126,6 +135,7 @@ async def test_post(mock_post):
 =======
     arguments = KernelArguments(url="https://example.org/post", body="{message: 'Hello, world!'}")
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -140,6 +150,8 @@ async def test_post(mock_post):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     response = await plugin.post(**arguments)
     assert response == "Hello World !"
 
@@ -163,6 +175,7 @@ async def test_put(mock_put):
     mock_put.return_value.__aenter__.return_value.status = 200
 
     plugin = HttpPlugin()
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -185,6 +198,8 @@ async def test_put(mock_put):
         url="https://example.org/put", body="{message: 'Hello, world!'}"
     )
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
     arguments = KernelArguments(
         url="https://example.org/put", body="{message: 'Hello, world!'}"
@@ -192,6 +207,7 @@ async def test_put(mock_put):
 =======
     arguments = KernelArguments(url="https://example.org/put", body="{message: 'Hello, world!'}")
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -206,6 +222,8 @@ async def test_put(mock_put):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     response = await plugin.put(**arguments)
     assert response == "Hello World !"
 

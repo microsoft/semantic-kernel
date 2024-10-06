@@ -7,6 +7,7 @@
 > and we appreciate your support, input and PRs!
 
 can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -23,6 +24,8 @@ can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 You can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -54,6 +57,7 @@ tips on how you can make reporting your issue as effective as possible.
 New New issues can be reported in our [list of issues](https://github.com/semantic-kernel/issues).
 >>>>>>>+8590ec5
 ore filing a new issue, please search the list of issues to make sure it does
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -70,6 +74,8 @@ ore filing a new issue, please search the list of issues to make sure it does
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 New issues can be reported in our [list of issues](https://github.com/microsoft/semantic-kernel/issues).
 
 Before filing a new issue, please search the list of issues to make sure it does
@@ -101,6 +107,7 @@ The better a bug report, the faster the problem will be resolved. Ideally, a bug
 report should contain the following information:
 
 <<<<<<- A high-level description of the problem.
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -117,6 +124,8 @@ report should contain the following information:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 - A high-level description of the problem.
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -149,6 +158,7 @@ report should contain the following information:
     any known workarounds?
 >>>>>>>+8590ec5
 ntributing Changes
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -165,6 +175,8 @@ ntributing Changes
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 
 ## Contributing Changes
 >>>>>>> origin/main
@@ -189,6 +201,7 @@ Project maintainers will merge accepted code changes from contributors.
 DO's:
 
 <<<<<<- **DO** follow the standard coding conventions
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -205,6 +218,8 @@ DO's:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 - **DO** follow the standard coding conventions
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -254,6 +269,7 @@ DON'Ts:
     it's often better to create new issue than to side track the discussion.
 -   **DO** clearly state on an issue that you are going to take on implementing it.
 -   **DO** blog and tweet (or whatever) about your contributions, frequently!
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -270,6 +286,20 @@ DON'Ts:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+
+DON'Ts:
+
+-   **DON'T** surprise us with big pull requests. Instead, file an issue and start
+    a discussion so we can agree on a direction before you invest a large amount of time.
+-   **DON'T** commit code that you didn't write. If you find code that you think is a good
+    fit to add to Semantic Kernel, file an issue and start a discussion before proceeding.
+-   **DON'T** submit PRs that alter licensing related files or headers. If you believe
+    there's a problem with them, file an issue and we'll be happy to discuss it.
+-   **DON'T** make new APIs without filing an issue and discussing with us first.
+>>>>>>>+8590ec5
+reaking Changes
+>>>>>>> origin/main
 
 DON'Ts:
 

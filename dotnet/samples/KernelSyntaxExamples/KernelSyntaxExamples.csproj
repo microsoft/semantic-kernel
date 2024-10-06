@@ -1,3 +1,4 @@
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -18,12 +19,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 <Project Sdk="Microsoft.NET.Sdk.Web">
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
 <Project Sdk="Microsoft.NET.Sdk">
 <Project Sdk="Microsoft.NET.Sdk.Web">
 =======
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,10 +42,13 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
   <PropertyGroup>
     <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
   </PropertyGroup>
   <PropertyGroup>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -62,6 +69,9 @@
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
     <RootNamespace></RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <RollForward>LatestMajor</RollForward>
@@ -74,6 +84,7 @@
     <None Remove="appsettings.json" />
   </ItemGroup>
   <ItemGroup>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -106,6 +117,10 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+>>>>>>> origin/main
     <AssemblyName>KernelSyntaxExamples</AssemblyName>
     <RootNamespace></RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
@@ -140,6 +155,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Http" />
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -171,6 +187,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Polly" />
@@ -183,6 +202,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -215,6 +235,10 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+>>>>>>> origin/main
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
@@ -237,6 +261,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -268,11 +293,15 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
     <ProjectReference Include="..\..\src\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Planning.PowerShell\Planning.PowerShell.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -295,11 +324,14 @@
     <ProjectReference Include="..\..\src\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
 =======
+=======
+>>>>>>> origin/main
     <ProjectReference Include="..\..\src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\..\src\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -314,6 +346,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Skills\Skills.Core\Skills.Core.csproj" />
     <ProjectReference Include="..\..\src\Skills\Skills.OpenAPI\Skills.OpenAPI.csproj" />
@@ -331,6 +365,7 @@
     <EmbeddedResource Include="Resources\30-user-prompt.txt" />
     <EmbeddedResource Include="Resources\30-system-prompt.txt" />
     <EmbeddedResource Include="Resources\30-user-context.txt" />
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -364,6 +399,11 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+>>>>>>> origin/main
     <ProjectReference Include="..\..\src\Experimental\Agents\Experimental.Agents.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System;
 using System.Collections.Generic;
@@ -128,6 +132,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.Equal(record.ParkingIncluded, getResult.ParkingIncluded);
         Assert.Equal(record.Tags.ToArray(), getResult.Tags.ToArray());
         Assert.Equal(record.Description, getResult.Description);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -159,6 +164,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        Assert.Equal(record.Timestamp, getResult.Timestamp);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         if (includeVectors)
         {
@@ -320,6 +328,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.Equal(10, getResult.HotelRating);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -336,6 +345,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact(Skip = SkipReason)]
     public async Task VectorizedSearchReturnsValidResultsByDefaultAsync()
     {
@@ -533,6 +544,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         },
     };
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -547,6 +559,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     #region private
 
     private AzureCosmosDBNoSQLHotel CreateTestHotel(string hotelId, string? hotelName = null)
@@ -560,6 +574,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
             ParkingIncluded = true,
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -595,6 +610,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
+            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+            Timestamp = new DateTimeOffset(2024, 9, 24, 17, 28, 32, TimeSpan.Zero),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         };
     }
 
@@ -611,6 +631,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -645,6 +666,10 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.CosineSimilarity }
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             ]
         };
     }

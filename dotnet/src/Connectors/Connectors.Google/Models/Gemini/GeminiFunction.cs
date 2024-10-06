@@ -172,6 +172,7 @@ public sealed class GeminiFunction
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(parameter.Description))
         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -205,6 +206,9 @@ public sealed class GeminiFunction
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            return KernelJsonSchemaBuilder.Build(typeof(string), parameter.Description);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         // Otherwise, we can use a cached schema for a string with no description.

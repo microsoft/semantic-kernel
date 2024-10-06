@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -90,6 +94,7 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
                 {
                     Instructions = TutorInstructions,
                     Name = TutorName,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -125,6 +130,11 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                    Kernel = sp.GetRequiredService<Kernel>().Clone(),
+                    Kernel = sp.GetRequiredService<Kernel>(),
+                    Kernel = sp.GetRequiredService<Kernel>().Clone(),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 });
 
         // Create a service provider for resolving registered services
@@ -136,6 +146,7 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 
         // Execute the agent-client
 <<<<<<< HEAD
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,10 +186,13 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         await WriteAgentResponse("The sunset is very colorful.");
         await WriteAgentResponse("The sunset is nice.");
         await WriteAgentResponse("The sunset is very colorful.");
  6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -193,6 +207,8 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         await WriteAgentResponse("The sunset is setting over the mountains.");
         await WriteAgentResponse("The sunset is setting over the mountains and filled the sky with a deep red flame, setting the clouds ablaze.");
 

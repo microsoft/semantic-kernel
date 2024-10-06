@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System.Reflection;
 using Microsoft.Azure.Cosmos;
@@ -83,6 +87,7 @@ public sealed class AzureCosmosDBNoSQLKernelBuilderExtensionsTests
         var database = (Database)vectorStore.GetType().GetField("_database", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(vectorStore)!;
         Assert.Equal(HttpHeaderConstant.Values.UserAgent, database.Client.ClientOptions.ApplicationName);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -99,6 +104,8 @@ public sealed class AzureCosmosDBNoSQLKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 =======
     [Fact]
@@ -145,6 +152,7 @@ public sealed class AzureCosmosDBNoSQLKernelBuilderExtensionsTests
         public string Id { get; set; } = string.Empty;
     }
 >>>>>>> upstream/feature-vector-search
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -159,4 +167,6 @@ public sealed class AzureCosmosDBNoSQLKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

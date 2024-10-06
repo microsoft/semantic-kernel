@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,10 +21,13 @@ using System;
 
 using System;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +42,8 @@ using System.ClientModel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.ClientModel.Primitives;
 using System.Net.Http;
 using System.Threading;
@@ -95,6 +101,7 @@ internal partial class AzureClientCore : ClientCore
         this.DeploymentName = deploymentName;
         this.Endpoint = new Uri(endpoint);
         this.Client = new AzureOpenAIClient(this.Endpoint, apiKey, options);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -126,6 +133,9 @@ internal partial class AzureClientCore : ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        this.Client = new AzureOpenAIClient(this.Endpoint, new ApiKeyCredential(apiKey), options);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
@@ -192,6 +202,7 @@ internal partial class AzureClientCore : ClientCore
     internal static AzureOpenAIClientOptions GetAzureOpenAIClientOptions(HttpClient? httpClient, AzureOpenAIClientOptions.ServiceVersion? serviceVersion = null)
     {
         AzureOpenAIClientOptions options = serviceVersion is not null
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -228,6 +239,10 @@ internal partial class AzureClientCore : ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            ? new(serviceVersion.Value) { UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent }
+            : new() { UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent };
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureClientCore))), PipelinePosition.PerCall);
 
@@ -240,6 +255,7 @@ internal partial class AzureClientCore : ClientCore
 
         return options;
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -256,10 +272,13 @@ internal partial class AzureClientCore : ClientCore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <inheritdoc/>
     protected override string GetClientModelId()
         => this.DeploymentName;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -274,4 +293,6 @@ internal partial class AzureClientCore : ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

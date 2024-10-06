@@ -6,6 +6,7 @@ namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests.TestSe
 
 [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
     Justification = "Configuration classes are instantiated through IConfiguration.")]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +25,8 @@ internal sealed class AzureOpenAIConfiguration(string serviceId, string deployme
 <<<<<<< main
 internal sealed class AzureOpenAIConfiguration(string serviceId, string deploymentName, string endpoint, string apiKey, string? chatDeploymentName = null)
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
 internal sealed class AzureOpenAIConfiguration(string serviceId, string deploymentName, string endpoint, string apiKey, string? chatDeploymentName = null)
 {
@@ -90,6 +93,7 @@ internal sealed class AzureOpenAIConfiguration
         this.ApiKey = apiKey;
     }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -104,4 +108,6 @@ internal sealed class AzureOpenAIConfiguration
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 }

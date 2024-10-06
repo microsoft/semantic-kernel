@@ -1,3 +1,4 @@
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,6 +20,9 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> origin/main
 
 using System;
 using System.Collections.Generic;
@@ -28,6 +32,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -44,10 +49,13 @@ using Microsoft.SemanticKernel.Connectors.Pinecone;
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 using Microsoft.SemanticKernel.Diagnostics;
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -62,6 +70,8 @@ using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
@@ -117,6 +127,7 @@ public class PineconeMemoryStoreTests
 
         // Act
         var exception = await Assert.ThrowsAsync<KernelException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -142,6 +153,10 @@ public class PineconeMemoryStoreTests
         var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
         var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
 >>>>>>> Stashed changes
+=======
+        var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+        var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+>>>>>>> origin/main
 
         // Assert
         this._mockPineconeClient

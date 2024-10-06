@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System;
 using System.Collections.Generic;
@@ -47,6 +51,7 @@ using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -79,6 +84,10 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTest
@@ -144,6 +153,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
     public async Task CanAutoInvokeKernelFunctionsWithComplexTypeParametersAsync()
     {
         // Arrange
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -160,6 +170,8 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var kernel = this.CreateAndInitializeKernel();
         kernel.ImportPluginFromFunctions("HelperFunctions",
         [
@@ -173,6 +185,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
                 throw new NotSupportedException($"Weather in {parameters.City.Name} ({parameters.City.Country}) is not supported.");
             }, "Get_Current_Temperature", "Get current temperature."),
         ]);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -187,6 +200,8 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -292,6 +307,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("Transportation", result, StringComparison.InvariantCultureIgnoreCase);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -325,6 +341,9 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    [Fact]
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public async Task ConnectorSpecificChatMessageContentClassesCanBeUsedForManualFunctionCallingAsync()
     {
         // Arrange
@@ -621,6 +640,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -654,6 +674,9 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    [Fact]
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForManualFunctionCallingForStreamingAsync()
     {
         // Arrange
@@ -1038,6 +1061,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1071,6 +1095,9 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
 
         var chatHistory = new ChatHistory();
@@ -1094,6 +1121,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1127,6 +1155,9 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
 
         var chatHistory = new ChatHistory();
@@ -1172,6 +1203,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
                         _ => "31 and snowing",
                     };
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1231,6 +1263,8 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             ]);
         }
 

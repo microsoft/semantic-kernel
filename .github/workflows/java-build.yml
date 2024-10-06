@@ -38,6 +38,7 @@ permissions:
   contents: read
 
 jobs:
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -97,6 +98,10 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+  # Determines if Java files have changed
+  # Determines if Java files have changed
+>>>>>>> origin/main
   paths-filter:
     runs-on: ubuntu-latest
     outputs:
@@ -110,6 +115,7 @@ jobs:
             java:
               - 'java/**'
               - '**/java/**'
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -126,6 +132,8 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
       - name: java tests
         if: steps.filter.outputs.java == 'true'
         run: echo "Java file"
@@ -193,6 +201,7 @@ jobs:
           else
             version=${{ matrix.java-versions }}
             echo "JDK_VERSION=$version" >> $GITHUB_OUTPUT
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -264,6 +273,14 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v3
+      # Sets up the specified JDK version from the matrix
+      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
+>>>>>>> origin/main
         with:
           java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
           distribution: microsoft
@@ -279,6 +296,7 @@ jobs:
         run: ./mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-versions }} test --file pom.xml
         working-directory: java
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -327,11 +345,14 @@ jobs:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> origin/main
       - uses: actions/upload-artifact@v4
       - uses: actions/upload-artifact@v4
       # Uploads test artifacts for each JDK version
       - uses: actions/upload-artifact@v2
       - uses: actions/upload-artifact@v4
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -346,6 +367,8 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         if: always()
         with:
           name: test_output_sk_jdk${{ matrix.java-versions }}u

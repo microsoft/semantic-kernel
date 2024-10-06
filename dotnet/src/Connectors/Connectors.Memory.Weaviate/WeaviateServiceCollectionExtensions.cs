@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@ using System;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using System;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -73,6 +77,7 @@ public static class WeaviateServiceCollectionExtensions
 
         return services;
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,6 +94,8 @@ public static class WeaviateServiceCollectionExtensions
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Register a Weaviate <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID.
@@ -143,6 +150,7 @@ public static class WeaviateServiceCollectionExtensions
                 return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<Guid, TRecord>>(serviceId);
             });
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -157,4 +165,6 @@ public static class WeaviateServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

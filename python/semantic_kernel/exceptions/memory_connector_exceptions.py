@@ -32,6 +32,7 @@ class VectorStoreModelValidationError(VectorStoreModelException):
     """An error occurred while validating the vector store model."""
 
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -48,12 +49,15 @@ class VectorStoreModelValidationError(VectorStoreModelException):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 class VectorStoreSearchError(MemoryConnectorException):
     """An error occurred while searching the vector store model."""
 
     pass
 
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -68,6 +72,8 @@ class VectorStoreSearchError(MemoryConnectorException):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 __all__ = [
     "MemoryConnectorException",
     "MemoryConnectorInitializationError",
@@ -76,6 +82,7 @@ __all__ = [
     "VectorStoreModelException",
     "VectorStoreModelSerializationException",
     "VectorStoreModelValidationError",
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -107,4 +114,7 @@ __all__ = [
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    "VectorStoreSearchError",
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 ]

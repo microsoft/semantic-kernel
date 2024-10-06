@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -53,6 +57,7 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
     {
         OpenAIClientProvider provider = this.GetClientProvider();
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -92,6 +97,11 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+
+        OpenAIFile uploadFile =
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             await fileClient.UploadFileAsync(
                 new BinaryData(await EmbeddedResource.ReadAllAsync("30-user-context.txt")),
                 "30-user-context.txt",
@@ -102,6 +112,7 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agents
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -124,6 +135,8 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
                 provider,
                 new(this.Model)
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
                 kernel: new(),
@@ -131,6 +144,7 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
                 new(this.Model)
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -145,10 +159,13 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 {
                     EnableCodeInterpreter = true,
                     CodeInterpreterFileIds = [uploadFile.Id], // Associate uploaded file with assistant code-interpreter
                     Metadata = AssistantSampleMetadata,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -167,11 +184,14 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
 <<<<<<< HEAD
                 });
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 },
                 kernel: new Kernel());
                 });
                 },
                 kernel: new Kernel());
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -186,6 +206,8 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         ChatCompletionAgent summaryAgent =
             new()

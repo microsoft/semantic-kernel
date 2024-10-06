@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -45,6 +49,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// A <see cref="KernelAgent"/> specialization bound to a <see cref="ChatHistoryChannel"/>.
 /// </summary>
 /// <remarks>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -81,10 +86,15 @@ namespace Microsoft.SemanticKernel.Agents;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+/// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins.
+/// (<see cref="KernelAgent.Arguments"/>)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 /// </remarks>
 public abstract class ChatHistoryKernelAgent : KernelAgent
 {
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -128,6 +138,8 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// An optional reducer for limiting the size of the conversation history.
     /// </summary>
     public KernelArguments? Arguments { get; init; }
@@ -149,6 +161,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of response messages.</returns>
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -163,12 +176,15 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -187,6 +203,8 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
 <<<<<<< HEAD
     /// <inheritdoc/>
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>
     /// Invoke the assistant to respond to the provided history with streaming response.
     /// </summary>
@@ -195,6 +213,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of response messages.</returns>
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -209,6 +228,8 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
@@ -220,6 +241,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// </summary>
     /// <param name="history">The source history</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -253,6 +275,9 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    /// <returns>True if reduction has occurred.</returns>
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public Task<bool> ReduceAsync(ChatHistory history, CancellationToken cancellationToken = default) =>
         history.ReduceAsync(this.HistoryReducer, cancellationToken);
 

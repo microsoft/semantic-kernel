@@ -83,6 +83,7 @@ def kernel_function_metadata_to_function_call_format(
                 "properties": {
                     param.name: param.schema_data for param in metadata.parameters
                 },
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,6 +124,8 @@ def kernel_function_metadata_to_function_call_format(
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 "properties": {param.name: param.schema_data for param in metadata.parameters},
                 "properties": {param.name: param.schema_data for param in metadata.parameters if param.is_required},
                 "required": [p.name for p in metadata.parameters if p.is_required],
@@ -132,6 +135,7 @@ def kernel_function_metadata_to_function_call_format(
                 },
                 "required": [p.name for p in metadata.parameters if p.is_required and p.include_in_function_choices],
 >>>>>>> ms/feature-python-search
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -146,6 +150,8 @@ def kernel_function_metadata_to_function_call_format(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             },
         },
     }

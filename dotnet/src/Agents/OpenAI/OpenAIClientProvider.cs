@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
@@ -111,6 +115,7 @@ public sealed class OpenAIClientProvider
     public static OpenAIClientProvider ForOpenAI(Uri? endpoint = null, HttpClient? httpClient = null)
     {
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -144,6 +149,9 @@ public sealed class OpenAIClientProvider
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        return new(new OpenAIClient(new ApiKeyCredential(SingleSpaceKey), clientOptions), CreateConfigurationKeys(endpoint, httpClient));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <summary>
@@ -155,6 +163,7 @@ public sealed class OpenAIClientProvider
     public static OpenAIClientProvider ForOpenAI(ApiKeyCredential apiKey, Uri? endpoint = null, HttpClient? httpClient = null)
     {
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -173,12 +182,15 @@ public sealed class OpenAIClientProvider
 <<<<<<< HEAD
         return new(new OpenAIClient(apiKey ?? SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         return new(new OpenAIClient(apiKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
         return new(new OpenAIClient(apiKey ?? SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
 =======
         return new(new OpenAIClient(apiKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
 >>>>>>> ms/main
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -193,6 +205,8 @@ public sealed class OpenAIClientProvider
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <summary>
@@ -207,6 +221,7 @@ public sealed class OpenAIClientProvider
     {
         AzureOpenAIClientOptions options = new()
         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -240,6 +255,9 @@ public sealed class OpenAIClientProvider
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         };
 
         ConfigureClientOptions(httpClient, options);
@@ -251,6 +269,7 @@ public sealed class OpenAIClientProvider
     {
         OpenAIClientOptions options = new()
         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -284,6 +303,9 @@ public sealed class OpenAIClientProvider
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             Endpoint = endpoint ?? httpClient?.BaseAddress,
         };
 

@@ -3,6 +3,8 @@
   "description": "Anything",
   "type": "completion",
   "completion": {
+  "description": "Given a text input, continue it with additional text.",
+  "default_settings": {
     "max_tokens": 4000,
     "temperature": 0.3,
     "top_p": 0.5,

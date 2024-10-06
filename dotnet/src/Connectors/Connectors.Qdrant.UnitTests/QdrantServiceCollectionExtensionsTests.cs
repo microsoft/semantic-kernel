@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +36,11 @@ using System;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -90,6 +96,7 @@ public class QdrantServiceCollectionExtensionsTests
         this.AssertVectorStoreCreated();
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -106,6 +113,8 @@ public class QdrantServiceCollectionExtensionsTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public void AddVectorStoreRecordCollectionRegistersClass()
     {
@@ -140,6 +149,7 @@ public class QdrantServiceCollectionExtensionsTests
         this.AssertVectorStoreRecordCollectionCreated();
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -154,6 +164,8 @@ public class QdrantServiceCollectionExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private void AssertVectorStoreCreated()
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
@@ -161,6 +173,7 @@ public class QdrantServiceCollectionExtensionsTests
         Assert.NotNull(vectorStore);
         Assert.IsType<QdrantVectorStore>(vectorStore);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -177,6 +190,8 @@ public class QdrantServiceCollectionExtensionsTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     private void AssertVectorStoreRecordCollectionCreated()
     {
@@ -201,6 +216,7 @@ public class QdrantServiceCollectionExtensionsTests
         [VectorStoreRecordVector(4)]
         public ReadOnlyMemory<float> Vector { get; set; }
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -215,4 +231,6 @@ public class QdrantServiceCollectionExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

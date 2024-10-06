@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -48,6 +52,7 @@ public class Step10_AssistantTool_CodeInterpreter(ITestOutputHelper output) : Ba
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -70,6 +75,8 @@ public class Step10_AssistantTool_CodeInterpreter(ITestOutputHelper output) : Ba
                 clientProvider: this.GetClientProvider(),
                 new(this.Model)
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 clientProvider: this.GetClientProvider(),
                 definition: new(this.Model)
                 {
@@ -80,6 +87,7 @@ public class Step10_AssistantTool_CodeInterpreter(ITestOutputHelper output) : Ba
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 definition: new(this.Model)
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -94,10 +102,13 @@ public class Step10_AssistantTool_CodeInterpreter(ITestOutputHelper output) : Ba
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 {
                     EnableCodeInterpreter = true,
                     Metadata = AssistantSampleMetadata,
                 });
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -131,6 +142,11 @@ public class Step10_AssistantTool_CodeInterpreter(ITestOutputHelper output) : Ba
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+                },
+                kernel: new Kernel());
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Create a thread for the agent conversation.
         string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });

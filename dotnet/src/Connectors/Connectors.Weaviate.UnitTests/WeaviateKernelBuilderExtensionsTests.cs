@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@ using System;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using System;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -64,6 +68,7 @@ public sealed class WeaviateKernelBuilderExtensionsTests
         Assert.NotNull(vectorStore);
         Assert.IsType<WeaviateVectorStore>(vectorStore);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -80,6 +85,8 @@ public sealed class WeaviateKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     [Fact]
     public void AddWeaviateVectorStoreRecordCollectionRegistersClass()
@@ -110,6 +117,7 @@ public sealed class WeaviateKernelBuilderExtensionsTests
         [VectorStoreRecordKey]
         public Guid Id { get; set; }
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -124,4 +132,6 @@ public sealed class WeaviateKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

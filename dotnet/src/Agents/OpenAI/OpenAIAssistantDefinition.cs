@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -39,6 +43,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Defines an assistant.
 /// </summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -72,6 +77,9 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 {
     /// <summary>
     /// Identifies the AI model targeted by the agent.
@@ -102,6 +110,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     public string? Name { get; init; }
 
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -118,6 +127,8 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Provide the captured template format for the assistant if needed for agent retrieval.
     /// (<see cref="OpenAIAssistantAgent.RetrieveAsync"/>)
     /// </summary>
@@ -136,6 +147,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
             return templateFormat;
         }
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -150,6 +162,8 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Optional file-ids made available to the code_interpreter tool, if enabled.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -174,6 +188,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     public bool EnableJsonResponse { get; init; }
 
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -213,12 +228,15 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Initializes a new instance of the <see cref="OpenAIAssistantDefinition"/> class.
     /// </summary>
     /// <param name="modelId">The targeted model</param>
     [JsonConstructor]
     public OpenAIAssistantDefinition(string modelId)
         : base(modelId) { }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -233,6 +251,8 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 
@@ -241,6 +261,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? Temperature { get; init; }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -299,6 +320,8 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Provide the captured template format for the assistant if needed for agent retrieval.
     /// (<see cref="OpenAIAssistantAgent.RetrieveAsync"/>)
     /// </summary>
@@ -317,6 +340,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
             return templateFormat;
         }
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -331,6 +355,8 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantDefinition"/> class.
@@ -343,6 +369,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 
         this.ModelId = modelId;
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -374,4 +401,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        : base(modelId) { }
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

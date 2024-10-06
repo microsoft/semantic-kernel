@@ -19,6 +19,7 @@ from semantic_kernel.exceptions.agent_exceptions import AgentInitializationExcep
 from semantic_kernel.kernel import Kernel
 
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,6 +53,9 @@ from semantic_kernel.kernel import Kernel
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+@pytest.fixture(scope="function")
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 def openai_assistant_agent(kernel: Kernel, openai_unit_test_env):
     return OpenAIAssistantAgent(
         kernel=kernel,
@@ -67,6 +71,7 @@ def openai_assistant_agent(kernel: Kernel, openai_unit_test_env):
     )
 
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -100,6 +105,9 @@ def openai_assistant_agent(kernel: Kernel, openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+@pytest.fixture(scope="function")
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 def mock_assistant():
     return Assistant(
         created_at=123456789,
@@ -128,6 +136,7 @@ def mock_assistant():
     )
 
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -161,6 +170,9 @@ def mock_assistant():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+@pytest.fixture(scope="function")
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 def mock_assistant_json():
     return Assistant(
         created_at=123456789,
@@ -231,6 +243,7 @@ async def test_create_agent(kernel: Kernel, openai_unit_test_env):
 
 
 @pytest.mark.asyncio
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -288,6 +301,11 @@ async def test_create_agent_second_way(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+async def test_create_agent_second_way(
+    kernel: Kernel, mock_assistant, openai_unit_test_env
+):
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_create_agent_with_files(kernel: Kernel, openai_unit_test_env):
     mock_open_file = mock_open(read_data="file_content")
     with (
@@ -368,6 +386,7 @@ async def test_create_agent_with_search_files_not_found_raises_exception(kernel:
 
 @pytest.mark.asyncio
 async def test_create_agent_second_way(kernel: Kernel, mock_assistant, openai_unit_test_env):
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -400,6 +419,8 @@ async def test_create_agent_second_way(kernel: Kernel, mock_assistant, openai_un
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     agent = OpenAIAssistantAgent(
         kernel=kernel,
         ai_model_id="test_model_id",
@@ -442,6 +463,7 @@ async def test_create_agent_second_way(kernel: Kernel, mock_assistant, openai_un
 
 
 @pytest.mark.asyncio
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -475,6 +497,9 @@ async def test_list_definitions(kernel: Kernel, openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+async def test_list_definitions(kernel: Kernel, openai_unit_test_env):
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     agent = OpenAIAssistantAgent(
         kernel=kernel,
         service_id="test_service",
@@ -483,6 +508,7 @@ async def test_list_definitions(kernel: Kernel, openai_unit_test_env):
         id="test_id",
     )
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -499,6 +525,8 @@ async def test_list_definitions(kernel: Kernel, openai_unit_test_env):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     assistant = Assistant(
         id="test_id",
         created_at=123456789,
@@ -525,6 +553,7 @@ async def test_list_definitions(kernel: Kernel, openai_unit_test_env):
         tools=[{"type": "code_interpreter"}, {"type": "file_search"}],
     )
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -539,6 +568,8 @@ async def test_list_definitions(kernel: Kernel, openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     with patch.object(
         OpenAIAssistantAgent, "_create_client", return_value=MagicMock(spec=AsyncOpenAI)
     ) as mock_create_client:
@@ -548,6 +579,7 @@ async def test_list_definitions(kernel: Kernel, openai_unit_test_env):
         mock_client_instance.beta.assistants.list = AsyncMock(
             return_value=MagicMock(data=[mock_assistant])
         )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -579,6 +611,9 @@ async def test_list_definitions(kernel: Kernel, openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        mock_client_instance.beta.assistants.list = AsyncMock(return_value=MagicMock(data=[assistant]))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         agent.client = mock_client_instance
 
@@ -617,6 +652,7 @@ async def test_list_definitions(kernel: Kernel, openai_unit_test_env):
         }
 
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -660,6 +696,8 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 @pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
 @pytest.mark.asyncio
 async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_test_env):
@@ -676,6 +714,7 @@ async def test_retrieve_agent_missing_api_key_throws(kernel, openai_unit_test_en
         AgentInitializationException, match="The OpenAI API key is required, if a client is not provided."
     ):
         _ = await OpenAIAssistantAgent.retrieve(id="test_id", kernel=kernel, env_file_path="test.env")
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -690,6 +729,8 @@ async def test_retrieve_agent_missing_api_key_throws(kernel, openai_unit_test_en
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         mock_client_instance.beta.assistants.retrieve = AsyncMock(
             return_value=AsyncMock()
@@ -703,6 +744,7 @@ async def test_retrieve_agent_missing_api_key_throws(kernel, openai_unit_test_en
             id="test_id",
         )
         OpenAIAssistantBase._create_open_ai_assistant_definition = MagicMock(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -719,6 +761,8 @@ async def test_retrieve_agent_missing_api_key_throws(kernel, openai_unit_test_en
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 def test_open_ai_settings_create_throws(openai_unit_test_env):
     with patch("semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings.OpenAISettings.create") as mock_create:
@@ -749,6 +793,7 @@ def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_j
         patch.object(
             OpenAIAssistantBase,
             "_create_open_ai_assistant_definition",
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -763,6 +808,8 @@ def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_j
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             return_value={
                 "ai_model_id": "test_model",
                 "description": "test_description",
@@ -788,6 +835,7 @@ def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_j
                 "max_prompt_tokens": 50,
                 "parallel_tool_calls_enabled": True,
                 "truncation_message_count": 10,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -808,6 +856,8 @@ def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_j
             }
         )
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             },
         ) as mock_create_def,
     ):
@@ -837,6 +887,7 @@ def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_j
             "parallel_tool_calls_enabled": True,
             "truncation_message_count": 10,
         }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -851,10 +902,13 @@ def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_j
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         retrieved_agent = await agent.retrieve(
             id="test_id", api_key="test_api_key", kernel=kernel
         )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -871,6 +925,8 @@ def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_j
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 @pytest.mark.asyncio
 async def test_retrieve_agent(kernel, openai_unit_test_env):
@@ -916,6 +972,7 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
         mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=AsyncMock(spec=Assistant))
 
         retrieved_agent = await OpenAIAssistantAgent.retrieve(id="test_id", api_key="test_api_key", kernel=kernel)
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -930,6 +987,8 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         assert retrieved_agent.model_dump(
             include={
                 "ai_model_id",
@@ -982,6 +1041,7 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
 @pytest.mark.asyncio
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1014,12 +1074,15 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_retrieve_agent_missing_chat_model_id_throws(
     kernel, openai_unit_test_env
 ):
     with pytest.raises(
         AgentInitializationError, match="The OpenAI chat model ID is required."
     ):
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1075,6 +1138,10 @@ async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_t
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_test_env):
+    with pytest.raises(AgentInitializationException, match="The OpenAI chat model ID is required."):
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         _ = await OpenAIAssistantAgent.retrieve(
             id="test_id",
             api_key="test_api_key",
@@ -1087,6 +1154,7 @@ async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_t
 @pytest.mark.asyncio
 async def test_retrieve_agent_missing_api_key_throws(kernel, openai_unit_test_env):
     with pytest.raises(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1119,12 +1187,15 @@ async def test_retrieve_agent_missing_api_key_throws(kernel, openai_unit_test_en
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         AgentInitializationError,
         match="The OpenAI API key is required, if a client is not provided.",
     ):
         _ = await OpenAIAssistantAgent.retrieve(
             id="test_id", kernel=kernel, env_file_path="test.env"
         )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1182,6 +1253,11 @@ async def test_retrieve_agent_missing_api_key_throws(kernel, openai_unit_test_en
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        AgentInitializationException, match="The OpenAI API key is required, if a client is not provided."
+    ):
+        _ = await OpenAIAssistantAgent.retrieve(id="test_id", kernel=kernel, env_file_path="test.env")
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 
 def test_open_ai_settings_create_throws(openai_unit_test_env):
@@ -1192,6 +1268,7 @@ def test_open_ai_settings_create_throws(openai_unit_test_env):
             "test", line_errors=[], input_type="python"
         )
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1234,10 +1311,13 @@ def test_open_ai_settings_create_throws(openai_unit_test_env):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         with pytest.raises(
             AgentInitializationError, match="Failed to create OpenAI settings."
         ):
         with pytest.raises(AgentInitializationException, match="Failed to create OpenAI settings."):
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1252,6 +1332,8 @@ def test_open_ai_settings_create_throws(openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             OpenAIAssistantAgent(
                 service_id="test",
                 api_key="test_api_key",
@@ -1262,6 +1344,7 @@ def test_open_ai_settings_create_throws(openai_unit_test_env):
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
 def test_azure_openai_agent_create_missing_chat_model_id_throws(openai_unit_test_env):
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1322,12 +1405,19 @@ def test_azure_openai_agent_create_missing_chat_model_id_throws(openai_unit_test
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    with pytest.raises(
+        AgentInitializationError, match="The OpenAI chat model ID is required."
+    ):
+    with pytest.raises(AgentInitializationException, match="The OpenAI chat model ID is required."):
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         OpenAIAssistantAgent(service_id="test_service", env_file_path="test.env")
 
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
 def test_azure_openai_agent_create_missing_api_key_throws(openai_unit_test_env):
     with pytest.raises(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1386,6 +1476,11 @@ def test_azure_openai_agent_create_missing_api_key_throws(openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        AgentInitializationError,
+        match="The OpenAI API key is required, if a client is not provided.",
+        AgentInitializationException, match="The OpenAI API key is required, if a client is not provided."
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     ):
         OpenAIAssistantAgent(env_file_path="test.env")
 
@@ -1468,6 +1563,7 @@ def test_create_open_ai_assistant_definition_with_json_metadata(
         "parallel_tool_calls_enabled": True,
         "truncation_message_count": 10,
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1499,3 +1595,6 @@ def test_create_open_ai_assistant_definition_with_json_metadata(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        mock_create_def.assert_called_once()
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75

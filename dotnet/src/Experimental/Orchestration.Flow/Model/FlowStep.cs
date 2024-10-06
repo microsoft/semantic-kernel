@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,10 +25,16 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 <<<<<<< HEAD
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
+=======
+<<<<<<< HEAD
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+=======
+>>>>>>> origin/main
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,12 +48,15 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 /// <summary>
 /// Step within a <see cref="Flow"/> which defines the step goal, available plugins, required and provided variables.
 /// </summary>
 public class FlowStep
 {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -78,6 +88,9 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
     private readonly List<string> _requires = [];
 
     private readonly List<string> _provides = [];
@@ -85,6 +98,7 @@ public class FlowStep
     private readonly List<string> _passthrough = [];
 
     private Dictionary<string, Type?> _pluginTypes = [];
+<<<<<<< head
 
     private Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
 <<<<<<< Updated upstream
@@ -126,12 +140,28 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+
+    private Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
+=======
+    private readonly List<string> _requires = new();
+
+    private readonly List<string> _provides = new();
+
+    private readonly List<string> _passthrough = new();
+
+    private Dictionary<string, Type?> _pluginTypes = new();
+
+    private Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FlowStep"/> class.
     /// </summary>
     /// <param name="goal">The goal of step</param>
     /// <param name="pluginsFactory">The factory to get plugins</param>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -165,6 +195,13 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+    public FlowStep(string goal, Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? pluginsFactory = null)
+=======
+    public FlowStep(string goal, Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? pluginsFactory = null)
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
     {
         this.Goal = goal;
         this._pluginsFactory = pluginsFactory;
@@ -220,6 +257,7 @@ public class FlowStep
         }
     }
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -235,11 +273,14 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
     private List<object> GetPlugins(Dictionary<object, string?> globalPlugins, Kernel kernel)
 =======
     private List<object> GetPlugins(Dictionary<object, string?> globalPlugins, IKernel kernel)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -253,11 +294,14 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     {
         return this._pluginTypes.Select(kvp =>
         {
             var pluginName = kvp.Key;
             var globalPlugin = globalPlugins.FirstOrDefault(_ => _.Key.GetType().Name.Contains(pluginName)).Key;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -276,11 +320,14 @@ public class FlowStep
 <<<<<<< main
             if (globalPlugin is not null)
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
             if (globalPlugin is not null)
 =======
             if (globalPlugin != null)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -295,11 +342,14 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
             {
                 return globalPlugin;
             }
 
             var type = kvp.Value;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -335,11 +385,15 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
             if (type is not null)
             {
                 try
                 {
                     return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, [kernel], null);
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -354,6 +408,8 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 =======
             if (type != null)
             {
@@ -361,6 +417,7 @@ public class FlowStep
                 {
                     return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new object[] { kernel }, null);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -375,6 +432,8 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
                 }
                 catch (MissingMethodException)
                 {
@@ -389,6 +448,7 @@ public class FlowStep
             }
 
             return null;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -407,11 +467,14 @@ public class FlowStep
 <<<<<<< main
         }).Where(plugin => plugin is not null).ToList()!;
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
         }).Where(plugin => plugin is not null).ToList()!;
 =======
         }).Where(plugin => plugin != null).ToList()!;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -426,10 +489,13 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     }
 
     private static Dictionary<string, Type?> GetPluginTypes(List<string>? value)
     {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -448,11 +514,14 @@ public class FlowStep
 <<<<<<< main
         Dictionary<string, Type?> plugins = [];
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
         Dictionary<string, Type?> plugins = [];
 =======
         Dictionary<string, Type?> plugins = new();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -467,6 +536,8 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
         if (value is not null)
         {
@@ -548,6 +619,7 @@ public class FlowStep
     /// <param name="kernel">The semantic kernel</param>
     /// <param name="globalPlugins">The global plugins available</param>
     /// <returns></returns>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -565,17 +637,23 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
     public IEnumerable<object> LoadPlugins(Kernel kernel, Dictionary<object, string?> globalPlugins)
     {
         if (this._pluginsFactory is not null)
+<<<<<<< head
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 =======
     public IEnumerable<object> LoadPlugins(IKernel kernel, Dictionary<object, string?> globalPlugins)
     {
         if (this._pluginsFactory != null)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -590,10 +668,13 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         {
             return this._pluginsFactory(kernel, globalPlugins);
         }
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -612,11 +693,14 @@ public class FlowStep
 <<<<<<< main
         return [];
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
         return [];
 =======
         return Enumerable.Empty<object>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -631,6 +715,8 @@ public class FlowStep
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     }
 
     /// <summary>

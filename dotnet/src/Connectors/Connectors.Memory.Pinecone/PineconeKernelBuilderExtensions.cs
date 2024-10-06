@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,12 +32,16 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Microsoft.SemanticKernel.Data;
 using Sdk = Pinecone;
 
 namespace Microsoft.SemanticKernel;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -53,10 +58,13 @@ namespace Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel.Data;
 using Sdk = Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -71,6 +79,8 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 /// <summary>
 /// Extension methods to register Pinecone <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
@@ -103,6 +113,7 @@ public static class PineconeKernelBuilderExtensions
         builder.Services.AddPineconeVectorStore(apiKey, options, serviceId);
         return builder;
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -119,6 +130,8 @@ public static class PineconeKernelBuilderExtensions
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Register a Pinecone <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the
@@ -163,6 +176,7 @@ public static class PineconeKernelBuilderExtensions
         builder.Services.AddPineconeVectorStoreRecordCollection<TRecord>(collectionName, apiKey, options, serviceId);
         return builder;
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -177,4 +191,6 @@ public static class PineconeKernelBuilderExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

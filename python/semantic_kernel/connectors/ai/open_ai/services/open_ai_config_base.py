@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,12 +22,15 @@ from copy import copy
 from collections.abc import Mapping
 from copy import copy
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< main
 from collections.abc import Mapping
 from copy import copy
 =======
 from typing import Dict, Mapping, Optional
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +45,8 @@ from typing import Dict, Mapping, Optional
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 from openai import AsyncOpenAI
 from pydantic import ConfigDict, Field, validate_call
@@ -71,6 +77,7 @@ class OpenAIConfigBase(OpenAIHandler):
     def __init__(
         self,
         ai_model_id: str = Field(min_length=1),
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -102,12 +109,16 @@ class OpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
         api_key: str | None = Field(min_length=1),
         ai_model_type: OpenAIModelTypes | None = OpenAIModelTypes.CHAT,
         org_id: str | None = None,
         service_id: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         client: AsyncOpenAI | None = None,
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -124,6 +135,8 @@ class OpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 =======
         api_key: Optional[str] = Field(min_length=1),
         ai_model_type: Optional[OpenAIModelTypes] = OpenAIModelTypes.CHAT,
@@ -132,6 +145,7 @@ class OpenAIConfigBase(OpenAIHandler):
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -146,6 +160,8 @@ class OpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     ) -> None:
         """Initialize a client for OpenAI services.
 
@@ -165,6 +181,7 @@ class OpenAIConfigBase(OpenAIHandler):
             default_headers (Mapping[str, str]): Default headers
                 for HTTP requests. (Optional)
             client (AsyncOpenAI): An existing OpenAI client, optional.
+<<<<<<< head
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -221,6 +238,9 @@ class OpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+
+>>>>>>> origin/main
         """
         # Merge APP_INFO into the headers if it exists
         merged_headers = dict(copy(default_headers)) if default_headers else {}
@@ -238,6 +258,7 @@ class OpenAIConfigBase(OpenAIHandler):
             )
         args = {
             "ai_model_id": ai_model_id,
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -253,11 +274,14 @@ class OpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 <<<<<<< main
             "client": client,
 =======
             "client": async_client,
 >>>>>>> ms/small_fixes
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -271,12 +295,15 @@ class OpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
             "ai_model_type": ai_model_type,
         }
         if service_id:
             args["service_id"] = service_id
         super().__init__(**args)
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -293,6 +320,8 @@ class OpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 <<<<<<< main
     def to_dict(self) -> dict[str, str]:
         """Create a dict of the service settings."""
@@ -302,6 +331,7 @@ class OpenAIConfigBase(OpenAIHandler):
         Create a dict of the service settings.
         """
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -316,6 +346,8 @@ class OpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         client_settings = {
             "api_key": self.client.api_key,
             "default_headers": {

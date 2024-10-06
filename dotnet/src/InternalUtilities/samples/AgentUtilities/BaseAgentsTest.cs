@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,10 @@ using System.ClientModel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+
+using System.ClientModel;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Microsoft.SemanticKernel;
@@ -68,6 +73,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
     protected OpenAIClientProvider GetClientProvider()
         =>
             this.UseOpenAIConfig ?
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -104,6 +110,10 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey)) :
+                OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Common method to write formatted agent chat content to the console.
@@ -144,6 +154,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -177,6 +188,9 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    protected async Task DownloadResponseContentAsync(OpenAIFileClient client, ChatMessageContent message)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     {
         foreach (KernelContent item in message.Items)
         {
@@ -187,6 +201,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -220,6 +235,9 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    protected async Task DownloadResponseImageAsync(OpenAIFileClient client, ChatMessageContent message)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     {
         foreach (KernelContent item in message.Items)
         {
@@ -230,6 +248,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -269,10 +288,13 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private async Task DownloadFileContentAsync(OpenAIFileClient client, string fileId, bool launchViewer = false)
     {
         OpenAIFile fileInfo = client.GetFile(fileId);
         if (fileInfo.Purpose == FilePurpose.AssistantsOutput)
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -287,6 +309,8 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         {
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(fileInfo.Filename));
             if (launchViewer)
@@ -303,6 +327,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
                 Process.Start(
                     new ProcessStartInfo
                     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -339,6 +364,10 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                        FileName = filePath,
+                        UseShellExecute = true
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                     });
             }
         }

@@ -13,6 +13,7 @@ from openai.types.beta.threads.image_file_content_block import ImageFileContentB
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -33,10 +34,13 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -51,6 +55,8 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
@@ -174,6 +180,7 @@ async def test_invoke_agent():
 
 
 @pytest.mark.asyncio
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -190,6 +197,8 @@ async def test_invoke_agent():
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_invoke_agent_invalid_instance_throws():
     from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
@@ -248,6 +257,7 @@ async def test_invoke_streaming_agent_invalid_instance_throws():
 
 
 @pytest.mark.asyncio
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -262,6 +272,8 @@ async def test_invoke_streaming_agent_invalid_instance_throws():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_invoke_agent_deleted():
     from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
@@ -277,6 +289,7 @@ async def test_invoke_agent_deleted():
 
 
 @pytest.mark.asyncio
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -293,6 +306,8 @@ async def test_invoke_agent_deleted():
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_invoke_streaming_agent_deleted():
     from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
@@ -308,6 +323,7 @@ async def test_invoke_streaming_agent_deleted():
 
 
 @pytest.mark.asyncio
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -322,6 +338,8 @@ async def test_invoke_streaming_agent_deleted():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_invoke_agent_wrong_type():
     from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
@@ -429,6 +447,7 @@ async def test_reset_channel_error_throws_exception(mock_thread_messages, mock_a
 
     with pytest.raises(Exception, match="Test error"):
         await channel.reset()
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -445,6 +464,8 @@ async def test_reset_channel_error_throws_exception(mock_thread_messages, mock_a
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 
 @pytest.mark.asyncio
@@ -458,6 +479,7 @@ async def test_channel_receive_fcc_skipped(openai_unit_test_env):
     channel = OpenAIAssistantChannel(client=client, thread_id="test_thread")
 
     await channel.receive([message])
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -472,3 +494,5 @@ async def test_channel_receive_fcc_skipped(openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75

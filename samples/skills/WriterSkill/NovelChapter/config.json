@@ -1,8 +1,6 @@
 {
-  "schema": 1,
-  "type": "completion",
   "description": "Write a chapter of a novel.",
-  "completion": {
+  "default_settings": {
     "max_tokens": 2048,
     "temperature": 0.3,
     "top_p": 0.0,

@@ -3,6 +3,7 @@
 
 import pytest
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,11 +35,15 @@ import pytest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
 from semantic_kernel.kernel import Kernel
 
 
 @pytest.fixture(scope="function")
 def setup_tldr_function_for_oai_models(kernel: Kernel):
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,6 +60,8 @@ def setup_tldr_function_for_oai_models(kernel: Kernel):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 =======
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -68,6 +75,7 @@ def setup_tldr_function_for_oai_models(create_kernel):
     kernel = create_kernel
 
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,6 +90,8 @@ def setup_tldr_function_for_oai_models(create_kernel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     # Define semantic function using SK prompt template language
     prompt = """
     {{$input}}
@@ -109,6 +119,7 @@ def setup_tldr_function_for_oai_models(create_kernel):
 
 
 @pytest.fixture(scope="function")
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -127,12 +138,15 @@ def setup_summarize_conversation_using_plugin(kernel: Kernel):
 <<<<<<< main
 def setup_summarize_conversation_using_plugin(kernel: Kernel):
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< main
 def setup_summarize_conversation_using_plugin(kernel: Kernel):
 =======
 def setup_summarize_conversation_using_plugin(create_kernel):
     kernel = create_kernel
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -147,6 +161,8 @@ def setup_summarize_conversation_using_plugin(create_kernel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     ChatTranscript = """John: Hello, how are you?
         Jane: I'm fine, thanks. How are you?
         John: I'm doing well, writing some example code.
@@ -186,6 +202,7 @@ def setup_summarize_conversation_using_plugin(create_kernel):
         John: Yeah, that's a good idea."""
 
     yield kernel, ChatTranscript
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -202,6 +219,8 @@ def setup_summarize_conversation_using_plugin(create_kernel):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< main
 =======
 
@@ -231,6 +250,7 @@ def setup_gp_text_completion_function(create_kernel, get_gp_config):
 
     yield kernel, text2text_function, simple_input
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -245,3 +265,5 @@ def setup_gp_text_completion_function(create_kernel, get_gp_config):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main

@@ -28,6 +28,7 @@ class PromptExecutionSettings(KernelBaseModel):
         extension_data (Dict[str, Any]): Any additional data to send with the request.
         function_choice_behavior (FunctionChoiceBehavior | None): The function choice behavior settings.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -44,11 +45,14 @@ class PromptExecutionSettings(KernelBaseModel):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     Parameters:
         service_id (str): The service ID to use for the request.
         extension_data (Dict[str, Any], optional): Any additional data to send with the request. Defaults to None.
         kwargs (Any): Additional keyword arguments,
             these are attempted to parse into the keys of the specific prompt execution settings.
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -63,6 +67,8 @@ class PromptExecutionSettings(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     Methods:
         prepare_settings_dict: Prepares the settings as a dictionary for sending to the AI service.
         update_from_prompt_execution_settings: Update the keys from another prompt execution settings object.
@@ -135,6 +141,7 @@ class PromptExecutionSettings(KernelBaseModel):
             exclude={
                 "service_id",
                 "extension_data",
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -166,6 +173,9 @@ class PromptExecutionSettings(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                "structured_json_response",
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             },
             exclude_none=True,
             by_alias=True,

@@ -74,6 +74,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
         chat.Add(message);
         this.WriteAgentChatMessage(message);
 <<<<<<< main
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -105,6 +106,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         StringBuilder builder = new();
 =======
@@ -113,6 +117,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 
         bool isFirst = false;
 >>>>>>> upstream/main
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -130,9 +135,12 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 
         StringBuilder builder = new();
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -147,6 +155,8 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(chat))
         {
             if (string.IsNullOrEmpty(response.Content))
@@ -157,6 +167,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             if (!isFirst)
             {
 <<<<<<< main
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -188,6 +199,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 Console.WriteLine($"# {response.Role} - {response.AuthorName ?? "*"}:");
             }
 
@@ -199,6 +213,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             }
 
             Console.WriteLine($"\t > streamed: '{response.Content}'");
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -216,12 +231,15 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
                 Console.WriteLine($"# {response.Role} - {response.AuthorName ?? "*"}:");
             }
 
             Console.WriteLine($"\t > streamed: '{response.Content}'");
             builder.Append(response.Content);
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -236,6 +254,8 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         if (historyCount <= chat.Count)
@@ -262,6 +282,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             ChatMessageContent response = new(AuthorRole.Assistant, builder.ToString()) { AuthorName = agent.Name };
             chat.Add(response);
             this.WriteAgentChatMessage(response);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -284,12 +305,15 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             this.WriteAgentChatMessage(message);
 >>>>>>> upstream/main
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 =======
             this.WriteAgentChatMessage(message);
 >>>>>>> upstream/main
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -304,6 +328,8 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
     }
 

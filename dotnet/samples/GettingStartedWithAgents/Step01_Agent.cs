@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,6 +38,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 // Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -44,6 +47,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
 6d73513a859ab2d05e01db3bc1d405827799e34b
 using Resources;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -58,6 +62,8 @@ using Resources;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 namespace GettingStarted;
 
@@ -73,6 +79,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
     [Fact]
     public async Task UseSingleChatCompletionAgentAsync()
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,11 +96,14 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Kernel kernel = this.CreateKernelWithChatCompletion();
 
  6d73513a859ab2d05e01db3bc1d405827799e34b
         Kernel kernel = this.CreateKernelWithChatCompletion();
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -108,6 +118,8 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         // Define the agent
         ChatCompletionAgent agent =
             new()
@@ -140,6 +152,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
             }
         }
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -156,6 +169,8 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     [Fact]
     public async Task UseTemplateForChatCompletionAgentAsync()
@@ -202,6 +217,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
         }
     }
  6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -216,4 +232,6 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,10 +21,13 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Linq;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 // Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +42,8 @@ using System.Text.Json;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Threading;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -74,6 +80,7 @@ internal class MockAgent : ChatHistoryKernelAgent
         this.InvokeCount++;
         return this.Response.Select(m => new StreamingChatMessageContent(m.Role, m.Content)).ToAsyncEnumerable();
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -90,6 +97,8 @@ internal class MockAgent : ChatHistoryKernelAgent
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <inheritdoc/>
     protected internal override IEnumerable<string> GetChannelKeys()
@@ -120,6 +129,7 @@ internal class MockAgent : ChatHistoryKernelAgent
     {
         return base.MergeArguments(arguments);
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -134,4 +144,6 @@ internal class MockAgent : ChatHistoryKernelAgent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

@@ -14,6 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 /// </summary>
 public class RedisVectorStoreCollectionCreateMappingTests
 {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -30,10 +31,13 @@ public class RedisVectorStoreCollectionCreateMappingTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 <<<<<<< HEAD
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -48,10 +52,13 @@ public class RedisVectorStoreCollectionCreateMappingTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void MapToSchemaCreatesSchema(bool useDollarPrefix)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -68,6 +75,8 @@ public class RedisVectorStoreCollectionCreateMappingTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 =======
     [Fact]
@@ -75,6 +84,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,6 +99,8 @@ public class RedisVectorStoreCollectionCreateMappingTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     {
         // Arrange.
         var properties = new VectorStoreRecordProperty[]
@@ -123,6 +135,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
         };
 
         // Act.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -141,6 +154,8 @@ public class RedisVectorStoreCollectionCreateMappingTests
 <<<<<<< HEAD
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames, useDollarPrefix);
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 <<<<<<< HEAD
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames, useDollarPrefix);
@@ -150,6 +165,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
 =======
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames, useDollarPrefix);
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -164,6 +180,8 @@ public class RedisVectorStoreCollectionCreateMappingTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Assert.
         Assert.NotNull(schema);
@@ -178,6 +196,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
         Assert.IsType<VectorField>(schema.Fields[6]);
         Assert.IsType<VectorField>(schema.Fields[7]);
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -194,10 +213,13 @@ public class RedisVectorStoreCollectionCreateMappingTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 <<<<<<< HEAD
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -212,6 +234,8 @@ public class RedisVectorStoreCollectionCreateMappingTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         if (useDollarPrefix)
         {
             VerifyFieldName(schema.Fields[0].FieldName, new List<object> { "$.FilterableString", "AS", "FilterableString" });
@@ -231,6 +255,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
             VerifyFieldName(schema.Fields[1].FieldName, new List<object> { "FullTextSearchableString", "AS", "FullTextSearchableString" });
             VerifyFieldName(schema.Fields[2].FieldName, new List<object> { "FilterableStringEnumerable.*", "AS", "FilterableStringEnumerable" });
             VerifyFieldName(schema.Fields[3].FieldName, new List<object> { "FullTextSearchableStringEnumerable", "AS", "FullTextSearchableStringEnumerable" });
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -261,6 +286,9 @@ public class RedisVectorStoreCollectionCreateMappingTests
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
             VerifyFieldName(schema.Fields[4].FieldName, new List<object> { "FilterableInt", "AS", "FilterableInt" });
             VerifyFieldName(schema.Fields[5].FieldName, new List<object> { "FilterableNullableInt", "AS", "FilterableNullableInt" });
@@ -268,6 +296,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
             VerifyFieldName(schema.Fields[6].FieldName, new List<object> { "VectorDefaultIndexingOptions", "AS", "VectorDefaultIndexingOptions" });
             VerifyFieldName(schema.Fields[7].FieldName, new List<object> { "vector_specific_indexing_options", "AS", "vector_specific_indexing_options" });
         }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -282,6 +311,8 @@ public class RedisVectorStoreCollectionCreateMappingTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
         VerifyFieldName(schema.Fields[0].FieldName, new List<object> { "$.FilterableString", "AS", "FilterableString" });
         VerifyFieldName(schema.Fields[1].FieldName, new List<object> { "$.FullTextSearchableString", "AS", "FullTextSearchableString" });
@@ -289,16 +320,22 @@ public class RedisVectorStoreCollectionCreateMappingTests
         VerifyFieldName(schema.Fields[3].FieldName, new List<object> { "$.FullTextSearchableStringEnumerable", "AS", "FullTextSearchableStringEnumerable" });
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
             VerifyFieldName(schema.Fields[4].FieldName, new List<object> { "FilterableInt", "AS", "FilterableInt" });
             VerifyFieldName(schema.Fields[5].FieldName, new List<object> { "FilterableNullableInt", "AS", "FilterableNullableInt" });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             VerifyFieldName(schema.Fields[6].FieldName, new List<object> { "VectorDefaultIndexingOptions", "AS", "VectorDefaultIndexingOptions" });
             VerifyFieldName(schema.Fields[7].FieldName, new List<object> { "vector_specific_indexing_options", "AS", "vector_specific_indexing_options" });
         }
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
         VerifyFieldName(schema.Fields[6].FieldName, new List<object> { "$.VectorDefaultIndexingOptions", "AS", "VectorDefaultIndexingOptions" });
         VerifyFieldName(schema.Fields[7].FieldName, new List<object> { "$.vector_specific_indexing_options", "AS", "vector_specific_indexing_options" });
@@ -308,6 +345,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
             VerifyFieldName(schema.Fields[7].FieldName, new List<object> { "vector_specific_indexing_options", "AS", "vector_specific_indexing_options" });
         }
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -322,6 +360,8 @@ public class RedisVectorStoreCollectionCreateMappingTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         Assert.Equal("10", ((VectorField)schema.Fields[6]).Attributes!["DIM"]);
         Assert.Equal("FLOAT32", ((VectorField)schema.Fields[6]).Attributes!["TYPE"]);
@@ -342,6 +382,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
         var storagePropertyNames = new Dictionary<string, string>() { { "VectorProperty", "VectorProperty" } };
 
         // Act and assert.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -360,6 +401,8 @@ public class RedisVectorStoreCollectionCreateMappingTests
 <<<<<<< HEAD
         Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames, true));
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 <<<<<<< HEAD
         Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames, true));
@@ -369,6 +412,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
 =======
         Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames, true));
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -383,6 +427,8 @@ public class RedisVectorStoreCollectionCreateMappingTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     [Fact]

@@ -34,6 +34,7 @@ They can then be run by:
 
 # Configuration
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -191,6 +192,8 @@ They can then be run by:
 
 # Configuration
 
+=======
+>>>>>>> origin/main
 <<<<<<< AI
 =======
 <<<<<<< HEAD
@@ -227,6 +230,7 @@ OR
 
 ## Client Settings
 <<<<<<< AI
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -261,11 +265,14 @@ The samples search for the client settings in the following order:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 The samples search for the client settings in the following order:
 The tests search for the client settings in the following order:
 =======
 <<<<<<< HEAD
 The samples search for the client settings in the following order:
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -286,6 +293,8 @@ The samples search for the client settings in the following order:
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 =======
 The tests search for the client settings in the following order:
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
@@ -304,6 +313,7 @@ You can set the location of a properties file, by setting the `CONF_PROPERTIES` 
 ```shell
 CONF_PROPERTIES=my.properties \
 <<<<<<< AI
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -319,50 +329,56 @@ CONF_PROPERTIES=my.properties \
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
+=======
+>>>>>>> origin/main
+OPENAI_CLIENT_TYPE=OPEN_AI \
+OPENAI_CLIENT_TYPE=OPENAI \
+=======
+<<<<<<< HEAD
+<<<<<<< head
+OPENAI_CLIENT_TYPE=OPEN_AI \
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 OPENAI_CLIENT_TYPE=OPEN_AI \
 OPENAI_CLIENT_TYPE=OPENAI \
 =======
 <<<<<<< HEAD
 OPENAI_CLIENT_TYPE=OPEN_AI \
-=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+>>>>>>> origin/main
 >>>>>>> Stashed changes
+=======
 OPENAI_CLIENT_TYPE=OPEN_AI \
-OPENAI_CLIENT_TYPE=OPENAI \
-=======
-<<<<<<< HEAD
-OPENAI_CLIENT_TYPE=OPEN_AI \
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
 >>>>>>> origin/main
->>>>>>> Stashed changes
-=======
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
->>>>>>> origin/main
->>>>>>> Stashed changes
 =======
 OPENAI_CLIENT_TYPE=OPENAI \
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f

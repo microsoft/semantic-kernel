@@ -34,6 +34,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
     }
 
     [Fact]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -50,6 +51,8 @@ public sealed class GeminiChatGenerationTests : IDisposable
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public async Task ShouldReturnEmptyMessageContentAndNullMetadataIfEmptyJsonInResponseAsync()
     {
         // Arrange
@@ -68,6 +71,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
     }
 
     [Fact]
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,6 +86,8 @@ public sealed class GeminiChatGenerationTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public async Task ShouldReturnEmptyMessageContentIfNoContentInResponseAsync()
     {
         // Arrange
@@ -465,6 +471,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
         using var httpClient = new HttpClient(multipleMessageHandlerStub, false);
 
         var client = new GeminiChatCompletionClient(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -506,12 +513,15 @@ public sealed class GeminiChatGenerationTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             httpClient: httpClient,
             modelId: "fake-model",
             apiVersion: VertexAIVersion.V1,
             bearerTokenProvider: () => bearerTokenGenerator.GetBearerToken(),
             location: "fake-location",
             projectId: "fake-project-id");
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -526,6 +536,8 @@ public sealed class GeminiChatGenerationTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         var chatHistory = CreateSampleChatHistory();
 

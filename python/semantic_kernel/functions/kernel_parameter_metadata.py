@@ -6,6 +6,7 @@ from pydantic import Field, model_validator
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -22,12 +23,15 @@ from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBu
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 from typing import Any, Optional
 
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,6 +46,8 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.utils.validation import FUNCTION_PARAM_NAME_REGEX
 
 
@@ -55,6 +61,7 @@ class KernelParameterMetadata(KernelBaseModel):
     is_required: bool | None = False
     type_object: Any | None = None
     schema_data: dict[str, Any] | None = None
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -88,6 +95,9 @@ class KernelParameterMetadata(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    include_in_function_choices: bool = True
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     @model_validator(mode="before")
     @classmethod
@@ -107,6 +117,7 @@ class KernelParameterMetadata(KernelBaseModel):
     @classmethod
     def infer_schema(
         cls,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -138,10 +149,14 @@ class KernelParameterMetadata(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         type_object: type | None,
         parameter_type: str | None,
         default_value: Any,
         description: str | None,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -158,11 +173,14 @@ class KernelParameterMetadata(KernelBaseModel):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         type_object: type | None = None,
         parameter_type: str | None = None,
         default_value: Any | None = None,
         description: str | None = None,
         structured_output: bool = False,
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -177,11 +195,14 @@ class KernelParameterMetadata(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     ) -> dict[str, Any] | None:
         """Infer the schema for the parameter metadata."""
         schema = None
 
         if type_object is not None:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -215,6 +236,9 @@ class KernelParameterMetadata(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            schema = KernelJsonSchemaBuilder.build(type_object, description, structured_output)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         elif parameter_type is not None:
             string_default = str(default_value) if default_value is not None else None
             if string_default and string_default.strip():
@@ -229,6 +253,7 @@ class KernelParameterMetadata(KernelBaseModel):
                 parameter_type, description
             )
         return schema
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -246,6 +271,8 @@ class KernelParameterMetadata(KernelBaseModel):
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
     name: str = Field(..., pattern=FUNCTION_PARAM_NAME_REGEX)
     description: str
     default_value: Any
@@ -254,6 +281,7 @@ class KernelParameterMetadata(KernelBaseModel):
     # expose is used to distinguish between parameters that should be exposed to tool calling and those that should not
     expose: Optional[bool] = Field(default=False, exclude=True)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -268,3 +296,5 @@ class KernelParameterMetadata(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75

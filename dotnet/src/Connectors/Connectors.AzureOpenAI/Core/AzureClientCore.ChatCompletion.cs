@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,10 +38,13 @@ using Azure.AI.OpenAI;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
 using Azure.AI.OpenAI.Chat;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,6 +59,8 @@ using Azure.AI.OpenAI.Chat;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -91,6 +97,7 @@ internal partial class AzureClientCore
 
         var options = new ChatCompletionOptions
         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -124,6 +131,9 @@ internal partial class AzureClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            MaxOutputTokenCount = executionSettings.MaxTokens,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             Temperature = (float?)executionSettings.Temperature,
             TopP = (float?)executionSettings.TopP,
             FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
@@ -132,6 +142,7 @@ internal partial class AzureClientCore
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -150,6 +161,9 @@ internal partial class AzureClientCore
 =======
 <<<<<<< HEAD
 >>>>>>> main
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -161,6 +175,7 @@ internal partial class AzureClientCore
         if (toolCallingConfig.Choice is not null)
         {
             options.ToolChoice = toolCallingConfig.Choice;
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
             ResponseFormat = GetResponseFormat(azureSettings) ?? ChatResponseFormat.Text,
@@ -179,11 +194,17 @@ internal partial class AzureClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            ResponseFormat = GetResponseFormat(azureSettings) ?? ChatResponseFormat.Text,
+            ToolChoice = toolCallingConfig.Choice
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
         if (responseFormat is not null)
         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -198,10 +219,13 @@ internal partial class AzureClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             options.AddDataSource(azureSettings.AzureChatDataSource);
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -215,12 +239,15 @@ internal partial class AzureClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             options.ResponseFormat = responseFormat;
         }
 
         if (toolCallingConfig.Choice is not null)
         {
             options.ToolChoice = toolCallingConfig.Choice;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -241,6 +268,8 @@ internal partial class AzureClientCore
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         if (toolCallingConfig.Tools is { Count: > 0 } tools)
@@ -248,6 +277,7 @@ internal partial class AzureClientCore
             options.Tools.AddRange(tools);
         }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -279,6 +309,9 @@ internal partial class AzureClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         if (azureSettings.AzureChatDataSource is not null)
         {
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -286,6 +319,7 @@ internal partial class AzureClientCore
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -318,6 +352,10 @@ internal partial class AzureClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> ms/prevent-null-assignment
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         if (executionSettings.TokenSelectionBiases is not null)
         {
             foreach (var keyValue in executionSettings.TokenSelectionBiases)

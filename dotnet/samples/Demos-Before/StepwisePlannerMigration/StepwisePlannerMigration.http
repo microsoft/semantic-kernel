@@ -1,0 +1,61 @@
+@StepwisePlannerMigration_HostAddress = http://localhost:5257
+
+POST {{StepwisePlannerMigration_HostAddress}}/stepwise-planner/generate-plan
+Accept: application/json
+Content-Type: application/json
+
+{
+    "goal": "Check current UTC time and return current weather in Boston city."
+}
+
+###
+
+POST {{StepwisePlannerMigration_HostAddress}}/stepwise-planner/execute-new-plan
+Accept: application/json
+Content-Type: application/json
+
+{
+    "goal": "Check current UTC time and return current weather in Boston city."
+}
+
+###
+
+POST {{StepwisePlannerMigration_HostAddress}}/stepwise-planner/execute-existing-plan
+Accept: application/json
+Content-Type: application/json
+
+{
+    "goal": "Check current UTC time and return current weather in Boston city."
+}
+
+###
+
+POST {{StepwisePlannerMigration_HostAddress}}/auto-function-calling/generate-plan
+Accept: application/json
+Content-Type: application/json
+
+{
+    "goal": "Check current UTC time and return current weather in Boston city."
+}
+
+###
+
+POST {{StepwisePlannerMigration_HostAddress}}/auto-function-calling/execute-new-plan
+Accept: application/json
+Content-Type: application/json
+
+{
+    "goal": "Check current UTC time and return current weather in Boston city."
+}
+
+###
+
+POST {{StepwisePlannerMigration_HostAddress}}/auto-function-calling/execute-existing-plan
+Accept: application/json
+Content-Type: application/json
+
+{
+    "goal": "Check current UTC time and return current weather in Boston city."
+}
+
+###

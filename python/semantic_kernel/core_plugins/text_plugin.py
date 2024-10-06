@@ -15,6 +15,7 @@ class TextPlugin(KernelBaseModel):
         {{text.trim $input}} => "hello world"
 
         KernelArguments["input"] = "  hello world  "
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -46,10 +47,14 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         {{text.trimStart $input}} => "hello world  "
 
         KernelArguments["input"] = "  hello world  "
         {{text.trimEnd $input}} => "  hello world"
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -67,11 +72,14 @@ class TextPlugin(KernelBaseModel):
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
         {{text.trimStart $input} => "hello world  "
 
         KernelArguments["input"] = "  hello world  "
         {{text.trimEnd $input} => "  hello world"
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -86,6 +94,8 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         KernelArguments["input"] = "hello world"
         {{text.uppercase $input}} => "HELLO WORLD"
@@ -96,6 +106,7 @@ class TextPlugin(KernelBaseModel):
 
     @kernel_function(description="Trim whitespace from the start and end of a string.")
     def trim(self, input: str) -> str:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -114,12 +125,15 @@ class TextPlugin(KernelBaseModel):
 <<<<<<< HEAD
         """Trim whitespace from the start and end of a string.
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
         """Trim whitespace from the start and end of a string.
 =======
         """
         Trim whitespace from the start and end of a string.
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -134,6 +148,8 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         Example:
             KernelArguments["input"] = "  hello world  "
@@ -143,6 +159,7 @@ class TextPlugin(KernelBaseModel):
 
     @kernel_function(description="Trim whitespace from the start of a string.")
     def trim_start(self, input: str) -> str:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -165,6 +182,8 @@ class TextPlugin(KernelBaseModel):
 
         Example:
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
         """Trim whitespace from the start of a string.
 
@@ -175,6 +194,7 @@ class TextPlugin(KernelBaseModel):
 
          Example:
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -189,6 +209,8 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
              KernelArguments["input"] = "  hello world  "
              {{input.trim $input}} => "hello world  "
         """
@@ -196,6 +218,7 @@ class TextPlugin(KernelBaseModel):
 
     @kernel_function(description="Trim whitespace from the end of a string.")
     def trim_end(self, input: str) -> str:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -218,6 +241,8 @@ class TextPlugin(KernelBaseModel):
 
         Example:
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
         """Trim whitespace from the end of a string.
 
@@ -228,6 +253,7 @@ class TextPlugin(KernelBaseModel):
 
          Example:
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -242,6 +268,8 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
              KernelArguments["input"] = "  hello world  "
              {{input.trim $input}} => "  hello world"
         """
@@ -249,6 +277,7 @@ class TextPlugin(KernelBaseModel):
 
     @kernel_function(description="Convert a string to uppercase.")
     def uppercase(self, input: str) -> str:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -267,12 +296,15 @@ class TextPlugin(KernelBaseModel):
 <<<<<<< HEAD
         """Convert a string to uppercase.
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
         """Convert a string to uppercase.
 =======
         """
         Convert a string to uppercase.
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -287,6 +319,8 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         Example:
             KernelArguments["input"] = "hello world"
@@ -296,6 +330,7 @@ class TextPlugin(KernelBaseModel):
 
     @kernel_function(description="Convert a string to lowercase.")
     def lowercase(self, input: str) -> str:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -318,6 +353,8 @@ class TextPlugin(KernelBaseModel):
 
         Example:
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
         """Convert a string to lowercase.
 
@@ -328,6 +365,7 @@ class TextPlugin(KernelBaseModel):
 
          Example:
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -342,6 +380,8 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
              KernelArguments["input"] = "HELLO WORLD"
              {{input.lowercase $input}} => "hello world"
         """

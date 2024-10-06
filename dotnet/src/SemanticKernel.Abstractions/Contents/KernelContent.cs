@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Base class for all AI non-streaming results
 /// </summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,12 +43,16 @@ namespace Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: nameof(TextContent))]
 [JsonDerivedType(typeof(ImageContent), typeDiscriminator: nameof(ImageContent))]
 [JsonDerivedType(typeof(FunctionCallContent), typeDiscriminator: nameof(FunctionCallContent))]
 [JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: nameof(FunctionResultContent))]
 [JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
 [JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -79,6 +84,9 @@ namespace Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+[JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 #pragma warning disable SKEXP0110
 [JsonDerivedType(typeof(AnnotationContent), typeDiscriminator: nameof(AnnotationContent))]
 [JsonDerivedType(typeof(FileReferenceContent), typeDiscriminator: nameof(FileReferenceContent))]

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,6 +33,9 @@ using System.ClientModel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using System.ClientModel;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
@@ -71,6 +75,7 @@ public class KernelBuilderExtensionsTests
         var sut = Kernel.CreateBuilder();
 
         // Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -104,6 +109,9 @@ public class KernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient(new ApiKeyCredential("key")))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             .Build()
             .GetRequiredService<ITextEmbeddingGenerationService>();
 
@@ -163,6 +171,7 @@ public class KernelBuilderExtensionsTests
         var sut = Kernel.CreateBuilder();
 
         // Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -196,6 +205,9 @@ public class KernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var service = sut.AddOpenAIAudioToText("model", new OpenAIClient(new ApiKeyCredential("key")))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             .Build()
             .GetRequiredService<IAudioToTextService>();
 
@@ -224,6 +236,7 @@ public class KernelBuilderExtensionsTests
     public void KernelBuilderAddOpenAIChatCompletionAddsValidService(InitializationType type)
     {
         // Arrange
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -257,6 +270,9 @@ public class KernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var client = new OpenAIClient(new ApiKeyCredential("key"));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(client);

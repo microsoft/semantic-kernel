@@ -2,15 +2,20 @@
 
 using System;
 using System.Linq;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
+<<<<<<< head
 =======
 >>>>>>> Stashed changes
 =======
@@ -24,6 +29,8 @@ using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
+=======
+>>>>>>> origin/main
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
@@ -31,6 +38,7 @@ using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -44,6 +52,8 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 /// <summary>
 /// The flow validator
@@ -99,6 +109,7 @@ public class FlowValidator : IFlowValidator
     {
         var steps = flow.Steps
             .Select(step => step as ReferenceFlowStep)
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -117,11 +128,14 @@ public class FlowValidator : IFlowValidator
 <<<<<<< main
             .Where(step => step is not null);
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
             .Where(step => step is not null);
 =======
             .Where(step => step != null);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -136,6 +150,8 @@ public class FlowValidator : IFlowValidator
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
         foreach (var step in steps)
         {

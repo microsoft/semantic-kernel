@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.planner.actionplanner;
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15,6 +16,8 @@ package com.microsoft.semantickernel.planner.actionplanner;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +29,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@ import org.slf4j.LoggerFactory;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
@@ -52,6 +58,7 @@ import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -80,6 +87,9 @@ import org.slf4j.LoggerFactory;
 =======
 
 >>>>>>> Stashed changes
+=======
+
+>>>>>>> origin/main
 import reactor.core.publisher.Mono;
 
 /// <summary>
@@ -111,6 +121,7 @@ public class ActionPlanner {
     // means that the code needs to be modified to enable the injection of a skill store, likely for
     // dependency injection or other design considerations.
     TODO: allow to inject skill store
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -127,6 +138,8 @@ public class ActionPlanner {
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
     // TODO: allow to inject skill store
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -206,6 +219,7 @@ public class ActionPlanner {
     private Plan parsePlan(String goal, SKContext result) {
         ActionPlanResponse planData;
         // Clean up the plan, removing any prompt and the stop sequence
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -239,6 +253,11 @@ public class ActionPlanner {
 
         String plan = (String)result.getResult();
 >>>>>>> Stashed changes
+=======
+        Matcher matcher = CLEAN_PLAN.matcher((String)result.getResult());
+
+        String plan = (String)result.getResult();
+>>>>>>> origin/main
         if (matcher.matches()) {
             plan = matcher.group(1);
         }

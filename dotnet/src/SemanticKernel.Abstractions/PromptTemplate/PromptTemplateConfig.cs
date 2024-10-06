@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +39,9 @@ using System.Text.Json.Serialization.Metadata;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using System.Text.Json.Serialization.Metadata;
+>>>>>>> origin/main
 
 namespace Microsoft.SemanticKernel;
 
@@ -66,6 +70,7 @@ public sealed class PromptTemplateConfig
     /// <summary>Lazily-initialized execution settings. The key is the service ID, or <see cref="PromptExecutionSettings.DefaultServiceId"/> for the default execution settings.</summary>
     private Dictionary<string, PromptExecutionSettings>? _executionSettings;
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -86,6 +91,8 @@ public sealed class PromptTemplateConfig
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
     /// </summary>
@@ -93,6 +100,7 @@ public sealed class PromptTemplateConfig
     {
     }
 
+<<<<<<< head
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class using the specified prompt template string.
     /// </summary>
@@ -159,6 +167,50 @@ public sealed class PromptTemplateConfig
     /// <summary>
     /// Gets or sets the function name to use by default when creating prompt functions using this configuration.
     /// </summary>
+=======
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class using the specified prompt template string.
+    /// </summary>
+    /// <param name="template">The prompt template string that defines the prompt.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="template"/> is null.</exception>
+    public PromptTemplateConfig(string template)
+    {
+        this.Template = template;
+    }
+
+    /// <summary>
+    /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
+    /// </summary>
+    /// <param name="json">A string containing a JSON representation of the <see cref="PromptTemplateConfig"/>.</param>
+    /// <returns>The deserialized <see cref="PromptTemplateConfig"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="json"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is an invalid JSON representation of a <see cref="PromptTemplateConfig"/>.</exception>
+    [RequiresUnreferencedCode("Uses reflection to deserialize the prompt template config from JSON, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to deserialize the prompt template config from JSON, making it incompatible with AOT scenarios.")]
+    public static PromptTemplateConfig FromJson(string json)
+    {
+        return FromJsonInternal(json, jsonSerializerOptions: null);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
+    /// </summary>
+    /// <param name="json">A string containing a JSON representation of the <see cref="PromptTemplateConfig"/>.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to deserialize the prompt template config from JSON.</param>
+    /// <returns>The deserialized <see cref="PromptTemplateConfig"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="json"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is an invalid JSON representation of a <see cref="PromptTemplateConfig"/>.</exception>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT safe.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
+    public static PromptTemplateConfig FromJson(string json, JsonSerializerOptions jsonSerializerOptions)
+    {
+        return FromJsonInternal(json, jsonSerializerOptions);
+    }
+
+    /// <summary>
+    /// Gets or sets the function name to use by default when creating prompt functions using this configuration.
+    /// </summary>
+>>>>>>> origin/main
     /// <remarks>
     /// If the name is null or empty, a random name will be generated dynamically when creating a function.
     /// </remarks>
@@ -255,6 +307,7 @@ public sealed class PromptTemplateConfig
             this._executionSettings = value;
         }
     }
+<<<<<<< head
 
     /// <summary>
     /// Gets or sets a value indicating whether to allow potentially dangerous content to be inserted into the prompt from functions.
@@ -296,6 +349,8 @@ public sealed class PromptTemplateConfig
         }
 
         var key = serviceId ?? settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
+=======
+>>>>>>> origin/main
 
         if (this.ExecutionSettings.ContainsKey(key))
         {
@@ -345,23 +400,64 @@ public sealed class PromptTemplateConfig
 >>>>>>> Stashed changes
 =======
     /// <summary>
-    /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
+    /// Gets or sets a value indicating whether to allow potentially dangerous content to be inserted into the prompt from functions.
     /// </summary>
-    public PromptTemplateConfig()
-    {
-    }
+    /// <remarks>
+    /// The default is false.
+    /// When set to true the return values from functions only are treated as safe content.
+    /// For prompts which are being used with a chat completion service this should be set to false to protect against prompt injection attacks.
+    /// When using other AI services e.g. Text-To-Image this can be set to true to allow for more complex prompts.
+    /// </remarks>
+    [Experimental("SKEXP0001")]
+    [JsonPropertyName("allow_dangerously_set_content")]
+    public bool AllowDangerouslySetContent { get; set; } = false;
 
     /// <summary>
+<<<<<<< head
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class using the specified prompt template string.
     /// </summary>
     /// <param name="template">The prompt template string that defines the prompt.</param>
     /// <exception cref="ArgumentNullException"><paramref name="template"/> is null.</exception>
     public PromptTemplateConfig(string template)
+=======
+    /// Gets the default execution settings from <see cref="ExecutionSettings"/>.
+    /// </summary>
+    /// <remarks>
+    /// If no default is specified, this will return null.
+    /// </remarks>
+    public PromptExecutionSettings? DefaultExecutionSettings => this._executionSettings?.TryGetValue(PromptExecutionSettings.DefaultServiceId, out PromptExecutionSettings? settings) is true ? settings : null;
+
+    /// <summary>
+    /// Adds the specified <see cref="PromptExecutionSettings"/> to the <see cref="ExecutionSettings"/> dictionary.
+    /// </summary>
+    /// <remarks>
+    /// The key is the service ID, or <see cref="PromptExecutionSettings.DefaultServiceId"/> for the default execution settings.
+    /// If the service ID is null, <see cref="PromptExecutionSettings.DefaultServiceId"/> will be used.
+    /// </remarks>
+    /// <param name="settings">The <see cref="PromptExecutionSettings"/> to add to the dictionary.</param>
+    /// <param name="serviceId">The service ID with which to associated <paramref name="settings"/>, or null if this should be the default settings.</param>
+    public void AddExecutionSettings(PromptExecutionSettings settings, string? serviceId = null)
+>>>>>>> origin/main
     {
-        this.Template = template;
+        Verify.NotNull(settings);
+
+        if (!string.IsNullOrWhiteSpace(serviceId) && !string.IsNullOrWhiteSpace(settings.ServiceId))
+        {
+            throw new ArgumentException($"Service id must not be passed when '{nameof(settings.ServiceId)}' is already provided in execution settings.", nameof(serviceId));
+        }
+
+        var key = serviceId ?? settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
+
+        if (this.ExecutionSettings.ContainsKey(key))
+        {
+            throw new ArgumentException($"Execution settings for service id '{key}' already exists.", nameof(serviceId));
+        }
+
+        this.ExecutionSettings[key] = settings;
     }
 
     /// <summary>
+<<<<<<< head
     /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
     /// </summary>
     /// <param name="json">A string containing a JSON representation of the <see cref="PromptTemplateConfig"/>.</param>
@@ -597,6 +693,65 @@ public sealed class PromptTemplateConfig
     /// <summary>
     /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
     /// </summary>
+=======
+    /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
+    /// </summary>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> for schema generation.</param>
+    internal IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata(JsonSerializerOptions jsonSerializerOptions)
+    {
+        KernelParameterMetadata[] result = [];
+        if (this._inputVariables is List<InputVariable> inputVariables)
+        {
+            result = new KernelParameterMetadata[inputVariables.Count];
+            for (int i = 0; i < result.Length; i++)
+            {
+                InputVariable p = inputVariables[i];
+                result[i] = new KernelParameterMetadata(p.Name, jsonSerializerOptions)
+                {
+                    Description = p.Description,
+                    DefaultValue = p.Default,
+                    IsRequired = p.IsRequired,
+                    ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema) ? null : p.Default?.GetType() ?? typeof(string),
+                    Schema = !string.IsNullOrWhiteSpace(p.JsonSchema) ? KernelJsonSchema.Parse(p.JsonSchema!) : null,
+                };
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
+    /// </summary>
+    [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
+    internal IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata()
+    {
+        KernelParameterMetadata[] result = [];
+        if (this._inputVariables is List<InputVariable> inputVariables)
+        {
+            result = new KernelParameterMetadata[inputVariables.Count];
+            for (int i = 0; i < result.Length; i++)
+            {
+                InputVariable p = inputVariables[i];
+                result[i] = new KernelParameterMetadata(p.Name)
+                {
+                    Description = p.Description,
+                    DefaultValue = p.Default,
+                    IsRequired = p.IsRequired,
+                    ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema) ? null : p.Default?.GetType() ?? typeof(string),
+                    Schema = !string.IsNullOrWhiteSpace(p.JsonSchema) ? KernelJsonSchema.Parse(p.JsonSchema!) : null,
+                };
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
+    /// </summary>
+>>>>>>> origin/main
     [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     internal KernelReturnParameterMetadata? GetKernelReturnParameterMetadata() =>
@@ -684,6 +839,7 @@ public sealed class PromptTemplateConfig
         return
             config ??
             throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json), innerException);
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -698,6 +854,8 @@ public sealed class PromptTemplateConfig
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     }
 
     /// <summary>

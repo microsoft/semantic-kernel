@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,10 +25,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.Agents.Internal;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,6 +46,8 @@ using Microsoft.SemanticKernel.Agents.Internal;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -80,6 +86,7 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     public KernelArguments? Arguments { get; init; }
 
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,6 +130,8 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
     /// </summary>
     public Kernel Kernel => kernel;
@@ -131,6 +140,7 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     /// The <see cref="KernelFunction"/> invoked as termination criteria.
     /// </summary>
     public KernelFunction Function { get; } = function;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -145,6 +155,8 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// A callback responsible for translating the <see cref="FunctionResult"/>
@@ -152,6 +164,7 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     /// </summary>
     public Func<FunctionResult, bool> ResultParser { get; init; } = (_) => true;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -174,6 +187,8 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     protected sealed override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>
     /// Optionally specify a <see cref="IChatHistoryReducer"/> to reduce the history.
     /// </summary>
@@ -184,6 +199,7 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     {
         history = await history.ReduceAsync(this.HistoryReducer, cancellationToken).ConfigureAwait(false);
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -198,11 +214,14 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
                 { this.AgentVariableName, agent.Name ?? agent.Id },
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -236,6 +255,9 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                { this.HistoryVariableName, ChatMessageForPrompt.Format(history) },
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             };
 
         this.Logger.LogKernelFunctionTerminationStrategyInvokingFunction(nameof(ShouldAgentTerminateAsync), this.Function.PluginName, this.Function.Name);

@@ -41,6 +41,7 @@ public class OpenAITextEmbeddingGenerationServiceTests
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new OpenAITextEmbeddingGenerationService(" ", "apikey"));
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -81,11 +82,14 @@ public class OpenAITextEmbeddingGenerationServiceTests
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Assert.Throws<ArgumentException>(() => new OpenAITextEmbeddingGenerationService(" ", openAIClient: new(new ApiKeyCredential("apikey"))));
         Assert.Throws<ArgumentException>(() => new OpenAITextEmbeddingGenerationService("", "apikey"));
         Assert.Throws<ArgumentException>(() => new OpenAITextEmbeddingGenerationService("", openAIClient: new(new ApiKeyCredential("apikey"))));
         Assert.Throws<ArgumentNullException>(() => new OpenAITextEmbeddingGenerationService(null!, "apikey"));
         Assert.Throws<ArgumentNullException>(() => new OpenAITextEmbeddingGenerationService(null!, openAIClient: new(new ApiKeyCredential("apikey"))));
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -100,6 +104,8 @@ public class OpenAITextEmbeddingGenerationServiceTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     [Fact]

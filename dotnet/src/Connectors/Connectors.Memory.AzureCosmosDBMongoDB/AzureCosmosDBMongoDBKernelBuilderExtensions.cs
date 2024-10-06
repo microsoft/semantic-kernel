@@ -48,6 +48,7 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
         builder.Services.AddAzureCosmosDBMongoDBVectorStore(connectionString, databaseName, options, serviceId);
         return builder;
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -64,6 +65,8 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Register an Azure CosmosDB MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
@@ -110,6 +113,7 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
         builder.Services.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(collectionName, connectionString, databaseName, options, serviceId);
         return builder;
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -124,4 +128,6 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

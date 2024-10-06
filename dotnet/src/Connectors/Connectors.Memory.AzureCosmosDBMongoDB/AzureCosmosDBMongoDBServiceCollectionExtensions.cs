@@ -3,6 +3,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using Microsoft.SemanticKernel.Data;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,10 +22,13 @@ using Microsoft.SemanticKernel.Http;
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Http;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Http;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@ using Microsoft.SemanticKernel.Http;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel;
@@ -100,6 +106,7 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
             (sp, obj) =>
             {
                 var settings = MongoClientSettings.FromConnectionString(connectionString);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -120,11 +127,14 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
                 settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
 
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
                 settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
 
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -139,6 +149,8 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 var mongoClient = new MongoClient(settings);
                 var database = mongoClient.GetDatabase(databaseName);
 
@@ -149,6 +161,7 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 
         return services;
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -165,6 +178,8 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Register an Azure CosmosDB MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
@@ -255,6 +270,7 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
                 return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceId);
             });
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -269,4 +285,6 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

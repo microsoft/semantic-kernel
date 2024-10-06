@@ -1,3 +1,4 @@
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,10 +20,14 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> origin/main
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +44,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 >>>>>>> origin/main
 <<<<<<< Updated upstream

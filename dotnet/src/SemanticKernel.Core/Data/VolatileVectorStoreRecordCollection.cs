@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,6 +37,10 @@ using System;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -59,6 +64,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     where TKey : notnull
     where TRecord : class
 {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -75,6 +81,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>A set of types that vectors on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedVectorTypes =
     [
@@ -90,6 +98,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <summary>The data type of each collection, to enforce a single type per collection.</summary>
     private readonly ConcurrentDictionary<string, Type> _internalCollectionTypes;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -104,10 +113,13 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>Internal storage for the record collection.</summary>
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollection;
 
     /// <summary>Optional configuration options for this class.</summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -141,10 +153,14 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    private readonly VolatileVectorStoreRecordCollectionOptions<TKey, TRecord> _options;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</summary>
     private readonly string _collectionName;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -161,6 +177,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 
@@ -173,6 +191,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <summary>An function to look up keys from the records.</summary>
     private readonly VolatileVectorStoreKeyResolver<TKey, TRecord> _keyResolver;
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -187,6 +206,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
 
@@ -195,6 +216,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// </summary>
     /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -240,6 +262,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public VolatileVectorStoreRecordCollection(string collectionName, VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default)
     {
         // Verify.
@@ -264,6 +288,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._internalCollection = new();
         this._options = options ?? new VolatileVectorStoreRecordCollectionOptions();
         var vectorStorePropertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), this._options.VectorStoreRecordDefinition, new() { RequiresAtLeastOneVector = false, SupportsMultipleKeys = false, SupportsMultipleVectors = true });
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -278,6 +303,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Get the key property info.
         var keyProperty = vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordKeyProperty>().FirstOrDefault();
@@ -287,6 +314,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         this._keyPropertyInfo = typeof(TRecord).GetProperty(keyProperty.DataModelPropertyName) ?? throw new ArgumentException($"Key property {keyProperty.DataModelPropertyName} not found on {typeof(TRecord).Name}");
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -303,6 +331,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Assign resolvers.
         this._vectorResolver = CreateVectorResolver(this._options.VectorResolver, this._vectorProperties);
@@ -314,6 +344,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Assign resolvers.
         this._vectorResolver = CreateVectorResolver(this._options.VectorResolver, this._vectorProperties);
         this._keyResolver = CreateKeyResolver(this._options.KeyResolver, this._propertyReader.KeyProperty);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -328,11 +359,14 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> class.
     /// </summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -349,6 +383,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <param name="internalCollection">Internal storage for the record collection.</param>
     /// <param name="internalCollectionTypes">The data type of each collection, to enforce a single type per collection.</param>
     /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
@@ -362,6 +398,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         this._internalCollections = internalCollection;
         this._internalCollectionTypes = internalCollectionTypes;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -376,6 +413,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <param name="internalCollection">Allows passing in the dictionary used for storage, for testing purposes.</param>
     /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
@@ -391,6 +430,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -422,12 +462,16 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        return this._internalCollections.ContainsKey(this._collectionName) ? Task.FromResult(true) : Task.FromResult(false);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         return this._internalCollection.ContainsKey(this._collectionName) ? Task.FromResult(true) : Task.FromResult(false);
     }
 
     /// <inheritdoc />
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -444,12 +488,15 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         if (!this._internalCollections.ContainsKey(this._collectionName))
         {
             this._internalCollections.TryAdd(this._collectionName, new ConcurrentDictionary<object, object>());
             this._internalCollectionTypes.TryAdd(this._collectionName, typeof(TRecord));
         }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -464,6 +511,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this._internalCollection.TryAdd(this._collectionName, new ConcurrentDictionary<object, object>());
         return Task.CompletedTask;
     }
@@ -480,6 +529,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -514,6 +564,10 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        this._internalCollections.TryRemove(this._collectionName, out _);
+        this._internalCollection.TryRemove(this._collectionName, out _)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         return Task.CompletedTask;
     }
 
@@ -571,6 +625,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         var collectionDictionary = this.GetCollectionDictionary();
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -604,6 +659,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var key = (TKey)this._keyResolver(record)!;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         collectionDictionary.AddOrUpdate(key!, record, (key, currentValue) => record);
 
         return Task.FromResult(key!);
@@ -618,6 +676,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -634,6 +693,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <inheritdoc />
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously - Need to satisfy the interface which returns IAsyncEnumerable
     public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -689,6 +750,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -703,10 +765,13 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>
     /// Get the collection dictionary from the internal storage, throws if it does not exist.
     /// </summary>
     /// <returns>The retrieved collection dictionary.</returns>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -740,6 +805,11 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    internal ConcurrentDictionary<object, object> GetCollectionDictionary()
+    {
+        if (!this._internalCollections.TryGetValue(this._collectionName, out var collectionDictionary))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private ConcurrentDictionary<object, object> GetCollectionDictionary()
     {
         if (!this._internalCollection.TryGetValue(this._collectionName, out var collectionDictionary))
@@ -749,6 +819,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return collectionDictionary;
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -765,6 +836,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Pick / create a vector resolver that will read a vector from a record in the store based on the vector name.
@@ -847,6 +920,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         var keyPropertyInfo = typeof(TRecord).GetProperty(keyProperty.DataModelPropertyName) ?? throw new ArgumentException($"Key property {keyProperty.DataModelPropertyName} not found on {typeof(TRecord).Name}");
         return (record) => (TKey)keyPropertyInfo.GetValue(record)!;
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -861,4 +935,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,12 +35,17 @@ using Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using System.Text;
+using Microsoft.SemanticKernel;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace ChatCompletion;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -81,6 +87,8 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 // The following example shows how to use Semantic Kernel with OpenAI API
 public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
@@ -90,6 +98,7 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -104,11 +113,14 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Console.WriteLine("======== Open AI - Chat Completion ========");
 
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
         await StartChatAsync(chatCompletionService);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -204,6 +216,8 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     [Fact]
@@ -288,6 +302,7 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         var replyInnerContent = messageContent!.InnerContent as OpenAI.Chat.ChatCompletion; // Retrieves inner content from ChatMessageContent.
 
         OutputInnerContent(replyInnerContent!);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -302,6 +317,8 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     private async Task StartChatAsync(IChatCompletionService chatGPT)
@@ -329,6 +346,7 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         chatHistory.Add(reply);
         OutputLastMessage(chatHistory);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -345,6 +363,8 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Retrieve extra information from a <see cref="ChatMessageContent"/> inner content of type <see cref="OpenAI.Chat.ChatCompletion"/>.
@@ -408,6 +428,7 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
             }
         }
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -422,4 +443,6 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,10 +21,13 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Collections.Generic;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +42,8 @@ using System.Text.Json;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
@@ -54,6 +60,7 @@ public sealed class OpenAIChatMessageContentTests
     public void ConstructorsWorkCorrectly()
     {
         // Arrange
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -87,6 +94,9 @@ public sealed class OpenAIChatMessageContentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        List<ChatToolCall> toolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", BinaryData.FromString("args"))];
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act
         var content1 = new OpenAIChatMessageContent(ChatMessageRole.User, "content1", "model-id1", toolCalls) { AuthorName = "Fred" };
@@ -101,6 +111,7 @@ public sealed class OpenAIChatMessageContentTests
     public void GetOpenAIFunctionToolCallsReturnsCorrectList()
     {
         // Arrange
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,11 +134,14 @@ public sealed class OpenAIChatMessageContentTests
             ChatToolCall.CreateFunctionToolCall("id1", "name", string.Empty),
             ChatToolCall.CreateFunctionToolCall("id2", "name", string.Empty)];
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
 
         List<ChatToolCall> toolCalls = [
             ChatToolCall.CreateFunctionToolCall("id1", "name", BinaryData.FromString(args)),
             ChatToolCall.CreateFunctionToolCall("id2", "name", BinaryData.FromString(args))];
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -142,6 +156,8 @@ public sealed class OpenAIChatMessageContentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         var content1 = new OpenAIChatMessageContent(AuthorRole.User, "content", "model-id", toolCalls);
         var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content", "model-id", []);
@@ -164,6 +180,7 @@ public sealed class OpenAIChatMessageContentTests
     public void MetadataIsInitializedCorrectly(bool readOnlyMetadata)
     {
         // Arrange
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -196,11 +213,16 @@ public sealed class OpenAIChatMessageContentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         IReadOnlyDictionary<string, object?> metadata = readOnlyMetadata ?
             new CustomReadOnlyDictionary<string, object?>(new Dictionary<string, object?> { { "key", "value" } }) :
             new Dictionary<string, object?> { { "key", "value" } };
 
         List<ChatToolCall> toolCalls = [
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -237,6 +259,10 @@ public sealed class OpenAIChatMessageContentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            ChatToolCall.CreateFunctionToolCall("id1", "name", BinaryData.FromString(args)),
+            ChatToolCall.CreateFunctionToolCall("id2", "name", BinaryData.FromString(args))];
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act
         var content1 = new OpenAIChatMessageContent(AuthorRole.User, "content1", "model-id1", [], metadata);

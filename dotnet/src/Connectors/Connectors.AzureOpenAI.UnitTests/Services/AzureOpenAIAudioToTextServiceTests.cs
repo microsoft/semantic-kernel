@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,6 +33,9 @@ using System.ClientModel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using System.ClientModel;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -99,6 +103,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
     public void ConstructorWithOpenAIClientWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -132,6 +137,9 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var client = new AzureOpenAIClient(new Uri("http://host"), new ApiKeyCredential("key"));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var service = includeLoggerFactory ?
             new AzureOpenAIAudioToTextService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object) :
             new AzureOpenAIAudioToTextService("deployment", client, "model-id");
@@ -146,6 +154,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new AzureOpenAIAudioToTextService(" ", "http://host", "apikey"));
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -186,11 +195,14 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Assert.Throws<ArgumentException>(() => new AzureOpenAIAudioToTextService(" ", azureOpenAIClient: new(new Uri("http://host"), new ApiKeyCredential("apikey"))));
         Assert.Throws<ArgumentException>(() => new AzureOpenAIAudioToTextService("", "http://host", "apikey"));
         Assert.Throws<ArgumentException>(() => new AzureOpenAIAudioToTextService("", azureOpenAIClient: new(new Uri("http://host"), new ApiKeyCredential("apikey"))));
         Assert.Throws<ArgumentNullException>(() => new AzureOpenAIAudioToTextService(null!, "http://host", "apikey"));
         Assert.Throws<ArgumentNullException>(() => new AzureOpenAIAudioToTextService(null!, azureOpenAIClient: new(new Uri("http://host"), new ApiKeyCredential("apikey"))));
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -205,6 +217,8 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     [Theory]

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -136,6 +140,7 @@ public class StreamingChatMessageContent : StreamingKernelContent
     }
 
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -152,6 +157,8 @@ public class StreamingChatMessageContent : StreamingKernelContent
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Represents the source of the message.
     /// </summary>
     /// <remarks>
@@ -163,6 +170,7 @@ public class StreamingChatMessageContent : StreamingKernelContent
     public object? Source { get; set; }
 
     /// <summary>
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -177,6 +185,8 @@ public class StreamingChatMessageContent : StreamingKernelContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Initializes a new instance of the <see cref="StreamingChatMessageContent"/> class.
     /// </summary>
     /// <param name="role">Role of the author of the message</param>

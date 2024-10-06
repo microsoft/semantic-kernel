@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System;
 using System.Collections.Generic;
@@ -85,6 +89,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -116,6 +121,9 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
             ]
@@ -132,6 +140,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -148,6 +157,8 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var cursor = await this.MongoDatabase.ListCollectionNamesAsync();
 
         while (await cursor.MoveNextAsync().ConfigureAwait(false))
@@ -156,6 +167,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
             {
                 await this.MongoDatabase.DropCollectionAsync(collection);
             }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -170,6 +182,8 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         foreach (var collection in this._testCollections)
         {
             await this.MongoDatabase.DropCollectionAsync(collection);
@@ -184,6 +198,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         public string HotelId { get; init; }
 
         /// <summary>A string metadata field.</summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -215,6 +230,9 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        [VectorStoreRecordData(IsFilterable = true)]
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         [VectorStoreRecordData]
         public string? HotelName { get; set; }
 
@@ -238,6 +256,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         [VectorStoreRecordData]
         public string Description { get; set; }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -254,10 +273,13 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         /// <summary>A datetime metadata field.</summary>
         [VectorStoreRecordData]
         public DateTime Timestamp { get; set; }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -272,6 +294,8 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         /// <summary>A vector field.</summary>
         [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }

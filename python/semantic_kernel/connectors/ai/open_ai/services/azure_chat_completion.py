@@ -6,6 +6,7 @@ from copy import deepcopy
 from typing import Any, TypeVar
 from uuid import uuid4
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +25,8 @@ from openai import AsyncAzureOpenAI
 <<<<<<< main
 from openai import AsyncAzureOpenAI
 =======
+=======
+>>>>>>> origin/main
 import json
 import logging
 import sys
@@ -38,6 +41,7 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from openai import AsyncAzureOpenAI, AsyncStream
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,6 +56,8 @@ from openai import AsyncAzureOpenAI, AsyncStream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 from openai.lib.azure import AsyncAzureADTokenProvider
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
@@ -79,6 +85,7 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -95,6 +102,8 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
@@ -105,6 +114,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -119,6 +129,8 @@ from semantic_kernel.contents.chat_history import ChatHistory
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -128,6 +140,7 @@ from semantic_kernel.contents.streaming_chat_message_content import (
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -144,12 +157,15 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.kernel_pydantic import HttpsUrl
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_streaming_chat_completion
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -164,6 +180,8 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_s
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -192,6 +210,7 @@ class AzureChatCompletion(
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -353,12 +372,113 @@ class AzureChatCompletion(
         self,
         deployment_name: str,
         endpoint: Union[HttpsUrl, str],
+=======
+        deployment_name: str,
+        base_url: Union[HttpsUrl, str],
+        service_id: Optional[str] = None,
+>>>>>>> origin/main
         api_version: str = DEFAULT_AZURE_API_VERSION,
         service_id: Optional[str] = None,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+<<<<<<< head
+=======
+    ) -> None:
+        """Initialize an AzureChatCompletion service.
+
+        Args:
+            service_id (str | None): The service ID for the Azure deployment. (Optional)
+            api_key  (str | None): The optional api key. If provided, will override the value in the
+                env vars or .env file.
+            deployment_name  (str | None): The optional deployment. If provided, will override the value
+                (chat_deployment_name) in the env vars or .env file.
+            endpoint (str | None): The optional deployment endpoint. If provided will override the value
+                in the env vars or .env file.
+            base_url (str | None): The optional deployment base_url. If provided will override the value
+                in the env vars or .env file.
+            api_version (str | None): The optional deployment api version. If provided will override the value
+                in the env vars or .env file.
+            ad_token (str | None): The Azure Active Directory token. (Optional)
+            ad_token_provider (AsyncAzureADTokenProvider): The Azure Active Directory token provider. (Optional)
+            token_endpoint (str | None): The token endpoint to request an Azure token. (Optional)
+            default_headers (Mapping[str, str]): The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
+            async_client (AsyncAzureOpenAI | None): An existing client to use. (Optional)
+            env_file_path (str | None): Use the environment settings file as a fallback to using env vars.
+            env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
+        """
+        try:
+            azure_openai_settings = AzureOpenAISettings.create(
+                api_key=api_key,
+                base_url=base_url,
+                endpoint=endpoint,
+                chat_deployment_name=deployment_name,
+                api_version=api_version,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+                token_endpoint=token_endpoint,
+            )
+        except ValidationError as exc:
+            raise ServiceInitializationError(
+                f"Failed to validate settings: {exc}"
+            ) from exc
+
+        if not azure_openai_settings.chat_deployment_name:
+            raise ServiceInitializationError("chat_deployment_name is required.")
+
+        # If the async_client is None, the api_key is none, the ad_token is none, and the ad_token_provider is none,
+        # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
+
+        # Temp debug logging
+        print(f"async_client: {async_client is not None}")
+        print(f"api_key: {azure_openai_settings.api_key is not None}")
+        print(f"ad_token: {ad_token is not None}")
+        print(f"ad_token_provider: {ad_token_provider is not None}")
+        print(f"token_endpoint: {azure_openai_settings.token_endpoint is not None}")
+
+        if (
+            async_client is None
+            and azure_openai_settings.api_key is None
+            and ad_token_provider is None
+            and ad_token is None
+            and azure_openai_settings.token_endpoint
+        ):
+            print("Getting ad_token")
+            ad_token = azure_openai_settings.get_azure_openai_auth_token(
+                token_endpoint=azure_openai_settings.token_endpoint
+            )
+            print(f"Called get ad_token: {ad_token is not None}")
+
+        if not async_client and not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
+            raise ServiceInitializationError(
+                "Please provide either a custom client, or an api_key, an ad_token or an ad_token_provider"
+            )
+
+        super().__init__(
+            deployment_name=azure_openai_settings.chat_deployment_name,
+            endpoint=azure_openai_settings.endpoint,
+            base_url=azure_openai_settings.base_url,
+            api_version=azure_openai_settings.api_version,
+            service_id=service_id,
+            api_key=(
+                azure_openai_settings.api_key.get_secret_value()
+                if azure_openai_settings.api_key
+                else None
+            ),
+    @overload
+    def __init__(
+        self,
+        deployment_name: str,
+        endpoint: Union[HttpsUrl, str],
+        api_version: str = DEFAULT_AZURE_API_VERSION,
+        service_id: Optional[str] = None,
+        api_key: Optional[str] = None,
+        ad_token: Optional[str] = None,
+        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+>>>>>>> origin/main
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -400,6 +520,49 @@ class AzureChatCompletion(
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
             async_client {AsyncAzureOpenAI} -- An existing client to use.
+<<<<<<< head
+=======
+        """
+
+    @overload
+    def __init__(
+        self,
+        deployment_name: str,
+        endpoint: Union[HttpsUrl, str],
+        api_version: str = DEFAULT_AZURE_API_VERSION,
+        service_id: Optional[str] = None,
+        api_key: Optional[str] = None,
+        ad_token: Optional[str] = None,
+        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+        use_extensions: bool = False,
+    ) -> None:
+        """
+        Initialize an AzureChatCompletion service.
+
+        Arguments:
+        deployment_name: The name of the Azure deployment. This value
+            will correspond to the custom name you chose for your deployment
+            when you deployed a model. This value can be found under
+            Resource Management > Deployments in the Azure portal or, alternatively,
+            under Management > Deployments in Azure OpenAI Studio.
+        endpoint: The endpoint of the Azure deployment. This value
+            can be found in the Keys & Endpoint section when examining
+            your resource from the Azure portal, the endpoint should end in openai.azure.com.
+        api_key: The API key for the Azure deployment. This value can be
+            found in the Keys & Endpoint section when examining your resource in
+            the Azure portal. You can use either KEY1 or KEY2.
+        api_version: The API version to use. (Optional)
+            The default value is "2023-05-15".
+        ad_auth: Whether to use Azure Active Directory authentication. (Optional)
+            The default value is False.
+        default_headers: The default headers mapping of string keys to
+            string values for HTTP requests. (Optional)
+        log: The logger instance to use. (Optional)
+        use_extensions: Whether to use extensions, for example when chatting with data. (Optional)
+            When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
+            The default value is False.
+>>>>>>> origin/main
         """
 
     @overload
@@ -610,6 +773,7 @@ class AzureChatCompletion(
             client=async_client,
         )
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -630,6 +794,8 @@ class AzureChatCompletion(
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
 =======
+=======
+>>>>>>> origin/main
     @override
     @trace_streaming_chat_completion(OpenAIChatCompletionBase.MODEL_PROVIDER_NAME)
     async def _inner_get_streaming_chat_message_contents(
@@ -666,6 +832,7 @@ class AzureChatCompletion(
                 self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
             ]
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -679,10 +846,13 @@ class AzureChatCompletion(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     @classmethod
     def from_dict(cls, settings: dict[str, Any]) -> "AzureChatCompletion":
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -703,6 +873,8 @@ class AzureChatCompletion(
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         Args:
             settings: A dictionary of settings for the service.
                 should contain keys: service_id, and optionally:
@@ -715,6 +887,7 @@ class AzureChatCompletion(
             endpoint=settings.get("endpoint"),
             base_url=settings.get("base_url"),
             api_version=settings.get("api_version"),
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -731,6 +904,8 @@ class AzureChatCompletion(
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
             api_version=settings.get("api_version", DEFAULT_AZURE_API_VERSION),
             service_id=settings.get("service_id"),
             api_key=settings.get("api_key"),
@@ -752,6 +927,7 @@ class AzureChatCompletion(
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
             env_file_path=settings.get("env_file_path"),
+<<<<<<< head
         )
 
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
@@ -842,6 +1018,36 @@ class AzureChatCompletion(
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+=======
+        )
+
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        """Create a request settings object."""
+        return AzureChatPromptExecutionSettings
+
+    def _create_chat_message_content(
+        self,
+        response: ChatCompletion,
+        choice: Choice,
+        response_metadata: dict[str, Any],
+    ) -> ChatMessageContent:
+        """Create an Azure chat message content object from a choice."""
+        content = super()._create_chat_message_content(
+            response, choice, response_metadata
+        )
+        return self._add_tool_message_to_chat_message_content(content, choice)
+
+    def _create_streaming_chat_message_content(
+        self,
+        chunk: ChatCompletionChunk,
+        choice: ChunkChoice,
+        chunk_metadata: dict[str, Any],
+    ) -> "StreamingChatMessageContent":
+        """Create an Azure streaming chat message content object from a choice."""
+        content = super()._create_streaming_chat_message_content(
+            chunk, choice, chunk_metadata
+        )
+>>>>>>> origin/main
         assert isinstance(content, StreamingChatMessageContent) and isinstance(
             choice, ChunkChoice
         )  # nosec

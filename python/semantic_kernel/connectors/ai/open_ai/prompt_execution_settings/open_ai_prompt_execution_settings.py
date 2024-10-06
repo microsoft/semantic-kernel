@@ -9,6 +9,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self  # pragma: no cover
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,6 +43,9 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+from pydantic import BaseModel, Field, field_validator, model_validator
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
@@ -101,6 +105,7 @@ class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
 class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the Chat Completion endpoint."""
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -136,6 +141,11 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    response_format: (
+        dict[Literal["type"], Literal["text", "json_object"]] | dict[str, Any] | type[BaseModel] | type | None
+    ) = None
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     function_call: str | None = None
     functions: list[dict[str, Any]] | None = None
     messages: list[dict[str, Any]] | None = None
@@ -149,6 +159,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         None,
         description="Do not set this manually. It is set by the service based on the function choice configuration.",
     )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -165,11 +176,14 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     structured_json_response: bool = Field(False, description="Do not set this manually. It is set by the service.")
     stream_options: dict[str, Any] | None = Field(
         None,
         description="Additional options to pass when streaming is used. Do not set this manually.",
     )
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -184,6 +198,8 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
@@ -196,6 +212,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         return v
 
     @model_validator(mode="before")
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -212,6 +229,8 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     def validate_response_format_and_set_flag(cls, values) -> Any:
         """Validate the response_format and set structured_json_response accordingly."""
         response_format = values.get("response_format", None)
@@ -243,6 +262,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         return values
 
     @model_validator(mode="before")
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -257,6 +277,8 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     @classmethod
     def validate_function_calling_behaviors(cls, data) -> Any:
         """Check if function_call_behavior is set and if so, move to use function_choice_behavior instead."""

@@ -2,6 +2,7 @@
 
 from pytest import mark, raises
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,11 +21,14 @@ from semantic_kernel.exceptions import CodeBlockSyntaxError
 <<<<<<< main
 from semantic_kernel.exceptions import CodeBlockSyntaxError
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< main
 from semantic_kernel.exceptions import CodeBlockSyntaxError
 =======
 from semantic_kernel.template_engine.blocks.block_errors import CodeBlockSyntaxError
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@ from semantic_kernel.template_engine.blocks.block_errors import CodeBlockSyntaxE
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 

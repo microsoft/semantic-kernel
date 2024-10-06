@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System.Collections.Generic;
 using System.Text;
@@ -149,6 +153,7 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 
         // Act
         await foreach (var update in textGeneration.GetStreamingTextContentsAsync("What is the capital of France?", null, kernel))
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -180,6 +185,9 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        await foreach (var update in textGeneration.GetStreamingTextContentsAsync("Reply \"I don't know\" to every question. What is the capital of France?", null, kernel))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         {
             stringBuilder.Append(update);
 

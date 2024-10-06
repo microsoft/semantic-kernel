@@ -8,6 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 public sealed class RedisVectorStoreOptions
 {
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -26,6 +27,8 @@ public sealed class RedisVectorStoreOptions
 <<<<<<< HEAD
     /// An optional factory to use for constructing <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 <<<<<<< HEAD
     /// An optional factory to use for constructing <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
@@ -35,6 +38,7 @@ public sealed class RedisVectorStoreOptions
 =======
     /// An optional factory to use for constructing <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -49,6 +53,8 @@ public sealed class RedisVectorStoreOptions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// </summary>
     public IRedisVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
 

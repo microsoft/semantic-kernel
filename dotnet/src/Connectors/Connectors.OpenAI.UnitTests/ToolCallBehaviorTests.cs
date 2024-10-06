@@ -106,6 +106,7 @@ public sealed class ToolCallBehaviorTests
         var options = kernelFunctions.ConfigureOptions(kernel);
 
         // Assert
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -141,6 +142,9 @@ public sealed class ToolCallBehaviorTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        Assert.NotNull(options.Choice);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this.AssertTools(options.Tools);
     }
 
@@ -200,6 +204,7 @@ public sealed class ToolCallBehaviorTests
         var options = enabledFunctions.ConfigureOptions(kernel);
 
         // Assert
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -235,6 +240,9 @@ public sealed class ToolCallBehaviorTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        Assert.NotNull(options.Choice);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this.AssertTools(options.Tools);
     }
 

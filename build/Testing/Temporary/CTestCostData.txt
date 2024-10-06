@@ -1,0 +1,33 @@
+test-tokenizer-0-bert-bge 1 0.430157
+test-tokenizer-0-command-r 1 5.14427
+test-tokenizer-0-deepseek-coder 1 1.26035
+test-tokenizer-0-deepseek-llm 1 2.1278
+test-tokenizer-0-falcon 1 2.20092
+test-tokenizer-0-gpt-2 1 1.14219
+test-tokenizer-0-llama-bpe 1 3.79311
+test-tokenizer-0-llama-spm 1 0.429538
+test-tokenizer-0-mpt 1 1.3466
+test-tokenizer-0-phi-3 1 0.493922
+test-tokenizer-0-qwen2 1 3.85294
+test-tokenizer-0-refact 1 1.33424
+test-tokenizer-0-starcoder 1 1.11247
+test-tokenizer-1-llama-spm 1 3.27894
+test-log 1 0.0686901
+test-arg-parser 1 0.0868997
+test-quantize-fns 1 55.2266
+test-quantize-perf 1 17.0073
+test-sampling 1 12.9815
+test-chat-template 1 0.00484731
+test-grammar-parser 1 0.00516855
+test-llama-grammar 1 0.011504
+test-grammar-integration 1 0.165305
+test-grad0 1 2.12637
+test-barrier 1 3.13998
+test-backend-ops 1 0.0175099
+test-rope 1 0.100854
+test-model-load-cancel 1 0.00889449
+test-autorelease 1 0.010481
+test-json-schema-to-grammar 1 14.6761
+test-eval-callback 0 0
+---
+test-eval-callback

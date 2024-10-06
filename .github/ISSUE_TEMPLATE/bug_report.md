@@ -5,6 +5,7 @@ title: ''
 labels: ''
 assignees: ''
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,6 +20,8 @@ assignees: ''
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 about: Create a report to help us improve
 assignees: ""
 labels: ""
@@ -27,6 +30,7 @@ runme:
   id: 01J0BTG8CANBSFT2PB9SAS2DFC
   version: v3
 title: ""
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -40,6 +44,8 @@ title: ""
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 ---
 
 **Describe the bug**
@@ -69,6 +75,7 @@ If applicable, add screenshots to help explain your problem.
  - OS: [e.g. iOS8.1]
  - Browser [e.g. stock browser, safari]
  - Version [e.g. 22]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -85,6 +92,8 @@ If applicable, add screenshots to help explain your problem.
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 
 **Additional context**
 Add any other context about the problem here.
@@ -92,6 +101,7 @@ Add any other context about the problem here.
 - OS: [e.g. iOS]
 - Browser [e.g. chrome, safari]
 - Version [e.g. 22]
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -106,6 +116,8 @@ Add any other context about the problem here.
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 **Additional context**
 Add any other context about the problem here.

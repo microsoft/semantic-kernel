@@ -336,6 +336,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 
         jsonObject["properties"]!["hotel_name"] = "Test Name from Mapper";
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -369,6 +370,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonObject>>();
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         mockMapper
             .Setup(l => l.MapFromDataToStorageModel(It.IsAny<WeaviateHotel>()))
@@ -384,6 +388,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(
             this._mockHttpClient,
             "Collection",
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -417,6 +422,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            new() { JsonObjectCustomMapper = mockMapper.Object });
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act
         var result = await sut.UpsertAsync(hotel);
@@ -448,6 +456,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
             Content = new StringContent(JsonSerializer.Serialize(jsonObject))
         };
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -487,10 +496,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonObject>>();
 
         mockMapper
             .Setup(l => l.MapFromStorageToDataModel(It.IsAny<JsonObject>(), It.IsAny<StorageToDataModelMapperOptions>()))
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -505,11 +517,14 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             .Returns(new WeaviateHotel { HotelId = id, HotelName = "Test Name from mapper" });
 
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(
             this._mockHttpClient,
             "Collection",
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -543,6 +558,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            new() { JsonObjectCustomMapper = mockMapper.Object });
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act
         var result = await sut.GetAsync(id);
@@ -578,6 +596,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         Assert.Equal(expectedHeader, headers?.Authorization?.ToString());
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -594,6 +613,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -701,6 +722,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
             await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), searchOptions).ToListAsync());
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -715,6 +737,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public void Dispose()
     {
         this._mockHttpClient.Dispose();

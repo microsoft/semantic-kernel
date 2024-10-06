@@ -23,6 +23,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
     from semantic_kernel.contents.chat_history import ChatHistory
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -57,6 +58,8 @@ if TYPE_CHECKING:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 
 @experimental_class
@@ -70,6 +73,7 @@ class ChatHistoryAgentProtocol(Protocol):
         ...
 
     @abstractmethod
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,6 +107,9 @@ class ChatHistoryAgentProtocol(Protocol):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["ChatMessageContent"]:
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         """Invoke the chat history agent protocol in streaming mode."""
         ...
 
@@ -164,6 +171,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
                 yield_message,
             )
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -180,6 +188,8 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     @override
     async def invoke_stream(
         self,
@@ -210,6 +220,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
         for message_index in range(message_count, len(self.messages)):
             messages.append(self.messages[message_index])
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -224,6 +235,8 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     def _is_message_visible(self, message: ChatMessageContent, message_queue_count: int) -> bool:
         """Determine if a message is visible to the user."""
         return (

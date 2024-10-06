@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,12 +36,16 @@ using OllamaSharp.Models.Chat;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using OllamaSharp.Models.Chat;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 namespace ChatCompletion;
 
 // The following example shows how to use Semantic Kernel with Ollama Chat Completion API
 public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -74,6 +79,11 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    /// <summary>
+    /// Demonstrates how you can use the chat completion service directly.
+    /// </summary>
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public async Task ServicePromptAsync()
     {
@@ -109,6 +119,7 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         this.OutputLastMessage(chatHistory);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -125,6 +136,8 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>
     /// Demonstrates how you can get extra information from the service response, using the underlying inner content.
     /// </summary>
@@ -165,6 +178,7 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
     /// <summary>
     /// Demonstrates how you can template a chat history call using the kernel for invocation.
     /// </summary>
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -179,6 +193,8 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public async Task ChatPromptAsync()
     {
@@ -204,6 +220,7 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         Console.WriteLine(reply);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -220,6 +237,8 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Demonstrates how you can template a chat history call and get extra information from the response while using the kernel for invocation.
@@ -286,6 +305,7 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
             Console.WriteLine("------------------------");
         });
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -300,4 +320,6 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

@@ -9,6 +9,7 @@ from pydantic import Field, Json
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -90,6 +91,27 @@ from semantic_kernel.functions.kernel_plugin_collection import (
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+)
+from semantic_kernel.core_plugins.http_plugin import HttpPlugin
+from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
+from semantic_kernel.core_plugins.text_plugin import TextPlugin
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
+from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
+from semantic_kernel.core_plugins.web_search_engine_plugin import WebSearchEnginePlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+<<<<<<< main
+=======
+from semantic_kernel.functions.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
@@ -101,6 +123,7 @@ from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -117,11 +140,14 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< main
 =======
 
 # from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -136,6 +162,8 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 KernelBaseModelFieldT = t.TypeVar("KernelBaseModelFieldT", bound=KernelBaseModel)
 
@@ -159,6 +187,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
     def create_kernel_function() -> KernelFunction:
         """Return an KernelFunction."""
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -199,12 +228,15 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> origin/main
 
         @kernel_function(name="function")
         def my_function(arguments: KernelArguments) -> str:
             return f"F({arguments['input']})"
 
 <<<<<<< main
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -219,10 +251,13 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         return KernelFunction.from_method(
             plugin_name="plugin",
             method=my_function,
         )
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -240,17 +275,23 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 =======
         return KernelFunction.from_native_method(my_function, "plugin")
 
     def create_chat_history() -> ChatHistory:
         return ChatHistory()
+<<<<<<< head
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 >>>>>>> ms/small_fixes
 
     def create_chat_history() -> ChatHistory:
         return ChatHistory()
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -265,6 +306,8 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
     cls_obj_map = {
         Block: Block(content="foo"),
@@ -279,6 +322,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             name="foo",
             description="bar",
             default_value="baz",
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -310,6 +354,9 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
             type_="string",
             is_required=True,
             schema_data=KernelParameterMetadata.infer_schema(None, "str", "baz", "bar"),
@@ -331,6 +378,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             ],
             is_prompt=True,
             is_asynchronous=False,
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -351,6 +399,8 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         ),
         ChatHistory: create_chat_history(),
 =======
+=======
+>>>>>>> origin/main
         ),
         ChatHistory: create_chat_history(),
 =======
@@ -368,6 +418,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         ChatHistory: create_chat_history(),
         KernelPluginCollection: create_plugin_collection(),
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -382,6 +433,8 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         NullMemory: NullMemory(),
         KernelFunction: create_kernel_function(),
     }
@@ -394,6 +447,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
 
 PROTOCOLS = [
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -443,12 +497,22 @@ PROTOCOLS = [
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+    pytest.param(
+        ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")
+    ),
+=======
+    pytest.param(ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")),
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
     HttpPlugin,
     MathPlugin,
     TextMemoryPlugin,
     TextPlugin,
     TimePlugin,
     WaitPlugin,
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -466,6 +530,8 @@ PROTOCOLS = [
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 <<<<<<< main
     pytest.param(
         WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")
@@ -473,6 +539,7 @@ PROTOCOLS = [
 =======
     pytest.param(WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")),
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -487,6 +554,8 @@ PROTOCOLS = [
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 ]
 
 BASE_CLASSES = [
@@ -494,6 +563,7 @@ BASE_CLASSES = [
 ]
 
 STATELESS_CLASSES = [
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -510,10 +580,13 @@ STATELESS_CLASSES = [
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< main
 =======
     # PromptTemplateEngine,
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -528,6 +601,8 @@ STATELESS_CLASSES = [
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     NullMemory,
 ]
 
@@ -545,6 +620,7 @@ PYDANTIC_MODELS = [
     NamedArgBlock,
     KernelParameterMetadata,
     KernelFunctionMetadata,
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -561,10 +637,13 @@ PYDANTIC_MODELS = [
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< main
 =======
     KernelPluginCollection,
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -579,6 +658,8 @@ PYDANTIC_MODELS = [
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     ChatHistory,
     pytest.param(
         KernelFunction,

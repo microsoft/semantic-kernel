@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,10 +36,14 @@ import pytest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
 from semantic_kernel.exceptions import PlannerInvalidPlanError
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -72,11 +77,17 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -93,10 +104,13 @@ from semantic_kernel.kernel import Kernel
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 =======
 from semantic_kernel.planners.planning_exception import PlanningException
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -111,11 +125,14 @@ from semantic_kernel.planners.planning_exception import PlanningException
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.planners.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
 )
 
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -138,6 +155,8 @@ def create_mock_function(
     kernel_function_metadata: KernelFunctionMetadata,
 ) -> KernelFunction:
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 def create_mock_function(
     kernel_function_metadata: KernelFunctionMetadata,
@@ -145,6 +164,7 @@ def create_mock_function(
 =======
 def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> KernelFunction:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -159,6 +179,8 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Ke
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     mock_function = Mock(spec=KernelFunction)
     mock_function.metadata = kernel_function_metadata
     mock_function.name = kernel_function_metadata.name
@@ -166,6 +188,7 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Ke
     mock_function.description = kernel_function_metadata.description
     mock_function.is_prompt = kernel_function_metadata.is_prompt
     mock_function.prompt_execution_settings = PromptExecutionSettings()
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -184,10 +207,13 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Ke
 <<<<<<< HEAD
     mock_function.function_copy.return_value = mock_function
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     mock_function.function_copy.return_value = mock_function
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -202,6 +228,8 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Ke
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     return mock_function
 
 
@@ -223,6 +251,7 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
         mock_function.invoke.return_value = FunctionResult(
             function=kernel_function_metadata, value=result_string, metadata={}
         )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -241,11 +270,14 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
 <<<<<<< HEAD
         kernel.add_plugin(KernelPlugin(name=plugin_name, functions=[mock_function]))
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         kernel.add_plugin(KernelPlugin(name=plugin_name, functions=[mock_function]))
 =======
         kernel.plugins.add(KernelPlugin(name=plugin_name, functions=[mock_function]))
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -260,6 +292,8 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     return kernel
 
@@ -286,6 +320,7 @@ def test_can_call_to_plan_from_xml():
     kernel = create_kernel_and_functions_mock(functions)
 
     plan_string = """<plan>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -317,11 +352,15 @@ def test_can_call_to_plan_from_xml():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     <function.SummarizePlugin-Summarize/>
     <function.WriterPlugin-Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
     <function.get_email-GetEmailAddressAsync input="John Doe" setContextVariable="EMAIL_ADDRESS" \
         appendToResult="PLAN_RESULT"/>
     <function.send_email-SendEmailAsync input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -338,6 +377,8 @@ def test_can_call_to_plan_from_xml():
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
     <function.SummarizePlugin.Summarize/>
     <function.WriterPlugin.Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
@@ -345,6 +386,7 @@ def test_can_call_to_plan_from_xml():
         appendToResult="PLAN_RESULT"/>
     <function.send_email.SendEmailAsync input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -359,10 +401,13 @@ def test_can_call_to_plan_from_xml():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 </plan>"""
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
 
     plan = SequentialPlanParser.to_plan_from_xml(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -394,6 +439,9 @@ def test_can_call_to_plan_from_xml():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         xml_string=plan_string,
         goal=goal,
         kernel=kernel,
@@ -404,6 +452,7 @@ def test_can_call_to_plan_from_xml():
         plan.description
         == "Summarize an input, translate to french, and e-mail to John Doe"
     )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -421,6 +470,8 @@ def test_can_call_to_plan_from_xml():
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
         plan_string,
         goal,
         SequentialPlanParser.get_plugin_function(kernel),
@@ -429,6 +480,7 @@ def test_can_call_to_plan_from_xml():
     assert plan is not None
     assert plan.description == "Summarize an input, translate to french, and e-mail to John Doe"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -443,6 +495,8 @@ def test_can_call_to_plan_from_xml():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     assert len(plan._steps) == 4
     assert plan._steps[0].plugin_name == "SummarizePlugin"
@@ -468,6 +522,7 @@ def test_invalid_plan_execute_plan_returns_invalid_result():
     kernel = create_kernel_and_functions_mock([])
 
     # Act and Assert
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -490,6 +545,8 @@ def test_invalid_plan_execute_plan_returns_invalid_result():
         SequentialPlanParser.to_plan_from_xml(
             "<someTag>", "Solve the equation x^2 = 2.", kernel
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     with pytest.raises(PlannerInvalidPlanError):
         SequentialPlanParser.to_plan_from_xml(
@@ -501,6 +558,7 @@ def test_invalid_plan_execute_plan_returns_invalid_result():
             "Solve the equation x^2 = 2.",
             SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -515,6 +573,8 @@ def test_invalid_plan_execute_plan_returns_invalid_result():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         )
 
 
@@ -524,6 +584,7 @@ def test_can_create_plan_with_text_nodes():
     plan_text = """
         <goal>Test the functionFlowRunner</goal>
         <plan>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -542,11 +603,14 @@ def test_can_create_plan_with_text_nodes():
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
 =======
         <function.MockPlugin.Echo input="Hello World" />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -561,6 +625,8 @@ def test_can_create_plan_with_text_nodes():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         This is some text
         </plan>"""
     functions = [
@@ -572,6 +638,7 @@ def test_can_create_plan_with_text_nodes():
     plan = SequentialPlanParser.to_plan_from_xml(
         plan_text,
         goal_text,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -590,11 +657,14 @@ def test_can_create_plan_with_text_nodes():
 <<<<<<< HEAD
         kernel,
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         kernel,
 =======
         SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -609,6 +679,8 @@ def test_can_create_plan_with_text_nodes():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     )
 
     # Assert
@@ -625,6 +697,7 @@ def test_can_create_plan_with_text_nodes():
         (
             """
         <plan>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -645,6 +718,8 @@ def test_can_create_plan_with_text_nodes():
         <function.MockPlugin-Echo input="Hello World" />
         <function.MockPlugin-DoesNotExist input="Hello World" />
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
         <function.MockPlugin-DoesNotExist input="Hello World" />
@@ -652,6 +727,7 @@ def test_can_create_plan_with_text_nodes():
         <function.MockPlugin.Echo input="Hello World" />
         <function.MockPlugin.DoesNotExist input="Hello World" />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -666,12 +742,15 @@ def test_can_create_plan_with_text_nodes():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         </plan>""",
             True,
         ),
         (
             """
         <plan>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -692,6 +771,8 @@ def test_can_create_plan_with_text_nodes():
         <function.MockPlugin-Echo input="Hello World" />
         <function.MockPlugin-DoesNotExist input="Hello World" />
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
         <function.MockPlugin-DoesNotExist input="Hello World" />
@@ -699,6 +780,7 @@ def test_can_create_plan_with_text_nodes():
         <function.MockPlugin.Echo input="Hello World" />
         <function.MockPlugin.DoesNotExist input="Hello World" />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -713,11 +795,14 @@ def test_can_create_plan_with_text_nodes():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         </plan>""",
             False,
         ),
     ],
 )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -740,6 +825,8 @@ def test_can_create_plan_with_invalid_function_nodes(
     plan_text, allow_missing_functions
 ):
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 def test_can_create_plan_with_invalid_function_nodes(
     plan_text, allow_missing_functions
@@ -747,6 +834,7 @@ def test_can_create_plan_with_invalid_function_nodes(
 =======
 def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_functions):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -761,6 +849,8 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     # Arrange
     functions = [
         ("Echo", "MockPlugin", "Echo an input", True, "Mock Echo Result"),
@@ -769,6 +859,7 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
     # Act and Assert
     if allow_missing_functions:
         plan = SequentialPlanParser.to_plan_from_xml(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -800,10 +891,14 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             xml_string=plan_text,
             goal="",
             kernel=kernel,
             allow_missing_functions=allow_missing_functions,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -820,12 +915,15 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
             plan_text,
             "",
             SequentialPlanParser.get_plugin_function(kernel),
             allow_missing_functions,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -840,6 +938,8 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         )
 
         # Assert
@@ -852,6 +952,7 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
 
         assert plan._steps[1].plugin_name == plan.__class__.__name__
         assert plan._steps[1].name.startswith("plan_")
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -883,6 +984,9 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         assert plan._steps[1].description == "MockPlugin-DoesNotExist"
     else:
         with pytest.raises(PlannerInvalidPlanError):
@@ -890,6 +994,7 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
                 plan_text,
                 "",
                 kernel,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -906,6 +1011,8 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
         assert plan._steps[1].description == "MockPlugin.DoesNotExist"
     else:
@@ -916,6 +1023,7 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
                 SequentialPlanParser.get_plugin_function(kernel),
                 allow_missing_functions,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -930,6 +1038,8 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             )
 
 
@@ -938,6 +1048,7 @@ def test_can_create_plan_with_other_text():
     goal_text = "Test the functionFlowRunner"
     plan_text1 = """Possible result: <goal>Test the functionFlowRunner</goal>
         <plan>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -956,11 +1067,14 @@ def test_can_create_plan_with_other_text():
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
 =======
         <function.MockPlugin.Echo input="Hello World" />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -975,10 +1089,13 @@ def test_can_create_plan_with_other_text():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         This is some text
         </plan>"""
     plan_text2 = """
         <plan>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -997,11 +1114,14 @@ def test_can_create_plan_with_other_text():
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
 =======
         <function.MockPlugin.Echo input="Hello World" />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1016,12 +1136,15 @@ def test_can_create_plan_with_other_text():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         This is some text
         </plan>
 
         plan end"""
     plan_text3 = """
         <plan>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1040,11 +1163,14 @@ def test_can_create_plan_with_other_text():
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
 =======
         <function.MockPlugin.Echo input="Hello World" />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1059,6 +1185,8 @@ def test_can_create_plan_with_other_text():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         This is some text
         </plan>
 
@@ -1072,6 +1200,7 @@ def test_can_create_plan_with_other_text():
     plan1 = SequentialPlanParser.to_plan_from_xml(
         plan_text1,
         goal_text,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1090,11 +1219,14 @@ def test_can_create_plan_with_other_text():
 <<<<<<< HEAD
         kernel,
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         kernel,
 =======
         SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1109,10 +1241,13 @@ def test_can_create_plan_with_other_text():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     )
     plan2 = SequentialPlanParser.to_plan_from_xml(
         plan_text2,
         goal_text,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1131,11 +1266,14 @@ def test_can_create_plan_with_other_text():
 <<<<<<< HEAD
         kernel,
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         kernel,
 =======
         SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1150,10 +1288,13 @@ def test_can_create_plan_with_other_text():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     )
     plan3 = SequentialPlanParser.to_plan_from_xml(
         plan_text3,
         goal_text,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1172,11 +1313,14 @@ def test_can_create_plan_with_other_text():
 <<<<<<< HEAD
         kernel,
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         kernel,
 =======
         SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1191,6 +1335,8 @@ def test_can_create_plan_with_other_text():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     )
 
     # Assert
@@ -1216,6 +1362,7 @@ def test_can_create_plan_with_other_text():
 @pytest.mark.parametrize(
     "plan_text",
     [
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1234,11 +1381,14 @@ def test_can_create_plan_with_other_text():
 <<<<<<< HEAD
         """<plan> <function.CodeSearch-codesearchresults_post organization="MyOrg" project="Proj" \
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         """<plan> <function.CodeSearch-codesearchresults_post organization="MyOrg" project="Proj" \
 =======
         """<plan> <function.CodeSearch.codesearchresults_post organization="MyOrg" project="Proj" \
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1253,12 +1403,15 @@ def test_can_create_plan_with_other_text():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             api_version="7.1-preview.1" server_url="https://faketestorg.dev.azure.com/" \
                 payload="{&quot;searchText&quot;:&quot;test&quot;,&quot;$top&quot;:3,&quot;filters&quot;\
                     :{&quot;Repository/Project&quot;:[&quot;Proj&quot;],&quot;Repository/Repository&quot;\
                         :[&quot;Repo&quot;]}}" content_type="application/json" appendToResult=\
                             "RESULT__TOP_THREE_RESULTS" /> </plan>""",
         """<plan>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1277,11 +1430,14 @@ def test_can_create_plan_with_other_text():
 <<<<<<< HEAD
   <function.CodeSearch-codesearchresults_post organization="MyOrg" project="MyProject" \
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
   <function.CodeSearch-codesearchresults_post organization="MyOrg" project="MyProject" \
 =======
   <function.CodeSearch.codesearchresults_post organization="MyOrg" project="MyProject" \
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1296,11 +1452,14 @@ def test_can_create_plan_with_other_text():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     api_version="7.1-preview.1" payload="{&quot;searchText&quot;: &quot;MySearchText&quot;, \
         &quot;filters&quot;: {&quot;pathFilters&quot;: [&quot;MyRepo&quot;]} }" \
             setContextVariable="SEARCH_RESULTS"/>
 </plan><!-- END -->""",
         """<plan>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1319,11 +1478,14 @@ def test_can_create_plan_with_other_text():
 <<<<<<< HEAD
   <function.CodeSearch-codesearchresults_post organization="MyOrg" project="MyProject" \
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
   <function.CodeSearch-codesearchresults_post organization="MyOrg" project="MyProject" \
 =======
   <function.CodeSearch.codesearchresults_post organization="MyOrg" project="MyProject" \
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1338,6 +1500,8 @@ def test_can_create_plan_with_other_text():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     api_version="7.1-preview.1" server_url="https://faketestorg.dev.azure.com/" \
         payload="{ 'searchText': 'MySearchText', 'filters': { 'Project': ['MyProject'], \
             'Repository': ['MyRepo'] }, 'top': 3, 'skip': 0 }" content_type="application/json" \
@@ -1362,6 +1526,7 @@ def test_can_create_plan_with_open_api_plugin(plan_text):
     plan = SequentialPlanParser.to_plan_from_xml(
         plan_text,
         "",
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1380,11 +1545,14 @@ def test_can_create_plan_with_open_api_plugin(plan_text):
 <<<<<<< HEAD
         kernel,
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         kernel,
 =======
         SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1399,6 +1567,8 @@ def test_can_create_plan_with_open_api_plugin(plan_text):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     )
 
     # Assert
@@ -1412,6 +1582,7 @@ def test_can_create_plan_with_ignored_nodes():
     # Arrange
     goal_text = "Test the functionFlowRunner"
     plan_text = """<plan>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1434,6 +1605,8 @@ def test_can_create_plan_with_ignored_nodes():
         <tag>Some other tag</tag>
         <function.MockPlugin-Echo />
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
         <tag>Some other tag</tag>
@@ -1443,6 +1616,7 @@ def test_can_create_plan_with_ignored_nodes():
         <tag>Some other tag</tag>
         <function.MockPlugin.Echo />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1457,6 +1631,8 @@ def test_can_create_plan_with_ignored_nodes():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         </plan>"""
     functions = [
         ("Echo", "MockPlugin", "Echo an input", True, "Mock Echo Result"),
@@ -1467,6 +1643,7 @@ def test_can_create_plan_with_ignored_nodes():
     plan = SequentialPlanParser.to_plan_from_xml(
         plan_text,
         goal_text,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1485,11 +1662,14 @@ def test_can_create_plan_with_ignored_nodes():
 <<<<<<< HEAD
         kernel,
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         kernel,
 =======
         SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1504,6 +1684,8 @@ def test_can_create_plan_with_ignored_nodes():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     )
 
     # Assert

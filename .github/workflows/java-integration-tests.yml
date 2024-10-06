@@ -57,6 +57,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -73,6 +74,8 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
         uses: actions/checkout@v3
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -109,6 +112,7 @@ jobs:
 
       - name: Build with Maven
         run: ./mvnw -B -Pwith-samples -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -125,6 +129,8 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
         working-directory: java
         if: ${{ matrix.java-versions >= 17 }}
         run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml

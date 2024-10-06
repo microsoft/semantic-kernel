@@ -1,4 +1,5 @@
 Generate a short funny poem or limerick to explain the given event. Be creative and be funny. Let your imagination run wild.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -30,10 +31,14 @@ Generate a short funny poem or limerick to explain the given event. Be creative 
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 Event: {{$eventName}} = "My Event"
 
 config:
   eventName: "My Event"
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -67,3 +72,8 @@ Event: {{$input}}
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+Event: {{$input}}
+=======
+>>>>>>> origin/codespace-special-garbanzo-55wjrggxg5x36rg
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<Project Sdk="Microsoft.NET.Sdk">
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
   <PropertyGroup>
     <AssemblyName>GettingStartedWithAgents</AssemblyName>
@@ -76,6 +80,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -107,6 +112,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    <ProjectReference Include="..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
   </ItemGroup>
 
   <ItemGroup>
@@ -121,6 +129,7 @@
   </ItemGroup>
 
   <ItemGroup>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -139,12 +148,15 @@
 <<<<<<< HEAD
     <None Remove="Resources\travelinfo.txt" />
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
     <None Remove="Resources\*" />
     <None Remove="Resources\travelinfo.txt" />
 =======
     <None Remove="Resources\*" />
 >>>>>>> ms/main
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -159,6 +171,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
   </ItemGroup>
 
 </Project>

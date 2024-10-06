@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,10 +21,13 @@ using System.Text;
 using System.Collections.Generic;
 using System.Text;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +42,8 @@ using System.Text.Json;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
 using Xunit;
@@ -55,6 +61,7 @@ public sealed class OpenAIFunctionToolCallTests
     public void FullyQualifiedNameReturnsValidName(string toolCallName, string expectedName)
     {
         // Arrange
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,6 +96,10 @@ public sealed class OpenAIFunctionToolCallTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, BinaryData.FromString(args));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
 
         // Act & Assert
@@ -100,6 +111,7 @@ public sealed class OpenAIFunctionToolCallTests
     public void ToStringReturnsCorrectValue()
     {
         // Arrange
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -133,6 +145,9 @@ public sealed class OpenAIFunctionToolCallTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", BinaryData.FromString("{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}"));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
 
         // Act & Assert
@@ -178,6 +193,7 @@ public sealed class OpenAIFunctionToolCallTests
 
         Assert.Equal("test-id", toolCall.Id);
         Assert.Equal("test-function", toolCall.FunctionName);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -211,5 +227,8 @@ public sealed class OpenAIFunctionToolCallTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        Assert.Equal("test-argument", toolCall.FunctionArguments.ToString());
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -40,6 +41,11 @@ using System.Net.Http;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using System.ClientModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -90,6 +96,7 @@ public static class AzureOpenAIServiceCollectionExtensions
         {
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,6 +130,9 @@ public static class AzureOpenAIServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                new ApiKeyCredential(apiKey),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 HttpClientProvider.GetHttpClient(serviceProvider));
 
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
@@ -478,6 +488,7 @@ public static class AzureOpenAIServiceCollectionExtensions
         {
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -511,6 +522,9 @@ public static class AzureOpenAIServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                new ApiKeyCredential(apiKey),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 HttpClientProvider.GetHttpClient(serviceProvider));
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
@@ -588,6 +602,7 @@ public static class AzureOpenAIServiceCollectionExtensions
 
     #endregion
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -621,6 +636,9 @@ public static class AzureOpenAIServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient) =>
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient));
 
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, TokenCredential credentials, HttpClient? httpClient) =>

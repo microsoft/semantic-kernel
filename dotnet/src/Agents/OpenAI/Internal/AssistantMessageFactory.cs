@@ -48,6 +48,7 @@ internal static class AssistantMessageFactory
             {
                 if (imageContent.Uri != null)
                 {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -88,11 +89,14 @@ internal static class AssistantMessageFactory
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                     yield return MessageContent.FromImageUri(imageContent.Uri);
                 }
                 else if (string.IsNullOrWhiteSpace(imageContent.DataUri))
                 {
                     yield return MessageContent.FromImageUri(new(imageContent.DataUri!));
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -107,6 +111,8 @@ internal static class AssistantMessageFactory
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 }
             }
             else if (content is FileReferenceContent fileContent)

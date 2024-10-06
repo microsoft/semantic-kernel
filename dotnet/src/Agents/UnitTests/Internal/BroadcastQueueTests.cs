@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -162,6 +166,7 @@ public class BroadcastQueueTests
         await queue.EnsureSynchronizedAsync(new ChannelReference(channel, hash));
         Assert.Equal(receiveCount, channel.ReceiveCount);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -178,6 +183,8 @@ public class BroadcastQueueTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     private sealed class TestChannel : MockChannel
     {
@@ -223,6 +230,7 @@ public class BroadcastQueueTests
             throw new NotImplementedException();
         }
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -237,4 +245,6 @@ public class BroadcastQueueTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

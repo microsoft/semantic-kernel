@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -16,10 +17,13 @@
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,6 +38,8 @@ using System.Collections.Generic;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
@@ -47,6 +53,7 @@ internal static class AzureCosmosDBMongoDBConstants
 
     /// <summary>Reserved key property name in data model.</summary>
     internal const string DataModelReservedKeyPropertyName = "Id";
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -63,6 +70,8 @@ internal static class AzureCosmosDBMongoDBConstants
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 =======
 
@@ -101,6 +110,7 @@ internal static class AzureCosmosDBMongoDBConstants
         typeof(ReadOnlyMemory<double>?)
     ];
 >>>>>>> ms/main
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -115,4 +125,6 @@ internal static class AzureCosmosDBMongoDBConstants
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

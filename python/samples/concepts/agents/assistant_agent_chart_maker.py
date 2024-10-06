@@ -4,6 +4,7 @@ import asyncio
 from semantic_kernel.agents.open_ai import AzureAssistantAgent, OpenAIAssistantAgent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +36,9 @@ from semantic_kernel.contents.streaming_file_reference_content import StreamingF
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
@@ -50,6 +54,7 @@ AGENT_INSTRUCTIONS = "Create charts as requested without explanation."
 # Note: you may toggle this to switch between AzureOpenAI and OpenAI
 use_azure_openai = True
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,6 +87,10 @@ streaming = True
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+streaming = True
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 # A helper method to invoke the agent with the user input
 async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) -> None:
@@ -90,6 +99,7 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
 
     print(f"# {AuthorRole.USER}: '{input}'")
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -133,6 +143,8 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     if streaming:
         first_chunk = True
         async for message in agent.invoke_stream(thread_id=thread_id):
@@ -156,6 +168,7 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
                 for item in message.items:
                     if isinstance(item, FileReferenceContent):
                         print(f"\n`{message.role}` => {item.file_id}")
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -170,6 +183,8 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 
 async def main():

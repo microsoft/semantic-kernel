@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -65,6 +69,7 @@ public static class IndexKind
     /// Better with smaller datasets.
     /// </remarks>
     public const string Flat = nameof(Flat);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -96,6 +101,9 @@ public static class IndexKind
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Inverted File with Flat Compression. Designed to enhance search efficiency by narrowing the search area through the use of neighbor partitions or clusters.
@@ -118,6 +126,7 @@ public static class IndexKind
     /// Dynamic index allows to automatically switch from <see cref="Flat"/> to <see cref="Hnsw"/> indexes.
     /// </summary>
     public const string Dynamic = nameof(Dynamic);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -150,4 +159,8 @@ public static class IndexKind
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

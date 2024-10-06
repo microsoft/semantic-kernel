@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import re
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,6 +33,9 @@ import re
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from collections.abc import Callable
 
 from defusedxml import ElementTree as ET
@@ -45,6 +49,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -62,6 +67,8 @@ from semantic_kernel.planners.plan import Plan
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 from typing import Callable, Optional, Tuple
 from xml.etree import ElementTree as ET
 
@@ -72,6 +79,7 @@ from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.planning_exception import PlanningException
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -86,6 +94,8 @@ from semantic_kernel.planners.planning_exception import PlanningException
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 # Constants
 GOAL_TAG = "goal"
@@ -96,6 +106,7 @@ APPEND_TO_RESULT_TAG = "appendToResult"
 
 
 class SequentialPlanParser:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -114,6 +125,8 @@ class SequentialPlanParser:
 <<<<<<< HEAD
     """Parser for Sequential planners."""
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     """Parser for Sequential planners."""
 =======
@@ -133,6 +146,7 @@ class SequentialPlanParser:
 
         return function
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -147,11 +161,14 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     @staticmethod
     def to_plan_from_xml(
         xml_string: str,
         goal: str,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -183,11 +200,15 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         kernel: Kernel,
         get_plugin_function: Callable[[str, str], KernelFunction | None] | None = None,
         allow_missing_functions: bool = False,
     ):
         """Convert an xml string to a plan."""
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -205,10 +226,13 @@ class SequentialPlanParser:
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
         get_plugin_function: Callable[[str, str], Optional[KernelFunction]],
         allow_missing_functions: bool = False,
     ):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -223,6 +247,8 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         xml_string = "<xml>" + xml_string + "</xml>"
         try:
             xml_doc = ET.fromstring(xml_string)
@@ -236,6 +262,7 @@ class SequentialPlanParser:
                 try:
                     xml_doc = ET.fromstring("<xml>" + plan_xml + "</xml>")
                 except ET.ParseError:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -267,12 +294,16 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                     raise PlannerInvalidPlanError(
                         f"Failed to parse plan xml strings: '{xml_string}' or '{plan_xml}'"
                     )
             else:
                 raise PlannerInvalidPlanError(
                     f"Failed to parse plan xml string: '{xml_string}'"
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -289,6 +320,8 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
                     raise PlanningException(
                         PlanningException.ErrorCodes.InvalidPlan,
@@ -299,6 +332,7 @@ class SequentialPlanParser:
                     PlanningException.ErrorCodes.InvalidPlan,
                     f"Failed to parse plan xml string: '{xml_string}'",
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -313,6 +347,8 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 )
 
         solution = xml_doc.findall(".//" + SOLUTION_TAG)
@@ -320,6 +356,7 @@ class SequentialPlanParser:
         plan = Plan.from_goal(goal)
         for solution_node in solution:
             for child_node in solution_node:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -351,6 +388,9 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 if (
                     child_node.tag == "#text"
                     or child_node.tag == "#comment"
@@ -414,6 +454,7 @@ class SequentialPlanParser:
                     plan._outputs.append(result)
 
                 plan.add_steps([plan_step])
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -430,6 +471,8 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
                 if child_node.tag == "#text" or child_node.tag == "#comment":
                     continue
@@ -479,6 +522,7 @@ class SequentialPlanParser:
                                 f"Failed to find function '{plugin_function_name}' in plugin '{plugin_name}'.",
                             )
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -493,10 +537,13 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         return plan
 
     @staticmethod
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -528,6 +575,9 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     def get_plugin_function_names(plugin_function_name: str) -> tuple[str, str]:
         """Get the plugin and function names from the plugin function name."""
         plugin_function_name_parts = plugin_function_name.split("-")
@@ -539,6 +589,7 @@ class SequentialPlanParser:
             if len(plugin_function_name_parts) > 1
             else plugin_function_name
         )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -556,11 +607,14 @@ class SequentialPlanParser:
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
     def get_plugin_function_names(plugin_function_name: str) -> Tuple[str, str]:
         plugin_function_name_parts = plugin_function_name.split(".")
         plugin_name = plugin_function_name_parts[0] if len(plugin_function_name_parts) > 0 else ""
         function_name = plugin_function_name_parts[1] if len(plugin_function_name_parts) > 1 else plugin_function_name
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -575,4 +629,6 @@ class SequentialPlanParser:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         return plugin_name, function_name

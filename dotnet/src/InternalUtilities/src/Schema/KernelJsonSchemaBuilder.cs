@@ -21,6 +21,7 @@ namespace Microsoft.SemanticKernel;
 [ExcludeFromCodeCoverage]
 internal static class KernelJsonSchemaBuilder
 {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -54,6 +55,9 @@ internal static class KernelJsonSchemaBuilder
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    private static JsonSerializerOptions? s_options;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private static readonly JsonSchemaMapperConfiguration s_config = new()
     {
         IncludeSchemaVersion = false,
@@ -61,6 +65,7 @@ internal static class KernelJsonSchemaBuilder
         TreatNullObliviousAsNonNullable = true,
     };
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -106,6 +111,8 @@ internal static class KernelJsonSchemaBuilder
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     public static KernelJsonSchema Build(Type type, string? description = null, JsonSchemaMapperConfiguration? configuration = null)
@@ -122,6 +129,7 @@ internal static class KernelJsonSchemaBuilder
         var mapperConfiguration = configuration ?? s_config;
 
         JsonNode jsonSchema = options.GetJsonSchema(type, mapperConfiguration);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -136,6 +144,8 @@ internal static class KernelJsonSchemaBuilder
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Debug.Assert(jsonSchema.GetValueKind() is JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True);
 
         if (jsonSchema is not JsonObject jsonObj)
@@ -151,6 +161,7 @@ internal static class KernelJsonSchemaBuilder
             jsonObj["description"] = description;
         }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -198,6 +209,8 @@ internal static class KernelJsonSchemaBuilder
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         return KernelJsonSchema.Parse(jsonObj.ToJsonString(options));
     }
 
@@ -217,6 +230,7 @@ internal static class KernelJsonSchemaBuilder
         }
 
         return s_options;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -231,5 +245,7 @@ internal static class KernelJsonSchemaBuilder
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 }

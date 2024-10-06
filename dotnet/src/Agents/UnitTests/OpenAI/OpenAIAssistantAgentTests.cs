@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +36,11 @@ using System.IO;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using System.ClientModel;
+using System.Collections.Generic;
+using System.IO;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -95,6 +101,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     /// <summary>
     /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -111,6 +118,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// for an agent with name, instructions, and description from a template.
     /// </summary>
     [Fact]
@@ -135,6 +144,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     /// <summary>
     /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,6 +159,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// for an agent with code-interpreter enabled.
     /// </summary>
     [Fact]
@@ -167,6 +179,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     /// <summary>
     /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -183,6 +196,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// for an agent with code-interpreter enabled.
     /// </summary>
     [Fact]
@@ -206,6 +221,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     /// <summary>
     /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -220,6 +236,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// for an agent with code-interpreter files.
     /// </summary>
     [Fact]
@@ -410,6 +428,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 },
             };
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -481,6 +500,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
@@ -495,6 +516,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition = new("testmodel");
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentPayload(definition));
 
         OpenAIAssistantAgent agent =
@@ -503,6 +525,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 this.CreateTestConfiguration(),
                 "#id");
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this.SetupResponse(HttpStatusCode.OK, definition);
 
         OpenAIAssistantAgent agent =
@@ -733,7 +757,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 this._emptyKernel,
                 new KernelArguments(),
                 new KernelPromptTemplateFactory());
+<<<<<<< HEAD
 >>>>>>> main
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act and Assert
         ValidateAgentDefinition(agent, definition);
@@ -752,12 +779,18 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         // Arrange
 <<<<<<< HEAD
+<<<<<<< HEAD
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.DeleteAgent);
 =======
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteAgent);
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.DeleteAgent);
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteAgent);
 >>>>>>> main
+=======
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteAgent);
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.DeleteAgent);
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteAgent);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act
         await agent.DeleteAsync();
@@ -770,12 +803,15 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.True(agent.IsDeleted);
         await Assert.ThrowsAsync<KernelException>(() => agent.AddChatMessageAsync("threadid", new(AuthorRole.User, "test")));
 <<<<<<< HEAD
+<<<<<<< HEAD
         await Assert.ThrowsAsync<KernelException>(() => agent.InvokeAsync("threadid").ToArrayAsync().AsTask());
     }
 
     /// <summary>
     /// Verify the deletion of agent via <see cref="OpenAIAssistantAgent.DeleteAsync"/>.
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         await Assert.ThrowsAsync<KernelException>(() => agent.GetThreadMessagesAsync("threadid").ToArrayAsync().AsTask());
         await Assert.ThrowsAsync<KernelException>(() => agent.InvokeAsync("threadid").ToArrayAsync().AsTask());
         await Assert.ThrowsAsync<KernelException>(() => agent.InvokeStreamingAsync("threadid", []).ToArrayAsync().AsTask());
@@ -790,7 +826,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     /// <summary>
     /// Verify the creating a thread via <see cref="OpenAIAssistantAgent"/>.
+<<<<<<< HEAD
 >>>>>>> main
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// </summary>
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreateThreadAsync()
@@ -798,6 +837,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateThread);
 
@@ -821,6 +861,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentChatTextMessageAsync()
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
 
         // Act
@@ -957,6 +999,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     /// </summary>
     [Fact]
     public async Task VerifyOpenAIAssistantAgentInvokeAsync()
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -970,10 +1013,13 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     {
         // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1009,6 +1055,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this.SetupResponses(
             HttpStatusCode.OK,
             OpenAIAssistantResponseContent.CreateThread,
@@ -1040,6 +1088,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     /// </summary>
     [Fact]
     public async Task VerifyOpenAIAssistantAgentInvokeAsync()
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1054,12 +1103,15 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     {
         // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
         this.SetupResponses(
             HttpStatusCode.OK,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1105,6 +1157,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             OpenAIAssistantResponseContent.CreateThread,
             OpenAIAssistantResponseContent.Run.CreateRun,
             OpenAIAssistantResponseContent.Run.CompletedRun,
@@ -1113,6 +1167,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         // Act
         ChatMessageContent[] messages = await agent.InvokeAsync("threadid").ToArrayAsync();
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1127,6 +1182,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Assert
         Assert.Single(messages);
@@ -1145,6 +1202,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         this.SetupResponses(
             HttpStatusCode.OK,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1185,11 +1243,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             OpenAIAssistantResponseContent.CreateThread,
             OpenAIAssistantResponseContent.Run.CreateRun,
             OpenAIAssistantResponseContent.Run.CompletedRun,
             OpenAIAssistantResponseContent.Run.MessageSteps,
             OpenAIAssistantResponseContent.GetTextMessageWithAnnotation);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1204,6 +1265,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         AgentGroupChat chat = new();
 
@@ -1228,6 +1291,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         this.SetupResponses(
             HttpStatusCode.OK,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1268,11 +1332,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             OpenAIAssistantResponseContent.CreateThread,
             OpenAIAssistantResponseContent.Run.CreateRun,
             OpenAIAssistantResponseContent.Run.CompletedRun,
             OpenAIAssistantResponseContent.Run.MessageSteps,
             OpenAIAssistantResponseContent.GetImageMessage);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1287,6 +1354,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         AgentGroupChat chat = new();
 
@@ -1311,6 +1380,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Initialize agent channel
         this.SetupResponses(
             HttpStatusCode.OK,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1351,11 +1421,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             OpenAIAssistantResponseContent.CreateThread,
             OpenAIAssistantResponseContent.Run.CreateRun,
             OpenAIAssistantResponseContent.Run.CompletedRun,
             OpenAIAssistantResponseContent.Run.MessageSteps,
             OpenAIAssistantResponseContent.GetTextMessage());
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1370,6 +1443,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         AgentGroupChat chat = new();
 
@@ -1381,6 +1456,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Arrange: Setup messages
         this.SetupResponses(
             HttpStatusCode.OK,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1420,6 +1496,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            OpenAIAssistantResponseContent.ListMessagesPageMore,
+            OpenAIAssistantResponseContent.ListMessagesPageMore,
+            OpenAIAssistantResponseContent.ListMessagesPageFinal);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act: Get messages
         messages = await chat.GetChatMessagesAsync(agent).ToArrayAsync();
@@ -1428,6 +1509,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1444,6 +1526,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Verify message retrieval via <see cref="OpenAIAssistantAgent.GetThreadMessagesAsync(string, System.Threading.CancellationToken)"/>.
     /// </summary>
     [Fact]
@@ -1526,6 +1610,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1540,6 +1625,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Verify complex chat interaction across multiple states.
     /// </summary>
     [Fact]
@@ -1551,6 +1638,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Initialize agent channel
         this.SetupResponses(
             HttpStatusCode.OK,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1591,11 +1679,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             OpenAIAssistantResponseContent.CreateThread,
             OpenAIAssistantResponseContent.Run.CreateRun,
             OpenAIAssistantResponseContent.Run.CompletedRun,
             OpenAIAssistantResponseContent.Run.MessageSteps,
             OpenAIAssistantResponseContent.GetTextMessage());
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1610,6 +1701,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         AgentGroupChat chat = new();
 
         // Act
@@ -1638,6 +1731,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         this.SetupResponses(
             HttpStatusCode.OK,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1677,6 +1771,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            OpenAIAssistantResponseContent.ListAgentsPageMore,
+            OpenAIAssistantResponseContent.ListAgentsPageMore,
+            OpenAIAssistantResponseContent.ListAgentsPageFinal);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act
         var messages =
@@ -1688,6 +1787,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Arrange
         this.SetupResponses(
             HttpStatusCode.OK,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1708,12 +1808,15 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.ListAgentsPageMore,
             ResponseContent.ListAgentsPageFinal);
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             OpenAIAssistantResponseContent.ListAgentsPageMore,
             OpenAIAssistantResponseContent.ListAgentsPageFinal);
             ResponseContent.ListAgentsPageMore,
             ResponseContent.ListAgentsPageFinal);
             OpenAIAssistantResponseContent.ListAgentsPageMore,
             OpenAIAssistantResponseContent.ListAgentsPageFinal);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1728,6 +1831,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act
         messages =
@@ -1751,6 +1856,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         this.SetupResponses(
             HttpStatusCode.OK,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1794,6 +1900,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             OpenAIAssistantResponseContent.CreateThread,
             OpenAIAssistantResponseContent.Run.CreateRun,
             OpenAIAssistantResponseContent.Run.PendingRun,
@@ -1802,6 +1910,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             OpenAIAssistantResponseContent.Run.CompletedRun,
             OpenAIAssistantResponseContent.Run.MessageSteps,
             OpenAIAssistantResponseContent.GetTextMessage());
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1816,6 +1925,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         AgentGroupChat chat = new();
 
@@ -1847,6 +1958,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     private async Task VerifyAgentCreationAsync(OpenAIAssistantDefinition definition)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1889,6 +2001,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this.SetupResponse(HttpStatusCode.OK, definition);
 
         OpenAIAssistantAgent agent =
@@ -1901,6 +2015,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 this.CreateTestConfiguration(),
                 definition,
                 this._emptyKernel);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1915,10 +2030,13 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         ValidateAgentDefinition(agent, definition);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1937,6 +2055,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 <<<<<<< HEAD
     private static void ValidateAgentDefinition(OpenAIAssistantAgent agent, OpenAIAssistantDefinition sourceDefinition)
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private async Task VerifyAgentTemplateAsync(
         OpenAIAssistantCapabilities capabilities,
         PromptTemplateConfig templateConfig,
@@ -1972,6 +2092,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         string? expectedInstructions,
         string? expectedDescription,
         OpenAIAssistantCapabilities expectedConfig)
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1986,12 +2107,15 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     {
         // Verify fundamental state
         Assert.NotNull(agent);
         Assert.NotNull(agent.Id);
         Assert.False(agent.IsDeleted);
         Assert.NotNull(agent.Definition);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2041,6 +2165,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Assert.Equal(expectedConfig.ModelId, agent.Definition.ModelId);
 
         // Verify core properties
@@ -2055,6 +2181,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.Equal(expectedConfig.ExecutionOptions?.MaxPromptTokens, agent.Definition.ExecutionOptions?.MaxPromptTokens);
         Assert.Equal(expectedConfig.ExecutionOptions?.ParallelToolCallsEnabled, agent.Definition.ExecutionOptions?.ParallelToolCallsEnabled);
         Assert.Equal(expectedConfig.ExecutionOptions?.TruncationMessageCount, agent.Definition.ExecutionOptions?.TruncationMessageCount);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2069,11 +2196,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Verify tool definitions
         int expectedToolCount = 0;
 
         bool hasCodeInterpreter = false;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2107,6 +2237,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        if (expectedConfig.EnableCodeInterpreter)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         {
             hasCodeInterpreter = true;
             ++expectedToolCount;
@@ -2115,6 +2248,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.Equal(hasCodeInterpreter, agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
 
         bool hasFileSearch = false;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2148,6 +2282,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        if (expectedConfig.EnableFileSearch)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         {
             hasFileSearch = true;
             ++expectedToolCount;
@@ -2159,6 +2296,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         // Verify metadata
         Assert.NotNull(agent.Definition.Metadata);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2205,6 +2343,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         if (expectedConfig.ExecutionOptions == null)
         {
             Assert.Equal(expectedConfig.Metadata ?? new Dictionary<string, string>(), agent.Definition.Metadata);
@@ -2216,6 +2356,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             if (expectedConfig.Metadata != null)
             {
                 foreach (var (key, value) in expectedConfig.Metadata)
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2230,6 +2371,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 {
                     string? targetValue = agent.Definition.Metadata[key];
                     Assert.NotNull(targetValue);
@@ -2239,6 +2382,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         }
 
         // Verify detail definition
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2275,12 +2419,17 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        Assert.Equal(expectedConfig.VectorStoreId, agent.Definition.VectorStoreId);
+        Assert.Equal(expectedConfig.CodeInterpreterFileIds, agent.Definition.CodeInterpreterFileIds);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     private Task<OpenAIAssistantAgent> CreateAgentAsync()
     {
         OpenAIAssistantDefinition definition = new("testmodel");
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2314,11 +2463,15 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        this.SetupResponse(HttpStatusCode.OK, definition);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         return
             OpenAIAssistantAgent.CreateAsync(
                 this._emptyKernel,
                 this.CreateTestConfiguration(),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2341,6 +2494,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 definition,
                 this._emptyKernel);
                 this.CreateTestConfiguration(),
@@ -2350,6 +2505,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         ValidateAgentDefinition(agent, definition);
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2364,11 +2520,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private OpenAIClientProvider CreateTestConfiguration(bool targetAzure = false)
         => targetAzure ?
             OpenAIClientProvider.ForAzureOpenAI(apiKey: "fakekey", endpoint: new Uri("https://localhost"), this._httpClient) :
             OpenAIClientProvider.ForOpenAI(apiKey: "fakekey", endpoint: null, this._httpClient);
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2436,6 +2595,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private async Task VerifyAgentTemplateAsync(
         OpenAIAssistantCapabilities capabilities,
         PromptTemplateConfig templateConfig,
@@ -2512,6 +2673,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             hasCodeInterpreter = true;
             ++expectedToolCount;
         }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2526,6 +2688,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         public static string CreateAgentPayload(OpenAIAssistantDefinition definition)
         {
             StringBuilder builder = new();
@@ -2637,6 +2801,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             }
             """;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2928,6 +3093,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Assert.Equal(hasCodeInterpreter, agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
 
         bool hasFileSearch = false;
@@ -2990,6 +3157,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantDefinition definition) =>
         this._messageHandlerStub.SetupResponses(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(definition));
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3004,6 +3172,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         public const string ListAgentsPageMore =
             """
             {
@@ -3072,6 +3242,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             }
             """;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3192,6 +3363,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantCapabilities capabilities, PromptTemplateConfig templateConfig) =>
         this._messageHandlerStub.SetupResponses(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(capabilities, templateConfig));
 
@@ -3203,6 +3376,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         [KernelFunction]
         public void MyFunction(int index)
         { }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3217,5 +3391,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 }

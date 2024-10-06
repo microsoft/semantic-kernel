@@ -1,3 +1,4 @@
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,6 +20,9 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> origin/main
 
 using System;
 using System.Collections.Generic;
@@ -108,6 +112,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = new Kernel();
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -122,10 +127,13 @@ public class KernelTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         // Arrange
         var kernel = KernelBuilder.Create();
         var factory = new Mock<Func<IKernel, ITextCompletion>>();
         kernel.Config.AddTextCompletionService(factory.Object);
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -139,6 +147,8 @@ public class KernelTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
         // Act - Assert no exception occurs
         kernel.ImportPluginFromType<MyPlugin>();
@@ -163,6 +173,7 @@ public class KernelTests
 
         // Act
         var result = await kernel.InvokeAsync(function);
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -183,6 +194,9 @@ public class KernelTests
 =======
         SKContext result = await kernel.RunAsync(null, skill["ReadSkillCollectionAsync"]);
 >>>>>>> Stashed changes
+=======
+        SKContext result = await kernel.RunAsync(null, skill["ReadSkillCollectionAsync"]);
+>>>>>>> origin/main
 
         // Assert
         Assert.Equal(1, functionInvocations);
@@ -218,6 +232,7 @@ public class KernelTests
         var kernel = new Kernel();
         int functionInvocations = 0;
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -232,11 +247,14 @@ public class KernelTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         var aiService = new Mock<ITextCompletion>();
 
         var kernel = Kernel.Builder
             .WithAIService<ITextCompletion>("x", aiService.Object)
             .Build();
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -250,6 +268,8 @@ public class KernelTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
         var handlerInvocations = 0;
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -262,6 +282,7 @@ public class KernelTests
         IAsyncEnumerable<StreamingKernelContent> enumerable = kernel.InvokeStreamingAsync<StreamingKernelContent>(function);
         IAsyncEnumerator<StreamingKernelContent> enumerator = enumerable.GetAsyncEnumerator();
         var e = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -293,6 +314,9 @@ public class KernelTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        SKContext result = await kernel.RunAsync("x", skill["ReadSkillCollectionAsync"]);
+>>>>>>> origin/main
 
         // Assert
         Assert.Equal(1, handlerInvocations);
@@ -324,6 +348,7 @@ public class KernelTests
         IAsyncEnumerable<StreamingKernelContent> enumerable = kernel.InvokeStreamingAsync<StreamingKernelContent>(functions["GetAnyValue"]);
         IAsyncEnumerator<StreamingKernelContent> enumerator = enumerable.GetAsyncEnumerator();
         var e = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -355,6 +380,9 @@ public class KernelTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        SKContext result = await kernel.RunAsync(null, cts.Token, skill["GetAnyValue"]);
+>>>>>>> origin/main
 
         // Assert
         Assert.Equal(0, invoked);
@@ -378,6 +406,7 @@ public class KernelTests
         await foreach (var chunk in kernel.InvokeStreamingAsync(function))
         {
         }
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -398,6 +427,9 @@ public class KernelTests
 =======
         SKContext result = await kernel.RunAsync("fake-model", cts.Token, kernel.Func("mySk", "GetAnyValue"));
 >>>>>>> Stashed changes
+=======
+        SKContext result = await kernel.RunAsync("fake-model", cts.Token, kernel.Func("mySk", "GetAnyValue"));
+>>>>>>> origin/main
 
         // Assert
         Assert.Equal(1, functionInvocations);

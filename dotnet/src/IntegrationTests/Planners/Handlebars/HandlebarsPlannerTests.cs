@@ -18,6 +18,7 @@ namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
 public sealed class HandlebarsPlannerTests
 {
     [Theory(Skip = "This test is for manual verification.")]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -49,6 +50,9 @@ public sealed class HandlebarsPlannerTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    [Theory]
+>>>>>>> origin/main
     [InlineData("Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
     public async Task CreatePlanFunctionFlowAsync(string goal, string expectedFunction, string expectedPlugin)
     {
@@ -89,6 +93,7 @@ public sealed class HandlebarsPlannerTests
     }
 
     [Theory(Skip = "This test is for manual verification.")]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -120,6 +125,9 @@ public sealed class HandlebarsPlannerTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    [Theory]
+>>>>>>> origin/main
     [InlineData("List each property of the default Qux object.", "## Complex types", """
         ### Qux:
         {

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
@@ -63,6 +67,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -105,6 +110,8 @@ public class AssistantRunOptionsFactoryTests
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, null);
 
         // Assert
@@ -122,6 +129,7 @@ public class AssistantRunOptionsFactoryTests
         Assert.NotNull(options);
         Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -136,6 +144,8 @@ public class AssistantRunOptionsFactoryTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Assert.Empty(options.Metadata);
     }
 
@@ -159,6 +169,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,11 +186,14 @@ public class AssistantRunOptionsFactoryTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, "test", invocationOptions);
 
         // Assert
         Assert.NotNull(options);
         Assert.Equal("test", options.InstructionsOverride);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -194,10 +208,13 @@ public class AssistantRunOptionsFactoryTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
 
         // Assert
         Assert.NotNull(options);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -214,11 +231,14 @@ public class AssistantRunOptionsFactoryTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, "test", invocationOptions);
 
         // Assert
         Assert.NotNull(options);
         Assert.Equal("test", options.InstructionsOverride);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -233,6 +253,8 @@ public class AssistantRunOptionsFactoryTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
     }
@@ -266,6 +288,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -301,6 +324,11 @@ public class AssistantRunOptionsFactoryTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Assert
         Assert.NotNull(options);
@@ -340,6 +368,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -375,6 +404,11 @@ public class AssistantRunOptionsFactoryTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Assert
         Assert.Equal(2, options.Metadata.Count);

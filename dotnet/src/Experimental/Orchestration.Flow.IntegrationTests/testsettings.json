@@ -1,5 +1,6 @@
 ﻿{
   "OpenAI": {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,6 +43,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
     "ServiceId": "gpt-3.5-turbo-instruct",
     "ModelId": "gpt-3.5-turbo-instruct",
@@ -59,6 +62,7 @@
     "ServiceId": "azure-text-davinci-003",
     "DeploymentName": "text-davinci-003",
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -73,6 +77,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     "ChatDeploymentName": "gpt-4",
     "Endpoint": "",
     "ApiKey": ""

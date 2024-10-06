@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,10 +22,13 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Serialization;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@ using Microsoft.SemanticKernel.Agents.Serialization;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -94,6 +100,7 @@ ebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync)
 
         return Task.FromResult<AgentChannel>(channel);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -110,6 +117,8 @@ ebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync)
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <inheritdoc/>
     protected internal async override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
@@ -128,6 +137,7 @@ ebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync)
 
         return channel;
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -142,4 +152,6 @@ ebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

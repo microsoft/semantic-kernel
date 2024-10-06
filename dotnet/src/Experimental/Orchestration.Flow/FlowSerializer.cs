@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -25,10 +26,16 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 <<<<<<< HEAD
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
+=======
+<<<<<<< HEAD
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+=======
+>>>>>>> origin/main
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,12 +49,15 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 /// <summary>
 /// Serializer for <see cref="Flow"/>
 /// </summary>
 public static class FlowSerializer
 {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -68,6 +78,9 @@ public static class FlowSerializer
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
     /// <summary>Options for <see cref="DeserializeFromJson"/>.</summary>
     private static readonly JsonSerializerOptions s_deserializeOptions = new()
     {
@@ -75,6 +88,7 @@ public static class FlowSerializer
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     };
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -100,6 +114,10 @@ public static class FlowSerializer
 =======
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
     /// <summary>
     /// Deserialize flow from yaml
     /// </summary>
@@ -123,6 +141,7 @@ public static class FlowSerializer
     /// <returns>the <see cref="Flow"/> instance</returns>
     public static Flow? DeserializeFromJson(string json)
     {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -143,6 +162,12 @@ public static class FlowSerializer
         var flow = JsonSerializer.Deserialize<FlowModel>(json, s_deserializeOptions) ??
             throw new JsonException("Failed to deserialize flow");
 =======
+=======
+<<<<<<< HEAD
+        var flow = JsonSerializer.Deserialize<FlowModel>(json, s_deserializeOptions) ??
+            throw new JsonException("Failed to deserialize flow");
+=======
+>>>>>>> origin/main
         var options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
@@ -155,6 +180,7 @@ public static class FlowSerializer
             throw new JsonException("Failed to deserialize flow");
         }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -168,6 +194,8 @@ public static class FlowSerializer
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
         return UpCast(flow);
     }
@@ -211,6 +239,7 @@ public static class FlowSerializer
     {
         public string Goal { get; set; } = string.Empty;
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -242,11 +271,15 @@ public static class FlowSerializer
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
         public List<string> Requires { get; set; } = [];
 
         public List<string> Provides { get; set; } = [];
 
         public List<string> Passthrough { get; set; } = [];
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -261,6 +294,8 @@ public static class FlowSerializer
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 =======
         public List<string> Requires { get; set; } = new();
 >>>>>>> origin/main
@@ -272,6 +307,7 @@ public static class FlowSerializer
 =======
         public List<string> Passthrough { get; set; } = new();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -286,6 +322,8 @@ public static class FlowSerializer
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
         public CompletionType CompletionType { get; set; } = CompletionType.Once;
 
@@ -293,6 +331,7 @@ public static class FlowSerializer
 
         public string? TransitionMessage { get; set; }
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -311,11 +350,14 @@ public static class FlowSerializer
 <<<<<<< main
         public List<string> Plugins { get; set; } = [];
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
         public List<string> Plugins { get; set; } = [];
 =======
         public List<string> Plugins { get; set; } = new();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -330,10 +372,13 @@ public static class FlowSerializer
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
         public string? FlowName { get; set; }
     }
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -369,11 +414,15 @@ public static class FlowSerializer
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
     private sealed class FlowModel : FlowStepModel
     {
         public string Name { get; set; } = string.Empty;
 
         public List<FlowStepModel> Steps { get; set; } = [];
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -388,6 +437,8 @@ public static class FlowSerializer
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 =======
     private class FlowModel : FlowStepModel
     {
@@ -395,6 +446,7 @@ public static class FlowSerializer
 
         public List<FlowStepModel> Steps { get; set; } = new();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -409,5 +461,7 @@ public static class FlowSerializer
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     }
 }

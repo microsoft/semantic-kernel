@@ -1,3 +1,4 @@
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,10 +20,14 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> origin/main
 
 using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +44,8 @@ using Microsoft.SemanticKernel.TemplateEngine;
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -168,6 +175,7 @@ public class VarBlockTests
 
         // Act + Assert
         Assert.Throws<KernelException>(() => target.Render(arguments));
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -193,6 +201,10 @@ public class VarBlockTests
         Assert.Throws<SKException>(() => target.Render(variables));
         Assert.Throws<SKException>(() => target.Render(variables));
 >>>>>>> Stashed changes
+=======
+        Assert.Throws<SKException>(() => target.Render(variables));
+        Assert.Throws<SKException>(() => target.Render(variables));
+>>>>>>> origin/main
     }
 
     [Theory]

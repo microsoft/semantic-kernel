@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Azure.AI.OpenAI.Chat;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,10 +22,13 @@ using Microsoft.SemanticKernel;
 <<<<<<< HEAD
 using Microsoft.SemanticKernel;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 using Microsoft.SemanticKernel;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@ using Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -66,6 +72,7 @@ public class OpenAIPromptExecutionSettingsTests
             Logprobs = true,
             Seed = 123456,
             TopLogprobs = 5,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -97,12 +104,16 @@ public class OpenAIPromptExecutionSettingsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             AzureChatDataSource = new AzureSearchChatDataSource
             {
                 Endpoint = new Uri("https://test-host"),
                 Authentication = DataSourceAuthentication.FromApiKey("api-key"),
                 IndexName = "index-name"
             }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -134,6 +145,9 @@ public class OpenAIPromptExecutionSettingsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         };
 
         // Act
@@ -143,6 +157,7 @@ public class OpenAIPromptExecutionSettingsTests
         AssertExecutionSettings(executionSettings);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -174,6 +189,9 @@ public class OpenAIPromptExecutionSettingsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public void ItRestoresOriginalFunctionChoiceBehavior()
     {
@@ -190,6 +208,7 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(functionChoiceBehavior, result.FunctionChoiceBehavior);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -222,6 +241,10 @@ public class OpenAIPromptExecutionSettingsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);

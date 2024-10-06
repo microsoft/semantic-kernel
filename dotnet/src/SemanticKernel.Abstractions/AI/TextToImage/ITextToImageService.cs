@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,6 +21,9 @@ using System.Collections.Generic;
 =======
 using System.Collections.Generic;
 >>>>>>> Stashed changes
+=======
+using System.Collections.Generic;
+>>>>>>> origin/main
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,6 +38,7 @@ namespace Microsoft.SemanticKernel.TextToImage;
 public interface ITextToImageService : IAIService
 {
     /// <summary>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -96,11 +101,20 @@ public interface ITextToImageService : IAIService
     /// <param name="executionSettings">Text to image execution settings</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+=======
+    /// Given a prompt and/or an input text, the model will generate a new image.
+    /// </summary>
+    /// <param name="input">Input text for image generation</param>
+    /// <param name="executionSettings">Text to image execution settings</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+>>>>>>> origin/main
     /// <returns>Generated image contents</returns>
     [Experimental("SKEXP0001")]
     public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(
         TextContent input,
         PromptExecutionSettings? executionSettings = null,
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -115,6 +129,8 @@ public interface ITextToImageService : IAIService
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 }

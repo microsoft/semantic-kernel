@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,6 +21,8 @@ using System;
 
 using System;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 // Copyright (c) Microsoft. All rights reserved.
 =======
@@ -28,6 +31,7 @@ using System;
 
 using System;
 using System.ClientModel;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,12 +46,15 @@ using System.ClientModel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -66,10 +73,13 @@ using Azure.Core;
 <<<<<<< HEAD
 using Azure.Core;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 using Azure.Core;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -84,6 +94,8 @@ using Azure.Core;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToAudio;
@@ -133,6 +145,7 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     {
         var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -190,6 +203,11 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
+
+        var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), new ApiKeyCredential(apiKey), options);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToAudioService)));
 
@@ -198,6 +216,7 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         this._modelId = modelId;
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -229,6 +248,9 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAITextToAudioService"/> class.
     /// </summary>
@@ -248,6 +270,7 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     {
         var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -285,6 +308,9 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), credential, options);
 
@@ -295,6 +321,7 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         this._modelId = modelId;
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -327,6 +354,10 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <inheritdoc/>
     public Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(
         string text,

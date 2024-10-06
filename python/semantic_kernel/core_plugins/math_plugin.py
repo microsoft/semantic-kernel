@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,6 +20,8 @@ from typing import Annotated
 
 from typing import Annotated
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 
 from typing import Annotated
@@ -30,6 +33,7 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -44,11 +48,14 @@ else:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 class MathPlugin:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -67,12 +74,15 @@ class MathPlugin:
 <<<<<<< HEAD
     """Description: MathPlugin provides a set of functions to make Math calculations.
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
     """Description: MathPlugin provides a set of functions to make Math calculations.
 =======
     """
     Description: MathPlugin provides a set of functions to make Math calculations.
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -87,6 +97,8 @@ class MathPlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     Usage:
         kernel.add_plugin(MathPlugin(), plugin_name="math")
@@ -109,6 +121,7 @@ class MathPlugin:
             amount = int(amount)
         return MathPlugin.add_or_subtract(input, amount, add=True)
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -127,6 +140,8 @@ class MathPlugin:
 <<<<<<< HEAD
     @kernel_function(name="Subtract")
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
     @kernel_function(name="Subtract")
 =======
@@ -135,6 +150,7 @@ class MathPlugin:
         name="Subtract",
     )
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,11 +165,14 @@ class MathPlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     def subtract(
         self,
         input: Annotated[int, "the first number"],
         amount: Annotated[int, "the number to subtract"],
     ) -> int:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -172,6 +191,8 @@ class MathPlugin:
 <<<<<<< HEAD
         """Returns the difference of numbers provided."""
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
         """Returns the difference of numbers provided."""
 =======
@@ -183,6 +204,7 @@ class MathPlugin:
         :return: The resulting subtraction as a string
         """
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -197,6 +219,8 @@ class MathPlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         if isinstance(input, str):
             input = int(input)
         if isinstance(amount, str):
@@ -205,6 +229,7 @@ class MathPlugin:
 
     @staticmethod
     def add_or_subtract(input: int, amount: int, add: bool) -> int:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -223,6 +248,8 @@ class MathPlugin:
 <<<<<<< HEAD
         """Helper function to perform addition or subtraction based on the add flag."""
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
         """Helper function to perform addition or subtraction based on the add flag."""
 =======
@@ -235,6 +262,7 @@ class MathPlugin:
         :return: The resulting sum or subtraction as a string
         """
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -249,4 +277,6 @@ class MathPlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         return input + amount if add else input - amount

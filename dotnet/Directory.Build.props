@@ -1,3 +1,4 @@
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,6 +20,9 @@
 =======
 <Project>
 >>>>>>> Stashed changes
+=======
+<Project>
+>>>>>>> origin/main
   <PropertyGroup>
     <!-- Default properties inherited by all projects. Projects can override. -->
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
@@ -34,6 +38,7 @@
   <PropertyGroup>
     <!-- In "main" branch this flag should be always "false". -->
     <IsReleaseCandidate>false</IsReleaseCandidate>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -65,6 +70,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    <IsReleaseCandidate>true</IsReleaseCandidate>
+>>>>>>> origin/main
   </PropertyGroup>
   
   <PropertyGroup>

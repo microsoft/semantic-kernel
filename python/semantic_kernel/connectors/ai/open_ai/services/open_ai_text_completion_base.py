@@ -26,6 +26,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -48,6 +49,8 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< main
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -60,6 +63,7 @@ from semantic_kernel.utils.telemetry.model_diagnostics import trace_text_complet
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import StreamingTextContent, TextContent
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -74,6 +78,8 @@ from semantic_kernel.contents import StreamingTextContent, TextContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import (
@@ -85,6 +91,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     """Base class for OpenAI text completion services."""
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -127,6 +134,11 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 
     MODEL_PROVIDER_NAME: ClassVar[str] = "openai"
 
+=======
+
+    MODEL_PROVIDER_NAME: ClassVar[str] = "openai"
+
+>>>>>>> origin/main
     # region Overriding base class methods
 
     # Override from AIServiceClientBase
@@ -134,6 +146,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return OpenAITextPromptExecutionSettings
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -154,11 +167,14 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     @override
     @trace_text_completion(MODEL_PROVIDER_NAME)
     async def _inner_get_text_contents(
         self,
         prompt: str,
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -190,6 +206,9 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
         settings: "PromptExecutionSettings",
     ) -> list["TextContent"]:
         if not isinstance(
@@ -203,6 +222,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         )  # nosec
         assert isinstance(settings, (OpenAITextPromptExecutionSettings, OpenAIChatPromptExecutionSettings))  # nosec
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -219,6 +239,8 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 =======
         settings: "OpenAIPromptExecutionSettings",
     ) -> List["TextContent"]:
@@ -232,6 +254,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             List["TextContent"] -- The completion result(s).
         """
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -246,12 +269,15 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         if isinstance(settings, OpenAITextPromptExecutionSettings):
             settings.prompt = prompt
         else:
             settings.messages = [{"role": "user", "content": prompt}]
 
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -321,10 +347,23 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+
+        response = await self._send_request(request_settings=settings)
+        assert isinstance(response, (TextCompletion, ChatCompletion))  # nosec
+
+        metadata = self._get_metadata_from_text_response(response)
+        return [
+            self._create_text_content(response, choice, metadata)
+            for choice in response.choices
+        ]
+
+>>>>>>> origin/main
     @override
     async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -356,6 +395,9 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
         if not isinstance(
@@ -369,6 +411,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         )  # nosec
 
         if isinstance(settings, OpenAITextPromptExecutionSettings):
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -385,6 +428,8 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 =======
         settings: "OpenAIPromptExecutionSettings",
     ) -> AsyncIterable[List["StreamingTextContent"]]:
@@ -401,6 +446,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         """
         if "prompt" in settings.model_fields:
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -415,16 +461,25 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
             settings.prompt = prompt
         else:
             if not settings.messages:
                 settings.messages = [{"role": "user", "content": prompt}]
             else:
                 settings.messages.append({"role": "user", "content": prompt})
+<<<<<<< head
 
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
         settings.stream = True
 
+=======
+
+        settings.ai_model_id = settings.ai_model_id or self.ai_model_id
+        settings.stream = True
+
+>>>>>>> origin/main
         response = await self._send_request(request_settings=settings)
         assert isinstance(response, AsyncStream)  # nosec
 

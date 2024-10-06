@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -79,6 +83,7 @@ public abstract class BaseTest
     /// <param name="target">Target object to write</param>
     protected void Write(object? target = null)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -110,6 +115,9 @@ public abstract class BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        this.Output.Write(target ?? string.Empty);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this.Output.WriteLine(target ?? string.Empty);
     }
 }

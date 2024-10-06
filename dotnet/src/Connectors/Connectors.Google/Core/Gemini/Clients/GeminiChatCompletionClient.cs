@@ -559,6 +559,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private static void ValidateGeminiResponse(GeminiResponse geminiResponse)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -603,10 +604,13 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         if (geminiResponse.PromptFeedback?.BlockReason is not null)
         {
             // TODO: Currently SK doesn't support prompt feedback/finish status, so we just throw an exception. I told SK team that we need to support it: https://github.com/microsoft/semantic-kernel/issues/4621
             throw new KernelException("Prompt was blocked due to Gemini API safety reasons.");
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -621,6 +625,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
     }
 
@@ -649,6 +655,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     }
 
     private List<GeminiChatMessageContent> GetChatMessageContentsFromResponse(GeminiResponse geminiResponse)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -684,6 +691,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        => geminiResponse.Candidates == null ?
+            [new GeminiChatMessageContent(role: AuthorRole.Assistant, content: string.Empty, modelId: this._modelId)]
+            : geminiResponse.Candidates.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
     {
@@ -717,6 +729,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 modelId: this._modelId,
                 calledToolResult: message.CalledToolResult,
                 metadata: message.Metadata,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -750,6 +763,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                choiceIndex: message.Metadata?.Index ?? 0);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         if (message.ToolCalls is not null)
@@ -760,6 +776,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 modelId: this._modelId,
                 toolCalls: message.ToolCalls,
                 metadata: message.Metadata,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -793,12 +810,16 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                choiceIndex: message.Metadata?.Index ?? 0);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         return new GeminiStreamingChatMessageContent(
             role: message.Role,
             content: message.Content,
             modelId: this._modelId,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -832,6 +853,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            choiceIndex: message.Metadata?.Index ?? 0,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             metadata: message.Metadata);
     }
 

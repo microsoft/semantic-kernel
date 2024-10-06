@@ -1,4 +1,5 @@
 {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -23,6 +24,11 @@
     "max_tokens": 256,
 <<<<<<< main
 =======
+=======
+  "description": "Translate the input into a language of your choice",
+  "completion": {
+    "max_tokens": 256,
+>>>>>>> origin/main
   "default_settings": {
     "max_tokens": 2000,
 >>>>>>> origin/main
@@ -50,6 +56,7 @@
   "default_backends": [
     "text-davinci-002"
   ]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,4 +89,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    "stop_sequences": ["[done]"]
+  }
+>>>>>>> origin/main
 }

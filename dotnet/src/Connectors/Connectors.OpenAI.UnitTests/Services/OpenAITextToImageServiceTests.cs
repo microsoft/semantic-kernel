@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,10 +35,14 @@ using System.Text;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using System.Text;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -73,6 +78,11 @@ using OpenAI.Images;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using Microsoft.SemanticKernel.TextToImage;
+using Moq;
+using OpenAI.Images;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
@@ -92,6 +102,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         {
             ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -125,6 +136,9 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             }
         };
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
@@ -135,6 +149,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public void ConstructorWorksCorrectly()
     {
         // Arrange & Act
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -168,6 +183,9 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var sut = new OpenAITextToImageService("apiKey", "organization", "model");
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Assert
         Assert.NotNull(sut);
@@ -197,6 +215,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         Assert.Equal("https://image-url/", result);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -213,6 +232,8 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Theory]
     [InlineData(null, null)]
     [InlineData("uri", "url")]
@@ -394,6 +415,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         Assert.Equal("my prompt", breakingGlass!.RevisedPrompt);
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -408,6 +430,8 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public void Dispose()
     {
         this._httpClient.Dispose();

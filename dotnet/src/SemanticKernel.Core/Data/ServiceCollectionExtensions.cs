@@ -2,6 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +25,8 @@ using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -33,6 +36,7 @@ namespace Microsoft.SemanticKernel;
 
 namespace Microsoft.SemanticKernel.Data;
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -47,6 +51,8 @@ namespace Microsoft.SemanticKernel.Data;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 /// <summary>
 /// Extension methods to register Data services on an <see cref="IServiceCollection"/>.
@@ -62,6 +68,7 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddVolatileVectorStore(this IServiceCollection services, string? serviceId = default)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -80,6 +87,8 @@ public static class ServiceCollectionExtensions
 <<<<<<< HEAD
         services.AddKeyedSingleton<IVectorStore, VolatileVectorStore>(serviceId);
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         services.AddKeyedSingleton<VolatileVectorStore, VolatileVectorStore>(serviceId);
         services.AddKeyedSingleton<IVectorStore>(serviceId, (sp, obj) => sp.GetRequiredKeyedService<VolatileVectorStore>(serviceId));
         return services;
@@ -119,6 +128,7 @@ public static class ServiceCollectionExtensions
                 return new VectorStoreTextSearch<TRecord>(vectorSearch, generationService, stringMapper, resultMapper, options);
             });
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -133,6 +143,8 @@ public static class ServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         return services;
     }
 }

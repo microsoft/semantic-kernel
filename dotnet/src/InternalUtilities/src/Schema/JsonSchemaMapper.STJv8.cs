@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -16,10 +17,13 @@
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 // Source copied from https://github.com/eiriktsarpalis/stj-schema-mapper
 // It should be kept in sync with any changes made in that repo,
 // and should be removed once the relevant replacements are available in STJv9.
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,6 +38,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 #if !NET9_0_OR_GREATER && !SYSTEM_TEXT_JSON_V9
 using System;
 using System.Collections.Generic;
@@ -108,6 +114,7 @@ internal
 
         if (hasDefaultValue)
         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -139,6 +146,9 @@ internal
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            JsonSchema.EnsureMutable(ref paramSchema);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             paramSchema.DefaultValue = defaultValue;
             paramSchema.HasDefaultValue = true;
         }
@@ -308,6 +318,7 @@ internal
                 List<string>? required = null;
                 JsonSchema? additionalProperties = null;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -342,6 +353,10 @@ internal
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                JsonUnmappedMemberHandling effectiveUnmappedMemberHandling = typeInfo.UnmappedMemberHandling ?? typeInfo.Options.UnmappedMemberHandling;
+                if (effectiveUnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 {
                     // Disallow unspecified properties.
                     additionalProperties = JsonSchema.False;
@@ -426,6 +441,7 @@ internal
 
                     if (hasDefaultValue)
                     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -457,6 +473,9 @@ internal
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                        JsonSchema.EnsureMutable(ref propertySchema);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                         propertySchema.DefaultValue = defaultValue;
                         propertySchema.HasDefaultValue = true;
                     }

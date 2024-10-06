@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System;
 using System.Collections.Generic;
@@ -65,6 +69,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -98,6 +103,9 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private readonly IVectorStoreRecordMapper<TRecord, Sdk.Vector> _mapper;
 
     private Sdk.Index<GrpcTransport>? _index;
@@ -120,6 +128,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         this._pineconeClient = pineconeClient;
         this.CollectionName = collectionName;
         this._options = options ?? new PineconeVectorStoreRecordCollectionOptions<TRecord>();
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -160,6 +169,8 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this._propertyReader = new VectorStoreRecordPropertyReader(
             typeof(TRecord),
             this._options.VectorStoreRecordDefinition,
@@ -173,6 +184,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         if (this._options.VectorCustomMapper is null)
         {
             this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._propertyReader);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -187,6 +199,8 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
         else
         {
@@ -213,6 +227,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // we already run through record property validation, so a single VectorStoreRecordVectorProperty is guaranteed.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -246,6 +261,9 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var vectorProperty = this._propertyReader.VectorProperty!;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var (dimension, metric) = PineconeVectorStoreCollectionCreateMapping.MapServerlessIndex(vectorProperty);
 
         await this.RunOperationAsync(
@@ -385,6 +403,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         }
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -401,12 +420,15 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <inheritdoc />
     public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -421,6 +443,8 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
     {
         try

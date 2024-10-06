@@ -35,6 +35,7 @@ public class RedisKernelBuilderExtensionsTests
         this.AssertVectorStoreCreated();
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -51,6 +52,8 @@ public class RedisKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public void AddRedisHashSetVectorStoreRecordCollectionRegistersClass()
     {
@@ -77,6 +80,7 @@ public class RedisKernelBuilderExtensionsTests
         this.AssertJsonVectorStoreRecordCollectionCreated<TestRecord>();
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -91,6 +95,8 @@ public class RedisKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private void AssertVectorStoreCreated()
     {
         var kernel = this._kernelBuilder.Build();
@@ -98,6 +104,7 @@ public class RedisKernelBuilderExtensionsTests
         Assert.NotNull(vectorStore);
         Assert.IsType<RedisVectorStore>(vectorStore);
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -114,6 +121,8 @@ public class RedisKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     private void AssertHashSetVectorStoreRecordCollectionCreated<TRecord>() where TRecord : class
     {
@@ -138,6 +147,7 @@ public class RedisKernelBuilderExtensionsTests
         [VectorStoreRecordKey]
         public string Id { get; set; } = string.Empty;
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -152,4 +162,6 @@ public class RedisKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

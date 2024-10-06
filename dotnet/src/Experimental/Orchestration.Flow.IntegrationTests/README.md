@@ -1,3 +1,4 @@
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -16,11 +17,14 @@
 <<<<<<< main
 # Experimental Flow Orchestrator Integration Tests
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
 # Experimental Flow Orchestrator Integration Tests
 =======
 ﻿# Experimental Flow Orchestrator Integration Tests
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,11 +39,14 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 ## Requirements
 
 1. **Azure OpenAI**: go to the [Azure OpenAI Quickstart](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart)
 <<<<<<< HEAD
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -75,11 +82,15 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
    and deploy an instance of Azure OpenAI, deploy a model like "text-davinci-003" find your Endpoint and API key.
 =======
    and deploy an instance of Azure OpenAI, deploy a model like "gpt-35-turbo-instruct" find your Endpoint and API key.
 >>>>>>> origin/111
 2. **OpenAI**: go to [OpenAI](https://platform.openai.com) to register and procure your API key.
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -94,10 +105,13 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 =======
    and deploy an instance of Azure OpenAI, deploy a model like "text-davinci-003" find your Endpoint and API key.
 2. **OpenAI**: go to [OpenAI](https://openai.com/product/) to register and procure your API key.
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -112,6 +126,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 3. **Azure Bing Web Search API**: go to [Bing Web Search API](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
    and select `Try Now` to get started.
 
@@ -120,6 +136,7 @@
 ### Option 1: Use Secret Manager
 
 Integration tests will require secrets and credentials, to access OpenAI, Azure OpenAI,
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -138,11 +155,14 @@ Bing and other resources.
 <<<<<<< main
 Bing and other resources.
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
 Bing and other resources.
 =======
 Bing and other resources. 
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -157,6 +177,8 @@ Bing and other resources.
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 We suggest using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
 to avoid the risk of leaking secrets into the repository, branches and pull requests.
@@ -164,6 +186,7 @@ You can also use environment variables if you prefer.
 
 To set your secrets with Secret Manager:
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -195,6 +218,9 @@ To set your secrets with Secret Manager:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
 ```sh {"id":"01J6KPR1FAFBFPM4TCN6WEPFNE"}
 cd dotnet/src/IntegrationTests
 
@@ -206,6 +232,7 @@ dotnet user-secrets set "OpenAI:ApiKey" "..."
 
 dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-gpt-35-turbo-instruct"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "gpt-35-turbo-instruct"
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -220,6 +247,8 @@ dotnet user-secrets set "AzureOpenAI:DeploymentName" "gpt-35-turbo-instruct"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 =======
 ```
 >>>>>>> origin/main
@@ -238,6 +267,7 @@ dotnet user-secrets set "AzureOpenAI:DeploymentName" "gpt-35-turbo-instruct"
 dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-text-davinci-003"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "text-davinci-003"
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -252,6 +282,8 @@ dotnet user-secrets set "AzureOpenAI:DeploymentName" "text-davinci-003"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "gpt-4"
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://contoso.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
@@ -265,6 +297,7 @@ dotnet user-secrets set "Bing:ApiKey" "..."
 ```
 
 ### Option 2: Use Configuration File
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -296,6 +329,9 @@ dotnet user-secrets set "Bing:ApiKey" "..."
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
 
 1. Create a `testsettings.development.json` file next to `testsettings.json`. This file will be ignored by git,
    the content will not end up in pull requests, so it's safe for personal settings. Keep the file safe.
@@ -310,6 +346,7 @@ For example:
   "OpenAI": {
     "ServiceId": "gpt-3.5-turbo-instruct",
     "ModelId": "gpt-3.5-turbo-instruct",
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -324,6 +361,9 @@ For example:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
 =======
 >>>>>>> origin/main
 1. Create a `testsettings.development.json` file next to `testsettings.json`. This file will be ignored by git,
@@ -344,6 +384,7 @@ For example:
     "ServiceId": "text-davinci-003",
     "ModelId": "text-davinci-003",
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -358,10 +399,13 @@ For example:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     "ChatModelId": "gpt-4",
     "ApiKey": "sk-...."
   },
   "AzureOpenAI": {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -382,6 +426,8 @@ For example:
     "ServiceId": "gpt-35-turbo-instruct",
     "DeploymentName": "gpt-35-turbo-instruct",
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
     "ServiceId": "gpt-35-turbo-instruct",
     "DeploymentName": "gpt-35-turbo-instruct",
@@ -389,6 +435,7 @@ For example:
     "ServiceId": "azure-text-davinci-003",
     "DeploymentName": "text-davinci-003",
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -403,6 +450,8 @@ For example:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     "ChatDeploymentName": "gpt-4",
     "Endpoint": "https://contoso.openai.azure.com/",
     "ApiKey": "...."
@@ -425,6 +474,7 @@ For example:
 ```
 
 ### Option 3: Use Environment Variables
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -443,10 +493,13 @@ For example:
 <<<<<<< main
 
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
 
 =======
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -461,12 +514,15 @@ For example:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 You may also set the test settings in your environment variables. The environment variables will override the settings in the `testsettings.development.json` file.
 
 When setting environment variables, use a double underscore (i.e. "\_\_") to delineate between parent and child properties. For example:
 
 - bash:
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -498,6 +554,9 @@ When setting environment variables, use a double underscore (i.e. "\_\_") to del
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> origin/main
 ```bash {"id":"01J6KPR1FBXXPNFHK1MXCK9QN7"}
 export OpenAI__ApiKey="sk-...."
 export AzureOpenAI__ApiKey="...."
@@ -507,6 +566,7 @@ export AzureOpenAIEmbeddings__DeploymentName="azure-text-embedding-ada-002"
 export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
 export Bing__ApiKey="...."
 ```
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -554,6 +614,8 @@ $env:Bing__ApiKey = "...."
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> origin/main
 
 - PowerShell:
 
@@ -589,6 +651,7 @@ $env:Bing__ApiKey = "...."
   $env:Bing__ApiKey = "...."
   ```
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -603,3 +666,5 @@ $env:Bing__ApiKey = "...."
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main

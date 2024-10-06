@@ -142,6 +142,7 @@ var result = await kernel.InvokePromptAsync("{{budgetByYear}} What is my budget 
 This approach is similar to Option 1, but data search step is part of prompt rendering process. Following list contains possible plugins to use for data search:
 
 - [ChatGPT Retrieval Plugin](https://github.com/openai/chatgpt-retrieval-plugin) - this plugin should be hosted as a separate service. It has integration with various [vector databases](https://github.com/openai/chatgpt-retrieval-plugin?tab=readme-ov-file#choosing-a-vector-database).
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,6 +176,9 @@ This approach is similar to Option 1, but data search step is part of prompt ren
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+- [SemanticKernel.Plugins.Memory.TextMemoryPlugin](https://www.nuget.org/packages/Microsoft.SemanticKernel.Plugins.Memory) - Semantic Kernel solution, which supports various vector databases.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 - Custom user plugin.
 
 ChatGPT Retrieval Plugin:

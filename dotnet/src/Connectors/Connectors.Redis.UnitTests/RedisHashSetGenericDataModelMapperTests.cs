@@ -20,6 +20,7 @@ public class RedisHashSetGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
     {
         // Arrange.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -53,6 +54,9 @@ public class RedisHashSetGenericDataModelMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data =
@@ -116,6 +120,7 @@ public class RedisHashSetGenericDataModelMapperTests
             },
         };
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,6 +154,9 @@ public class RedisHashSetGenericDataModelMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
@@ -172,6 +180,7 @@ public class RedisHashSetGenericDataModelMapperTests
         // Arrange.
         var hashSet = RedisHashSetVectorStoreMappingTestHelpers.CreateHashSet();
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -205,6 +214,9 @@ public class RedisHashSetGenericDataModelMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act.
         var dataModel = sut.MapFromStorageToDataModel(("key", hashSet), new() { IncludeVectors = true });
@@ -252,6 +264,7 @@ public class RedisHashSetGenericDataModelMapperTests
             new("FloatVector", RedisValue.Null),
         };
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -285,6 +298,9 @@ public class RedisHashSetGenericDataModelMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(("key", hashSet), new() { IncludeVectors = true });
@@ -300,6 +316,7 @@ public class RedisHashSetGenericDataModelMapperTests
     public void MapFromDataToStorageModelSkipsMissingProperties()
     {
         // Arrange.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -333,6 +350,9 @@ public class RedisHashSetGenericDataModelMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data = { },
@@ -353,6 +373,7 @@ public class RedisHashSetGenericDataModelMapperTests
         // Arrange.
         var hashSet = Array.Empty<HashEntry>();
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -386,6 +407,9 @@ public class RedisHashSetGenericDataModelMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Act.
         var dataModel = sut.MapFromStorageToDataModel(("key", hashSet), new() { IncludeVectors = true });

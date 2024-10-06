@@ -108,6 +108,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         )
 
         if not client and not openai_settings.api_key:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -168,6 +169,12 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            raise AgentInitializationError(
+                "The OpenAI API key is required, if a client is not provided."
+            )
+            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         if not openai_settings.chat_model_id:
             raise AgentInitializationException("The OpenAI chat model ID is required.")
 
@@ -404,6 +411,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -446,10 +454,13 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             raise AgentInitializationError(
                 "Failed to create OpenAI settings.", ex
             ) from ex
             raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -464,6 +475,8 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         return openai_settings
 
@@ -475,6 +488,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         """
         assistants = await self.client.beta.assistants.list(order="desc")
         for assistant in assistants.data:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -508,6 +522,9 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     @classmethod
     async def retrieve(
@@ -547,6 +564,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             env_file_encoding=env_file_encoding,
         )
         if not client and not openai_settings.api_key:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -589,10 +607,13 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             raise AgentInitializationError(
                 "The OpenAI API key is required, if a client is not provided."
             )
             raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -607,6 +628,8 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         if not openai_settings.chat_model_id:
             raise AgentInitializationException("The OpenAI chat model ID is required.")
         if not client:
@@ -624,6 +647,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             assistant
         )
         return OpenAIAssistantAgent(kernel=kernel, **assistant_definition)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -656,5 +680,9 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+        return OpenAIAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     # endregion

@@ -21,6 +21,7 @@ using RepoUtils;
 public static class Example24_OpenApiPlugin_Jira
 {
     public static async Task RunAsync()
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -43,6 +44,8 @@ public static class Example24_OpenApiPlugin_Jira
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
         var contextVariables = new ContextVariables();
 =======
+=======
+>>>>>>> origin/main
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
         var contextVariables = new ContextVariables();
@@ -99,6 +102,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     public async Task RunAsync()
     {
         Kernel kernel = new();
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -113,11 +117,14 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
         // Change <your-domain> to a jira instance you have access to with your authentication credentials
         string serverUrl = $"https://{TestConfiguration.Jira.Domain}.atlassian.net/rest/api/latest/";
         contextVariables.Set("server-url", serverUrl);
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -151,6 +158,9 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        KernelPlugin jiraFunctions;
+>>>>>>> origin/main
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
             string s = $"{TestConfiguration.Jira.Email}:{TestConfiguration.Jira.ApiKey}";
@@ -165,6 +175,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         {
             var apiPluginFile = "./../../../Plugins/JiraPlugin/openapi.json";
             jiraFunctions = await kernel.ImportPluginFunctionsAsync("jiraPlugin", apiPluginFile, new OpenApiFunctionExecutionParameters(authCallbackProvider: (_) => tokenProvider.AuthenticateRequestAsync));
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -181,6 +192,8 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
             jiraFunctions = await kernel.ImportPluginFromOpenApiAsync(
                 "jiraPlugin",
                 apiPluginFile,
@@ -208,6 +221,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         {
             var apiPluginRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
             jiraFunctions = await kernel.ImportPluginFunctionsAsync("jiraPlugin", apiPluginRawFileURL, new OpenApiFunctionExecutionParameters(authCallbackProvider: (_) => tokenProvider.AuthenticateRequestAsync));
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -224,6 +238,8 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
         }
 
         // GetIssue Function
@@ -285,6 +301,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             // Run operation via the semantic kernel
             var result = await kernel.RunAsync(contextVariables, jiraFunctions["GetIssue"]);
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -324,10 +341,13 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> origin/main
         WriteLine("\n\n\n");
         var formattedContent = JsonSerializer.Serialize(
             result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
         WriteLine($"GetIssue jiraPlugin response: \n{formattedContent}");
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -342,6 +362,8 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
         // AddComment Function
         {
@@ -372,6 +394,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             // Run operation via the semantic kernel
             var result = await kernel.RunAsync(contextVariables, jiraFunctions["AddComment"]);
 
+<<<<<<< head
             Console.WriteLine("\n\n\n");
             var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.GetValue<string>()!), Formatting.Indented);
             Console.WriteLine("AddComment jiraPlugin response: \n{0}", formattedContent);
@@ -391,11 +414,14 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> origin/main
         WriteLine("\n\n\n");
 
         formattedContent = JsonSerializer.Serialize(result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
         WriteLine($"AddComment jiraPlugin response: \n{formattedContent}");
     }
+<<<<<<< head
 
     #region Example of authentication providers
 
@@ -437,6 +463,49 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     {
         private readonly Func<Task<string>> _bearerToken;
 
+=======
+
+    #region Example of authentication providers
+
+    /// <summary>
+    /// Retrieves authentication content (e.g. username/password, API key) via the provided delegate and
+    /// applies it to HTTP requests using the "basic" authentication scheme.
+    /// </summary>
+    public class BasicAuthenticationProvider
+    {
+        private readonly Func<Task<string>> _credentials;
+
+        /// <summary>
+        /// Creates an instance of the <see cref="BasicAuthenticationProvider"/> class.
+        /// </summary>
+        /// <param name="credentials">Delegate for retrieving credentials.</param>
+        public BasicAuthenticationProvider(Func<Task<string>> credentials)
+        {
+            this._credentials = credentials;
+        }
+
+        /// <summary>
+        /// Applies the authentication content to the provided HTTP request message.
+        /// </summary>
+        /// <param name="request">The HTTP request message.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        public async Task AuthenticateRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
+        {
+            // Base64 encode
+            string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials().ConfigureAwait(false)));
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", encodedContent);
+        }
+    }
+
+    /// <summary>
+    /// Retrieves a token via the provided delegate and applies it to HTTP requests using the
+    /// "bearer" authentication scheme.
+    /// </summary>
+    public class BearerAuthenticationProvider
+    {
+        private readonly Func<Task<string>> _bearerToken;
+
+>>>>>>> origin/main
         /// <summary>
         /// Creates an instance of the <see cref="BearerAuthenticationProvider"/> class.
         /// </summary>
@@ -492,12 +561,21 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             IEnumerable<IAccount> accounts = await app.GetAccountsAsync().ConfigureAwait(false);
             AuthenticationResult result;
             try
+<<<<<<< head
             {
                 result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
                     .ExecuteAsync().ConfigureAwait(false);
             }
             catch (MsalUiRequiredException)
             {
+=======
+            {
+                result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
+                    .ExecuteAsync().ConfigureAwait(false);
+            }
+            catch (MsalUiRequiredException)
+            {
+>>>>>>> origin/main
                 // A MsalUiRequiredException happened on AcquireTokenSilent.
                 // This indicates you need to call AcquireTokenInteractive to acquire a token
                 result = await app.AcquireTokenInteractive(scopes)
@@ -543,6 +621,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 
     public Example24_OpenApiPlugin_Jira(ITestOutputHelper output) : base(output)
     {
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -557,5 +636,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     }
 }

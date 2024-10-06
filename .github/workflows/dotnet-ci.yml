@@ -20,6 +20,7 @@ jobs:
         matrix:
           include:
           - { os: ubuntu-latest, dotnet: '8.0', configuration: Debug }
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,6 +37,8 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
           - { os: ubuntu-latest, dotnet: '6.0', configuration: Debug }
           - { os: ubuntu-latest, dotnet: '6.0', configuration: Release }
           - { os: ubuntu-latest, dotnet: '7.0', configuration: Release }
@@ -100,6 +103,7 @@ jobs:
           os: [windows-latest]
           configuration: [Release, Debug]
           dotnet-version: ['8.0.x']
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -116,6 +120,8 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
           dotnet-version: ['7.0.x']
 >>>>>>> origin/main
 <<<<<<< Updated upstream

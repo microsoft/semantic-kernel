@@ -14,6 +14,7 @@ internal sealed class WeaviateUpsertCollectionObjectBatchRequest
     [JsonConstructor]
     public WeaviateUpsertCollectionObjectBatchRequest() { }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -47,6 +48,9 @@ internal sealed class WeaviateUpsertCollectionObjectBatchRequest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    public WeaviateUpsertCollectionObjectBatchRequest(List<JsonObject> collectionObjects)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     {
         this.CollectionObjects = collectionObjects;
     }
@@ -55,6 +59,7 @@ internal sealed class WeaviateUpsertCollectionObjectBatchRequest
     public List<string> Fields { get; set; } = [WeaviateConstants.ReservedKeyPropertyName];
 
     [JsonPropertyName("objects")]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -88,6 +93,9 @@ internal sealed class WeaviateUpsertCollectionObjectBatchRequest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    public List<JsonObject>? CollectionObjects { get; set; }
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     public HttpRequestMessage Build()
     {

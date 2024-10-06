@@ -61,6 +61,7 @@ public class VolatileVectorStoreTests
         Assert.Equal(new[] { "collection1", "collection2" }, collectionNamesList);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -79,6 +80,8 @@ public class VolatileVectorStoreTests
 <<<<<<< HEAD
     public sealed class SinglePropsModel<TKey>
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     [Fact]
     public async Task GetCollectionDoesNotAllowADifferentDataTypeThanPreviouslyUsedAsync()
@@ -98,6 +101,7 @@ public class VolatileVectorStoreTests
 =======
     public sealed class SinglePropsModel<TKey>
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -112,6 +116,8 @@ public class VolatileVectorStoreTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     {
         [VectorStoreRecordKey]
         public required TKey Key { get; set; }
@@ -124,6 +130,7 @@ public class VolatileVectorStoreTests
 
         public string? NotAnnotated { get; set; }
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -140,6 +147,8 @@ public class VolatileVectorStoreTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 
     private sealed class SecondModel
@@ -153,6 +162,7 @@ public class VolatileVectorStoreTests
 #pragma warning restore CA1812
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -167,4 +177,6 @@ public class VolatileVectorStoreTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

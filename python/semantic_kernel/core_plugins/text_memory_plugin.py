@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import logging
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,6 +33,9 @@ import logging
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from typing import Annotated, Any, Final
 
 from pydantic import Field
@@ -39,6 +43,7 @@ from pydantic import Field
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,6 +60,8 @@ from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryB
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 import sys
 import typing as t
@@ -70,6 +77,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 if t.TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -84,10 +92,13 @@ if t.TYPE_CHECKING:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 DEFAULT_COLLECTION: Final[str] = "generic"
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -110,6 +121,8 @@ COLLECTION_PARAM: Final[str] = "collection"
 DEFAULT_RELEVANCE: Final[float] = 0.75
 RELEVANCE_PARAM: Final[str] = "relevance"
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 COLLECTION_PARAM: Final[str] = "collection"
 DEFAULT_RELEVANCE: Final[float] = 0.75
@@ -117,6 +130,7 @@ RELEVANCE_PARAM: Final[str] = "relevance"
 =======
 DEFAULT_RELEVANCE: Final[float] = 0.75
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -131,10 +145,13 @@ DEFAULT_RELEVANCE: Final[float] = 0.75
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 DEFAULT_LIMIT: Final[int] = 1
 
 
 class TextMemoryPlugin(KernelBaseModel):
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -166,6 +183,9 @@ class TextMemoryPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     """A plugin to interact with a Semantic Text Memory."""
 
     memory: SemanticTextMemoryBase
@@ -182,6 +202,7 @@ class TextMemoryPlugin(KernelBaseModel):
         """
         super().__init__(memory=memory, embeddings_kwargs=embeddings_kwargs)
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -214,6 +235,10 @@ class TextMemoryPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     @kernel_function(
         description="Recall a fact from the long term memory",
         name="recall",
@@ -221,6 +246,7 @@ class TextMemoryPlugin(KernelBaseModel):
     async def recall(
         self,
         ask: Annotated[str, "The information to retrieve"],
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -252,6 +278,9 @@ class TextMemoryPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         collection: Annotated[
             str, "The collection to search for information."
         ] = DEFAULT_COLLECTION,
@@ -263,6 +292,7 @@ class TextMemoryPlugin(KernelBaseModel):
         ] = DEFAULT_LIMIT,
     ) -> str:
         """Recall a fact from the long term memory.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -279,6 +309,8 @@ class TextMemoryPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
         kernel: Annotated["Kernel", "The kernel"],
         collection: Annotated[Optional[str], "The collection to search for information."] = DEFAULT_COLLECTION,
@@ -290,6 +322,7 @@ class TextMemoryPlugin(KernelBaseModel):
         """
         Recall a fact from the long term memory.
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -304,11 +337,14 @@ class TextMemoryPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         Example:
             {{memory.recall $ask}} => "Paris"
 
         Args:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -340,10 +376,14 @@ class TextMemoryPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             ask: The question to ask the memory
             collection: The collection to search for information
             relevance: The relevance score, from 0.0 to 1.0; 1.0 means perfect match
             limit: The maximum number of relevant memories to recall
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -361,11 +401,14 @@ class TextMemoryPlugin(KernelBaseModel):
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
             ask -- The question to ask the memory
             collection -- The collection to search for information
             relevance -- The relevance score, from 0.0 to 1.0; 1.0 means perfect match
             limit -- The maximum number of relevant memories to recall
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -380,10 +423,13 @@ class TextMemoryPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         Returns:
             The nearest item from the memory store as a string or empty string if not found.
         """
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -402,6 +448,8 @@ class TextMemoryPlugin(KernelBaseModel):
 <<<<<<< HEAD
         results = await self.memory.search(
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
         results = await self.memory.search(
 =======
@@ -410,6 +458,7 @@ class TextMemoryPlugin(KernelBaseModel):
 
         results = await kernel.memory.search(
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -424,6 +473,8 @@ class TextMemoryPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             collection=collection,
             query=ask,
             limit=limit,
@@ -442,6 +493,7 @@ class TextMemoryPlugin(KernelBaseModel):
     async def save(
         self,
         text: Annotated[str, "The information to save."],
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -473,6 +525,9 @@ class TextMemoryPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         key: Annotated[str, "The unique key to associate with the information."],
         collection: Annotated[
             str, "The collection to save the information."
@@ -493,6 +548,7 @@ class TextMemoryPlugin(KernelBaseModel):
             id=key,
             embeddings_kwargs=self.embeddings_kwargs,
         )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -509,6 +565,8 @@ class TextMemoryPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
         kernel: Annotated["Kernel", "The kernel"],
         key: Annotated[str, "The unique key to associate with the information."],
@@ -530,6 +588,7 @@ class TextMemoryPlugin(KernelBaseModel):
 
         await kernel.memory.save_information(collection, text=text, id=key)
 >>>>>>> ms/small_fixes
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -544,3 +603,5 @@ class TextMemoryPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,11 +32,15 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -69,6 +74,11 @@ using Resources;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using Resources;
+6d73513a859ab2d05e01db3bc1d405827799e34b
+using Resources;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 namespace GettingStarted;
 
@@ -87,6 +97,7 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -109,6 +120,8 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
                 clientProvider: this.GetClientProvider(),
                 new(this.Model)
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
                 kernel: new(),
@@ -117,6 +130,7 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
  6d73513a859ab2d05e01db3bc1d405827799e34b
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -131,10 +145,13 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 {
                     Instructions = HostInstructions,
                     Name = HostName,
                     Metadata = AssistantSampleMetadata,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -153,12 +170,15 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 <<<<<<< HEAD
                 });
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 },
                 kernel: new Kernel());
                 });
  6d73513a859ab2d05e01db3bc1d405827799e34b
                 },
                 kernel: new Kernel());
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -173,6 +193,8 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -209,6 +231,7 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         }
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -225,6 +248,8 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public async Task UseTemplateForAssistantAgentAsync()
     {
@@ -281,6 +306,7 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
     }
 
  6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -295,6 +321,8 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private sealed class MenuPlugin
     {
         [KernelFunction, Description("Provides a list of specials from the menu.")]

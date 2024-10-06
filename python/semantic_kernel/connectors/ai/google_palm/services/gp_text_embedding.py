@@ -6,6 +6,7 @@ from typing import Annotated, Any
 import google.generativeai as palm
 from numpy import array, ndarray
 from pydantic import StringConstraints, ValidationError
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -49,6 +50,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> origin/main
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
@@ -69,6 +72,7 @@ from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+<<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -97,6 +101,21 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     ) -> None:
         """Initializes a new instance of the GooglePalmTextEmbedding class.
 
+=======
+>>>>>>> ms/small_fixes
+class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
+    api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+
+    def __init__(
+        self,
+        ai_model_id: str,
+        api_key: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+    ) -> None:
+        """Initializes a new instance of the GooglePalmTextEmbedding class.
+
+>>>>>>> origin/main
         Args:
             ai_model_id (str): GooglePalm model name, see
                 https://developers.generativeai.google/models/language
@@ -110,6 +129,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
             ServiceInitializationError: When the Google Palm settings cannot be read.
 
         """
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -151,6 +171,27 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
             ServiceInitializationError: When the Google Palm settings cannot be read.
 
         """
+=======
+        try:
+            google_palm_settings = GooglePalmSettings.create(
+                api_key=api_key,
+                embedding_model_id=ai_model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise ServiceInitializationError("Failed to create Google Palm settings.", ex) from ex
+        if not google_palm_settings.embedding_model_id:
+            raise ServiceInitializationError("The Google Palm embedding model ID is required.")
+
+        super().__init__(
+            ai_model_id=google_palm_settings.embedding_model_id,
+            api_key=google_palm_settings.api_key.get_secret_value() if google_palm_settings.api_key else None,
+        )
+
+    async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
+        """Generates embeddings for the given list of texts."""
+>>>>>>> origin/main
         try:
             google_palm_settings = GooglePalmSettings.create(
                 api_key=api_key,

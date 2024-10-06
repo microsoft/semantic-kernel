@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -130,6 +134,7 @@ public class OpenAIAssistantDefinitionTests
         ValidateSerialization(definition);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -146,6 +151,8 @@ public class OpenAIAssistantDefinitionTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
     /// <summary>
     /// Verify TemplateFactoryFormat.
@@ -171,6 +178,7 @@ public class OpenAIAssistantDefinitionTests
 
 =======
 >>>>>>> ms/main
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -185,6 +193,8 @@ public class OpenAIAssistantDefinitionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private static void ValidateSerialization(OpenAIAssistantDefinition source)
     {
         string json = JsonSerializer.Serialize(source);

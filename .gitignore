@@ -676,6 +676,7 @@ swa-cli.config.json
 
 # python devcontainer
 /python/.devcontainer/*
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -695,11 +696,14 @@ swa-cli.config.json
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
 .env*
 .flaskenv*
 !.env.project
 !.env.vault
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -747,3 +751,5 @@ swa-cli.config.json
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main

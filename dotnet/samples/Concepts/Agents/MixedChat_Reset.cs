@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -57,6 +61,7 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agents
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -79,6 +84,8 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
                 provider,
                 new(this.Model)
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
                 {
@@ -89,6 +96,7 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
                 kernel: new(),
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,10 +111,13 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 {
                     Name = nameof(OpenAIAssistantAgent),
                     Instructions = AgentInstructions,
                 });
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -139,6 +150,10 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                },
+                kernel: new Kernel());
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         ChatCompletionAgent chatAgent =
             new()

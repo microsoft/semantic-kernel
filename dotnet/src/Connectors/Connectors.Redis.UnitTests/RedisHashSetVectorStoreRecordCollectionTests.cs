@@ -82,6 +82,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             1,
             "testcollection:",
             "SCHEMA",
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -114,6 +115,10 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             "OriginalNameData",
             "AS",
             "OriginalNameData",
@@ -123,6 +128,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             "data_storage_name",
             "TAG",
             "vector_storage_name",
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -139,6 +145,8 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
             "$.OriginalNameData",
 =======
@@ -157,6 +165,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 =======
             "vector_storage_name",
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -171,6 +180,8 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             "AS",
             "vector_storage_name",
             "VECTOR",
@@ -495,6 +506,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -511,6 +523,8 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     [Theory]
     [InlineData(true, true)]
@@ -604,6 +618,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -618,6 +633,8 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
     /// In this case, the expectation is that a custom mapper will be provided to map between the
@@ -679,6 +696,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             .ReturnsAsync(RedisResult.Create(results));
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -695,6 +713,8 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, IEnumerable<RedisResult> redisResultStrings)
     {
@@ -711,6 +731,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -725,6 +746,8 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, string redisResultString)
     {
         redisDatabaseMock

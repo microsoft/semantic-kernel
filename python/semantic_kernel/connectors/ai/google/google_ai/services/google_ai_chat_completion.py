@@ -16,6 +16,7 @@ from google.generativeai.types import (
 )
 from pydantic import ValidationError
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,12 +37,15 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 =======
 from semantic_kernel.connectors.ai.function_calling_utils import merge_function_results
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -56,6 +60,8 @@ from semantic_kernel.connectors.ai.function_calling_utils import merge_function_
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
 )
@@ -84,6 +90,7 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -100,11 +107,14 @@ from semantic_kernel.contents.utils.finish_reason import FinishReason
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< main
 =======
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -119,6 +129,8 @@ from semantic_kernel.kernel import Kernel
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 
 if sys.version_info >= (3, 12):
@@ -203,6 +215,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 
     # Override from AIServiceClientBase
     @override
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -234,12 +247,16 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return GoogleAIChatPromptExecutionSettings
 
     @override
     @trace_chat_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
     async def _inner_get_chat_message_contents(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -257,9 +274,12 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
     @trace_chat_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
     async def get_chat_message_contents(
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -274,6 +294,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -310,6 +332,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             settings.function_choice_behavior.maximum_auto_invoke_attempts
         ):
             completions = await self._send_chat_request(chat_history, settings)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -341,6 +364,9 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             chat_history.add_message(message=completions[0])
             function_calls = [
                 item
@@ -356,6 +382,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             completions = await self._send_chat_request(chat_history, settings)
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
 >>>>>>> Stashed changes
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -389,6 +416,11 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+            function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             if (fc_count := len(function_calls)) == 0:
                 return completions
 
@@ -410,6 +442,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             system_instruction=filter_system_message(chat_history),
         )
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -441,6 +474,9 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         response: AsyncGenerateContentResponse = await model.generate_content_async(
             contents=self._prepare_chat_history_for_request(chat_history),
             generation_config=GenerationConfig(**settings.prepare_settings_dict()),
@@ -460,6 +496,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         if not isinstance(settings, GoogleAIChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -477,12 +514,15 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
             if any(result.terminate for result in results if result is not None):
                 return merge_function_results(chat_history.messages[-len(results) :])
         else:
             # do a final call without auto function calling
             return await self._send_chat_request(chat_history, settings)
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -497,6 +537,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         model = GenerativeModel(

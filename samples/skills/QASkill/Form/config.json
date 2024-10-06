@@ -1,4 +1,5 @@
 {
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -28,6 +29,10 @@
   "description": "",
   "default_settings": {
 >>>>>>> Stashed changes
+=======
+  "description": "",
+  "default_settings": {
+>>>>>>> origin/main
     "max_tokens": 256,
     "temperature": 0.0,
     "top_p": 0.0,
@@ -40,6 +45,7 @@
   "default_backends": [
     "text-davinci-003"
   ]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -72,4 +78,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    "stop_sequences": ["[done]"]
+  }
+>>>>>>> origin/main
 }

@@ -20,6 +20,7 @@ public sealed class KernelJsonSchema
     /// <param name="jsonSchema">The JSON Schema as a string.</param>
     /// <returns>A parsed <see cref="KernelJsonSchema"/>, or null if <paramref name="jsonSchema"/> is null or empty.</returns>
     internal static KernelJsonSchema? ParseOrNull(string? jsonSchema) =>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -53,6 +54,9 @@ public sealed class KernelJsonSchema
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        !string.IsNullOrEmpty(jsonSchema) ? new(JsonSerializer.Deserialize<JsonElement>(jsonSchema!, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement)) :
+>>>>>>> origin/main
         null;
 
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
@@ -61,6 +65,7 @@ public sealed class KernelJsonSchema
     /// <exception cref="ArgumentException"><paramref name="jsonSchema"/> is null.</exception>
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(string jsonSchema) =>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -94,12 +99,16 @@ public sealed class KernelJsonSchema
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        new(JsonSerializer.Deserialize<JsonElement>(jsonSchema, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement));
+>>>>>>> origin/main
 
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
     /// <param name="jsonSchema">The JSON Schema as a sequence of UTF16 chars.</param>
     /// <returns>A parsed <see cref="KernelJsonSchema"/>.</returns>
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(ReadOnlySpan<char> jsonSchema) =>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -133,12 +142,16 @@ public sealed class KernelJsonSchema
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        new(JsonSerializer.Deserialize<JsonElement>(jsonSchema, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement));
+>>>>>>> origin/main
 
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
     /// <param name="utf8JsonSchema">The JSON Schema as a sequence of UTF8 bytes.</param>
     /// <returns>A parsed <see cref="KernelJsonSchema"/>.</returns>
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(ReadOnlySpan<byte> utf8JsonSchema) =>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -172,6 +185,9 @@ public sealed class KernelJsonSchema
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        new(JsonSerializer.Deserialize<JsonElement>(utf8JsonSchema, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement));
+>>>>>>> origin/main
 
     /// <summary>Initializes a new instance from the specified <see cref="JsonElement"/>.</summary>
     /// <param name="jsonSchema">The schema to be stored.</param>
@@ -186,6 +202,7 @@ public sealed class KernelJsonSchema
     public JsonElement RootElement { get; }
 
     /// <summary>Gets the JSON Schema as a string.</summary>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -207,6 +224,9 @@ public sealed class KernelJsonSchema
 =======
     public override string ToString() => this._schemaAsString ??= JsonSerializer.Serialize(this.RootElement, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement);
 >>>>>>> Stashed changes
+=======
+    public override string ToString() => this._schemaAsString ??= JsonSerializer.Serialize(this.RootElement, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement);
+>>>>>>> origin/main
 
     /// <summary>Converter for reading/writing the schema.</summary>
     public sealed class JsonConverter : JsonConverter<KernelJsonSchema>

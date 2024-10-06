@@ -4,6 +4,7 @@ import logging
 
 from pytest import mark, raises
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -26,6 +27,8 @@ from semantic_kernel.exceptions import NamedArgBlockSyntaxError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 from semantic_kernel.exceptions import NamedArgBlockSyntaxError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -35,6 +38,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_errors import NamedArgBlockSyntaxError
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -49,6 +53,8 @@ from semantic_kernel.template_engine.blocks.block_errors import NamedArgBlockSyn
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
@@ -90,6 +96,7 @@ def test_type_property():
     ids=["no_name", "invalid_var", "invalid_val", "empty_val", "empty_var"],
 )
 def test_syntax_error(content):
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -108,6 +115,8 @@ def test_syntax_error(content):
 <<<<<<< HEAD
     match = content.replace("$", "\\$") if "$" in content else content
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     match = content.replace("$", "\\$") if "$" in content else content
 =======
@@ -116,6 +125,7 @@ def test_syntax_error(content):
     else:
         match = content
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -130,12 +140,15 @@ def test_syntax_error(content):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     with raises(NamedArgBlockSyntaxError, match=rf".*{match}.*"):
         NamedArgBlock(content=content)
 
 
 def test_render():
     named_arg_block = NamedArgBlock(content="test=$test_var")
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -158,6 +171,8 @@ def test_render():
         Kernel(), KernelArguments(test_var="test_value")
     )
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     rendered_value = named_arg_block.render(
         Kernel(), KernelArguments(test_var="test_value")
@@ -165,6 +180,7 @@ def test_render():
 =======
     rendered_value = named_arg_block.render(Kernel(), KernelArguments(test_var="test_value"))
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -179,6 +195,8 @@ def test_render():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     assert rendered_value == "test_value"
 
 

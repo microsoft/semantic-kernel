@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,6 +35,10 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+
+﻿// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System;
 using System.ClientModel;
 using System.Collections.Generic;
@@ -74,6 +79,7 @@ internal partial class ClientCore
 
     protected const string ModelProvider = "openai";
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -107,6 +113,11 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    protected const string ModelProvider = "openai";
+    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
+    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -129,6 +140,7 @@ internal partial class ClientCore
     /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
     protected static readonly ChatTool s_nonInvocableFunctionTool = ChatTool.CreateFunctionTool("NonInvocableTool");
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -162,6 +174,11 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
+    protected static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
     /// </summary>
@@ -214,6 +231,7 @@ internal partial class ClientCore
     {
         return new Dictionary<string, object?>
         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -253,11 +271,14 @@ internal partial class ClientCore
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             { nameof(completionUpdate.CompletionId), completionUpdate.CompletionId },
             { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },
             { nameof(completionUpdate.SystemFingerprint), completionUpdate.SystemFingerprint },
             { nameof(completionUpdate.RefusalUpdate), completionUpdate.RefusalUpdate },
             { nameof(completionUpdate.Usage), completionUpdate.Usage },
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -272,6 +293,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completionUpdate.FinishReason), completionUpdate.FinishReason?.ToString() },
@@ -283,6 +306,7 @@ internal partial class ClientCore
     /// </summary>
     /// <param name="targetModel">Model identifier</param>
     /// <param name="chatHistory">Chat history</param>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -314,6 +338,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    /// <param name="chat">Chat history</param>
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <param name="executionSettings">Execution settings for the completion API.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">Async cancellation token</param>
@@ -321,6 +348,7 @@ internal partial class ClientCore
     internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
         string targetModel,
         ChatHistory chatHistory,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -352,11 +380,15 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        ChatHistory chat,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chatHistory);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -390,10 +422,14 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        Verify.NotNull(chat);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
                 JsonSerializer.Serialize(chatHistory),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -425,6 +461,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                JsonSerializer.Serialize(chat),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 JsonSerializer.Serialize(executionSettings));
         }
 
@@ -440,6 +479,7 @@ internal partial class ClientCore
             var functionCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, functionCallingConfig, kernel);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -456,11 +496,14 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
 
             var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -475,11 +518,14 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
             // Make the request.
             OpenAIChatCompletion? chatCompletion = null;
             OpenAIChatMessageContent chatMessageContent;
             using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -511,6 +557,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             {
                 try
                 {
@@ -526,6 +575,7 @@ internal partial class ClientCore
                         // Capture available metadata even if the operation failed.
                         activity
                             .SetResponseId(chatCompletion.Id)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -548,10 +598,13 @@ internal partial class ClientCore
                             .SetCompletionTokenUsage(chatCompletion.Usage.OutputTokens);
                     }
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                             .SetPromptTokenUsage(chatCompletion.Usage.InputTokenCount)
                             .SetCompletionTokenUsage(chatCompletion.Usage.OutputTokenCount);
                     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -566,10 +619,13 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                     throw;
                 }
 
                 chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -603,10 +659,14 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             }
 
             // If we don't want to attempt to invoke any functions or there is nothing to call, just return the result.
             if (!functionCallingConfig.AutoInvoke || chatCompletion.ToolCalls.Count == 0)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -623,6 +683,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             // If we don't want to attempt to invoke any functions, just return the result.
             if (!toolCallingConfig.AutoInvoke)
             {
@@ -635,6 +697,7 @@ internal partial class ClientCore
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
             if (chatCompletion.ToolCalls.Count == 0)
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -649,6 +712,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             {
                 return [chatMessageContent];
             }
@@ -670,6 +735,7 @@ internal partial class ClientCore
 
             // Process non-function tool calls.
             this.ProcessNonFunctionToolCalls(chatCompletion.ToolCalls, chatHistory);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -686,6 +752,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             if (this.Logger.IsEnabled(LogLevel.Debug))
             {
                 this.Logger.LogDebug("Tool requests: {Requests}", chatCompletion.ToolCalls.Count);
@@ -799,6 +867,7 @@ internal partial class ClientCore
                     return [chat.Last()];
                 }
             }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -813,12 +882,15 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
     }
 
     internal async IAsyncEnumerable<OpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
         string targetModel,
         ChatHistory chatHistory,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -850,11 +922,15 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        ChatHistory chat,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chatHistory);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -886,11 +962,15 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        Verify.NotNull(chat);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
                 JsonSerializer.Serialize(chatHistory),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -922,6 +1002,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                JsonSerializer.Serialize(chat),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 JsonSerializer.Serialize(executionSettings));
         }
 
@@ -941,6 +1024,7 @@ internal partial class ClientCore
             var toolCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, toolCallingConfig, kernel);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -957,11 +1041,14 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
 
             var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -976,6 +1063,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
             // Reset state
             contentBuilder?.Clear();
@@ -992,6 +1081,7 @@ internal partial class ClientCore
             FunctionCallContent[]? functionCallContents = null;
 
             using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1023,6 +1113,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             {
                 // Make the request.
                 AsyncCollectionResult<StreamingChatCompletionUpdate> response;
@@ -1099,6 +1192,7 @@ internal partial class ClientCore
                             {
                                 // Using the code below to distinguish and skip non - function call related updates.
                                 // The Kind property of updates can't be reliably used because it's only initialized for the first update.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1115,6 +1209,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                                 if (string.IsNullOrEmpty(functionCallUpdate.ToolCallId) &&
                                     string.IsNullOrEmpty(functionCallUpdate.FunctionName) &&
                                     (functionCallUpdate.FunctionArgumentsUpdate is null || functionCallUpdate.FunctionArgumentsUpdate.ToMemory().IsEmpty))
@@ -1136,6 +1232,7 @@ internal partial class ClientCore
                             {
                                 // Using the code below to distinguish and skip non - function call related updates.
                                 // The Kind property of updates can't be reliably used because it's only initialized for the first update.
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1150,6 +1247,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                                 if (string.IsNullOrEmpty(functionCallUpdate.Id) &&
                                     string.IsNullOrEmpty(functionCallUpdate.FunctionName) &&
                                     string.IsNullOrEmpty(functionCallUpdate.FunctionArgumentsUpdate))
@@ -1164,6 +1263,7 @@ internal partial class ClientCore
                                     functionCallIndex: functionCallUpdate.Index));
                             }
                         }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1195,6 +1295,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                         streamedContents?.Add(openAIStreamingChatMessageContent);
                         yield return openAIStreamingChatMessageContent;
                     }
@@ -1246,6 +1349,7 @@ internal partial class ClientCore
 
             // Process non-function tool calls.
             this.ProcessNonFunctionToolCalls(toolCalls, chatHistory);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1262,6 +1366,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             // Log the requests
             if (this.Logger.IsEnabled(LogLevel.Trace))
             {
@@ -1378,6 +1484,7 @@ internal partial class ClientCore
                     yield break;
                 }
             }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1392,6 +1499,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
     }
 
@@ -1449,6 +1558,7 @@ internal partial class ClientCore
     {
         var options = new ChatCompletionOptions
         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1482,6 +1592,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            MaxOutputTokenCount = executionSettings.MaxTokens,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             Temperature = (float?)executionSettings.Temperature,
             TopP = (float?)executionSettings.TopP,
             FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
@@ -1503,6 +1616,7 @@ internal partial class ClientCore
             options.ToolChoice = toolCallingConfig.Choice;
         }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1519,6 +1633,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             ResponseFormat = GetResponseFormat(executionSettings) ?? ChatResponseFormat.Text,
             ToolChoice = toolCallingConfig.Choice,
         };
@@ -1536,6 +1652,7 @@ internal partial class ClientCore
             options.ToolChoice = toolCallingConfig.Choice;
         }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1550,6 +1667,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         if (toolCallingConfig.Tools is { Count: > 0 } tools)
         {
             options.Tools.AddRange(tools);
@@ -1591,6 +1710,7 @@ internal partial class ClientCore
                 switch (formatString)
                 {
                     case "json_object":
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1631,12 +1751,15 @@ internal partial class ClientCore
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                         return ChatResponseFormat.CreateJsonObjectFormat();
 
                     case "text":
                         return ChatResponseFormat.CreateTextFormat();
                 }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1651,6 +1774,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 break;
 
             case JsonElement formatElement:
@@ -1662,6 +1787,7 @@ internal partial class ClientCore
                     switch (formatString)
                     {
                         case "json_object":
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1703,6 +1829,8 @@ internal partial class ClientCore
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                             return ChatResponseFormat.CreateJsonObjectFormat();
 
                         case "text":
@@ -1710,6 +1838,7 @@ internal partial class ClientCore
                     }
                 }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1724,6 +1853,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 break;
             case Type formatObjectType:
                 return GetJsonSchemaResponseFormat(formatObjectType);
@@ -1737,6 +1868,7 @@ internal partial class ClientCore
     /// </summary>
     private static ChatResponseFormat GetJsonSchemaResponseFormat(Type formatObjectType)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1780,12 +1912,15 @@ internal partial class ClientCore
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
 
         var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
         return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, jsonSchemaIsStrict: true);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1800,6 +1935,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
@@ -1809,6 +1946,7 @@ internal partial class ClientCore
         {
             if (tools[i].Kind == ChatToolKind.Function &&
                 string.Equals(tools[i].FunctionName, FunctionName.ToFullyQualifiedName(functionCallContent.FunctionName, functionCallContent.PluginName, OpenAIFunction.NameSeparator), StringComparison.OrdinalIgnoreCase))
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1825,6 +1963,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
     private static bool IsRequestableTool(ChatCompletionOptions options, OpenAIFunctionToolCall ftc)
     {
@@ -1833,6 +1973,7 @@ internal partial class ClientCore
         {
             if (tools[i].Kind == ChatToolKind.Function &&
                 string.Equals(tools[i].FunctionName, ftc.FullyQualifiedName, StringComparison.OrdinalIgnoreCase))
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1847,6 +1988,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             {
                 return true;
             }
@@ -1894,6 +2037,7 @@ internal partial class ClientCore
         foreach (var message in chatHistory)
         {
             messages.AddRange(CreateRequestMessages(message));
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1925,12 +2069,16 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            messages.AddRange(CreateRequestMessages(message, executionSettings.ToolCallBehavior));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         return messages;
     }
 
     private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1962,6 +2110,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     {
         if (message.Role == AuthorRole.System)
         {
@@ -1997,6 +2148,7 @@ internal partial class ClientCore
                 }
 
                 var stringResult = FunctionCalling.FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2028,6 +2180,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
                 toolMessages.Add(new ToolChatMessage(resultContent.CallId, stringResult ?? string.Empty));
             }
@@ -2047,6 +2202,7 @@ internal partial class ClientCore
                 return [new UserChatMessage(textContent.Text) { ParticipantName = message.AuthorName }];
             }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2089,6 +2245,8 @@ internal partial class ClientCore
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             return
             [
                 new UserChatMessage(message.Items.Select(static (KernelContent item) => item switch
@@ -2099,6 +2257,7 @@ internal partial class ClientCore
                     }))
                 { ParticipantName = message.AuthorName }
             ];
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2113,6 +2272,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         if (message.Role == AuthorRole.Assistant)
@@ -2140,6 +2301,7 @@ internal partial class ClientCore
                             name.ValueKind == JsonValueKind.String &&
                             arguments.ValueKind == JsonValueKind.String)
                         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2173,6 +2335,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                            ftcs.Add(ChatToolCall.CreateFunctionToolCall(id.GetString()!, name.GetString()!, BinaryData.FromString(arguments.GetString()!)));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                         }
                     }
                     tools = ftcs;
@@ -2202,6 +2367,7 @@ internal partial class ClientCore
 
                 var argument = JsonSerializer.Serialize(callRequest.Arguments);
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2235,6 +2401,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), BinaryData.FromString(argument ?? string.Empty)));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             }
 
             // This check is necessary to prevent an exception that will be thrown if the toolCalls collection is empty.
@@ -2244,6 +2413,7 @@ internal partial class ClientCore
                 return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
             }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2262,6 +2432,8 @@ internal partial class ClientCore
 <<<<<<< HEAD
             return [new AssistantChatMessage(toolCalls, message.Content) { ParticipantName = message.AuthorName }];
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             var assistantMessage = new AssistantChatMessage(toolCalls) { ParticipantName = message.AuthorName };
             if (message.Content is { } content)
             {
@@ -2269,6 +2441,7 @@ internal partial class ClientCore
             }
 
             return [assistantMessage];
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2283,6 +2456,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         throw new NotSupportedException($"Role {message.Role} is not supported.");
@@ -2292,6 +2467,7 @@ internal partial class ClientCore
     {
         if (imageContent.Data is { IsEmpty: false } data)
         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2325,10 +2501,14 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MimeType);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         if (imageContent.Uri is not null)
         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2362,6 +2542,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            return ChatMessageContentPart.CreateImagePart(imageContent.Uri);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
@@ -2445,6 +2628,7 @@ internal partial class ClientCore
         return result;
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2461,6 +2645,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private static void AddResponseMessage(ChatHistory chat, string? result, string? errorMessage, ChatToolCall toolCall, ILogger logger)
     {
         // Log any error
@@ -2486,6 +2672,7 @@ internal partial class ClientCore
         chat.Add(message);
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2500,6 +2687,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private static void ValidateMaxTokens(int? maxTokens)
     {
         if (maxTokens.HasValue && maxTokens < 1)
@@ -2523,6 +2712,7 @@ internal partial class ClientCore
         if (this.Logger!.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2565,6 +2755,8 @@ internal partial class ClientCore
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 "Prompt tokens: {InputTokenCount}. Completion tokens: {OutputTokenCount}. Total tokens: {TotalTokenCount}.",
                 usage.InputTokenCount, usage.OutputTokenCount, usage.TotalTokenCount);
         }
@@ -2572,6 +2764,7 @@ internal partial class ClientCore
         s_promptTokensCounter.Add(usage.InputTokenCount);
         s_completionTokensCounter.Add(usage.OutputTokenCount);
         s_totalTokensCounter.Add(usage.TotalTokenCount);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2586,6 +2779,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     private ToolCallingConfig GetFunctionCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory, int requestIndex)
@@ -2636,6 +2831,7 @@ internal partial class ClientCore
 
         return new ToolCallingConfig(
             Tools: tools ?? [s_nonInvocableFunctionTool],
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2669,6 +2865,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            Choice: choice ?? ChatToolChoice.CreateNoneChoice(),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             AutoInvoke: autoInvoke,
             AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction,
             Options: options);
@@ -2710,6 +2909,7 @@ internal partial class ClientCore
         {
             if (config.Choice == FunctionChoice.Auto)
             {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2754,6 +2954,8 @@ internal partial class ClientCore
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 toolChoice = ChatToolChoice.CreateAutoChoice();
             }
             else if (config.Choice == FunctionChoice.Required)
@@ -2763,6 +2965,7 @@ internal partial class ClientCore
             else if (config.Choice == FunctionChoice.None)
             {
                 toolChoice = ChatToolChoice.CreateNoneChoice();
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2777,6 +2980,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             }
             else
             {
@@ -2817,6 +3022,7 @@ internal partial class ClientCore
 
             chatHistory.Add(message);
         }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2833,6 +3039,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>
     /// Processes the function result.
     /// </summary>
@@ -2938,6 +3146,7 @@ internal partial class ClientCore
             Tools: tools ?? [s_nonInvocableFunctionTool],
             Choice: choice ?? ChatToolChoice.None,
             AutoInvoke: autoInvoke);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2952,5 +3161,7 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 }

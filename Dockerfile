@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -159,6 +160,8 @@ CMD ["entrypoint.sh"]
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 # Read the doc: https://huggingface.co/docs/hub/spaces-sdks-docker
 # you will also find guides on how best to write your Dockerfile
 
@@ -175,6 +178,7 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 COPY --chown=user . /app
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -189,3 +193,5 @@ CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75

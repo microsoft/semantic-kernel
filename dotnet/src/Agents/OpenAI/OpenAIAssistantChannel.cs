@@ -181,6 +181,7 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     /// <inheritdoc/>
     protected override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(OpenAIAssistantAgent agent, IList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -199,10 +200,13 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
 <<<<<<< HEAD
         return AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         agent.ThrowIfDeleted();
 
         return AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
         return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -217,6 +221,8 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <inheritdoc/>
@@ -751,6 +757,7 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     /// <inheritdoc/>
     protected override Task ResetAsync(CancellationToken cancellationToken = default) =>
         this._client.DeleteThreadAsync(this._threadId, cancellationToken);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -782,4 +789,7 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    protected override string Serialize() => this._threadId;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

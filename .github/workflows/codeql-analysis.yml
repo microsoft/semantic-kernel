@@ -7,6 +7,7 @@ name: "CodeQL"
 on:
   push:
     branches: ["*"]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -23,6 +24,8 @@ on:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
     branches: ["main", "experimental*", "feature*", "*-development"]
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -54,6 +57,7 @@ jobs:
       fail-fast: false
       matrix:
         language: [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -70,6 +74,8 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
         language: ["csharp", "python", "java"]
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -97,6 +103,7 @@ jobs:
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -128,6 +135,9 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        uses: github/codeql-action/init@v3
+>>>>>>> origin/main
         with:
           languages: ${{ matrix.language }}
           # If you wish to specify custom queries, you can do so here or in a config file.
@@ -154,6 +164,7 @@ jobs:
       - name: Autobuild
         if: ${{ matrix.language != 'C' }}
         uses: github/codeql-action/autobuild@v4
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -170,6 +181,8 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
         uses: github/codeql-action/autobuild@v3
 
       - name: Setup JDK
@@ -211,6 +224,7 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -242,5 +256,8 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        uses: github/codeql-action/analyze@v3
+>>>>>>> origin/main
         with:
           category: "/language:${{matrix.language}}"

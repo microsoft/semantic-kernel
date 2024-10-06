@@ -6,6 +6,7 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +42,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/main
         <relativePath>../pom.xml</relativePath>
     </parent>
 

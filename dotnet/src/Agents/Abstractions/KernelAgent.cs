@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15,11 +16,14 @@
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,6 +38,8 @@ using System.Threading.Tasks;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
@@ -42,6 +48,7 @@ namespace Microsoft.SemanticKernel.Agents;
 public abstract class KernelAgent : Agent
 {
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -62,6 +69,8 @@ public abstract class KernelAgent : Agent
     /// The instructions of the agent (optional)
     /// </summary>
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Arguments for the agent instruction parameters (optional).
     /// </summary>
     /// <remarks>
@@ -76,6 +85,7 @@ public abstract class KernelAgent : Agent
     /// Instructions may be formatted in "semantic-kernel" template format.
     /// (<see cref="KernelPromptTemplateFactory"/>)
     /// </remarks>
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -90,6 +100,8 @@ public abstract class KernelAgent : Agent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public string? Instructions { get; init; }
 
     /// <summary>
@@ -99,6 +111,7 @@ public abstract class KernelAgent : Agent
     /// Defaults to empty Kernel, but may be overridden.
     /// </remarks>
     public Kernel Kernel { get; init; } = new();
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -115,6 +128,8 @@ public abstract class KernelAgent : Agent
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// A prompt-template based on the agent instructions.
@@ -188,6 +203,7 @@ public abstract class KernelAgent : Agent
     }
 
     private static readonly Dictionary<string, PromptExecutionSettings> s_emptySettings = [];
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -202,4 +218,6 @@ public abstract class KernelAgent : Agent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

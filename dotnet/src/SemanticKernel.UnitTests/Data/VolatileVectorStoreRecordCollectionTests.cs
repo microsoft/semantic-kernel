@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -18,10 +19,13 @@ using System.Collections.Concurrent;
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 using System.Collections.Generic;
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,6 +40,8 @@ using System.Collections.Generic;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,6 +64,7 @@ public class VolatileVectorStoreRecordCollectionTests
     private readonly CancellationToken _testCancellationToken = new(false);
 
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _collectionStore;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -74,10 +81,13 @@ public class VolatileVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     private readonly ConcurrentDictionary<string, Type> _collectionStoreTypes;
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -92,10 +102,13 @@ public class VolatileVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     public VolatileVectorStoreRecordCollectionTests()
     {
         this._collectionStore = new();
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -112,10 +125,13 @@ public class VolatileVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         this._collectionStoreTypes = new();
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -130,6 +146,8 @@ public class VolatileVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     [Theory]
@@ -143,6 +161,7 @@ public class VolatileVectorStoreRecordCollectionTests
 
         var sut = new VolatileVectorStoreRecordCollection<string, SinglePropsModel<string>>(
             this._collectionStore,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -159,10 +178,13 @@ public class VolatileVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
             this._collectionStoreTypes,
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -177,6 +199,8 @@ public class VolatileVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             collectionName);
 
         // Act
@@ -401,6 +425,7 @@ public class VolatileVectorStoreRecordCollectionTests
         Assert.Equal($"data {testKey1}", (collection[testKey1] as SinglePropsModel<TKey>)!.Data);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -419,6 +444,8 @@ public class VolatileVectorStoreRecordCollectionTests
 <<<<<<< HEAD
     private static SinglePropsModel<TKey> CreateModel<TKey>(TKey key, bool withVectors)
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     [Theory]
     [InlineData(true, TestRecordKey1, TestRecordKey2)]
@@ -667,6 +694,7 @@ public class VolatileVectorStoreRecordCollectionTests
 =======
     private static SinglePropsModel<TKey> CreateModel<TKey>(TKey key, bool withVectors)
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -681,11 +709,14 @@ public class VolatileVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     {
         return new SinglePropsModel<TKey>
         {
             Key = key,
             Data = "data " + key,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -704,12 +735,15 @@ public class VolatileVectorStoreRecordCollectionTests
 <<<<<<< HEAD
             Vector = withVectors ? new float[] { 1, 2, 3, 4 } : null,
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
             Tags = new List<string> { "default tag", "tag " + key },
             Vector = vector ?? (withVectors ? new float[] { 1, 2, 3, 4 } : null),
 =======
             Vector = withVectors ? new float[] { 1, 2, 3, 4 } : null,
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -724,6 +758,8 @@ public class VolatileVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             NotAnnotated = null,
         };
     }
@@ -733,6 +769,7 @@ public class VolatileVectorStoreRecordCollectionTests
     {
         return new VolatileVectorStoreRecordCollection<TKey, SinglePropsModel<TKey>>(
             this._collectionStore,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -749,10 +786,13 @@ public class VolatileVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
             this._collectionStoreTypes,
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -767,6 +807,8 @@ public class VolatileVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             TestCollectionName,
             new()
             {
@@ -779,6 +821,7 @@ public class VolatileVectorStoreRecordCollectionTests
         Properties =
         [
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -797,12 +840,15 @@ public class VolatileVectorStoreRecordCollectionTests
 <<<<<<< HEAD
             new VectorStoreRecordDataProperty("Data", typeof(string)),
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
             new VectorStoreRecordDataProperty("Tags", typeof(List<string>)) { IsFilterable = true },
             new VectorStoreRecordDataProperty("Data", typeof(string)) { IsFilterable = true },
 =======
             new VectorStoreRecordDataProperty("Data", typeof(string)),
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -817,6 +863,8 @@ public class VolatileVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
         ]
     };
@@ -826,6 +874,7 @@ public class VolatileVectorStoreRecordCollectionTests
         [VectorStoreRecordKey]
         public TKey? Key { get; set; }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -844,6 +893,8 @@ public class VolatileVectorStoreRecordCollectionTests
 <<<<<<< HEAD
         [VectorStoreRecordData]
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         [VectorStoreRecordData(IsFilterable = true)]
         public List<string> Tags { get; set; } = new List<string>();
@@ -852,6 +903,7 @@ public class VolatileVectorStoreRecordCollectionTests
 =======
         [VectorStoreRecordData]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -866,6 +918,8 @@ public class VolatileVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         public string Data { get; set; } = string.Empty;
 
         [VectorStoreRecordVector]

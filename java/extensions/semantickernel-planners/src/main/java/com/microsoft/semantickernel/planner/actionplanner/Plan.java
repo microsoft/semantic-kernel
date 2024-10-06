@@ -36,7 +36,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /** Standard Semantic Kernel callable plan. Plan is used to create trees of SKFunctions. */
-public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
+public class Plan extends AbstractSkFunction {
 
     private static final Pattern s_variablesRegex = Pattern.compile("\\$(\\w+)", Pattern.MULTILINE);
 
@@ -54,7 +54,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     // Outputs for the plan, used to pass information to the caller
     private List<String> outputs = new ArrayList<>();
 
-    @Nullable private SKFunction<?> function = null;
+    @Nullable private SKFunction function = null;
 
     public Plan(
             String goal,
@@ -79,7 +79,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     }
 
     public Plan(
-            SKFunction<?> function,
+            SKFunction function,
             ContextVariables state,
             List<String> functionOutputs,
             KernelSkillsSupplier kernelSkillsSupplier) {
@@ -101,7 +101,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     }
 
     public Plan(
-            SKFunction<?> function,
+            SKFunction function,
             @Nullable ContextVariables parameters,
             ContextVariables state,
             List<String> functionOutputs,
@@ -130,13 +130,13 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 =======
 >>>>>>> main
     public Plan(
-            SKFunction<?> function,
+            SKFunction function,
             List<String> functionOutputs,
             KernelSkillsSupplier kernelSkillsSupplier) {
         this(function, SKBuilders.variables().build(), functionOutputs, kernelSkillsSupplier);
     }
 
-    public Plan(SKFunction<?> function, KernelSkillsSupplier kernelSkillsSupplier) {
+    public Plan(SKFunction function, KernelSkillsSupplier kernelSkillsSupplier) {
         this(function, SKBuilders.variables().build(), new ArrayList<>(), kernelSkillsSupplier);
     }
 
@@ -144,12 +144,12 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
             String goal,
             ContextVariables parameters,
             KernelSkillsSupplier kernelSkillsSupplier,
-            SKFunction<?>... steps) {
+            SKFunction... steps) {
         this(goal, parameters, kernelSkillsSupplier);
         this.addSteps(steps);
     }
 
-    public Plan(String goal, KernelSkillsSupplier kernelSkillsSupplier, SKFunction<?>... steps) {
+    public Plan(String goal, KernelSkillsSupplier kernelSkillsSupplier, SKFunction... steps) {
         this(goal, kernelSkillsSupplier);
         this.addSteps(steps);
     }
@@ -170,7 +170,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 
     @Override
     @Nullable
-    public Class getType() {
+    public Class<?> getType() {
         if (function == null) {
             return null;
         }
@@ -195,7 +195,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
      *
      * @param steps The steps to add to the current plan.
      */
-    public void addSteps(SKFunction<?>... steps) {
+    public void addSteps(SKFunction... steps) {
         List<Plan> plans =
                 Arrays.stream(steps)
                         .map(step -> new Plan(step, getSkillsSupplier()))
@@ -240,7 +240,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                 .map(
                         result -> {
                             if (result.getVariables().get(DefaultResultKey) != null) {
-                                result = result.update(result.getVariables().get(DefaultResultKey));
+                                result = result.update((String)result.getVariables().get(DefaultResultKey));
                             }
                             return result;
                         });
@@ -282,7 +282,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 
     private static Mono<SKContext> processInvocationResult(
             SKContext context, Plan step, SKContext currentContext, SKContext result) {
-        String resultValue = result.getResult();
+        String resultValue = (String)result.getResult();
 
         if (resultValue == null) {
             return Mono.error(
@@ -298,7 +298,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         step.outputs.forEach(
                 item -> {
                     if (result.getVariables().asMap().containsKey(item)) {
-                        String variable = result.getVariables().get(item);
+                        String variable = (String)result.getVariables().get(item);
                         if (variable != null) {
                             updatedContext.setVariable(item, variable);
                         }
@@ -402,7 +402,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     public Mono<SKContext> invokeAsync(
             @Nullable String input,
             @Nullable SKContext context,
-            @Nullable CompletionRequestSettings settings) {
+            @Nullable Object settings) {
         if (input != null) {
             this.state = state.writableClone().update(input);
         }
@@ -424,7 +424,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 
     @Override
     protected Mono<SKContext> invokeAsyncInternal(
-            SKContext contextIn, @Nullable CompletionRequestSettings settings) {
+            SKContext contextIn, @Nullable Object settings) {
         if (function != null) {
             return ((SKFunction) function).invokeAsync(contextIn, settings);
         } else {
@@ -448,10 +448,10 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 
             String varName = matches.group(1);
 
-            String value = variables.get(varName);
+            String value = (String)variables.get(varName);
 
             if (value == null) {
-                value = state.get(varName);
+                value = (String)state.get(varName);
             }
 
             if (value == null) {
@@ -470,7 +470,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         vars.asMap()
                 .forEach(
                         (key, value) -> {
-                            if (Verify.isNullOrEmpty(clone.get(key))) {
+                            if (Verify.isNullOrEmpty((String)clone.get(key))) {
                                 clone.setVariable(key, value);
                             }
                         });
@@ -495,15 +495,15 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 
         String input = "";
         if (step.parameters != null
-                && !Verify.isNullOrEmpty(step.parameters.getInput())
+                && !Verify.isNullOrEmpty((String)step.parameters.getInput())
                 && !step.parameters.getInput().equals(SKFunctionParameters.NO_DEFAULT_VALUE)) {
             input =
                     this.expandFromVariables(
-                            variables, Objects.requireNonNull(step.parameters.getInput()));
-        } else if (!Verify.isNullOrEmpty(variables.getInput())) {
-            input = Objects.requireNonNull(variables.getInput());
-        } else if (!Verify.isNullOrEmpty(this.state.getInput())) {
-            input = Objects.requireNonNull(this.state.getInput());
+                            variables, Objects.requireNonNull((String)step.parameters.getInput()));
+        } else if (!Verify.isNullOrEmpty((String)variables.getInput())) {
+            input = Objects.requireNonNull((String)variables.getInput());
+        } else if (!Verify.isNullOrEmpty((String)this.state.getInput())) {
+            input = Objects.requireNonNull((String)this.state.getInput());
         } else if (steps.size() > 0) {
             input = "";
         } else if (!Verify.isNullOrEmpty(this.getDescription())) {
@@ -526,11 +526,11 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                     continue;
                 }
 
-                if (!Verify.isNullOrEmpty(variables.get(param.getName()))) {
-                    String variable = Objects.requireNonNull(variables.get(param.getName()));
+                if (!Verify.isNullOrEmpty((String)variables.get(param.getName()))) {
+                    String variable = Objects.requireNonNull((String)variables.get(param.getName()));
                     stepVariables.setVariable(param.getName(), variable);
-                } else if (!Verify.isNullOrEmpty(this.state.get(param.getName()))) {
-                    String variable = Objects.requireNonNull(this.state.get(param.getName()));
+                } else if (!Verify.isNullOrEmpty((String)this.state.get(param.getName()))) {
+                    String variable = Objects.requireNonNull((String)this.state.get(param.getName()));
                     stepVariables.setVariable(param.getName(), variable);
                 }
             }
@@ -542,21 +542,21 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                     .forEach(
                             (key, value) -> {
                                 // Don't overwrite variable values that are already set
-                                if (!Verify.isNullOrEmpty(stepVariables.get(key))) {
+                                if (!Verify.isNullOrEmpty((String)stepVariables.get(key))) {
                                     return;
                                 }
 
-                                String expandedValue = this.expandFromVariables(variables, value);
+                                String expandedValue = this.expandFromVariables(variables, (String)value);
                                 if (expandedValue != null
-                                        && !expandedValue.equalsIgnoreCase(value)) {
+                                        && !expandedValue.equalsIgnoreCase((String)value)) {
                                     stepVariables.setVariable(key, expandedValue);
-                                } else if (!Verify.isNullOrEmpty(variables.get(key))) {
-                                    String variable = variables.get(key);
+                                } else if (!Verify.isNullOrEmpty((String)variables.get(key))) {
+                                    String variable = (String)variables.get(key);
                                     if (variable != null) {
                                         stepVariables.setVariable(key, variable);
                                     }
-                                } else if (!Verify.isNullOrEmpty(state.get(key))) {
-                                    String variable = state.get(key);
+                                } else if (!Verify.isNullOrEmpty((String)state.get(key))) {
+                                    String variable = (String)state.get(key);
                                     if (variable != null) {
                                         stepVariables.setVariable(key, variable);
                                     }
@@ -599,7 +599,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                                         if (step.getParameters() != null
                                                 && step.getParameters().get(param.getName())
                                                         != null) {
-                                            value = step.getParameters().get(param.getName());
+                                            value = (String)step.getParameters().get(param.getName());
                                         }
                                         return "\t" + param.getName() + ": \"" + value + "\"";
                                     })

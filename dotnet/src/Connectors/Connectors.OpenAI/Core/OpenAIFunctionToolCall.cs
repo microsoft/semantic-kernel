@@ -24,6 +24,7 @@ public sealed class OpenAIFunctionToolCall
 
         string fullyQualifiedFunctionName = functionToolCall.FunctionName;
         string functionName = fullyQualifiedFunctionName;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -57,6 +58,9 @@ public sealed class OpenAIFunctionToolCall
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        string? arguments = functionToolCall.FunctionArguments?.ToString();
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         string? pluginName = null;
 
         int separatorPos = fullyQualifiedFunctionName.IndexOf(OpenAIFunction.NameSeparator, StringComparison.Ordinal);
@@ -141,6 +145,7 @@ public sealed class OpenAIFunctionToolCall
         {
             // If we have an ID, ensure the index is being tracked. Even if it's not a function update,
             // we want to keep track of it so we can send back an error.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -174,6 +179,9 @@ public sealed class OpenAIFunctionToolCall
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            if (update.ToolCallId is string id)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             {
                 (toolCallIdsByIndex ??= [])[update.Index] = id;
             }
@@ -185,6 +193,7 @@ public sealed class OpenAIFunctionToolCall
             }
 
             // Ensure we're tracking the function's arguments.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -218,12 +227,16 @@ public sealed class OpenAIFunctionToolCall
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            if (update.FunctionArgumentsUpdate is not null)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             {
                 if (!(functionArgumentBuildersByIndex ??= []).TryGetValue(update.Index, out StringBuilder? arguments))
                 {
                     functionArgumentBuildersByIndex[update.Index] = arguments = new();
                 }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -257,6 +270,9 @@ public sealed class OpenAIFunctionToolCall
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                arguments.Append(update.FunctionArgumentsUpdate.ToString());
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             }
         }
     }
@@ -286,6 +302,7 @@ public sealed class OpenAIFunctionToolCall
                 functionNamesByIndex?.TryGetValue(toolCallIndexAndId.Key, out functionName);
                 functionArgumentBuildersByIndex?.TryGetValue(toolCallIndexAndId.Key, out functionArguments);
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -319,6 +336,9 @@ public sealed class OpenAIFunctionToolCall
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                toolCalls[i] = ChatToolCall.CreateFunctionToolCall(toolCallIndexAndId.Value, functionName ?? string.Empty, BinaryData.FromString(functionArguments?.ToString() ?? string.Empty));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 i++;
             }
 

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,6 +33,9 @@ using System.Text.Json.Nodes;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using System.Text.Json.Nodes;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -46,6 +50,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 public static class SKFunctionExtensions
 {
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -162,6 +167,8 @@ public static class SKFunctionExtensions
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Execute a function with a custom set of context variables.
     /// Use case: template engine: semantic function with custom input variable.
     /// </summary>
@@ -183,6 +190,7 @@ public static class SKFunctionExtensions
         // var tmpContext = new SKContext(input, memory, skills, log, cancellationToken);
         var tmpContext = new SKContext(input);
         try
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -199,6 +207,8 @@ public static class SKFunctionExtensions
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         return function.InvokeAsync(input, settings: null, memory: null, logger: null, cancellationToken: cancellationToken);
     }
 
@@ -223,6 +233,7 @@ public static class SKFunctionExtensions
         // Log a warning if the given input is overriding a different input in the context
         var inputInContext = context.Variables.Input;
         if (!string.IsNullOrEmpty(inputInContext) && !string.Equals(input, inputInContext, StringComparison.Ordinal))
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -237,6 +248,8 @@ public static class SKFunctionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         {
 #pragma warning disable CA2016 // the token is passed in via the context
             await function.InvokeAsync(tmpContext).ConfigureAwait(false);
@@ -250,6 +263,7 @@ public static class SKFunctionExtensions
         }
 
         return tmpContext;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -266,6 +280,8 @@ public static class SKFunctionExtensions
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             return function.InvokeAsync(context, textCompletionService, settings);
         }
 
@@ -276,6 +292,7 @@ public static class SKFunctionExtensions
         contextClone.Variables.Update(input);
 
         return function.InvokeAsync(contextClone, textCompletionService, settings);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -290,5 +307,7 @@ public static class SKFunctionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 }

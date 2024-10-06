@@ -75,6 +75,7 @@ internal static class QdrantVectorStoreCollectionCreateMapping
     /// <param name="storagePropertyNames">The mapping of property names to storage names.</param>
     /// <returns>THe mapped <see cref="VectorParamsMap"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the property is missing information or has unsupported options specified.</exception>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -108,6 +109,9 @@ internal static class QdrantVectorStoreCollectionCreateMapping
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    public static VectorParamsMap MapNamedVectors(IEnumerable<VectorStoreRecordVectorProperty> vectorProperties, IReadOnlyDictionary<string, string> storagePropertyNames)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     {
         var vectorParamsMap = new VectorParamsMap();
 

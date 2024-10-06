@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,10 +21,13 @@ using System;
 
 using System;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Text.Json;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +42,8 @@ using System.Text.Json;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Azure;
 using Azure.Core;
 using Azure.Core.Serialization;
@@ -49,6 +55,7 @@ using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -65,11 +72,14 @@ namespace Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -84,6 +94,8 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 /// <summary>
 /// Extension methods to register Azure AI Search <see cref="IVectorStore"/> instances on an <see cref="IServiceCollection"/>.
@@ -134,6 +146,7 @@ public static class AzureAISearchServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -165,6 +178,9 @@ public static class AzureAISearchServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 var selectedOptions = options ?? sp.GetService<AzureAISearchVectorStoreOptions>();
 
                 // Build options for the Azure AI Search client and construct it.
@@ -178,6 +194,7 @@ public static class AzureAISearchServiceCollectionExtensions
                 var searchIndexClient = new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
 
                 // Construct the vector store.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -194,6 +211,8 @@ public static class AzureAISearchServiceCollectionExtensions
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 var searchIndexClient = new SearchIndexClient(endpoint, tokenCredential);
 =======
 >>>>>>> ms/features/bugbash-prep
@@ -202,6 +221,7 @@ public static class AzureAISearchServiceCollectionExtensions
                 var searchIndexClient = new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
 
                 // Construct the vector store.
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -216,6 +236,8 @@ public static class AzureAISearchServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 return new AzureAISearchVectorStore(
                     searchIndexClient,
                     selectedOptions);
@@ -242,6 +264,7 @@ public static class AzureAISearchServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -273,6 +296,9 @@ public static class AzureAISearchServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 var selectedOptions = options ?? sp.GetService<AzureAISearchVectorStoreOptions>();
 
                 // Build options for the Azure AI Search client and construct it.
@@ -286,6 +312,7 @@ public static class AzureAISearchServiceCollectionExtensions
                 var searchIndexClient = new SearchIndexClient(endpoint, credential, searchClientOptions);
 
                 // Construct the vector store.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -302,6 +329,8 @@ public static class AzureAISearchServiceCollectionExtensions
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 var searchIndexClient = new SearchIndexClient(endpoint, credential);
 =======
 >>>>>>> ms/features/bugbash-prep
@@ -310,6 +339,7 @@ public static class AzureAISearchServiceCollectionExtensions
                 var searchIndexClient = new SearchIndexClient(endpoint, credential, searchClientOptions);
 
                 // Construct the vector store.
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -324,6 +354,8 @@ public static class AzureAISearchServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 return new AzureAISearchVectorStore(
                     searchIndexClient,
                     selectedOptions);
@@ -331,6 +363,7 @@ public static class AzureAISearchServiceCollectionExtensions
 
         return services;
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -347,6 +380,8 @@ public static class AzureAISearchServiceCollectionExtensions
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// Register an Azure AI Search <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>, <see cref="IVectorizedSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
@@ -526,6 +561,7 @@ public static class AzureAISearchServiceCollectionExtensions
 
         return searchClientOptions;
     }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -540,4 +576,6 @@ public static class AzureAISearchServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

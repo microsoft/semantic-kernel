@@ -11,6 +11,7 @@ namespace Agents;
 /// </summary>
 public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTest(output)
 {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -63,6 +64,8 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public async Task UseStreamingAssistantAgentAsync()
     {
@@ -81,6 +84,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
                         EnableCodeInterpreter = true,
                         Metadata = AssistantSampleMetadata,
                     });
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -95,6 +99,8 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Create a thread for the agent conversation.
         string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
@@ -109,6 +115,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
     }
 
     [Fact]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -131,10 +138,13 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
     {
         const string MenuInstructions = "Answer questions about the menu.";
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     public async Task UseStreamingAssistantAgentWithPluginAsync()
     {
         const string AgentName = "Host";
         const string AgentInstructions = "Answer questions about the menu.";
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,12 +159,15 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -194,10 +207,13 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Instructions = AgentInstructions,
                     Name = AgentName,
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -212,6 +228,8 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                     Metadata = AssistantSampleMetadata,
                 });
 
@@ -230,6 +248,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
         await DisplayChatHistoryAsync(agent, threadId);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -246,6 +265,8 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public async Task UseStreamingAssistantWithCodeInterpreterAsync()
     {
@@ -276,6 +297,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
         await DisplayChatHistoryAsync(agent, threadId);
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -290,6 +312,8 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     // Local function to invoke agent and display the conversation messages.
     private async Task InvokeAgentAsync(OpenAIAssistantAgent agent, string threadId, string input)
     {
@@ -300,6 +324,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
         ChatHistory history = [];
 
         bool isFirst = false;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -334,12 +359,17 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        bool isCode = false;
+        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(threadId, messages: history))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         {
             if (string.IsNullOrEmpty(response.Content))
             {
                 continue;
             }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -356,6 +386,8 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             // Differentiate between assistant and tool messages
             if (isCode != (response.Metadata?.ContainsKey(OpenAIAssistantAgent.CodeInterpreterMetadataKey) ?? false))
             {
@@ -363,6 +395,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
                 isCode = !isCode;
             }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -377,6 +410,8 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             if (!isFirst)
             {
                 Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");

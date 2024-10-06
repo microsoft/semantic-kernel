@@ -1,4 +1,5 @@
 repos:
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -13,11 +14,14 @@ repos:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
   - repo: https://github.com/floatingpurr/sync_with_poetry
     rev: 1.1.0
     hooks:
       - id: sync_with_poetry
         args: [--config=python/.conf/.pre-commit-config.yaml, --db=python/.conf/packages_list.json, python/poetry.lock]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,10 +35,13 @@ repos:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
     hooks:
       - id: check-toml
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -60,6 +67,8 @@ repos:
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
       - id: check-yaml
       - id: end-of-file-fixer
       - id: mixed-line-ending
@@ -77,6 +86,7 @@ repos:
     hooks:
     - id: flake8
       args: ["--config=python/.conf/flake8.cfg"]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -91,12 +101,15 @@ repos:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
         files: \.toml$
 >>>>>>> origin/main
       - id: check-yaml
       - id: end-of-file-fixer
       - id: mixed-line-ending
   - repo: https://github.com/psf/black
+<<<<<<< head
 <<<<<<< main
     rev: 22.3.0
     hooks:
@@ -112,6 +125,8 @@ repos:
     - id: flake8
       args: ["--config=python/.conf/flake8.cfg"]
 =======
+=======
+>>>>>>> origin/main
     rev: 23.12.0
     hooks:
       - id: black
@@ -121,6 +136,7 @@ repos:
     hooks:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -135,3 +151,5 @@ repos:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main

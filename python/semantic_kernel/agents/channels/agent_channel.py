@@ -61,6 +61,7 @@ class AgentChannel(ABC):
             agent: The agent to interact with.
 
         Returns:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -79,6 +80,8 @@ class AgentChannel(ABC):
 <<<<<<< HEAD
             A async iterable of a bool, ChatMessageContent.
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             An async iterable of a bool, ChatMessageContent.
         """
         ...
@@ -97,6 +100,7 @@ class AgentChannel(ABC):
 
         Returns:
             An async iterable ChatMessageContent.
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -111,6 +115,8 @@ class AgentChannel(ABC):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         """
         ...
 

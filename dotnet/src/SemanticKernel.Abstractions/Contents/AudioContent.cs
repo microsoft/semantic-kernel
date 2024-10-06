@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -60,6 +64,7 @@ public class AudioContent : BinaryContent
 
     /// <summary>
     /// The audio data.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -91,6 +96,9 @@ public class AudioContent : BinaryContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// </summary>
     [JsonConstructor]
     public AudioContent()

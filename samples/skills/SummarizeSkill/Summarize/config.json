@@ -1,8 +1,6 @@
 {
-  "schema": 1,
-  "type": "completion",
   "description": "Summarize given text or any text document",
-  "completion": {
+  "default_settings": {
     "max_tokens": 512,
     "temperature": 0.0,
     "top_p": 0.0,

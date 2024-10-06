@@ -93,6 +93,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
         using var generator = new Generator(this.GetModel(), generatorParams);
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -124,6 +125,9 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        bool removeNextTokenStartingWithSpace = true;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         while (!generator.IsDone())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -135,6 +139,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
                 var outputTokens = generator.GetSequence(0);
                 var newToken = outputTokens.Slice(outputTokens.Length - 1, 1);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -153,6 +158,8 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 <<<<<<< HEAD
                 var output = this.GetTokenizer().Decode(newToken);
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 string output = this.GetTokenizer().Decode(newToken);
 
                 if (removeNextTokenStartingWithSpace && output[0] == ' ')
@@ -161,6 +168,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
                     output = output.TrimStart();
                 }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,6 +183,8 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 return output;
             }, cancellationToken).ConfigureAwait(false);
         }

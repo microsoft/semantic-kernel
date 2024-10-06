@@ -67,6 +67,7 @@ def test_render():
         (" \t", " \t"),
         (" \r", " \r"),
     ],
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -98,6 +99,9 @@ def test_render():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
     ids=[
         "None",
         "empty",
@@ -108,6 +112,7 @@ def test_render():
         "space_tab",
         "space_carriage_return",
     ],
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -141,6 +146,11 @@ def test_render():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+    ids=["None", "empty", "space", "two_spaces", "three_spaces", "space_newline", "space_tab", "space_carriage_return"],
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
 )
 def test_preserves_empty_values(input_, output):
     assert output == TextBlock.from_text(text=input_).content

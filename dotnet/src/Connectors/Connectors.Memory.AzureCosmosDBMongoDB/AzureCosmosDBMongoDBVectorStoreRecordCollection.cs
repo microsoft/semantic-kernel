@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,6 +32,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 using System;
 using System.Collections.Generic;
@@ -57,6 +61,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "AzureCosmosDBMongoDB";
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -73,6 +78,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>Property name to be used for search similarity score value.</summary>
     private const string ScorePropertyName = "similarityScore";
 
@@ -82,6 +89,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -96,6 +104,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
 
@@ -105,6 +115,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>Optional configuration options for this class.</summary>
     private readonly AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord> _options;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -141,6 +152,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
 
@@ -150,6 +163,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>Collection of vector storage property names.</summary>
     private readonly List<string> _vectorStoragePropertyNames;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -170,6 +184,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>Collection of record vector properties.</summary>
     private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 
@@ -178,6 +194,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
     /// <summary>First vector property for the collections that this class is used with.</summary>
     private readonly VectorStoreRecordVectorProperty? _firstVectorProperty = null;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -192,6 +209,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <inheritdoc />
     public string CollectionName { get; }
@@ -210,6 +229,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         // Verify.
         Verify.NotNull(mongoDatabase);
         Verify.NotNullOrWhiteSpace(collectionName);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -242,12 +262,17 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.BsonDocumentCustomMapper is not null, AzureCosmosDBMongoDBConstants.SupportedKeyTypes);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
         // Assign.
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(collectionName);
         this.CollectionName = collectionName;
         this._options = options ?? new AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>();
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -296,6 +321,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this._propertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), this._options.VectorStoreRecordDefinition, new() { RequiresAtLeastOneVector = false, SupportsMultipleKeys = false, SupportsMultipleVectors = true });
 
         this._storagePropertyNames = GetStoragePropertyNames(this._propertyReader.Properties, typeof(TRecord));
@@ -316,6 +343,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(
                 this._vectorStoreRecordDefinition,
                 properties.KeyProperty.DataModelPropertyName);
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -330,10 +358,13 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         this._vectorProperties = properties.VectorProperties;
         this._vectorStoragePropertyNames = this._vectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
 
         this._mapper = this._options.BsonDocumentCustomMapper ??
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -352,6 +383,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 <<<<<<< HEAD
             new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, properties.KeyProperty.DataModelPropertyName);
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, this._storagePropertyNames);
         this._mapper = this.InitializeMapper(properties.KeyProperty);
         this._vectorStoragePropertyNames = this._propertyReader.VectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
@@ -360,6 +393,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         this._vectorStoragePropertyNames = this._propertyReader.VectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
 
         this._mapper = this.InitializeMapper();
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -374,6 +408,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <inheritdoc />
@@ -386,6 +422,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         await this.RunOperationAsync("CreateCollection",
             () => this._mongoDatabase.CreateCollectionAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -418,6 +455,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        await this.RunOperationAsync("CreateIndexes",
+            () => this.CreateIndexesAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         await this.RunOperationAsync("CreateIndex",
             () => this.CreateIndexAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
     }
@@ -460,6 +501,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         const string OperationName = "Find";
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -492,6 +534,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        var includeVectors = options?.IncludeVectors ?? false;
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         var record = await this.RunOperationAsync(OperationName, async () =>
         {
             using var cursor = await this
@@ -510,6 +556,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             DatabaseName,
             this.CollectionName,
             OperationName,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -543,6 +590,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            () => this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors }));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <inheritdoc />
@@ -620,6 +670,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             }
         }
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -642,6 +693,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     #region private
 
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <inheritdoc />
     public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
@@ -755,6 +808,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             uniqueIndexes));
     #region private
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -769,6 +823,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private async Task CreateIndexAsync(string collectionName, CancellationToken cancellationToken)
     {
         var indexCursor = await this._mongoCollection.Indexes.ListAsync(cancellationToken).ConfigureAwait(false);
@@ -778,6 +834,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         var indexArray = new BsonArray();
 
         // Create separate index for each vector property
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -811,6 +868,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        foreach (var property in this._propertyReader.VectorProperties)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         {
             // Use index name same as vector property name with underscore
             var vectorPropertyName = this._storagePropertyNames[property.DataModelPropertyName];
@@ -963,6 +1023,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// Gets storage property names taking into account BSON serialization attributes.
     /// </summary>
     private static Dictionary<string, string> GetStoragePropertyNames(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1010,6 +1071,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         IReadOnlyList<VectorStoreRecordProperty> properties,
         Type dataModel)
     {
@@ -1020,6 +1083,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         {
             var propertyInfo = dataModel.GetProperty(property.DataModelPropertyName);
             string propertyName;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1034,12 +1098,15 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
             if (propertyInfo != null)
             {
                 var bsonElementAttribute = propertyInfo.GetCustomAttribute<BsonElementAttribute>();
 
                 storagePropertyNames[property.DataModelPropertyName] = bsonElementAttribute?.ElementName ?? property.DataModelPropertyName;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1058,6 +1125,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 <<<<<<< HEAD
             }
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 if (bsonElementAttribute is not null)
                 {
                     storagePropertyNames[property.DataModelPropertyName] = bsonElementAttribute.ElementName;
@@ -1070,6 +1139,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             }
 
             storagePropertyNames[property.DataModelPropertyName] = propertyName;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1084,11 +1154,14 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         return storagePropertyNames;
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1105,6 +1178,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// <summary>
     /// Get vector property to use for a search by using the storage name for the field name from options
     /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
@@ -1151,6 +1226,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         return new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(this._propertyReader);
     }
 
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1165,5 +1241,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     #endregion
 }

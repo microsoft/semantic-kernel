@@ -1,3 +1,4 @@
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,6 +20,9 @@
 =======
 <Project Sdk="Microsoft.NET.Sdk">
 >>>>>>> Stashed changes
+=======
+<Project Sdk="Microsoft.NET.Sdk">
+>>>>>>> origin/main
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Abstractions</AssemblyName>
@@ -27,6 +31,7 @@
     <NoWarn>$(NoWarn);SKEXP0001;SKEXP0005</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
     <ApiCompatGenerateSuppressionFile>true</ApiCompatGenerateSuppressionFile>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -58,6 +63,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
+>>>>>>> origin/main
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
@@ -89,6 +97,7 @@
     <InternalsVisibleTo Include="SemanticKernel.Extensions.PromptTemplates.Liquid.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" /> <!-- Moq -->
   </ItemGroup>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,6 +112,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
   <ItemGroup>
     <!-- Exclude utilities that are not used by the project and causing AOT warnings-->
@@ -119,6 +130,7 @@
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Type/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -132,4 +144,6 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 </Project>

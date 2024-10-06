@@ -3,6 +3,7 @@
 import pytest
 
 from semantic_kernel import Kernel
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,10 +35,14 @@ from semantic_kernel import Kernel
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -54,6 +59,8 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 =======
 from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.functions.function_result import FunctionResult
@@ -61,6 +68,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -75,12 +83,15 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 from semantic_kernel.text import aggregate_chunked_results
 
 
 @pytest.mark.asyncio
 async def test_aggregate_results():
     kernel = Kernel()
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -121,6 +132,9 @@ async def test_aggregate_results():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
 
     @kernel_function(name="func")
     def function(kernel, arguments):
@@ -131,6 +145,7 @@ async def test_aggregate_results():
         )
 
     func = KernelFunction.from_method(method=function, plugin_name="test")
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -145,6 +160,8 @@ async def test_aggregate_results():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 =======
     kernel.add_service(sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none", service_id="text-davinci-002"))
     prompt = """
@@ -188,6 +205,11 @@ async def test_aggregate_results():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+
+    func.function = lambda function, kernel, arguments, service, execution_settings: FunctionResult(
+        function=function, value=arguments["input"], metadata={}
+    )
+>>>>>>> ms/small_fixes
 
     chunked = [
         "This is a test of the emergency broadcast system.",

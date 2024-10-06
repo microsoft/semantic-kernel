@@ -6,6 +6,7 @@ namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests.TestSe
 
 [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
     Justification = "Configuration classes are instantiated through IConfiguration.")]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -47,6 +48,8 @@ internal sealed class OpenAIConfiguration(string serviceId, string modelId, stri
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
 internal sealed class OpenAIConfiguration(string serviceId, string modelId, string apiKey, string? chatModelId = null)
 {
@@ -70,6 +73,7 @@ internal sealed class OpenAIConfiguration
         this.ApiKey = apiKey;
     }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -84,4 +88,6 @@ internal sealed class OpenAIConfiguration
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 }

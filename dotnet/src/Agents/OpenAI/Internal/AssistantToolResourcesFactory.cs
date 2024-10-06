@@ -26,6 +26,7 @@ internal static class AssistantToolResourcesFactory
 
         if (hasVectorStore || hasCodeInterpreterFiles)
         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -79,6 +80,8 @@ internal static class AssistantToolResourcesFactory
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             FileSearchToolResources? fileSearch =
                 hasVectorStore ?
                     new()
@@ -98,6 +101,7 @@ internal static class AssistantToolResourcesFactory
                 FileSearch = fileSearch,
                 CodeInterpreter = codeInterpreter
             };
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -112,6 +116,8 @@ internal static class AssistantToolResourcesFactory
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         return toolResources;

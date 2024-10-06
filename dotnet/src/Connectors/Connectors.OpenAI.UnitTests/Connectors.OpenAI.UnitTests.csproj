@@ -7,6 +7,7 @@
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -25,11 +26,14 @@
 <<<<<<< HEAD
     <NoWarn>$(NoWarn);SKEXP0001;SKEXP0070;SKEXP0010;CS1591;IDE1006;RCS1261;CA1031;CA1308;CA1861;CA2007;CA2234;VSTHRD111;CA1812</NoWarn>
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     <NoWarn>$(NoWarn);SKEXP0001;SKEXP0070;SKEXP0010;CS1591;IDE1006;RCS1261;CA1031;CA1308;CA1861;CA2007;CA2234;VSTHRD111;CA1812</NoWarn>
 =======
     <NoWarn>$(NoWarn);SKEXP0001;SKEXP0070;SKEXP0010;CS1591;IDE1006;RCS1261;CA1031;CA1308;CA1861;CA2007;CA2234;VSTHRD111</NoWarn>
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -44,6 +48,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
   </PropertyGroup>
 
   <ItemGroup>
@@ -92,6 +98,7 @@
     <None Update="TestData\chat_completion_streaming_single_function_call_test_response.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,6 +130,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     <None Update="TestData\chat_completion_streaming_refusal_test_response.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -132,6 +142,7 @@
     <None Update="TestData\chat_completion_refusal_test_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,10 +160,13 @@
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
     <None Update="TestData\chat_completion_streaming_test_response.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -167,6 +181,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     <None Update="TestData\chat_completion_test_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -188,6 +204,7 @@
     <None Update="TestData\text-embeddings-response.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -206,10 +223,13 @@
 <<<<<<< HEAD
     <None Update="TestData\text-to-image-response.txt">
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     <None Update="TestData\text-to-image-b64_json-format-response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestData\text-to-image-response.json">
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -224,6 +244,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

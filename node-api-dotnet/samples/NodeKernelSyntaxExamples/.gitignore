@@ -1,0 +1,7 @@
+/node_modules
+/pkg
+/obj
+/bin
+
+*.d.ts
+package-lock.json

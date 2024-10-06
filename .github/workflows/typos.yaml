@@ -13,6 +13,7 @@ on:
   workflow_dispatch:
   pull_request:
     branches: ["main", "feature*"]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -29,6 +30,8 @@ on:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
     branches: ["main", "java-development", "feature*"]
 >>>>>>> origin/main
 <<<<<<< Updated upstream

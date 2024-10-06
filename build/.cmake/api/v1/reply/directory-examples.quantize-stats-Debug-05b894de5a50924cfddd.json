@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/quantize-stats/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-quantize-stats"
+			],
+			"targetId" : "llama-quantize-stats::@6787a8a0f894e3699ff9",
+			"targetIndex" : 61,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/quantize-stats",
+		"source" : "examples/quantize-stats"
+	}
+}

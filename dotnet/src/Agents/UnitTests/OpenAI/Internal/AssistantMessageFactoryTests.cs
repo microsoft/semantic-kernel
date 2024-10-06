@@ -144,6 +144,7 @@ public class AssistantMessageFactoryTests
         // Assert
         Assert.NotNull(contents);
         Assert.Single(contents);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -177,6 +178,9 @@ public class AssistantMessageFactoryTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        Assert.NotNull(contents.Single().ImageUri);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <summary>
@@ -194,6 +198,7 @@ public class AssistantMessageFactoryTests
         // Assert
         Assert.NotNull(contents);
         Assert.Single(contents);
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -227,6 +232,9 @@ public class AssistantMessageFactoryTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        Assert.NotNull(contents.Single().ImageUri);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <summary>

@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,12 +33,15 @@ using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 #pragma warning restore IDE0005 // Using directive is unnecessary
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 #pragma warning disable IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 #pragma warning restore IDE0005 // Using directive is unnecessary
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,6 +56,8 @@ using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using OpenAI;
@@ -106,6 +112,7 @@ internal partial class ClientCore
     internal Dictionary<string, object?> Attributes { get; } = [];
 
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -137,11 +144,15 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// The function calls processor.
     /// </summary>
     protected FunctionCallsProcessor FunctionCallsProcessor { get; set; }
 
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -174,6 +185,10 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Initializes a new instance of the <see cref="ClientCore"/> class.
     /// </summary>
     /// <param name="modelId">Model name.</param>
@@ -190,6 +205,7 @@ internal partial class ClientCore
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -210,11 +226,14 @@ internal partial class ClientCore
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -229,6 +248,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         // Empty constructor will be used when inherited by a specialized Client.
         if (modelId is null
             && apiKey is null
@@ -271,6 +292,7 @@ internal partial class ClientCore
             this.AddAttribute(ClientCore.OrganizationKey, organizationId);
         }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -304,6 +326,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        this.Client = new OpenAIClient(new ApiKeyCredential(apiKey!), options);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <summary>
@@ -330,6 +355,7 @@ internal partial class ClientCore
 
         this.Logger = logger ?? NullLogger.Instance;
         this.Client = openAIClient;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -348,10 +374,13 @@ internal partial class ClientCore
 <<<<<<< HEAD
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -366,6 +395,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     }
 
     /// <summary>
@@ -401,6 +432,7 @@ internal partial class ClientCore
     {
         OpenAIClientOptions options = new()
         {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -434,6 +466,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             Endpoint = endpoint
         };
 
@@ -450,6 +485,7 @@ internal partial class ClientCore
     }
 
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -466,12 +502,15 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Gets the model identifier to use for the client.
     /// </summary>
     protected virtual string GetClientModelId()
         => this.ModelId;
 
     /// <summary>
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -486,6 +525,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Invokes the specified request and handles exceptions.
     /// </summary>
     /// <typeparam name="T">Type of the response.</typeparam>

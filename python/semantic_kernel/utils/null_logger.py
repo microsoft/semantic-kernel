@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,6 +21,8 @@ class NullLogger(Logger):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 
 
 class NullLogger(Logger):
@@ -30,7 +33,14 @@ from typing import Any, Callable
 
 logger: Logger = getLogger(__name__)
 
+<<<<<<< head
 # TODO: delete
+=======
+logger: Logger = getLogger(__name__)
+
+# TODO: delete
+
+>>>>>>> origin/main
 
 
 <<<<<<< main
@@ -80,6 +90,7 @@ class NullLogger(Logger, metaclass=_NullerMeta):
 
     def info(self, _: str) -> None:
         pass
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -96,6 +107,8 @@ class NullLogger(Logger, metaclass=_NullerMeta):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 
     def warning(self, _: str) -> None:
         pass
@@ -110,6 +123,7 @@ class NullLogger(Logger, metaclass=_NullerMeta):
                 "the same goes for all 'log' and 'logger' arguments.",
             )
         )
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -124,6 +138,8 @@ class NullLogger(Logger, metaclass=_NullerMeta):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 
     def warning(self, _: str) -> None:
         pass

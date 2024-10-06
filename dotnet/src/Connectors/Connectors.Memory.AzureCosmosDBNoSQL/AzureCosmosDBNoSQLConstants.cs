@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
 internal static class AzureCosmosDBNoSQLConstants
 {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +25,8 @@ internal static class AzureCosmosDBNoSQLConstants
     /// <summary>Reserved key property name in Azure CosmosDB NoSQL.</summary>
     internal const string ReservedKeyPropertyName = "id";
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
     /// <summary>
     /// Reserved key property name in Azure CosmosDB NoSQL.
@@ -39,6 +42,7 @@ internal static class AzureCosmosDBNoSQLConstants
     /// <summary>Reserved key property name in Azure CosmosDB NoSQL.</summary>
     internal const string ReservedKeyPropertyName = "id";
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -53,4 +57,6 @@ internal static class AzureCosmosDBNoSQLConstants
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }

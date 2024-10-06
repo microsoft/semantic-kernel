@@ -36,6 +36,7 @@
   "retryCount": 3,
   "fallbackRetryDelay": "30s",
   "aliveStatusCodes": [200, 206, 429, 500, 503]
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,6 +53,8 @@
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
   "aliveStatusCodes": [
     200,
     206,

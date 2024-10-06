@@ -54,6 +54,7 @@ public class ChatMessageContent : KernelContent
             {
                 this.Items.Add(new TextContent(
                     text: value,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -95,12 +96,15 @@ public class ChatMessageContent : KernelContent
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
                 ////modelId: this.ModelId, // %%% REDUNDANT
                 ////innerContent: this.InnerContent, // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION / MUTATION RISK (IGNORED FOR SERIALIZATION)
                     encoding: this.Encoding // %%% WEIRD, BUT WHO CARES (IGNORED FOR SERIALIZATION)
                 ////metadata: this.Metadata, // %%% CARDINALITY MISMATCH / MUTATION RISK
                 )
                 { MimeType = this.MimeType }); // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -115,6 +119,8 @@ public class ChatMessageContent : KernelContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             }
         }
     }
@@ -161,6 +167,7 @@ public class ChatMessageContent : KernelContent
     /// </summary>
     /// <remarks>
     /// The source is corresponds to the entity that generated this message.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -194,6 +201,9 @@ public class ChatMessageContent : KernelContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    /// The property is intended to be used by agents to associate themselves with the messages they generate or by a user who created it.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// </remarks>
     [Experimental("SKEXP0101")]
     [JsonIgnore]

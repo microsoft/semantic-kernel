@@ -12,6 +12,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Block(KernelBaseModel):
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -43,6 +44,9 @@ class Block(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
     """A block."""
 
     type: ClassVar[BlockTypes] = BlockTypes.UNDEFINED
@@ -90,6 +94,7 @@ class Block(ABC):
     @property
     def content(self) -> str:
         return self._content
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -107,6 +112,8 @@ class Block(ABC):
 <<<<<<< main
 =======
 =======
+>>>>>>> origin/main
+=======
     type: ClassVar[BlockTypes] = BlockTypes.UNDEFINED
     content: str
 
@@ -115,6 +122,7 @@ class Block(ABC):
     def content_strip(cls, content: str):
         return content.strip()
 >>>>>>> ms/small_fixes
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -129,3 +137,5 @@ class Block(ABC):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main

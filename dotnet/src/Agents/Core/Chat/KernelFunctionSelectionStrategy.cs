@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,10 +25,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.Agents.Internal;
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,6 +46,8 @@ using Microsoft.SemanticKernel.Agents.Internal;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -53,6 +59,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel kernel) : SelectionStrategy
 {
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -86,10 +93,14 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    /// The default value for <see cref="KernelFunctionSelectionStrategy.AgentsVariableName"/>.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// </summary>
     public const string DefaultAgentsVariableName = "_agents_";
 
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,6 +134,9 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    /// The default value for <see cref="KernelFunctionSelectionStrategy.HistoryVariableName"/>.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// </summary>
     public const string DefaultHistoryVariableName = "_history_";
 
@@ -144,6 +158,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     public KernelArguments? Arguments { get; init; }
 
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -160,11 +175,14 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
     /// </summary>
     public Kernel Kernel => kernel;
 
     /// <summary>
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -179,11 +197,14 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// The <see cref="KernelFunction"/> invoked as selection criteria.
     /// </summary>
     public KernelFunction Function { get; } = function;
 
     /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -227,6 +248,8 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     /// Optionally specify a <see cref="IChatHistoryReducer"/> to reduce the history.
     /// </summary>
     public IChatHistoryReducer? HistoryReducer { get; init; }
@@ -235,6 +258,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     /// When set, will use <see cref="SelectionStrategy.InitialAgent"/> in the event of a failure to select an agent.
     /// </summary>
     public bool UseInitialAgentAsFallback { get; init; }
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -249,6 +273,8 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     /// <summary>
     /// A callback responsible for translating the <see cref="FunctionResult"/>
@@ -259,6 +285,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     /// <inheritdoc/>
     protected sealed override async Task<Agent> SelectAgentAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -291,11 +318,16 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        history = await history.ReduceAsync(this.HistoryReducer, cancellationToken).ConfigureAwait(false);
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
                 { this.AgentsVariableName, string.Join(",", agents.Select(a => a.Name)) },
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -329,6 +361,9 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                { this.HistoryVariableName, ChatMessageForPrompt.Format(history) },
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             };
 
         this.Logger.LogKernelFunctionSelectionStrategyInvokingFunction(nameof(NextAsync), this.Function.PluginName, this.Function.Name);

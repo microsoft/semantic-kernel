@@ -6,6 +6,7 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel.test</groupId>
         <artifactId>api-test</artifactId>
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -61,6 +62,9 @@
         <version>1.0.0-alpha.1-SNAPSHOT</version>
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+=======
+        <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/main
         <relativePath>../pom.xml</relativePath>
     </parent>
 

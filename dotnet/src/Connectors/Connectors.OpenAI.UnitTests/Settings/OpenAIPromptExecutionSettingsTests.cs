@@ -253,6 +253,7 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Empty(executionSettings.StopSequences);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -284,6 +285,9 @@ public class OpenAIPromptExecutionSettingsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     [Fact]
     public void ItRestoresOriginalFunctionChoiceBehavior()
     {
@@ -302,6 +306,7 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(functionChoiceBehavior, result.FunctionChoiceBehavior);
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -334,6 +339,10 @@ public class OpenAIPromptExecutionSettingsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);

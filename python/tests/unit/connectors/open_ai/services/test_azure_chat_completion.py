@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -22,6 +23,8 @@ import json
 import os
 from unittest.mock import AsyncMock, MagicMock, patch
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 import json
 import os
@@ -29,6 +32,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 =======
 from unittest.mock import AsyncMock, patch
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -43,10 +47,13 @@ from unittest.mock import AsyncMock, patch
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 import openai
 import pytest
 from httpx import Request, Response
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -78,6 +85,9 @@ from httpx import Request, Response
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 from openai import AsyncAzureOpenAI, AsyncStream
 from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompletions
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
@@ -140,6 +150,7 @@ def test_init_client(azure_openai_unit_test_env) -> None:
 
 
 def test_init_base_url(azure_openai_unit_test_env) -> None:
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -156,6 +167,8 @@ def test_init_base_url(azure_openai_unit_test_env) -> None:
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 from openai import AsyncAzureOpenAI
 from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompletions
@@ -212,6 +225,7 @@ def test_azure_chat_completion_init_base_url() -> None:
     api_version = "2023-03-15-preview"
 
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -226,10 +240,13 @@ def test_azure_chat_completion_init_base_url() -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     # Custom header for testing
     default_headers = {"X-Unit-Test": "test-guid"}
 
     azure_chat_completion = AzureChatCompletion(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -246,6 +263,8 @@ def test_azure_chat_completion_init_base_url() -> None:
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
 =======
         deployment_name=deployment_name,
@@ -253,6 +272,7 @@ def test_azure_chat_completion_init_base_url() -> None:
         api_key=api_key,
         api_version=api_version,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -267,11 +287,14 @@ def test_azure_chat_completion_init_base_url() -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         default_headers=default_headers,
     )
 
     assert azure_chat_completion.client is not None
     assert isinstance(azure_chat_completion.client, AsyncAzureOpenAI)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -303,10 +326,14 @@ def test_azure_chat_completion_init_base_url() -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     assert (
         azure_chat_completion.ai_model_id
         == azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]
     )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -340,12 +367,18 @@ def test_azure_chat_completion_init_base_url() -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+    assert azure_chat_completion.ai_model_id == deployment_name
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     assert isinstance(azure_chat_completion, ChatCompletionClientBase)
     for key, value in default_headers.items():
         assert key in azure_chat_completion.client.default_headers
         assert azure_chat_completion.client.default_headers[key] == value
 
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -377,6 +410,9 @@ def test_azure_chat_completion_init_base_url() -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_BASE_URL"]], indirect=True)
 def test_init_endpoint(azure_openai_unit_test_env) -> None:
     azure_chat_completion = AzureChatCompletion()
@@ -499,6 +535,7 @@ def mock_streaming_chat_completion_response() -> AsyncStream[ChatCompletionChunk
     stream = MagicMock(spec=AsyncStream)
     stream.__aiter__.return_value = [content]
     return stream
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -515,6 +552,8 @@ def mock_streaming_chat_completion_response() -> AsyncStream[ChatCompletionChunk
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 def test_azure_chat_completion_init_with_empty_deployment_name() -> None:
     # deployment_name = "test_deployment"
@@ -590,6 +629,7 @@ def test_azure_chat_completion_init_with_base_url() -> None:
             api_version=api_version,
         )
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -604,10 +644,13 @@ def test_azure_chat_completion_init_with_base_url() -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -639,6 +682,9 @@ def test_azure_chat_completion_init_with_base_url() -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_cmc(
     mock_create,
     kernel: Kernel,
@@ -662,6 +708,7 @@ async def test_cmc(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         stream=False,
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -678,6 +725,8 @@ async def test_cmc(
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
     deployment_name = "test_deployment"
@@ -707,6 +756,7 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
         top_p=complete_prompt_execution_settings.top_p,
         messages=azure_chat_completion._prepare_chat_history_for_request(messages),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -721,11 +771,14 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     )
 
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -757,6 +810,9 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_cmc_with_logit_bias(
     mock_create,
     kernel: Kernel,
@@ -767,6 +823,7 @@ async def test_cmc_with_logit_bias(
     mock_create.return_value = mock_chat_completion_response
     prompt = "hello world"
     chat_history.add_user_message(prompt)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -783,6 +840,8 @@ async def test_cmc_with_logit_bias(
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined(
     mock_create,
@@ -796,6 +855,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
     messages = ChatHistory()
     messages.add_user_message(prompt)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -810,11 +870,14 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
 
     token_bias = {"1": -100}
     complete_prompt_execution_settings.logit_bias = token_bias
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -846,6 +909,9 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     azure_chat_completion = AzureChatCompletion()
 
     await azure_chat_completion.get_chat_message_contents(
@@ -858,6 +924,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         stream=False,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -874,6 +941,8 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -895,6 +964,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         presence_penalty=complete_prompt_execution_settings.presence_penalty,
         frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -909,12 +979,15 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         logit_bias=token_bias,
     )
 
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -946,6 +1019,9 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_cmc_with_stop(
     mock_create,
     azure_openai_unit_test_env,
@@ -953,6 +1029,7 @@ async def test_cmc_with_stop(
     mock_chat_completion_response: ChatCompletion,
 ) -> None:
     mock_create.return_value = mock_chat_completion_response
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -969,6 +1046,8 @@ async def test_cmc_with_stop(
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
     mock_create,
@@ -981,6 +1060,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -995,11 +1075,14 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
 
     stop = ["!"]
     complete_prompt_execution_settings.stop = stop
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1031,6 +1114,9 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     azure_chat_completion = AzureChatCompletion()
 
     await azure_chat_completion.get_chat_message_contents(
@@ -1189,6 +1275,7 @@ async def test_azure_on_your_data_string(
         stream=False,
         extra_body=expected_data_settings,
     )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1205,6 +1292,8 @@ async def test_azure_on_your_data_string(
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -1261,6 +1350,7 @@ def test_azure_chat_completion_serialize() -> None:
     # Assert that the 'User-agent' header is not present in the dumped_settings default headers
     assert USER_AGENT not in dumped_settings["default_headers"]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1275,10 +1365,13 @@ def test_azure_chat_completion_serialize() -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1310,6 +1403,9 @@ def test_azure_chat_completion_serialize() -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_azure_on_your_data_fail(
     mock_create,
     kernel: Kernel,
@@ -1331,6 +1427,7 @@ async def test_azure_on_your_data_fail(
     mock_create.return_value = mock_chat_completion_response
     prompt = "hello world"
     messages_in = chat_history
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1347,6 +1444,8 @@ async def test_azure_on_your_data_fail(
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 async def test_azure_chat_completion_with_data_call_with_parameters(
     mock_create,
@@ -1358,6 +1457,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
     prompt = "hello world"
     messages_in = ChatHistory()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1372,11 +1472,14 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     messages_in.add_user_message(prompt)
     messages_out = ChatHistory()
     messages_out.add_user_message(prompt)
 
     expected_data_settings = {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1395,11 +1498,14 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
 <<<<<<< HEAD
         "data_sources": [
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 <<<<<<< HEAD
         "data_sources": [
 =======
         "dataSources": [
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1414,6 +1520,8 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             {
                 "type": "AzureCognitiveSearch",
                 "parameters": {
@@ -1425,6 +1533,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         ]
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1456,6 +1565,9 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
         extra_body=expected_data_settings
     )
@@ -1474,6 +1586,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(messages_out),
         stream=False,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1490,6 +1603,8 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings(extra_body=expected_data_settings)
 
@@ -1515,6 +1630,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         stream=False,
         max_tokens=complete_prompt_execution_settings.max_tokens,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1529,12 +1645,15 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         extra_body=expected_data_settings,
     )
 
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1566,6 +1685,9 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_azure_on_your_data_split_messages(
     mock_create,
     kernel: Kernel,
@@ -1647,6 +1769,7 @@ async def test_cmc_function_calling(
     chat_history.add_user_message(prompt)
 
     azure_chat_completion = AzureChatCompletion()
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1663,6 +1786,8 @@ async def test_cmc_function_calling(
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 async def test_azure_chat_completion_call_with_data_parameters_and_function_calling(
     mock_create,
@@ -1686,6 +1811,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
         use_extensions=True,
     )
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1700,11 +1826,14 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
     functions = [{"name": "test-function", "description": "test-description"}]
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
         function_call="test-function",
         functions=functions,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1736,6 +1865,9 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     )
 
     content = await azure_chat_completion.get_chat_message_contents(
@@ -1749,6 +1881,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         stream=False,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1765,6 +1898,8 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
         extra_body=extra,
     )
@@ -1789,6 +1924,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
         logit_bias=complete_prompt_execution_settings.logit_bias,
         extra_body=expected_data_settings,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1803,6 +1939,8 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         functions=functions,
         function_call=complete_prompt_execution_settings.function_call,
     )
@@ -1810,6 +1948,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1841,6 +1980,9 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_cmc_tool_calling(
     mock_create,
     kernel: Kernel,
@@ -1888,6 +2030,7 @@ async def test_cmc_tool_calling(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         stream=False,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1904,6 +2047,8 @@ async def test_cmc_tool_calling(
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Defined(
     mock_create,
@@ -1950,6 +2095,7 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
         logit_bias={},
         extra_body=expected_data_settings,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1964,6 +2110,8 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     )
 
 
@@ -1982,6 +2130,7 @@ CONTENT_FILTERED_ERROR_FULL_MESSAGE = (
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2013,6 +2162,9 @@ CONTENT_FILTERED_ERROR_FULL_MESSAGE = (
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_content_filtering_raises_correct_exception(
     mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
 ) -> None:
@@ -2024,6 +2176,7 @@ async def test_content_filtering_raises_correct_exception(
     mock_create.side_effect = openai.BadRequestError(
         CONTENT_FILTERED_ERROR_FULL_MESSAGE,
         response=Response(400, request=Request("POST", test_endpoint)),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2040,6 +2193,8 @@ async def test_content_filtering_raises_correct_exception(
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 async def test_azure_chat_completion_content_filtering_raises_correct_exception(
     mock_create,
@@ -2057,6 +2212,7 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
         CONTENT_FILTERED_ERROR_FULL_MESSAGE,
         response=Response(400, request=Request("POST", endpoint)),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2071,6 +2227,8 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         body={
             "message": CONTENT_FILTERED_ERROR_MESSAGE,
             "type": None,
@@ -2089,6 +2247,7 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
         },
     )
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2120,6 +2279,9 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     azure_chat_completion = AzureChatCompletion()
 
     with pytest.raises(
@@ -2138,6 +2300,7 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
         content_filter_exc.content_filter_result["hate"].severity
         == ContentFilterResultSeverity.HIGH
     )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2154,6 +2317,8 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -2171,6 +2336,7 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
     assert content_filter_exc.content_filter_result["hate"].filtered
     assert content_filter_exc.content_filter_result["hate"].severity == ContentFilterResultSeverity.HIGH
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2185,10 +2351,13 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2220,6 +2389,9 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 async def test_content_filtering_without_response_code_raises_with_default_code(
     mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
 ) -> None:
@@ -2231,6 +2403,7 @@ async def test_content_filtering_without_response_code_raises_with_default_code(
     mock_create.side_effect = openai.BadRequestError(
         CONTENT_FILTERED_ERROR_FULL_MESSAGE,
         response=Response(400, request=Request("POST", test_endpoint)),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2247,6 +2420,8 @@ async def test_content_filtering_without_response_code_raises_with_default_code(
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 async def test_azure_chat_completion_content_filtering_without_response_code_raises_with_default_code(
     mock_create,
@@ -2264,6 +2439,7 @@ async def test_azure_chat_completion_content_filtering_without_response_code_rai
         CONTENT_FILTERED_ERROR_FULL_MESSAGE,
         response=Response(400, request=Request("POST", endpoint)),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2278,6 +2454,8 @@ async def test_azure_chat_completion_content_filtering_without_response_code_rai
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         body={
             "message": CONTENT_FILTERED_ERROR_MESSAGE,
             "type": None,
@@ -2295,6 +2473,7 @@ async def test_azure_chat_completion_content_filtering_without_response_code_rai
         },
     )
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2326,6 +2505,9 @@ async def test_azure_chat_completion_content_filtering_without_response_code_rai
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     azure_chat_completion = AzureChatCompletion()
 
     with pytest.raises(
@@ -2453,6 +2635,7 @@ async def test_cmc_streaming(
         stream=True,
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
     )
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2470,6 +2653,8 @@ async def test_cmc_streaming(
 <<<<<<< HEAD
 =======
 =======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
         endpoint=endpoint,
@@ -2483,6 +2668,7 @@ async def test_cmc_streaming(
     content_filter_exc = exc_info.value
     assert content_filter_exc.content_filter_code == ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2497,3 +2683,5 @@ async def test_cmc_streaming(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75

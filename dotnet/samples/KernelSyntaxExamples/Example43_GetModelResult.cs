@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -18,6 +19,8 @@ using Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
 <<<<<<< main
 =======
@@ -27,6 +30,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> ms/feature-error-handling
 =======
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +45,8 @@ using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
 using RepoUtils;
 using Xunit;
 using Xunit.Abstractions;
@@ -74,6 +80,7 @@ public class Example43_GetModelResult : BaseTest
         WriteLine();
     }
 
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -94,6 +101,8 @@ public class Example43_GetModelResult : BaseTest
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)
     {
 =======
+=======
+>>>>>>> origin/main
 <<<<<<< HEAD
 <<<<<<< main
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)
@@ -113,6 +122,7 @@ public class Example43_GetModelResult : BaseTest
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)
     {
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+<<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -127,5 +137,7 @@ public class Example43_GetModelResult : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
     }
 }
