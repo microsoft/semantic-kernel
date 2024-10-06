@@ -59,8 +59,8 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         var queryDefinition = new QueryDefinition(query);
 
         queryDefinition.WithParameter(VectorVariableName, vector);
-        queryDefinition.WithParameter(OffsetVariableName, searchOptions.Offset);
-        queryDefinition.WithParameter(LimitVariableName, searchOptions.Limit);
+        queryDefinition.WithParameter(OffsetVariableName, searchOptions.Skip);
+        queryDefinition.WithParameter(LimitVariableName, searchOptions.Top);
 
         if (filterQueryParameters is { Count: > 0 })
         {

@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/convert-llama2c-to-ggml/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-convert-llama2c-to-ggml"
+			],
+			"targetId" : "llama-convert-llama2c-to-ggml::@c9c92c40ab99bad22fcc",
+			"targetIndex" : 37,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/convert-llama2c-to-ggml",
+		"source" : "examples/convert-llama2c-to-ggml"
+	}
+}

@@ -24,6 +24,31 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
     /// </summary>
     /// <param name="vectorizedSearch"><see cref="IVectorizedSearch{TRecord}"/> instance used to perform the search.</param>
     /// <param name="textEmbeddingGeneration"><see cref="ITextEmbeddingGenerationService"/> instance used to create a vector from the text query.</param>
+    /// <param name="stringMapper"><see cref="MapFromResultToString" /> instance that can map a TRecord to a <see cref="string"/></param>
+    /// <param name="resultMapper"><see cref="MapFromResultToTextSearchResult" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
+    /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
+    public VectorStoreTextSearch(
+        IVectorizedSearch<TRecord> vectorizedSearch,
+        ITextEmbeddingGenerationService textEmbeddingGeneration,
+        MapFromResultToString stringMapper,
+        MapFromResultToTextSearchResult resultMapper,
+        VectorStoreTextSearchOptions? options = null) :
+        this(
+            vectorizedSearch,
+            textEmbeddingGeneration,
+            new TextSearchStringMapper(stringMapper),
+            new TextSearchResultMapper(resultMapper),
+            options)
+    {
+    }
+
+    /// <summary>
+    /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
+    /// provided <see cref="IVectorizedSearch{TRecord}"/> for performing searches and
+    /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
+    /// </summary>
+    /// <param name="vectorizedSearch"><see cref="IVectorizedSearch{TRecord}"/> instance used to perform the search.</param>
+    /// <param name="textEmbeddingGeneration"><see cref="ITextEmbeddingGenerationService"/> instance used to create a vector from the text query.</param>
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
@@ -43,6 +68,28 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
         this._textEmbeddingGeneration = textEmbeddingGeneration;
         this._stringMapper = stringMapper;
         this._resultMapper = resultMapper;
+    }
+
+    /// <summary>
+    /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
+    /// provided <see cref="IVectorizableTextSearch{TRecord}"/> for performing searches and
+    /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
+    /// </summary>
+    /// <param name="vectorizableTextSearch"><see cref="IVectorizableTextSearch{TRecord}"/> instance used to perform the text search.</param>
+    /// <param name="stringMapper"><see cref="MapFromResultToString" /> instance that can map a TRecord to a <see cref="string"/></param>
+    /// <param name="resultMapper"><see cref="MapFromResultToTextSearchResult" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
+    /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
+    public VectorStoreTextSearch(
+        IVectorizableTextSearch<TRecord> vectorizableTextSearch,
+        MapFromResultToString stringMapper,
+        MapFromResultToTextSearchResult resultMapper,
+        VectorStoreTextSearchOptions? options = null) :
+        this(
+            vectorizableTextSearch,
+            new TextSearchStringMapper(stringMapper),
+            new TextSearchResultMapper(resultMapper),
+            options)
+    {
     }
 
     /// <summary>
@@ -118,8 +165,8 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
         var vectorSearchOptions = new VectorSearchOptions
         {
             Filter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
-            Offset = searchOptions.Offset,
-            Limit = searchOptions.Count,
+            Skip = searchOptions.Skip,
+            Top = searchOptions.Top,
         };
 
         if (this._vectorizedSearch is not null)

@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/eval-callback/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-eval-callback"
+			],
+			"targetId" : "llama-eval-callback::@97c8c552d67dc307ae99",
+			"targetIndex" : 40,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/eval-callback",
+		"source" : "examples/eval-callback"
+	}
+}

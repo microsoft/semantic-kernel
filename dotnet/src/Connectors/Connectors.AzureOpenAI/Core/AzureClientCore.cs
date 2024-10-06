@@ -1,6 +1,7 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Net.Http;
 using System.Threading;
@@ -8,12 +9,9 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-<<<<<<< HEAD
 #pragma warning disable IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 #pragma warning restore IDE0005 // Using directive is unnecessary
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
@@ -61,10 +59,8 @@ internal partial class AzureClientCore : ClientCore
         this.DeploymentName = deploymentName;
         this.Endpoint = new Uri(endpoint);
         this.Client = new AzureOpenAIClient(this.Endpoint, apiKey, options);
-<<<<<<< HEAD
+        this.Client = new AzureOpenAIClient(this.Endpoint, new ApiKeyCredential(apiKey), options);
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }
@@ -94,10 +90,7 @@ internal partial class AzureClientCore : ClientCore
         this.DeploymentName = deploymentName;
         this.Endpoint = new Uri(endpoint);
         this.Client = new AzureOpenAIClient(this.Endpoint, credential, options);
-<<<<<<< HEAD
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }
@@ -121,10 +114,7 @@ internal partial class AzureClientCore : ClientCore
         this.Logger = logger ?? NullLogger.Instance;
         this.DeploymentName = deploymentName;
         this.Client = openAIClient;
-<<<<<<< HEAD
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }
@@ -136,8 +126,8 @@ internal partial class AzureClientCore : ClientCore
     internal static AzureOpenAIClientOptions GetAzureOpenAIClientOptions(HttpClient? httpClient, AzureOpenAIClientOptions.ServiceVersion? serviceVersion = null)
     {
         AzureOpenAIClientOptions options = serviceVersion is not null
-            ? new(serviceVersion.Value) { ApplicationId = HttpHeaderConstant.Values.UserAgent }
-            : new() { ApplicationId = HttpHeaderConstant.Values.UserAgent };
+            ? new(serviceVersion.Value) { UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent }
+            : new() { UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent };
 
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureClientCore))), PipelinePosition.PerCall);
 
@@ -150,4 +140,8 @@ internal partial class AzureClientCore : ClientCore
 
         return options;
     }
+
+    /// <inheritdoc/>
+    protected override string GetClientModelId()
+        => this.DeploymentName;
 }

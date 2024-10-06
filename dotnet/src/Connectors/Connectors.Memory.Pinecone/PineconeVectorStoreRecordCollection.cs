@@ -33,7 +33,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
-    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
     private readonly IVectorStoreRecordMapper<TRecord, Sdk.Vector> _mapper;
 
     private Sdk.Index<GrpcTransport>? _index;
@@ -56,11 +56,19 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         this._pineconeClient = pineconeClient;
         this.CollectionName = collectionName;
         this._options = options ?? new PineconeVectorStoreRecordCollectionOptions<TRecord>();
-        this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
+        this._propertyReader = new VectorStoreRecordPropertyReader(
+            typeof(TRecord),
+            this._options.VectorStoreRecordDefinition,
+            new()
+            {
+                RequiresAtLeastOneVector = true,
+                SupportsMultipleKeys = false,
+                SupportsMultipleVectors = false,
+            });
 
         if (this._options.VectorCustomMapper is null)
         {
-            this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition);
+            this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._propertyReader);
         }
         else
         {
@@ -87,7 +95,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // we already run through record property validation, so a single VectorStoreRecordVectorProperty is guaranteed.
-        var vectorProperty = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>().First();
+        var vectorProperty = this._propertyReader.VectorProperty!;
         var (dimension, metric) = PineconeVectorStoreCollectionCreateMapping.MapServerlessIndex(vectorProperty);
 
         await this.RunOperationAsync(

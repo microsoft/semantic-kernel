@@ -6,11 +6,7 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel.test</groupId>
         <artifactId>api-test</artifactId>
-<<<<<<< HEAD
-        <version>0.2.10-alpha-SNAPSHOT</version>
-=======
-        <version>0.2.9-alpha-SNAPSHOT</version>
->>>>>>> main
+        <version>1.0.0-alpha.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

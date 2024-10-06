@@ -4,5 +4,6 @@
 	"typescript.preferences.quoteStyle": "single",
 	"editor.codeActionsOnSave": {
 		"source.fixAll.eslint": true
+	},
 	}
 }

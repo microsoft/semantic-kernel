@@ -21,6 +21,9 @@ async def main():
     kernel.import_plugin(MathPlugin(), "math")
     kernel.import_plugin(TimePlugin(), "time")
     kernel.import_plugin(TextPlugin(), "text")
+    kernel.import_plugin_from_object(MathPlugin(), "math")
+    kernel.import_plugin_from_object(TimePlugin(), "time")
+    kernel.import_plugin_from_object(TextPlugin(), "text")
 
     # create an instance of action planner.
     planner = ActionPlanner(kernel, service_id)

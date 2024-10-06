@@ -5,6 +5,7 @@ import reference_skill.ActivityOuterClass.GetRandomActivityRequest;
 
 
 import reference_skill.ActivityOuterClass.GetRandomActivityResponse;
+import reference_skill.ActivityOuterClass;
 import reference_skill.RandomActivitySkillGrpc;
 
 import java.net.URI;
@@ -48,6 +49,8 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
         return API_ACTIVITY_URL;
     }
 
+    public static final String API_ACTIVITY_URL = "https://www.boredapi.com/api/activity";
+
     /**
      * <pre>
      * GetRandomActivity is an RPC method that retrieves a random activity from an API.
@@ -58,6 +61,7 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
      */
     @Override
     public void getRandomActivity(GetRandomActivityRequest request, StreamObserver<GetRandomActivityResponse> responseObserver) {
+    public void getRandomActivity(ActivityOuterClass.GetRandomActivityRequest request, StreamObserver<ActivityOuterClass.GetRandomActivityResponse> responseObserver) {
         Logger logger =  java.util.logging.Logger.getLogger(this.getClass().getName());
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -67,6 +71,7 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
             CompletableFuture<HttpResponse<String>> response = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
             logger.info("Response: " + response.get().body());
             responseObserver.onNext(GetRandomActivityResponse.newBuilder().setActivity(response.get().body()).build());
+            responseObserver.onNext(ActivityOuterClass.GetRandomActivityResponse.newBuilder().setActivity(response.get().body()).build());
             responseObserver.onCompleted();
         } catch (Exception e) {
             logger.severe("Error with request: " + e.getMessage());

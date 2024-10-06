@@ -12,7 +12,7 @@ public sealed class TextSearchOptions
     /// <summary>
     /// Default number of search results to return.
     /// </summary>
-    public static readonly int DefaultCount = 5;
+    public static readonly int DefaultTop = 5;
 
     /// <summary>
     /// Flag indicating the total count should be included in the results.
@@ -31,10 +31,10 @@ public sealed class TextSearchOptions
     /// <summary>
     /// Number of search results to return.
     /// </summary>
-    public int Count { get; init; } = DefaultCount;
+    public int Top { get; init; } = DefaultTop;
 
     /// <summary>
     /// The index of the first result to return.
     /// </summary>
-    public int Offset { get; init; } = 0;
+    public int Skip { get; init; } = 0;
 }

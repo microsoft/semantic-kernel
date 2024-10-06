@@ -28,7 +28,7 @@ public partial class ClientCoreTests
     {
         // Act
         var logger = new Mock<ILogger<ClientCoreTests>>().Object;
-        var openAIClient = new OpenAIClient("key");
+        var openAIClient = new OpenAIClient(new ApiKeyCredential("key"));
 
         var clientCoreModelConstructor = new ClientCore("model1", "apiKey");
         var clientCoreOpenAIClientConstructor = new ClientCore("model1", openAIClient, logger: logger);
@@ -157,7 +157,7 @@ public partial class ClientCoreTests
         var clientCore = new ClientCore(
             modelId: "model",
             openAIClient: new OpenAIClient(
-                "test",
+                new ApiKeyCredential("test"),
                 new OpenAIClientOptions()
                 {
                     Transport = new HttpClientPipelineTransport(client),
@@ -217,7 +217,7 @@ public partial class ClientCoreTests
 
         // Act
         var clientCore = new ClientCore(expectedModelId, "apikey");
-        var clientCoreBreakingGlass = new ClientCore(expectedModelId, new OpenAIClient(" "));
+        var clientCoreBreakingGlass = new ClientCore(expectedModelId, new OpenAIClient(new ApiKeyCredential(" ")));
 
         // Assert
         Assert.True(clientCore.Attributes.ContainsKey(AIServiceExtensions.ModelIdKey));

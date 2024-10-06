@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.planner.sequentialplanner;
 
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -8,9 +13,7 @@ import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Mono;
 
 /** A planner that uses semantic function to create a sequential plan. */
@@ -29,17 +32,13 @@ public class SequentialPlanner {
     private final CompletionSKFunction functionFlowFunction;
     private final Kernel kernel;
 
-<<<<<<< HEAD
     /** Whether to include function outputs in the function manual. */
     private final boolean includeFunctionOutputs;
 
-=======
->>>>>>> main
     public SequentialPlanner(
             Kernel kernel,
             @Nullable SequentialPlannerRequestSettings config,
             @Nullable String prompt) {
-<<<<<<< HEAD
         this(kernel, config, prompt, false);
     }
 
@@ -48,8 +47,6 @@ public class SequentialPlanner {
             @Nullable SequentialPlannerRequestSettings config,
             @Nullable String prompt,
             boolean includeFunctionOutputs) {
-=======
->>>>>>> main
         // Verify.NotNull(kernel);
 
         if (config == null) {
@@ -80,10 +77,7 @@ public class SequentialPlanner {
                         .build();
 
         this.kernel = kernel;
-<<<<<<< HEAD
         this.includeFunctionOutputs = includeFunctionOutputs;
-=======
->>>>>>> main
     }
 
     /**
@@ -111,11 +105,7 @@ public class SequentialPlanner {
 
         try {
             return new DefaultSequentialPlannerSKContext(context)
-<<<<<<< HEAD
                     .getFunctionsManualAsync(goal, this.config, includeFunctionOutputs)
-=======
-                    .getFunctionsManualAsync(goal, this.config)
->>>>>>> main
                     .flatMap(
                             relevantFunctionsManual -> {
                                 SKContext updatedContext =
@@ -128,14 +118,15 @@ public class SequentialPlanner {
                             })
                     .map(
                             planResult -> {
-                                String planResultString = planResult.getResult().trim();
+                                String planResultString = ((String)planResult.getResult()).trim();
 
                                 LOGGER.debug("Plan result: " + planResultString);
 
-                                Plan plan =
-                                        SequentialPlanParser.toPlanFromXml(
-                                                planResultString, goal, context.getSkills());
-                                return plan;
+                                return SequentialPlanParser.toPlanFromXml(
+                                        planResultString,
+                                        goal,
+                                        context.getSkills(),
+                                        config.getAllowMissingFunctions());
                             });
         } catch (Exception e) {
             throw new PlanningException(

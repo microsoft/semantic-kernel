@@ -1,0 +1,329 @@
+{
+    "Id": "06c1b75e5ed7e3e9bce3d7493c830d34ffd6249c5842ca981757da05fa5decc0",
+    "Created": "2024-05-25T17:42:36.053652477Z",
+    "Path": "/bin/sh",
+    "Args": [
+        "-c",
+        "echo Container started\ntrap \"exit 0\" 15\n/usr/local/share/ssh-init.sh\n/usr/local/share/docker-init.sh\nexec \"$@\"\nwhile sleep 1 & wait $!; do :; done",
+        "-"
+    ],
+    "State": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 68883,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2024-05-25T17:42:37.564994317Z",
+        "FinishedAt": "0001-01-01T00:00:00Z"
+    },
+    "Image": "sha256:559513bf4f704655a42a5d177f69e96493b3a2c334a56a94b1893fbad4ecb7f9",
+    "ResolvConfPath": "/var/lib/docker/containers/06c1b75e5ed7e3e9bce3d7493c830d34ffd6249c5842ca981757da05fa5decc0/resolv.conf",
+    "HostnamePath": "/var/lib/docker/containers/06c1b75e5ed7e3e9bce3d7493c830d34ffd6249c5842ca981757da05fa5decc0/hostname",
+    "HostsPath": "/var/lib/docker/containers/06c1b75e5ed7e3e9bce3d7493c830d34ffd6249c5842ca981757da05fa5decc0/hosts",
+    "LogPath": "/var/lib/docker/containers/06c1b75e5ed7e3e9bce3d7493c830d34ffd6249c5842ca981757da05fa5decc0/06c1b75e5ed7e3e9bce3d7493c830d34ffd6249c5842ca981757da05fa5decc0-json.log",
+    "Name": "/romantic_keller",
+    "RestartCount": 0,
+    "Driver": "overlayfs",
+    "Platform": "linux",
+    "MountLabel": "",
+    "ProcessLabel": "",
+    "AppArmorProfile": "",
+    "ExecIDs": [
+        "715f980fbe326de3dbcaa3e67f168baa2844aeebd182ecfe3ebaeb591adbcd47",
+        "851b65c26775d2920cf8ccf32a25f8a8c767d14cbfb60cd78efd20dafecd7806",
+        "bce23ecee37c449589d4dc034c5992f6a5786af54900d69113cbd4479dab59df",
+        "76e86e2ba9ee62bb5d96ea9a50cedb783653eab10ec97ec75b0b203a04263725",
+        "9a5d9ef6558b794ab9f977659811534ffd9fd1310ac1668d7cb1a88067803d1d",
+        "e872e58c310c376eb2107d9191c288f00080fdd86e190de0df376b61ae983a8c",
+        "1bac546177c6f40bb01e635c3b2db30bc25e76bad9ed3a8dc1eaa246c2e04d38"
+    ],
+    "HostConfig": {
+        "Binds": null,
+        "ContainerIDFile": "",
+        "LogConfig": {
+            "Type": "json-file",
+            "Config": {}
+        },
+        "NetworkMode": "bridge",
+        "PortBindings": {},
+        "RestartPolicy": {
+            "Name": "no",
+            "MaximumRetryCount": 0
+        },
+        "AutoRemove": false,
+        "VolumeDriver": "",
+        "VolumesFrom": null,
+        "ConsoleSize": [
+            14,
+            88
+        ],
+        "CapAdd": [
+            "SYS_PTRACE"
+        ],
+        "CapDrop": null,
+        "CgroupnsMode": "host",
+        "Dns": [],
+        "DnsOptions": [],
+        "DnsSearch": [],
+        "ExtraHosts": null,
+        "GroupAdd": null,
+        "IpcMode": "private",
+        "Cgroup": "",
+        "Links": null,
+        "OomScoreAdj": 0,
+        "PidMode": "",
+        "Privileged": true,
+        "PublishAllPorts": false,
+        "ReadonlyRootfs": false,
+        "SecurityOpt": [
+            "seccomp=unconfined",
+            "label=disable"
+        ],
+        "UTSMode": "",
+        "UsernsMode": "",
+        "ShmSize": 67108864,
+        "Runtime": "runc",
+        "Isolation": "",
+        "CpuShares": 0,
+        "Memory": 0,
+        "NanoCpus": 0,
+        "CgroupParent": "",
+        "BlkioWeight": 0,
+        "BlkioWeightDevice": [],
+        "BlkioDeviceReadBps": [],
+        "BlkioDeviceWriteBps": [],
+        "BlkioDeviceReadIOps": [],
+        "BlkioDeviceWriteIOps": [],
+        "CpuPeriod": 0,
+        "CpuQuota": 0,
+        "CpuRealtimePeriod": 0,
+        "CpuRealtimeRuntime": 0,
+        "CpusetCpus": "",
+        "CpusetMems": "",
+        "Devices": [],
+        "DeviceCgroupRules": null,
+        "DeviceRequests": null,
+        "MemoryReservation": 0,
+        "MemorySwap": 0,
+        "MemorySwappiness": null,
+        "OomKillDisable": false,
+        "PidsLimit": null,
+        "Ulimits": [],
+        "CpuCount": 0,
+        "CpuPercent": 0,
+        "IOMaximumIOps": 0,
+        "IOMaximumBandwidth": 0,
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "c:\\Users\\Administrator\\semantic-kernel",
+                "Target": "/workspaces/semantic-kernel",
+                "Consistency": "cached"
+            },
+            {
+                "Type": "volume",
+                "Source": "dind-var-lib-docker-0j72ng6vpnpvagce0fijsg0esjdgb8npeon89pbe8c206vvi0q12",
+                "Target": "/var/lib/docker"
+            },
+            {
+                "Type": "volume",
+                "Source": "minikube-config",
+                "Target": "/home/vscode/.minikube"
+            },
+            {
+                "Type": "volume",
+                "Source": "vscode",
+                "Target": "/vscode"
+            },
+            {
+                "Type": "bind",
+                "Source": "/run/desktop/mnt/host/wsl/docker-desktop-bind-mounts/Ubuntu/1e3f10efd5b66e89511d4ace575ae6f00a11f07d7c405a94977aebc6893fa00c",
+                "Target": "/tmp/vscode-wayland-7c4acf08-89a6-4e83-a7ae-6ac759de41bc.sock"
+            }
+        ],
+        "MaskedPaths": null,
+        "ReadonlyPaths": null,
+        "Init": true
+    },
+    "GraphDriver": {
+        "Data": null,
+        "Name": "overlayfs"
+    },
+    "Mounts": [
+        {
+            "Type": "bind",
+            "Source": "c:\\Users\\Administrator\\semantic-kernel",
+            "Destination": "/workspaces/semantic-kernel",
+            "Mode": "",
+            "RW": true,
+            "Propagation": "rprivate"
+        },
+        {
+            "Type": "volume",
+            "Name": "dind-var-lib-docker-0j72ng6vpnpvagce0fijsg0esjdgb8npeon89pbe8c206vvi0q12",
+            "Source": "/var/lib/docker/volumes/dind-var-lib-docker-0j72ng6vpnpvagce0fijsg0esjdgb8npeon89pbe8c206vvi0q12/_data",
+            "Destination": "/var/lib/docker",
+            "Driver": "local",
+            "Mode": "z",
+            "RW": true,
+            "Propagation": ""
+        },
+        {
+            "Type": "volume",
+            "Name": "minikube-config",
+            "Source": "/var/lib/docker/volumes/minikube-config/_data",
+            "Destination": "/home/vscode/.minikube",
+            "Driver": "local",
+            "Mode": "z",
+            "RW": true,
+            "Propagation": ""
+        },
+        {
+            "Type": "volume",
+            "Name": "vscode",
+            "Source": "/var/lib/docker/volumes/vscode/_data",
+            "Destination": "/vscode",
+            "Driver": "local",
+            "Mode": "z",
+            "RW": true,
+            "Propagation": ""
+        },
+        {
+            "Type": "bind",
+            "Source": "/run/desktop/mnt/host/wsl/docker-desktop-bind-mounts/Ubuntu/1e3f10efd5b66e89511d4ace575ae6f00a11f07d7c405a94977aebc6893fa00c",
+            "Destination": "/tmp/vscode-wayland-7c4acf08-89a6-4e83-a7ae-6ac759de41bc.sock",
+            "Mode": "",
+            "RW": true,
+            "Propagation": "rprivate"
+        }
+    ],
+    "Config": {
+        "Hostname": "06c1b75e5ed7",
+        "Domainname": "",
+        "User": "codespace",
+        "AttachStdin": false,
+        "AttachStdout": true,
+        "AttachStderr": true,
+        "Tty": false,
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "Env": [
+            "PATH=/usr/local/share/nvm/current/bin:/usr/local/dotnet/current:/home/codespace/.dotnet:/home/codespace/nvm/current/bin:/home/codespace/.php/current/bin:/home/codespace/.python/current/bin:/home/codespace/java/current/bin:/home/codespace/.ruby/current/bin:/home/codespace/.local/bin:/usr/local/python/current/bin:/usr/local/py-utils/bin:/usr/local/oryx:/usr/local/go/bin:/go/bin:/usr/local/sdkman/bin:/usr/local/sdkman/candidates/java/current/bin:/usr/local/sdkman/candidates/gradle/current/bin:/usr/local/sdkman/candidates/maven/current/bin:/usr/local/sdkman/candidates/ant/current/bin:/usr/local/rvm/gems/default/bin:/usr/local/rvm/gems/default@global/bin:/usr/local/rvm/rubies/default/bin:/usr/local/share/rbenv/bin:/usr/local/php/current/bin:/opt/conda/bin:/usr/local/nvs:/usr/local/share/nvm/current/bin:/usr/local/hugo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/dotnet:~/.dotnet/tools",
+            "LANG=C.UTF-8",
+            "SHELL=/bin/bash",
+            "DOCKER_BUILDKIT=1",
+            "DOTNET_ROOT=/usr/local/dotnet/current",
+            "DOTNET_RUNNING_IN_CONTAINER=true",
+            "DOTNET_USE_POLLING_FILE_WATCHER=true",
+            "HUGO_DIR=/usr/local/hugo",
+            "NVM_DIR=/usr/local/share/nvm",
+            "NVM_SYMLINK_CURRENT=true",
+            "NVS_DIR=/usr/local/nvs",
+            "CONDA_DIR=/opt/conda",
+            "CONDA_SCRIPT=/opt/conda/etc/profile.d/conda.sh",
+            "PHP_PATH=/usr/local/php/current",
+            "GEM_PATH=/usr/local/rvm/gems/default:/usr/local/rvm/gems/default@global",
+            "GEM_HOME=/usr/local/rvm/gems/default",
+            "MY_RUBY_HOME=/usr/local/rvm/rubies/default",
+            "SDKMAN_DIR=/usr/local/sdkman",
+            "JAVA_HOME=/usr/local/sdkman/candidates/java/current",
+            "GOROOT=/usr/local/go",
+            "GOPATH=/go",
+            "ORYX_SDK_STORAGE_BASE_URL=https://oryx-cdn.microsoft.io",
+            "ENABLE_DYNAMIC_INSTALL=true",
+            "DYNAMIC_INSTALL_ROOT_DIR=/opt",
+            "ORYX_PREFER_USER_INSTALLED_SDKS=true",
+            "ORYX_DIR=/usr/local/oryx",
+            "DEBIAN_FLAVOR=focal-scm",
+            "PYTHON_PATH=/usr/local/python/current",
+            "PIPX_HOME=/usr/local/py-utils",
+            "PIPX_BIN_DIR=/usr/local/py-utils/bin",
+            "RUBY_HOME=/usr/local/rvm/rubies/default",
+            "JAVA_ROOT=/home/codespace/java",
+            "NODE_ROOT=/home/codespace/nvm",
+            "PHP_ROOT=/home/codespace/.php",
+            "PYTHON_ROOT=/home/codespace/.python",
+            "RUBY_ROOT=/home/codespace/.ruby",
+            "MAVEN_ROOT=/home/codespace/.maven",
+            "HUGO_ROOT=/home/codespace/.hugo",
+            "DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1",
+            "NUGET_XMLDOC_MODE=skip",
+            "ORYX_ENV_TYPE=vsonline-present",
+            "PYTHONIOENCODING=UTF-8",
+            "NPM_GLOBAL=/home/codespace/.npm-global",
+            "NVS_HOME=/home/codespace/.nvs",
+            "RVM_PATH=/usr/local/rvm",
+            "RAILS_DEVELOPMENT_HOSTS=.githubpreview.dev,.preview.app.github.dev,.app.github.dev",
+            "JUPYTERLAB_PATH=/home/codespace/.local/bin"
+        ],
+        "Cmd": [
+            "-c",
+            "echo Container started\ntrap \"exit 0\" 15\n/usr/local/share/ssh-init.sh\n/usr/local/share/docker-init.sh\nexec \"$@\"\nwhile sleep 1 & wait $!; do :; done",
+            "-"
+        ],
+        "Image": "vsc-semantic-kernel-8f0c7dd12c792063f38b6c31c30116c8625f7184c81e0d05d33776fc80d4672f-features",
+        "Volumes": {
+            "/var/lib/docker": {}
+        },
+        "WorkingDir": "",
+        "Entrypoint": [
+            "/bin/sh"
+        ],
+        "OnBuild": null,
+        "Labels": {
+            "dev.containers.id": "universal",
+            "dev.containers.release": "v0.3.38",
+            "dev.containers.source": "https://github.com/devcontainers/images",
+            "dev.containers.timestamp": "Tue, 14 May 2024 22:21:51 GMT",
+            "dev.containers.variant": "null",
+            "devcontainer.config_file": "c:\\Users\\Administrator\\semantic-kernel\\.devcontainer\\devcontainer.json",
+            "devcontainer.local_folder": "c:\\Users\\Administrator\\semantic-kernel",
+            "devcontainer.metadata": "[ {\"id\":\"ghcr.io/devcontainers/features/common-utils:2\"}, {\"id\":\"ghcr.io/devcontainers/features/git:1\"}, {\"id\":\"ghcr.io/devcontainers/features/dotnet:2\"}, {\"id\":\"ghcr.io/devcontainers/features/hugo:1\"}, {\"id\":\"ghcr.io/devcontainers/features/node:1\"}, {\"id\":\"./local-features/nvs\"}, {\"id\":\"ghcr.io/devcontainers/features/conda:1\"}, {\"id\":\"./local-features/patch-conda\"}, {\"id\":\"ghcr.io/devcontainers/features/php:1\"}, {\"id\":\"ghcr.io/devcontainers/features/ruby:1\"}, {\"id\":\"ghcr.io/devcontainers/features/java:1\"}, {\"id\":\"ghcr.io/devcontainers/features/sshd:1\",\"entrypoint\":\"/usr/local/share/ssh-init.sh\"}, {\"id\":\"ghcr.io/devcontainers/features/git-lfs:1\",\"postCreateCommand\":\"/usr/local/share/pull-git-lfs-artifacts.sh\"}, {\"id\":\"ghcr.io/devcontainers/features/github-cli:1\"}, {\"id\":\"ghcr.io/devcontainers/features/docker-in-docker:2\",\"privileged\":true,\"entrypoint\":\"/usr/local/share/docker-init.sh\",\"mounts\":[{\"source\":\"dind-var-lib-docker-${devcontainerId}\",\"target\":\"/var/lib/docker\",\"type\":\"volume\"}]}, {\"id\":\"ghcr.io/devcontainers/features/kubectl-helm-minikube:1\",\"mounts\":[{\"source\":\"minikube-config\",\"target\":\"/home/vscode/.minikube\",\"type\":\"volume\"}]}, {\"id\":\"ghcr.io/devcontainers/features/go:1\",\"init\":true,\"capAdd\":[\"SYS_PTRACE\"],\"securityOpt\":[\"seccomp=unconfined\"]}, {\"id\":\"./local-features/jekyll\"}, {\"id\":\"ghcr.io/devcontainers/features/oryx:1\"}, {\"id\":\"ghcr.io/devcontainers/features/python:1\"}, {\"id\":\"./local-features/patch-python\"}, {\"id\":\"./local-features/machine-learning-packages\"}, {\"id\":\"./local-features/setup-user\"}, {\"customizations\":{\"vscode\":{\"settings\":{\"go.toolsManagement.checkForUpdates\":\"local\",\"go.useLanguageServer\":true,\"go.gopath\":\"/go\",\"python.defaultInterpreterPath\":\"/home/codespace/.python/current/bin/python3\",\"jupyter.kernels.filter\":[{\"path\":\"/opt/conda/bin/python\",\"type\":\"pythonEnvironment\"},{\"path\":\"/usr/local/python/current/bin/python3\",\"type\":\"pythonEnvironment\"},{\"path\":\"/usr/local/python/current/bin/python\",\"type\":\"pythonEnvironment\"},{\"path\":\"/usr/bin/python3\",\"type\":\"pythonEnvironment\"},{\"path\":\"/bin/python3\",\"type\":\"pythonEnvironment\"}],\"lldb.executable\":\"/usr/bin/lldb\"},\"extensions\":[\"GitHub.vscode-pull-request-github\"]}},\"containerUser\":\"codespace\",\"remoteUser\":\"codespace\"}, {\"id\":\"ghcr.io/devcontainers/features/dotnet:1\",\"customizations\":{\"vscode\":{\"extensions\":[\"ms-dotnettools.csharp\"]}}}, {\"id\":\"ghcr.io/devcontainers/features/node:1\",\"customizations\":{\"vscode\":{\"extensions\":[\"dbaeumer.vscode-eslint\"]}}}, {\"id\":\"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1\",\"customizations\":{\"vscode\":{\"extensions\":[\"ms-azuretools.vscode-azurefunctions\"]}}}, {\"postCreateCommand\":\"sudo chmod a+rwx /usr/share/dotnet\",\"customizations\":{\"vscode\":{\"extensions\":[\"ms-dotnettools.dotnet-interactive-vscode\",\"ms-semantic-kernel.semantic-kernel\",\"esbenp.prettier-vscode\"]}}} ]",
+            "org.opencontainers.image.ref.name": "ubuntu",
+            "org.opencontainers.image.version": "20.04",
+            "version": "2.11.0"
+        }
+    },
+    "NetworkSettings": {
+        "Bridge": "",
+        "SandboxID": "ce27f06917169eef5a36253888cadbaeb59f55f3a25f8386400b5805368fd799",
+        "SandboxKey": "/var/run/docker/netns/ce27f0691716",
+        "Ports": {},
+        "HairpinMode": false,
+        "LinkLocalIPv6Address": "",
+        "LinkLocalIPv6PrefixLen": 0,
+        "SecondaryIPAddresses": null,
+        "SecondaryIPv6Addresses": null,
+        "EndpointID": "7ca455db872bf7a2b9b6777f78059976474addacc67e8d7c10859353fb9102c8",
+        "Gateway": "172.17.0.1",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "IPAddress": "172.17.0.3",
+        "IPPrefixLen": 16,
+        "IPv6Gateway": "",
+        "MacAddress": "02:42:ac:11:00:03",
+        "Networks": {
+            "bridge": {
+                "IPAMConfig": null,
+                "Links": null,
+                "Aliases": null,
+                "MacAddress": "02:42:ac:11:00:03",
+                "NetworkID": "95e531e3a3a6ac2184511910a89d98bbdec012dae976ff82ce0ce3e98bbe8860",
+                "EndpointID": "7ca455db872bf7a2b9b6777f78059976474addacc67e8d7c10859353fb9102c8",
+                "Gateway": "172.17.0.1",
+                "IPAddress": "172.17.0.3",
+                "IPPrefixLen": 16,
+                "IPv6Gateway": "",
+                "GlobalIPv6Address": "",
+                "GlobalIPv6PrefixLen": 0,
+                "DriverOpts": null,
+                "DNSNames": null
+            }
+        }
+    },
+    "Ports": []
+}

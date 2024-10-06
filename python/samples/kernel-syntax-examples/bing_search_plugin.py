@@ -27,6 +27,7 @@ async def main():
     )
     connector = BingConnector(api_key=os.getenv("BING_API_KEY"))
     web_plugin = kernel.import_plugin(WebSearchEnginePlugin(connector), "WebSearch")
+    web_plugin = kernel.import_plugin_from_object(WebSearchEnginePlugin(connector), "WebSearch")
 
     print("---------------- Question 1 -----------------\n")
 
@@ -58,6 +59,11 @@ async def main():
 
     question = "What is Semantic Kernel?"
     qna = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+    qna = kernel.create_function_from_prompt(
+        function_name="qna",
+        plugin_name="WebSearch",
+        prompt_template_config=prompt_template_config,
+    )
     result = await qna.invoke(kernel, question=question, num_results=10, offset=0)
 
     print(f"Question: {question}\n")

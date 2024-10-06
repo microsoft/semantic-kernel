@@ -15,7 +15,7 @@ internal sealed class MockTextSearch(int count = 3, long totalCount = 30) : ITex
     /// <inheritdoc/>
     public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        int count = searchOptions?.Count ?? this._count;
+        int count = searchOptions?.Top ?? this._count;
         var results = Enumerable.Range(1, count).Select(i => new MySearchResult($"Name {i}", $"Result {i}", $"http://example.com/page{i}")).ToList();
         long? totalCount = searchOptions?.IncludeTotalCount ?? false ? this._totalCount : null;
         return Task.FromResult(new KernelSearchResults<object>(results.ToAsyncEnumerable<object>(), totalCount));
@@ -24,7 +24,7 @@ internal sealed class MockTextSearch(int count = 3, long totalCount = 30) : ITex
     /// <inheritdoc/>
     public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        int count = searchOptions?.Count ?? this._count;
+        int count = searchOptions?.Top ?? this._count;
         var results = Enumerable.Range(1, count).Select(i => new TextSearchResult($"Name {i}", $"Result {i}", $"http://example.com/page{i}")).ToList();
         long? totalCount = searchOptions?.IncludeTotalCount ?? false ? this._totalCount : null;
         return Task.FromResult(new KernelSearchResults<TextSearchResult>(results.ToAsyncEnumerable(), totalCount));
@@ -33,7 +33,7 @@ internal sealed class MockTextSearch(int count = 3, long totalCount = 30) : ITex
     /// <inheritdoc/>
     public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        int count = searchOptions?.Count ?? this._count;
+        int count = searchOptions?.Top ?? this._count;
         var results = Enumerable.Range(1, count).Select(i => $"Result {i}").ToList();
         long? totalCount = searchOptions?.IncludeTotalCount ?? false ? this._totalCount : null;
         return Task.FromResult(new KernelSearchResults<string>(results.ToAsyncEnumerable(), totalCount));

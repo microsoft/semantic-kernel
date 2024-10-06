@@ -5,6 +5,7 @@
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -64,11 +65,9 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     {
         var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
-        var options = AzureClientCore.GetAzureOpenAIClientOptions(
-            httpClient,
-            AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
 
-        var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), apiKey, options);
+        var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), new ApiKeyCredential(apiKey), options);
 
         this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToAudioService)));
 
@@ -97,9 +96,7 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     {
         var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
-        var options = AzureClientCore.GetAzureOpenAIClientOptions(
-            httpClient,
-            AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
 
         var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), credential, options);
 

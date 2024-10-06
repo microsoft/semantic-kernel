@@ -141,7 +141,7 @@ internal partial class ClientCore
             this.AddAttribute(ClientCore.OrganizationKey, organizationId);
         }
 
-        this.Client = new OpenAIClient(apiKey!, options);
+        this.Client = new OpenAIClient(new ApiKeyCredential(apiKey!), options);
     }
 
     /// <summary>
@@ -207,7 +207,7 @@ internal partial class ClientCore
     {
         OpenAIClientOptions options = new()
         {
-            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
             Endpoint = endpoint
         };
 
@@ -222,6 +222,12 @@ internal partial class ClientCore
 
         return options;
     }
+
+    /// <summary>
+    /// Gets the model identifier to use for the client.
+    /// </summary>
+    protected virtual string GetClientModelId()
+        => this.ModelId;
 
     /// <summary>
     /// Invokes the specified request and handles exceptions.

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections;
@@ -48,8 +48,13 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// </summary>
     /// <param name="properties">The property definitions to map from.</param>
     /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name that should be used when serializing it to json for data and vector properties.</param>
-<<<<<<< main
-<<<<<<< HEAD
+    /// <param name="useDollarPrefix">A value indicating whether to include $. prefix for field names as required in JSON mode.</param>
+    /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
+    public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, IReadOnlyDictionary<string, string> storagePropertyNames, bool useDollarPrefix)
+    {
+        var schema = new Schema();
+        var fieldNamePrefix = useDollarPrefix ? "$." : string.Empty;
     /// <param name="useDollarPrefix">A value indicating whether to include $. prefix for field names as required in JSON mode.</param>
     /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
@@ -57,20 +62,6 @@ internal static class RedisVectorStoreCollectionCreateMapping
     {
         var schema = new Schema();
         var fieldNamePrefix = useDollarPrefix ? "$." : string.Empty;
-=======
-=======
-    /// <param name="useDollarPrefix">A value indicating whether to include $. prefix for field names as required in JSON mode.</param>
->>>>>>> ms/features/bugbash-prep
-    /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
-    public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, Dictionary<string, string> storagePropertyNames, bool useDollarPrefix)
-    {
-        var schema = new Schema();
-<<<<<<< main
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
-=======
-        var fieldNamePrefix = useDollarPrefix ? "$." : string.Empty;
->>>>>>> ms/features/bugbash-prep
 
         // Loop through all properties and create the index fields.
         foreach (var property in properties)
@@ -97,15 +88,9 @@ internal static class RedisVectorStoreCollectionCreateMapping
                 {
                     if (dataProperty.PropertyType == typeof(string) || (typeof(IEnumerable).IsAssignableFrom(dataProperty.PropertyType) && GetEnumerableType(dataProperty.PropertyType) == typeof(string)))
                     {
-<<<<<<< main
-<<<<<<< HEAD
                         schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
-=======
                         schema.AddTextField(new FieldName($"$.{storageName}", storageName));
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
-=======
                         schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
->>>>>>> ms/features/bugbash-prep
                     }
                     else
                     {
@@ -118,8 +103,6 @@ internal static class RedisVectorStoreCollectionCreateMapping
                 {
                     if (dataProperty.PropertyType == typeof(string))
                     {
-<<<<<<< main
-<<<<<<< HEAD
                         schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
                     }
                     else if (typeof(IEnumerable).IsAssignableFrom(dataProperty.PropertyType) && GetEnumerableType(dataProperty.PropertyType) == typeof(string))
@@ -129,11 +112,8 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     else if (RedisVectorStoreCollectionCreateMapping.s_supportedFilterableNumericDataTypes.Contains(dataProperty.PropertyType))
                     {
                         schema.AddNumericField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
-=======
                         schema.AddTagField(new FieldName($"$.{storageName}", storageName));
-=======
                         schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
->>>>>>> ms/features/bugbash-prep
                     }
                     else if (typeof(IEnumerable).IsAssignableFrom(dataProperty.PropertyType) && GetEnumerableType(dataProperty.PropertyType) == typeof(string))
                     {
@@ -141,12 +121,8 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     }
                     else if (RedisVectorStoreCollectionCreateMapping.s_supportedFilterableNumericDataTypes.Contains(dataProperty.PropertyType))
                     {
-<<<<<<< main
                         schema.AddNumericField(new FieldName($"$.{storageName}", storageName));
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
-=======
                         schema.AddNumericField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
->>>>>>> ms/features/bugbash-prep
                     }
                     else
                     {
@@ -167,20 +143,17 @@ internal static class RedisVectorStoreCollectionCreateMapping
 
                 var storageName = storagePropertyNames[vectorProperty.DataModelPropertyName];
                 var indexKind = GetSDKIndexKind(vectorProperty);
-<<<<<<< HEAD
                 var vectorType = GetSDKVectorType(vectorProperty);
                 var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
                 var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
                 schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName), indexKind, new Dictionary<string, object>()
                 {
                     ["TYPE"] = vectorType,
-=======
                 var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
                 var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
                 schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName), indexKind, new Dictionary<string, object>()
                 {
                     ["TYPE"] = "FLOAT32",
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
                     ["DIM"] = dimensions,
                     ["DISTANCE_METRIC"] = distanceAlgorithm
                 });
@@ -236,7 +209,6 @@ internal static class RedisVectorStoreCollectionCreateMapping
     }
 
     /// <summary>
-<<<<<<< HEAD
     /// Get the vector type to pass to the SDK based on the data type of the vector property.
     /// </summary>
     /// <param name="vectorProperty">The vector property definition.</param>
@@ -255,8 +227,6 @@ internal static class RedisVectorStoreCollectionCreateMapping
     }
 
     /// <summary>
-=======
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
     /// Gets the type of object stored in the given enumerable type.
     /// </summary>
     /// <param name="type">The enumerable to get the stored type for.</param>

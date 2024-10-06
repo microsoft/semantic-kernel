@@ -1,18 +1,12 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
-<<<<<<< HEAD
 using System.Reflection;
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Microsoft.SemanticKernel.Data;
-<<<<<<< HEAD
 using Microsoft.SemanticKernel.Http;
-=======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 using Moq;
 using Xunit;
 
@@ -41,7 +35,6 @@ public sealed class AzureCosmosDBNoSQLKernelBuilderExtensionsTests
         Assert.NotNull(vectorStore);
         Assert.IsType<AzureCosmosDBNoSQLVectorStore>(vectorStore);
     }
-<<<<<<< HEAD
 
     [Fact]
     public void AddVectorStoreWithConnectionStringRegistersClass()
@@ -58,6 +51,50 @@ public sealed class AzureCosmosDBNoSQLKernelBuilderExtensionsTests
         var database = (Database)vectorStore.GetType().GetField("_database", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(vectorStore)!;
         Assert.Equal(HttpHeaderConstant.Values.UserAgent, database.Client.ClientOptions.ApplicationName);
     }
+<<<<<<< main
 =======
->>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+    [Fact]
+    public void AddVectorStoreRecordCollectionRegistersClass()
+    {
+        // Arrange
+        this._kernelBuilder.Services.AddSingleton<Database>(Mock.Of<Database>());
+
+        // Act
+        this._kernelBuilder.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TestRecord>("testcollection");
+
+        // Assert
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
+
+    [Fact]
+    public void AddVectorStoreRecordCollectionWithConnectionStringRegistersClass()
+    {
+        // Act
+        this._kernelBuilder.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TestRecord>("testcollection", "AccountEndpoint=https://test.documents.azure.com:443/;AccountKey=mock;", "mydb");
+
+        // Assert
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
+
+    private void AssertVectorStoreRecordCollectionCreated()
+    {
+        var kernel = this._kernelBuilder.Build();
+
+        var collection = kernel.Services.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
+        Assert.NotNull(collection);
+        Assert.IsType<AzureCosmosDBNoSQLVectorStoreRecordCollection<TestRecord>>(collection);
+
+        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        Assert.NotNull(vectorizedSearch);
+        Assert.IsType<AzureCosmosDBNoSQLVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
+    }
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    private sealed class TestRecord
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; } = string.Empty;
+    }
+>>>>>>> upstream/feature-vector-search
 }

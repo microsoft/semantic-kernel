@@ -1,9 +1,0 @@
-name: getTimeInCity
-description: Gets the time in a specified city.
-template: |
-  <message role="user">Can you help me tell the time in {{$city}} right now?</message>
-template_format: semantic-kernel
-input_variables:
-  - name: city
-    description: City for which time is desired
-    default: Seattle

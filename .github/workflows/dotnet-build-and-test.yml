@@ -201,6 +201,7 @@ jobs:
           # Report for production packages only
           assemblyfilters: "+Microsoft.SemanticKernel.Abstractions;+Microsoft.SemanticKernel.Core;+Microsoft.SemanticKernel.PromptTemplates.Handlebars;+Microsoft.SemanticKernel.Connectors.OpenAI;+Microsoft.SemanticKernel.Yaml;"
 
+
       - name: Check coverage
         shell: pwsh
         run: .github/workflows/check-coverage.ps1 -JsonReportPath "TestResults/Reports/Summary.json" -CoverageThreshold $env:COVERAGE_THRESHOLD

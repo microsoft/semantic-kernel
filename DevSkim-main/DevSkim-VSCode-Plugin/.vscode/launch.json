@@ -30,6 +30,8 @@
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickProcess}"
+		]
+	}
         }
 	]
 }

@@ -19,4 +19,9 @@ pubpublic sealed record KernelProcessEvent
     /// An optional data payload associated with the event.
     /// </summary>
     public object? Data { get; set; }
+
+    /// <summary>
+    /// The visibility of the event. Defaults to <see cref="KernelProcessEventVisibility.Internal"/>.
+    /// </summary>
+    public KernelProcessEventVisibility Visibility { get; set; } = KernelProcessEventVisibility.Internal;
 }

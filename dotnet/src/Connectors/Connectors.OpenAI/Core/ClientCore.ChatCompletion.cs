@@ -120,10 +120,11 @@ internal partial class ClientCore
     {
         return new Dictionary<string, object?>
         {
-            { nameof(completionUpdate.Id), completionUpdate.Id },
+            { nameof(completionUpdate.CompletionId), completionUpdate.CompletionId },
             { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },
             { nameof(completionUpdate.SystemFingerprint), completionUpdate.SystemFingerprint },
             { nameof(completionUpdate.RefusalUpdate), completionUpdate.RefusalUpdate },
+            { nameof(completionUpdate.Usage), completionUpdate.Usage },
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completionUpdate.FinishReason), completionUpdate.FinishReason?.ToString() },
@@ -196,14 +197,15 @@ internal partial class ClientCore
                         // Capture available metadata even if the operation failed.
                         activity
                             .SetResponseId(chatCompletion.Id)
-                            .SetPromptTokenUsage(chatCompletion.Usage.InputTokens)
-                            .SetCompletionTokenUsage(chatCompletion.Usage.OutputTokens);
+                            .SetPromptTokenUsage(chatCompletion.Usage.InputTokenCount)
+                            .SetCompletionTokenUsage(chatCompletion.Usage.OutputTokenCount);
                     }
+
                     throw;
                 }
 
                 chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel);
-                activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokens, chatCompletion.Usage.OutputTokens);
+                activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
             }
 
             // If we don't want to attempt to invoke any functions or there is nothing to call, just return the result.
@@ -490,17 +492,17 @@ internal partial class ClientCore
                             {
                                 // Using the code below to distinguish and skip non - function call related updates.
                                 // The Kind property of updates can't be reliably used because it's only initialized for the first update.
-                                if (string.IsNullOrEmpty(functionCallUpdate.Id) &&
+                                if (string.IsNullOrEmpty(functionCallUpdate.ToolCallId) &&
                                     string.IsNullOrEmpty(functionCallUpdate.FunctionName) &&
-                                    string.IsNullOrEmpty(functionCallUpdate.FunctionArgumentsUpdate))
+                                    (functionCallUpdate.FunctionArgumentsUpdate is null || functionCallUpdate.FunctionArgumentsUpdate.ToMemory().IsEmpty))
                                 {
                                     continue;
                                 }
 
                                 openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
-                                    callId: functionCallUpdate.Id,
+                                    callId: functionCallUpdate.ToolCallId,
                                     name: functionCallUpdate.FunctionName,
-                                    arguments: functionCallUpdate.FunctionArgumentsUpdate,
+                                    arguments: functionCallUpdate.FunctionArgumentsUpdate?.ToString(),
                                     functionCallIndex: functionCallUpdate.Index));
                             }
                         }
@@ -750,7 +752,7 @@ internal partial class ClientCore
     {
         var options = new ChatCompletionOptions
         {
-            MaxTokens = executionSettings.MaxTokens,
+            MaxOutputTokenCount = executionSettings.MaxTokens,
             Temperature = (float?)executionSettings.Temperature,
             TopP = (float?)executionSettings.TopP,
             FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
@@ -830,11 +832,12 @@ internal partial class ClientCore
                 switch (formatString)
                 {
                     case "json_object":
-                        return ChatResponseFormat.JsonObject;
+                        return ChatResponseFormat.CreateJsonObjectFormat();
 
                     case "text":
-                        return ChatResponseFormat.Text;
+                        return ChatResponseFormat.CreateTextFormat();
                 }
+
                 break;
 
             case JsonElement formatElement:
@@ -846,12 +849,13 @@ internal partial class ClientCore
                     switch (formatString)
                     {
                         case "json_object":
-                            return ChatResponseFormat.JsonObject;
+                            return ChatResponseFormat.CreateJsonObjectFormat();
 
                         case "text":
-                            return ChatResponseFormat.Text;
+                            return ChatResponseFormat.CreateTextFormat();
                     }
                 }
+
                 break;
             case Type formatObjectType:
                 return GetJsonSchemaResponseFormat(formatObjectType);
@@ -865,14 +869,12 @@ internal partial class ClientCore
     /// </summary>
     private static ChatResponseFormat GetJsonSchemaResponseFormat(Type formatObjectType)
     {
-        var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ?
-            Nullable.GetUnderlyingType(formatObjectType)! :
-            formatObjectType;
+        var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
 
         var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
-        return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, strictSchemaEnabled: true);
+        return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, jsonSchemaIsStrict: true);
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
@@ -1000,13 +1002,16 @@ internal partial class ClientCore
                 return [new UserChatMessage(textContent.Text) { ParticipantName = message.AuthorName }];
             }
 
-            return [new UserChatMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentPart)(item switch
-            {
-                TextContent textContent => ChatMessageContentPart.CreateTextMessageContentPart(textContent.Text),
-                ImageContent imageContent => GetImageContentItem(imageContent),
-                _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
-            })))
-            { ParticipantName = message.AuthorName }];
+            return
+            [
+                new UserChatMessage(message.Items.Select(static (KernelContent item) => item switch
+                    {
+                        TextContent textContent => ChatMessageContentPart.CreateTextPart(textContent.Text),
+                        ImageContent imageContent => GetImageContentItem(imageContent),
+                        _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
+                    }))
+                { ParticipantName = message.AuthorName }
+            ];
         }
 
         if (message.Role == AuthorRole.Assistant)
@@ -1034,7 +1039,7 @@ internal partial class ClientCore
                             name.ValueKind == JsonValueKind.String &&
                             arguments.ValueKind == JsonValueKind.String)
                         {
-                            ftcs.Add(ChatToolCall.CreateFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
+                            ftcs.Add(ChatToolCall.CreateFunctionToolCall(id.GetString()!, name.GetString()!, BinaryData.FromString(arguments.GetString()!)));
                         }
                     }
                     tools = ftcs;
@@ -1064,7 +1069,7 @@ internal partial class ClientCore
 
                 var argument = JsonSerializer.Serialize(callRequest.Arguments);
 
-                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
+                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), BinaryData.FromString(argument ?? string.Empty)));
             }
 
             // This check is necessary to prevent an exception that will be thrown if the toolCalls collection is empty.
@@ -1074,7 +1079,13 @@ internal partial class ClientCore
                 return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
             }
 
-            return [new AssistantChatMessage(toolCalls, message.Content) { ParticipantName = message.AuthorName }];
+            var assistantMessage = new AssistantChatMessage(toolCalls) { ParticipantName = message.AuthorName };
+            if (message.Content is { } content)
+            {
+                assistantMessage.Content.Add(content);
+            }
+
+            return [assistantMessage];
         }
 
         throw new NotSupportedException($"Role {message.Role} is not supported.");
@@ -1084,12 +1095,12 @@ internal partial class ClientCore
     {
         if (imageContent.Data is { IsEmpty: false } data)
         {
-            return ChatMessageContentPart.CreateImageMessageContentPart(BinaryData.FromBytes(data), imageContent.MimeType);
+            return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MimeType);
         }
 
         if (imageContent.Uri is not null)
         {
-            return ChatMessageContentPart.CreateImageMessageContentPart(imageContent.Uri);
+            return ChatMessageContentPart.CreateImagePart(imageContent.Uri);
         }
 
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
@@ -1221,13 +1232,13 @@ internal partial class ClientCore
         if (this.Logger!.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation(
-                "Prompt tokens: {InputTokens}. Completion tokens: {OutputTokens}. Total tokens: {TotalTokens}.",
-                usage.InputTokens, usage.OutputTokens, usage.TotalTokens);
+                "Prompt tokens: {InputTokenCount}. Completion tokens: {OutputTokenCount}. Total tokens: {TotalTokenCount}.",
+                usage.InputTokenCount, usage.OutputTokenCount, usage.TotalTokenCount);
         }
 
-        s_promptTokensCounter.Add(usage.InputTokens);
-        s_completionTokensCounter.Add(usage.OutputTokens);
-        s_totalTokensCounter.Add(usage.TotalTokens);
+        s_promptTokensCounter.Add(usage.InputTokenCount);
+        s_completionTokensCounter.Add(usage.OutputTokenCount);
+        s_totalTokensCounter.Add(usage.TotalTokenCount);
     }
 
     private ToolCallingConfig GetFunctionCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory, int requestIndex)
@@ -1278,7 +1289,7 @@ internal partial class ClientCore
 
         return new ToolCallingConfig(
             Tools: tools ?? [s_nonInvocableFunctionTool],
-            Choice: choice ?? ChatToolChoice.None,
+            Choice: choice ?? ChatToolChoice.CreateNoneChoice(),
             AutoInvoke: autoInvoke,
             AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction,
             Options: options);
@@ -1320,15 +1331,15 @@ internal partial class ClientCore
         {
             if (config.Choice == FunctionChoice.Auto)
             {
-                toolChoice = ChatToolChoice.Auto;
+                toolChoice = ChatToolChoice.CreateAutoChoice();
             }
             else if (config.Choice == FunctionChoice.Required)
             {
-                toolChoice = ChatToolChoice.Required;
+                toolChoice = ChatToolChoice.CreateRequiredChoice();
             }
             else if (config.Choice == FunctionChoice.None)
             {
-                toolChoice = ChatToolChoice.None;
+                toolChoice = ChatToolChoice.CreateNoneChoice();
             }
             else
             {

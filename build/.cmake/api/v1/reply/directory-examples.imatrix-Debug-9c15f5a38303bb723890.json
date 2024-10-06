@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/imatrix/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-imatrix"
+			],
+			"targetId" : "llama-imatrix::@ce1125763a202f30b284",
+			"targetIndex" : 47,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/imatrix",
+		"source" : "examples/imatrix"
+	}
+}

@@ -66,8 +66,12 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
     public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition, string keyPropertyName)
     /// <param name="storagePropertyNames">A dictionary that maps from a property name to the configured name that should be used when storing it.</param>
     public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition, Dictionary<string, string> storagePropertyNames)
+    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
+    public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordPropertyReader propertyReader)
     {
-        var (keyProperty, dataProperties, vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: true);
+        propertyReader.VerifyKeyProperties(AzureCosmosDBMongoDBConstants.SupportedKeyTypes);
+        propertyReader.VerifyDataProperties(AzureCosmosDBMongoDBConstants.SupportedDataTypes, supportEnumerable: true);
+        propertyReader.VerifyVectorProperties(AzureCosmosDBMongoDBConstants.SupportedVectorTypes);
 
         VectorStoreRecordPropertyReader.VerifyPropertyTypes([keyProperty], AzureCosmosDBMongoDBConstants.SupportedKeyTypes, "Key");
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(dataProperties, AzureCosmosDBMongoDBConstants.SupportedDataTypes, "Data", supportEnumerable: true);
@@ -76,6 +80,9 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
 
         this._keyPropertyName = keyPropertyName;
         this._keyProperty = keyProperty;
+
+        this._keyPropertyName = propertyReader.KeyPropertyName;
+        this._keyProperty = propertyReader.KeyPropertyInfo;
 
         var conventionPack = new ConventionPack
         {
@@ -95,6 +102,8 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
             nameof(AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>),
             conventionPack,
             type => type == typeof(TRecord));
+        this._keyPropertyName = propertyReader.KeyPropertyName;
+        this._keyProperty = propertyReader.KeyPropertyInfo;
     }
 
     public BsonDocument MapFromDataToStorageModel(TRecord dataModel)

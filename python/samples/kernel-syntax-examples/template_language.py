@@ -24,6 +24,7 @@ async def main():
     )
 
     kernel.import_plugin(TimePlugin(), "time")
+    kernel.import_plugin_from_object(TimePlugin(), "time")
 
     function_definition = """
     Today is: {{time.Date}}
@@ -41,6 +42,7 @@ async def main():
     print(rendered_prompt)
 
     kind_of_day = kernel.create_function_from_prompt(
+        plugin_name="TimePlugin",
         template=function_definition,
         execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(service_id=service_id, max_tokens=100),
         function_name="kind_of_day",

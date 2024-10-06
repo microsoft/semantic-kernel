@@ -13,6 +13,7 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
+from semantic_kernel.exceptions import PlannerCreatePlanError, PlannerExecutionException, PlannerInvalidPlanError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -28,6 +29,9 @@ from semantic_kernel.planners.stepwise_planner.system_step import SystemStep
 from semantic_kernel.prompt_template.prompt_template_config import (
     PromptTemplateConfig,
 )
+from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import StepwisePlannerConfig
+from semantic_kernel.planners.stepwise_planner.system_step import SystemStep
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
@@ -92,6 +96,7 @@ class StepwisePlanner:
 
         self._system_step_function = self.import_function_from_prompt(kernel, "StepwiseStep", prompt_config)
         self._native_functions = self._kernel.import_plugin(self, RESTRICTED_PLUGIN_NAME)
+        self._native_functions = self._kernel.import_plugin_from_object(self, RESTRICTED_PLUGIN_NAME)
 
         self._context = KernelArguments()
 
@@ -103,6 +108,9 @@ class StepwisePlanner:
             description="",
             parameters=[
                 KernelParameterMetadata(name="goal", description="The goal to achieve", default_value="", required=True)
+                KernelParameterMetadata(
+                    name="goal", description="The goal to achieve", default_value="", is_required=True
+                )
             ],
             is_prompt=True,
             is_asynchronous=True,
@@ -111,6 +119,7 @@ class StepwisePlanner:
     def create_plan(self, goal: str) -> Plan:
         if is_null_or_empty(goal):
             raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty")
+            raise PlannerInvalidPlanError("The goal specified is empty")
 
         function_descriptions = self.get_function_descriptions()
 
@@ -124,6 +133,7 @@ class StepwisePlanner:
         plan_step._outputs.append("steps_taken")
 
         plan = Plan(goal)
+        plan = Plan(description=goal)
 
         plan.add_steps([plan_step])
 
@@ -151,6 +161,9 @@ class StepwisePlanner:
                         f"Error occurred while executing stepwise plan: {llm_response.metadata['error']}",
                         llm_response.metadata["error"],
                     )
+                    raise PlannerExecutionException(
+                        f"Error occurred while executing stepwise plan: {llm_response.metadata['error']}",
+                    ) from llm_response.metadata["error"]
 
                 action_text = str(llm_response).strip()
                 logger.debug(f"Response: {action_text}")
@@ -329,6 +342,7 @@ class StepwisePlanner:
                 PlanningException.ErrorCodes.UnknownError,
                 f"The function '{action_name}' was not found.",
             )
+            raise PlannerExecutionException(f"The function '{action_name}' was not found.")
 
         try:
             function = self._kernel.func(target_function.plugin_name, target_function.name)
@@ -365,6 +379,7 @@ class StepwisePlanner:
                 PlanningException.ErrorCodes.CreatePlanError,
                 "Plugin collection not found in the kernel",
             )
+            raise PlannerCreatePlanError("Plugin collection not found in the kernel")
 
         excluded_plugins = self.config.excluded_plugins or []
         excluded_functions = self.config.excluded_functions or []

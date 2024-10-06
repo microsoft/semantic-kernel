@@ -206,7 +206,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Arrange.
         var storageObject = JsonSerializer.SerializeToNode(CreateModel(TestRecordKey1, false))!.AsObject();
 
-        var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "storage_data1", "data2", "key" } : new[] { "storage_data1", "Data2", "Key" };
+        var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "key", "storage_data1", "data2" } : new[] { "Key", "storage_data1", "Data2" };
         this._searchClientMock.Setup(
             x => x.GetDocumentAsync<MultiPropsModel>(
                 TestRecordKey1,
@@ -573,10 +573,10 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             new ReadOnlyMemory<float>(new float[4]),
             new()
             {
-                Limit = 5,
-                Offset = 3,
+                Top = 5,
+                Skip = 3,
                 Filter = filter,
-                VectorFieldName = nameof(MultiPropsModel.Vector1)
+                VectorPropertyName = nameof(MultiPropsModel.Vector1)
             },
             this._testCancellationToken).ToListAsync();
 
@@ -615,10 +615,10 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             "search string",
             new()
             {
-                Limit = 5,
-                Offset = 3,
+                Top = 5,
+                Skip = 3,
                 Filter = filter,
-                VectorFieldName = nameof(MultiPropsModel.Vector1)
+                VectorPropertyName = nameof(MultiPropsModel.Vector1)
             },
             this._testCancellationToken).ToListAsync();
 

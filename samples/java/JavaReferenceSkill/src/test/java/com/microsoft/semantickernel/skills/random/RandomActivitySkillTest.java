@@ -4,6 +4,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import io.grpc.stub.StreamObserver;
+import io.grpc.testing.GrpcServerRule;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import reference_skill.ActivityOuterClass;
+import reference_skill.RandomActivitySkillGrpc;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -24,6 +31,8 @@ import reference_skill.ActivityOuterClass.GetRandomActivityRequest;
 import reference_skill.ActivityOuterClass.GetRandomActivityResponse;
 
 // import reference_skill.RandomActivitySkillGrpc.RandomActivitySkillBlockingStub; // Remove the unused import statement
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class RandomActivitySkillTest {
 
@@ -31,6 +40,7 @@ public class RandomActivitySkillTest {
     public GrpcServerRule grpcServerRule = new GrpcServerRule().directExecutor();
 
     // Remove the unused field declaration
+    private RandomActivitySkillGrpc.RandomActivitySkillBlockingStub blockingStub;
 
     @Before
     public void setUp() {
@@ -47,6 +57,16 @@ public class RandomActivitySkillTest {
         CompletableFuture<HttpResponse<String>> responseFuture = CompletableFuture.completedFuture(httpResponse);
 
         extracted(httpClient, responseFuture);
+        blockingStub = RandomActivitySkillGrpc.newBlockingStub(grpcServerRule.getChannel());
+    }
+
+    @Test
+    public void testGetRandomActivity() throws Exception {
+        HttpClient httpClient = mock(HttpClient.class);
+        HttpResponse<String> httpResponse = mock(HttpResponse.class);
+        CompletableFuture<HttpResponse<String>> responseFuture = CompletableFuture.completedFuture(httpResponse);
+
+        when(httpClient.sendAsync(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(responseFuture);
         when(httpResponse.body()).thenReturn("{\"activity\":\"Test Activity\"}");
 
         RandomActivitySkill randomActivitySkill = new RandomActivitySkill() {
@@ -96,5 +116,13 @@ public class RandomActivitySkillTest {
                 .thenReturn(mockResponseFuture);
     
         // Your test logic here
+    }
+
+        ActivityOuterClass.GetRandomActivityRequest request = ActivityOuterClass.GetRandomActivityRequest.newBuilder().build();
+        StreamObserver<ActivityOuterClass.GetRandomActivityResponse> responseObserver = mock(StreamObserver.class);
+        randomActivitySkill.getRandomActivity(request, responseObserver);
+
+        verify(responseObserver).onNext(any(ActivityOuterClass.GetRandomActivityResponse.class));
+        verify(responseObserver).onCompleted();
     }
 }

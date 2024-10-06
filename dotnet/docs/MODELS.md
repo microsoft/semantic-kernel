@@ -7,7 +7,7 @@ This document describes the planned models to be supported by Semantic Kernel al
 In the core Semantic Kernel repo, we plan on supporting up to four deployment types of each model:
 
 - Dedicated API endpoints (e.g., OpenAI's APIs, Mistral.AI, and Google Gemini)
-- Azure AI deployments via the [model catalog](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/model-catalog)
+- Azure AI deployments via the [model catalog][aiCatalogLink]
 - Local deployments via [Ollama](https://ollama.ai/library)
 - Hugging face deployment using the [Hugging Face inference API](https://huggingface.co/docs/api-inference/index)
 
@@ -135,3 +135,5 @@ Please note that not all of the model interfaces are defined yet. As part of con
 | P2       | roberta-large                  | Not started | `IFillMask`          | Hugging Face    | TBD          | TBD       | TBD      |
 | P1       | stable-diffusion-xl-base-1.0   | Not started | `ITextToImage`       | Azure AI        | TBD          | TBD       | TBD      |
 | P1       | stable-diffusion-xl-base-1.0   | Not started | `ITextToImage`       | Hugging Face    | TBD          | TBD       | TBD      |
+
+[aiCatalogLink]: https://learn.microsoft.com/en-us/azure/ai-studio/how-to/model-catalog

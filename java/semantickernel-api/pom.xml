@@ -6,12 +6,16 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
+<<<<<<< main
 <<<<<<< AI
         <version>0.2.10-alpha-SNAPSHOT</version>
 =======
         <version>1.1.6-SNAPSHOT</version>
         <version>1.1.5-SNAPSHOT</version>
 >>>>>>> main
+=======
+        <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/dsgrieve/java-v1-api
         <relativePath>../pom.xml</relativePath>
     </parent>
 

@@ -40,6 +40,7 @@ prompt_template_config = PromptTemplateConfig(
         InputVariable(
             name="user_input",
             description="The history of the conversation",
+            description="The user input",
             is_required=True,
             default="",
         ),

@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/speculative/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-speculative"
+			],
+			"targetId" : "llama-speculative::@a868e3b191acfd0f7506",
+			"targetIndex" : 66,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/speculative",
+		"source" : "examples/speculative"
+	}
+}

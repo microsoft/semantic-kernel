@@ -2,12 +2,15 @@
 
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+<<<<<<< HEAD
 <<<<<<< main
 =======
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> ms/feature-error-handling
+=======
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 using RepoUtils;
 using Xunit;
 using Xunit.Abstractions;
@@ -41,6 +44,7 @@ public class Example43_GetModelResult : BaseTest
         WriteLine();
     }
 
+<<<<<<< HEAD
 <<<<<<< main
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)
     {
@@ -55,5 +59,9 @@ public class Example43_GetModelResult : BaseTest
             };
         }
 >>>>>>> ms/feature-error-handling
+=======
+    public Example43_GetModelResult(ITestOutputHelper output) : base(output)
+    {
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
     }
 }

@@ -437,18 +437,18 @@ public class VolatileVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
-            new VectorSearchOptions { IncludeVectors = true, Limit = 10, Offset = 10 },
+            new VectorSearchOptions { IncludeVectors = true, Top = 10, Skip = 10 },
             this._testCancellationToken).ToListAsync();
 
         // Assert
         Assert.NotNull(actual);
 
-        // Assert that limit was respected
+        // Assert that top was respected
         Assert.Equal(10, actual.Count);
         var actualIds = actual.Select(r => r.Record.Key).ToList();
         for (int i = 0; i < 10; i++)
         {
-            // Assert that offset was respected
+            // Assert that skip was respected
             Assert.Contains(i + 10, actualIds);
             if (i <= 4)
             {
@@ -511,7 +511,7 @@ public class VolatileVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 1, 1, 1]),
-            new VectorSearchOptions { IncludeVectors = true, VectorFieldName = "Vector" },
+            new VectorSearchOptions { IncludeVectors = true, VectorPropertyName = "Vector" },
             this._testCancellationToken).ToListAsync();
 
         // Assert

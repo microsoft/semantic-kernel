@@ -1,6 +1,10 @@
 [submodule "Singularity"]
 [submodule "Bryan-Roe"]
 [submodule "semantic-kernel"]
+<<<<<<< Updated upstream
+[submodule "semantic-kernel2"]
+[submodule "SK"]
+=======
 <<<<<<< main
 [submodule "semantic-kernel2"]
 [submodule "SK"]
@@ -12,3 +16,4 @@
 	url = https://Bryan-Roe@github.com/Bryan-Roe/SK.AI
 [submodule "tree-sitter-python"]
 >>>>>>> origin/PR
+>>>>>>> Stashed changes

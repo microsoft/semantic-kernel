@@ -48,7 +48,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Limit = 1 }).ToListAsync();
+        var searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 1 }).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Result: " + searchResult.First().Record.Definition);
@@ -57,7 +57,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         // Search the collection using a vector search.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Limit = 1 }).ToListAsync();
+        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 1 }).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Result: " + searchResult.First().Record.Definition);
@@ -67,7 +67,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
         var filter = new VectorSearchFilter().EqualTo(nameof(Glossary.Category), "External Definitions");
-        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Limit = 3, Filter = filter }).ToListAsync();
+        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 3, Filter = filter }).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Number of results: " + searchResult.Count);

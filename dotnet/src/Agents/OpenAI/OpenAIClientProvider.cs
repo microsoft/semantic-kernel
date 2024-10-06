@@ -79,7 +79,7 @@ public sealed class OpenAIClientProvider
     public static OpenAIClientProvider ForOpenAI(Uri? endpoint = null, HttpClient? httpClient = null)
     {
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);
-        return new(new OpenAIClient(SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
+        return new(new OpenAIClient(new ApiKeyCredential(SingleSpaceKey), clientOptions), CreateConfigurationKeys(endpoint, httpClient));
     }
 
     /// <summary>
@@ -111,7 +111,7 @@ public sealed class OpenAIClientProvider
     {
         AzureOpenAIClientOptions options = new()
         {
-            ApplicationId = HttpHeaderConstant.Values.UserAgent
+            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent
         };
 
         ConfigureClientOptions(httpClient, options);
@@ -123,7 +123,7 @@ public sealed class OpenAIClientProvider
     {
         OpenAIClientOptions options = new()
         {
-            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
             Endpoint = endpoint ?? httpClient?.BaseAddress,
         };
 

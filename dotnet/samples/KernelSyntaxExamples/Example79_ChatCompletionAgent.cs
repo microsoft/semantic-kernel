@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
@@ -11,16 +12,33 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Kusto.Cloud.Platform.Utils;
 using Microsoft.Extensions.DependencyInjection;
+=======
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Examples;
+using Kusto.Cloud.Platform.Utils;
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
+<<<<<<< HEAD
 using Pipelines.Sockets.Unofficial.Arenas;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Examples;
 
+=======
+using Xunit;
+using Xunit.Abstractions;
+
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 public class Example79_ChatCompletionAgent : BaseTest
 {
     /// <summary>
@@ -29,6 +47,7 @@ public class Example79_ChatCompletionAgent : BaseTest
     [Fact]
     public async Task ChatWithAgentAsync()
     {
+<<<<<<< HEAD
         var agent = new ChatCompletionAgent(
             kernel: this._kernel,
             name: "Financial Adviser",
@@ -60,6 +79,20 @@ public class Example79_ChatCompletionAgent : BaseTest
             instructions: "You act as a professional financial adviser. However, clients may not know the terminology, so please provide a simple explanation.",
             description: "Financial Adviser",
             executionSettings: new OpenAIPromptExecutionSettings
+=======
+        var kernel = Kernel.CreateBuilder()
+           .AddAzureOpenAIChatCompletion(
+               deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+               endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+               apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+               modelId: TestConfiguration.AzureOpenAI.ChatModelId)
+           .Build();
+
+        var agent = new ChatCompletionAgent(
+            kernel,
+            instructions: "You act as a professional financial adviser. However, clients may not know the terminology, so please provide a simple explanation.",
+            new OpenAIPromptExecutionSettings
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
             {
                 MaxTokens = 500,
                 Temperature = 0.7,
@@ -70,6 +103,7 @@ public class Example79_ChatCompletionAgent : BaseTest
          );
 
         var prompt = PrintPrompt("I need help with my investment portfolio. Please guide me.");
+<<<<<<< HEAD
         await PrintConversationAsync(agent.InvokeStreamingAsync(new[] { new ChatMessageContent(AuthorRole.User, prompt) }));
     }
 
@@ -120,6 +154,9 @@ public class Example79_ChatCompletionAgent : BaseTest
 
         var stressManagementExpertStreamResponse = stressManagementExpert.InvokeStreamingAsync(fitnessTrainerStreamResponse);
         await PrintConversationAsync(stressManagementExpertStreamResponse);
+=======
+        PrintConversation(await agent.InvokeAsync(new[] { new ChatMessageContent(AuthorRole.User, prompt) }));
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
     }
 
     /// <summary>
@@ -128,6 +165,17 @@ public class Example79_ChatCompletionAgent : BaseTest
     [Fact]
     public async Task TurnBasedAgentsChatAsync()
     {
+<<<<<<< HEAD
+=======
+        var kernel = Kernel.CreateBuilder()
+           .AddAzureOpenAIChatCompletion(
+               deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+               endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+               apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+               modelId: TestConfiguration.AzureOpenAI.ChatModelId)
+           .Build();
+
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
         var settings = new OpenAIPromptExecutionSettings
         {
             MaxTokens = 1500,
@@ -138,6 +186,7 @@ public class Example79_ChatCompletionAgent : BaseTest
         };
 
         var fitnessTrainer = new ChatCompletionAgent(
+<<<<<<< HEAD
             kernel: this._kernel,
             name: "Fitness Trainer",
             instructions:
@@ -162,18 +211,43 @@ public class Example79_ChatCompletionAgent : BaseTest
                 "Always include your role at the beginning of each response such as 'As a stress management expert.",
             description: "Stress Management Expert",
             executionSettings: settings
+=======
+           kernel,
+           instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners. " +
+           "You are not a stress management expert, so refrain from recommending stress management strategies. " +
+           "Collaborate with the stress management expert to create a holistic wellness plan." +
+           "Always incorporate stress reduction techniques provided by the stress management expert into the fitness plan." +
+           "Always include your role at the beginning of each response, such as 'As a fitness trainer.",
+           settings
+        );
+
+        var stressManagementExpert = new ChatCompletionAgent(
+            kernel,
+            instructions: "As a stress management expert, provide guidance on stress reduction strategies. " +
+            "Collaborate with the fitness trainer to create a simple and holistic wellness plan." +
+            "You are not a fitness expert; therefore, avoid recommending fitness exercises." +
+            "If the plan is not aligned with recommended stress reduction plan, ask the fitness trainer to rework it to incorporate recommended stress reduction techniques. " +
+            "Only you can stop the conversation by saying WELLNESS_PLAN_COMPLETE if suggested fitness plan is good." +
+            "Always include your role at the beginning of each response such as 'As a stress management expert.",
+            settings
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
          );
 
         var chat = new TurnBasedChat(new[] { fitnessTrainer, stressManagementExpert }, (chatHistory, replies, turn) =>
             turn >= 10 || // Limit the number of turns to 10    
             replies.Any(
                 message => message.Role == AuthorRole.Assistant &&
+<<<<<<< HEAD
                 message.Items.OfType<TextContent>().Any(c => c.Text!.Contains("WELLNESS_PLAN_COMPLETE", StringComparison.InvariantCulture)))); // Exit when the message "WELLNESS_PLAN_COMPLETE" received from agent  
+=======
+                message.Content!.Contains("WELLNESS_PLAN_COMPLETE", StringComparison.InvariantCulture))); // Exit when the message "WELLNESS_PLAN_COMPLETE" received from agent  
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 
         var prompt = "I need help creating a simple wellness plan for a beginner. Please guide me.";
         PrintConversation(await chat.SendMessageAsync(prompt));
     }
 
+<<<<<<< HEAD
     /// <summary>
     /// This example demonstrates the auto function invocation capability of the chat completion agent.
     /// </summary>
@@ -380,6 +454,8 @@ public class Example79_ChatCompletionAgent : BaseTest
         PrintConversation(await agent.InvokeAsync(new[] { new ChatMessageContent(AuthorRole.User, prompt) }));
     }
 
+=======
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
     private string PrintPrompt(string prompt)
     {
         this.WriteLine($"Prompt: {prompt}");
@@ -392,6 +468,7 @@ public class Example79_ChatCompletionAgent : BaseTest
         foreach (var message in messages)
         {
             this.WriteLine($"------------------------------- {message.Role} ------------------------------");
+<<<<<<< HEAD
 
             foreach (var etxContent in message.Items.OfType<TextContent>())
             {
@@ -410,11 +487,16 @@ public class Example79_ChatCompletionAgent : BaseTest
         await foreach (var content in messageContents)
         {
             this.Write(content.Content);
+=======
+            this.WriteLine(message.Content);
+            this.WriteLine();
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
         }
 
         this.WriteLine();
     }
 
+<<<<<<< HEAD
     /// <summary>
     /// The turn-based chat. For demonstration purposes only.
     /// </summary>
@@ -424,12 +506,25 @@ public class Example79_ChatCompletionAgent : BaseTest
         {
             this._agents = agents.ToArray();
             this._exitCondition = exitPredicate;
+=======
+    private sealed class TurnBasedChat
+    {
+        public TurnBasedChat(IEnumerable<ChatCompletionAgent> agents, Func<ChatHistory, IEnumerable<ChatMessageContent>, int, bool> exitCondition)
+        {
+            this._agents = agents.ToArray();
+            this._exitCondition = exitCondition;
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
         }
 
         public async Task<IReadOnlyList<ChatMessageContent>> SendMessageAsync(string message, CancellationToken cancellationToken = default)
         {
+<<<<<<< HEAD
             var chat = new List<ChatMessageContent>();
             chat.Add(new ChatMessageContent(AuthorRole.User, message));
+=======
+            var chat = new ChatHistory();
+            chat.AddUserMessage(message);
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 
             IReadOnlyList<ChatMessageContent> result = new List<ChatMessageContent>();
 
@@ -439,6 +534,7 @@ public class Example79_ChatCompletionAgent : BaseTest
             {
                 var agent = this._agents[turn % this._agents.Length];
 
+<<<<<<< HEAD
                 result = await agent.InvokeAsync(chat, cancellationToken: cancellationToken);
 
                 chat.AddRange(result);
@@ -480,6 +576,9 @@ public class Example79_ChatCompletionAgent : BaseTest
                 var agent = await this.GetAgentAsync(chat, cancellationToken);
 
                 result = await agent.InvokeAsync(chat, cancellationToken: cancellationToken);
+=======
+                result = await agent.InvokeAsync(chat, cancellationToken);
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 
                 chat.AddRange(result);
 
@@ -490,6 +589,7 @@ public class Example79_ChatCompletionAgent : BaseTest
             return chat;
         }
 
+<<<<<<< HEAD
         private async Task<KernelAgent> GetAgentAsync(List<ChatMessageContent> chat, CancellationToken cancellationToken)
         {
             var listOfAgentNames = string.Join(",", this._agents.Select(a => $"name - {a.Name}; description - {a.Description}"));
@@ -604,14 +704,22 @@ public class Example79_ChatCompletionAgent : BaseTest
         public string Name { get; set; }
 
         public byte Age { get; set; }
+=======
+        private readonly ChatCompletionAgent[] _agents;
+        private readonly Func<ChatHistory, IEnumerable<ChatMessageContent>, int, bool> _exitCondition;
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
     }
 
     public Example79_ChatCompletionAgent(ITestOutputHelper output) : base(output)
     {
+<<<<<<< HEAD
         this._kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion("gpt-4-1106-preview", TestConfiguration.OpenAI.ApiKey)
             .Build();
     }
 
     private readonly Kernel _kernel;
+=======
+    }
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 }

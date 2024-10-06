@@ -22,6 +22,7 @@ class FunctionInvokedEventArgs(KernelEventArgs):
 
     Args:
         kernel_function_metadata (FunctionView): The function that is being executed.
+        kernel_function_metadata (KernelFunctionMetadata): The function that is being executed.
         arguments (KernelArguments): The arguments that are being passed to the function.
         function_result (FunctionResult): The result of the function execution.
         exception (Optional: Exception): The exception that was raised during the function execution.

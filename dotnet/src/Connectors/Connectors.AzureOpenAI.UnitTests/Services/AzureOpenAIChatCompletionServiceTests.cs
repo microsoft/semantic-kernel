@@ -2,6 +2,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,6 +22,8 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using OpenAI.Chat;
+
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
@@ -83,7 +86,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public void ConstructorWithOpenAIClientWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var client = new AzureOpenAIClient(new Uri("http://host"), "key");
+        var client = new AzureOpenAIClient(new Uri("http://host"), new ApiKeyCredential("apikey"));
         var service = includeLoggerFactory ?
             new AzureOpenAIChatCompletionService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object) :
             new AzureOpenAIChatCompletionService("deployment", client, "model-id");
@@ -119,9 +122,9 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var usage = result[0].Metadata?["Usage"] as ChatTokenUsage;
 
         Assert.NotNull(usage);
-        Assert.Equal(55, usage.InputTokens);
-        Assert.Equal(100, usage.OutputTokens);
-        Assert.Equal(155, usage.TotalTokens);
+        Assert.Equal(55, usage.InputTokenCount);
+        Assert.Equal(100, usage.OutputTokenCount);
+        Assert.Equal(155, usage.TotalTokenCount);
     }
 
     [Fact]
@@ -141,12 +144,14 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             StopSequences = ["stop_sequence"],
             Logprobs = true,
             TopLogprobs = 5,
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             AzureChatDataSource = new AzureSearchChatDataSource()
             {
                 Endpoint = new Uri("http://test-search-endpoint"),
                 IndexName = "test-index-name",
                 Authentication = DataSourceAuthentication.FromApiKey("api-key"),
             }
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         };
 
         var chatHistory = new ChatHistory();
@@ -282,9 +287,9 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var usage = result[0].Metadata?["Usage"] as ChatTokenUsage;
 
         Assert.NotNull(usage);
-        Assert.Equal(55, usage.InputTokens);
-        Assert.Equal(100, usage.OutputTokens);
-        Assert.Equal(155, usage.TotalTokens);
+        Assert.Equal(55, usage.InputTokenCount);
+        Assert.Equal(100, usage.OutputTokenCount);
+        Assert.Equal(155, usage.TotalTokenCount);
 
         Assert.Equal("Stop", result[0].Metadata?["FinishReason"]);
     }
@@ -482,7 +487,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
         var update = (StreamingChatCompletionUpdate)message.InnerContent;
-        var promptResults = update.GetContentFilterResultForPrompt();
+        var promptResults = update.GetRequestContentFilterResult();
         Assert.Equal(ContentFilterSeverity.Safe, promptResults.Hate.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, promptResults.Sexual.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, promptResults.Violence.Severity);
@@ -504,7 +509,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
         update = (StreamingChatCompletionUpdate)message.InnerContent;
 
-        var filterResults = update.GetContentFilterResultForResponse();
+        var filterResults = update.GetResponseContentFilterResult();
         Assert.Equal(ContentFilterSeverity.Safe, filterResults.Hate.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, filterResults.Sexual.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, filterResults.SelfHarm.Severity);
@@ -515,7 +520,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
         update = (StreamingChatCompletionUpdate)message.InnerContent;
-        filterResults = update.GetContentFilterResultForResponse();
+        filterResults = update.GetResponseContentFilterResult();
         Assert.False(filterResults.ProtectedMaterialCode.Detected);
         Assert.False(filterResults.ProtectedMaterialText.Detected);
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -632,7 +637,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
         var update = (StreamingChatCompletionUpdate)message.InnerContent;
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var promptResults = update.GetContentFilterResultForPrompt();
+        var promptResults = update.GetRequestContentFilterResult();
         Assert.Equal(ContentFilterSeverity.Safe, promptResults.Hate.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, promptResults.Sexual.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, promptResults.Violence.Severity);
@@ -663,7 +668,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
         update = (StreamingChatCompletionUpdate)message.InnerContent;
 
-        var filterResults = update.GetContentFilterResultForResponse();
+        var filterResults = update.GetResponseContentFilterResult();
         Assert.Equal(ContentFilterSeverity.Safe, filterResults.Hate.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, filterResults.Sexual.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, filterResults.SelfHarm.Severity);
@@ -674,7 +679,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
         update = (StreamingChatCompletionUpdate)message.InnerContent;
-        filterResults = update.GetContentFilterResultForResponse();
+        filterResults = update.GetResponseContentFilterResult();
         Assert.False(filterResults.ProtectedMaterialCode.Detected);
         Assert.False(filterResults.ProtectedMaterialText.Detected);
 

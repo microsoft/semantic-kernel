@@ -306,8 +306,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         // Act
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
-            Limit = 2,
-            Offset = 2
+            Top = 2,
+            Skip = 2
         }).ToListAsync();
 
         // Assert
@@ -340,7 +340,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
             Filter = filter,
-            Limit = 4,
+            Top = 4,
         }).ToListAsync();
 
         // Assert
@@ -381,6 +381,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         string hotelId,
         string? hotelName = null,
         ReadOnlyMemory<float>? embedding = null)
+    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
     {
         // Arrange
@@ -427,6 +428,32 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
     }
+
+    public static TheoryData<VectorSearchFilter, List<string>> VectorizedSearchWithFilterData => new()
+    {
+        {
+            new VectorSearchFilter()
+                .EqualTo(nameof(AzureCosmosDBNoSQLHotel.HotelName), "My Hotel key2"),
+            ["key2"]
+        },
+        {
+            new VectorSearchFilter()
+                .AnyTagEqualTo(nameof(AzureCosmosDBNoSQLHotel.Tags), "t2"),
+            ["key1", "key2", "key3", "key4"]
+        },
+        {
+            new VectorSearchFilter()
+                .EqualTo(nameof(AzureCosmosDBNoSQLHotel.HotelName), "My Hotel key2")
+                .AnyTagEqualTo(nameof(AzureCosmosDBNoSQLHotel.Tags), "t2"),
+            ["key2"]
+        },
+        {
+            new VectorSearchFilter()
+                .EqualTo(nameof(AzureCosmosDBNoSQLHotel.HotelName), "non-existent-hotel")
+                .AnyTagEqualTo(nameof(AzureCosmosDBNoSQLHotel.Tags), "non-existent-tag"),
+            []
+        },
+    };
 
     #region private
 

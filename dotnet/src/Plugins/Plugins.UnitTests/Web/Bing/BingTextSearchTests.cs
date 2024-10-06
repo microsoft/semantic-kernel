@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -26,6 +27,20 @@ public sealed class BingTextSearchTests : IDisposable
     }
 
     [Fact]
+    public void AddBingTextSearchSucceeds()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder.AddBingTextSearch(apiKey: "ApiKey");
+        var kernel = builder.Build();
+
+        // Assert
+        Assert.IsType<BingTextSearch>(kernel.Services.GetRequiredService<ITextSearch>());
+    }
+
+    [Fact]
     public async Task SearchReturnsSuccessfullyAsync()
     {
         // Arrange
@@ -35,7 +50,7 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Count = 10, Offset = 0 });
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
 
         // Assert
         Assert.NotNull(result);
@@ -59,7 +74,7 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 10, Offset = 0 });
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
 
         // Assert
         Assert.NotNull(result);
@@ -85,7 +100,7 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 10, Offset = 0 });
+        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
 
         // Assert
         Assert.NotNull(result);
@@ -113,7 +128,7 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, StringMapper = new TestTextSearchStringMapper() });
 
         // Act
-        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Count = 10, Offset = 0 });
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
 
         // Assert
         Assert.NotNull(result);
@@ -139,7 +154,7 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, ResultMapper = new TestTextSearchResultMapper() });
 
         // Act
-        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Count = 10, Offset = 0 });
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
 
         // Assert
         Assert.NotNull(result);
@@ -191,7 +206,7 @@ public sealed class BingTextSearchTests : IDisposable
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
+        TextSearchOptions searchOptions = new() { Top = 4, Skip = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
         KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions);
 
         // Assert
@@ -206,7 +221,7 @@ public sealed class BingTextSearchTests : IDisposable
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
-        TextSearchOptions searchOptions = new() { Count = 4, Offset = 0, Filter = new TextSearchFilter().Equality("fooBar", "Baz") };
+        TextSearchOptions searchOptions = new() { Top = 4, Skip = 0, Filter = new TextSearchFilter().Equality("fooBar", "Baz") };
 
         // Create an ITextSearch instance using Bing search
         var textSearch = new BingTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });

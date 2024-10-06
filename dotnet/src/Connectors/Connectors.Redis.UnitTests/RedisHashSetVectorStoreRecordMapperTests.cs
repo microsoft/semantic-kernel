@@ -1,17 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-<<<<<<< HEAD
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 using Microsoft.SemanticKernel.Data;
-=======
 using System.Runtime.InteropServices;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Data;
 using StackExchange.Redis;
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 using Xunit;
 
 namespace SemanticKernel.Connectors.Redis.UnitTests;
@@ -25,11 +21,10 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
     public void MapsAllFieldsFromDataToStorageModel()
     {
         // Arrange.
-<<<<<<< HEAD
         var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, s_storagePropertyNames);
-=======
         var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(s_vectorStoreRecordDefinition, s_storagePropertyNames);
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+        var reader = new VectorStoreRecordPropertyReader(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, null);
+        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(reader);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
@@ -37,9 +32,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         // Assert.
         Assert.NotNull(actual.HashEntries);
         Assert.Equal("test key", actual.Key);
-<<<<<<< HEAD
         RedisHashSetVectorStoreMappingTestHelpers.VerifyHashSet(actual.HashEntries);
-=======
 
         Assert.Equal("storage_string_data", actual.HashEntries[0].Name.ToString());
         Assert.Equal("data 1", actual.HashEntries[0].Value.ToString());
@@ -91,24 +84,22 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 
         Assert.Equal("DoubleVector", actual.HashEntries[16].Name.ToString());
         Assert.Equal(new double[] { 5, 6, 7, 8 }, MemoryMarshal.Cast<byte, double>((byte[])actual.HashEntries[16].Value!).ToArray());
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
     }
 
     [Fact]
     public void MapsAllFieldsFromStorageToDataModel()
     {
         // Arrange.
-<<<<<<< HEAD
         var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, s_storagePropertyNames);
+        var reader = new VectorStoreRecordPropertyReader(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, null);
+        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(reader);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(("test key", RedisHashSetVectorStoreMappingTestHelpers.CreateHashSet()), new() { IncludeVectors = true });
-=======
         var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(s_vectorStoreRecordDefinition, s_storagePropertyNames);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(("test key", CreateHashSet()), new() { IncludeVectors = true });
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 
         // Assert.
         Assert.NotNull(actual);
@@ -159,8 +150,6 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         };
     }
 
-<<<<<<< HEAD
-=======
     private static HashEntry[] CreateHashSet()
     {
         var hashSet = new HashEntry[17];
@@ -184,7 +173,6 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         return hashSet;
     }
 
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
     private static readonly Dictionary<string, string> s_storagePropertyNames = new()
     {
         ["StringData"] = "storage_string_data",
@@ -206,8 +194,6 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         ["DoubleVector"] = "DoubleVector",
     };
 
-<<<<<<< HEAD
-=======
     private static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
     {
         Properties = new List<VectorStoreRecordProperty>()
@@ -233,13 +219,12 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         }
     };
 
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
     private sealed class AllTypesModel
     {
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(StoragePropertyName = "storage_string_data")]
         public string StringData { get; set; } = string.Empty;
 
         [VectorStoreRecordData]

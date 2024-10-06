@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.ClientModel;
 using System;
-// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Files;
 
@@ -224,11 +222,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         // Query and enumerate assistant definitions
         await foreach (var page in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = ListOrder.NewestFirst }, cancellationToken).ConfigureAwait(false))
         await foreach (PageResult<Assistant> page in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = ListOrder.NewestFirst }, cancellationToken).ConfigureAwait(false))
+        await foreach (Assistant model in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = AssistantCollectionOrder.Descending }, cancellationToken).ConfigureAwait(false))
         {
-            foreach (Assistant model in page.Values)
-            {
-                yield return CreateAssistantDefinition(model);
-            }
+            yield return CreateAssistantDefinition(model);
         }
     }
 
@@ -313,7 +309,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         // Validate input
         Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
 
-        return await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+        ThreadDeletionResult result = await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+
+        return result.Deleted;
     }
 
     /// <summary>
@@ -324,13 +322,13 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The file identifier</returns>
     /// <remarks>
-    /// Use the <see cref="FileClient"/> directly for more advanced file operations.
+    /// Use the <see cref="OpenAIFileClient"/> directly for more advanced file operations.
     /// </remarks>
     public async Task<string> UploadFileAsync(Stream stream, string name, CancellationToken cancellationToken = default)
     {
-        FileClient client = this._provider.Client.GetFileClient();
+        OpenAIFileClient client = this._provider.Client.GetOpenAIFileClient();
 
-        OpenAIFileInfo fileInfo = await client.UploadFileAsync(stream, name, FileUploadPurpose.Assistants, cancellationToken).ConfigureAwait(false);
+        OpenAIFile fileInfo = await client.UploadFileAsync(stream, name, FileUploadPurpose.Assistants, cancellationToken).ConfigureAwait(false);
 
         return fileInfo.Id;
     }
@@ -373,7 +371,8 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     {
         if (!this.IsDeleted)
         {
-            this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value;
+            AssistantDeletionResult result = await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false);
+            this.IsDeleted = result.Deleted;
         }
 
         return this.IsDeleted;
@@ -395,7 +394,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         KernelArguments? arguments = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-            => this.InvokeAsync(threadId, options: null, arguments, kernel, cancellationToken);
+        => this.InvokeAsync(threadId, options: null, arguments, kernel, cancellationToken);
 
     /// <summary>
     /// Invoke the assistant on the specified thread.
@@ -438,7 +437,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.ThrowIfDeleted();
 
         kernel ??= this.Kernel;
-        arguments ??= this.Arguments;
+        arguments = this.MergeArguments(arguments);
 
         await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
         {
@@ -467,7 +466,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         Kernel? kernel = null,
         ChatHistory? messages = null,
         CancellationToken cancellationToken = default)
-            => this.InvokeStreamingAsync(threadId, options: null, arguments, kernel, messages, cancellationToken);
+        => this.InvokeStreamingAsync(threadId, options: null, arguments, kernel, messages, cancellationToken);
 
     /// <summary>
     /// Invoke the assistant on the specified thread with streaming response.
@@ -493,7 +492,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.ThrowIfDeleted();
 
         kernel ??= this.Kernel;
-        arguments ??= this.Arguments;
+        arguments = this.MergeArguments(arguments);
 
         return AssistantThreadActions.InvokeStreamingAsync(this, this._client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
     }

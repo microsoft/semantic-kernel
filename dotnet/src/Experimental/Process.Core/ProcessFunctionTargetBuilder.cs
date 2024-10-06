@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides functionality for incrementally defining a process function target.
 /// </summary>
-public sealed class ProcessFunctionTargetBuilder
+public sealed record ProcessFunctionTargetBuilder
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessFunctionTargetBuilder"/> class.
@@ -41,7 +41,7 @@ public sealed class ProcessFunctionTargetBuilder
     internal KernelProcessFunctionTarget Build()
     {
         Verify.NotNull(this.Step.Id);
-        return new KernelProcessFunctionTarget(this.Step.Id, this.FunctionName, this.ParameterName);
+        return new KernelProcessFunctionTarget(this.Step.Id, this.FunctionName, this.ParameterName, this.TargetEventId);
     }
 
     /// <summary>
@@ -58,4 +58,9 @@ public sealed class ProcessFunctionTargetBuilder
     /// The name of the parameter to target. This may be null if the function has no parameters.
     /// </summary>
     public string? ParameterName { get; init; }
+
+    /// <summary>
+    /// The unique identifier for the event to target. This may be null if the target is not a sub-process.
+    /// </summary>
+    public string? TargetEventId { get; init; }
 }

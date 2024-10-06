@@ -15,6 +15,8 @@ using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTest

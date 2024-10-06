@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 /** OpenAI Chat content */
 public final class OpenAIChatHistory extends ChatHistory {
+public class OpenAIChatHistory extends ChatHistory {
 
     /**
      * Create a new and empty chat history

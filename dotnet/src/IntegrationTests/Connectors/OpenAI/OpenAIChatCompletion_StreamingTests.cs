@@ -72,7 +72,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         Assert.Contains("I don't know", stringBuilder.ToString());
         Assert.NotNull(metadata);
 
-        Assert.True(metadata.TryGetValue("Id", out object? id));
+        Assert.True(metadata.TryGetValue("CompletionId", out object? id));
         Assert.NotNull(id);
 
         Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));
@@ -136,7 +136,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         // Assert
         Assert.NotNull(metadata);
 
-        Assert.True(metadata.TryGetValue("Id", out object? id));
+        Assert.True(metadata.TryGetValue("CompletionId", out object? id));
         Assert.NotNull(id);
 
         Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));
