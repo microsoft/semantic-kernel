@@ -1,8 +1,0 @@
-fastapi
-uvicorn
-pydantic
-bert_score
-nltk
-evaluate
-cmake
-unbabel-comet

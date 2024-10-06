@@ -1,5 +1,0 @@
-name: getSeattleTime
-description: Gets the time in Seattle.
-template: |
-  <message role="user">Can you help me tell the time in Seattle right now?</message>
-template_format: semantic-kernel

@@ -1,6 +1,0 @@
-Original request: {{$goal}}
-
-You are in the process of helping the user fulfill this request using the following plan:
-{{$initial_plan}}
-
-The user will ask you for help with each step.
