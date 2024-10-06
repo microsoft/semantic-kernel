@@ -49,10 +49,16 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
             await OpenAIAssistantAgent.CreateAsync(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 definition: new(this.Model)
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -64,6 +70,12 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
                 definition: new OpenAIAssistantDefinition(this.Model)
 >>>>>>> main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -73,8 +85,14 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
                     Metadata = AssistantSampleMetadata,
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -84,6 +102,12 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
                 kernel: new Kernel());
 >>>>>>> main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

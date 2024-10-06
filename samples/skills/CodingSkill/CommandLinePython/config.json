@@ -1,10 +1,20 @@
 {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
   "type": "completion",
   "completion": {
+=======
+  "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
   "default_settings": {
@@ -27,7 +37,13 @@
   ]
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -36,6 +52,12 @@
   }
 >>>>>>> origin/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

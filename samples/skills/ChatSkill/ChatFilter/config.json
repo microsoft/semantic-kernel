@@ -1,10 +1,20 @@
 {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "Given a chat message decide whether to block it",
   "type": "completion",
   "completion": {
+=======
+  "description": "Given a chat message decide whether to block it",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a chat message decide whether to block it",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "Given a chat message decide whether to block it",
   "default_settings": {
@@ -27,7 +37,13 @@
   ]
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -36,6 +52,12 @@
   }
 >>>>>>> origin/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

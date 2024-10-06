@@ -22,8 +22,14 @@ public sealed class WeaviateVectorStoreRecordMapperTests
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -37,6 +43,12 @@ public sealed class WeaviateVectorStoreRecordMapperTests
         }
 >>>>>>> main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

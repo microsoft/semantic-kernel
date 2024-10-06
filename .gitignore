@@ -1,8 +1,3 @@
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
 output/
 venv/
 temp/
@@ -20,10 +15,6 @@ temp/
 testrun/*
 .~lock*
 *.pkl
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 dotnet/.config
 
 ## Ignore Visual Studio temporary files, build results, and
@@ -685,18 +676,18 @@ swa-cli.config.json
 
 # python devcontainer
 /python/.devcontainer/*
-<<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
 <<<<<<< main
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
-<<<<<<< main
-=======
->>>>>>> origin/main
 >>>>>>> Stashed changes
 
 .env*
@@ -705,16 +696,20 @@ swa-cli.config.json
 !.env.vault
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+.jython_cache/
+/SK.AI/**
 =======
-<<<<<<< main
->>>>>>> Stashed changes
 =======
-<<<<<<< main
 >>>>>>> Stashed changes
+<<<<<<< main
 .jython_cache/
 =======
 /SK.AI/**
 >>>>>>> origin/PR
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 !/dotnet/.SK-dotnet.sln.icloud
 
 !/dotnet/.SK-dotnet.sln.icloud
@@ -724,6 +719,9 @@ swa-cli.config.json
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 /java/PACKAGES.md
+/dotnet/src/Experimental/Assistants/Internal/ChatRun.cs
+/dotnet/src/Experimental/Assistants/Internal/ChatRun.cs
+/dotnet/src/Experimental/Assistants/Internal/**
 =======
 =======
 >>>>>>> origin/main

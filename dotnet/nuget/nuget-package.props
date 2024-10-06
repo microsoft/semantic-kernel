@@ -3,6 +3,14 @@
     <!-- Central version prefix - applies to all nuget packages. -->
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -17,6 +25,18 @@
 >>>>>>> ms/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+    <VersionPrefix>1.21.1</VersionPrefix>
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
+=======
+    <VersionPrefix>1.21.1</VersionPrefix>
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 =======
     <VersionPrefix>1.21.1</VersionPrefix>
@@ -36,8 +56,14 @@
     <!-- Package validation. Baseline Version should be lower or equal to current version. -->
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <PackageValidationBaselineVersion>1.16.2</PackageValidationBaselineVersion>
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -46,6 +72,12 @@
     <PackageValidationBaselineVersion>1.21.1</PackageValidationBaselineVersion>
 >>>>>>> origin/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

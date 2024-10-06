@@ -1,10 +1,20 @@
 {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "A chat bot that plays a persona or role",
   "type": "completion",
   "completion": {
+=======
+  "description": "A chat bot that plays a persona or role",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "A chat bot that plays a persona or role",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "A chat bot that plays a persona or role",
   "default_settings": {
@@ -28,7 +38,13 @@
   ]
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -37,6 +53,12 @@
   }
 >>>>>>> origin/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

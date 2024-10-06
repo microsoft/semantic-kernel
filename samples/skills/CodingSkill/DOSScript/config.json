@@ -1,10 +1,20 @@
 {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "Turns your intent into a SAFE DOS batch script",
   "type": "completion",
   "completion": {
+=======
+  "description": "Turns your intent into a SAFE DOS batch script",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Turns your intent into a SAFE DOS batch script",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "Turns your intent into a SAFE DOS batch script",
   "default_settings": {
@@ -29,7 +39,13 @@
   ]
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -38,6 +54,12 @@
   }
 >>>>>>> origin/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

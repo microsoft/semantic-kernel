@@ -9,8 +9,14 @@ In the core Semantic Kernel repo, we plan on supporting up to four deployment ty
 - Dedicated API endpoints (e.g., OpenAI's APIs, Mistral.AI, and Google Gemini)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 - Azure AI deployments via the [model catalog](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/model-catalog)
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -19,6 +25,12 @@ In the core Semantic Kernel repo, we plan on supporting up to four deployment ty
 - Azure AI deployments via the [model catalog][aiCatalogLink]
 >>>>>>> main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -151,7 +163,13 @@ Please note that not all of the model interfaces are defined yet. As part of con
 | P1       | stable-diffusion-xl-base-1.0   | Not started | `ITextToImage`       | Hugging Face    | TBD          | TBD       | TBD      |
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -160,6 +178,12 @@ Please note that not all of the model interfaces are defined yet. As part of con
 [aiCatalogLink]: https://learn.microsoft.com/en-us/azure/ai-studio/how-to/model-catalog
 >>>>>>> main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

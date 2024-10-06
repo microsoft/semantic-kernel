@@ -40,7 +40,13 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
     ) -> "AzureStreamingChatMessageContent":
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -48,6 +54,12 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
     def __add__(self, other: "AzureStreamingChatMessageContent") -> "AzureStreamingChatMessageContent":
 >>>>>>> main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -80,7 +92,13 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
         )
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -95,6 +113,12 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
         fc = (self.function_call + other.function_call) if self.function_call else other.function_call
 >>>>>>> main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

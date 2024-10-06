@@ -1,10 +1,20 @@
 {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "type": "completion",
   "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
   "completion": {
+=======
+  "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
   "default_settings": {
@@ -27,7 +37,13 @@
   ]
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -36,6 +52,12 @@
   }
 >>>>>>> origin/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
