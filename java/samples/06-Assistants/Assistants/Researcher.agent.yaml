@@ -1,0 +1,7 @@
+name: Researcher
+template: |
+  You are a researcher that searchers the web for information.
+template_format: handlebars
+description: An assistant that generates images.
+execution_settings:
+  - model_id_pattern: ^gpt-4

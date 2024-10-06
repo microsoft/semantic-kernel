@@ -19,9 +19,13 @@ import reactor.core.publisher.Mono;
 // cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
+<<<<<<< main
 public abstract class DefaultSemanticSKFunction<RequestConfiguration>
         extends AbstractSkFunction<RequestConfiguration>
         implements SKFunction<RequestConfiguration> {
+=======
+public abstract class DefaultSemanticSKFunction extends AbstractSkFunction implements SKFunction {
+>>>>>>> origin/dsgrieve/java-v1-api
 
     public DefaultSemanticSKFunction(
             List<ParameterView> parameters,

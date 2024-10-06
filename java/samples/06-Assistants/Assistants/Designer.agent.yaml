@@ -1,0 +1,18 @@
+name: ImageDesigner
+template: |
+  ## Who you are
+  You are a designer that creates images.
+
+  ## Instructions
+  Generate an image for the request. Make sure you follow these guidelines:
+  - Style: {{style}}
+  - Color pallet: {{colorPallet}}
+template_format: handlebars
+description: An assistant that generates images.
+input_variables:
+  - name: style
+    description: The style of the image to generate
+  - name: colorPallet
+    description: The color pallet of the image to generate
+execution_settings:
+  - model_id_pattern: ^gpt-4

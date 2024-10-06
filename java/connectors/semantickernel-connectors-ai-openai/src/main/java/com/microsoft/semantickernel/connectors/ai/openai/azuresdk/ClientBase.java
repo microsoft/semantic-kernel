@@ -13,7 +13,7 @@ public abstract class ClientBase {
         this.client = client;
     }
 
-    protected String getModelId() {
+    public String getModelId() {
         return modelId;
     }
 

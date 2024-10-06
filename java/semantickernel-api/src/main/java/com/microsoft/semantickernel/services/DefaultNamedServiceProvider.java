@@ -7,7 +7,10 @@ import java.util.Map;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
-/** Default implementation of {@link NamedServiceProvider} */
+/** 
+ * Default implementation of {@link NamedServiceProvider} 
+ * @deprecated Use {@code com.microsoft.semantickernel.aiservices.DefaultNamedServiceProvider} instead
+ */
 public class DefaultNamedServiceProvider<T> implements NamedServiceProvider<T> {
 
     // A dictionary that maps a service type to a nested dictionary of names and service instances

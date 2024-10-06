@@ -6,8 +6,12 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
+<<<<<<< main
     <version>1.1.6-SNAPSHOT</version>
     <parent></parent>
+=======
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/dsgrieve/java-v1-api
     <packaging>pom</packaging>
 
     <url>https://www.github.com/microsoft/semantic-kernel</url>
@@ -76,6 +80,13 @@
         <module>connectors/semantickernel-connectors-memory-mysql</module>
 
         <module>extensions/semantickernel-planners</module>
+<<<<<<< main
+=======
+        <module>extensions/aiservices-azureopenai</module>
+        <module>extensions/aiservices-huggingface</module>
+        <module>extensions/aiservices-ollama</module>
+        <module>extensions/aiservices-openai</module>
+>>>>>>> origin/dsgrieve/java-v1-api
         <module>extensions/semantickernel-gpt3-tokenizer</module>
         <module>extensions/semantickernel-settings-loader</module>
 
@@ -737,7 +748,11 @@
             <id>with-samples</id>
             <modules>
                 <module>samples</module>
+<<<<<<< main
                 <module>api-test</module>
+=======
+<!--                <module>api-test</module>-->
+>>>>>>> origin/dsgrieve/java-v1-api
             </modules>
         </profile>
         <profile>

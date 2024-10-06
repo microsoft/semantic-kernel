@@ -46,7 +46,11 @@ import reactor.core.scheduler.Schedulers;
 // cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
+<<<<<<< main
 public class NativeSKFunction extends AbstractSkFunction<Void> {
+=======
+public class NativeSKFunction extends AbstractSkFunction {
+>>>>>>> origin/dsgrieve/java-v1-api
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NativeSKFunction.class);
 

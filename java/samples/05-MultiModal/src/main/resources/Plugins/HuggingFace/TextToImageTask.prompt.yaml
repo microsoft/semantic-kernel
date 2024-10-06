@@ -1,0 +1,13 @@
+name: TextToImageTask
+template: |
+  <message role="user">
+  Astronaut riding a horse.
+  </message>
+template_format: handlebars
+description: A function that asks a model to create an image.
+input_variables:
+output_variable:
+    type: Image
+    description: The generated image.
+execution_settings:
+  - model_id_pattern: ^runwayml/stable-diffusion-v1-5

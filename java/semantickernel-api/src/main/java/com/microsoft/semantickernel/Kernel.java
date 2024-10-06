@@ -1,6 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+<<<<<<< main
+=======
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
+import com.microsoft.semantickernel.aiservices.AIService;
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
+>>>>>>> origin/dsgrieve/java-v1-api
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 <<<<<<< main
 import com.microsoft.semantickernel.memory.MemoryStore;
@@ -10,6 +22,7 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 <<<<<<< AI
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
+<<<<<<< main
 =======
 <<<<<<< HEAD
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
@@ -58,6 +71,24 @@ public class Kernel {
 
     @Nullable
     private final Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider;
+=======
+import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
+import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
+import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+
+import reactor.core.publisher.Mono;
+
+/** Interface for the semantic kernel. */
+public interface Kernel extends SkillExecutor, Buildable {
+
+    /**
+     * Settings required to execute functions, including details about AI dependencies, e.g.
+     * endpoints and API keys.
+     */
+    @Deprecated
+    default KernelConfig getConfig() { throw new UnsupportedOperationException(); }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * Initializes a new instance of {@code Kernel}.
@@ -70,6 +101,7 @@ public class Kernel {
      * @param globalKernelHooks       The global hooks to be used throughout the kernel. If
      *                                {@code null}, an empty collection will be used.
      */
+<<<<<<< main
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public Kernel(
         AIServiceCollection services,
@@ -96,15 +128,24 @@ public class Kernel {
 
         this.globalKernelHooks = new KernelHooks(globalKernelHooks);
     }
+=======
+    @Deprecated
+    default PromptTemplateEngine getPromptTemplateEngine() { throw new UnsupportedOperationException(); }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * Get the fluent builder for creating a new instance of {@code Kernel}.
      *
      * @return The fluent builder for creating a new instance of {@code Kernel}.
      */
+<<<<<<< main
     public static Builder builder() {
         return new Kernel.Builder();
     }
+=======
+    @Deprecated
+    default SemanticTextMemory getMemory() { throw new UnsupportedOperationException(); }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * Creates a Builder that can create a copy of the {@code Kernel}. Use this method if you wish
@@ -113,12 +154,17 @@ public class Kernel {
      * @param kernel The kernel to copy.
      * @return A Builder that can create a copy of the instance of {@code Kernel}.
      */
+<<<<<<< main
     public static Builder from(Kernel kernel) {
         return new Builder(
             kernel.services,
             kernel.serviceSelectorProvider,
             kernel.plugins);
     }
+=======
+    @Deprecated
+    default Mono<KernelResult> runAsync(SKFunction... pipeline) { throw new UnsupportedOperationException(); }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * Creates a Builder that can create a copy of the current instance of {@code Kernel}. Use this
@@ -126,9 +172,14 @@ public class Kernel {
      *
      * @return A Builder that can create a copy of the current instance of {@code Kernel}.
      */
+<<<<<<< main
     public Builder toBuilder() {
         return new Builder(services, serviceSelectorProvider, plugins);
     }
+=======
+    @Deprecated
+    default Mono<KernelResult> runAsync(String input, SKFunction... pipeline) { throw new UnsupportedOperationException(); }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * Invokes a {@code KernelFunction} function by name.
@@ -183,9 +234,16 @@ public class Kernel {
      * @return The result of the prompt invocation.
      * @see KernelFunction#invokeAsync(Kernel)
      */
+<<<<<<< main
     public <T> FunctionInvocation<T> invokePromptAsync(@Nonnull String prompt) {
         return invokeAsync(KernelFunction.<T>createFromPrompt(prompt).build());
     }
+=======
+    @Deprecated
+    default CompletionSKFunction registerSemanticFunction(
+            String skillName, String functionName, SemanticFunctionConfig functionConfig)
+        { throw new UnsupportedOperationException(); }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
 <<<<<<< AI
@@ -205,6 +263,7 @@ public class Kernel {
      * @see KernelFunction#invokeAsync(Kernel)
 >>>>>>> origin/main-auto-tune
      */
+<<<<<<< main
     public <T> FunctionInvocation<T> invokeAsync(KernelFunction<T> function) {
         return function.invokeAsync(this);
     }
@@ -220,6 +279,15 @@ public class Kernel {
     public <T> FunctionResult<T> invoke(KernelFunction<T> function) {
         return invokeAsync(function).block();
     }
+=======
+    @Deprecated
+    default CompletionSKFunction.Builder getSemanticFunctionBuilder() { throw new UnsupportedOperationException(); }
+
+    /** Obtains the service with the given name and type */
+    @Deprecated
+    default <T extends AIService> T getService(@Nullable String name, Class<T> clazz)
+            throws KernelException { throw new UnsupportedOperationException(); }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * Gets the plugin with the specified name.
@@ -227,10 +295,16 @@ public class Kernel {
      * @param pluginName The name of the plugin to get.
      * @return The plugin with the specified name, or {@code null} if no such plugin exists.
      */
+<<<<<<< main
     @Nullable
     public KernelPlugin getPlugin(String pluginName) {
         return plugins.getPlugin(pluginName);
     }
+=======
+    @Deprecated
+    default <FunctionType extends SKFunction> FunctionType registerSemanticFunction(
+            FunctionType semanticFunctionDefinition) { throw new UnsupportedOperationException(); }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * Gets the plugins that were added to the kernel.
@@ -238,9 +312,14 @@ public class Kernel {
      * @return The plugins available through the kernel (unmodifiable list).
      * @see Kernel#getPlugins()
      */
+<<<<<<< main
     public Collection<KernelPlugin> getPlugins() {
         return Collections.unmodifiableCollection(plugins.getPlugins());
     }
+=======
+    @Deprecated
+    default SKFunction getFunction(String skill, String function) { throw new UnsupportedOperationException(); }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * Gets the function with the specified name from the plugin with the specified name.
@@ -257,6 +336,7 @@ public class Kernel {
         return (KernelFunction<T>) plugins.getFunction(pluginName, functionName);
     }
 
+<<<<<<< main
     /**
      * Gets the functions available through the kernel. Functions are collected from all plugins
      * available through the kernel.
@@ -281,6 +361,13 @@ public class Kernel {
     public KernelHooks getGlobalKernelHooks() {
         return globalKernelHooks;
     }
+=======
+    @Deprecated
+    default ReadOnlySkillCollection getSkills() { throw new UnsupportedOperationException(); }
+
+    @Deprecated
+    default ReadOnlyFunctionCollection getSkill() { throw new UnsupportedOperationException(); }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * Get the AIServiceSelector used to query for services available through the kernel.

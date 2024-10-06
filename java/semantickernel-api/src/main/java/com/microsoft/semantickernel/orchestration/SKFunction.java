@@ -1,11 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+<<<<<<< main
+=======
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.Kernel;
+>>>>>>> origin/dsgrieve/java-v1-api
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-import javax.annotation.CheckReturnValue;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Mono;
 
 /**
@@ -32,7 +38,14 @@ public interface SKFunction<RequestConfiguration> {
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
+<<<<<<< main
     Mono<SKContext> invokeAsync(String input, SKContext context, RequestConfiguration settings);
+=======
+    @Deprecated
+    default Mono<SKContext> invokeAsync(String input, SKContext context, Object settings) {
+        throw new UnsupportedOperationException("Deprecated");
+    }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * Invokes the function
@@ -65,9 +78,38 @@ public interface SKFunction<RequestConfiguration> {
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
+<<<<<<< main
     Mono<SKContext> invokeAsync(SKContext context);
 
     /**
+=======
+    @Deprecated
+    default Mono<SKContext> invokeAsync(SKContext context) {
+        throw new UnsupportedOperationException("Deprecated");
+    }
+
+    /**
+     * The type of the configuration argument that will be provided when the function is invoked
+     *
+     * @return The type @Nullable Class<RequestConfiguration> getType();
+     */
+
+    /**
+     * Invokes the function with the given context and settings
+     *
+     * @param kernel Associated Kernel
+     * @param variables Request variables
+     * @param streaming Whether streaming is on or not
+     * @return an updated context with the result of the request
+     */
+    @CheckReturnValue
+    default Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables variables, boolean streaming) {
+        throw new UnsupportedOperationException("Deprecated");
+    }
+
+
+    /**
+>>>>>>> origin/dsgrieve/java-v1-api
      * Invokes the function with the given context and settings
      *
      * @param context Request context
@@ -75,7 +117,14 @@ public interface SKFunction<RequestConfiguration> {
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
+<<<<<<< main
     Mono<SKContext> invokeAsync(SKContext context, @Nullable RequestConfiguration settings);
+=======
+    @Deprecated
+    default Mono<SKContext> invokeAsync(SKContext context, @Nullable Object settings) {
+        throw new UnsupportedOperationException("Deprecated");
+    }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * @return The name of the skill that this function is within
@@ -128,6 +177,11 @@ public interface SKFunction<RequestConfiguration> {
     String toManualString();
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 >>>>>>> main
+
+    @Deprecated
+    default Class<?> getType() {
+        throw new UnsupportedOperationException("Deprecated");
+    }
 
     /**
      * Invokes the function with the given input, context and settings

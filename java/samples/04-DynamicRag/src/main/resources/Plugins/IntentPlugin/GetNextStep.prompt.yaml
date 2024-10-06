@@ -1,0 +1,119 @@
+name: GetNextStep
+template: |
+  {{#message role="system"}}
+  ## Instructions
+  You will now return a single key that represents the action you will perform next.
+
+  ## Rules
+  - You should return the action that you will perform next to satisfy the user's request.
+  - The valid actions are: PerformMath, AskClarifyingMathQuestion, Other
+  - Use PerformMath if you have all the information you need to solve a math problem.
+  - If the bot is unsure if it needs more details to fully answer a math question, it should return AskClarifyingMathQuestion.
+  - If the request has nothing to do with math, return Other.
+  - Do not provide any other information in this response besides the action name.
+  - Do not add any punctuation to the end of the response.
+  {{/message}}
+
+
+  {{#message role="system"}}
+  ### Examples 1
+  {{/message}}
+
+  {{#message role="user"}}
+  Can you help me count my animals?
+  {{/message}}
+
+  {{#message role="system"}}
+  Provide action
+  {{/message}}
+
+  {{#message role="assistant"}}
+  AskClarifyingMathQuestion
+  {{/message}}
+  
+
+  {{#message role="system"}}
+  ### Examples 2
+  {{/message}}
+
+  {{#message role="user"}}
+  What is 2 plus 2?
+  {{/message}}
+
+  {{#message role="system"}}
+  Provide action
+  {{/message}}
+
+  {{#message role="assistant"}}
+  PerformMath
+  {{/message}}
+
+
+  {{#message role="system"}}
+  ### Examples 3
+  {{/message}}
+
+  {{#message role="user"}}
+  How many eggs would I have if I had 2 and then doubled them?
+  {{/message}}
+
+  {{#message role="assistant"}}
+  You would have 4 eggs.
+  {{/message}}
+
+  {{#message role="user"}}
+  What if I had tripled them or quadrupled them instead?
+  {{/message}}
+
+  {{#message role="system"}}
+  Provide action
+  {{/message}}
+
+  {{#message role="assistant"}}
+  PerformMath
+  {{/message}}
+
+  {{#message role="system"}}
+  ### Examples 3
+  {{/message}}
+
+  {{#message role="user"}}
+  Can you tell me a story
+  {{/message}}
+
+  {{#message role="system"}}
+  Provide action
+  {{/message}}
+
+  {{#message role="assistant"}}
+  Other
+  {{/message}}
+
+  {{#message role="system"}}
+  ## Actual Response
+  {{/message}}
+
+  {{#each messages}}
+    {{#message role=Role}}
+    {{~Content~}}
+    {{/message}}
+  {{/each}}
+
+  {{#message role="system"}}
+  Provide action
+  {{/message}}
+
+
+template_format: handlebars
+description: A function that determines the next action the assistant should take.
+input_variables:
+  - name: messages
+    type: ChatHistory
+    description: The history of the chat.
+    is_required: true
+output_variable:
+    type: string
+    description: The action the assistant should take.
+execution_settings:
+  - model_id_pattern: ^gpt-3\.?5-turbo
+    temperature: 0.3

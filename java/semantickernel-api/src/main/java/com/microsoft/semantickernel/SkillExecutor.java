@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-import java.util.Map;
-import javax.annotation.Nullable;
 
 public interface SkillExecutor {
 
@@ -18,9 +20,12 @@ public interface SkillExecutor {
      * @return the function collection
      * @throws SkillsNotFoundException if the skill is not found
      */
-    ReadOnlyFunctionCollection importSkill(
+    @Deprecated
+    default ReadOnlyFunctionCollection importSkill(
             String skillName, Map<String, SemanticFunctionConfig> skills)
-            throws SkillsNotFoundException;
+            throws SkillsNotFoundException { 
+                throw new UnsupportedOperationException("Deprecated"); 
+        }
 
     /**
      * Get function collection with the skill name
@@ -29,7 +34,10 @@ public interface SkillExecutor {
      * @return the function collection
      * @throws SkillsNotFoundException if the skill is not found
      */
-    ReadOnlyFunctionCollection getSkill(String skillName) throws SkillsNotFoundException;
+    @Deprecated
+    default ReadOnlyFunctionCollection getSkill(String skillName) throws SkillsNotFoundException { 
+                throw new UnsupportedOperationException("Deprecated"); 
+        }
 
     /**
      * Imports the native functions annotated on the given object as a skill.
@@ -37,11 +45,17 @@ public interface SkillExecutor {
      * @param skillName name of the skill
      * @return the function collection
      */
-    ReadOnlyFunctionCollection importSkillFromDirectory(
-            String skillName, String parentDirectory, String skillDirectoryName);
+    @Deprecated
+    default ReadOnlyFunctionCollection importSkillFromDirectory(
+            String skillName, String parentDirectory, String skillDirectoryName) { 
+                throw new UnsupportedOperationException("Deprecated"); 
+        }
 
     /** Imports the native functions annotated on the given object as a skill. */
-    void importSkillsFromDirectory(String parentDirectory, String... skillNames);
+    @Deprecated
+    default void importSkillsFromDirectory(String parentDirectory, String... skillNames) { 
+                throw new UnsupportedOperationException("Deprecated"); 
+        }
 
     /**
      * Imports the native functions annotated on the given object as a skill. Assumes that the
@@ -51,7 +65,10 @@ public interface SkillExecutor {
      * @param parentDirectory directory that contains the skill
      * @return the function collection
      */
-    ReadOnlyFunctionCollection importSkillFromDirectory(String skillName, String parentDirectory);
+    @Deprecated
+    default ReadOnlyFunctionCollection importSkillFromDirectory(String skillName, String parentDirectory) { 
+                throw new UnsupportedOperationException("Deprecated"); 
+        }
 
     /**
      * Imports a skill using ClassLoader.getResourceAsStream to load skills from the classpath.
@@ -66,6 +83,7 @@ public interface SkillExecutor {
 >>>>>>> main
      * @throws KernelException if it is not possible to correctly load the skill
      */
+<<<<<<< main
     ReadOnlyFunctionCollection importSkillFromResources(
             String pluginDirectory, String skillName, String functionName) throws KernelException;
 <<<<<<< AI
@@ -79,6 +97,13 @@ public interface SkillExecutor {
             String pluginDirectory, String skillName, String functionName);
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 >>>>>>> main
+=======
+    @Deprecated
+    default ReadOnlyFunctionCollection importSkillFromResources(
+            String pluginDirectory, String skillName, String functionName) throws KernelException { 
+                throw new UnsupportedOperationException("Deprecated"); 
+        }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * Imports a skill using clazz.getResourceAsStream to load skills from the classpath.
@@ -93,6 +118,7 @@ public interface SkillExecutor {
 >>>>>>> main
      * @throws KernelException if it is not possible to correctly load the skill
      */
+<<<<<<< main
     ReadOnlyFunctionCollection importSkillFromResources(
             String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) throws KernelException;
 <<<<<<< AI
@@ -106,6 +132,14 @@ public interface SkillExecutor {
             String pluginDirectory, String skillName, String functionName, @Nullable Class clazz);
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 >>>>>>> main
+=======
+    @Deprecated
+    default  ReadOnlyFunctionCollection importSkillFromResources(
+            String pluginDirectory, String skillName, String functionName, @Nullable Class clazz)
+            throws KernelException { 
+                throw new UnsupportedOperationException("Deprecated"); 
+        }
+>>>>>>> origin/dsgrieve/java-v1-api
 
     /**
      * Imports the native functions annotated on the given object as a skill.
@@ -114,10 +148,16 @@ public interface SkillExecutor {
      * @param skillName name of the skill
      * @return the function collection
      */
-    ReadOnlyFunctionCollection importSkill(Object nativeSkill, @Nullable String skillName);
+    @Deprecated
+    default ReadOnlyFunctionCollection importSkill(Object nativeSkill, @Nullable String skillName) { 
+                throw new UnsupportedOperationException("Deprecated"); 
+        }
 
     /**
      * @return Reference to the read-only skill collection containing all the imported functions
      */
-    ReadOnlySkillCollection getSkills();
+    @Deprecated
+    default ReadOnlySkillCollection getSkills() { 
+                throw new UnsupportedOperationException("Deprecated"); 
+        }
 }
