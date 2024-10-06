@@ -675,3 +675,4 @@ swa-cli.config.json
 
 !/dotnet/.SK-dotnet.sln.icloud
 
+/java/PACKAGES.md
